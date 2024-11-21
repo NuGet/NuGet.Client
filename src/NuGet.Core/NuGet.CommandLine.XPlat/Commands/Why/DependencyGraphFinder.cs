@@ -44,22 +44,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 {
                     foreach (var runtimeIdentifier in runtimeIdentifiers)
                     {
-                        LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: runtimeIdentifier);
+                        var targetFrameworkDisplayName = runtimeIdentifier == null ? targetFrameworkAlias : $"{targetFrameworkAlias}/{runtimeIdentifier}";
+
+                        LockFileTarget target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: runtimeIdentifier);
 
                         // get all package libraries for the framework
-                        IList<LockFileTargetLibrary>? packageLibraries = target?.Libraries;
+                        IList<LockFileTargetLibrary>? packageLibraries = target.Libraries;
 
                         // if the project has a dependency on the target package, get the dependency graph
                         if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
                         {
                             doesProjectHaveDependencyOnPackage = true;
-                            var targetFrameworkDisplayName = runtimeIdentifier == null ? targetFrameworkAlias : $"{targetFrameworkAlias}/{runtimeIdentifier}";
                             dependencyGraphPerFramework.Add(targetFrameworkDisplayName,
                                 GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
                         }
                         else
                         {
-                            dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
+                            dependencyGraphPerFramework.Add(targetFrameworkDisplayName, null);
                         }
                     }
                 }
