@@ -8,7 +8,6 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Protocol.Tests.Providers
