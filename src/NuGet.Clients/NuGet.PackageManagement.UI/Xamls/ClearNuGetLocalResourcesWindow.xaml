@@ -1,0 +1,54 @@
+<vsui:DialogWindow
+  x:Class="NuGet.PackageManagement.UI.ClearNuGetLocalResourcesWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+  xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+  mc:Ignorable="d"
+  Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
+  imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
+  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+  WindowStartupLocation="CenterScreen"
+  ShowInTaskbar="False"
+  IsCloseButtonEnabled="True"
+  WindowStyle="SingleBorderWindow"
+  Title="NuGet Package Manager" Height="200" Width="800"
+  ResizeMode="NoResize">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <Grid Margin="12,12,12,12" Focusable="False">
+    <Grid.RowDefinitions>
+      <!-- Top caption -->
+      <RowDefinition Height="Auto" />
+      <!-- Content -->
+      <RowDefinition Height="*" />
+      <!-- Buttons -->
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <!-- Top caption -->
+    <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" />
+
+    <!-- Content -->
+    <ProgressBar Grid.Row="1" IsIndeterminate="True" />
+
+    <!-- Buttons -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button x:Name ="CloseButton"
+              Style="{DynamicResource {x:Static vs:VsResourceKeys.ThemedDialogButtonStyleKey}}"
+              IsDefault="True"
+              Content="Close"/>
+    </StackPanel>
+
+  </Grid>
+</vsui:DialogWindow>

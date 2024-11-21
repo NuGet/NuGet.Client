@@ -1230,8 +1230,9 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 MessageHelper.ShowWarningMessage("Let's clear the NuGet Local Resources....", "Clear NuGet Local Resources");
-            })
-          .PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
+                var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow();
+                var result = clearNuGetLocalResourcesWindow.ShowModal() == true;
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
         private void ShowOptionPageSafe(Type optionPageType)
