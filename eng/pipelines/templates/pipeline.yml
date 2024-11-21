@@ -21,6 +21,10 @@ parameters:
   displayName: Run functional tests on Windows
   type: boolean
   default: true
+- name: RunUnitTestsOnWindows
+  displayName: Run unit tests on Windows
+  type: boolean
+  default: false
 - name: RunSourceBuild
   displayName: Run source build
   type: boolean
@@ -35,6 +39,10 @@ parameters:
   default: true
 - name: RunMonoTestsOnMac
   displayName: Run Mono tests on Mac
+  type: boolean
+  default: false
+- name: RunStaticAnalysis
+  displayName: Run static analysis
   type: boolean
   default: false
 
@@ -70,6 +78,7 @@ stages:
   jobs:
   - job: RunStaticSourceAnalysis
     displayName: Run Static Source Analysis
+    condition: "ne(variables['RunStaticAnalysis'], 'false')"
     timeoutInMinutes: 15
     pool:
       name: AzurePipelines-EO
@@ -206,6 +215,7 @@ stages:
       parameters:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
+        RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
