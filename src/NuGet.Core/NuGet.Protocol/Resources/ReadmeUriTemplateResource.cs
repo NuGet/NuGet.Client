@@ -10,6 +10,9 @@ using System;
 
 namespace NuGet.Protocol
 {
+    /// <summary>
+    /// A resource that provides the URI for downloading a README file based on a template.
+    /// </summary>
     internal class ReadmeUriTemplateResource : INuGetResource
     {
         private readonly string _uriTemplate;

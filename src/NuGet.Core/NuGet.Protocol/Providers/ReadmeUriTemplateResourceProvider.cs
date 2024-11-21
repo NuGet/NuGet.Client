@@ -9,6 +9,8 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
+    /// <summary>NuGet.Protocol resource provider for <see cref="ReadmeUriTemplateResource"/>.</summary>
+    /// <remarks>When successful, returns an instance of <see cref="ReadmeUriTemplateResource"/>.</remarks>
     internal class ReadmeUriTemplateResourceProvider : ResourceProvider
     {
         public ReadmeUriTemplateResourceProvider()
@@ -18,6 +20,7 @@ namespace NuGet.Protocol
         {
         }
 
+        /// <inheritdoc cref="ResourceProvider.TryCreate(SourceRepository, CancellationToken)"/>
         public override async Task<Tuple<bool, INuGetResource?>> TryCreate(SourceRepository source, CancellationToken token)
         {
             ReadmeUriTemplateResource? resource = null;
