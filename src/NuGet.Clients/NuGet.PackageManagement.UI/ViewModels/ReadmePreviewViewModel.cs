@@ -60,7 +60,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             if (packageMetadata != null && (!string.Equals(packageMetadata.Id, _packageMetadata?.Id) || packageMetadata.Version != _packageMetadata?.Version))
             {
-                ReadmeMarkdown = Resources.Text_Loading;
                 _packageMetadata = packageMetadata;
                 await LoadReadmeAsync(cancellationToken);
             }
@@ -73,6 +72,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private async Task LoadReadmeAsync(CancellationToken cancellationToken)
         {
+            ReadmeMarkdown = Resources.Text_Loading;
             if (string.IsNullOrWhiteSpace(_packageMetadata.ReadmeFileUrl))
             {
                 ReadmeMarkdown = _canRenderLocalReadme && !string.IsNullOrWhiteSpace(_packageMetadata.PackagePath) ? Resources.Text_NoReadme : string.Empty;
@@ -91,20 +91,22 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
 
             var readme = Resources.Text_NoReadme;
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            try
             {
-                await TaskScheduler.Default;
-                using var readmeStream = await _nugetPackageFileService.GetReadmeAsync(readmeUrl, cancellationToken);
-                if (readmeStream is null)
+                await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    return;
-                }
+                    await TaskScheduler.Default;
+                    using var readmeStream = await _nugetPackageFileService.GetReadmeAsync(readmeUrl, cancellationToken);
+                    if (readmeStream is null)
+                    {
+                        return;
+                    }
 
-                using StreamReader streamReader = new StreamReader(readmeStream);
-                readme = await streamReader.ReadToEndAsync();
-            });
-
-            if (!cancellationToken.IsCancellationRequested)
+                    using StreamReader streamReader = new StreamReader(readmeStream);
+                    readme = await streamReader.ReadToEndAsync();
+                });
+            }
+            finally
             {
                 ReadmeMarkdown = readme;
                 IsVisible = !string.IsNullOrWhiteSpace(readme);

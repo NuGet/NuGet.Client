@@ -16,6 +16,8 @@ namespace NuGet.Protocol
     internal class ReadmeUriTemplateResource : INuGetResource
     {
         private readonly string _uriTemplate;
+        private const string LowerId = "{lower_id}";
+        private const string LowerVersion = "{lower_version}";
 
         public ReadmeUriTemplateResource(string uriTemplate)
         {
@@ -23,7 +25,7 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Get  the URL for downloading the readme file.
+        /// Get the URL for downloading the readme file.
         /// </summary>
         /// <param name="id">The package id</param>
         /// <param name="version">The package version</param>
@@ -37,11 +39,11 @@ namespace NuGet.Protocol
 
             var uriString = _uriTemplate
 #if NETCOREAPP
-               .Replace("{lower_id}", id.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)
-               .Replace("{lower_version}", version.ToNormalizedString().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase);
+               .Replace(LowerId, id.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)
+               .Replace(LowerVersion, version.ToNormalizedString().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase);
 #else
-               .Replace("{lower_id}", id.ToLowerInvariant())
-               .Replace("{lower_version}", version.ToNormalizedString().ToLowerInvariant());
+               .Replace(LowerId, id.ToLowerInvariant())
+               .Replace(LowerVersion, version.ToNormalizedString().ToLowerInvariant());
 #endif
 
             return uriString;
