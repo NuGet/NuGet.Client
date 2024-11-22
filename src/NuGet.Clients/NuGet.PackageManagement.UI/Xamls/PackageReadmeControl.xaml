@@ -30,17 +30,14 @@
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
       Focusable="False"
-      Visibility="{Binding Path=IsReadmeReady, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-    />
+      Visibility="{Binding Path=IsReadmeReady, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
     <TextBlock
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Text_Loading}"
-      Visibility="{Binding Path=IsBusy, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-      />
+      Visibility="{Binding Path=IsBusy, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
     <TextBlock
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
-      Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-      />
+      Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
   </Grid>
 </UserControl>

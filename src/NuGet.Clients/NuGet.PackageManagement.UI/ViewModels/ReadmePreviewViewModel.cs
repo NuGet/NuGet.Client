@@ -90,13 +90,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private async Task LoadReadmeAsync(CancellationToken cancellationToken)
         {
-            IsBusy = true;
             if (string.IsNullOrWhiteSpace(_packageMetadata.ReadmeFileUrl))
             {
                 ReadmeMarkdown = _canRenderLocalReadme && !string.IsNullOrWhiteSpace(_packageMetadata.PackagePath) ? Resources.Text_NoReadme : string.Empty;
                 IsVisible = !string.IsNullOrWhiteSpace(ReadmeMarkdown);
                 ErrorLoadingReadme = false;
-                IsBusy = false;
                 return;
             }
 
@@ -106,13 +104,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 ReadmeMarkdown = string.Empty;
                 IsVisible = false;
                 ErrorLoadingReadme = false;
-                IsBusy = false;
                 return;
             }
 
             var readme = Resources.Text_NoReadme;
             try
             {
+                IsBusy = true;
                 await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await TaskScheduler.Default;
