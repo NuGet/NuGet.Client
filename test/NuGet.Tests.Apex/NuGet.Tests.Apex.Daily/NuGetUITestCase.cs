@@ -593,7 +593,7 @@ namespace NuGet.Tests.Apex.Daily
 
             // Assert
             VisualStudio.AssertNoErrors();
-            uiwindow.AssertPackageListIsNullIninsatlltab();
+            uiwindow.AssertPackageListIsNullOrEmpty();
             CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, TestPackageName, Logger);
         }
 
