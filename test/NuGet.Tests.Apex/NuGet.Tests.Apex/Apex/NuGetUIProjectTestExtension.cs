@@ -77,7 +77,7 @@ namespace NuGet.Tests.Apex
             package.Id.Should().Be(packageId);
         }
 
-        public bool AssertPackageListIsNullIninsatlltab()
+        public bool AssertPackageListIsNullOrEmpty()
         {
             return _uiproject.PackageItems.IsNullOrEmpty();
         }
