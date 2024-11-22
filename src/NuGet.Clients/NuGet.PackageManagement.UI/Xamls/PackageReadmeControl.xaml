@@ -38,6 +38,6 @@
     <TextBlock
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
-      Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+      Visibility="{Binding Path=ErrorWithReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
   </Grid>
 </UserControl>

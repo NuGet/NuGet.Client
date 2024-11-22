@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
-                ReadmeViewModel.ErrorLoadingReadme = true;
+                ReadmeViewModel.ErrorWithReadme = true;
                 ReadmeViewModel.ReadmeMarkdown = string.Empty;
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
             }
