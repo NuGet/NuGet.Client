@@ -2895,6 +2895,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Duration.Total"] = value => value.Should().BeOfType<double>(),
                 ["UseLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
                 ["UsedLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["TargetFrameworksCount"] = value => value.Should().Be(1),
+                ["RuntimeIdentifiersCount"] = value => value.Should().Be(0),
+                ["TreatWarningsAsErrors"] = value => value.Should().Be(false),
             };
 
             HashSet<string> actualProperties = new();
@@ -3053,7 +3056,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(31);
+            projectInformationEvent.Count.Should().Be(34);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
