@@ -111,6 +111,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             try
             {
                 IsBusy = true;
+                ErrorLoadingReadme = false;
                 await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await TaskScheduler.Default;
