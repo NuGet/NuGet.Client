@@ -370,12 +370,12 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task RepoSignCommand_SignPackageWithSHA1CertificateFingerprint_Raises_WarningAsync()
+        public async Task RepoSignCommand_SignPackageWithSHA1CertificateFingerprint_RaisesExceptionAsync()
         {
             var result = await ExecuteRepoSignCommandAsync(Common.HashAlgorithmName.SHA1);
 
-            result.Success.Should().BeTrue(because: result.AllOutput);
-            result.AllOutput.Should().Contain(_invalidCertificateFingerprintCode);
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            result.Errors.Should().Contain(_invalidCertificateFingerprintCode);
         }
 
         [CIOnlyTheory]
