@@ -157,42 +157,184 @@ namespace NuGet.Commands
             return ExecuteAsync(CancellationToken.None);
         }
 
+        private void InitializeTelemetry(TelemetryActivity telemetry)
+        {
+            telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
+            bool isPackageSourceMappingEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
+            telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
+            telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
+            int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
+            telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
+            telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
+            telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
+            telemetry.TelemetryEvent[IsLockFileEnabled] = _isLockFileEnabled;
+            telemetry.TelemetryEvent[UseLegacyDependencyResolver] = _request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            telemetry.TelemetryEvent[UsedLegacyDependencyResolver] = !_enableNewDependencyResolver;
+            var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
+            telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
+
+            if (isCpvmEnabled)
+            {
+                var isCentralPackageTransitivePinningEnabled = _request.Project.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
+                telemetry.TelemetryEvent[IsCentralPackageTransitivePinningEnabled] = isCentralPackageTransitivePinningEnabled;
+            }
+
+            bool auditEnabled = AuditUtility.ParseEnableValue(
+                _request.Project.RestoreMetadata?.RestoreAuditProperties,
+                _request.Project.FilePath,
+                _logger);
+            telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+        }
+
+        private async Task<RestoreResult> HandleNoOpRestoreAsync(TelemetryActivity telemetry, RestoreResultData restoreResultData, Stopwatch restoreTime)
+        {
+            telemetry.StartIntervalMeasure();
+            bool noOp;
+            TimeSpan? cacheFileAge;
+
+            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
+            (restoreResultData.CacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
+            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
+
+            telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
+            telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
+            if (noOp)
+            {
+                telemetry.StartIntervalMeasure();
+
+                var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request, restoreResultData.CacheFile);
+
+                telemetry.EndIntervalMeasure(NoOpRestoreOutputEvaluationDuration);
+                telemetry.TelemetryEvent[NoOpRestoreOutputEvaluationResult] = noOpSuccess;
+
+                if (noOpSuccess)
+                {
+                    telemetry.StartIntervalMeasure();
+
+                    // Replay Warnings and Errors from an existing lock file in case of a no-op.
+                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResultData.CacheFile.LogMessages, _logger);
+
+                    telemetry.EndIntervalMeasure(NoOpReplayLogsDuration);
+
+                    restoreTime.Stop();
+                    telemetry.TelemetryEvent[NoOpResult] = true;
+                    telemetry.TelemetryEvent[RestoreSuccess] = _success;
+                    telemetry.TelemetryEvent[TotalUniquePackagesCount] = restoreResultData.CacheFile.ExpectedPackageFilePaths?.Count ?? -1;
+                    telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
+                    if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
+
+                    return new NoOpRestoreResult(
+                        _success,
+                        _request.LockFilePath,
+                        new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
+                        restoreResultData.CacheFile,
+                        _request.Project.RestoreMetadata.CacheFilePath,
+                        _request.ProjectStyle,
+                        restoreTime.Elapsed);
+                }
+            }
+
+            return null;
+        }
+
+        private async Task ShowHttpSourcesError()
+        {
+            if (_request.DependencyProviders.RemoteProviders != null)
+            {
+                foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
+                {
+                    var source = remoteProvider.Source;
+                    if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
+                    {
+                        var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(_request.Project.RestoreMetadata.SdkAnalysisLevel,
+                            _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                            SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
+
+                        if (isErrorEnabled)
+                        {
+                            await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
+                            string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+                        }
+                        else
+                        {
+                            await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
+                            string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task<(bool, bool)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, RestoreResultData restoreResultData, bool isLockFileValid, bool regenerateLockFile, CancellationToken token)
+        {
+            // evaluate packages.lock.json file
+            using (telemetry.StartIndependentInterval(EvaluateLockFileDuration))
+            {
+                bool result;
+                (result, isLockFileValid, restoreResultData.PackagesLockFile) = await EvaluatePackagesLockFileAsync(restoreResultData.PackagesLockFilePath, contextForProject, telemetry);
+
+                telemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
+                telemetry.TelemetryEvent[LockFileEvaluationResult] = result;
+
+                regenerateLockFile = result; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
+                _success &= result;
+            }
+
+            restoreResultData.RestoreGraphs = null;
+            if (_success)
+            {
+                using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
+                {
+                    if (NuGetEventSource.IsEnabled)
+                        TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
+
+                    if (_enableNewDependencyResolver)
+                    {
+                        restoreResultData.RestoreGraphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
+                    }
+                    else
+                    {
+                        // Restore using the legacy code path if the optimized dependency resolution is disabled.
+                        restoreResultData.RestoreGraphs = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
+                    }
+
+                    if (NuGetEventSource.IsEnabled)
+                        TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                }
+            }
+            else
+            {
+                // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
+                // project or we're in locked mode and out of date.
+                // For example, project TFM or package versions couldn't be parsed. Although the minimal
+                // fake package spec generated has no packages requested, it also doesn't have any project TFMs
+                // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
+                // incorrect validation messages, don't try to restore. It is however, the responsibility for the
+                // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
+                // The other scenario is when the lock file is not up to date and we're running locked mode.
+                // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
+                var frameworkRuntimePair = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
+                restoreResultData.RestoreGraphs = frameworkRuntimePair.Select(e =>
+                {
+                    return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
+                });
+            }
+
+            return (isLockFileValid, regenerateLockFile);
+        }
+
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
-                telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
-
-                bool isPackageSourceMappingEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
-                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
-                telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
+                InitializeTelemetry(telemetry);
+                RestoreResultData restoreResultData = new RestoreResultData();
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
-                telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
-                telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
-                telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
-                telemetry.TelemetryEvent[IsLockFileEnabled] = _isLockFileEnabled;
-                telemetry.TelemetryEvent[UseLegacyDependencyResolver] = _request.Project.RestoreMetadata.UseLegacyDependencyResolver;
-                telemetry.TelemetryEvent[UsedLegacyDependencyResolver] = !_enableNewDependencyResolver;
-                telemetry.TelemetryEvent[TargetFrameworksCount] = _request.Project.RestoreMetadata.TargetFrameworks.Count;
-                telemetry.TelemetryEvent[RuntimeIdentifiersCount] = _request.Project.RuntimeGraph.Runtimes.Count;
-                telemetry.TelemetryEvent[TreatWarningsAsErrors] = _request.Project.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors;
-
-                _operationId = telemetry.OperationId;
-
-                var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
-                telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
-
-                if (isCpvmEnabled)
-                {
-                    var isCentralPackageTransitivePinningEnabled = _request.Project.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
-                    telemetry.TelemetryEvent[IsCentralPackageTransitivePinningEnabled] = isCentralPackageTransitivePinningEnabled;
-                }
-
                 bool auditEnabled = AuditUtility.ParseEnableValue(
-                    _request.Project.RestoreMetadata?.RestoreAuditProperties,
-                    _request.Project.FilePath,
-                    _logger);
-                telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+                _request.Project.RestoreMetadata?.RestoreAuditProperties,
+                _request.Project.FilePath,
+                _logger);
+                _operationId = telemetry.OperationId;
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -206,59 +348,20 @@ namespace NuGet.Commands
 
                 var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
-                CacheFile cacheFile = null;
+                restoreResultData.CacheFile = null;
 
                 using (telemetry.StartIndependentInterval(NoOpDuration))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
                     {
-                        telemetry.StartIntervalMeasure();
-                        bool noOp;
-                        TimeSpan? cacheFileAge;
-
-                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
-                        (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
-                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
-
-                        telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
-                        telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
-                        if (noOp)
+                        var noOpResult = await HandleNoOpRestoreAsync(telemetry, restoreResultData, restoreTime);
+                        if (noOpResult != null)
                         {
-                            telemetry.StartIntervalMeasure();
-
-                            var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request, cacheFile);
-
-                            telemetry.EndIntervalMeasure(NoOpRestoreOutputEvaluationDuration);
-                            telemetry.TelemetryEvent[NoOpRestoreOutputEvaluationResult] = noOpSuccess;
-
-                            if (noOpSuccess)
-                            {
-                                telemetry.StartIntervalMeasure();
-
-                                // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
-
-                                telemetry.EndIntervalMeasure(NoOpReplayLogsDuration);
-
-                                restoreTime.Stop();
-                                telemetry.TelemetryEvent[NoOpResult] = true;
-                                telemetry.TelemetryEvent[RestoreSuccess] = _success;
-                                telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count ?? -1;
-                                telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
-                                if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
-
-                                return new NoOpRestoreResult(
-                                    _success,
-                                    _request.LockFilePath,
-                                    new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
-                                    cacheFile,
-                                    _request.Project.RestoreMetadata.CacheFilePath,
-                                    _request.ProjectStyle,
-                                    restoreTime.Elapsed);
-                            }
+                            return noOpResult;
                         }
                     }
                 }
+
                 telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
                 if (!await AreCentralVersionRequirementsSatisfiedAsync(_request, httpSourcesCount))
@@ -267,126 +370,51 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                if (_request.DependencyProviders.RemoteProviders != null)
-                {
-                    foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
-                    {
-                        var source = remoteProvider.Source;
-                        if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
-                        {
-                            var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(_request.Project.RestoreMetadata.SdkAnalysisLevel,
-                                _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                                SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
-
-                            if (isErrorEnabled)
-                            {
-                                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
-                                string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
-                            }
-                            else
-                            {
-                                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
-                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
-                            }
-                        }
-                    }
-                }
+                await ShowHttpSourcesError();
 
                 _success &= HasValidPlatformVersions();
 
-                // evaluate packages.lock.json file
-                var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
+                restoreResultData.PackagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
+                restoreResultData.PackagesLockFile = null;
                 var isLockFileValid = false;
-                PackagesLockFile packagesLockFile = null;
                 var regenerateLockFile = true;
-
-                using (telemetry.StartIndependentInterval(EvaluateLockFileDuration))
-                {
-                    bool result;
-                    (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, telemetry);
-
-                    telemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
-                    telemetry.TelemetryEvent[LockFileEvaluationResult] = result;
-
-                    regenerateLockFile = result; // Ensure that the lock file *does not* get rewritten, when the lock file is out of date and the status is false.
-                    _success &= result;
-                }
-
-                IEnumerable<RestoreTargetGraph> graphs = null;
-                if (_success)
-                {
-                    using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
-                    {
-                        if (NuGetEventSource.IsEnabled)
-                            TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
-
-                        if (_enableNewDependencyResolver)
-                        {
-                            graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                        }
-                        else
-                        {
-                            // Restore using the legacy code path if the optimized dependency resolution is disabled.
-                            graphs = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                        }
-
-                        if (NuGetEventSource.IsEnabled)
-                            TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
-                    }
-                }
-                else
-                {
-                    // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
-                    // project or we're in locked mode and out of date.
-                    // For example, project TFM or package versions couldn't be parsed. Although the minimal
-                    // fake package spec generated has no packages requested, it also doesn't have any project TFMs
-                    // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
-                    // incorrect validation messages, don't try to restore. It is however, the responsibility for the
-                    // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
-                    // The other scenario is when the lock file is not up to date and we're running locked mode.
-                    // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
-                    var frameworkRuntimePair = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
-                    graphs = frameworkRuntimePair.Select(e =>
-                    {
-                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
-                    });
-                }
+                (isLockFileValid, regenerateLockFile) = await EvaluateLockFile(telemetry, contextForProject, restoreResultData, isLockFileValid, regenerateLockFile, token);
 
                 bool auditRan = false;
                 if (auditEnabled)
                 {
-                    auditRan = await PerformAuditAsync(graphs, telemetry, token);
+                    auditRan = await PerformAuditAsync(restoreResultData.RestoreGraphs, telemetry, token);
                 }
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
                 if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
-                LockFile assetsFile = BuildAssetsFile(
+                restoreResultData.LockFile = BuildAssetsFile(
                     _request.ExistingLockFile,
-                    _request.Project,
-                    graphs,
+                _request.Project,
+                    restoreResultData.RestoreGraphs,
                     localRepositories,
                     contextForProject);
                 if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
-                IList<CompatibilityCheckResult> checkResults = null;
+                restoreResultData.CompatibilityCheckResults = null;
 
                 telemetry.StartIntervalMeasure();
 
-                _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
+                _success &= await ValidateRestoreGraphsAsync(restoreResultData.RestoreGraphs, _logger);
 
                 // Check package compatibility
-                checkResults = await VerifyCompatibilityAsync(
+                restoreResultData.CompatibilityCheckResults = await VerifyCompatibilityAsync(
                     _request.Project,
                     _includeFlagGraphs,
                     localRepositories,
-                    assetsFile,
-                    graphs,
+                restoreResultData.LockFile,
+                    restoreResultData.RestoreGraphs,
                     _request.ValidateRuntimeAssets,
                     _logger);
 
-                if (checkResults.Any(r => !r.Success))
+                if (restoreResultData.CompatibilityCheckResults.Any(r => !r.Success))
                 {
                     _success = false;
                 }
@@ -394,128 +422,35 @@ namespace NuGet.Commands
 
 
                 // Generate Targets/Props files
-                var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
-                string assetsFilePath = null;
-                string cacheFilePath = null;
+                restoreResultData.MSBuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+                restoreResultData.AssetFilePath = null;
+                restoreResultData.CacheFilePath = null;
 
-                using (telemetry.StartIndependentInterval(CreateRestoreResultDuration))
-                {
-                    // Determine the lock file output path
-                    assetsFilePath = GetAssetsFilePath(assetsFile);
+                await ProcessRestoreResultAsync(
+                    telemetry,
+                    localRepositories,
+                    contextForProject,
+                    isLockFileValid,
+                    regenerateLockFile,
+                    restoreResultData,
+                    token);
 
-                    // Determine the cache file output path
-                    cacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, assetsFile);
-
-                    // Tool restores are unique since the output path is not known until after restore
-                    if (_request.LockFilePath == null
-                        && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
-                    {
-                        _request.LockFilePath = assetsFilePath;
-                    }
-
-                    if (contextForProject.IsMsBuildBased)
-                    {
-                        msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
-                            _request.Project,
-                            assetsFile,
-                            graphs,
-                            localRepositories,
-                            _request,
-                            assetsFilePath,
-                            _success,
-                            _logger);
-                    }
-
-                    // If the request is for a lower lock file version, downgrade it appropriately
-                    DowngradeLockFileIfNeeded(assetsFile);
-
-                    // Revert to the original case if needed
-                    await FixCaseForLegacyReaders(graphs, assetsFile, token);
-
-                    // if lock file was still valid then validate package's sha512 hash or else write
-                    // the file if enabled.
-                    if (isLockFileValid)
-                    {
-                        telemetry.StartIntervalMeasure();
-                        // validate package's SHA512
-                        _success &= ValidatePackagesSha512(packagesLockFile, assetsFile);
-                        telemetry.EndIntervalMeasure(ValidatePackagesShaDuration);
-
-                        // clear out the existing lock file so that we don't over-write the same file
-                        packagesLockFile = null;
-                    }
-                    else if (_isLockFileEnabled)
-                    {
-                        if (regenerateLockFile)
-                        {
-                            // generate packages.lock.json file if enabled
-                            packagesLockFile = new PackagesLockFileBuilder()
-                                .CreateNuGetLockFile(assetsFile);
-                        }
-                        else
-                        {
-                            packagesLockFile = null;
-                            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingPackagesLockFileGeneration, packagesLockFilePath));
-                        }
-                    }
-
-                    // Write the logs into the assets file
-                    var logsEnumerable = _logger.Errors
-                        .Select(l => AssetsLogMessage.Create(l));
-                    if (_request.AdditionalMessages != null)
-                    {
-                        logsEnumerable = logsEnumerable.Concat(_request.AdditionalMessages);
-                    }
-                    var logs = logsEnumerable
-                        .ToList();
-
-                    _success &= !logs.Any(l => l.Level == LogLevel.Error);
-
-                    assetsFile.LogMessages = logs;
-
-                    if (cacheFile != null)
-                    {
-                        cacheFile.Success = _success;
-                        cacheFile.ProjectFilePath = _request.Project.FilePath;
-                        cacheFile.LogMessages = assetsFile.LogMessages;
-                        cacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
-                        telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile?.ExpectedPackageFilePaths.Count;
-                    }
-
-                    var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
-                    var warningCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code)));
-
-                    if (!string.IsNullOrEmpty(errorCodes))
-                    {
-                        telemetry.TelemetryEvent[ErrorCodes] = errorCodes;
-                    }
-
-                    if (!string.IsNullOrEmpty(warningCodes))
-                    {
-                        telemetry.TelemetryEvent[WarningCodes] = warningCodes;
-                    }
-
-
-                    telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
-
-                    telemetry.TelemetryEvent[RestoreSuccess] = _success;
-                }
 
                 restoreTime.Stop();
 
                 // Create result
                 return new RestoreResult(
                     _success,
-                    graphs,
-                    checkResults,
-                    msbuildOutputFiles,
-                    assetsFile,
+                    restoreResultData.RestoreGraphs,
+                    restoreResultData.CompatibilityCheckResults,
+                    restoreResultData.MSBuildOutputFiles,
+                    restoreResultData.LockFile,
                     _request.ExistingLockFile,
-                    assetsFilePath,
-                    cacheFile,
-                    cacheFilePath,
-                    packagesLockFilePath,
-                    packagesLockFile,
+                    restoreResultData.AssetFilePath,
+                    restoreResultData.CacheFile,
+                    restoreResultData.CacheFilePath,
+                    restoreResultData.PackagesLockFilePath,
+                    restoreResultData.PackagesLockFile,
                     dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
@@ -523,6 +458,115 @@ namespace NuGet.Commands
                 {
                     AuditRan = auditRan
                 };
+            }
+        }
+
+        private async Task ProcessRestoreResultAsync(TelemetryActivity telemetry, List<NuGetv3LocalRepository> localRepositories, RemoteWalkContext contextForProject, bool isLockFileValid, bool regenerateLockFile, RestoreResultData restoreResultData, CancellationToken token)
+        {
+            restoreResultData.MSBuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+            restoreResultData.AssetFilePath = null;
+            restoreResultData.CacheFilePath = null;
+            using (telemetry.StartIndependentInterval(CreateRestoreResultDuration))
+            {
+                // Determine the lock file output path
+                restoreResultData.AssetFilePath = GetAssetsFilePath(restoreResultData.LockFile);
+
+                // Determine the cache file output path
+                restoreResultData.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(_request, restoreResultData.LockFile);
+
+                // Tool restores are unique since the output path is not known until after restore
+                if (_request.LockFilePath == null
+                    && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                {
+                    _request.LockFilePath = restoreResultData.AssetFilePath;
+                }
+
+                if (contextForProject.IsMsBuildBased)
+                {
+                    restoreResultData.MSBuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                        _request.Project,
+                        restoreResultData.LockFile,
+                        restoreResultData.RestoreGraphs,
+                        localRepositories,
+                        _request,
+                        restoreResultData.AssetFilePath,
+                        _success,
+                        _logger);
+                }
+
+                // If the request is for a lower lock file version, downgrade it appropriately
+                DowngradeLockFileIfNeeded(restoreResultData.LockFile);
+
+                // Revert to the original case if needed
+                await FixCaseForLegacyReaders(restoreResultData.RestoreGraphs, restoreResultData.LockFile, token);
+
+                // if lock file was still valid then validate package's sha512 hash or else write
+                // the file if enabled.
+                if (isLockFileValid)
+                {
+                    telemetry.StartIntervalMeasure();
+                    // validate package's SHA512
+                    _success &= ValidatePackagesSha512(restoreResultData.PackagesLockFile, restoreResultData.LockFile);
+                    telemetry.EndIntervalMeasure(ValidatePackagesShaDuration);
+
+                    // clear out the existing lock file so that we don't over-write the same file
+                    restoreResultData.PackagesLockFile = null;
+                }
+                else if (_isLockFileEnabled)
+                {
+                    if (regenerateLockFile)
+                    {
+                        // generate packages.lock.json file if enabled
+                        restoreResultData.PackagesLockFile = new PackagesLockFileBuilder()
+                            .CreateNuGetLockFile(restoreResultData.LockFile);
+                    }
+                    else
+                    {
+                        restoreResultData.PackagesLockFile = null;
+                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingPackagesLockFileGeneration, restoreResultData.PackagesLockFilePath));
+                    }
+                }
+
+                // Write the logs into the assets file
+                var logsEnumerable = _logger.Errors
+                    .Select(l => AssetsLogMessage.Create(l));
+                if (_request.AdditionalMessages != null)
+                {
+                    logsEnumerable = logsEnumerable.Concat(_request.AdditionalMessages);
+                }
+                var logs = logsEnumerable
+                    .ToList();
+
+                _success &= !logs.Any(l => l.Level == LogLevel.Error);
+
+                restoreResultData.LockFile.LogMessages = logs;
+
+                if (restoreResultData.CacheFile != null)
+                {
+                    restoreResultData.CacheFile.Success = _success;
+                    restoreResultData.CacheFile.ProjectFilePath = _request.Project.FilePath;
+                    restoreResultData.CacheFile.LogMessages = restoreResultData.LockFile.LogMessages;
+                    restoreResultData.CacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, restoreResultData.LockFile);
+                    telemetry.TelemetryEvent[TotalUniquePackagesCount] = restoreResultData.CacheFile?.ExpectedPackageFilePaths.Count;
+                }
+
+                var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
+                var warningCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code)));
+
+                if (!string.IsNullOrEmpty(errorCodes))
+                {
+                    telemetry.TelemetryEvent[ErrorCodes] = errorCodes;
+                }
+
+                if (!string.IsNullOrEmpty(warningCodes))
+                {
+                    telemetry.TelemetryEvent[WarningCodes] = warningCodes;
+                }
+
+
+                telemetry.TelemetryEvent[NewPackagesInstalledCount] = restoreResultData.RestoreGraphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
+
+                telemetry.TelemetryEvent[RestoreSuccess] = _success;
             }
         }
 
@@ -1659,6 +1703,19 @@ namespace NuGet.Commands
 
                 NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
             }
+        }
+
+        private class RestoreResultData
+        {
+            public IEnumerable<RestoreTargetGraph> RestoreGraphs { get; set; }
+            public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; set; }
+            public IEnumerable<MSBuildOutputFile> MSBuildOutputFiles { get; set; }
+            public LockFile LockFile { get; set; }
+            public string AssetFilePath { get; set; }
+            public CacheFile CacheFile { get; set; }
+            public string CacheFilePath { get; set; }
+            public string PackagesLockFilePath { get; set; }
+            public PackagesLockFile PackagesLockFile { get; set; }
         }
     }
 }
