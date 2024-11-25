@@ -722,9 +722,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task SignCommand_SignPackageWithInsecureCertificateFingerprint_RaisesWarningAsync()
+        public async Task SignCommand_SignPackageWithInsecureCertificateFingerprint_RaisesExceptionAsync()
         {
-            await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1, expectInsecureFingerprintWarning: true);
+            var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1);
+
+            Assert.False(result.Success, result.AllOutput);
+            Assert.True(result.Errors.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
         }
 
         [CIOnlyTheory]
@@ -733,12 +736,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData(HashAlgorithmName.SHA512)]
         public async Task SignCommand_SignPackageWithSecureCertificateFingerprint_SucceedsAsync(HashAlgorithmName hashAlgorithmName)
         {
-            await ExecuteSignPackageTestWithCertificateFingerprintAsync(hashAlgorithmName, expectInsecureFingerprintWarning: false);
+            var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(hashAlgorithmName);
+
+            Assert.True(result.Success, result.AllOutput);
+            Assert.False(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
         }
 
-        private async Task ExecuteSignPackageTestWithCertificateFingerprintAsync(
-            HashAlgorithmName hashAlgorithmName,
-            bool expectInsecureFingerprintWarning)
+        private async Task<CommandRunnerResult> ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName hashAlgorithmName)
         {
             // Arrange
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -755,7 +759,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 using var certificate = _testFixture.UntrustedSelfIssuedCertificateInCertificateStore;
 
-                string certFingerprint = expectInsecureFingerprintWarning ? certificate.Thumbprint :
+                string certFingerprint = hashAlgorithmName == HashAlgorithmName.SHA1 ? certificate.Thumbprint :
                     SignatureTestUtility.GetFingerprint(certificate, hashAlgorithmName);
 
                 var result = CommandRunner.Run(
@@ -764,16 +768,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     $"sign {packageFile.FullName} -CertificateFingerprint {certFingerprint} -Timestamper {timestampService.Url}",
                 testOutputHelper: _testOutputHelper);
 
-                // Assert
-                Assert.True(result.Success, result.AllOutput);
-                if (expectInsecureFingerprintWarning)
-                {
-                    Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
-                }
-                else
-                {
-                    Assert.False(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
-                }
+                return result;
             }
         }
     }
