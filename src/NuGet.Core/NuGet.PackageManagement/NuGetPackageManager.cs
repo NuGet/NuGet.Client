@@ -2964,14 +2964,12 @@ namespace NuGet.PackageManagement
                 }
                 else
                 {
-                    if (!nugetProjectActionsLookup.ContainsKey(buildIntegratedProject.MSBuildProjectPath))
+                    if (!nugetProjectActionsLookup.TryGetValue(buildIntegratedProject.MSBuildProjectPath, out nuGetProjectActions))
                     {
                         throw new ArgumentException(
                             message: string.Format(CultureInfo.CurrentCulture, Strings.UnableToFindPathInLookupOrList, nameof(nugetProjectActionsLookup), buildIntegratedProject.MSBuildProjectPath, nameof(packageIdentity), nameof(primarySources)),
                             paramName: nameof(nugetProjectActionsLookup));
                     }
-
-                    nuGetProjectActions = nugetProjectActionsLookup[buildIntegratedProject.MSBuildProjectPath];
 
                     if (nuGetProjectActions.Length == 0)
                     {
@@ -3477,7 +3475,7 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore 
+                    // This will restore all parents in a single restore
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
