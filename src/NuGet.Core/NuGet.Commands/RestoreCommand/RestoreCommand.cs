@@ -210,6 +210,8 @@ namespace NuGet.Commands
 
                 (bool isLockFileValid, bool regenerateLockFile) = await EvaluateLockFile(telemetry, contextForProject, restoreResultData, token);
 
+                await GenerateRestoreGraphsAsync(telemetry, contextForProject, restoreResultData, token);
+
                 bool auditRan = false;
 
                 if (auditEnabled)
@@ -419,6 +421,11 @@ namespace NuGet.Commands
                 _success &= result;
             }
 
+            return (isLockFileValid, regenerateLockFile);
+        }
+
+        private async Task GenerateRestoreGraphsAsync(TelemetryActivity telemetry, RemoteWalkContext contextForProject, RestoreResultData restoreResultData, CancellationToken token)
+        {
             restoreResultData.RestoreGraphs = null;
             if (_success)
             {
@@ -458,8 +465,6 @@ namespace NuGet.Commands
                     return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
                 });
             }
-
-            return (isLockFileValid, regenerateLockFile);
         }
 
         private async Task ProcessRestoreResultAsync(TelemetryActivity telemetry, List<NuGetv3LocalRepository> localRepositories, RemoteWalkContext contextForProject, bool isLockFileValid, bool regenerateLockFile, RestoreResultData restoreResultData, CancellationToken token)
