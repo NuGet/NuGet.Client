@@ -727,11 +727,11 @@ namespace NuGet.Commands
 
         internal static void AddPrunePackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
-            var PrunePackageReferences = new Dictionary<string, Dictionary<string, PrunePackageReference>>(StringComparer.OrdinalIgnoreCase);
+            var prunePackageReferences = new Dictionary<string, Dictionary<string, PrunePackageReference>>(StringComparer.OrdinalIgnoreCase);
             var isPruningEnabled = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             foreach (var targetFramework in spec.TargetFrameworks)
             {
-                PrunePackageReferences.Add(targetFramework.TargetAlias, new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase));
+                prunePackageReferences.Add(targetFramework.TargetAlias, new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase));
             }
 
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
@@ -754,14 +754,14 @@ namespace NuGet.Commands
                     {
                         if (isPruningEnabled[targetAlias])
                         {
-                            var frameworkInfo = PrunePackageReferences[targetAlias];
+                            var frameworkInfo = prunePackageReferences[targetAlias];
                             AddPackageToPrune(id, versionString, frameworkInfo);
                         }
                     }
                 }
                 else
                 {
-                    foreach (var frameworkInfo in PrunePackageReferences)
+                    foreach (var frameworkInfo in prunePackageReferences)
                     {
                         if (isPruningEnabled[frameworkInfo.Key])
                         {
@@ -773,7 +773,7 @@ namespace NuGet.Commands
 
             for (int i = 0; i < spec.TargetFrameworks.Count; i++)
             {
-                spec.TargetFrameworks[i] = new TargetFrameworkInformation(spec.TargetFrameworks[i]) { PackagesToPrune = PrunePackageReferences[spec.TargetFrameworks[i].TargetAlias] };
+                spec.TargetFrameworks[i] = new TargetFrameworkInformation(spec.TargetFrameworks[i]) { PackagesToPrune = prunePackageReferences[spec.TargetFrameworks[i].TargetAlias] };
             }
 
             static void AddPackageToPrune(string id, string version, Dictionary<string, PrunePackageReference> frameworkInfo)
