@@ -95,7 +95,7 @@
       <_LocalizeFiles Include="@(_LocalizeFolder)">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(_LocalizeFolder.Identity)))</DestinationPath>
       </_LocalizeFiles>
-      <!-- Second Localize run creates appropiate LocProject.json -->
+      <!-- Second Localize run creates appropriate LocProject.json -->
       <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
       </_LocalizeFiles>
@@ -103,6 +103,7 @@
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
   </Target>
 
+  <!-- Copy binaries to the localization artifacts folder -->
    <Target Name="CopyBinariesToLocalizationArtifacts">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
