@@ -93,8 +93,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                         project, optionalContext: null);
                 Assumes.Present(legacyPackageRefBasedProject);
 
-                await ProjectJsonToPackageRefMigrator.MigrateAsync(
-                    legacyPackageRefBasedProject as BuildIntegratedNuGetProject);
+                await ProjectJsonToPackageRefMigrator.MigrateAsync(legacyPackageRefBasedProject);
                 var result = new VsProjectJsonToPackageReferenceMigrateResult(success: true, errorMessage: null);
                 await nuGetProject.SaveAsync(CancellationToken.None);
                 await _solutionManager.Value.UpgradeProjectToPackageReferenceAsync(nuGetProject);

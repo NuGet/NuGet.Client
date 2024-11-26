@@ -187,7 +187,7 @@ namespace NuGet.ProjectModel
                     {
                         ReadScripts(ref jsonReader, packageSpec);
                     }
-#pragma warning restore CS0612 // Type or member is 
+#pragma warning restore CS0612 // Type or member is
                     else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
                     {
                         ReadDependencies(
@@ -851,7 +851,7 @@ namespace NuGet.ProjectModel
                         {
                             var files = new IncludeExcludeFiles()
                             {
-                                Include = new[] { (string)jsonReader.GetString() }
+                                Include = new[] { jsonReader.GetString() }
                             };
 
                             mappings.Add(mappingKey, files);
@@ -1641,7 +1641,7 @@ namespace NuGet.ProjectModel
                     {
                         if (jsonReader.TokenType == JsonTokenType.String)
                         {
-                            packageSpec.Scripts[propertyName] = new string[] { (string)jsonReader.GetString() };
+                            packageSpec.Scripts[propertyName] = new string[] { jsonReader.GetString() };
                         }
                         else if (jsonReader.TokenType == JsonTokenType.StartArray)
                         {

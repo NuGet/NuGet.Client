@@ -1031,7 +1031,7 @@ namespace NuGet.PackageManagement
                         if (packageIdentity.HasVersion)
                         {
                             preferredVersions[packageIdentity.Id] = packageIdentity;
-                            ((List<PackageIdentity>)primaryTargets).Add(packageIdentity);
+                            primaryTargets.Add(packageIdentity);
                         }
                         // Otherwise we just have the Id and so we wil explicitly not prefer the one currently installed
                         else
@@ -3477,7 +3477,7 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore 
+                    // This will restore all parents in a single restore
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
