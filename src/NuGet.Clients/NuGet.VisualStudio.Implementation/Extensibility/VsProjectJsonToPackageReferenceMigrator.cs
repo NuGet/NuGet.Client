@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
