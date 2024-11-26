@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Markdown.Platform;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
+using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,6 +40,16 @@ namespace NuGet.PackageManagement.UI
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateMarkdownAsync).PostOnFailure(nameof(PackageReadmeControl), nameof(ReadmeViewModel_PropertyChanged));
+            }
+            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
+            {
+                var loadingStatusText = ReadmeViewModel.IsBusy
+                    ? Resx.Text_LoadingReadme
+                    : Resx.Text_ReadmeLoaded;
+                if (!string.Equals(_ltbLoading.Text, loadingStatusText, StringComparison.OrdinalIgnoreCase))
+                {
+                    _ltbLoading.Text = loadingStatusText;
+                }
             }
         }
 
