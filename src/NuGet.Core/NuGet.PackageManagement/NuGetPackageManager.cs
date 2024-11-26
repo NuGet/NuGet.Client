@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement
                     var pathContext = NuGetPathContext.Create(Settings);
 
                     // count = FallbackPackageFolders.Count + 1 for UserPackageFolder
-                    var count = (pathContext.FallbackPackageFolders?.Count() ?? 0) + 1;
+                    var count = pathContext.FallbackPackageFolders.Count + 1;
                     var folders = new List<string>(count)
                     {
                         pathContext.UserPackageFolder
@@ -3477,7 +3477,7 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore 
+                    // This will restore all parents in a single restore
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
