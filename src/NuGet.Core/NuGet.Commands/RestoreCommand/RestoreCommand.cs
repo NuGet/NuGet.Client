@@ -164,9 +164,9 @@ namespace NuGet.Commands
                 RestoreResultData restoreResultData = new RestoreResultData();
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
                 bool auditEnabled = AuditUtility.ParseEnableValue(
-                _request.Project.RestoreMetadata?.RestoreAuditProperties,
-                _request.Project.FilePath,
-                _logger);
+                    _request.Project.RestoreMetadata?.RestoreAuditProperties,
+                    _request.Project.FilePath,
+                    _logger);
                 InitializeTelemetry(telemetry, httpSourcesCount, auditEnabled);
 
                 var restoreTime = Stopwatch.StartNew();
@@ -187,7 +187,7 @@ namespace NuGet.Commands
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
                     {
-                        var noOpResult = await HandleNoOpRestoreAsync(telemetry, restoreResultData, restoreTime);
+                        var noOpResult = await EvaluateNoOpAsync(telemetry, restoreResultData, restoreTime);
 
                         if (noOpResult != null)
                         {
@@ -208,11 +208,7 @@ namespace NuGet.Commands
 
                 _success &= HasValidPlatformVersions();
 
-                restoreResultData.PackagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
-                restoreResultData.PackagesLockFile = null;
-                var isLockFileValid = false;
-                var regenerateLockFile = true;
-                (isLockFileValid, regenerateLockFile) = await EvaluateLockFile(telemetry, contextForProject, restoreResultData, isLockFileValid, regenerateLockFile, token);
+                (bool isLockFileValid, bool regenerateLockFile) = await EvaluateLockFile(telemetry, contextForProject, restoreResultData, token);
 
                 bool auditRan = false;
 
@@ -253,8 +249,8 @@ namespace NuGet.Commands
                 {
                     _success = false;
                 }
-                telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
 
+                telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
 
                 // Generate Targets/Props files
                 restoreResultData.MSBuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
@@ -269,7 +265,6 @@ namespace NuGet.Commands
                     regenerateLockFile,
                     restoreResultData,
                     token);
-
 
                 restoreTime.Stop();
 
@@ -325,7 +320,7 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
         }
 
-        private async Task<RestoreResult> HandleNoOpRestoreAsync(TelemetryActivity telemetry, RestoreResultData restoreResultData, Stopwatch restoreTime)
+        private async Task<RestoreResult> EvaluateNoOpAsync(TelemetryActivity telemetry, RestoreResultData restoreResultData, Stopwatch restoreTime)
         {
             telemetry.StartIntervalMeasure();
             bool noOp;
@@ -404,9 +399,14 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<(bool, bool)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, RestoreResultData restoreResultData, bool isLockFileValid, bool regenerateLockFile, CancellationToken token)
+        private async Task<(bool, bool)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, RestoreResultData restoreResultData, CancellationToken token)
         {
             // evaluate packages.lock.json file
+            restoreResultData.PackagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
+            restoreResultData.PackagesLockFile = null;
+            var isLockFileValid = false;
+            var regenerateLockFile = true;
+
             using (telemetry.StartIndependentInterval(EvaluateLockFileDuration))
             {
                 bool result;
