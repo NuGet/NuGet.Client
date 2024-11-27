@@ -484,6 +484,30 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [PlatformFact(Platform.Windows)]
+        public void GetPluginsInPATH_WithOneValueInPathEmpty_ReturnsPlugin()
+        {
+            // Arrange
+            using TestDirectory pluginPathDirectory = TestDirectory.Create();
+            using TestDirectory pathDirectory = TestDirectory.Create();
+            var pluginInNuGetPluginPathDirectoryFilePath = Path.Combine(pluginPathDirectory.Path, "nuget-plugin-auth.exe");
+            var pluginInPathDirectoryFilePath = Path.Combine(pathDirectory.Path, "nuget-plugin-in-path-directory.exe");
+            File.Create(pluginInNuGetPluginPathDirectoryFilePath);
+            File.Create(pluginInPathDirectoryFilePath);
+            Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(Directory.GetParent(pluginInNuGetPluginPathDirectoryFilePath).FullName);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns($"{Directory.GetParent(pluginInPathDirectoryFilePath).FullName}{Path.PathSeparator}");
+            PluginDiscoverer pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Equal(pluginInPathDirectoryFilePath, plugins[0].Path);
+            Assert.False(plugins[0].RequiresDotnetHost);
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void GetPluginsInNuGetPluginPaths_NuGetPluginPathsPointsToAFile_TreatsAsPlugin()
         {
             // Arrange
