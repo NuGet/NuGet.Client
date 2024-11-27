@@ -525,8 +525,16 @@ namespace Dotnet.Integration.Test
         {
             var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1);
 
-            Assert.True(result.Success, result.AllOutput);
-            Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
+            if (typeof(int).Assembly.GetName().Version.Major >= 10)
+            {
+                Assert.False(result.Success, result.AllOutput);
+                Assert.True(result.Errors.Contains(_insecureCertificateFingerprintCode), result.Errors);
+            }
+            else
+            {
+                Assert.True(result.Success, result.AllOutput);
+                Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
+            }
         }
 
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
