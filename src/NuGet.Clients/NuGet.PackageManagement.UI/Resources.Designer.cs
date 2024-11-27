@@ -2245,7 +2245,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to readme loaded.
+        ///   Looks up a localized string similar to README loaded.
         /// </summary>
         public static string Text_ReadmeLoaded {
             get {

@@ -283,7 +283,7 @@
     <value>Loading README...</value>
   </data>
   <data name="Text_ReadmeLoaded" xml:space="preserve">
-    <value>readme loaded</value>
+    <value>README loaded</value>
   </data>
   <data name="Text_NoPackagesFound" xml:space="preserve">
     <value>No packages found</value>
