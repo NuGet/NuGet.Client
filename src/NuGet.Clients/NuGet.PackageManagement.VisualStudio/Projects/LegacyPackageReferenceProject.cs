@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return packageVersions
                 .Select(item => PrunePackageReference.Create(item.PackageId, item.Version))
-                .ToDictionary(cpv => cpv.Name, StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
         }
 
         private RestoreAuditProperties GetRestoreAuditProperties()
@@ -463,9 +463,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 packageReferences = ApplyCentralVersionInformation(packageReferences, centralPackageVersions);
             }
 
-            IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreEnablePackagePruning)) ?
-                GetPackagesToPrune() :
-                ImmutableDictionary<string, PrunePackageReference>.Empty;
+            IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreEnablePackagePruning))
+                ? GetPackagesToPrune()
+                : ImmutableDictionary<string, PrunePackageReference>.Empty;
 
             // Get fallback settings
             (targetFramework, var imports, var assetTargetFallback, var warn) = AssetTargetFallbackUtility.GetFallbackFrameworkInformation(targetFramework, packageTargetFallback, assetTargetFallbackList);

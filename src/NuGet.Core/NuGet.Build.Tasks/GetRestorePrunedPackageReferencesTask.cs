@@ -36,6 +36,7 @@ namespace NuGet.Build.Tasks
             if (PrunePackageReferences.Length == 0) return true;
 
             var entries = new List<ITaskItem>(PrunePackageReferences.Length);
+            // Important to use Ordinal comparer to allow the deduplication task report duplicate items.
             var seenIds = new HashSet<string>(PrunePackageReferences.Length, StringComparer.Ordinal);
 
             foreach (var msbuildItem in PrunePackageReferences)
