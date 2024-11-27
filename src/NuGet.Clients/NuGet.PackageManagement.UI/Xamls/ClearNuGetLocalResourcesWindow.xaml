@@ -40,7 +40,9 @@
     <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" />
 
     <!-- Content -->
-    <ProgressBar Grid.Row="1" IsIndeterminate="True" />
+    <Grid Grid.Row="1">
+      <ProgressBar IsIndeterminate="True" Height="20" />
+    </Grid>
 
     <!-- Buttons -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
