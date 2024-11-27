@@ -228,7 +228,7 @@ namespace NuGet.Commands
                 telemetry.StartIntervalMeasure();
                 // Create assets file
                 if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
-                var assetsFile = BuildAssetsFile(
+                LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
                     _request.Project,
                     graphs,
@@ -242,7 +242,7 @@ namespace NuGet.Commands
                 _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
                 // Check package compatibility
-                var compatibilityCheckResults = await VerifyCompatibilityAsync(
+                IList<CompatibilityCheckResult> checkResults = await VerifyCompatibilityAsync(
                     _request.Project,
                     _includeFlagGraphs,
                     localRepositories,
@@ -251,7 +251,7 @@ namespace NuGet.Commands
                     _request.ValidateRuntimeAssets,
                     _logger);
 
-                if (compatibilityCheckResults.Any(r => !r.Success))
+                if (checkResults.Any(r => !r.Success))
                 {
                     _success = false;
                 }
@@ -259,12 +259,12 @@ namespace NuGet.Commands
                 telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
 
                 // Generate Targets/Props files
-                var mSBuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
-                string assetFilePath = null;
+                var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+                string assetsFilePath = null;
                 string cacheFilePath = null;
 
-                (mSBuildOutputFiles,
-                    assetFilePath,
+                (msbuildOutputFiles,
+                    assetsFilePath,
                     cacheFilePath,
                     assetsFile,
                     graphs,
@@ -276,8 +276,8 @@ namespace NuGet.Commands
                     contextForProject,
                     isLockFileValid,
                     regenerateLockFile,
-                    mSBuildOutputFiles,
-                    assetFilePath,
+                    msbuildOutputFiles,
+                    assetsFilePath,
                     cacheFilePath,
                     assetsFile,
                     graphs,
@@ -292,11 +292,11 @@ namespace NuGet.Commands
                 return new RestoreResult(
                     _success,
                     graphs,
-                    compatibilityCheckResults,
-                    mSBuildOutputFiles,
+                    checkResults,
+                    msbuildOutputFiles,
                     assetsFile,
                     _request.ExistingLockFile,
-                    assetFilePath,
+                    assetsFilePath,
                     cacheFile,
                     cacheFilePath,
                     packagesLockFilePath,
@@ -491,7 +491,7 @@ namespace NuGet.Commands
             RemoteWalkContext contextForProject,
             bool isLockFileValid,
             bool regenerateLockFile,
-            IEnumerable<MSBuildOutputFile> mSBuildOutputFiles,
+            IEnumerable<MSBuildOutputFile> msbuildOutputFiles,
             string assetFilePath,
             string cacheFilePath,
             LockFile assetsFile,
@@ -518,7 +518,7 @@ namespace NuGet.Commands
 
                 if (contextForProject.IsMsBuildBased)
                 {
-                    mSBuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                    msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
                         _request.Project,
                         assetsFile,
                         graphs,
@@ -602,7 +602,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[RestoreSuccess] = _success;
             }
 
-            return (mSBuildOutputFiles,
+            return (msbuildOutputFiles,
                 assetFilePath,
                 cacheFilePath,
                 assetsFile,
