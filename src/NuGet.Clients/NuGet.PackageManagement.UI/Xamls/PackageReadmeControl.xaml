@@ -58,7 +58,20 @@
         Visibility="Collapsed"
         IsFrequencyLimited="True"
         Focusable="False"
-        AutomationProperties.IsOffscreenBehavior="Offscreen" />
+        AutomationProperties.IsOffscreenBehavior="Offscreen">
+        <vs:LiveTextBlock.Resources>
+          <Style TargetType="vs:LiveTextBlock">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding Path=IsBusy}" Value="True">
+                <Setter Property="Text" Value="{x:Static nuget:Resources.Text_LoadingReadme}"/>
+              </DataTrigger>
+              <DataTrigger Binding="{Binding Path=IsBusy}" Value="False">
+                <Setter Property="Text" Value="{x:Static nuget:Resources.Text_ReadmeLoaded}"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </vs:LiveTextBlock.Resources>
+      </vs:LiveTextBlock>
     </Grid>
     <TextBlock
       TextWrapping="Wrap"

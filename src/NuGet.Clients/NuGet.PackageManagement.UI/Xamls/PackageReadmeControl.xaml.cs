@@ -10,7 +10,6 @@ using Microsoft.VisualStudio.Markdown.Platform;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -30,7 +29,6 @@ namespace NuGet.PackageManagement.UI
 #pragma warning disable CS0618 // Type or member is obsolete
             _markdownPreview = new PreviewBuilder().Build();
 #pragma warning restore CS0618 // Type or member is obsolete
-            descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -40,16 +38,6 @@ namespace NuGet.PackageManagement.UI
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateMarkdownAsync).PostOnFailure(nameof(PackageReadmeControl), nameof(ReadmeViewModel_PropertyChanged));
-            }
-            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
-            {
-                var loadingStatusText = ReadmeViewModel.IsBusy
-                    ? Resx.Text_LoadingReadme
-                    : Resx.Text_ReadmeLoaded;
-                if (!string.Equals(_ltbLoading.Text, loadingStatusText, StringComparison.OrdinalIgnoreCase))
-                {
-                    _ltbLoading.Text = loadingStatusText;
-                }
             }
         }
 
@@ -82,6 +70,7 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
+                descriptionMarkdownPreview.Content = descriptionMarkdownPreview.Content ?? _markdownPreview.VisualElement;
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
                     await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
