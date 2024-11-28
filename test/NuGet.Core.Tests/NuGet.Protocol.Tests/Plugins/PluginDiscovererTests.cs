@@ -494,8 +494,8 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginInNuGetPluginPathDirectoryFilePath);
             File.Create(pluginInPathDirectoryFilePath);
             Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(Directory.GetParent(pluginInNuGetPluginPathDirectoryFilePath).FullName);
-            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns($"{Directory.GetParent(pluginInPathDirectoryFilePath).FullName}{Path.PathSeparator}");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPathDirectory.Path);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns($"{pathDirectory.Path}{Path.PathSeparator}");
             PluginDiscoverer pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
 
             // Act
