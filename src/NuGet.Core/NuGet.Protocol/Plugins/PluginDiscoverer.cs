@@ -249,10 +249,6 @@ namespace NuGet.Protocol.Plugins
                 {
                     pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
                 }
-                else
-                {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), requiresDotnetHost: false));
-                }
             }
 
             return pluginFiles;
