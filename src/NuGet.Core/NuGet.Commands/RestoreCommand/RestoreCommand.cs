@@ -443,7 +443,6 @@ namespace NuGet.Commands
         private async Task<IEnumerable<RestoreTargetGraph>> GenerateRestoreGraphsAsync(TelemetryActivity telemetry, RemoteWalkContext contextForProject, CancellationToken token)
         {
             IEnumerable<RestoreTargetGraph> graphs = null;
-
             if (_success)
             {
                 using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
