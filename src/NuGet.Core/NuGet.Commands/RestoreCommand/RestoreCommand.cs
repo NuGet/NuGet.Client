@@ -259,13 +259,9 @@ namespace NuGet.Commands
                 telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
 
                 // Generate Targets/Props files
-                var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
-                string assetsFilePath = null;
-                string cacheFilePath = null;
-
-                (msbuildOutputFiles,
-                    assetsFilePath,
-                    cacheFilePath,
+                (IEnumerable<MSBuildOutputFile> msbuildOutputFiles,
+                    string assetsFilePath,
+                    string cacheFilePath,
                     assetsFile,
                     graphs,
                     packagesLockFile,
@@ -276,9 +272,6 @@ namespace NuGet.Commands
                     contextForProject,
                     isLockFileValid,
                     regenerateLockFile,
-                    msbuildOutputFiles,
-                    assetsFilePath,
-                    cacheFilePath,
                     assetsFile,
                     graphs,
                     packagesLockFile,
@@ -490,9 +483,6 @@ namespace NuGet.Commands
             RemoteWalkContext contextForProject,
             bool isLockFileValid,
             bool regenerateLockFile,
-            IEnumerable<MSBuildOutputFile> msbuildOutputFiles,
-            string assetFilePath,
-            string cacheFilePath,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> graphs,
             PackagesLockFile packagesLockFile,
@@ -500,6 +490,10 @@ namespace NuGet.Commands
             CacheFile cacheFile,
             CancellationToken token)
         {
+            string assetFilePath = null;
+            string cacheFilePath = null;
+            var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+
             using (telemetry.StartIndependentInterval(CreateRestoreResultDuration))
             {
                 // Determine the lock file output path
