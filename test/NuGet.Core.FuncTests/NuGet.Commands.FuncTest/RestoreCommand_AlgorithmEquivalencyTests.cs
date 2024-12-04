@@ -80,11 +80,11 @@ namespace NuGet.Commands.FuncTest
                         Dependencies =
                         [
                             new SimpleTestPackageContext("b", "3.0.0")
-                        {
-                            Dependencies =
-                            [
-                                /*new SimpleTestPackageContext("e", "1.0.0")*/
-                            ]
+                            {
+                                Dependencies =
+                                [
+                                    /*new SimpleTestPackageContext("e", "1.0.0")*/
+                                ]
                             },
                         ]
                     },
@@ -351,6 +351,91 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> a 1.0.0 -> b 1.0.0
+        //                  c 1.0.0 -> b 3.0.0
+        //       d 1.0.0 -> b 2.0.0
+        [Fact]
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinning_RespectsDowngrade_AndDoesNotRaiseWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("b", "1.0.0"),
+                    new SimpleTestPackageContext("c", "1.0.0")
+                    {
+                        Dependencies =
+                        [
+                            new SimpleTestPackageContext("b", "3.0.0")
+                        ]
+                    },
+                ]
+            };
+
+            var packageD = new SimpleTestPackageContext("d", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("b", "2.0.0"),
+                ]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageD);
+
+            var projectSpec = @"
+                {
+                  ""restore"": {
+                    ""centralPackageVersionsManagementEnabled"": true,
+                    ""CentralPackageTransitivePinningEnabled"": true,
+                  },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""d"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[1.0.0,)"",
+                            ""c"": ""[1.0.0,)"",
+                        }
+                    }
+                  }
+                }";
+
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, projectSpec));
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.LogMessages.Should().BeEmpty();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("3.0.0"));
+
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("d");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         [Fact]
