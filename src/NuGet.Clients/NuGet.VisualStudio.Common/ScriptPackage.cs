@@ -16,28 +16,20 @@ namespace NuGet.PackageManagement.VisualStudio
     // it provides an IPackage like interface to make sure all install.ps scripts which depend on IPackage keep working
     public class ScriptPackage : IScriptPackage
     {
-        private string _id;
-        private string _version;
         private string _installPath;
         private IList<IPackageAssemblyReference> _assemblyReferences;
         private IEnumerable<IScriptPackageFile> _files;
 
         public ScriptPackage(string id, string version, string installPath)
         {
-            _id = id;
-            _version = version;
+            Id = id;
+            Version = version;
             _installPath = installPath;
         }
 
-        public string Id
-        {
-            get { return _id; }
-        }
+        public string Id { get; }
 
-        public string Version
-        {
-            get { return _version; }
-        }
+        public string Version { get; }
 
         public IEnumerable<IPackageAssemblyReference> AssemblyReferences
         {

@@ -13,29 +13,14 @@ using NuGet.Versioning;
 namespace NuGet.Protocol
 {
     /// <summary>
-    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing 
+    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing
     /// and converting should be done after based on the scenario.
     /// </summary>
     public class V2FeedPackageInfo : PackageIdentity
     {
-        private readonly string _title;
-        private readonly string _summary;
         private readonly string[] _authors;
-        private readonly string _description;
         private readonly string[] _owners;
-        private readonly string _iconUrl;
-        private readonly string _licenseUrl;
-        private readonly string _projectUrl;
-        private readonly string _reportAbuseUrl;
-        private readonly string _galleryDetailsUrl;
-        private readonly string _tags;
-        private readonly string _downloadCount;
         private readonly bool _requireLicenseAcceptance;
-        private readonly DateTimeOffset? _created;
-        private readonly DateTimeOffset? _lastEdited;
-        private readonly DateTimeOffset? _published;
-        private readonly string _dependencies;
-        private readonly string _downloadUrl;
         private readonly string _packageHash;
         private readonly string _packageHashAlgorithm;
         private readonly NuGetVersion _minClientVersion;
@@ -47,54 +32,36 @@ namespace NuGet.Protocol
             string packageHash, string packageHashAlgorithm, NuGetVersion minClientVersion)
             : base(identity.Id, identity.Version)
         {
-            _summary = summary;
-            _description = description;
+            Summary = summary;
+            Description = description;
             _authors = authors == null ? Array.Empty<string>() : authors.ToArray();
             _owners = owners == null ? Array.Empty<string>() : owners.ToArray();
-            _iconUrl = iconUrl;
-            _licenseUrl = licenseUrl;
-            _projectUrl = projectUrl;
-            _reportAbuseUrl = reportAbuseUrl;
-            _galleryDetailsUrl = galleryDetailsUrl;
-            _description = description;
-            _summary = summary;
-            _tags = tags;
-            _dependencies = dependencies;
+            IconUrl = iconUrl;
+            LicenseUrl = licenseUrl;
+            ProjectUrl = projectUrl;
+            ReportAbuseUrl = reportAbuseUrl;
+            GalleryDetailsUrl = galleryDetailsUrl;
+            Description = description;
+            Summary = summary;
+            Tags = tags;
+            Dependencies = dependencies;
             _requireLicenseAcceptance = requireLicenseAccept;
-            _title = title;
-            _downloadUrl = downloadUrl;
-            _downloadCount = downloadCount;
-            _created = created;
-            _lastEdited = lastEdited;
-            _published = published;
+            Title = title;
+            DownloadUrl = downloadUrl;
+            DownloadCount = downloadCount;
+            Created = created;
+            LastEdited = lastEdited;
+            Published = published;
             _packageHash = packageHash;
             _packageHashAlgorithm = packageHashAlgorithm;
             _minClientVersion = minClientVersion;
         }
 
-        public string Title
-        {
-            get
-            {
-                return _title;
-            }
-        }
+        public string Title { get; }
 
-        public string Summary
-        {
-            get
-            {
-                return _summary;
-            }
-        }
+        public string Summary { get; }
 
-        public string Description
-        {
-            get
-            {
-                return _description;
-            }
-        }
+        public string Description { get; }
 
         public IEnumerable<string> Authors
         {
@@ -112,69 +79,21 @@ namespace NuGet.Protocol
             }
         }
 
-        public string IconUrl
-        {
-            get
-            {
-                return _iconUrl;
-            }
-        }
+        public string IconUrl { get; }
 
-        public string LicenseUrl
-        {
-            get
-            {
-                return _licenseUrl;
-            }
-        }
+        public string LicenseUrl { get; }
 
-        public string ProjectUrl
-        {
-            get
-            {
-                return _projectUrl;
-            }
-        }
+        public string ProjectUrl { get; }
 
-        public string DownloadUrl
-        {
-            get
-            {
-                return _downloadUrl;
-            }
-        }
+        public string DownloadUrl { get; }
 
-        public string ReportAbuseUrl
-        {
-            get
-            {
-                return _reportAbuseUrl;
-            }
-        }
+        public string ReportAbuseUrl { get; }
 
-        public string GalleryDetailsUrl
-        {
-            get
-            {
-                return _galleryDetailsUrl;
-            }
-        }
+        public string GalleryDetailsUrl { get; }
 
-        public string Tags
-        {
-            get
-            {
-                return _tags;
-            }
-        }
+        public string Tags { get; }
 
-        public string DownloadCount
-        {
-            get
-            {
-                return _downloadCount;
-            }
-        }
+        public string DownloadCount { get; }
 
         /// <summary>
         /// Parse DownloadCount into an integer
@@ -184,34 +103,16 @@ namespace NuGet.Protocol
             get
             {
                 int x = 0;
-                _ = int.TryParse(_downloadCount, out x);
+                _ = int.TryParse(DownloadCount, out x);
                 return x;
             }
         }
 
-        public DateTimeOffset? Created
-        {
-            get
-            {
-                return _created;
-            }
-        }
+        public DateTimeOffset? Created { get; }
 
-        public DateTimeOffset? LastEdited
-        {
-            get
-            {
-                return _lastEdited;
-            }
-        }
+        public DateTimeOffset? LastEdited { get; }
 
-        public DateTimeOffset? Published
-        {
-            get
-            {
-                return _published;
-            }
-        }
+        public DateTimeOffset? Published { get; }
 
         /// <summary>
         /// Checks the published date
@@ -224,13 +125,7 @@ namespace NuGet.Protocol
             }
         }
 
-        public string Dependencies
-        {
-            get
-            {
-                return _dependencies;
-            }
-        }
+        public string Dependencies { get; }
 
         /// <summary>
         /// Parses Dependencies into actual groups

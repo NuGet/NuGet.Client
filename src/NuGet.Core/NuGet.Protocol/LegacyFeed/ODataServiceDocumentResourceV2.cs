@@ -8,23 +8,14 @@ namespace NuGet.Protocol
 {
     public class ODataServiceDocumentResourceV2 : INuGetResource
     {
-        private readonly string _baseAddress;
-        private readonly DateTime _requestTime;
-
         public ODataServiceDocumentResourceV2(string baseAddress, DateTime requestTime)
         {
-            _baseAddress = baseAddress.Trim('/');
-            _requestTime = requestTime;
+            BaseAddress = baseAddress.Trim('/');
+            RequestTime = requestTime;
         }
 
-        public virtual DateTime RequestTime
-        {
-            get { return _requestTime; }
-        }
+        public virtual DateTime RequestTime { get; }
 
-        public string BaseAddress
-        {
-            get { return _baseAddress; }
-        }
+        public string BaseAddress { get; }
     }
 }

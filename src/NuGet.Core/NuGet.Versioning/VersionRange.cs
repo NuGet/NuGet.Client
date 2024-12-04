@@ -18,7 +18,6 @@ namespace NuGet.Versioning
     public partial class VersionRange : VersionRangeBase, IFormattable
     {
         private readonly FloatRange? _floatRange;
-        private readonly string? _originalString;
 
         /// <summary>
         /// Creates a range that is greater than or equal to the minVersion.
@@ -72,7 +71,7 @@ namespace NuGet.Versioning
             }
 
             _floatRange = floatRange;
-            _originalString = originalString;
+            OriginalString = originalString;
         }
 
         /// <summary>
@@ -124,10 +123,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Original string being parsed to this object.
         /// </summary>
-        public string? OriginalString
-        {
-            get { return _originalString; }
-        }
+        public string? OriginalString { get; }
 
         /// <summary>
         /// Normalized range string.

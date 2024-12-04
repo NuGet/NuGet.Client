@@ -22,7 +22,6 @@ namespace NuGet.CommandLine
         internal static readonly string SymbolsExtension = ".symbols" + PackagingCoreConstants.NupkgExtension;
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         private Version _minClientVersionValue;
 
@@ -66,13 +65,7 @@ namespace NuGet.CommandLine
         public bool IncludeReferencedProjects { get; set; }
 
         [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription", AltName = "p")]
-        public Dictionary<string, string> Properties
-        {
-            get
-            {
-                return _properties;
-            }
-        }
+        public Dictionary<string, string> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         [Option(typeof(NuGetCommand), "PackageCommandMinClientVersion")]
         public string MinClientVersion { get; set; }

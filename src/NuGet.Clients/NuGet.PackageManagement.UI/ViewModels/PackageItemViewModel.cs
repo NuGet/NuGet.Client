@@ -146,8 +146,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private readonly Dictionary<NuGetVersion, int> _vulnerableVersions = [];
-        public Dictionary<NuGetVersion, int> VulnerableVersions => _vulnerableVersions;
+        public Dictionary<NuGetVersion, int> VulnerableVersions { get; } = [];
 
         /// <summary>
         /// The installed version of the package.

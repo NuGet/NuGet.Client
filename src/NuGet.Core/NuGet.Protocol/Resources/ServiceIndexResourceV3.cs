@@ -18,17 +18,15 @@ namespace NuGet.Protocol
     /// </summary>
     public class ServiceIndexResourceV3 : INuGetResource
     {
-        private readonly string _json;
         private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
-        private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
         internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
-            _json = index.ToString();
+            Json = index.ToString();
             _index = MakeLookup(index, packageSource);
-            _requestTime = requestTime;
+            RequestTime = requestTime;
         }
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime) : this(index, requestTime, null) { }
@@ -36,10 +34,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Time the index was requested
         /// </summary>
-        public virtual DateTime RequestTime
-        {
-            get { return _requestTime; }
-        }
+        public virtual DateTime RequestTime { get; }
 
         /// <summary>
         /// All service index entries.
@@ -52,13 +47,7 @@ namespace NuGet.Protocol
             }
         }
 
-        public virtual string Json
-        {
-            get
-            {
-                return _json;
-            }
-        }
+        public virtual string Json { get; }
 
         /// <summary>
         /// Get the list of service entries that best match the current clientVersion and type.

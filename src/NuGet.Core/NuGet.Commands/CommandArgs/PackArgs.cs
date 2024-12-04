@@ -15,7 +15,6 @@ namespace NuGet.Commands
     public class PackArgs
     {
         private string _currentDirectory;
-        private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public IEnumerable<string> Arguments { get; set; }
         public string BasePath { get; set; }
@@ -45,13 +44,7 @@ namespace NuGet.Commands
         public bool Deterministic { get; set; }
         public WarningProperties WarningProperties { get; set; }
         public MSBuildPackTargetArgs PackTargetArgs { get; set; }
-        public Dictionary<string, string> Properties
-        {
-            get
-            {
-                return _properties;
-            }
-        }
+        public Dictionary<string, string> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public string CurrentDirectory
         {

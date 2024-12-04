@@ -44,8 +44,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         #region Members
 
-        private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
-        private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, int.MaxValue);
         private readonly Semaphore _flushSemaphore = new Semaphore(0, int.MaxValue);
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
@@ -1073,9 +1071,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected BlockingCollection<Message> BlockingCollection => _blockingCollection;
+        protected BlockingCollection<Message> BlockingCollection { get; } = new();
 
-        protected Semaphore ScriptEndSemaphore => _scriptEndSemaphore;
+        protected Semaphore ScriptEndSemaphore { get; } = new(0, int.MaxValue);
 
         #endregion Logging
 

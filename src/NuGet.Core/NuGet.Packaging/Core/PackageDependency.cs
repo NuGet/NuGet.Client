@@ -14,7 +14,6 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public class PackageDependency : IEquatable<PackageDependency>
     {
-        private VersionRange _versionRange;
         private static readonly List<string> EmptyList = new List<string>();
 
         /// <summary>
@@ -36,10 +35,7 @@ namespace NuGet.Packaging.Core
         /// Range of versions allowed for the depenency
         /// </summary>
         [JsonProperty(PropertyName = "range")]
-        public VersionRange VersionRange
-        {
-            get { return _versionRange; }
-        }
+        public VersionRange VersionRange { get; }
 
         public PackageDependency(string id)
             : this(id, VersionRange.All)
@@ -64,7 +60,7 @@ namespace NuGet.Packaging.Core
             }
 
             Id = id;
-            _versionRange = versionRange ?? VersionRange.All;
+            VersionRange = versionRange ?? VersionRange.All;
             Include = include ?? EmptyList;
             Exclude = exclude ?? EmptyList;
         }

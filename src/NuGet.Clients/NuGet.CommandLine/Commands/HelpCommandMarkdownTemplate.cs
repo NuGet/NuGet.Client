@@ -214,30 +214,21 @@ namespace NuGet.CommandLine
     #region Base class
     public class HelpCommandMarkdownTemplateBase
     {
-        private System.Text.StringBuilder _generatingEnvironment = new System.Text.StringBuilder();
-        protected System.Text.StringBuilder GenerationEnvironment
-        {
-            get
-            {
-                return this._generatingEnvironment;
-            }
-            set
-            {
-                this._generatingEnvironment = value;
-            }
-        }
+        protected System.Text.StringBuilder GenerationEnvironment { get; set; } = new();
+
         public virtual void Execute()
         {
         }
+
         public void WriteLiteral(string textToAppend)
         {
-
             if (String.IsNullOrEmpty(textToAppend))
             {
                 return;
             }
             this.GenerationEnvironment.Append(textToAppend);
         }
+
         public void Write(object value)
         {
 

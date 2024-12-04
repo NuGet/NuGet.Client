@@ -16,22 +16,19 @@ namespace NuGet.Packaging
     /// </summary>
     public class PackageDependencyGroup : IEquatable<PackageDependencyGroup>, IFrameworkSpecific
     {
-        private readonly NuGetFramework _targetFramework;
-        private readonly IEnumerable<PackageDependency> _packages;
-
         [JsonConstructor]
         private PackageDependencyGroup(NuGetFramework targetFramework)
         {
             if (targetFramework == null)
             {
-                _targetFramework = NuGetFramework.AnyFramework;
+                TargetFramework = NuGetFramework.AnyFramework;
             }
             else
             {
-                _targetFramework = targetFramework;
+                TargetFramework = targetFramework;
             }
 
-            _packages = new List<PackageDependency>();
+            Packages = new List<PackageDependency>();
         }
 
         /// <summary>
@@ -51,27 +48,21 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(packages));
             }
 
-            _targetFramework = targetFramework;
-            _packages = packages;
+            TargetFramework = targetFramework;
+            Packages = packages;
         }
 
         /// <summary>
         /// Dependency group target framework
         /// </summary>
         [JsonProperty(PropertyName = "targetFramework")]
-        public NuGetFramework TargetFramework
-        {
-            get { return _targetFramework; }
-        }
+        public NuGetFramework TargetFramework { get; }
 
         /// <summary>
         /// Package dependencies
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
-        public IEnumerable<PackageDependency> Packages
-        {
-            get { return _packages; }
-        }
+        public IEnumerable<PackageDependency> Packages { get; }
 
         public override bool Equals(object obj)
         {

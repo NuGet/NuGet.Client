@@ -9,9 +9,6 @@ namespace NuGet.Commands
 {
     internal class VirtualFileInfo : IFileInfo
     {
-        private readonly string _path;
-        private readonly bool _isDirectory;
-
         public VirtualFileInfo(string path)
             : this(path, isDirectory: false)
         {
@@ -19,8 +16,8 @@ namespace NuGet.Commands
 
         public VirtualFileInfo(string path, bool isDirectory)
         {
-            _path = path;
-            _isDirectory = isDirectory;
+            PhysicalPath = path;
+            IsDirectory = isDirectory;
         }
 
         public bool Exists
@@ -32,13 +29,7 @@ namespace NuGet.Commands
             }
         }
 
-        public bool IsDirectory
-        {
-            get
-            {
-                return _isDirectory;
-            }
-        }
+        public bool IsDirectory { get; }
 
         public DateTimeOffset LastModified
         {
@@ -79,13 +70,7 @@ namespace NuGet.Commands
             }
         }
 
-        public string PhysicalPath
-        {
-            get
-            {
-                return _path;
-            }
-        }
+        public string PhysicalPath { get; }
 
         public Stream CreateReadStream()
         {

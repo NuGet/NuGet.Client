@@ -11,7 +11,6 @@ namespace NuGet.PackageManagement.UI.Options
 {
     internal class CheckedListBoxItemAccessibleObject : AccessibleObject
     {
-        private readonly string _helpText;
         private readonly int _index;
         private readonly CheckedListBoxAccessibleObject _parent;
         private string _name;
@@ -23,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Options
             _name = name;
             _parent = parent;
             _index = index;
-            _helpText = helpText;
+            Help = helpText;
         }
 
         public override Rectangle Bounds
@@ -63,10 +62,7 @@ namespace NuGet.PackageManagement.UI.Options
             set { _name = value; }
         }
 
-        public override string Help
-        {
-            get { return _helpText; }
-        }
+        public override string Help { get; }
 
         public override AccessibleObject Parent
         {

@@ -8,16 +8,14 @@ namespace NuGet.Packaging
 {
     public class ZipFilePair
     {
-        private readonly ZipArchiveEntry _packageEntry;
-        private readonly string _fileFullPath;
+        public string FileFullPath { get; }
 
-        public string FileFullPath => _fileFullPath;
-        public ZipArchiveEntry PackageEntry => _packageEntry;
+        public ZipArchiveEntry PackageEntry { get; }
 
         public ZipFilePair(string fileFullPath, ZipArchiveEntry entry)
         {
-            _fileFullPath = fileFullPath;
-            _packageEntry = entry;
+            FileFullPath = fileFullPath;
+            PackageEntry = entry;
         }
 
         public bool IsInstalled()

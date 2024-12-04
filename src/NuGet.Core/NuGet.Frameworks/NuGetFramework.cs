@@ -16,7 +16,6 @@ namespace NuGet.Frameworks
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
-        private readonly string _frameworkProfile;
         private string? _targetFrameworkMoniker;
         private string? _targetPlatformMoniker;
         private int? _hashCode;
@@ -63,7 +62,7 @@ namespace NuGet.Frameworks
 
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
-            _frameworkProfile = profile;
+            Profile = profile;
 
             IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
             Platform = IsNet5Era ? platform : string.Empty;
@@ -109,7 +108,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Target framework profile
         /// </summary>
-        public string Profile => _frameworkProfile;
+        public string Profile { get; }
 
         /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFramework.</summary>
         /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>

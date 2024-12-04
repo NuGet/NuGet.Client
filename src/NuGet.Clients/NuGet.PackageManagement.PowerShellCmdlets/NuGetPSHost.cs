@@ -15,16 +15,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal class NuGetPSHost : PSHost, IHostSupportsInteractiveSession
     {
-        private readonly CultureInfo _culture = Thread.CurrentThread.CurrentCulture;
-        private readonly Guid _instanceId = Guid.NewGuid();
-        private readonly string _name;
         private readonly PSObject _privateData;
-        private readonly CultureInfo _uiCulture = Thread.CurrentThread.CurrentUICulture;
         private PSHostUserInterface _ui;
 
         public NuGetPSHost(string name, params Tuple<string, object>[] extraData)
         {
-            _name = name;
+            Name = name;
             _privateData = new PSObject(new Commander(this));
 
             // add extra data as note properties
@@ -36,25 +32,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public IConsole ActiveConsole { get; set; }
 
-        public override CultureInfo CurrentCulture
-        {
-            get { return _culture; }
-        }
+        public override CultureInfo CurrentCulture { get; } = Thread.CurrentThread.CurrentCulture;
 
-        public override CultureInfo CurrentUICulture
-        {
-            get { return _uiCulture; }
-        }
+        public override CultureInfo CurrentUICulture { get; } = Thread.CurrentThread.CurrentUICulture;
 
-        public override Guid InstanceId
-        {
-            get { return _instanceId; }
-        }
+        public override Guid InstanceId { get; } = Guid.NewGuid();
 
-        public override string Name
-        {
-            get { return _name; }
-        }
+        public override string Name { get; }
 
         public override PSObject PrivateData
         {

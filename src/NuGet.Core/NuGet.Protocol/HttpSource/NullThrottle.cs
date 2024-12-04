@@ -11,15 +11,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class NullThrottle : IThrottle
     {
-        private static readonly NullThrottle _instance = new NullThrottle();
-
-        public static NullThrottle Instance
-        {
-            get
-            {
-                return _instance;
-            }
-        }
+        public static NullThrottle Instance { get; } = new();
 
         public Task WaitAsync()
         {

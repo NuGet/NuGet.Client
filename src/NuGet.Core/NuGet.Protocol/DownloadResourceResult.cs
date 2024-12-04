@@ -15,7 +15,6 @@ namespace NuGet.Protocol.Core.Types
         private bool _isDisposed;
         private readonly Stream _stream;
         private readonly PackageReaderBase _packageReader;
-        private readonly string _packageSource;
 
         /// <summary>
         /// Initializes a new <see cref="DownloadResourceResult" /> class.
@@ -51,7 +50,7 @@ namespace NuGet.Protocol.Core.Types
 
             Status = DownloadResourceResultStatus.Available;
             _stream = stream;
-            _packageSource = source;
+            PackageSource = source;
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace NuGet.Protocol.Core.Types
 
             Status = DownloadResourceResultStatus.AvailableWithoutStream;
             _packageReader = packageReader;
-            _packageSource = source;
+            PackageSource = source;
         }
 
         public DownloadResourceResultStatus Status { get; }
@@ -99,7 +98,7 @@ namespace NuGet.Protocol.Core.Types
         /// Gets the source containing this package, if not from cache
         /// </summary>
         /// <remarks>The value may be <see langword="null" />.</remarks>
-        public string PackageSource => _packageSource;
+        public string PackageSource { get; }
 
         /// <summary>
         /// Gets the <see cref="PackageReaderBase"/> for the package.

@@ -9,8 +9,6 @@ namespace NuGet.Protocol.Core.Types
 {
     public class PackageProgressEventArgs : EventArgs
     {
-        private readonly PackageIdentity _identity;
-        private readonly PackageSource _source;
         private readonly double _complete;
 
         /// <summary>
@@ -32,20 +30,14 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(identity));
             }
 
-            _identity = identity;
-            _source = source;
+            PackageIdentity = identity;
+            PackageSource = source;
             _complete = complete;
         }
 
-        public PackageIdentity PackageIdentity
-        {
-            get { return _identity; }
-        }
+        public PackageIdentity PackageIdentity { get; }
 
-        public PackageSource PackageSource
-        {
-            get { return _source; }
-        }
+        public PackageSource PackageSource { get; }
 
         /// <summary>
         /// Completion - 0.0 - 1.0

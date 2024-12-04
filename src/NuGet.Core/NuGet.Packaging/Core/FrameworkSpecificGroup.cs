@@ -15,7 +15,6 @@ namespace NuGet.Packaging
     /// </summary>
     public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>, IFrameworkSpecific
     {
-        private readonly NuGetFramework _targetFramework;
         private readonly string[] _items;
 
         /// <summary>
@@ -35,7 +34,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(items));
             }
 
-            _targetFramework = targetFramework;
+            TargetFramework = targetFramework;
 
             HasEmptyFolder = items.Any(item => item.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder,
                 StringComparison.Ordinal));
@@ -49,10 +48,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Group target framework
         /// </summary>
-        public NuGetFramework TargetFramework
-        {
-            get { return _targetFramework; }
-        }
+        public NuGetFramework TargetFramework { get; }
 
         /// <summary>
         /// Item relative paths

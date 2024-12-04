@@ -7,17 +7,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public class KnownOwner
     {
-        private string _name;
-        private Uri _link;
-
         public KnownOwner(string name, Uri link)
         {
-            _name = name ?? throw new ArgumentNullException(nameof(name));
-            _link = link ?? throw new ArgumentNullException(nameof(link));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Link = link ?? throw new ArgumentNullException(nameof(link));
         }
 
-        public string Name => _name;
+        public string Name { get; }
 
-        public Uri Link => _link;
+        public Uri Link { get; }
     }
 }

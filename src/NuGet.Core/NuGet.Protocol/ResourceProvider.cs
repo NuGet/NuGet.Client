@@ -13,11 +13,6 @@ namespace NuGet.Protocol.Core.Types
 {
     public abstract class ResourceProvider : INuGetResourceProvider
     {
-        private readonly Type _resourceType;
-        private readonly string _name;
-        private readonly IEnumerable<string> _after;
-        private readonly IEnumerable<string> _before;
-
         public ResourceProvider(Type resourceType)
             : this(resourceType, string.Empty, null)
         {
@@ -61,31 +56,19 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(after));
             }
 
-            _resourceType = resourceType;
-            _name = name;
-            _before = before;
-            _after = after;
+            ResourceType = resourceType;
+            Name = name;
+            Before = before;
+            After = after;
         }
 
-        public virtual IEnumerable<string> After
-        {
-            get { return _after; }
-        }
+        public virtual IEnumerable<string> After { get; }
 
-        public virtual IEnumerable<string> Before
-        {
-            get { return _before; }
-        }
+        public virtual IEnumerable<string> Before { get; }
 
-        public virtual string Name
-        {
-            get { return _name; }
-        }
+        public virtual string Name { get; }
 
-        public virtual Type ResourceType
-        {
-            get { return _resourceType; }
-        }
+        public virtual Type ResourceType { get; }
 
         /// <inheritdoc cref="INuGetResourceProvider.TryCreate(SourceRepository, CancellationToken)"/>
         public abstract Task<Tuple<bool, INuGetResource?>> TryCreate(SourceRepository source, CancellationToken token);

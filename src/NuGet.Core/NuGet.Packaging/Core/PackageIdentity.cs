@@ -12,7 +12,6 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public class PackageIdentity : IEquatable<PackageIdentity>, IComparable<PackageIdentity>
     {
-        private readonly string _id;
         private readonly NuGetVersion _version;
         private const string ToStringFormat = "{0}.{1}";
 
@@ -28,17 +27,14 @@ namespace NuGet.Packaging.Core
                 throw new ArgumentNullException(nameof(id));
             }
 
-            _id = id;
+            Id = id;
             _version = version;
         }
 
         /// <summary>
         /// Package name
         /// </summary>
-        public string Id
-        {
-            get { return _id; }
-        }
+        public string Id { get; }
 
         /// <summary>
         /// Package Version

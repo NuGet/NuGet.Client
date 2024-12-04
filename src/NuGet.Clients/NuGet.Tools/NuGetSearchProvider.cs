@@ -18,7 +18,6 @@ namespace NuGetVSExtension
         private IVsUIObject _searchResultsIcon;
         private readonly OleMenuCommand _managePackageDialogCommand;
         private readonly OleMenuCommand _managePackageForSolutionDialogCommand;
-        private readonly OleMenuCommandService _menuCommandService;
 
         public NuGetSearchProvider(OleMenuCommandService menuCommandService, OleMenuCommand managePackageDialogCommand, OleMenuCommand managePackageForSolutionDialogCommand)
         {
@@ -35,15 +34,12 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
             }
 
-            _menuCommandService = menuCommandService;
+            MenuCommandService = menuCommandService;
             _managePackageDialogCommand = managePackageDialogCommand;
             _managePackageForSolutionDialogCommand = managePackageForSolutionDialogCommand;
         }
 
-        internal OleMenuCommandService MenuCommandService
-        {
-            get { return _menuCommandService; }
-        }
+        internal OleMenuCommandService MenuCommandService { get; }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public IVsUIObject SearchResultsIcon

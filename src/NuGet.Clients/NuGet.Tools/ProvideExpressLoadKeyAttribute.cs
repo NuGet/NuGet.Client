@@ -16,15 +16,12 @@ namespace NuGetVSExtension
     public sealed class ProvideExpressLoadKeyAttribute : RegistrationAttribute
     {
         private string _minimumEdition;
-        private readonly string _productVersion;
-        private readonly string _productName;
-        private readonly string _companyName;
 
         public ProvideExpressLoadKeyAttribute(string productVersion, string productName, string companyName)
         {
-            _productVersion = productVersion;
-            _productName = productName;
-            _companyName = companyName;
+            ProductVersion = productVersion;
+            ProductName = productName;
+            CompanyName = companyName;
         }
 
         /// <summary>
@@ -40,26 +37,17 @@ namespace NuGetVSExtension
         /// <summary>
         /// Version of the product that this VSPackage implements.
         /// </summary>
-        public string ProductVersion
-        {
-            get { return _productVersion; }
-        }
+        public string ProductVersion { get; }
 
         /// <summary>
         /// Name of the product that this VSPackage delivers.
         /// </summary>
-        public string ProductName
-        {
-            get { return _productName; }
-        }
+        public string ProductName { get; }
 
         /// <summary>
         /// Creator of the VSPackage.
         /// </summary>
-        public string CompanyName
-        {
-            get { return _companyName; }
-        }
+        public string CompanyName { get; }
 
         public short VPDExpressId { get; set; }
 

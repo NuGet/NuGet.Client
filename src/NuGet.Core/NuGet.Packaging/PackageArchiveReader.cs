@@ -23,13 +23,12 @@ namespace NuGet.Packaging
     public class PackageArchiveReader : PackageReaderBase
     {
         private readonly ZipArchive _zipArchive;
-        private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Signature specifications.
         /// </summary>
-        protected SigningSpecifications SigningSpecifications => _signingSpecifications;
+        protected SigningSpecifications SigningSpecifications { get; } = SigningSpecifications.V1;
 
         /// <summary>
         /// Stream underlying the ZipArchive. Used to do signature verification on a SignedPackageArchive.
@@ -229,17 +228,15 @@ namespace NuGet.Packaging
         {
             private readonly Stream _inner;
 
-            private readonly long _size;
-
             private bool _isDisposed;
 
             public SizedArchiveEntryStream(Stream inner, long size)
             {
                 _inner = inner;
-                _size = size;
+                Length = size;
             }
 
-            public override long Length { get => _size; }
+            public override long Length { get; }
 
             public override bool CanRead => _inner.CanRead;
 

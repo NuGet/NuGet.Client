@@ -39,7 +39,6 @@ namespace NuGet.PackageManagement.UI
 
         private readonly NuGetUIProjectContext _projectContext;
         private PackageManagerControl _packageManagerControl;
-        private string _selectedPackageId;
 
         private NuGetUI(
             ICommonOperations commonOperations,
@@ -362,14 +361,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool ForceRemove { get; set; }
 
-        public string SelectedPackageId
-        {
-            get => _selectedPackageId;
-            set
-            {
-                _selectedPackageId = value;
-            }
-        }
+        public string SelectedPackageId { get; set; }
 
         public int SelectedIndex { get; set; }
 

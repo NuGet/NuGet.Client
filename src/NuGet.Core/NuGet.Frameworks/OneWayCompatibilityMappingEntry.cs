@@ -8,9 +8,6 @@ namespace NuGet.Frameworks
 {
     public class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
     {
-        private readonly FrameworkRange _targetFramework;
-        private readonly FrameworkRange _supportedFramework;
-
         /// <summary>
         /// Creates a one way compatibility mapping.
         /// Ex: net -supports-> native
@@ -19,25 +16,19 @@ namespace NuGet.Frameworks
         /// <param name="supportedFramework">Framework that is supported by the project framework</param>
         public OneWayCompatibilityMappingEntry(FrameworkRange targetFramework, FrameworkRange supportedFramework)
         {
-            _targetFramework = targetFramework;
-            _supportedFramework = supportedFramework;
+            TargetFrameworkRange = targetFramework;
+            SupportedFrameworkRange = supportedFramework;
         }
 
         /// <summary>
         /// Primary framework range or project target framework that supports the SuppportedFrameworkRange
         /// </summary>
-        public FrameworkRange TargetFrameworkRange
-        {
-            get { return _targetFramework; }
-        }
+        public FrameworkRange TargetFrameworkRange { get; }
 
         /// <summary>
         /// Framework range that is supported by the TargetFrameworkRange
         /// </summary>
-        public FrameworkRange SupportedFrameworkRange
-        {
-            get { return _supportedFramework; }
-        }
+        public FrameworkRange SupportedFrameworkRange { get; }
 
         public static CompatibilityMappingComparer Comparer
         {

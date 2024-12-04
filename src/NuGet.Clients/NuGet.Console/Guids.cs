@@ -16,13 +16,8 @@ namespace NuGetConsole
         internal static readonly Guid guidPackageManagerConsoleFontAndColorCategory = new Guid(GuidPackageManagerConsoleFontAndColorCategoryString);
 
         // NuGet Output window pane
-        private static Guid NuGetOutputWindowPane = Guid.Parse("CEC55EC8-CC51-40E7-9243-57B87A6F6BEB");
 
-        public static Guid NuGetOutputWindowPaneGuid
-        {
-            get => NuGetOutputWindowPane;
-            set => NuGetOutputWindowPane = value;
-        }
+        public static Guid NuGetOutputWindowPaneGuid { get; set; } = Guid.Parse("CEC55EC8-CC51-40E7-9243-57B87A6F6BEB");
 
         // Visual Studio output tool window (Copied from EnvDTE interop)
         internal static Guid guidVsWindowKindOutput = Guid.Parse("34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3");

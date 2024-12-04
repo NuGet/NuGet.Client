@@ -8,11 +8,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class SourceValidationResult
     {
-        private static readonly SourceValidationResult _none = new SourceValidationResult(
-                SourceValidity.None,
-                source: null,
-                sourceRepository: null);
-
         private SourceValidationResult(SourceValidity validity, string source, SourceRepository sourceRepository)
         {
             Validity = validity;
@@ -20,7 +15,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SourceRepository = sourceRepository;
         }
 
-        public static SourceValidationResult None => _none;
+        public static SourceValidationResult None { get; } = new(
+            SourceValidity.None,
+            source: null,
+            sourceRepository: null);
 
         public static SourceValidationResult Valid(string source, SourceRepository sourceRepository)
         {
