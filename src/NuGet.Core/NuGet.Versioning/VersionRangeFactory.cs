@@ -133,9 +133,9 @@ namespace NuGet.Versioning
                 return true;
             }
 
-            string? minVersionString = null;
+            string? minVersionString;
             string? maxVersionString = null;
-            var isMinInclusive = false;
+            bool isMinInclusive;
             var isMaxInclusive = false;
             NuGetVersion? minVersion = null;
             NuGetVersion? maxVersion = null;

@@ -541,7 +541,7 @@ namespace NuGet.ProjectModel.Test
         ""buildMultiTargeting"": {
           ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props"": {},
           ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets"": {}
-        }        
+        }
       },
        ""runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0"": {
         ""type"": ""package"",
@@ -1396,10 +1396,9 @@ namespace NuGet.ProjectModel.Test
   ]
 }";
             LockFile lockFileObj = null;
-            IAssetsLogMessage logMessage = null;
+            IAssetsLogMessage logMessage;
             using (var lockFile = new TempFile())
             {
-
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
@@ -1479,7 +1478,7 @@ namespace NuGet.ProjectModel.Test
   ""centralTransitiveDependencyGroups"": {
     "".NETPlatform,Version=v5.0"": {
       ""Newtonsoft.Json"": {
-        ""version"": ""1.0.0""           
+        ""version"": ""1.0.0""
       }
     }
   },
@@ -1561,8 +1560,8 @@ namespace NuGet.ProjectModel.Test
     }
   ]
 }";
-            LockFile lockFileObj = null;
-            IAssetsLogMessage logMessage = null;
+            LockFile lockFileObj;
+            IAssetsLogMessage logMessage;
             using (var lockFile = new TempFile())
             {
 
@@ -2404,7 +2403,7 @@ namespace NuGet.ProjectModel.Test
                 ""type"": ""package"",
                 ""files"": [
                     ""System.Runtime.nuspec""
-                    ]             
+                    ]
                 }
             },
             ""projectFileDependencyGroups"": {
@@ -2418,7 +2417,7 @@ namespace NuGet.ProjectModel.Test
                 ""Newtonsoft.Json"": {
                             ""include"": ""Compile, Native, BuildTransitive"",
                             ""suppressParent"": ""All"",
-                            ""version"": ""[12.0.3, )""           
+                            ""version"": ""[12.0.3, )""
                         }
                     }
                 }

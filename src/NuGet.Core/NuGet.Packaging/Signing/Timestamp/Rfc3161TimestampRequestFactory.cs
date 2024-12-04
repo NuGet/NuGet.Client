@@ -23,9 +23,8 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(messageHash));
             }
 
-            IRfc3161TimestampRequest iRfc3161TimestampRequest = null;
 #if IS_DESKTOP
-            iRfc3161TimestampRequest = new Rfc3161TimestampRequestNet472Wrapper(
+            return new Rfc3161TimestampRequestNet472Wrapper(
                 messageHash,
                 hashAlgorithm,
                 requestedPolicyId,
@@ -33,7 +32,7 @@ namespace NuGet.Packaging.Signing
                 requestSignerCertificates,
                 extensions);
 #else
-            iRfc3161TimestampRequest = new Rfc3161TimestampRequestNetstandard21Wrapper(
+            return new Rfc3161TimestampRequestNetstandard21Wrapper(
                 messageHash,
                 hashAlgorithm,
                 requestedPolicyId,
@@ -41,8 +40,6 @@ namespace NuGet.Packaging.Signing
                 requestSignerCertificates,
                 extensions);
 #endif
-            return iRfc3161TimestampRequest;
-
         }
     }
 }

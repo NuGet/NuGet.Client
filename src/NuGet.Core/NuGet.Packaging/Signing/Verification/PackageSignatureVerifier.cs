@@ -32,13 +32,13 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
             var packageSigningTelemetryEvent = new PackageSigningTelemetryEvent();
             using (var telemetry = TelemetryActivity.Create(parentId, packageSigningTelemetryEvent))
             {
                 var isSigned = await package.IsSignedAsync(token);
+                bool valid;
                 if (isSigned)
                 {
                     try

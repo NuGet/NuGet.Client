@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement
 
             foreach (var fetchResult in preFetchTasks)
             {
-                string message = null;
+                string message;
 
                 if (fetchResult.InPackagesFolder)
                 {

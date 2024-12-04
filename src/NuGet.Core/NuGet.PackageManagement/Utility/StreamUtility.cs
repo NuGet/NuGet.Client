@@ -42,8 +42,8 @@ namespace NuGet.ProjectManagement
         public static bool IsBinary(Stream stream)
         {
             // Quick and dirty trick to check if a stream represents binary content.
-            // We read the first 30 bytes. If there's a character 0 in those bytes, 
-            // we assume this is a binary file. 
+            // We read the first 30 bytes. If there's a character 0 in those bytes,
+            // we assume this is a binary file.
             var a = new byte[30];
             var bytesRead = stream.Read(a, 0, 30);
             var byteZeroIndex = Array.FindIndex(a, 0, bytesRead, d => d == 0);
@@ -104,7 +104,7 @@ namespace NuGet.ProjectManagement
             var buffer = new byte[4 * 1024];
             var otherBuffer = new byte[4 * 1024];
 
-            var bytesRead = 0;
+            int bytesRead;
             do
             {
                 bytesRead = stream.Read(buffer, 0, buffer.Length);

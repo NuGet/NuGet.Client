@@ -341,7 +341,6 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 NuGetPackageFileService.AddIconToCache(packageIdentity, packageItemViewModel.IconUrl);
             }
 
-            BitmapSource result = packageItemViewModel.IconBitmap;
             var millisecondsToWait = 200000;
             while (!IconBitmapStatusUtility.GetIsCompleted(packageItemViewModel.BitmapStatus) && millisecondsToWait >= 0)
             {
@@ -349,8 +348,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 millisecondsToWait -= 250;
             }
 
-            result = packageItemViewModel.IconBitmap;
-            return result;
+            return packageItemViewModel.IconBitmap;
         }
 
         [Theory]

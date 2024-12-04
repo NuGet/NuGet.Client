@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.Warn_AddPkgWithoutRestore));
 
-                VersionRange versionRange = default;
+                VersionRange versionRange;
                 if (packageReferenceArgs.NoVersion)
                 {
                     versionRange = packageReferenceArgs.Prerelease ?

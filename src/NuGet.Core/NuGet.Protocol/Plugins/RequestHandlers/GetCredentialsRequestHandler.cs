@@ -133,7 +133,7 @@ namespace NuGet.Protocol.Plugins
             var requestPayload = MessageUtilities.DeserializePayload<GetCredentialsRequest>(request);
             var packageSource = GetPackageSource(requestPayload.PackageSourceRepository);
 
-            GetCredentialsResponse responsePayload = null;
+            GetCredentialsResponse responsePayload;
 
             if (packageSource.IsHttp &&
                 string.Equals(

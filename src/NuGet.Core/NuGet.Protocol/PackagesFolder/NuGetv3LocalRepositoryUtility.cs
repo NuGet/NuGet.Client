@@ -16,13 +16,11 @@ namespace NuGet.Repositories
             string id,
             NuGetVersion version)
         {
-            LocalPackageInfo package = null;
-
             for (var i = 0; i < repositories.Count; i++)
             {
                 var repository = repositories[i];
 
-                package = repository.FindPackage(id, version);
+                LocalPackageInfo package = repository.FindPackage(id, version);
 
                 if (package != null)
                 {

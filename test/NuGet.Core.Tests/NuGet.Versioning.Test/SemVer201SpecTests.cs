@@ -310,9 +310,8 @@ namespace NuGet.Versioning.Test
         public void SemVerSortNumericAlpha(string lower, string higher)
         {
             // Arrange & act
-            SemanticVersion? lowerSemVer = null, higherSemVer = null;
-            SemanticVersion.TryParse(lower, out lowerSemVer);
-            SemanticVersion.TryParse(higher, out higherSemVer);
+            SemanticVersion.TryParse(lower, out var lowerSemVer);
+            SemanticVersion.TryParse(higher, out var higherSemVer);
 
             // Assert
             Assert.True(VersionComparer.Default.Compare(lowerSemVer!, higherSemVer!) < 0);
@@ -325,9 +324,8 @@ namespace NuGet.Versioning.Test
         public void SemVerSortReleaseLabelCount(string lower, string higher)
         {
             // Arrange & act
-            SemanticVersion? lowerSemVer = null, higherSemVer = null;
-            SemanticVersion.TryParse(lower, out lowerSemVer);
-            SemanticVersion.TryParse(higher, out higherSemVer);
+            SemanticVersion.TryParse(lower, out var lowerSemVer);
+            SemanticVersion.TryParse(higher, out var higherSemVer);
 
             // Assert
             Assert.True(VersionComparer.Default.Compare(lowerSemVer!, higherSemVer!) < 0);
@@ -340,9 +338,8 @@ namespace NuGet.Versioning.Test
         public void SemVerSortIgnoreReleaseCasing(string a, string b)
         {
             // Arrange & act
-            SemanticVersion? semVerA = null, semVerB = null;
-            SemanticVersion.TryParse(a, out semVerA);
-            SemanticVersion.TryParse(b, out semVerB);
+            SemanticVersion.TryParse(a, out var semVerA);
+            SemanticVersion.TryParse(b, out var semVerB);
 
             // Assert
             Assert.True(VersionComparer.Default.Equals(semVerA!, semVerB!));

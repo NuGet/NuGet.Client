@@ -223,7 +223,7 @@ namespace NuGet.ProjectModel
 
                                 if (p2pSpec != null)
                                 {
-                                    TargetFrameworkInformation p2pSpecTargetFrameworkInformation = default;
+                                    TargetFrameworkInformation p2pSpecTargetFrameworkInformation;
                                     if (p2pSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig || p2pSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Unknown)
                                     {
                                         // Skip compat check and dependency check for non PR projects.
@@ -248,7 +248,7 @@ namespace NuGet.ProjectModel
 
                                             if (hasChanged)
                                             {
-                                                // P2P transitive package dependencies have changed                                            
+                                                // P2P transitive package dependencies have changed
                                                 invalidReasons.Add(message);
                                             }
 

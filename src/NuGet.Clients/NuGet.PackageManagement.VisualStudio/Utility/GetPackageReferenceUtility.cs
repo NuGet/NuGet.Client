@@ -67,8 +67,6 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <param name="transitivePackages">Cached transitive package information</param>
         internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(IList<LockFileTargetLibrary> libraries, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
-            NuGetVersion resolvedVersion = default;
-
             var packageIdentities = new List<PackageIdentity>();
 
             // get the dependencies for this target framework
@@ -80,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                     // don't add transitive packages if they are not packages
                     if (!installedPackages.ContainsKey(package.Name) && package.Type == LibraryType.Package.Value)
                     {
-                        resolvedVersion = package.Version ?? new NuGetVersion(0, 0, 0);
+                        NuGetVersion resolvedVersion = package.Version ?? new NuGetVersion(0, 0, 0);
 
                         var packageIdentity = new PackageIdentity(package.Name, resolvedVersion);
                         transitivePackages[package.Name] = new ProjectInstalledPackage(new VersionRange(package.Version), packageIdentity);

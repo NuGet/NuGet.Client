@@ -74,24 +74,21 @@ namespace NuGet.Commands
             string propsPath,
             ProjectStyle restoreType)
         {
-            XDocument targetsXML = null;
             XDocument propsXML = null;
 
             // Create an error file for MSBuild to stop the build.
-            targetsXML = GenerateMultiTargetFrameworkWarning();
+            XDocument targetsXML = GenerateMultiTargetFrameworkWarning();
 
             if (restoreType == ProjectStyle.PackageReference)
             {
                 propsXML = GenerateEmptyImportsFile();
             }
 
-            var files = new List<MSBuildOutputFile>()
+            return new List<MSBuildOutputFile>()
             {
                 new MSBuildOutputFile(propsPath, propsXML),
                 new MSBuildOutputFile(targetsPath, targetsXML),
             };
-
-            return files;
         }
 
         private static string ReplacePathsWithMacros(string path, IEnvironmentVariableReader environmentVariableReader)

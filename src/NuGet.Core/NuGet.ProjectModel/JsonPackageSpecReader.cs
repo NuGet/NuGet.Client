@@ -1965,7 +1965,7 @@ namespace NuGet.ProjectModel
         [Obsolete]
         private static void AddTargetFramework(PackageSpec packageSpec, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
         {
-            NuGetFramework updatedFramework = frameworkName;
+            NuGetFramework updatedFramework;
 
             if (targetFrameworkInformation.Imports.Length > 0)
             {

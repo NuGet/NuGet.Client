@@ -204,9 +204,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var sourcePath2 = Util.CreateTestPackage("PackageB", "1.1.0", pathContext.WorkingDirectory);
                 var outputPath2 = Path.Combine(pathContext.WorkingDirectory, "pushed2.nupkg");
 
-                CommandRunnerResult result = null;
-                CommandRunnerResult result2 = null;
-                CommandRunnerResult result3 = null;
+                CommandRunnerResult result;
+                CommandRunnerResult result2;
+                CommandRunnerResult result3;
 
                 using (var server = new MockServer())
                 {
@@ -826,8 +826,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
-                CommandRunnerResult result = null;
-                CommandRunnerResult result2 = null;
+                CommandRunnerResult result;
+                CommandRunnerResult result2;
 
                 using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {

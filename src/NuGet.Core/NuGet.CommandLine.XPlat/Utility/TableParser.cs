@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     var subsequentRow = new List<FormattedCell>();
                     for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                     {
-                        var formattedDataCell = (FormattedCell)null;
+                        FormattedCell formattedDataCell;
                         if (columnQueues.TryGetValue(colIndex, out var thisColumnQueue)) // we have at least one remaining value for this column
                         {
                             formattedDataCell = thisColumnQueue.Dequeue();

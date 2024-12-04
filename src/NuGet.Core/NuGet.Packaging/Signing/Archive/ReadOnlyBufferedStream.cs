@@ -330,7 +330,7 @@ namespace NuGet.Packaging.Signing
             _stream.Position = _bufferStartPosition;
 
             var totalBytesRead = 0;
-            var bytesRead = 0;
+            int bytesRead;
             var offset = 0;
             var count = _buffer.Length;
 

@@ -490,8 +490,8 @@ namespace NuGet.Commands
             CacheFile cacheFile,
             CancellationToken token)
         {
-            string assetFilePath = null;
-            string cacheFilePath = null;
+            string assetFilePath;
+            string cacheFilePath;
             var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
 
             using (telemetry.StartIndependentInterval(CreateRestoreResultDuration))

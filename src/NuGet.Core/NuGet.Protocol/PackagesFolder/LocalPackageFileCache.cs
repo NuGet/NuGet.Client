@@ -177,24 +177,16 @@ namespace NuGet.Protocol
         /// </summary>
         private static NuspecReader GetNuspec(string manifestPath, string expandedPath)
         {
-            NuspecReader nuspec = null;
-
             // Verify that the nuspec has the correct name before opening it
             if (File.Exists(manifestPath))
             {
-                nuspec = new NuspecReader(File.OpenRead(manifestPath));
-            }
-            else
-            {
-                // Scan the folder for the nuspec
-                using (var folderReader = new PackageFolderReader(expandedPath))
-                {
-                    // This will throw if the nuspec is not found
-                    nuspec = new NuspecReader(folderReader.GetNuspec());
-                }
+                return new NuspecReader(File.OpenRead(manifestPath));
             }
 
-            return nuspec;
+            // Scan the folder for the nuspec
+            using var folderReader = new PackageFolderReader(expandedPath);
+            // This will throw if the nuspec is not found
+            return new NuspecReader(folderReader.GetNuspec());
         }
 
         /// <summary>

@@ -271,7 +271,7 @@ namespace NuGet.Commands.FuncTest
             var lockFileFormat = new LockFileFormat();
             var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV2.json");
 
-            JObject expectedJson = null;
+            JObject expectedJson;
 
             using (var reader = new StreamReader(expectedStream))
             {

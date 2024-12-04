@@ -241,7 +241,7 @@ namespace NuGet.Build.Tasks.Console
             }
 
             // Default parameters
-            return binaryLoggerParameters = "LogFile=nuget.binlog";
+            return "LogFile=nuget.binlog";
         }
 
         /// <summary>

@@ -3339,7 +3339,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
         private Stream GetManifestStream(Stream packageStream)
         {
-            Stream resultStream = null;
+            Stream resultStream;
 
             using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Read, leaveOpen: true))
             {

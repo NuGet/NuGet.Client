@@ -33,14 +33,13 @@ namespace NuGet.Protocol
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             ODataServiceDocumentResourceV2 serviceDocument = null;
-            ODataServiceDocumentCacheInfo cacheInfo = null;
             var url = source.PackageSource.Source;
 
             var utcNow = DateTime.UtcNow;
             var entryValidCutoff = utcNow.Subtract(MaxCacheDuration);
 
             // check the cache before downloading the file
-            if (!_cache.TryGetValue(url, out cacheInfo) || entryValidCutoff > cacheInfo.CachedTime)
+            if (!_cache.TryGetValue(url, out var cacheInfo) || entryValidCutoff > cacheInfo.CachedTime)
             {
                 // Track if the semaphore needs to be released
                 var release = false;

@@ -969,20 +969,15 @@ namespace NuGet.Commands
         private static NuGetVersion GetVersion(IMSBuildItem item)
         {
             var versionString = item.GetProperty("Version");
-            NuGetVersion version = null;
 
             if (string.IsNullOrEmpty(versionString))
             {
                 // Default to 1.0.0 if the property does not exist
-                version = new NuGetVersion(1, 0, 0);
-            }
-            else
-            {
-                // Snapshot versions are not allowed in .NETCore
-                version = NuGetVersion.Parse(versionString);
+                return new NuGetVersion(1, 0, 0);
             }
 
-            return version;
+            // Snapshot versions are not allowed in .NETCore
+            return NuGetVersion.Parse(versionString);
         }
 
         public static void Dump(IEnumerable<IMSBuildItem> items, ILogger log)

@@ -26,8 +26,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static IEnumerable<PackageDependency> GetDependencies(JObject json)
         {
-            JToken node = null;
-            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out var node))
             {
                 foreach (var dependency in node)
                 {
@@ -96,8 +95,7 @@ namespace NuGet.ProjectManagement
 
             JObject dependencySet = null;
 
-            JToken node = null;
-            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out var node))
             {
                 dependencySet = node as JObject;
             }
@@ -121,8 +119,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static void RemoveDependency(JObject json, string packageId)
         {
-            JToken node = null;
-            if (json.TryGetValue(DEPENDENCIES_TAG, out node))
+            if (json.TryGetValue(DEPENDENCIES_TAG, out var node))
             {
                 foreach (var dependency in node.ToArray())
                 {
@@ -142,8 +139,7 @@ namespace NuGet.ProjectManagement
         {
             var results = new List<NuGetFramework>();
 
-            JToken node = null;
-            if (json.TryGetValue(FRAMEWORKS_TAG, out node))
+            if (json.TryGetValue(FRAMEWORKS_TAG, out var node))
             {
                 foreach (var frameworkNode in node.ToArray())
                 {
@@ -172,8 +168,7 @@ namespace NuGet.ProjectManagement
 
             JObject frameworkSet = null;
 
-            JToken node = null;
-            if (json.TryGetValue(FRAMEWORKS_TAG, out node))
+            if (json.TryGetValue(FRAMEWORKS_TAG, out var node))
             {
                 frameworkSet = node as JObject;
             }
