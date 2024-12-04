@@ -54,7 +54,6 @@
         Code behind changes to the Text property will trigger a narrator event.
       -->
       <vs:LiveTextBlock
-        x:Name="_ltbLoading"
         Visibility="Collapsed"
         IsFrequencyLimited="True"
         Focusable="False"
