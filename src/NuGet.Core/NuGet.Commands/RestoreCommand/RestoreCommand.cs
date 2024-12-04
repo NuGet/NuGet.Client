@@ -115,6 +115,7 @@ namespace NuGet.Commands
         private const string AuditTransitiveVulnerabilitySev2 = "Audit.Vulnerability.Transitive.Severity2";
         private const string AuditTransitiveVulnerabilitySev3 = "Audit.Vulnerability.Transitive.Severity3";
         private const string AuditTransitiveVulnerabilitySevInvalid = "Audit.Vulnerability.Transitive.SeverityInvalid";
+        private const string AuditPackageDownloadVulnerabilitiesPackages = "Audit.Vulnerability.PackageDownload.Packages";
         private const string AuditDurationDownload = "Audit.Duration.Download";
         private const string AuditDurationCheck = "Audit.Duration.Check";
         private const string AuditDurationOutput = "Audit.Duration.Output";
@@ -535,6 +536,7 @@ namespace NuGet.Commands
         {
             telemetry.StartIntervalMeasure();
             var audit = new AuditUtility(
+                _request.Project.TargetFrameworks.SelectMany(t => t.DownloadDependencies),
                 _request.Project.RestoreMetadata.RestoreAuditProperties,
                 _request.Project.FilePath,
                 graphs,
@@ -563,6 +565,8 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev2] = audit.Sev2TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevInvalid] = audit.InvalidSevTransitiveMatches;
+
+            if (audit.PackageDownloadPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditPackageDownloadVulnerabilitiesPackages, audit.PackageDownloadPackagesWithAdvisory); }
 
             telemetry.TelemetryEvent[AuditDataSources] = audit.SourcesWithVulnerabilityData;
             if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
