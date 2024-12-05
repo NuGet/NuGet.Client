@@ -427,6 +427,7 @@ public class AuditUtilityTests
 
         // Act
         var audit = new AuditUtility(
+            downloadDependencies: new List<DownloadDependency>(),
             restoreAuditProperties: null,
             "/path/proj.csproj",
             graphs,
@@ -569,7 +570,7 @@ public class AuditUtilityTests
 
             var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
 
-            var audit = new AuditUtility(restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
+            var audit = new AuditUtility(downloadDependencies: new List<DownloadDependency>(), restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
             await audit.CheckPackageVulnerabilitiesAsync(cancellationToken);
 
             return audit;
