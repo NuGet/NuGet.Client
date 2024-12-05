@@ -150,6 +150,7 @@
             <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
               <nuget:PackageMetadataControl
                 Focusable="True"
+                AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
                 Margin="0,5,0,0"/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReadmePreviewViewModel}">
