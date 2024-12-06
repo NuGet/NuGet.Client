@@ -23,7 +23,6 @@ namespace NuGet.PackageManagement.UI
         public PackageDetailsTabControl()
         {
             InitializeComponent();
-            MarkdownPreviewSingleton.GetInstance();
             DataContext = new PackageDetailsTabViewModel();
         }
 
