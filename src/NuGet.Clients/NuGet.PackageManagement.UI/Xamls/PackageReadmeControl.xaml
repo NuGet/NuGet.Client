@@ -28,14 +28,13 @@
   <Grid>
     <ContentControl
       x:Name="descriptionMarkdownPreview"
-      x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
       Focusable="False"
-      Visibility="{Binding Path=IsReadmeReady, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+      Visibility="{Binding Path=IsReadmeReady, Mode=OneWay, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
     <Grid
       HorizontalAlignment="Center"
       VerticalAlignment="Center"
-      Visibility="{Binding Path=IsBusy, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" >
+      Visibility="{Binding Path=IsBusy, Mode=OneWay, FallbackValue=Visible, Converter={StaticResource BooleanToVisibilityConverter}}" >
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="Auto"/>
@@ -75,6 +74,6 @@
     <TextBlock
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
-      Visibility="{Binding Path=ErrorWithReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+      Visibility="{Binding Path=ErrorWithReadme, Mode=OneWay, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
   </Grid>
 </UserControl>

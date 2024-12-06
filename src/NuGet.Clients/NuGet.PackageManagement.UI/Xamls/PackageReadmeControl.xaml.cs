@@ -19,9 +19,15 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageReadmeControl : UserControl
     {
+#pragma warning disable CS0618 // Type or member is obsolete
+        public IMarkdownPreview markdownPreview;
+#pragma warning restore CS0618 // Type or member is obsolete
+
         public PackageReadmeControl()
         {
             InitializeComponent();
+            markdownPreview = MarkdownPreviewSingleton.GetInstance();
+            descriptionMarkdownPreview.Content = markdownPreview.VisualElement;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -40,7 +46,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    await ReadmeViewModel.MarkdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                    await markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
                 }
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
@@ -57,13 +63,12 @@ namespace NuGet.PackageManagement.UI
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await oldMetadata.MarkdownPreview.UpdateContentAsync("", ScrollHint.None);
+                    await markdownPreview.UpdateContentAsync("", ScrollHint.None);
                 });
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
             {
-                descriptionMarkdownPreview.Content = ReadmeViewModel.MarkdownPreview.VisualElement;
                 ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
             }
         }
@@ -74,7 +79,7 @@ namespace NuGet.PackageManagement.UI
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await ReadmeViewModel.MarkdownPreview.UpdateContentAsync("", ScrollHint.None);
+                    await markdownPreview.UpdateContentAsync("", ScrollHint.None);
                 });
                 ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
@@ -82,8 +87,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateMarkdownAsync)
-                .PostOnFailure(nameof(PackageReadmeControl), nameof(PackageReadmeControl_Loaded));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(UpdateMarkdownAsync);
         }
     }
 }

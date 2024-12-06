@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Markdown.Platform;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -40,7 +39,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             var nuGetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
             _readmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
 #pragma warning disable CS0618 // Type or member is obsolete
-            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter, new PreviewBuilder().Build(), _readmeTabEnabled);
+            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter, _readmeTabEnabled);
 #pragma warning restore CS0618 // Type or member is obsolete
             DetailControlModel = detailControlModel;
 
@@ -78,7 +77,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
             _disposed = true;
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
-            ReadmePreviewViewModel.Dispose();
             foreach (var tab in Tabs)
             {
                 tab.PropertyChanged -= IsVisible_PropertyChanged;

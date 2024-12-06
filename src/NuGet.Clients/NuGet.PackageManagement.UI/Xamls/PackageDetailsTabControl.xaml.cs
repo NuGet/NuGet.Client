@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.UI
         public PackageDetailsTabControl()
         {
             InitializeComponent();
+            MarkdownPreviewSingleton.GetInstance();
             DataContext = new PackageDetailsTabViewModel();
         }
 
@@ -41,6 +42,7 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 PackageDetailsTabViewModel.Dispose();
+                MarkdownPreviewSingleton.ResetInstance();
             }
             _disposed = true;
         }
