@@ -38,7 +38,6 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                descriptionMarkdownPreview.Content = descriptionMarkdownPreview.Content ?? _markdownPreview.VisualElement;
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
                     await ReadmeViewModel.MarkdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
