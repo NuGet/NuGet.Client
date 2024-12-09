@@ -97,7 +97,8 @@
         <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <CommandName>cmdidClearNuGetLocalResources</CommandName>
-          <ButtonText>dgtestClearLocals</ButtonText>
+          <!--This button text is not visible to the user as the command is invoked from Unified Settings-->
+          <ButtonText>ClearLocals</ButtonText>
         </Strings>
       </Button>
 

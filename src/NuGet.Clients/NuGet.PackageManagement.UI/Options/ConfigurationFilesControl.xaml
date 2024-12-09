@@ -43,7 +43,7 @@
           <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" TextWrapping="WrapWithOverflow" Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles}"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">  
           <Hyperlink
               NavigateUri="https://aka.ms/nuget/how-settings-are-applied"
               RequestNavigate="Hyperlink_RequestNavigate">

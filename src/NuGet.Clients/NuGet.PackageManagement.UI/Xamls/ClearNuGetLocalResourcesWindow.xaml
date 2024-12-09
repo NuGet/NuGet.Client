@@ -16,7 +16,7 @@
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   WindowStartupLocation="CenterScreen"
   ShowInTaskbar="False"
-  IsCloseButtonEnabled="True"
+  IsCloseButtonEnabled="{Binding asdf}"
   WindowStyle="SingleBorderWindow"
   Title="NuGet Package Manager" Height="200" Width="800"
   ResizeMode="NoResize">

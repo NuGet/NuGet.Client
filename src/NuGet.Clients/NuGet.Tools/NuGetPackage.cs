@@ -53,9 +53,10 @@ namespace NuGetVSExtension
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}", // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true, IsInUnifiedSettings = true)]
-    [ProvideOptionPage(typeof(ConfigurationFilesOptionsPage), "NuGet Package Manager", "Configuration Files", 113, 117, true, Sort = 0)]
-    [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true, Sort = 1)]
-    [ProvideOptionPage(typeof(PackageSourceMappingOptionsPage), "NuGet Package Manager", "Package Source Mapping", 113, 116, true, Sort = 2)]
+    [ProvideOptionPage(typeof(StubGeneralOptionsPage), "NuGet Package Manager", "GeneralStub", 113, 115, true, IsInUnifiedSettings = false, Sort = 0)]
+    [ProvideOptionPage(typeof(ConfigurationFilesOptionsPage), "NuGet Package Manager", "Configuration Files", 113, 117, true, Sort = 1)]
+    [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true, Sort = 2)]
+    [ProvideOptionPage(typeof(PackageSourceMappingOptionsPage), "NuGet Package Manager", "Package Source Mapping", 113, 116, true, Sort = 3)]
     [ProvideSettingsManifest]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     // UI Context rule for a project that could be upgraded to PackageReference from packages.config based project.
@@ -1229,9 +1230,20 @@ namespace NuGetVSExtension
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                MessageHelper.ShowWarningMessage("Let's clear the NuGet Local Resources....", "Clear NuGet Local Resources");
-                var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow();
-                var result = clearNuGetLocalResourcesWindow.ShowModal() == true;
+                var isUserContinuing = MessageHelper.ShowQueryMessage(
+                    message: "Let's clear the NuGet Local Resources....",
+                    title: "Clear NuGet Local Resources",
+                    showCancelButton: false);
+
+                if (isUserContinuing == true)
+                {
+                    var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow();
+                    var result = clearNuGetLocalResourcesWindow.ShowModal() == true;
+                }
+                else
+                {
+                    //NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true);
+                }
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 

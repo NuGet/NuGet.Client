@@ -28,6 +28,9 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the Configuration Files page, defined in ConfigurationFilesOptionsPage.cs
         private const string _configurationFilesGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
 
+        //// GUID of the stub "General" page in Legacy options which points to the Unified Settings "General" page.
+        //private const string _stubGeneralGUID = "41B6E760-DFED-44E3-8CA5-AAEC83FBC9DB";
+
         private Action _closeCallback;
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
