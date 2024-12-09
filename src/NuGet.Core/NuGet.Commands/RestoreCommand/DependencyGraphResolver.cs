@@ -1504,9 +1504,11 @@ namespace NuGet.Commands
                         break;
                 }
 
-                return typeConstraint1 == typeConstraint2 &&
-                       VersionRangeComparer.Default.Equals(x.VersionRange, y.VersionRange) &&
-                       x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase);
+                return typeConstraint1 == typeConstraint2
+                    && VersionRangeComparer.Default.Equals(x.VersionRange, y.VersionRange)
+                    && x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase)
+                    && x.VersionRange.IsFloating == y.VersionRange.IsFloating
+                    && EqualityUtility.EqualsWithNullCheck(x.VersionRange.Float, y.VersionRange.Float);
             }
 
             public int GetHashCode(LibraryRange obj)
