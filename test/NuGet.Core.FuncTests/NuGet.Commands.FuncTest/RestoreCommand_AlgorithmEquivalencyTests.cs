@@ -367,7 +367,7 @@ namespace NuGet.Commands.FuncTest
         //                  c 1.0.0 -> b 3.0.0
         //       d 1.0.0 -> b 2.0.0
         [Fact]
-        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinning_RespectsDowngrade_AndDoesNotRaiseWarning()
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinning_ElevatesTransitiveToDirect_AndDoesNotRaiseWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -448,6 +448,10 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, f 1.0.0 and a 1.0.0
+
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinning_RespectsDowngrade_AndRaisesWarning()
         {
@@ -525,6 +529,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, b, f 1.0.0, a 2.0.0 and b 1.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinningToDowngradedVersion_Fails()
         {
@@ -620,6 +627,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, f 1.0.0 and a 2.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinningToHigherVersion_RespectsDowngrade_AndRaisesWarning()
         {
