@@ -52,6 +52,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("X");
         }
 
+        // Project 1 -> X 1.0 -> B 2.0 -> E 1.0
+        //           -> C 2.0 -> D 1.0 -> B 3.0
+        // Expected: X 1.0, B 3.0, C 2.0, D 1.0
         [Fact]
         public async Task RestoreCommand_WithNewPackageEvictedByVersionBump()
         {
@@ -129,6 +132,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> Project 2 -> a (null)
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -194,6 +198,8 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        // Project 1 -> a 1.0.0 -> b 1.0.0
+        //                      -> c 1.0.0 -> b 2.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngrade_RespectsDowngrade_AndRaisesWarning()
         {
@@ -242,6 +248,8 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> a 1.0.0 -> b 1.0.0
+        //                      -> c 1.0.0 -> -> d 1.0.0 -> b 2.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndDepthDifferenceMoreThanOne_RespectsDowngrade_AndRaisesWarning()
         {
@@ -300,6 +308,8 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> a 1.0.0 -> b 1.0.0
+        //                      -> c 1.0.0 -> b 2.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndMissingVersion_RespectsDowngrade_AndRaisesWarning()
         {
@@ -703,6 +713,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project 1 -> d 1.0.0 -> b 1.0.0
+        // Project 1 -> a 1.0.0 -> b 1.0.0
+        //                      -> c 1.0.0 -> b 2.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestors_RespectsDowngrade_AndRaisesWarning()
         {
@@ -769,9 +782,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-        // P1 -> a 1.0.0 -> b 1.0.0
-        //                  c 1.0.0 -> b 3.0.0
-        //       d 1.0.0 -> b 2.0.0
+        // Project 1 -> d 1.0.0 -> b 2.0.0
+        // Project 1 -> a 1.0.0 -> b 1.0.0
+        //                      -> c 1.0.0 -> b 3.0.0
         [Fact]
         public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestorsAndCousin_RespectsDowngrade_AndDoesNotRaiseWarning()
         {
