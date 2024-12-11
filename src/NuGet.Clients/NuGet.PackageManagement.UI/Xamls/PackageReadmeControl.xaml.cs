@@ -20,14 +20,14 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageReadmeControl : UserControl
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        public IMarkdownPreview markdownPreview;
+        private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
 
         public PackageReadmeControl()
         {
             InitializeComponent();
-            markdownPreview = MarkdownPreviewSingleton.GetInstance();
-            descriptionMarkdownPreview.Content = markdownPreview.VisualElement;
+            _markdownPreview = MarkdownPreviewSingleton.GetInstance();
+            descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    await markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                    await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
                 }
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await markdownPreview.UpdateContentAsync("", ScrollHint.None);
+                    await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
                 });
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.UI
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    await markdownPreview.UpdateContentAsync("", ScrollHint.None);
+                    await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
                 });
                 ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
