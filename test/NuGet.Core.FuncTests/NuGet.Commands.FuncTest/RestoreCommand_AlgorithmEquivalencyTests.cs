@@ -820,12 +820,12 @@ namespace NuGet.Commands.FuncTest
                 Dependencies =
                 [
                     new SimpleTestPackageContext("e", "1.0.0")
-                        {
-                            Dependencies =
-                            [
-                                new SimpleTestPackageContext("b", "3.0.0"),
-                            ]
-                        }
+                    {
+                        Dependencies =
+                        [
+                            new SimpleTestPackageContext("b", "3.0.0"),
+                        ]
+                    }
                 ]
             };
 
