@@ -425,7 +425,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        private static string GetAssetsFilePath(string projectPath)
+        public static string GetAssetsFilePath(string projectPath)
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             return Path.Combine(projectDirectory, "obj", "project.assets.json");

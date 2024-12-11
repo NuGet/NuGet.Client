@@ -877,6 +877,46 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
         }
 
+        [TestMethod]
+        [DataRow(ProjectTemplate.ConsoleApplication)]
+        [DataRow(ProjectTemplate.NetCoreConsoleApp)]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyPackageRestoreAfterDeletingAssetsJsonFile(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+            _pathContext.Settings.SetPackageFormatToPackageReference();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            var assetsFilePath = CommonUtility.GetAssetsFilePath(project.FullPath);
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
+            File.Delete(assetsFilePath);
+
+            // Act
+            if (projectTemplate.Equals(ProjectTemplate.ConsoleApplication))
+            {
+                CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+            }
+            else
+            {
+                nugetTestService.WaitForAutoRestore();
+            }
+
+            // Assert
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
+        }
+
         public override void Dispose()
         {
             _pathContext.Dispose();
