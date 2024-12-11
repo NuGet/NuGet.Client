@@ -533,11 +533,7 @@ namespace NuGet.PackageManagement.UI
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsPackageVulnerable));
-                    OnPropertyChanged(nameof(PackageVulnerabilityCount));
-                    OnPropertyChanged(nameof(PackageVulnerabilities));
                     OnPropertyChanged(nameof(IsPackageVulnerableOrDeprecated));
-                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 }
             }
         }
