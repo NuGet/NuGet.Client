@@ -489,7 +489,7 @@ namespace NuGet.Commands
                             }
 
                             //If the one we already have chosen is pure, then we can skip this one.  Processing it wont bring any new info
-                            if (chosenSuppressions.Count == 1 && chosenSuppressions[0].Count == 0)
+                            if (chosenSuppressions.Count == 1 && chosenSuppressions[0].Count == 0 && HasCommonAncestor(chosenResolvedItem.Path, pathToCurrentRef))
                             {
                                 continue;
                             }
