@@ -18,10 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="17.12.6" />
-    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="17.12.6" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <EmbeddedResource Include="Resources\customMetadata.jpeg" />
     <EmbeddedResource Include="Resources\grayicc.png" />

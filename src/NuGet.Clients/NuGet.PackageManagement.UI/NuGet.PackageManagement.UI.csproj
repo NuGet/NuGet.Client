@@ -41,9 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="17.12.6" />
-    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="17.12.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Markdown.Platform" />
+    <PackageReference Include="Microsoft.VisualStudio.Markdown.Platform" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
   </ItemGroup>
 
