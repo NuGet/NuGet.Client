@@ -26,8 +26,6 @@ namespace NuGet.PackageManagement.UI
         public PackageReadmeControl()
         {
             InitializeComponent();
-            _markdownPreview = MarkdownPreviewSingleton.GetInstance();
-            descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -87,7 +85,14 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(UpdateMarkdownAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+                var markdownPreviewSingleton = componentModel.GetService<MarkdownPreviewSingleton>();
+                _markdownPreview = markdownPreviewSingleton.GetInstance();
+                descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
+                await UpdateMarkdownAsync();
+            });
         }
     }
 }
