@@ -24,9 +24,18 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void SettingsButtonClicked(object sender, RoutedEventArgs e)
         {
+            bool? isUserSavingChanges = MessageHelper.ShowQueryMessage(
+                message: "Save any changes made prior to closing this dialog?",
+                title: null,
+                showCancelButton: true);
+
+            if (isUserSavingChanges.HasValue == false)
+            {
+                return;
+            }
+
             var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
             optionsPageActivator.ActivatePage(OptionsPage.General, closeCallback: null);
-
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -34,9 +43,8 @@ namespace NuGet.PackageManagement.UI.Options
 
                 var asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
                 IVsUIShell2 uiShell = await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell2>();
-                var options = await asyncServiceProvider.GetServiceAsync<SVsToolsOptions, IVsToolsOptionsPrivate2>();
-
-                options.CloseToolsOptions(applyChanges: true);
+                IVsToolsOptionsPrivate2 options = await asyncServiceProvider.GetServiceAsync<SVsToolsOptions, IVsToolsOptionsPrivate2>();
+                options.CloseToolsOptions(applyChanges: isUserSavingChanges.Value);
             });
         }
     }
