@@ -3,6 +3,9 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Internal.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -15,6 +18,7 @@ namespace NuGet.PackageManagement.UI.Options
     {
         public StubGeneralOptionControl()
         {
+            DataContext = this;
             InitializeComponent();
         }
 
@@ -22,12 +26,18 @@ namespace NuGet.PackageManagement.UI.Options
         {
             var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
             optionsPageActivator.ActivatePage(OptionsPage.General, closeCallback: null);
-            //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            //{
-            //    var asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
-            //    IVsUIShell2 uiShell = await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell2>();
-            //    await ShowOptionsPageAsync(uiShell, "");
-            //});
+
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
+                IVsUIShell2 uiShell = await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell2>();
+                var options = await asyncServiceProvider.GetServiceAsync<SVsToolsOptions, IVsToolsOptionsPrivate2>();
+
+                options.CloseToolsOptions(applyChanges: true);
+            });
         }
     }
 }

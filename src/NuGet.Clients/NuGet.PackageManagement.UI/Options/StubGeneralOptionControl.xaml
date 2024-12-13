@@ -21,7 +21,6 @@
         <Run Text="The General page for NuGet has moved to Unified Settings" />
         <Control Margin="6,0,0,0" IsTabStop="False" />
         <controls:ButtonHyperlink Click="SettingsButtonClicked"
-                   Style="{StaticResource HyperlinkStyleNoUri}"
                    AutomationProperties.Name="Open the settings page">
           <TextBlock TextWrapping="Wrap" Text="Open the settings page" />
         </controls:ButtonHyperlink>
