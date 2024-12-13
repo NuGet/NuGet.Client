@@ -10,7 +10,6 @@ namespace NuGet.PackageManagement.UI.Options
     /// NuGet's General settings are now in the new UI.
     /// </summary>
     [Guid("41B6E760-DFED-44E3-8CA5-AAEC83FBC9DB")]
-    [ComVisible(true)]
     public class StubGeneralOptionsPage : UIElementDialogPage
     {
         private Lazy<StubGeneralOptionControl> _stubGeneralOptionControl;
