@@ -143,25 +143,14 @@ namespace NuGet.CommandLine
             }
 
             // This happens before we obtain warning properties, so this Logger is still IConsole.
-            IConsole console = Logger as IConsole;
-            switch (LogLevel)
+            var console = (IConsole) Logger;
+            console.Verbosity = LogLevel switch
             {
-                case LogLevel.Verbose:
-                    {
-                        console.Verbosity = Verbosity.Detailed;
-                        break;
-                    }
-                case LogLevel.Information:
-                    {
-                        console.Verbosity = Verbosity.Normal;
-                        break;
-                    }
-                case LogLevel.Minimal:
-                    {
-                        console.Verbosity = Verbosity.Quiet;
-                        break;
-                    }
-            }
+                LogLevel.Verbose => Verbosity.Detailed,
+                LogLevel.Information => Verbosity.Normal,
+                LogLevel.Minimal => Verbosity.Quiet,
+                _ => console.Verbosity
+            };
         }
 
         public WarningProperties GetWarningPropertiesForProject()
