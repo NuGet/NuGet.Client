@@ -72,12 +72,11 @@ namespace NuGet.SolutionRestoreManager
         {
             if (reference is null) { return null; }
 
-            var a = new VsReferenceItem2Adapter
+            return new VsReferenceItem2Adapter
             {
                 Name = reference.Name,
                 Metadata = ToPropertiesDictionary(reference.Properties),
             };
-            return a;
         }
 
         private static IReadOnlyList<IVsTargetFrameworkInfo4> ToTargetFrameworkInfoList(IVsTargetFrameworks targetFrameworks)
@@ -99,15 +98,13 @@ namespace NuGet.SolutionRestoreManager
         {
             if (targetFramework is null) { return null; }
 
-            var adapter = new VsTargetFramework4Adapter()
+            return new VsTargetFramework4Adapter()
             {
                 TargetFrameworkMoniker = targetFramework.TargetFrameworkMoniker,
                 // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
                 Properties = ToPropertiesDictionary(targetFramework.Properties)!,
                 Items = ToItemsDictionary(targetFramework)
             };
-
-            return adapter;
         }
 
         private static IReadOnlyList<IVsTargetFrameworkInfo4> ToTargetFrameworkInfoList(IVsTargetFrameworks2 targetFrameworks)
@@ -129,15 +126,13 @@ namespace NuGet.SolutionRestoreManager
         {
             if (targetFramework is null) { return null; }
 
-            var adapter = new VsTargetFramework4Adapter()
+            return new VsTargetFramework4Adapter()
             {
                 TargetFrameworkMoniker = targetFramework.TargetFrameworkMoniker,
                 // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
                 Properties = ToPropertiesDictionary(targetFramework.Properties)!,
                 Items = ToItemsDictionary(targetFramework)
             };
-
-            return adapter;
         }
 
         private static IReadOnlyDictionary<string, string?>? ToPropertiesDictionary(IVsProjectProperties? properties)
@@ -176,36 +171,30 @@ namespace NuGet.SolutionRestoreManager
 
             if (targetFrameworkInfo.ProjectReferences?.Count > 0)
             {
-                IReadOnlyList<IVsReferenceItem2> projectReferences = ToReferenceItemList(targetFrameworkInfo.ProjectReferences);
-                result[ProjectItems.ProjectReference] = projectReferences;
+                result[ProjectItems.ProjectReference] = ToReferenceItemList(targetFrameworkInfo.ProjectReferences);
             }
 
             if (targetFrameworkInfo.PackageReferences?.Count > 0)
             {
-                IReadOnlyList<IVsReferenceItem2>? packageReferences = ToReferenceItemList(targetFrameworkInfo.PackageReferences);
-                result[ProjectItems.PackageReference] = packageReferences;
+                result[ProjectItems.PackageReference] = ToReferenceItemList(targetFrameworkInfo.PackageReferences);
             }
 
             if (targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
             {
                 if (targetFrameworkInfo2.PackageDownloads?.Count > 0)
                 {
-                    IReadOnlyList<IVsReferenceItem2>? packageDownloads = ToReferenceItemList(targetFrameworkInfo2.PackageDownloads);
-                    result[ProjectItems.PackageDownload] = packageDownloads;
+                    result[ProjectItems.PackageDownload] = ToReferenceItemList(targetFrameworkInfo2.PackageDownloads);
                 }
 
                 if (targetFrameworkInfo2.FrameworkReferences?.Count > 0)
                 {
-                    IReadOnlyList<IVsReferenceItem2>? frameworkReferences = ToReferenceItemList(targetFrameworkInfo2.FrameworkReferences);
-                    result[ProjectItems.FrameworkReference] = frameworkReferences;
+                    result[ProjectItems.FrameworkReference] = ToReferenceItemList(targetFrameworkInfo2.FrameworkReferences);
                 }
             }
 
-            if (targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3
-                && targetFrameworkInfo3.CentralPackageVersions?.Count > 0)
+            if (targetFrameworkInfo is IVsTargetFrameworkInfo3 {CentralPackageVersions.Count: > 0} targetFrameworkInfo3)
             {
-                IReadOnlyList<IVsReferenceItem2>? centralPackageVersions = ToReferenceItemList(targetFrameworkInfo3.CentralPackageVersions);
-                result[ProjectItems.PackageVersion] = centralPackageVersions;
+                result[ProjectItems.PackageVersion] = ToReferenceItemList(targetFrameworkInfo3.CentralPackageVersions);
             }
 
             return result;
