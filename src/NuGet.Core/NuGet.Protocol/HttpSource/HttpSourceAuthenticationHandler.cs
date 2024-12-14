@@ -103,10 +103,12 @@ namespace NuGet.Protocol
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
                     (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
+                    List<Stopwatch> stopwatches = null;
+
 #if NET5_0_OR_GREATER
                     if (request.Options.TryGetValue(
                         new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
-                        out var stopwatches))
+                        out stopwatches))
                     {
 #else
                     if (request.Properties.TryGetValue(HttpRetryHandler.StopwatchPropertyName, out var value))
@@ -238,7 +240,8 @@ namespace NuGet.Protocol
         {
             var correlationId = ActivityCorrelationId.Current;
 
-            if (!_authStates.TryGetValue(correlationId, out var authState))
+            AmbientAuthenticationState authState;
+            if (!_authStates.TryGetValue(correlationId, out authState))
             {
                 authState = new AmbientAuthenticationState();
                 _authStates[correlationId] = authState;
