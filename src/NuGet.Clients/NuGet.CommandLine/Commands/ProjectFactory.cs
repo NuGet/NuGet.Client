@@ -139,7 +139,7 @@ namespace NuGet.CommandLine
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
             if (!string.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                TargetFramework = NuGetFramework.Parse(targetFrameworkMoniker);
+                _targetFramework = NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
             // This happens before we obtain warning properties, so this Logger is still IConsole.
@@ -173,17 +173,9 @@ namespace NuGet.CommandLine
                 warningsNotAsErrors: GetPropertyValue("WarningsNotAsErrors"));
         }
 
-        private string TargetPath
-        {
-            get;
-            set;
-        }
+        private string _targetPath;
 
-        private NuGetFramework TargetFramework
-        {
-            get;
-            set;
-        }
+        private NuGetFramework _targetFramework;
 
         public void SetIncludeSymbols(bool includeSymbols)
         {
@@ -230,12 +222,12 @@ namespace NuGet.CommandLine
                 BuildProject();
             }
 
-            if (!string.IsNullOrEmpty(TargetPath))
+            if (!string.IsNullOrEmpty(_targetPath))
             {
                 Logger.Log(PackagingLogMessage.CreateMessage(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("PackagingFilesFromOutputPath"),
-                        Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
+                        Path.GetFullPath(Path.GetDirectoryName(_targetPath))), LogLevel.Minimal));
             }
 
             string usingNETSDK = _project.GetPropertyValue("UsingMicrosoftNETSDK");
@@ -267,7 +259,7 @@ namespace NuGet.CommandLine
                 Logger.Log(PackagingLogMessage.CreateError(string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("UnableToExtractAssemblyMetadata"),
-                        Path.GetFileName(TargetPath)), NuGetLogCode.NU5011));
+                        Path.GetFileName(_targetPath)), NuGetLogCode.NU5011));
                 if (LogLevel == LogLevel.Verbose)
                 {
                     Logger.Log(PackagingLogMessage.CreateError(ex.ToString(), NuGetLogCode.NU5011));
@@ -455,25 +447,25 @@ namespace NuGet.CommandLine
         {
             if (Build)
             {
-                if (TargetFramework != null)
+                if (_targetFramework != null)
                 {
                     Logger.Log(PackagingLogMessage.CreateMessage(string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("BuildingProjectTargetingFramework"),
                             _project.FullPath,
-                            TargetFramework), LogLevel.Minimal));
+                            _targetFramework), LogLevel.Minimal));
                 }
 
                 BuildProjectWithMsbuild();
             }
             else
             {
-                TargetPath = ResolveTargetPath();
+                _targetPath = ResolveTargetPath();
 
                 // Make if the target path doesn't exist, fail
-                if (!Directory.Exists(TargetPath) && !File.Exists(TargetPath))
+                if (!Directory.Exists(_targetPath) && !File.Exists(_targetPath))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5012, string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
+                    throw new PackagingException(NuGetLogCode.NU5012, string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), _targetPath));
                 }
             }
         }
@@ -496,7 +488,7 @@ namespace NuGet.CommandLine
                 throw new PackagingException(NuGetLogCode.NU5013, error);
             }
 
-            TargetPath = ResolveTargetPath();
+            _targetPath = ResolveTargetPath();
         }
 
         private string ResolveTargetPath()
@@ -636,7 +628,7 @@ namespace NuGet.CommandLine
                     referencedProject.Build = Build;
                     referencedProject.IncludeReferencedProjects = IncludeReferencedProjects;
                     referencedProject.ProjectProperties = ProjectProperties;
-                    referencedProject.TargetFramework = TargetFramework;
+                    referencedProject._targetFramework = _targetFramework;
                     referencedProject.BuildProject();
                     referencedProject.SymbolPackageFormat = SymbolPackageFormat;
                     referencedProject.RecursivelyApply(action, alreadyAppliedProjects);
@@ -810,14 +802,14 @@ namespace NuGet.CommandLine
             // If building an xproj, then TargetPath points to the folder where the framework folders will be
             // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
             // use only metadata from the project and json file.
-            if (!Directory.Exists(TargetPath))
+            if (!Directory.Exists(_targetPath))
             {
                 // If building a project targeting netstandard, asssembly metadata extraction fails
                 // because it tries to load system.runtime version 4.1.0 which is not present in the local
                 // path or the gac. In this case, we should just skip it and extract metadata from the project.
                 try
                 {
-                    new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
+                    new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, _targetPath);
                 }
                 catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
                 {
@@ -853,19 +845,19 @@ namespace NuGet.CommandLine
             }
             else
             {
-                nugetFramework = TargetFramework;
+                nugetFramework = _targetFramework;
             }
 
-            var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
+            var projectOutputDirectory = Path.GetDirectoryName(_targetPath);
             string targetFileName;
 
-            if (Directory.Exists(TargetPath))
+            if (Directory.Exists(_targetPath))
             {
                 targetFileName = builder.Id;
             }
             else
             {
-                targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
+                targetFileName = Path.GetFileNameWithoutExtension(_targetPath);
             }
 
             var outputFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -902,9 +894,9 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    if (Directory.Exists(TargetPath))
+                    if (Directory.Exists(_targetPath))
                     {
-                        targetFolder = Path.Combine(ReferenceFolder, Path.GetDirectoryName(file.Replace(TargetPath, string.Empty)));
+                        targetFolder = Path.Combine(ReferenceFolder, Path.GetDirectoryName(file.Replace(_targetPath, string.Empty)));
                     }
                     else if (nugetFramework == null)
                     {
@@ -1002,7 +994,7 @@ namespace NuGet.CommandLine
             {
                 builder.DependencyGroups.Clear();
 
-                var targetFramework = TargetFramework ?? NuGetFramework.AnyFramework;
+                var targetFramework = _targetFramework ?? NuGetFramework.AnyFramework;
                 builder.DependencyGroups.Add(new PackageDependencyGroup(targetFramework, new HashSet<PackageDependency>(dependencies.Values)));
             }
         }
@@ -1048,7 +1040,7 @@ namespace NuGet.CommandLine
 
             if (!props.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
             {
-                props.Add(NuGetProjectMetadataKeys.TargetFramework, TargetFramework);
+                props.Add(NuGetProjectMetadataKeys.TargetFramework, _targetFramework);
             }
             if (!props.ContainsKey(NuGetProjectMetadataKeys.Name))
             {
