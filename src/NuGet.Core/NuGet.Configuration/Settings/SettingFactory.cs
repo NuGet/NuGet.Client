@@ -25,8 +25,7 @@ namespace NuGet.Configuration
 
             if (node is XElement element)
             {
-                var elementType = SettingElementType.Unknown;
-                Enum.TryParse(element.Name.LocalName, ignoreCase: true, result: out elementType);
+                Enum.TryParse(element.Name.LocalName, ignoreCase: true, result: out SettingElementType elementType);
 
                 var parentType = SettingElementType.Unknown;
                 if (element.Parent != null)

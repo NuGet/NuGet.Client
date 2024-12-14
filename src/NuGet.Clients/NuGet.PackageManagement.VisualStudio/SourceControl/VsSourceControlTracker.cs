@@ -112,8 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                uint cookie;
-                if (ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out cookie) == VSConstants.S_OK)
+                if (ProjectTracker.AdviseTrackProjectDocumentsEvents(_projectDocumentListener, out var cookie) == VSConstants.S_OK)
                 {
                     _trackingCookie = cookie;
                 }

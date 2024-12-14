@@ -13,8 +13,7 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             // Set F1 help keyword
-            object varUserContext = null;
-            if (ErrorHandler.Succeeded(windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_UserContext, out varUserContext)))
+            if (ErrorHandler.Succeeded(windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_UserContext, out var varUserContext)))
             {
                 var userContext = varUserContext as IVsUserContext;
                 if (userContext != null)

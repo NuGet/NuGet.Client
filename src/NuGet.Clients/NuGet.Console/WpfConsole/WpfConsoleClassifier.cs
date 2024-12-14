@@ -207,8 +207,7 @@ namespace NuGetConsole.Implementation.Console
         /// </remarks>
         private IList<ClassificationSpan> GetCommandLineClassifications(ITextSnapshot snapshot, IList<Span> cmdSpans)
         {
-            IList<ClassificationSpan> cachedCommandLineClassifications;
-            if (TryGetCachedCommandLineClassifications(snapshot, cmdSpans, out cachedCommandLineClassifications))
+            if (TryGetCachedCommandLineClassifications(snapshot, cmdSpans, out var cachedCommandLineClassifications))
             {
                 return cachedCommandLineClassifications;
             }

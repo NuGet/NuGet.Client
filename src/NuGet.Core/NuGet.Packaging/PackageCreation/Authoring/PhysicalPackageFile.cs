@@ -51,8 +51,7 @@ namespace NuGet.Packaging
                 if (string.Compare(_targetPath, value, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     _targetPath = value;
-                    string effectivePath;
-                    _nugetFramework = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(_targetPath, out effectivePath);
+                    _nugetFramework = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(_targetPath, out var effectivePath);
                     if (_nugetFramework != null && _nugetFramework.Version.Major < 5)
                     {
                         _targetFramework = new FrameworkName(_nugetFramework.DotNetFrameworkName);

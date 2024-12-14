@@ -66,9 +66,7 @@ namespace NuGet.PackageManagement
 
             var hasEntry = false;
 
-            SourcePackageDependencyInfo result;
-
-            hasEntry = _singleVersion.TryGetValue(key, out result);
+            hasEntry = _singleVersion.TryGetValue(key, out var result);
 
             if (!hasEntry)
             {
@@ -107,9 +105,7 @@ namespace NuGet.PackageManagement
         {
             var key = new GatherAllCacheKey(packageId, source, framework);
 
-            List<SourcePackageDependencyInfo> result;
-
-            var hasEntry = _allPackageVersions.TryGetValue(key, out result);
+            var hasEntry = _allPackageVersions.TryGetValue(key, out var result);
 
             return new GatherCacheResult(hasEntry, result);
         }

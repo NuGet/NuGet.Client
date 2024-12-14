@@ -142,8 +142,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual string GetMetadataValue(string name)
         {
-            string metadataValue;
-            MetadataValues.TryGetValue(name, out metadataValue);
+            MetadataValues.TryGetValue(name, out var metadataValue);
             return metadataValue ?? string.Empty;
         }
 

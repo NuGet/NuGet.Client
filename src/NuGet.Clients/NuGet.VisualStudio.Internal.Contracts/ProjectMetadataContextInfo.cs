@@ -47,9 +47,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<NuGetFramework>? supportedFrameworks = null;
             NuGetFramework? targetFramework = null;
             string? uniqueName = null;
-            object? value;
 
-            if (projectMetadata.TryGetValue(NuGetProjectMetadataKeys.FullPath, out value))
+            if (projectMetadata.TryGetValue(NuGetProjectMetadataKeys.FullPath, out var value))
             {
                 fullPath = value as string;
             }

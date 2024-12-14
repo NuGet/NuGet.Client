@@ -111,8 +111,7 @@ namespace NuGet.Commands
                 }
 
                 // Find the include/exclude flags for this package
-                LibraryIncludeFlags packageIncludeFlags;
-                if (!includeFlags.TryGetValue(node.Key.Name, out packageIncludeFlags))
+                if (!includeFlags.TryGetValue(node.Key.Name, out var packageIncludeFlags))
                 {
                     packageIncludeFlags = LibraryIncludeFlags.All;
                 }
@@ -297,10 +296,9 @@ namespace NuGet.Commands
         {
             var available = new List<NuGetFramework>();
 
-            object frameworksObject;
             if (localLibrary.Items.TryGetValue(
-                KnownLibraryProperties.ProjectFrameworks,
-                out frameworksObject))
+                    KnownLibraryProperties.ProjectFrameworks,
+                    out var frameworksObject))
             {
                 available = (List<NuGetFramework>)frameworksObject;
             }
@@ -310,10 +308,9 @@ namespace NuGet.Commands
 
         private static bool IsProjectFrameworkCompatible(Library library)
         {
-            object frameworkInfoObject;
             if (library.Items.TryGetValue(
-                KnownLibraryProperties.TargetFrameworkInformation,
-                out frameworkInfoObject))
+                    KnownLibraryProperties.TargetFrameworkInformation,
+                    out var frameworkInfoObject))
             {
                 var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
 

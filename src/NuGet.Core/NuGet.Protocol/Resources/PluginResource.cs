@@ -108,9 +108,8 @@ namespace NuGet.Protocol.Core.Types
             string proxyPassword = null;
             string username = null;
             string password = null;
-            ICredentials credentials;
 
-            if (TryGetCachedCredentials(sourceUri, isProxy: true, credentials: out credentials))
+            if (TryGetCachedCredentials(sourceUri, isProxy: true, credentials: out var credentials))
             {
                 var proxyCredential = credentials.GetCredential(sourceUri, _basicAuthenticationType);
 

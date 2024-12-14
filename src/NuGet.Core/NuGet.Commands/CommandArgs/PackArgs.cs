@@ -67,8 +67,7 @@ namespace NuGet.Commands
 
         public string GetPropertyValue(string propertyName)
         {
-            string value;
-            if (Properties.TryGetValue(propertyName, out value))
+            if (Properties.TryGetValue(propertyName, out var value))
             {
                 return value;
             }

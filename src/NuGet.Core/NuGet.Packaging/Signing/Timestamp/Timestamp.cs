@@ -179,11 +179,10 @@ namespace NuGet.Packaging.Signing
                     else
                     {
                         var chainBuildingHasIssues = false;
-                        IEnumerable<string> messages;
 
                         var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out var messages))
                         {
                             foreach (var message in messages)
                             {

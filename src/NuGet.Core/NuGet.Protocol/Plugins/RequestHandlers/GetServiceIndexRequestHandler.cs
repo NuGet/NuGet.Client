@@ -116,11 +116,10 @@ namespace NuGet.Protocol.Plugins
             cancellationToken.ThrowIfCancellationRequested();
 
             var getRequest = MessageUtilities.DeserializePayload<GetServiceIndexRequest>(request);
-            SourceRepository sourceRepository;
             ServiceIndexResourceV3 serviceIndex = null;
             GetServiceIndexResponse responsePayload;
 
-            if (_repositories.TryGetValue(getRequest.PackageSourceRepository, out sourceRepository))
+            if (_repositories.TryGetValue(getRequest.PackageSourceRepository, out var sourceRepository))
             {
                 serviceIndex = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
             }

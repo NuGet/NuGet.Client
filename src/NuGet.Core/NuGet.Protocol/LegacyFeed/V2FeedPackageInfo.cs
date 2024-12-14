@@ -183,8 +183,7 @@ namespace NuGet.Protocol
         {
             get
             {
-                int x = 0;
-                _ = int.TryParse(_downloadCount, out x);
+                _ = int.TryParse(_downloadCount, out var x);
                 return x;
             }
         }
@@ -287,8 +286,7 @@ namespace NuGet.Protocol
                             }
 
                             // Group dependencies by target framework
-                            List<PackageDependency> deps = null;
-                            if (!results.TryGetValue(framework, out deps))
+                            if (!results.TryGetValue(framework, out var deps))
                             {
                                 deps = new List<PackageDependency>();
                                 results.Add(framework, deps);

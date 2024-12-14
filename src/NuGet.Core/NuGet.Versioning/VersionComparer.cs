@@ -320,13 +320,11 @@ namespace NuGet.Versioning
         /// </summary>
         private static int CompareRelease(string version1, string version2)
         {
-            var version1Num = 0;
-            var version2Num = 0;
             var result = 0;
 
             // check if the identifiers are numeric
-            var v1IsNumeric = int.TryParse(version1, out version1Num);
-            var v2IsNumeric = int.TryParse(version2, out version2Num);
+            var v1IsNumeric = int.TryParse(version1, out var version1Num);
+            var v2IsNumeric = int.TryParse(version2, out var version2Num);
 
             // if both are numeric compare them as numbers
             if (v1IsNumeric && v2IsNumeric)

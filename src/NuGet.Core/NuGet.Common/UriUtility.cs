@@ -31,8 +31,7 @@ namespace NuGet.Common
         {
             source = FixSourceUri(source);
 
-            Uri? uri;
-            return Uri.TryCreate(source, kind, out uri) ? uri : null;
+            return Uri.TryCreate(source, kind, out var uri) ? uri : null;
         }
 
         private static string FixSourceUri(string source)
@@ -75,8 +74,7 @@ namespace NuGet.Common
                 && localOrUriPath.StartsWith(FilePrefix, StringComparison.OrdinalIgnoreCase))
             {
                 // convert to a uri and get the local path
-                Uri? uri;
-                if (Uri.TryCreate(localOrUriPath, UriKind.RelativeOrAbsolute, out uri))
+                if (Uri.TryCreate(localOrUriPath, UriKind.RelativeOrAbsolute, out var uri))
                 {
                     return uri.LocalPath;
                 }

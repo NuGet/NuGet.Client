@@ -91,8 +91,7 @@ namespace NuGet.Credentials
                 var timeoutEnvar = _envarReader.GetEnvironmentVariable(
                     CredentialsConstants.ProviderTimeoutSecondsEnvar);
 
-                int value;
-                if (int.TryParse(timeoutSetting, out value)
+                if (int.TryParse(timeoutSetting, out var value)
                     || int.TryParse(timeoutEnvar, out value))
                 {
                     return value;

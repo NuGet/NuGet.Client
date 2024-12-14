@@ -291,9 +291,7 @@ namespace NuGet.Protocol.Plugins
 
         private PackageSource GetPackageSource(string packageSourceRepository)
         {
-            SourceRepository sourceRepository;
-
-            if (_repositories.TryGetValue(packageSourceRepository, out sourceRepository))
+            if (_repositories.TryGetValue(packageSourceRepository, out var sourceRepository))
             {
                 return sourceRepository.PackageSource;
             }

@@ -127,8 +127,7 @@ namespace NuGet.Commands
                         if (node.Disposition == Disposition.Acceptable)
                         {
                             // This wasn't resolved. It's a conflict.
-                            HashSet<ResolverRequest> ranges;
-                            if (!conflicts.TryGetValue(node.Key.Name, out ranges))
+                            if (!conflicts.TryGetValue(node.Key.Name, out var ranges))
                             {
                                 ranges = new HashSet<ResolverRequest>();
                                 conflicts[node.Key.Name] = ranges;

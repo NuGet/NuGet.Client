@@ -173,9 +173,8 @@ namespace NuGetConsole.Implementation.Console
             get
             {
                 var userData = VsTextView as IVsUserData;
-                object data;
                 Guid guidIWpfTextViewHost = EditorDefGuidList.guidIWpfTextViewHost;
-                userData.GetData(ref guidIWpfTextViewHost, out data);
+                userData.GetData(ref guidIWpfTextViewHost, out var data);
                 var wpfTextViewHost = data as IWpfTextViewHost;
 
                 return wpfTextViewHost;
@@ -320,9 +319,8 @@ namespace NuGetConsole.Implementation.Console
                     var propCategoryContainer = _view as IVsTextEditorPropertyCategoryContainer;
                     if (propCategoryContainer != null)
                     {
-                        IVsTextEditorPropertyContainer propContainer;
                         Guid guidPropCategory = EditorDefGuidList.guidEditPropCategoryViewMasterSettings;
-                        int hr = propCategoryContainer.GetPropertyCategory(ref guidPropCategory, out propContainer);
+                        int hr = propCategoryContainer.GetPropertyCategory(ref guidPropCategory, out var propContainer);
                         if (hr == 0)
                         {
                             propContainer.SetProperty(VSEDITPROPID.VSEDITPROPID_ViewGeneral_FontCategory,

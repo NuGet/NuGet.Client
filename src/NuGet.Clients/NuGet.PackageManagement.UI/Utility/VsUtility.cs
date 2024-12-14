@@ -11,16 +11,14 @@ namespace NuGet.PackageManagement.UI
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IEnumWindowFrames documentWindowEnumerator;
-            var hr = uiShell.GetDocumentWindowEnum(out documentWindowEnumerator);
+            var hr = uiShell.GetDocumentWindowEnum(out var documentWindowEnumerator);
             if (documentWindowEnumerator == null)
             {
                 yield break;
             }
 
             var windowFrames = new IVsWindowFrame[1];
-            uint frameCount;
-            while (documentWindowEnumerator.Next(1, windowFrames, out frameCount) == VSConstants.S_OK &&
+            while (documentWindowEnumerator.Next(1, windowFrames, out var frameCount) == VSConstants.S_OK &&
                    frameCount == 1)
             {
                 yield return windowFrames[0];
@@ -32,10 +30,9 @@ namespace NuGet.PackageManagement.UI
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            object property;
             var hr = windowFrame.GetProperty(
                 (int)__VSFPROPID.VSFPROPID_DocView,
-                out property);
+                out var property);
 
             var windowPane = property as PackageManagerWindowPane;
             if (windowPane == null)

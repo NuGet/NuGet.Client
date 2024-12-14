@@ -313,8 +313,7 @@ namespace NuGet.VisualStudio
 
             if (solution != null)
             {
-                IVsHierarchy hierarchy;
-                if (ErrorHandler.Succeeded(solution.GetProjectOfUniqueName(project.UniqueName, out hierarchy))
+                if (ErrorHandler.Succeeded(solution.GetProjectOfUniqueName(project.UniqueName, out var hierarchy))
                     && hierarchy != null)
                 {
                     var solutionBuild = hierarchy as IVsProjectBuildSystem;
@@ -394,8 +393,7 @@ namespace NuGet.VisualStudio
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.
             // this is used by project templates to include assembly references directly inside the template project file
             // without relying on nuget to install the actual packages.
-            string targetInstallDir;
-            if (replacementsDictionary.TryGetValue("$destinationdirectory$", out targetInstallDir))
+            if (replacementsDictionary.TryGetValue("$destinationdirectory$", out var targetInstallDir))
             {
                 string solutionRepositoryPath = null;
                 if (_dte.Solution != null
@@ -526,15 +524,13 @@ namespace NuGet.VisualStudio
             // Is $specifiedsolutionname$ null or empty? We're definitely in the solution
             // in same directory as project case.
 
-            string solutionName;
-            string solutionDir;
-            bool ignoreSolutionDir = (replacementsDictionary.TryGetValue("$specifiedsolutionname$", out solutionName) && String.IsNullOrEmpty(solutionName));
+            bool ignoreSolutionDir = (replacementsDictionary.TryGetValue("$specifiedsolutionname$", out var solutionName) && String.IsNullOrEmpty(solutionName));
 
             // We check $destinationdirectory$ twice because we want the following precedence:
             // 1. If $specifiedsolutionname$ == null, ALWAYS use $destinationdirectory$
             // 2. Otherwise, use $solutiondirectory$ if available
             // 3. If $solutiondirectory$ is not available, use $destinationdirectory$.
-            if ((ignoreSolutionDir && replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir))
+            if ((ignoreSolutionDir && replacementsDictionary.TryGetValue("$destinationdirectory$", out var solutionDir))
                 || replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDir)
                 || replacementsDictionary.TryGetValue("$destinationdirectory$", out solutionDir))
             {

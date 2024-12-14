@@ -53,8 +53,7 @@ namespace NuGet.Commands
         /// </summary>
         public string GetProperty(string property, bool trim)
         {
-            string val;
-            if (_metadata.TryGetValue(property, out val) && val != null)
+            if (_metadata.TryGetValue(property, out var val) && val != null)
             {
                 if (trim)
                 {

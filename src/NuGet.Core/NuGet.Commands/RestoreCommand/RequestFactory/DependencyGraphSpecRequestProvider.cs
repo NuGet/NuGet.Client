@@ -273,8 +273,7 @@ namespace NuGet.Commands
             {
                 foreach (var child in root.ExternalProjectReferences)
                 {
-                    ExternalProjectReference childProject;
-                    if (!allProjects.TryGetValue(child, out childProject))
+                    if (!allProjects.TryGetValue(child, out var childProject))
                     {
                         // Let the resolver handle this later
                         Debug.Fail($"Missing project {childProject}");

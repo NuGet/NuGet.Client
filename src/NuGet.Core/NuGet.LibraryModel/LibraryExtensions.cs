@@ -18,8 +18,7 @@ namespace NuGet.LibraryModel
 
         public static T? GetItem<T>(this Library library, string key)
         {
-            object? value;
-            if (library.Items.TryGetValue(key, out value))
+            if (library.Items.TryGetValue(key, out var value))
             {
                 return (T)value;
             }
@@ -28,8 +27,7 @@ namespace NuGet.LibraryModel
 
         public static T GetRequiredItem<T>(this Library library, string key)
         {
-            object? value;
-            if (library.Items.TryGetValue(key, out value))
+            if (library.Items.TryGetValue(key, out var value))
             {
                 return (T)value;
             }

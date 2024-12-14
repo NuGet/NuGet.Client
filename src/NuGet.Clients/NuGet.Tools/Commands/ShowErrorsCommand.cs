@@ -64,13 +64,11 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                IVsWindowFrame toolWindow = null;
-                _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                _vsUiShell.Value.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out var toolWindow);
                 toolWindow?.Show();
 
-                IVsOutputWindowPane pane;
                 Guid outputWindowPaneId = NuGetConsole.GuidList.NuGetOutputWindowPaneGuid;
-                if (_vsOutputWindow.Value.GetPane(ref outputWindowPaneId, out pane) == VSConstants.S_OK)
+                if (_vsOutputWindow.Value.GetPane(ref outputWindowPaneId, out var pane) == VSConstants.S_OK)
                 {
                     NuGetConsole.GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;
                     pane.Activate();

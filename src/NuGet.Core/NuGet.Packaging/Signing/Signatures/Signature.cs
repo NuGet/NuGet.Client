@@ -223,8 +223,7 @@ namespace NuGet.Packaging.Signing
 
                     var statusFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                    IEnumerable<string> messages;
-                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, statusFlags, out messages))
+                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, statusFlags, out var messages))
                     {
                         foreach (var message in messages)
                         {

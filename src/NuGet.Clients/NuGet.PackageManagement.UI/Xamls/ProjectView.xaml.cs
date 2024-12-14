@@ -251,10 +251,9 @@ namespace NuGet.PackageManagement.UI
         private void SetComboboxCurrentVersion(string comboboxText, IEnumerable<NuGetVersion> versions)
         {
             NuGetVersion matchVersion = null;
-            VersionRange userRange = null;
 
             // Get the best version from the range if the user typed a custom version
-            bool userTypedAValidVersionRange = VersionRange.TryParse(comboboxText, out userRange);
+            bool userTypedAValidVersionRange = VersionRange.TryParse(comboboxText, out var userRange);
             if (userTypedAValidVersionRange)
             {
                 matchVersion = userRange.FindBestMatch(versions);

@@ -778,12 +778,11 @@ namespace NuGet.Configuration
             foreach (var source in sources)
             {
                 AddItem? existingDisabledSourceItem = null;
-                SourceItem? existingSourceItem = null;
                 CredentialsItem? existingCredentialsItem = null;
 
                 var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(source.Name, out existingDisabledSourceItem);
 
-                if (existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem))
+                if (existingSettingsLookup.TryGetValue(source.Name, out var existingSourceItem))
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, existingSourceIsEnabled, Settings, environmentVariableReader);
 

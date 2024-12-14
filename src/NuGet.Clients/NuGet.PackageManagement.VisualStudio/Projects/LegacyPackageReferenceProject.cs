@@ -115,8 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
-            PackageSpec packageSpec;
-            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
+            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out var packageSpec))
             {
                 packageSpec = await GetPackageSpecAsync(context.Settings);
                 if (packageSpec == null)

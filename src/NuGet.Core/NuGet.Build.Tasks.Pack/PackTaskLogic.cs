@@ -48,8 +48,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (request.MinClientVersion != null)
             {
-                Version version;
-                if (!Version.TryParse(request.MinClientVersion, out version))
+                if (!Version.TryParse(request.MinClientVersion, out var version))
                 {
                     throw new PackagingException(NuGetLogCode.NU5022, string.Format(
                         CultureInfo.CurrentCulture,
@@ -138,8 +137,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (request.PackageVersion != null)
             {
-                NuGetVersion version;
-                if (!NuGetVersion.TryParse(request.PackageVersion, out version))
+                if (!NuGetVersion.TryParse(request.PackageVersion, out var version))
                 {
                     throw new PackagingException(NuGetLogCode.NU5024, string.Format(
                         CultureInfo.CurrentCulture,
@@ -163,8 +161,7 @@ namespace NuGet.Build.Tasks.Pack
                 builder.Tags.AddRange(request.Tags);
             }
 
-            Uri tempUri;
-            if (Uri.TryCreate(request.LicenseUrl, UriKind.Absolute, out tempUri))
+            if (Uri.TryCreate(request.LicenseUrl, UriKind.Absolute, out var tempUri))
             {
                 builder.LicenseUrl = tempUri;
             }
@@ -193,8 +190,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (request.MinClientVersion != null)
             {
-                Version version;
-                if (!Version.TryParse(request.MinClientVersion, out version))
+                if (!Version.TryParse(request.MinClientVersion, out var version))
                 {
                     throw new PackagingException(NuGetLogCode.NU5022, string.Format(
                         CultureInfo.CurrentCulture,
@@ -477,8 +473,7 @@ namespace NuGet.Build.Tasks.Pack
                     throw new PackagingException(NuGetLogCode.NU5026, string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotFound, finalOutputPath));
                 }
 
-                string translated = null;
-                var succeeded = aliases.TryGetValue(targetFramework, out translated);
+                var succeeded = aliases.TryGetValue(targetFramework, out var translated);
                 if (succeeded)
                 {
                     targetFramework = translated;
@@ -515,8 +510,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 nugetFrameworks = new HashSet<NuGetFramework>(request.TargetFrameworks.Select(targetFramework =>
                 {
-                    string translated = null;
-                    var succeeded = aliases.TryGetValue(targetFramework, out translated);
+                    var succeeded = aliases.TryGetValue(targetFramework, out var translated);
                     if (succeeded)
                     {
                         targetFramework = translated;
@@ -854,8 +848,7 @@ namespace NuGet.Build.Tasks.Pack
                     continue;
                 }
 
-                HashSet<LibraryDependency> dependencies;
-                if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
+                if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out var dependencies))
                 {
                     dependencies = new HashSet<LibraryDependency>();
                     dependenciesByFramework[framework.FrameworkName] = dependencies;
@@ -956,8 +949,7 @@ namespace NuGet.Build.Tasks.Pack
             LockFile assetsFile,
             Dictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>> packageSpecificNoWarnProperties)
         {
-            HashSet<LibraryDependency> dependencies;
-            if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
+            if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out var dependencies))
             {
                 dependencies = new HashSet<LibraryDependency>();
                 dependenciesByFramework[framework.FrameworkName] = dependencies;
@@ -978,8 +970,7 @@ namespace NuGet.Build.Tasks.Pack
             LockFile assetsFile,
             Dictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>> packageSpecificNoWarnProperties)
         {
-            HashSet<LibraryDependency> dependencies;
-            if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
+            if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out var dependencies))
             {
                 dependencies = new HashSet<LibraryDependency>();
                 dependenciesByFramework[framework.FrameworkName] = dependencies;
@@ -1035,9 +1026,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (packageDependency.NoWarn.Length > 0)
             {
-                HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
-
-                if (!packageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out nowarnProperties))
+                if (!packageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out var nowarnProperties))
                 {
                     nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
                 }

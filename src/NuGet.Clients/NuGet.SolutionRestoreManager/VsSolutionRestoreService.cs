@@ -553,8 +553,7 @@ namespace NuGet.SolutionRestoreManager
                     return false;
                 }
 
-                object value;
-                var hr = vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+                var hr = vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out var value);
                 ErrorHandler.ThrowOnFailure(hr);
 
                 return (bool)value;

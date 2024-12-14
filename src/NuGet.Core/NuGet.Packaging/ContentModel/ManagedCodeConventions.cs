@@ -131,8 +131,7 @@ namespace NuGet.Client
         {
             if (table != null)
             {
-                object val;
-                if (table.TryLookup(PropertyNames.CodeLanguage, name, out val))
+                if (table.TryLookup(PropertyNames.CodeLanguage, name, out var val))
                 {
                     return val;
                 }
@@ -164,8 +163,7 @@ namespace NuGet.Client
         {
             if (table != null)
             {
-                object val;
-                if (table.TryLookup(PropertyNames.Locale, name, out val))
+                if (table.TryLookup(PropertyNames.Locale, name, out var val))
                 {
                     return val;
                 }
@@ -214,12 +212,10 @@ namespace NuGet.Client
             PatternTable table,
             bool matchOnly)
         {
-            object obj = null;
-
             // Check for replacements
             if (table != null)
             {
-                if (table.TryLookup(PropertyNames.TargetFrameworkMoniker, name, out obj))
+                if (table.TryLookup(PropertyNames.TargetFrameworkMoniker, name, out var obj))
                 {
                     return obj;
                 }
@@ -228,8 +224,7 @@ namespace NuGet.Client
             // Check the cache for an exact match
             if (!name.IsEmpty)
             {
-                NuGetFramework cachedResult;
-                if (!_frameworkCache.TryGetValue(name, out cachedResult))
+                if (!_frameworkCache.TryGetValue(name, out var cachedResult))
                 {
                     // Parse and add the framework to the cache
                     cachedResult = TargetFrameworkName_ParserCore(name.ToString());

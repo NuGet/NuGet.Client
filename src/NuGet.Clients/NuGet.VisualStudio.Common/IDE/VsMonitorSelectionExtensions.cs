@@ -18,15 +18,13 @@ namespace NuGet.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             IntPtr ppHier = IntPtr.Zero;
-            uint pitemid;
-            IVsMultiItemSelect ppMIS;
             IntPtr ppSC = IntPtr.Zero;
 
             try
             {
                 IVsHierarchy hierarchy = null;
 
-                vsMonitorSelection.GetCurrentSelection(out ppHier, out pitemid, out ppMIS, out ppSC);
+                vsMonitorSelection.GetCurrentSelection(out ppHier, out var pitemid, out var ppMIS, out ppSC);
                 if (ppHier == IntPtr.Zero)
                 {
                     return null;
@@ -49,8 +47,7 @@ namespace NuGet.VisualStudio
 
                 if (hierarchy != null)
                 {
-                    object project;
-                    if (hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out project) >= 0)
+                    if (hierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out var project) >= 0)
                     {
                         return project as EnvDTE.Project;
                     }

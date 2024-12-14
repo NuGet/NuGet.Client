@@ -16,8 +16,7 @@ namespace NuGet.Protocol.Core.Types
         {
             Version = version;
 
-            long count;
-            if (long.TryParse(downloadCount, out count))
+            if (long.TryParse(downloadCount, out var count))
             {
                 DownloadCount = count;
             }

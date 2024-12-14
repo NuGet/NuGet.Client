@@ -408,10 +408,9 @@ namespace NuGetVSExtension
             var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
-                object docView;
                 var hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocView,
-                    out docView);
+                    out var docView);
                 if (hr == VSConstants.S_OK
                     && docView is PackageManagerWindowPane)
                 {
@@ -716,10 +715,9 @@ namespace NuGetVSExtension
             var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
-                object property;
                 var hr = windowFrame.GetProperty(
                     (int)__VSFPROPID.VSFPROPID_DocData,
-                    out property);
+                    out var property);
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 if (hr == VSConstants.S_OK
                     &&

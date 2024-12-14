@@ -37,15 +37,13 @@ namespace NuGet.Protocol
 
         public override LocalPackageInfo GetPackage(Uri path, ILogger logger, CancellationToken token)
         {
-            LocalPackageInfo package;
-            _pathIndex.Value.TryGetValue(path, out package);
+            _pathIndex.Value.TryGetValue(path, out var package);
             return package;
         }
 
         public override LocalPackageInfo GetPackage(PackageIdentity identity, ILogger logger, CancellationToken token)
         {
-            LocalPackageInfo package;
-            _index.Value.TryGetValue(identity, out package);
+            _index.Value.TryGetValue(identity, out var package);
             return package;
         }
 

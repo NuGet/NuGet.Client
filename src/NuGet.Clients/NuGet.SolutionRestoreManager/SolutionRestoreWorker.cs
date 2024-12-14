@@ -224,8 +224,7 @@ namespace NuGet.SolutionRestoreManager
                 return false;
             }
 
-            object value;
-            var hr = vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+            var hr = vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out var value);
             ErrorHandler.ThrowOnFailure(hr);
 
             return (bool)value;
@@ -526,13 +525,11 @@ namespace NuGet.SolutionRestoreManager
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
-                            SolutionRestoreRequest next;
-
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
                             // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
-                            if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
+                            if (!_pendingRequests.Value.TryTake(out var next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {

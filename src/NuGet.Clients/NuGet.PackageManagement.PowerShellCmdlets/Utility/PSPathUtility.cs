@@ -62,11 +62,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     // we do not glob wildcards (literalpath.)
                     exists = session.InvokeProvider.Item.Exists(psPath, force: false, literalPath: true);
 
-                    ProviderInfo provider;
                     PSDriveInfo drive;
 
                     // translate pspath, not trying to glob.
-                    path = session.Path.GetUnresolvedProviderPathFromPSPath(psPath, out provider, out drive);
+                    path = session.Path.GetUnresolvedProviderPathFromPSPath(psPath, out var provider, out drive);
 
                     // ensure path is on the filesystem (not registry, certificate, variable etc.)
                     if (provider.ImplementingType != typeof(FileSystemProvider))

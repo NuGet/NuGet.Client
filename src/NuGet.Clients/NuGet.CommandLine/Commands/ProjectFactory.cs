@@ -432,8 +432,7 @@ namespace NuGet.CommandLine
 
         public string GetPropertyValue(string propertyName)
         {
-            string value;
-            if (!_properties.TryGetValue(propertyName, out value) &&
+            if (!_properties.TryGetValue(propertyName, out var value) &&
                 !ProjectProperties.TryGetValue(propertyName, out value))
             {
                 dynamic property = _project.GetProperty(propertyName);
@@ -555,9 +554,7 @@ namespace NuGet.CommandLine
             string version = _project.GetPropertyValue("Version");
             if (builder.Version == null)
             {
-                NuGetVersion parsedVersion;
-
-                if (NuGetVersion.TryParse(version, out parsedVersion))
+                if (NuGetVersion.TryParse(version, out var parsedVersion))
                 {
                     builder.Version = parsedVersion;
                 }
@@ -658,8 +655,7 @@ namespace NuGet.CommandLine
 
             if (item.HasMetadata(ReferenceOutputAssembly))
             {
-                bool result;
-                if (bool.TryParse(item.GetMetadataValue("ReferenceOutputAssembly"), out result))
+                if (bool.TryParse(item.GetMetadataValue("ReferenceOutputAssembly"), out bool result))
                 {
                     if (!result)
                     {
@@ -1172,8 +1168,7 @@ namespace NuGet.CommandLine
 
             foreach (var transformGroup in transformGroups)
             {
-                IPackageFile file;
-                if (fileLookup.TryGetValue(transformGroup.Key, out file))
+                if (fileLookup.TryGetValue(transformGroup.Key, out var file))
                 {
                     // Replace the original file with a file that removes the transforms
                     builder.Files.Remove(file);

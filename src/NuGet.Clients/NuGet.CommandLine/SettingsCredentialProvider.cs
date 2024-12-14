@@ -47,11 +47,10 @@ namespace NuGet.CommandLine
         {
             var source = _packageSourceProvider.LoadPackageSources().FirstOrDefault(p =>
             {
-                Uri sourceUri;
                 return p.Credentials != null
-                    && p.Credentials.IsValid()
-                    && Uri.TryCreate(p.Source, UriKind.Absolute, out sourceUri)
-                    && UriEquals(sourceUri, uri);
+                       && p.Credentials.IsValid()
+                       && Uri.TryCreate(p.Source, UriKind.Absolute, out var sourceUri)
+                       && UriEquals(sourceUri, uri);
             });
             if (source == null)
             {

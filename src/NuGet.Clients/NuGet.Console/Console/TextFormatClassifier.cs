@@ -91,8 +91,7 @@ namespace NuGetConsole.Implementation.Console
         public IClassificationType GetClassificationType(Color? foreground, Color? background)
         {
             var key = Tuple.Create(foreground, background);
-            IClassificationType classificationType;
-            if (!_classificationMap.TryGetValue(key, out classificationType))
+            if (!_classificationMap.TryGetValue(key, out var classificationType))
             {
                 string classificationName = GetClassificationName(foreground, background);
                 classificationType = Factory.ClassificationTypeRegistryService.GetClassificationType(classificationName);

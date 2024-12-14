@@ -169,8 +169,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
-            PackageSpec packageSpec = null;
-            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
+            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out var packageSpec))
             {
                 packageSpec = JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
                 if (packageSpec == null)

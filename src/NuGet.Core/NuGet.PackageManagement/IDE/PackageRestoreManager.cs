@@ -161,8 +161,7 @@ namespace NuGet.PackageManagement
                     var installedPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
                     foreach (var installedPackageReference in installedPackageReferences)
                     {
-                        List<string> projectNames = null;
-                        if (!packageReferencesDict.TryGetValue(installedPackageReference, out projectNames))
+                        if (!packageReferencesDict.TryGetValue(installedPackageReference, out var projectNames))
                         {
                             projectNames = new List<string>();
                             packageReferencesDict.Add(installedPackageReference, projectNames);
@@ -532,11 +531,9 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext)
         {
-            PackageReference currentPackageReference = null;
-
             var attemptedPackages = new List<AttemptedPackage>();
 
-            while (packageReferencesQueue.TryDequeue(out currentPackageReference))
+            while (packageReferencesQueue.TryDequeue(out var currentPackageReference))
             {
                 var attemptedPackage = await RestorePackageAsync(
                     currentPackageReference,
@@ -642,8 +639,7 @@ namespace NuGet.PackageManagement
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext)
         {
-            PackageReference currentPackageReference = null;
-            while (packageReferencesQueue.TryDequeue(out currentPackageReference))
+            while (packageReferencesQueue.TryDequeue(out var currentPackageReference))
             {
                 var result = await packageRestoreContext.PackageManager.CopySatelliteFilesAsync(
                     currentPackageReference.PackageIdentity,

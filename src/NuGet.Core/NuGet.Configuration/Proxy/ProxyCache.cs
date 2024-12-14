@@ -109,9 +109,8 @@ namespace NuGet.Configuration
 
             // Next try reading from the environment variable http_proxy. This would be specified as http://<username>:<password>@proxy.com
             host = _environment.GetEnvironmentVariable(ConfigurationConstants.HostKey);
-            Uri? uri;
             if (!string.IsNullOrEmpty(host)
-                && Uri.TryCreate(host, UriKind.Absolute, out uri))
+                && Uri.TryCreate(host, UriKind.Absolute, out var uri))
             {
                 var webProxy = new WebProxy(uri.GetComponents(
                     UriComponents.HttpRequestUrl, UriFormat.SafeUnescaped));
@@ -152,8 +151,7 @@ namespace NuGet.Configuration
 
         public NetworkCredential? GetCredential(Uri proxyAddress, string authType)
         {
-            ICredentials? cachedCredentials;
-            if (_cachedCredentials.TryGetValue(proxyAddress, out cachedCredentials))
+            if (_cachedCredentials.TryGetValue(proxyAddress, out var cachedCredentials))
             {
                 return cachedCredentials.GetCredential(proxyAddress, authType);
             }

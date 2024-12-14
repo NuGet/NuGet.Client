@@ -534,8 +534,7 @@ namespace NuGet.SolutionRestoreManager
                 var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();
 
                 // Make sure the status bar is not frozen
-                int frozen;
-                statusBar.IsFrozen(out frozen);
+                statusBar.IsFrozen(out var frozen);
 
                 if (frozen != 0)
                 {
@@ -568,8 +567,7 @@ namespace NuGet.SolutionRestoreManager
                 await _taskFactory.SwitchToMainThreadAsync();
 
                 // Make sure the status bar is not frozen
-                int frozen;
-                _statusBar.IsFrozen(out frozen);
+                _statusBar.IsFrozen(out var frozen);
 
                 if (frozen != 0)
                 {

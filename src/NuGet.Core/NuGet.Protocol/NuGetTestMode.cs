@@ -28,8 +28,7 @@ namespace NuGet.Protocol.Core.Types
                 return false;
             }
 
-            bool isEnabled;
-            return Boolean.TryParse(testMode, out isEnabled) && isEnabled;
+            return Boolean.TryParse(testMode, out var isEnabled) && isEnabled;
         }
 
 

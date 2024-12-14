@@ -1020,8 +1020,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
 
             do
             {
-                BigInteger remainder;
-                unencoded = BigInteger.DivRem(unencoded, divisor, out remainder);
+                unencoded = BigInteger.DivRem(unencoded, divisor, out var remainder);
 
                 byte octet = (byte)remainder;
                 octet |= continuance;

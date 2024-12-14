@@ -29,8 +29,7 @@ namespace NuGet.Protocol
 
         private static bool IsValidUriTemplate(string uriTemplate)
         {
-            Uri uri;
-            var isValidUri = Uri.TryCreate(uriTemplate, UriKind.Absolute, out uri);
+            var isValidUri = Uri.TryCreate(uriTemplate, UriKind.Absolute, out var uri);
 
             // Only allow HTTPS package details URLs.
             if (isValidUri && !uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))

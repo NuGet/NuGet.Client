@@ -22,8 +22,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentNullException(nameof(version));
             }
 
-            NuGetVersion nVersion;
-            var success = NuGetVersion.TryParse(version, out nVersion);
+            var success = NuGetVersion.TryParse(version, out var nVersion);
             if (!success)
             {
                 throw new InvalidOperationException(

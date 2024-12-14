@@ -81,7 +81,6 @@ namespace NuGet.PackageManagement.UI
         public override int Read(byte[] buffer, int offset, int count)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            uint bytesRead = 0;
             byte[] b = buffer;
 
             if (offset != 0)
@@ -90,7 +89,7 @@ namespace NuGet.PackageManagement.UI
                 Array.Copy(buffer, offset, b, 0, buffer.Length - offset);
             }
 
-            _comStream.Read(b, (uint)count, out bytesRead);
+            _comStream.Read(b, (uint)count, out var bytesRead);
 
             if (offset != 0)
             {
@@ -122,7 +121,6 @@ namespace NuGet.PackageManagement.UI
         public override void Write(byte[] buffer, int offset, int count)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            uint bytesWritten;
             if (count > 0)
             {
                 byte[] b = buffer;
@@ -132,7 +130,7 @@ namespace NuGet.PackageManagement.UI
                     Array.Copy(buffer, offset, b, 0, buffer.Length - offset);
                 }
 
-                _comStream.Write(b, (uint)count, out bytesWritten);
+                _comStream.Write(b, (uint)count, out var bytesWritten);
                 if (bytesWritten != count)
                 {
                     throw new IOException();

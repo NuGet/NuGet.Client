@@ -500,8 +500,7 @@ namespace NuGet.Protocol
                     var versionPart = versionDir.Name;
 
                     // Get the version part and parse it
-                    NuGetVersion version;
-                    if (!NuGetVersion.TryParse(versionPart, out version))
+                    if (!NuGetVersion.TryParse(versionPart, out var version))
                     {
                         logger.LogWarning(string.Format(
                             CultureInfo.CurrentCulture,

@@ -181,9 +181,8 @@ namespace NuGetConsole.Host
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 ParameterInfo paramInfo = paramInfos[i];
-                object argValue;
                 if (k < args.Length
-                    && TryConvertArg(paramInfo, args[k], out argValue)) // If args[k] matches
+                    && TryConvertArg(paramInfo, args[k], out var argValue)) // If args[k] matches
                 {
                     newArgs[i] = argValue;
                     k++;

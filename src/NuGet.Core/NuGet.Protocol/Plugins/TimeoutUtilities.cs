@@ -28,8 +28,7 @@ namespace NuGet.Protocol.Plugins
                     Strings.Plugin_TimeoutOutOfRange);
             }
 
-            int seconds;
-            if (int.TryParse(timeoutInSeconds, out seconds))
+            if (int.TryParse(timeoutInSeconds, out var seconds))
             {
                 try
                 {

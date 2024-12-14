@@ -44,8 +44,7 @@ namespace NuGetConsole.Implementation.Console
                 return;
             }
 
-            SimpleExpansion simpleExpansion;
-            if (session.Properties.TryGetProperty("TabExpansion", out simpleExpansion))
+            if (session.Properties.TryGetProperty("TabExpansion", out SimpleExpansion simpleExpansion))
             {
                 List<Completion> completions = new List<Completion>();
                 foreach (string s in simpleExpansion.Expansions)

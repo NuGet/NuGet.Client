@@ -77,14 +77,12 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 format = $"yyyyMMddHHmmss.{new string('F', fractionalSecondDigits)}Z";
             }
 
-            DateTime datetime;
-
             if (DateTime.TryParseExact(
-                stringToParse,
-                format,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-                out datetime))
+                    stringToParse,
+                    format,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                    out var datetime))
             {
                 return new DerGeneralizedTime(datetime);
             }

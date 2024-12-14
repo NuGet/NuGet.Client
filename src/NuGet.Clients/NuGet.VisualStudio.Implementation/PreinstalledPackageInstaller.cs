@@ -77,9 +77,8 @@ namespace NuGet.VisualStudio
         internal string GetExtensionRepositoryPath(string extensionId, object vsExtensionManager, Action<string> throwingErrorHandler)
         {
             var extensionManagerShim = new ExtensionManagerShim(vsExtensionManager, throwingErrorHandler);
-            string installPath;
 
-            if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out installPath))
+            if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out var installPath))
             {
                 throwingErrorHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidExtensionId,
                     extensionId));

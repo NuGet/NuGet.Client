@@ -432,8 +432,7 @@ namespace NuGet.Packaging
                 // Use the known framework or if the folder did not parse, use the Any framework and consider it a sub folder
                 var framework = GetFrameworkFromPath(path, allowSubFolders);
 
-                List<string> items = null;
-                if (!groups.TryGetValue(framework, out items))
+                if (!groups.TryGetValue(framework, out var items))
                 {
                     items = new List<string>();
                     groups.Add(framework, items);

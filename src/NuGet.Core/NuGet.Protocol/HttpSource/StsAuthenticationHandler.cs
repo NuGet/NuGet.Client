@@ -191,8 +191,7 @@ namespace NuGet.Protocol
 
         private static string GetHeader(HttpResponseMessage response, string header)
         {
-            IEnumerable<string> values;
-            if (response.Headers.TryGetValues(header, out values))
+            if (response.Headers.TryGetValues(header, out var values))
             {
                 return values.FirstOrDefault();
             }

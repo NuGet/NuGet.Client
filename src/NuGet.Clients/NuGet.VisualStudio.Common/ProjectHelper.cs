@@ -57,8 +57,7 @@ namespace NuGet.VisualStudio
                 IVsHierarchy hierarchy = project as IVsHierarchy;
                 if (hierarchy != null)
                 {
-                    object extObject;
-                    if (ErrorHandler.Succeeded(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ExtObject, out extObject)))
+                    if (ErrorHandler.Succeeded(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_ExtObject, out var extObject)))
                     {
                         Project dteProject = extObject as Project;
                         if (dteProject != null)

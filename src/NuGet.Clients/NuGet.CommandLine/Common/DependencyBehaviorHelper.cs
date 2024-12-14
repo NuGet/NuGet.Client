@@ -13,9 +13,7 @@ namespace NuGet.CommandLine
     {
         private static DependencyBehavior TryGetDependencyBehavior(string behaviorStr)
         {
-            DependencyBehavior dependencyBehavior;
-
-            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) ||
+            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out var dependencyBehavior) ||
                 !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture,

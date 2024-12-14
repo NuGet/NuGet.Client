@@ -417,8 +417,7 @@ namespace NuGet.DependencyResolver
             for (var i = 0; i < count; i++)
             {
                 var childNode = innerNodes[i];
-                GraphNode<TItem> acceptedNode;
-                if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
+                if (acceptedLibraries.TryGetValue(childNode.Key.Name, out var acceptedNode) &&
                     childNode != acceptedNode &&
                     childNode.Key.VersionRange != null &&
                     acceptedNode.Item.Key.Version != null)

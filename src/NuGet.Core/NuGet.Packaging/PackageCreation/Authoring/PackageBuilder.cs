@@ -1129,8 +1129,7 @@ namespace NuGet.Packaging
 
         internal static IEnumerable<PhysicalPackageFile> ResolveSearchPattern(string basePath, string searchPath, string targetPath, bool includeEmptyDirectories)
         {
-            string normalizedBasePath;
-            IEnumerable<PathResolver.SearchPathResult> searchResults = PathResolver.PerformWildcardSearch(basePath, searchPath, includeEmptyDirectories, out normalizedBasePath);
+            IEnumerable<PathResolver.SearchPathResult> searchResults = PathResolver.PerformWildcardSearch(basePath, searchPath, includeEmptyDirectories, out var normalizedBasePath);
 
             return searchResults.Select(result =>
                 result.IsFile

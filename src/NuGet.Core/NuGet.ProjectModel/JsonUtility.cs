@@ -111,8 +111,7 @@ namespace NuGet.ProjectModel
         {
             if (jObject != null)
             {
-                JToken value;
-                if (jObject.TryGetValue(propertyName, out value) && value != null)
+                if (jObject.TryGetValue(propertyName, out var value) && value != null)
                 {
                     return value.Value<TItem>();
                 }

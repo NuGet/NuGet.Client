@@ -82,8 +82,7 @@ namespace NuGet.Protocol
 
             foreach (var type in orderedTypes)
             {
-                List<ServiceIndexEntry> entries;
-                if (_index.TryGetValue(type, out entries))
+                if (_index.TryGetValue(type, out var entries))
                 {
                     var compatible = GetBestVersionMatchForType(clientVersion, entries);
 
@@ -150,15 +149,13 @@ namespace NuGet.Protocol
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
 
-            JToken resources;
-            if (index.TryGetValue("resources", out resources))
+            if (index.TryGetValue("resources", out var resources))
             {
                 foreach (var resource in resources)
                 {
                     var id = GetValues(resource["@id"]).SingleOrDefault();
 
-                    Uri uri;
-                    if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out uri))
+                    if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out var uri))
                     {
                         // Skip invalid or missing @ids
                         continue;
@@ -185,8 +182,7 @@ namespace NuGet.Protocol
                         // Parse supported versions
                         foreach (var versionString in GetValues(clientVersionToken))
                         {
-                            SemanticVersion version;
-                            if (SemanticVersion.TryParse(versionString, out version))
+                            if (SemanticVersion.TryParse(versionString, out var version))
                             {
                                 clientVersions.Add(version);
                             }
@@ -198,8 +194,7 @@ namespace NuGet.Protocol
                     {
                         foreach (var version in clientVersions)
                         {
-                            List<ServiceIndexEntry> entries;
-                            if (!result.TryGetValue(type, out entries))
+                            if (!result.TryGetValue(type, out var entries))
                             {
                                 entries = new List<ServiceIndexEntry>();
                                 result.Add(type, entries);

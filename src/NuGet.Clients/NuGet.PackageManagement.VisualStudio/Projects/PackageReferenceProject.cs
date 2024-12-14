@@ -484,8 +484,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 visited.Add(current.PackageIdentity); // visited
 
                 // Lookup Transitive Origins Cache
-                TransitiveEntry cachedEntry;
-                if (!transitiveOriginsCache.TryGetValue(current.PackageIdentity.Id, out cachedEntry))
+                if (!transitiveOriginsCache.TryGetValue(current.PackageIdentity.Id, out var cachedEntry))
                 {
                     cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
                     {

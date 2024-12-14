@@ -194,12 +194,10 @@ namespace NuGet.Protocol
 
             // Use SemVer instead of NuGetVersion, the service index should always be
             // in strict SemVer format
-            JToken versionToken;
-            if (json.TryGetValue("version", out versionToken) &&
+            if (json.TryGetValue("version", out var versionToken) &&
                 versionToken.Type == JTokenType.String)
             {
-                SemanticVersion version;
-                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                if (SemanticVersion.TryParse((string)versionToken, out var version) &&
                     version.Major == 3)
                 {
                     return new ServiceIndexResourceV3(json, utcNow, source);

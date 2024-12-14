@@ -170,10 +170,9 @@ namespace NuGet.ProjectManagement
                 var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, file);
 
                 // Resolve the target path
-                IPackageFileTransformer installTransformer;
                 var path = ResolveTargetPath(projectSystem,
                     fileTransformers,
-                    fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
+                    fte => fte.InstallExtension, effectivePathForContentFile, out var installTransformer);
 
                 if (projectSystem.IsSupportedFile(path))
                 {
@@ -517,11 +516,9 @@ namespace NuGet.ProjectManagement
             Func<FileTransformExtensions, string> extensionSelector,
             string effectivePath)
         {
-            string truncatedPath;
-
             // Remove the transformer extension (e.g. .pp, .transform)
             var transformer = FindFileTransformer(
-                fileTransformers, extensionSelector, effectivePath, out truncatedPath);
+                fileTransformers, extensionSelector, effectivePath, out var truncatedPath);
 
             if (transformer != null)
             {
@@ -538,10 +535,8 @@ namespace NuGet.ProjectManagement
             string effectivePath,
             out IPackageFileTransformer transformer)
         {
-            string truncatedPath;
-
             // Remove the transformer extension (e.g. .pp, .transform)
-            transformer = FindFileTransformer(fileTransformers, extensionSelector, effectivePath, out truncatedPath);
+            transformer = FindFileTransformer(fileTransformers, extensionSelector, effectivePath, out var truncatedPath);
             if (transformer != null)
             {
                 effectivePath = truncatedPath;

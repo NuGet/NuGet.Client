@@ -177,8 +177,7 @@ namespace NuGet.CommandLine
 
             if (!string.IsNullOrEmpty(Version))
             {
-                NuGetVersion version;
-                if (!NuGetVersion.TryParse(Version, out version))
+                if (!NuGetVersion.TryParse(Version, out var version))
                 {
                     throw new PackagingException(NuGetLogCode.NU5010, string.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }

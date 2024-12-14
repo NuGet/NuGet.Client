@@ -152,9 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (r.SourceProject != null && await EnvDTEProjectUtility.IsSupportedAsync(r.SourceProject))
                 {
-                    Array metadataElements;
-                    Array metadataValues;
-                    r.GetMetadata(ReferenceMetadata, out metadataElements, out metadataValues);
+                    r.GetMetadata(ReferenceMetadata, out var metadataElements, out var metadataValues);
 
                     references.Add(ToProjectRestoreReference(new ProjectReference(
                         uniqueName: r.SourceProject.FullName,

@@ -39,8 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string fileName = Path.GetFileName(path).ToUpperInvariant();
             var cacheKey = Tuple.Create(fileName, AssemblyName.GetAssemblyName(path).FullName);
 
-            Assembly assembly;
-            if (!_assemblyCache.TryGetValue(cacheKey, out assembly))
+            if (!_assemblyCache.TryGetValue(cacheKey, out var assembly))
             {
                 // Load the assembly in a reflection only context
                 assembly = Assembly.ReflectionOnlyLoadFrom(path);

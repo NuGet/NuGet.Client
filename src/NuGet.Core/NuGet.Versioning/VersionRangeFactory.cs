@@ -74,8 +74,7 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(value));
             }
 
-            VersionRange? versionInfo;
-            if (!TryParse(value, allowFloating, out versionInfo))
+            if (!TryParse(value, allowFloating, out var versionInfo))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,

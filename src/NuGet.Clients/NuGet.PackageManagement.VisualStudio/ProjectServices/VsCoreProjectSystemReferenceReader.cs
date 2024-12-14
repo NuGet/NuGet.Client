@@ -196,27 +196,24 @@ namespace NuGet.PackageManagement.VisualStudio
             var hierarchy = _vsProjectAdapter.VsHierarchy;
 
             // Get all items in the hierarchy, this includes project references, files, and everything else.
-            IEnumHierarchyItems items;
             if (ErrorHandler.Succeeded(itemsFactory.EnumHierarchyItems(
-                hierarchy,
-                (uint)__VSEHI.VSEHI_Leaf,
-                (uint)VSConstants.VSITEMID.Root,
-                out items)))
+                    hierarchy,
+                    (uint)__VSEHI.VSEHI_Leaf,
+                    (uint)VSConstants.VSITEMID.Root,
+                    out var items)))
             {
                 var buildPropertyStorage = (IVsBuildPropertyStorage)hierarchy;
 
                 // Loop through all items
-                uint fetched;
                 var item = new VSITEMSELECTION[1];
-                while (ErrorHandler.Succeeded(items.Next(1, item, out fetched)) && fetched == 1)
+                while (ErrorHandler.Succeeded(items.Next(1, item, out var fetched)) && fetched == 1)
                 {
                     // Check if the item has ReferenceOutputAssembly. This will
                     // return null for the vast majority of items.
-                    string value;
                     if (ErrorHandler.Succeeded(buildPropertyStorage.GetItemAttribute(
                             item[0].itemid,
                             "ReferenceOutputAssembly",
-                            out value))
+                            out var value))
                         && value != null)
                     {
                         // We only need to go farther if the flag exists and is not true
@@ -224,11 +221,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             // Get the DTE Project reference for the item id. This checks for nulls incase this is
                             // somehow not a project reference that had the ReferenceOutputAssembly flag.
-                            object childObject;
                             if (ErrorHandler.Succeeded(hierarchy.GetProperty(
-                                item[0].itemid,
-                                (int)__VSHPROPID.VSHPROPID_ExtObject,
-                                out childObject)))
+                                    item[0].itemid,
+                                    (int)__VSHPROPID.VSHPROPID_ExtObject,
+                                    out var childObject)))
                             {
                                 // 1. Verify that this is a project reference
                                 // 2. Check that it is valid and resolved

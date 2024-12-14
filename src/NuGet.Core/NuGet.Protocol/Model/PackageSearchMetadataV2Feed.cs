@@ -35,8 +35,7 @@ namespace NuGet.Protocol
             Version = package.Version;
             IsListed = package.IsListed;
 
-            long count;
-            if (long.TryParse(package.DownloadCount, out count))
+            if (long.TryParse(package.DownloadCount, out var count))
             {
                 DownloadCount = count;
             }
@@ -64,8 +63,7 @@ namespace NuGet.Protocol
             Version = package.Version;
             IsListed = package.IsListed;
 
-            long count;
-            if (long.TryParse(package.DownloadCount, out count))
+            if (long.TryParse(package.DownloadCount, out var count))
             {
                 DownloadCount = count;
             }
@@ -141,8 +139,7 @@ namespace NuGet.Protocol
 
         private static Uri GetUriSafe(string url)
         {
-            Uri uri = null;
-            Uri.TryCreate(url, UriKind.Absolute, out uri);
+            Uri.TryCreate(url, UriKind.Absolute, out var uri);
             return uri;
         }
 

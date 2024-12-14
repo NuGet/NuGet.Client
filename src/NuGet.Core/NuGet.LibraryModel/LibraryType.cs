@@ -57,8 +57,7 @@ namespace NuGet.LibraryModel
 
         public static LibraryType Parse(string value)
         {
-            LibraryType action;
-            if (_knownLibraryTypes.TryGetValue(value, out action))
+            if (_knownLibraryTypes.TryGetValue(value, out var action))
             {
                 return action;
             }

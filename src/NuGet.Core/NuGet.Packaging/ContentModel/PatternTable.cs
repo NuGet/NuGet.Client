@@ -31,8 +31,7 @@ namespace NuGet.ContentModel
 
             foreach (var entry in entries)
             {
-                Dictionary<ReadOnlyMemory<char>, object> byProp;
-                if (!_table.TryGetValue(entry.PropertyName, out byProp))
+                if (!_table.TryGetValue(entry.PropertyName, out var byProp))
                 {
                     byProp = new Dictionary<ReadOnlyMemory<char>, object>(ReadOnlyMemoryCharComparerOrdinal.Instance);
                     _table.Add(entry.PropertyName, byProp);
@@ -56,8 +55,7 @@ namespace NuGet.ContentModel
             }
             Debug.Assert(MemoryMarshal.TryGetString(name, out _, out _, out _));
 
-            Dictionary<ReadOnlyMemory<char>, object> byProp;
-            if (_table.TryGetValue(propertyName, out byProp))
+            if (_table.TryGetValue(propertyName, out var byProp))
             {
                 return byProp.TryGetValue(name, out value);
             }

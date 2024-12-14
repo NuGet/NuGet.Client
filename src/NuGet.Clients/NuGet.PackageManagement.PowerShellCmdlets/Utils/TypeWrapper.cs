@@ -79,8 +79,7 @@ namespace NuGetConsole.Host
 
             lock (_interfaceMapLock)
             {
-                T interfaceWrapper;
-                if (_interfaceMap.TryGetValue(interfaceType, out interfaceWrapper))
+                if (_interfaceMap.TryGetValue(interfaceType, out var interfaceWrapper))
                 {
                     return interfaceWrapper;
                 }

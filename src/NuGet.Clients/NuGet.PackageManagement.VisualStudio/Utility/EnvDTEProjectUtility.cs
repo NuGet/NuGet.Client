@@ -149,10 +149,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnvDTE.ProjectItem subFolder;
-
             var envDTEProjectItems = GetProjectItems(parentItem);
-            if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))
+            if (TryGetFolder(envDTEProjectItems, folderName, out var subFolder))
             {
                 // Get the sub folder
                 return subFolder;
@@ -212,8 +210,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectHierarchy = (IVsUIHierarchy)(await envDTEProject.ToVsHierarchyAsync());
 
-            uint itemId;
-            var hr = projectHierarchy.ParseCanonicalName(folderRelativePath, out itemId);
+            var hr = projectHierarchy.ParseCanonicalName(folderRelativePath, out var itemId);
             if (!ErrorHandler.Succeeded(hr))
             {
                 return false;
@@ -254,8 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string parentFileName;
-            if (!KnownNestedFiles.TryGetValue(name, out parentFileName))
+            if (!KnownNestedFiles.TryGetValue(name, out var parentFileName))
             {
                 parentFileName = Path.GetFileNameWithoutExtension(name);
             }
@@ -326,11 +322,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var container = await GetProjectItemsAsync(envDTEProject, folderPath, createIfNotExists: false);
 
-            EnvDTE.ProjectItem projectItem;
             // If we couldn't get the folder, or the child item doesn't exist, return null
             if (container == null
                 ||
-                (!TryGetFile(container, itemName, out projectItem) &&
+                (!TryGetFile(container, itemName, out var projectItem) &&
                  !TryGetFolder(container, itemName, out projectItem)))
             {
                 return null;
@@ -470,8 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            HashSet<string> assemblies;
-            if (visitedProjects.TryGetValue(envDTEProject.UniqueName, out assemblies))
+            if (visitedProjects.TryGetValue(envDTEProject.UniqueName, out var assemblies))
             {
                 return assemblies;
             }

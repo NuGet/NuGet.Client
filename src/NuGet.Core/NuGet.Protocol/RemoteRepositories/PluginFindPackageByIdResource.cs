@@ -267,9 +267,7 @@ namespace NuGet.Protocol.Core.Types
 
                 var packageInfos = await EnsurePackagesAsync(id, cacheContext, cancellationToken);
 
-                PackageInfo packageInfo;
-
-                if (packageInfos.TryGetValue(version, out packageInfo))
+                if (packageInfos.TryGetValue(version, out var packageInfo))
                 {
                     AddOrUpdateLogger(_plugin, logger);
 

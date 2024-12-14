@@ -80,10 +80,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 foreach (IAssembly referenceAssembly in assembly.ReferencedAssemblies)
                 {
                     Tuple<string, string> key = GetUniqueKey(referenceAssembly);
-                    IAssembly targetAssembly;
                     // If we have an assembly with the same unique key in our list of a different version then we want to use that version
                     // then we want to add a redirect for that assembly
-                    if (assemblyNameLookup.TryGetValue(key, out targetAssembly)
+                    if (assemblyNameLookup.TryGetValue(key, out var targetAssembly)
                         && targetAssembly.Version != referenceAssembly.Version)
                     {
                         // BUG #1158: Don't add binding redirects for assemblies without a strong name

@@ -379,9 +379,7 @@ namespace NuGet.Protocol.Plugins
 
             UnregisterEventHandlers(plugin as Plugin);
 
-            Lazy<Task<IPlugin>> lazyTask;
-
-            if (_plugins.TryRemove(plugin.FilePath, out lazyTask))
+            if (_plugins.TryRemove(plugin.FilePath, out var lazyTask))
             {
                 if (lazyTask.IsValueCreated && lazyTask.Value.Status == TaskStatus.RanToCompletion)
                 {

@@ -134,8 +134,7 @@ namespace NuGet.CommandLine
         private static float ToFloatValue(string directoryName)
         {
             var dirName = new DirectoryInfo(directoryName).Name;
-            float dirValue;
-            if (float.TryParse(dirName, NumberStyles.Float, CultureInfo.InvariantCulture, out dirValue))
+            if (float.TryParse(dirName, NumberStyles.Float, CultureInfo.InvariantCulture, out var dirValue))
             {
                 return dirValue;
             }

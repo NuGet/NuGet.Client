@@ -101,8 +101,7 @@ namespace NuGet.VisualStudio
             var aggregatableProject = hierarchy as IVsAggregatableProject;
             if (aggregatableProject != null)
             {
-                string projectTypeGuids;
-                var hr = aggregatableProject.GetAggregateProjectTypeGuids(out projectTypeGuids);
+                var hr = aggregatableProject.GetAggregateProjectTypeGuids(out var projectTypeGuids);
                 ErrorHandler.ThrowOnFailure(hr);
 
                 return projectTypeGuids.Split([';'], StringSplitOptions.RemoveEmptyEntries);
@@ -136,9 +135,8 @@ namespace NuGet.VisualStudio
 
             // Set it to null to avoid unassigned local variable warning
             EnvDTE.Project project = null;
-            object projectObject;
 
-            if (pHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out projectObject) >= 0)
+            if (pHierarchy.GetProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out var projectObject) >= 0)
             {
                 project = (EnvDTE.Project)projectObject;
             }
@@ -177,8 +175,7 @@ namespace NuGet.VisualStudio
 
             foreach (var project in projects.Cast<Project>())
             {
-                ISet<VsHierarchyItem> expandedNodes;
-                if (ignoreNodes.TryGetValue(project.GetUniqueName(), out expandedNodes)
+                if (ignoreNodes.TryGetValue(project.GetUniqueName(), out var expandedNodes)
                     &&
                     expandedNodes != null)
                 {
@@ -320,10 +317,9 @@ namespace NuGet.VisualStudio
             }
 
             const uint expandedStateMask = (uint)__VSHIERARCHYITEMSTATE.HIS_Expanded;
-            uint itemState;
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            uiWindow.GetItemState(AsVsUIHierarchy(hierarchyItem), hierarchyItem.VsItemID, expandedStateMask, out itemState);
+            uiWindow.GetItemState(AsVsUIHierarchy(hierarchyItem), hierarchyItem.VsItemID, expandedStateMask, out var itemState);
             return ((__VSHIERARCHYITEMSTATE)itemState == __VSHIERARCHYITEMSTATE.HIS_Expanded);
         }
 

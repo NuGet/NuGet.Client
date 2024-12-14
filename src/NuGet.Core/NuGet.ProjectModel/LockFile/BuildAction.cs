@@ -37,8 +37,7 @@ namespace NuGet.ProjectModel
 
         public static BuildAction Parse(string value)
         {
-            BuildAction action;
-            if (_knownBuildActions.TryGetValue(value, out action))
+            if (_knownBuildActions.TryGetValue(value, out var action))
             {
                 return action;
             }

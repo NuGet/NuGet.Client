@@ -28,8 +28,7 @@ namespace NuGet.Shared
             Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
             Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -54,8 +53,7 @@ namespace NuGet.Shared
             Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
             Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -96,8 +94,7 @@ namespace NuGet.Shared
             Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
             Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -131,8 +128,7 @@ namespace NuGet.Shared
             IEnumerable<T>? other,
             IEqualityComparer<T>? comparer = null)
         {
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -154,8 +150,7 @@ namespace NuGet.Shared
             ICollection<T>? other,
             IEqualityComparer<T>? comparer = null)
         {
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -187,8 +182,7 @@ namespace NuGet.Shared
             IList<T>? other,
             IEqualityComparer<T>? comparer = null)
         {
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -225,8 +219,7 @@ namespace NuGet.Shared
             ISet<T>? other,
             IEqualityComparer<T>? comparer = null)
         {
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -262,8 +255,7 @@ namespace NuGet.Shared
             Func<TValue, TValue, bool> comparerFunc = (s, o) => comparer.Equals(s, o);
             compareValues = compareValues ?? comparerFunc;
 
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }
@@ -312,8 +304,7 @@ namespace NuGet.Shared
 
         internal static bool EqualsWithNullCheck<T>(T self, T other)
         {
-            bool identityEquals;
-            if (TryIdentityEquals(self, other, out identityEquals))
+            if (TryIdentityEquals(self, other, out var identityEquals))
             {
                 return identityEquals;
             }

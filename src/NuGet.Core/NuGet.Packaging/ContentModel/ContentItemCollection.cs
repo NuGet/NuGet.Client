@@ -223,14 +223,13 @@ namespace NuGet.ContentModel
                             }
                             else
                             {
-                                object? itemProperty;
-                                if (!itemGroup.Properties.TryGetValue(criteriaProperty.Key, out itemProperty))
+                                if (!itemGroup.Properties.TryGetValue(criteriaProperty.Key, out var itemProperty))
                                 {
                                     groupIsValid = false;
                                     break;
                                 }
-                                ContentPropertyDefinition? propertyDefinition;
-                                if (!definition.PropertyDefinitions.TryGetValue(criteriaProperty.Key, out propertyDefinition))
+
+                                if (!definition.PropertyDefinitions.TryGetValue(criteriaProperty.Key, out var propertyDefinition))
                                 {
                                     groupIsValid = false;
                                     break;
@@ -507,8 +506,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var xProperty in x._properties)
                     {
-                        object? yValue;
-                        if (!y._properties.TryGetValue(xProperty.Key, out yValue))
+                        if (!y._properties.TryGetValue(xProperty.Key, out var yValue))
                         {
                             return false;
                         }

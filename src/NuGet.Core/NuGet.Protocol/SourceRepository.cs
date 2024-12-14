@@ -148,9 +148,8 @@ namespace NuGet.Protocol.Core.Types
         public virtual async Task<T> GetResourceAsync<T>(CancellationToken token) where T : class, INuGetResource
         {
             var resourceType = typeof(T);
-            INuGetResourceProvider[] possible = null;
 
-            if (_providerCache.TryGetValue(resourceType, out possible))
+            if (_providerCache.TryGetValue(resourceType, out var possible))
             {
                 foreach (var provider in possible)
                 {

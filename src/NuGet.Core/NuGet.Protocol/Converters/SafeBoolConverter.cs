@@ -21,8 +21,7 @@ namespace NuGet.Protocol
                 case JsonToken.Boolean:
                     return serializer.Deserialize<bool>(reader);
                 case JsonToken.String:
-                    bool flag;
-                    if (Boolean.TryParse(reader.Value.ToString().Trim(), out flag))
+                    if (Boolean.TryParse(reader.Value.ToString().Trim(), out var flag))
                     {
                         return flag;
                     }

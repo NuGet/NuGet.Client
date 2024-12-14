@@ -36,9 +36,7 @@ namespace NuGet.Protocol
                 return string.Empty;
             }
 
-            string cachedValue;
-
-            if (!_stringCache.TryGetValue(s, out cachedValue))
+            if (!_stringCache.TryGetValue(s, out var cachedValue))
             {
                 _stringCache.Add(s, s);
                 cachedValue = s;
@@ -57,8 +55,7 @@ namespace NuGet.Protocol
                 return NuGetVersion.Parse(s);
             }
 
-            NuGetVersion version;
-            if (!_versionCache.TryGetValue(s, out version))
+            if (!_versionCache.TryGetValue(s, out var version))
             {
                 version = NuGetVersion.Parse(s);
                 _versionCache.Add(s, version);
@@ -91,10 +88,9 @@ namespace NuGet.Protocol
         public T GetObject<T>(T input)
         {
             // Get all properties that contain both a Get method and a Set method and can be cached.
-            PropertyInfo[] properties;
             Type typeKey = typeof(T);
 
-            if (!_propertyCache.TryGetValue(typeKey, out properties))
+            if (!_propertyCache.TryGetValue(typeKey, out var properties))
             {
                 properties = typeKey.GetTypeInfo()
                     .DeclaredProperties.Where(

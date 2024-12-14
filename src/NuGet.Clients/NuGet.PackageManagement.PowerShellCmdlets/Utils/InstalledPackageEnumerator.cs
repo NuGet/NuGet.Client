@@ -170,8 +170,7 @@ namespace NuGetConsole.Host.PowerShell
             {
                 var result = await CollectPackagesForPackagesConfigAsync(project, token);
 
-                ISet<PackageIdentity> frameworkPackages;
-                if (!packagesByFramework.TryGetValue(result.Item1, out frameworkPackages))
+                if (!packagesByFramework.TryGetValue(result.Item1, out var frameworkPackages))
                 {
                     frameworkPackages = new HashSet<PackageIdentity>();
                     packagesByFramework.Add(result.Item1, frameworkPackages);
@@ -203,8 +202,7 @@ namespace NuGetConsole.Host.PowerShell
             if (installedRefs?.Any() == true)
             {
                 // Index packages.config references by target framework since this affects dependencies
-                NuGetFramework targetFramework;
-                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework))
+                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out NuGetFramework targetFramework))
                 {
                     targetFramework = NuGetFramework.AnyFramework;
                 }

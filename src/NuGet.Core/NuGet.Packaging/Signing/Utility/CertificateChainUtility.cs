@@ -71,10 +71,7 @@ namespace NuGet.Packaging.Signing
                     return GetCertificateChain(chain.PrivateReference);
                 }
 
-                X509ChainStatusFlags errorStatusFlags;
-                X509ChainStatusFlags warningStatusFlags;
-
-                GetChainStatusFlags(certificate, certificateType, out errorStatusFlags, out warningStatusFlags);
+                GetChainStatusFlags(certificate, certificateType, out var errorStatusFlags, out var warningStatusFlags);
 
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;

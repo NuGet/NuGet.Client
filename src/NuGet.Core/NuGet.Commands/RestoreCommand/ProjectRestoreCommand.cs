@@ -368,9 +368,8 @@ namespace NuGet.Commands
                     var tasks = Enumerable.Range(0, threadCount)
                         .Select(async _ =>
                         {
-                            RemoteMatch match;
                             var result = true;
-                            while (bag.TryTake(out match))
+                            while (bag.TryTake(out var match))
                             {
                                 result &= await InstallPackageAsync(match, userPackageFolder, _request.PackageExtractionContext, token);
                             }

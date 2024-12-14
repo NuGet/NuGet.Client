@@ -128,8 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 IVsMultiItemSelect multiItemSelect;
-                uint itemId;
-                if (vsMonitorSelection.GetCurrentSelection(out hHierarchy, out itemId, out multiItemSelect, out hContainer) != 0)
+                if (vsMonitorSelection.GetCurrentSelection(out hHierarchy, out var itemId, out multiItemSelect, out hContainer) != 0)
                 {
                     return string.Empty;
                 }
@@ -142,8 +141,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     return string.Empty;
                 }
-                string fileName;
-                hierarchy.GetCanonicalName(itemId, out fileName);
+
+                hierarchy.GetCanonicalName(itemId, out var fileName);
                 return fileName;
             }
             finally

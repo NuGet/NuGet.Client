@@ -513,8 +513,7 @@ namespace NuGet.PackageManagement.UI
                 var configSection = nugetSettings.GetSection(ConfigurationConstants.Config);
                 var dependencySetting = configSection?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, ConfigurationConstants.DependencyVersion);
 
-                DependencyBehavior behavior;
-                var success = Enum.TryParse(dependencySetting?.Value, ignoreCase: true, result: out behavior);
+                var success = Enum.TryParse(dependencySetting?.Value, ignoreCase: true, result: out DependencyBehavior behavior);
                 if (success)
                 {
                     return behavior;

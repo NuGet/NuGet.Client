@@ -414,8 +414,7 @@ namespace NuGet.Protocol
         {
             var dateString = GetString(parent, childName);
 
-            DateTimeOffset date;
-            if (DateTimeOffset.TryParse(dateString, out date))
+            if (DateTimeOffset.TryParse(dateString, out var date))
             {
                 return date;
             }

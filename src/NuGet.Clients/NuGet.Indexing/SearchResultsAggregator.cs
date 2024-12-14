@@ -114,8 +114,7 @@ namespace NuGet.Indexing
             {
                 foreach (var entry in result)
                 {
-                    IPackageSearchMetadata value;
-                    if (_index.TryGetValue(entry.Identity.Id, out value))
+                    if (_index.TryGetValue(entry.Identity.Id, out var value))
                     {
                         _index[entry.Identity.Id] = _splicer.MergeEntries(value, entry);
                     }

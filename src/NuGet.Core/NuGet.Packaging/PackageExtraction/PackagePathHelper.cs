@@ -92,12 +92,11 @@ namespace NuGet.Packaging
         {
             var packageId = packageIdentity.Id;
             var name = Path.GetFileNameWithoutExtension(path);
-            NuGetVersion parsedVersion;
 
             // When matching by pattern, we will always have a version token. Packages without versions would be matched early on by the version-less path resolver 
             // when doing an exact match.
             return name.Length > packageId.Length &&
-                   NuGetVersion.TryParse(name.Substring(packageId.Length + 1), out parsedVersion) &&
+                   NuGetVersion.TryParse(name.Substring(packageId.Length + 1), out var parsedVersion) &&
                    parsedVersion.Equals(packageIdentity.Version);
         }
 

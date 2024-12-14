@@ -2443,8 +2443,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
                 {
-                    BuildIntegratedNuGetProject project;
-                    if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
+                    if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out var project))
                     {
                         sortedProjectsToUpdate.Add(project);
                     }
@@ -2591,8 +2590,7 @@ namespace NuGet.PackageManagement
 
                     // raise Nuget batch start event
                     var batchId = Guid.NewGuid().ToString();
-                    string name;
-                    nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name);
+                    nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out string name);
                     var projectPath = msbuildProject?.MSBuildProjectPath;
                     packageProjectEventArgs = new PackageProjectEventArgs(batchId, name, projectPath);
                     BatchStart?.Invoke(this, packageProjectEventArgs);
@@ -3798,8 +3796,7 @@ namespace NuGet.PackageManagement
             Common.ILogger log,
             CancellationToken token)
         {
-            NuGetFramework framework;
-            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out var framework))
             {
                 // Default to the any framework if the project does not specify a framework.
                 framework = NuGetFramework.AnyFramework;
@@ -3824,8 +3821,7 @@ namespace NuGet.PackageManagement
         {
             var tasks = new List<Task<NuGetVersion>>();
 
-            NuGetFramework framework;
-            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out var framework))
             {
                 // Default to the any framework if the project does not specify a framework.
                 framework = NuGetFramework.AnyFramework;

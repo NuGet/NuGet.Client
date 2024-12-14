@@ -251,8 +251,7 @@ namespace NuGet.ProjectModel
                     var dependencyName = reference.ProjectPath;
                     var range = VersionRange.All;
 
-                    ExternalProjectReference externalProject;
-                    if (_externalProjectsByUniqueName.TryGetValue(reference.ProjectUniqueName, out externalProject))
+                    if (_externalProjectsByUniqueName.TryGetValue(reference.ProjectUniqueName, out var externalProject))
                     {
                         dependencyName = externalProject.ProjectName;
 
@@ -413,8 +412,7 @@ namespace NuGet.ProjectModel
 
             foreach (var reference in parent.ExternalProjectReferences)
             {
-                ExternalProjectReference childReference;
-                if (!_externalProjectsByUniqueName.TryGetValue(reference, out childReference))
+                if (!_externalProjectsByUniqueName.TryGetValue(reference, out var childReference))
                 {
                     // Create a reference to mark that this project is unresolved here
                     childReference = new ExternalProjectReference(

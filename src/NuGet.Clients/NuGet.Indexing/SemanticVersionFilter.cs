@@ -25,8 +25,7 @@ namespace NuGet.Indexing
 
             string version = _termAttribute.Term;
 
-            NuGetVersion nuGetVersion;
-            if (NuGetVersion.TryParse(version, out nuGetVersion))
+            if (NuGetVersion.TryParse(version, out var nuGetVersion))
             {
                 version = nuGetVersion.ToNormalizedString();
             }

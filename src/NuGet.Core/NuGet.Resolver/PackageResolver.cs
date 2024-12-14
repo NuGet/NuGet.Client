@@ -275,8 +275,7 @@ namespace NuGet.Resolver
             {
                 foreach (var dependency in package?.Dependencies)
                 {
-                    IList<VersionRange> dependencyVersionRanges;
-                    if (dependencyRangesByPackageId.TryGetValue(dependency.Id, out dependencyVersionRanges))
+                    if (dependencyRangesByPackageId.TryGetValue(dependency.Id, out var dependencyVersionRanges))
                     {
                         dependencyVersionRanges.Add(dependency.VersionRange);
                     }

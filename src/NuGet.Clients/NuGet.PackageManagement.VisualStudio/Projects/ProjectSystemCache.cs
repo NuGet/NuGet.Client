@@ -54,8 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             project = null;
 
-            CacheEntry cacheEntry;
-            if (TryGetCacheEntry(name, out cacheEntry))
+            if (TryGetCacheEntry(name, out var cacheEntry))
             {
                 project = cacheEntry.NuGetProject;
             }
@@ -72,8 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             project = null;
 
-            CacheEntry cacheEntry;
-            if (TryGetCacheEntry(name, out cacheEntry))
+            if (TryGetCacheEntry(name, out var cacheEntry))
             {
                 project = cacheEntry.VsProjectAdapter;
             }
@@ -91,8 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
             projectRestoreInfo = null;
             additionalMessages = null;
 
-            CacheEntry cacheEntry;
-            if (TryGetCacheEntry(name, out cacheEntry))
+            if (TryGetCacheEntry(name, out var cacheEntry))
             {
                 projectRestoreInfo = cacheEntry.ProjectRestoreInfo;
                 additionalMessages = cacheEntry.AdditionalMessages;
@@ -132,8 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                ProjectNames projectNames;
-                if (_projectNamesCache.TryGetValue(name, out projectNames))
+                if (_projectNamesCache.TryGetValue(name, out var projectNames))
                 {
                     _readerWriterLock.EnterWriteLock();
 
@@ -217,8 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                HashSet<ProjectNames> values;
-                if (_shortNameCache.TryGetValue(shortName, out values))
+                if (_shortNameCache.TryGetValue(shortName, out var values))
                 {
                     return values.Count > 1;
                 }
@@ -329,8 +324,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(_readerWriterLock.IsWriteLockHeld);
 
-            CacheEntry newCacheEntry, oldCacheEntry;
-            if (_primaryCache.TryGetValue(primaryKey, out oldCacheEntry))
+            CacheEntry newCacheEntry;
+            if (_primaryCache.TryGetValue(primaryKey, out var oldCacheEntry))
             {
                 newCacheEntry = updateEntryFactory(primaryKey, oldCacheEntry);
                 _primaryCache[primaryKey] = newCacheEntry;
@@ -381,8 +376,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             projectNames = null;
 
-            HashSet<ProjectNames> values;
-            if (_shortNameCache.TryGetValue(name, out values))
+            if (_shortNameCache.TryGetValue(name, out var values))
             {
                 // If there is only one project name instance, that means the short name is unambiguous, in which
                 // case we can return that one project.
@@ -401,8 +395,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(_readerWriterLock.IsWriteLockHeld);
 
-            HashSet<ProjectNames> values;
-            if (!_shortNameCache.TryGetValue(projectNames.ShortName, out values))
+            if (!_shortNameCache.TryGetValue(projectNames.ShortName, out var values))
             {
                 values = new HashSet<ProjectNames>();
                 _shortNameCache.Add(projectNames.ShortName, values);
@@ -419,8 +412,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(_readerWriterLock.IsWriteLockHeld);
 
-            HashSet<ProjectNames> values;
-            if (_shortNameCache.TryGetValue(projectNames.ShortName, out values))
+            if (_shortNameCache.TryGetValue(projectNames.ShortName, out var values))
             {
                 values.Remove(projectNames);
 
@@ -470,8 +462,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                ProjectNames primaryKey;
-                if (_projectNamesCache.TryGetValue(secondaryKey, out primaryKey) ||
+                if (_projectNamesCache.TryGetValue(secondaryKey, out var primaryKey) ||
                     TryGetProjectNameByShortNameWithoutLock(secondaryKey, out primaryKey))
                 {
                     return _primaryCache.TryGetValue(primaryKey.FullName, out cacheEntry);

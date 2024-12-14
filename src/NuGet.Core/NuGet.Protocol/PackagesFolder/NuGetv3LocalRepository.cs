@@ -153,14 +153,12 @@ namespace NuGet.Repositories
 
             foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
             {
-                LocalPackageInfo package;
-                if (!_packageCache.TryGetValue(fullVersionDir, out package))
+                if (!_packageCache.TryGetValue(fullVersionDir, out var package))
                 {
                     var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
 
                     // Get the version part and parse it
-                    NuGetVersion version;
-                    if (!NuGetVersion.TryParse(versionPart, out version))
+                    if (!NuGetVersion.TryParse(versionPart, out var version))
                     {
                         continue;
                     }

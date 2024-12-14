@@ -40,9 +40,8 @@ namespace NuGet.Packaging.Signing
 
                 // Look for signature central directory record
                 reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
-                CentralDirectoryHeader centralDirectoryHeader;
 
-                while (CentralDirectoryHeader.TryRead(reader, out centralDirectoryHeader))
+                while (CentralDirectoryHeader.TryRead(reader, out var centralDirectoryHeader))
                 {
                     if (IsPackageSignatureFileEntry(
                         centralDirectoryHeader.FileName,
@@ -52,8 +51,7 @@ namespace NuGet.Packaging.Signing
                         reader.BaseStream.Seek(centralDirectoryHeader.RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
 
                         // Make sure local file header exists
-                        LocalFileHeader localFileHeader;
-                        if (!LocalFileHeader.TryRead(reader, out localFileHeader))
+                        if (!LocalFileHeader.TryRead(reader, out var localFileHeader))
                         {
                             throw new InvalidDataException(Strings.ErrorInvalidPackageArchive);
                         }
@@ -117,9 +115,7 @@ namespace NuGet.Packaging.Signing
         {
             reader.BaseStream.Seek(signatureCentralDirectoryHeader.OffsetToLocalFileHeader, SeekOrigin.Begin);
 
-            LocalFileHeader header;
-
-            if (!LocalFileHeader.TryRead(reader, out header))
+            if (!LocalFileHeader.TryRead(reader, out var header))
             {
                 throw new SignatureException(NuGetLogCode.NU3005, Strings.InvalidPackageSignatureFile);
             }
@@ -172,9 +168,7 @@ namespace NuGet.Packaging.Signing
 
             reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
 
-            CentralDirectoryHeader centralDirectoryHeader;
-
-            while (CentralDirectoryHeader.TryRead(reader, out centralDirectoryHeader))
+            while (CentralDirectoryHeader.TryRead(reader, out var centralDirectoryHeader))
             {
                 if (HasZip64ExtendedInformationExtraField(centralDirectoryHeader))
                 {
@@ -190,9 +184,7 @@ namespace NuGet.Packaging.Signing
 
                 reader.BaseStream.Position = centralDirectoryHeader.RelativeOffsetOfLocalHeader;
 
-                LocalFileHeader localFileHeader;
-
-                if (LocalFileHeader.TryRead(reader, out localFileHeader) &&
+                if (LocalFileHeader.TryRead(reader, out var localFileHeader) &&
                     HasZip64ExtendedInformationExtraField(localFileHeader))
                 {
                     return true;
@@ -206,9 +198,7 @@ namespace NuGet.Packaging.Signing
 
         private static bool HasZip64ExtendedInformationExtraField(CentralDirectoryHeader header)
         {
-            IReadOnlyList<ExtraField> extraFields;
-
-            if (ExtraField.TryRead(header, out extraFields))
+            if (ExtraField.TryRead(header, out var extraFields))
             {
                 return extraFields.Any(extraField => extraField is Zip64ExtendedInformationExtraField);
             }
@@ -218,9 +208,7 @@ namespace NuGet.Packaging.Signing
 
         private static bool HasZip64ExtendedInformationExtraField(LocalFileHeader header)
         {
-            IReadOnlyList<ExtraField> extraFields;
-
-            if (ExtraField.TryRead(header, out extraFields))
+            if (ExtraField.TryRead(header, out var extraFields))
             {
                 return extraFields.Any(extraField => extraField is Zip64ExtendedInformationExtraField);
             }

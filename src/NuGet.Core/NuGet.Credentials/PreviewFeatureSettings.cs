@@ -26,9 +26,8 @@ namespace NuGet.Credentials
 
         private static bool GetFlagFromEnvironmentVariable(string variableName)
         {
-            bool flag;
             var flagString = environmentVariableReader.GetEnvironmentVariable(variableName);
-            return bool.TryParse(flagString, out flag) && flag;
+            return bool.TryParse(flagString, out var flag) && flag;
         }
     }
 }

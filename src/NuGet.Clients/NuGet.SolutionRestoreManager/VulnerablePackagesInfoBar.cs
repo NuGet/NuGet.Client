@@ -106,8 +106,7 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            object tempObject;
-            int hostBarCode = windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject);
+            int hostBarCode = windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out var tempObject);
             if (ErrorHandler.Failed(hostBarCode))
             {
                 Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find InfoBarHost. HRRESULT {0}", hostBarCode));

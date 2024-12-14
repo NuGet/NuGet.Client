@@ -549,8 +549,7 @@ namespace NuGet.Frameworks
         public bool TryGetPortableFrameworks(string profile, bool includeOptional, [NotNullWhen(true)] out IEnumerable<NuGetFramework>? frameworks)
         {
             // attempt to parse the profile for a number
-            int profileNum;
-            if (TryGetPortableProfileNumber(profile, out profileNum))
+            if (TryGetPortableProfileNumber(profile, out var profileNum))
             {
                 if (TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
                 {
@@ -1037,14 +1036,12 @@ namespace NuGet.Frameworks
                 return 0;
             }
 
-            int xIndex;
-            if (!precedence.TryGetValue(x.Framework, out xIndex))
+            if (!precedence.TryGetValue(x.Framework, out var xIndex))
             {
                 xIndex = int.MaxValue;
             }
 
-            int yIndex;
-            if (!precedence.TryGetValue(y.Framework, out yIndex))
+            if (!precedence.TryGetValue(y.Framework, out var yIndex))
             {
                 yIndex = int.MaxValue;
             }

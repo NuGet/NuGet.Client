@@ -27,8 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Func<Task> taskBody = async () =>
             {
-                TSource source;
-                while (bag.TryTake(out source))
+                while (bag.TryTake(out var source))
                 {
                     var value = await valueSelector(source, cancellationToken);
                     values.Enqueue(value);

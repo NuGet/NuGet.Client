@@ -186,8 +186,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
             // Check that the tag is legal, but the value isn't relevant.
             PeekTag();
 
-            int lengthLength;
-            int contentLength = ScanContentLength(_data, _position + 1, _end, out lengthLength);
+            int contentLength = ScanContentLength(_data, _position + 1, _end, out var lengthLength);
             // Length of tag, encoded length, and the content
             int totalLength = 1 + lengthLength + contentLength;
             Debug.Assert(_end - totalLength >= _position);
@@ -349,8 +348,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
             // DerSequenceReader wants to read its own tag, so don't EatTag here.
             CheckTag(expected, _data, _position);
 
-            int lengthLength;
-            int contentLength = ScanContentLength(_data, _position + 1, _end, out lengthLength);
+            int contentLength = ScanContentLength(_data, _position + 1, _end, out var lengthLength);
             int totalLength = 1 + lengthLength + contentLength;
 
             DerSequenceReader reader = new DerSequenceReader(expected, _data, _position, totalLength);
@@ -486,8 +484,6 @@ namespace NuGet.Packaging.Signing.DerEncoding
                 decodedTime[decodedTime.Length - 1] == 'Z',
                 $"The date doesn't follow the X.690 format, ending with {decodedTime[decodedTime.Length - 1]}");
 
-            DateTime time;
-
             DateTimeFormatInfo fi = LazyInitializer.EnsureInitialized(
                 ref s_validityDateTimeFormatInfo,
                 () =>
@@ -503,7 +499,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
                     formatString,
                     fi,
                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-                    out time))
+                    out var time))
             {
                 throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
             }
@@ -570,8 +566,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
 
         private int EatLength()
         {
-            int bytesConsumed;
-            int answer = ScanContentLength(_data, _position, _end, out bytesConsumed);
+            int answer = ScanContentLength(_data, _position, _end, out var bytesConsumed);
 
             _position += bytesConsumed;
             return answer;

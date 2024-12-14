@@ -324,8 +324,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalled) + ".3";
             using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            NuGetVersion nugetVersion;
-            if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
+            if (NuGetVersion.TryParse(version.ToString(), out var nugetVersion))
             {
                 return IsPackageInstalled(project, packageId, nugetVersion);
             }

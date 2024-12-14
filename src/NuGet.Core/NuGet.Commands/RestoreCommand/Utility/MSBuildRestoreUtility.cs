@@ -73,8 +73,7 @@ namespace NuGet.Commands
                 }
                 else if (!string.IsNullOrEmpty(projectUniqueName))
                 {
-                    List<IMSBuildItem> idItems;
-                    if (!itemsById.TryGetValue(projectUniqueName, out idItems))
+                    if (!itemsById.TryGetValue(projectUniqueName, out var idItems))
                     {
                         idItems = new List<IMSBuildItem>(1);
                         itemsById.Add(projectUniqueName, idItems);
@@ -583,8 +582,7 @@ namespace NuGet.Commands
 
                 foreach (var framework in addToFrameworks)
                 {
-                    List<ProjectRestoreReference> references;
-                    if (aliasGroups.TryGetValue(framework, out references))
+                    if (aliasGroups.TryGetValue(framework, out var references))
                     {
                         // Ensure unique
                         if (!references.Any(e => comparer.Equals(e.ProjectUniqueName, frameworkPair.Item2.ProjectUniqueName)))

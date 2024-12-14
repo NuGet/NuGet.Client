@@ -142,8 +142,7 @@ namespace NuGet.Packaging
 
             foreach (var package in _doc.Root.Elements(XName.Get(PackagesConfig.PackageNodeName)))
             {
-                string id = null;
-                if (!PackagesConfig.TryGetAttribute(package, "id", out id)
+                if (!PackagesConfig.TryGetAttribute(package, "id", out var id)
                     || String.IsNullOrEmpty(id))
                 {
                     throw new PackagesConfigReaderException(string.Format(
@@ -151,8 +150,7 @@ namespace NuGet.Packaging
                         Strings.ErrorNullOrEmptyPackageId));
                 }
 
-                string version = null;
-                if (!PackagesConfig.TryGetAttribute(package, PackagesConfig.VersionAttributeName, out version)
+                if (!PackagesConfig.TryGetAttribute(package, PackagesConfig.VersionAttributeName, out var version)
                     || String.IsNullOrEmpty(version))
                 {
                     throw new PackagesConfigReaderException(string.Format(
@@ -162,8 +160,7 @@ namespace NuGet.Packaging
                        version));
                 }
 
-                NuGetVersion semver = null;
-                if (!NuGetVersion.TryParse(version, out semver))
+                if (!NuGetVersion.TryParse(version, out var semver))
                 {
                     throw new PackagesConfigReaderException(string.Format(
                        CultureInfo.CurrentCulture,
@@ -172,9 +169,8 @@ namespace NuGet.Packaging
                        version));
                 }
 
-                string attributeValue = null;
                 VersionRange allowedVersions = null;
-                if (PackagesConfig.TryGetAttribute(package, PackagesConfig.allowedVersionsAttributeName, out attributeValue))
+                if (PackagesConfig.TryGetAttribute(package, PackagesConfig.allowedVersionsAttributeName, out var attributeValue))
                 {
                     if (!VersionRange.TryParse(attributeValue, out allowedVersions))
                     {

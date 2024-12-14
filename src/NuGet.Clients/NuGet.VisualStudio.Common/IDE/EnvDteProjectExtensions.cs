@@ -28,11 +28,9 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            IVsHierarchy hierarchy;
-
             // Get the vs solution
             var solution = await ServiceLocator.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
-            int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
+            int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out var hierarchy);
 
             if (hr != VSConstants.S_OK)
             {

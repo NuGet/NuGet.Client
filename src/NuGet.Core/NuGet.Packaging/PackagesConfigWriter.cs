@@ -266,13 +266,11 @@ namespace NuGet.Packaging
 
             var originalPackagesNode = originalConfig.Element(XName.Get(PackagesConfig.PackagesNodeName));
 
-            XElement matchingIdNode;
-
             if (PackagesConfig.HasAttributeValue(
-                originalPackagesNode,
-                PackagesConfig.IdAttributeName,
-                newEntry.PackageIdentity.Id,
-                out matchingIdNode))
+                    originalPackagesNode,
+                    PackagesConfig.IdAttributeName,
+                    newEntry.PackageIdentity.Id,
+                    out var matchingIdNode))
             {
                 // Find the old entry and update it based on the new entry
                 var packagesNode = _xDocument.Element(XName.Get(PackagesConfig.PackagesNodeName));
@@ -418,19 +416,16 @@ namespace NuGet.Packaging
 
         private XElement FindMatchingPackageNode(PackageReference entry, XElement packagesNode)
         {
-            XElement matchingIdNode;
             bool hasMatchingNode = PackagesConfig.HasAttributeValue(packagesNode, PackagesConfig.IdAttributeName,
-                entry.PackageIdentity.Id, out matchingIdNode);
+                entry.PackageIdentity.Id, out var matchingIdNode);
 
             if (matchingIdNode != null)
             {
-                string version;
-                PackagesConfig.TryGetAttribute(matchingIdNode, PackagesConfig.VersionAttributeName, out version);
+                PackagesConfig.TryGetAttribute(matchingIdNode, PackagesConfig.VersionAttributeName, out var version);
 
                 if (!string.IsNullOrEmpty(version))
                 {
-                    NuGetVersion nuGetVersion;
-                    bool isNuGetVersion = NuGetVersion.TryParse(version, out nuGetVersion);
+                    bool isNuGetVersion = NuGetVersion.TryParse(version, out var nuGetVersion);
 
                     if (isNuGetVersion && nuGetVersion != null && nuGetVersion.Equals(entry.PackageIdentity.Version))
                     {
@@ -453,10 +448,9 @@ namespace NuGet.Packaging
             foreach (XName name in existingAttributeNames)
             {
                 // Clear newValue
-                string newValue = null;
 
                 // Try to get newValue correlated to the attribute on the existing node.
-                PackagesConfig.TryGetAttribute(newEntryNode, name.LocalName, out newValue);
+                PackagesConfig.TryGetAttribute(newEntryNode, name.LocalName, out var newValue);
 
                 // When the attribute is not specified a value in the new node
                 if (string.IsNullOrEmpty(newValue))

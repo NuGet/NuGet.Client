@@ -383,8 +383,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected DependencyBehavior GetDependencyBehaviorFromConfig()
         {
             var dependencySetting = SettingsUtility.GetConfigValue(ConfigSettings, ConfigurationConstants.DependencyVersion);
-            DependencyBehavior behavior;
-            var success = Enum.TryParse(dependencySetting, ignoreCase: true, result: out behavior);
+            var success = Enum.TryParse(dependencySetting, ignoreCase: true, result: out DependencyBehavior behavior);
             if (success)
             {
                 return behavior;

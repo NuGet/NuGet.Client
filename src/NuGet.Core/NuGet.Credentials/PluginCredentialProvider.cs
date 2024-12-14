@@ -198,8 +198,7 @@ namespace NuGet.Credentials
                 StandardErrorEncoding = Encoding.UTF8,
             };
 
-            string stdOut = null;
-            var exitCode = Execute(startInfo, cancellationToken, out stdOut);
+            var exitCode = Execute(startInfo, cancellationToken, out var stdOut);
 
             var status = (PluginCredentialResponseExitCode)exitCode;
 

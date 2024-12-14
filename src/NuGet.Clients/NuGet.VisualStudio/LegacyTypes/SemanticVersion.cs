@@ -140,8 +140,7 @@ namespace NuGet
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(version));
             }
 
-            SemanticVersion semVer;
-            if (!TryParse(version, out semVer))
+            if (!TryParse(version, out var semVer))
             {
                 throw new ArgumentException(
                     message: string.Format(CultureInfo.CurrentCulture, Strings.SemanticVersionStringInvalid, version),
@@ -175,8 +174,7 @@ namespace NuGet
             }
 
             var match = regex.Match(version.Trim());
-            Version versionValue;
-            if (!match.Success || !Version.TryParse(match.Groups["Version"].Value, out versionValue))
+            if (!match.Success || !Version.TryParse(match.Groups["Version"].Value, out var versionValue))
             {
                 return false;
             }
@@ -191,8 +189,7 @@ namespace NuGet
         /// <returns>An instance of SemanticVersion if it parses correctly, null otherwise.</returns>
         public static SemanticVersion ParseOptionalVersion(string version)
         {
-            SemanticVersion semVer;
-            _ = TryParse(version, out semVer);
+            _ = TryParse(version, out var semVer);
             return semVer;
         }
 

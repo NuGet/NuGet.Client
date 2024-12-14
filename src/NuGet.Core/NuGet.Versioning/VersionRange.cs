@@ -167,10 +167,8 @@ namespace NuGet.Versioning
         /// </summary>
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
-            string? formattedString = null;
-
             if (formatProvider == null
-                || !TryFormatter(format, formatProvider, out formattedString))
+                || !TryFormatter(format, formatProvider, out var formattedString))
             {
                 formattedString = ToString();
             }

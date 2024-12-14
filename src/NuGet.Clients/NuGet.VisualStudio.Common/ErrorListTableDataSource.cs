@@ -235,10 +235,9 @@ namespace NuGet.VisualStudio.Common
 
         private static bool IsNuGetEntry(ITableEntryHandle entry)
         {
-            object sourceObj;
             return (entry != null
-                && entry.TryGetValue(StandardTableColumnDefinitions.ErrorSource, out sourceObj)
-                && StringComparer.Ordinal.Equals(ErrorListTableEntry.ErrorSouce, (sourceObj as string)));
+                    && entry.TryGetValue(StandardTableColumnDefinitions.ErrorSource, out var sourceObj)
+                    && StringComparer.Ordinal.Equals(ErrorListTableEntry.ErrorSouce, (sourceObj as string)));
         }
 
         public void Dispose()

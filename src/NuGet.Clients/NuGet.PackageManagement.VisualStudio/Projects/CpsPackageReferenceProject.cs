@@ -101,8 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private PackageSpec GetPackageSpec()
         {
-            DependencyGraphSpec projectRestoreInfo;
-            if (_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out projectRestoreInfo, out _))
+            if (_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out var projectRestoreInfo, out _))
             {
                 return projectRestoreInfo.GetProjectSpec(ProjectFullPath);
             }
@@ -129,9 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var projects = new List<PackageSpec>();
 
-            DependencyGraphSpec projectRestoreInfo;
-            IReadOnlyList<IAssetsLogMessage> additionalMessages;
-            if (!_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out projectRestoreInfo, out additionalMessages))
+            if (!_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out var projectRestoreInfo, out var additionalMessages))
             {
                 throw new ProjectNotNominatedException(
                     string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
@@ -282,8 +279,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var framework in installationContext.SuccessfulFrameworks)
                 {
-                    string originalFramework;
-                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out originalFramework))
+                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out var originalFramework))
                     {
                         originalFramework = framework.GetShortFolderName();
                     }
@@ -386,8 +382,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 foreach (var framework in installationContext.SuccessfulFrameworks)
                 {
-                    string originalFramework;
-                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out originalFramework))
+                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out var originalFramework))
                     {
                         originalFramework = framework.GetShortFolderName();
                     }

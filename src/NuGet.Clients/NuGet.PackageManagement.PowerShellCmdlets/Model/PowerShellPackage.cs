@@ -52,8 +52,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (nVersion != null)
                 {
-                    NuGet.SemanticVersion sVersion;
-                    _ = NuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    _ = NuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out var sVersion);
                     return sVersion;
                 }
 

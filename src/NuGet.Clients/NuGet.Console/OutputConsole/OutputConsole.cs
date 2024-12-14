@@ -55,10 +55,9 @@ namespace NuGetConsole
                     fClearWithSolution: 0);
                 ErrorHandler.ThrowOnFailure(hr);
 
-                IVsOutputWindowPane pane;
                 hr = _vsOutputWindow.GetPane(
                     ref outputWindowPaneId,
-                    out pane);
+                    out var pane);
                 ErrorHandler.ThrowOnFailure(hr);
 
                 GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;

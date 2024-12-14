@@ -419,10 +419,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             Uri sourceUri;
             if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
             {
-                string outputPath;
-                bool? exists;
                 string errorMessage;
-                if (PSPathUtility.TryTranslatePSPath(SessionState, source, out outputPath, out exists, out errorMessage) &&
+                if (PSPathUtility.TryTranslatePSPath(SessionState, source, out var outputPath, out var exists, out errorMessage) &&
                     exists == true)
                 {
                     source = outputPath;

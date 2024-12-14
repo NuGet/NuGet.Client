@@ -347,9 +347,8 @@ namespace NuGet.Packaging.Signing
             reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
 
             var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
-            CentralDirectoryHeader header;
 
-            while (CentralDirectoryHeader.TryRead(reader, out header))
+            while (CentralDirectoryHeader.TryRead(reader, out var header))
             {
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata()
                 {

@@ -58,10 +58,7 @@ namespace NuGet.Packaging.Signing
             if (messageHash == null)
                 throw new ArgumentNullException(nameof(messageHash));
 
-            int expectedSize;
-            string algorithmIdentifier;
-
-            if (!ResolveAlgorithm(hashAlgorithm, out expectedSize, out algorithmIdentifier))
+            if (!ResolveAlgorithm(hashAlgorithm, out var expectedSize, out var algorithmIdentifier))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(hashAlgorithm),

@@ -77,8 +77,7 @@ namespace NuGet.ProjectModel
 
         protected string GetProperty(string name)
         {
-            string value;
-            Properties.TryGetValue(name, out value);
+            Properties.TryGetValue(name, out var value);
             return value;
         }
 

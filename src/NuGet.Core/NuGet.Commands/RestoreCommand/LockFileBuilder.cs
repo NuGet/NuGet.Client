@@ -110,8 +110,7 @@ namespace NuGet.Commands
                     }
 
                     // The msbuild project path if it exists
-                    object msbuildPath;
-                    if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
+                    if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out var msbuildPath))
                     {
                         var msbuildRelativePath = PathUtility.GetRelativePath(
                             project.FilePath,
@@ -196,8 +195,7 @@ namespace NuGet.Commands
                     var library = graphItem.Key;
 
                     // include flags
-                    LibraryIncludeFlags includeFlags;
-                    if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
+                    if (!flattenedFlags.TryGetValue(library.Name, out var includeFlags))
                     {
                         includeFlags = ~LibraryIncludeFlags.ContentFiles;
                     }

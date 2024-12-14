@@ -81,8 +81,7 @@ namespace NuGet.Packaging
             {
                 var versionString = ClientVersionUtility.GetNuGetAssemblyVersion();
 
-                NuGetVersion clientVersion;
-                if (!NuGetVersion.TryParse(versionString, out clientVersion))
+                if (!NuGetVersion.TryParse(versionString, out var clientVersion))
                 {
                     throw new InvalidOperationException(Strings.UnableToParseClientVersion);
                 }

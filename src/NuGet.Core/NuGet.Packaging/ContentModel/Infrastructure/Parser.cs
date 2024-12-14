@@ -70,8 +70,7 @@ namespace NuGet.ContentModel.Infrastructure
             var startIndex = 0;
             foreach (var segment in _segments)
             {
-                int endIndex;
-                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
+                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out var endIndex))
                 {
                     startIndex = endIndex;
                     continue;
@@ -174,8 +173,7 @@ namespace NuGet.ContentModel.Infrastructure
                 int startIndex,
                 out int endIndex)
             {
-                ContentPropertyDefinition propertyDefinition;
-                if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))
+                if (!propertyDefinitions.TryGetValue(_token, out var propertyDefinition))
                 {
                     throw new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find property definition for {{{0}}}", _token));
                 }
@@ -198,8 +196,7 @@ namespace NuGet.ContentModel.Infrastructure
                         break;
                     }
                     ReadOnlyMemory<char> substring = path.AsMemory(startIndex, delimiterIndex - startIndex);
-                    object value;
-                    if (propertyDefinition.TryLookup(substring, _table, _matchOnly, out value))
+                    if (propertyDefinition.TryLookup(substring, _table, _matchOnly, out var value))
                     {
                         if (!_matchOnly)
                         {

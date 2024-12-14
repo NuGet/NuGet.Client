@@ -43,8 +43,7 @@ namespace NuGet.Packaging
         {
             foreach (var package in node.Elements(XName.Get(PackageNodeName)))
             {
-                string value;
-                bool hasValue = TryGetAttribute(package, attributeName, out value);
+                bool hasValue = TryGetAttribute(package, attributeName, out var value);
                 if (hasValue && string.Equals(targetValue, value, StringComparison.OrdinalIgnoreCase))
                 {
                     element = package;
@@ -61,8 +60,7 @@ namespace NuGet.Packaging
         /// </summary>
         public static bool BoolAttribute(XElement node, string name, bool defaultValue = false)
         {
-            string value = null;
-            if (PackagesConfig.TryGetAttribute(node, name, out value))
+            if (PackagesConfig.TryGetAttribute(node, name, out var value))
             {
                 if (StringComparer.OrdinalIgnoreCase.Equals(value, "true"))
                 {

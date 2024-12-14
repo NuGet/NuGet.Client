@@ -18,8 +18,7 @@ namespace NuGet.Commands
             PackageSpec project,
             RestoreTargetGraph graph)
         {
-            Dictionary<string, LibraryIncludeFlags> flattenedFlags;
-            if (!includeFlagGraphs.TryGetValue(graph, out flattenedFlags))
+            if (!includeFlagGraphs.TryGetValue(graph, out var flattenedFlags))
             {
                 flattenedFlags = FlattenDependencyTypes(graph, project);
                 includeFlagGraphs.Add(graph, flattenedFlags);
@@ -121,8 +120,7 @@ namespace NuGet.Commands
                 var rootId = node.Item.Key.Name;
 
                 // Combine results on the way up
-                LibraryIncludeFlags currentTypes;
-                if (result.TryGetValue(rootId, out currentTypes))
+                if (result.TryGetValue(rootId, out var currentTypes))
                 {
                     if ((node.DependencyType & currentTypes) == node.DependencyType)
                     {
@@ -150,8 +148,7 @@ namespace NuGet.Commands
                     // resolution phase.
                     // Note that we cannot stop here if there are no flags since we still need to mark
                     // the child nodes as having no flags. SuppressParent=all is a special case.
-                    GraphItem<RemoteResolveResult> child;
-                    if (unifiedNodes.TryGetValue(dependency.Name, out child)
+                    if (unifiedNodes.TryGetValue(dependency.Name, out var child)
                         && dependency.SuppressParent != LibraryIncludeFlags.All)
                     {
                         // intersect the edges and remove any suppressParent flags

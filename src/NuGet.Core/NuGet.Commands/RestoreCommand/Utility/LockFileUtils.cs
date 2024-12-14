@@ -524,10 +524,9 @@ namespace NuGet.Commands
             // Target framework information is optional and may not exist for csproj projects
             // that do not have a project.json file.
             string projectFramework = null;
-            object frameworkInfoObject;
             if (localMatch.LocalLibrary.Items.TryGetValue(
-                KnownLibraryProperties.TargetFrameworkInformation,
-                out frameworkInfoObject))
+                    KnownLibraryProperties.TargetFrameworkInformation,
+                    out var frameworkInfoObject))
             {
                 // Retrieve the resolved framework name, if this is null it means that the
                 // project is incompatible. This is marked as Unsupported.
@@ -642,19 +641,17 @@ namespace NuGet.Commands
             }
 
             // Add frameworkAssemblies for projects
-            object frameworkAssembliesObject;
             if (localMatch.LocalLibrary.Items.TryGetValue(
-                KnownLibraryProperties.FrameworkAssemblies,
-                out frameworkAssembliesObject))
+                    KnownLibraryProperties.FrameworkAssemblies,
+                    out var frameworkAssembliesObject))
             {
                 projectLib.FrameworkAssemblies.AddRange((List<string>)frameworkAssembliesObject);
             }
 
             // Add frameworkReferences for projects
-            object frameworkReferencesObject;
             if (localMatch.LocalLibrary.Items.TryGetValue(
-                KnownLibraryProperties.FrameworkReferences,
-                out frameworkReferencesObject))
+                    KnownLibraryProperties.FrameworkReferences,
+                    out var frameworkReferencesObject))
             {
                 projectLib.FrameworkReferences.AddRange(
                     ((IReadOnlyCollection<FrameworkDependency>)frameworkReferencesObject)
@@ -714,13 +711,12 @@ namespace NuGet.Commands
                     foreach (var item in group.Items.NoAllocEnumerate())
                     {
                         var newItem = new LockFileItem(item.Path);
-                        object locale;
-                        if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out locale))
+                        if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out var locale))
                         {
                             newItem.Properties[ManagedCodeConventions.PropertyNames.Locale] = (string)locale;
                         }
-                        object related;
-                        if (item.Properties.TryGetValue("related", out related))
+
+                        if (item.Properties.TryGetValue("related", out var related))
                         {
                             newItem.Properties["related"] = (string)related;
                         }
@@ -915,13 +911,11 @@ namespace NuGet.Commands
 
             foreach (var group in contentGroups)
             {
-                object keyObj;
-                if (group.Properties.TryGetValue(primaryKey, out keyObj))
+                if (group.Properties.TryGetValue(primaryKey, out var keyObj))
                 {
                     var key = (string)keyObj;
 
-                    List<ContentItemGroup> index;
-                    if (!primaryGroups.TryGetValue(key, out index))
+                    if (!primaryGroups.TryGetValue(key, out var index))
                     {
                         index = new List<ContentItemGroup>(1);
                         primaryGroups.Add(key, index);
@@ -940,10 +934,9 @@ namespace NuGet.Commands
                     group =>
                     {
                         // In the case of /native there is no TxM, here any should be used.
-                        object frameworkObj;
                         if (group.Properties.TryGetValue(
-                            ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker,
-                            out frameworkObj))
+                                ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker,
+                                out var frameworkObj))
                         {
                             return (NuGetFramework)frameworkObj;
                         }

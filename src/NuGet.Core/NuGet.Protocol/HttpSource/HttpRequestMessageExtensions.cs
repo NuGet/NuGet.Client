@@ -134,8 +134,7 @@ namespace NuGet.Protocol
 #if NET5_0_OR_GREATER
             if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
 #else
-            object result;
-            if (request.Properties.TryGetValue(key, out result) && result is T)
+            if (request.Properties.TryGetValue(key, out var result) && result is T)
 #endif
             {
                 return (T)result;

@@ -154,8 +154,7 @@ namespace NuGet.Protocol.Core.Types
                 packageIdentity = packageReader.GetIdentity();
 
 
-                bool isValidPackage;
-                if (PackageExists(packageIdentity, source, out isValidPackage))
+                if (PackageExists(packageIdentity, source, out var isValidPackage))
                 {
                     // Package already exists. Verify if it is valid
                     if (isValidPackage)

@@ -69,8 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                Guid id;
-                if (!_vsHierarchyItem.TryGetProjectId(out id))
+                if (!_vsHierarchyItem.TryGetProjectId(out var id))
                 {
                     id = Guid.Empty;
                 }

@@ -36,8 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var settingsManager = await _settingsManager.GetValueAsync();
 
-                IVsSettingsStore settingsStore;
-                var hr = settingsManager.GetReadOnlySettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
+                var hr = settingsManager.GetReadOnlySettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out var settingsStore);
                 if (ErrorHandler.Succeeded(hr)
                     && settingsStore != null)
                 {
@@ -56,8 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var settingsManager = await _settingsManager.GetValueAsync();
 
-                IVsWritableSettingsStore settingsStore;
-                var hr = settingsManager.GetWritableSettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out settingsStore);
+                var hr = settingsManager.GetWritableSettingsStore((uint)__VsSettingsScope.SettingsScope_UserSettings, out var settingsStore);
                 if (ErrorHandler.Succeeded(hr)
                     && settingsStore != null)
                 {

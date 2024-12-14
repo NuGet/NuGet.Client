@@ -75,21 +75,16 @@ namespace NuGet.Frameworks
             if (string.IsNullOrEmpty(targetFrameworkMoniker)) throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(targetFrameworkMoniker));
             if (mappings == null) throw new ArgumentNullException(nameof(mappings));
 
-            NuGetFramework? result;
-            string targetFrameworkIdentifier;
-            Version targetFrameworkVersion;
             var parts = GetParts(targetFrameworkMoniker);
 
             // if the first part is a special framework, ignore the rest
-            if (TryParseSpecialFramework(parts[0], out result))
+            if (TryParseSpecialFramework(parts[0], out var result))
             {
                 return result;
             }
 
-            string? profile;
-            string? targetFrameworkProfile;
-            ParseFrameworkNameParts(mappings, parts, out targetFrameworkIdentifier, out targetFrameworkVersion, out targetFrameworkProfile);
-            if (!mappings.TryGetProfile(targetFrameworkIdentifier, targetFrameworkProfile ?? string.Empty, out profile))
+            ParseFrameworkNameParts(mappings, parts, out var targetFrameworkIdentifier, out var targetFrameworkVersion, out var targetFrameworkProfile);
+            if (!mappings.TryGetProfile(targetFrameworkIdentifier, targetFrameworkProfile ?? string.Empty, out var profile))
             {
                 profile = targetFrameworkProfile;
             }
@@ -123,9 +118,7 @@ namespace NuGet.Frameworks
 
             if (!string.IsNullOrEmpty(targetPlatformMoniker) && isNet5EraTfm)
             {
-                string targetPlatformIdentifier;
-                Version platformVersion;
-                ParsePlatformParts(GetParts(targetPlatformMoniker!), out targetPlatformIdentifier, out platformVersion);
+                ParsePlatformParts(GetParts(targetPlatformMoniker!), out var targetPlatformIdentifier, out var platformVersion);
                 result = new NuGetFramework(targetFrameworkIdentifier, targetFrameworkVersion, targetPlatformIdentifier ?? string.Empty, platformVersion);
             }
             else
@@ -268,9 +261,8 @@ namespace NuGet.Frameworks
                 folderName = Uri.UnescapeDataString(folderName);
             }
 
-            NuGetFramework? result;
             // first check if we have a special or common framework
-            if (!TryParseSpecialFramework(folderName, out result)
+            if (!TryParseSpecialFramework(folderName, out var result)
                 && !TryParseCommonFramework(folderName, out result))
             {
                 // assume this is unsupported unless we find a match
@@ -341,8 +333,7 @@ namespace NuGet.Frameworks
                                     }
                                     else
                                     {
-                                        var profileNumber = -1;
-                                        if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                                        if (mappings.TryGetPortableProfile(clientFrameworks, out var profileNumber))
                                         {
                                             var portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
                                             result = new NuGetFramework(framework, version, portableProfileNumber);

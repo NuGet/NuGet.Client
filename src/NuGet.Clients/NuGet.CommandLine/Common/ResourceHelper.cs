@@ -30,8 +30,7 @@ namespace NuGet.CommandLine
                 _cachedManagers = new Dictionary<Type, ResourceManager>();
             }
 
-            ResourceManager resourceManager;
-            if (!_cachedManagers.TryGetValue(resourceType, out resourceManager))
+            if (!_cachedManagers.TryGetValue(resourceType, out var resourceManager))
             {
                 PropertyInfo property = resourceType.GetProperty("ResourceManager", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
 

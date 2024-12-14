@@ -82,8 +82,7 @@ namespace NuGet.ProjectManagement
         {
             value = default(T);
 
-            object oValue;
-            if (Metadata.TryGetValue(key, out oValue))
+            if (Metadata.TryGetValue(key, out var oValue))
             {
                 if (oValue == null)
                 {
@@ -133,8 +132,7 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(nuGetProject));
             }
 
-            string nuGetProjectName;
-            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out nuGetProjectName))
+            if (!nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string nuGetProjectName))
             {
                 // Unique name is not set, simply return the name
                 nuGetProjectName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);

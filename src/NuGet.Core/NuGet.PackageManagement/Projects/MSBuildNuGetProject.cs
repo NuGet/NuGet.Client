@@ -654,8 +654,7 @@ namespace NuGet.ProjectManagement
                 return (new List<PackageSpec>(), null);
             }
 
-            PackageSpec packageSpec = null;
-            if (!context.PackageSpecCache.TryGetValue(ProjectSystem.ProjectFileFullPath, out packageSpec))
+            if (!context.PackageSpecCache.TryGetValue(ProjectSystem.ProjectFileFullPath, out var packageSpec))
             {
                 packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
                 {

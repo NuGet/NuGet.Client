@@ -207,8 +207,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     _complexCommand = new ComplexCommand((allLines, lastLine) =>
                     {
-                        Collection<PSParseError> errors;
-                        PSParser.Tokenize(allLines, out errors);
+                        PSParser.Tokenize(allLines, out var errors);
 
                         // If there is a parse error token whose END is past input END, consider
                         // it a multi-line command.
@@ -569,8 +568,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             ActiveConsole = console;
 
-            string fullCommand;
-            if (ComplexCommand.AddLine(command, out fullCommand)
+            if (ComplexCommand.AddLine(command, out var fullCommand)
                 && !string.IsNullOrEmpty(fullCommand))
             {
                 // create a new token source with each command since CTS aren't usable once cancelled.

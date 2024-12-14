@@ -156,9 +156,8 @@ namespace NuGet.ProjectManagement
                     }
                     else
                     {
-                        Action<XElement, XElement> nodeAction;
                         if (nodeActions != null
-                            && nodeActions.TryGetValue(targetChild.Name, out nodeAction))
+                            && nodeActions.TryGetValue(targetChild.Name, out var nodeAction))
                         {
                             nodeAction(source, targetChild);
                         }
@@ -234,9 +233,8 @@ namespace NuGet.ProjectManagement
             // Loop over all the other attributes and see if there are
             foreach (var targetAttr in target.Attributes())
             {
-                string sourceValue;
                 // if any of the attributes are in the source (names match) but the value doesn't match then we've found a conflict
-                if (sourceAttr.TryGetValue(targetAttr.Name, out sourceValue)
+                if (sourceAttr.TryGetValue(targetAttr.Name, out var sourceValue)
                     && sourceValue != targetAttr.Value)
                 {
                     return true;

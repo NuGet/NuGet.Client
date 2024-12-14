@@ -194,8 +194,7 @@ namespace NuGet.Protocol
 
                 var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-                PackageInfo packageInfo;
-                if (packageInfos.TryGetValue(version, out packageInfo))
+                if (packageInfos.TryGetValue(version, out var packageInfo))
                 {
                     var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
                         packageInfo.Identity,
@@ -280,8 +279,7 @@ namespace NuGet.Protocol
 
                 var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-                PackageInfo packageInfo;
-                if (packageInfos.TryGetValue(version, out packageInfo))
+                if (packageInfos.TryGetValue(version, out var packageInfo))
                 {
                     return await _nupkgDownloader.CopyNupkgToStreamAsync(
                         packageInfo.Identity,
@@ -344,8 +342,7 @@ namespace NuGet.Protocol
 
             var packageInfos = await EnsurePackagesAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
 
-            PackageInfo packageInfo;
-            if (packageInfos.TryGetValue(packageIdentity.Version, out packageInfo))
+            if (packageInfos.TryGetValue(packageIdentity.Version, out var packageInfo))
             {
                 return new RemotePackageArchiveDownloader(_httpSource.PackageSource, this, packageInfo.Identity, cacheContext, logger);
             }

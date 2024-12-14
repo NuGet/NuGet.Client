@@ -19,8 +19,7 @@ namespace NuGet.Protocol
                 case JsonToken.Null:
                     return null;
                 case JsonToken.String:
-                    Uri uri;
-                    if (Uri.TryCreate(reader.Value.ToString().Trim(), UriKind.Absolute, out uri))
+                    if (Uri.TryCreate(reader.Value.ToString().Trim(), UriKind.Absolute, out var uri))
                     {
                         return uri;
                     }

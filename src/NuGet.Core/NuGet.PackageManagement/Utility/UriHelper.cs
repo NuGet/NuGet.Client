@@ -55,8 +55,7 @@ namespace NuGet.PackageManagement
                 return false;
             }
 
-            Uri uri;
-            if (Uri.TryCreate(source, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(source, UriKind.Absolute, out var uri))
             {
                 return IsHttpUrl(uri);
             }
@@ -121,8 +120,7 @@ namespace NuGet.PackageManagement
 
         private static bool IsLocal(string currentSource)
         {
-            Uri currentURI;
-            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out currentURI))
+            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out var currentURI))
             {
                 if (currentURI.IsFile)
                 {
@@ -137,8 +135,7 @@ namespace NuGet.PackageManagement
 
         private static bool IsUNC(string currentSource)
         {
-            Uri currentURI;
-            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out currentURI))
+            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out var currentURI))
             {
                 if (currentURI.IsUnc)
                 {

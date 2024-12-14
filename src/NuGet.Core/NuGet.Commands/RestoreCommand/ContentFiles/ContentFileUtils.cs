@@ -37,8 +37,7 @@ namespace NuGet.Commands
             {
                 var codeLanguage = (string)group.Properties[ManagedCodeConventions.PropertyNames.CodeLanguage];
 
-                List<ContentItemGroup> index;
-                if (!groupsByLanguage.TryGetValue(codeLanguage, out index))
+                if (!groupsByLanguage.TryGetValue(codeLanguage, out var index))
                 {
                     index = new List<ContentItemGroup>(1);
                     groupsByLanguage.Add(codeLanguage, index);

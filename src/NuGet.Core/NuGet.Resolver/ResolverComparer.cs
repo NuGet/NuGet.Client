@@ -120,8 +120,7 @@ namespace NuGet.Resolver
             if (packageBehavior != DependencyBehavior.Highest
                 && packageBehavior != DependencyBehavior.Ignore)
             {
-                NuGetVersion installedVersion = null;
-                if (_installedVersions.TryGetValue(x.Id, out installedVersion))
+                if (_installedVersions.TryGetValue(x.Id, out var installedVersion))
                 {
                     var xvDowngrade = _versionComparer.Compare(xv, installedVersion) < 0;
                     var yvDowngrade = _versionComparer.Compare(yv, installedVersion) < 0;

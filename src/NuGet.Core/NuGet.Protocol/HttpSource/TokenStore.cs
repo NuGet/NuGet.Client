@@ -16,8 +16,7 @@ namespace NuGet.Protocol
 
         public string GetToken(Uri sourceUri)
         {
-            string token;
-            if (_tokenCache.TryGetValue(sourceUri, out token))
+            if (_tokenCache.TryGetValue(sourceUri, out var token))
             {
                 return token;
             }

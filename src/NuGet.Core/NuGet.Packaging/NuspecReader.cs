@@ -242,8 +242,7 @@ namespace NuGet.Packaging
                 // apply items to each framework
                 foreach (var framework in frameworks)
                 {
-                    HashSet<string> items = null;
-                    if (!groups.TryGetValue(framework, out items))
+                    if (!groups.TryGetValue(framework, out var items))
                     {
                         items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         groups.Add(framework, items);

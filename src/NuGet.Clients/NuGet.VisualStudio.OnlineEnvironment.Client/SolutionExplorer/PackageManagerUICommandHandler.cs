@@ -262,8 +262,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
             Assumes.Present(uiShell);
 
-            uint toolWindowId;
-            bool foundToolWindowId = _projectGuidToToolWindowId.TryGetValue(projectGuid.ToString(), out toolWindowId);
+            bool foundToolWindowId = _projectGuidToToolWindowId.TryGetValue(projectGuid.ToString(), out var toolWindowId);
             const uint FTW_none = 0;
 
             if (foundToolWindowId)
@@ -338,8 +337,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
-                object property;
-                var hr = windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocData, out property);
+                var hr = windowFrame.GetProperty((int)__VSFPROPID.VSFPROPID_DocData, out var property);
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 if (hr == VSConstants.S_OK
                     && property is IVsSolution

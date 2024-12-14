@@ -83,8 +83,7 @@ namespace NuGet.PackageManagement
                 foreach (var dependency in package.Dependencies)
                 {
                     allowed.Add(dependency.Id);
-                    SourcePackageDependencyInfo[] packages;
-                    if (packagesDict.TryGetValue(dependency.Id, out packages))
+                    if (packagesDict.TryGetValue(dependency.Id, out var packages))
                     {
                         foreach (var dependentPackage in packages)
                         {

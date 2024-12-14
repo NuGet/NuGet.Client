@@ -49,9 +49,7 @@ namespace NuGet.CommandLine.XPlat
 
         private PackageSearchFormat GetFormatFromOption(string format)
         {
-            PackageSearchFormat packageSearchFormat;
-
-            if (!Enum.TryParse(format, ignoreCase: true, out packageSearchFormat))
+            if (!Enum.TryParse(format, ignoreCase: true, out PackageSearchFormat packageSearchFormat))
             {
                 packageSearchFormat = PackageSearchFormat.Table;
             }
@@ -61,9 +59,7 @@ namespace NuGet.CommandLine.XPlat
 
         private PackageSearchVerbosity GetVerbosityFromOption(string verbosity)
         {
-            PackageSearchVerbosity packageSearchVerbosity;
-
-            if (!Enum.TryParse(verbosity, ignoreCase: true, out packageSearchVerbosity))
+            if (!Enum.TryParse(verbosity, ignoreCase: true, out PackageSearchVerbosity packageSearchVerbosity))
             {
                 packageSearchVerbosity = PackageSearchVerbosity.Normal;
             }

@@ -27,16 +27,14 @@ namespace NuGet.PackageManagement
                     if (dependencyPackageIdentity != null)
                     {
                         // Update the package dependents dictionary
-                        HashSet<PackageIdentity> dependents;
-                        if (!dependentsDict.TryGetValue(dependencyPackageIdentity, out dependents))
+                        if (!dependentsDict.TryGetValue(dependencyPackageIdentity, out var dependents))
                         {
                             dependentsDict[dependencyPackageIdentity] = dependents = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
                         }
                         dependents.Add(packageIdentity);
 
                         // Update the package dependencies dictionary
-                        HashSet<PackageIdentity> dependencies;
-                        if (!dependenciesDict.TryGetValue(packageIdentity, out dependencies))
+                        if (!dependenciesDict.TryGetValue(packageIdentity, out var dependencies))
                         {
                             dependenciesDict[packageIdentity] = dependencies = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
                         }
@@ -51,8 +49,7 @@ namespace NuGet.PackageManagement
         public static ICollection<PackageIdentity> GetPackagesToBeUninstalled(PackageIdentity packageIdentity, IEnumerable<PackageDependencyInfo> dependencyInfoEnumerable,
             IEnumerable<PackageIdentity> installedPackages, UninstallationContext uninstallationContext)
         {
-            IDictionary<PackageIdentity, HashSet<PackageIdentity>> dependenciesDictionary;
-            var dependentsDictionary = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out dependenciesDictionary);
+            var dependentsDictionary = GetPackageDependents(dependencyInfoEnumerable, installedPackages, out var dependenciesDictionary);
             var packagesMarkedForUninstall =
                 MarkPackagesToBeUninstalled(packageIdentity, dependenciesDictionary, uninstallationContext);
 
@@ -66,8 +63,7 @@ namespace NuGet.PackageManagement
             UninstallationContext uninstallationContext,
             HashSet<PackageIdentity> packagesMarkedForUninstall)
         {
-            HashSet<PackageIdentity> dependents;
-            if (dependentsDict.TryGetValue(packageIdentity, out dependents)
+            if (dependentsDict.TryGetValue(packageIdentity, out var dependents)
                 && dependents != null)
             {
                 if (!uninstallationContext.ForceRemove)
@@ -80,9 +76,8 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            HashSet<PackageIdentity> dependencies;
             if (uninstallationContext.RemoveDependencies
-                && dependenciesDict.TryGetValue(packageIdentity, out dependencies)
+                && dependenciesDict.TryGetValue(packageIdentity, out var dependencies)
                 && dependencies != null)
             {
                 foreach (var dependency in dependencies)
@@ -110,9 +105,8 @@ namespace NuGet.PackageManagement
                 var headPackage = breathFirstSearchQueue.Dequeue();
                 markedPackages.Add(headPackage);
 
-                HashSet<PackageIdentity> dependencies;
                 if (uninstallationContext.RemoveDependencies
-                    && dependenciesDict.TryGetValue(headPackage, out dependencies)
+                    && dependenciesDict.TryGetValue(headPackage, out var dependencies)
                     && dependencies != null)
                 {
                     foreach (var dependency in dependencies)

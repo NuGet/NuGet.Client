@@ -66,8 +66,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            PackageSpec project;
-            _projects.TryGetValue(projectUniqueName, out project);
+            _projects.TryGetValue(projectUniqueName, out var project);
 
             return project;
         }

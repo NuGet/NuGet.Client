@@ -125,11 +125,8 @@ namespace NuGet.VisualStudio
 
             value = value.Trim();
 
-            bool boolResult;
-            int intResult;
-
-            var result = ((bool.TryParse(value, out boolResult) && boolResult) ||
-                          (int.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out intResult) && (intResult == 1)));
+            var result = ((bool.TryParse(value, out var boolResult) && boolResult) ||
+                          (int.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var intResult) && (intResult == 1)));
 
             return result;
         }

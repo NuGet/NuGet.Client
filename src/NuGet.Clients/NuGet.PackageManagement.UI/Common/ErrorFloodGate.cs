@@ -48,8 +48,7 @@ namespace NuGet.PackageManagement.UI
             {
                 while (q.Count > 0)
                 {
-                    int result;
-                    bool peekSucceeded = q.TryPeek(out result);
+                    bool peekSucceeded = q.TryPeek(out var result);
                     if (!peekSucceeded)
                     {
                         continue;

@@ -532,9 +532,7 @@ namespace NuGet.Protocol.Plugins
                 return;
             }
 
-            OutboundRequestContext requestContext;
-
-            if (_outboundRequestContexts.TryGetValue(e.Message.RequestId, out requestContext))
+            if (_outboundRequestContexts.TryGetValue(e.Message.RequestId, out var requestContext))
             {
                 switch (e.Message.Type)
                 {
@@ -590,9 +588,7 @@ namespace NuGet.Protocol.Plugins
 
         private void HandleInboundCancel(Message message)
         {
-            InboundRequestContext requestContext;
-
-            if (_inboundRequestContexts.TryGetValue(message.RequestId, out requestContext))
+            if (_inboundRequestContexts.TryGetValue(message.RequestId, out var requestContext))
             {
                 requestContext.Cancel();
             }
@@ -642,9 +638,7 @@ namespace NuGet.Protocol.Plugins
 
         private IRequestHandler GetInboundRequestHandler(MessageMethod method)
         {
-            IRequestHandler handler;
-
-            if (!RequestHandlers.TryGet(method, out handler))
+            if (!RequestHandlers.TryGet(method, out var handler))
             {
                 throw new ProtocolException(
                     string.Format(CultureInfo.CurrentCulture, Strings.Plugin_RequestHandlerDoesNotExist, method));
@@ -655,9 +649,7 @@ namespace NuGet.Protocol.Plugins
 
         private OutboundRequestContext GetOutboundRequestContext(string requestId)
         {
-            OutboundRequestContext requestContext;
-
-            if (!_outboundRequestContexts.TryGetValue(requestId, out requestContext))
+            if (!_outboundRequestContexts.TryGetValue(requestId, out var requestContext))
             {
                 throw new ProtocolException(
                     string.Format(CultureInfo.CurrentCulture, Strings.Plugin_RequestContextDoesNotExist, requestId));
@@ -668,9 +660,7 @@ namespace NuGet.Protocol.Plugins
 
         private void RemoveInboundRequestContext(string requestId)
         {
-            InboundRequestContext requestContext;
-
-            if (_inboundRequestContexts.TryRemove(requestId, out requestContext))
+            if (_inboundRequestContexts.TryRemove(requestId, out var requestContext))
             {
                 requestContext.Dispose();
             }
@@ -678,9 +668,7 @@ namespace NuGet.Protocol.Plugins
 
         private void RemoveOutboundRequestContext(string requestId)
         {
-            OutboundRequestContext requestContext;
-
-            if (_outboundRequestContexts.TryRemove(requestId, out requestContext))
+            if (_outboundRequestContexts.TryRemove(requestId, out var requestContext))
             {
                 requestContext.Dispose();
             }

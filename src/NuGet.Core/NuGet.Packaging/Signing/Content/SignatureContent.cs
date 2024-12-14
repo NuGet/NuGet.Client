@@ -168,8 +168,7 @@ namespace NuGet.Packaging.Signing
         {
             const string Version = "Version";
 
-            string signatureFormatVersion;
-            if (!properties.TryGetValue(Version, out signatureFormatVersion))
+            if (!properties.TryGetValue(Version, out var signatureFormatVersion))
             {
                 throw new SignatureException(Strings.InvalidSignatureContent);
             }

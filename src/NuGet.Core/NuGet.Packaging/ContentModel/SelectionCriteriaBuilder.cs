@@ -44,8 +44,7 @@ namespace NuGet.ContentModel
         {
             get
             {
-                ContentPropertyDefinition propertyDefinition;
-                if (!Builder.Properties.TryGetValue(key, out propertyDefinition))
+                if (!Builder.Properties.TryGetValue(key, out var propertyDefinition))
                 {
                     throw new Exception("Undefined property used for criteria");
                 }
@@ -55,8 +54,7 @@ namespace NuGet.ContentModel
                 }
                 else
                 {
-                    object valueLookup;
-                    if (propertyDefinition.TryLookup(value.AsMemory(), table: null, matchOnly: false, value: out valueLookup))
+                    if (propertyDefinition.TryLookup(value.AsMemory(), table: null, matchOnly: false, value: out var valueLookup))
                     {
                         Entry.Properties[key] = valueLookup;
                     }

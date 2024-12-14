@@ -91,10 +91,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 fClearWithSolution: 0);
             ErrorHandler.ThrowOnFailure(hr);
 
-            IVsOutputWindowPane pane;
             hr = outputWindow.GetPane(
                 ref GuidList.GuidNuGetOutputWindowPaneGuid,
-                out pane);
+                out var pane);
             ErrorHandler.ThrowOnFailure(hr);
 
             Guid outputToolWindow = VSConstants.StandardToolWindows.Output;

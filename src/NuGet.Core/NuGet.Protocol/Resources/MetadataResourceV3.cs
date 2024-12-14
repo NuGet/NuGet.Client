@@ -104,10 +104,8 @@ namespace NuGet.Protocol
 
             foreach (var catalogEntry in entries)
             {
-                NuGetVersion version = null;
-
                 if (catalogEntry["version"] != null
-                    && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
+                    && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out var version))
                 {
                     if (includePrerelease || !version.IsPrerelease)
                     {

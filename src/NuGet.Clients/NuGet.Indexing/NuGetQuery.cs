@@ -18,8 +18,7 @@ namespace NuGet.Indexing
             var grouping = new Dictionary<string, HashSet<string>>();
             foreach (Clause clause in MakeClauses(Tokenize(q)))
             {
-                HashSet<string> text;
-                if (!grouping.TryGetValue(clause.Field, out text))
+                if (!grouping.TryGetValue(clause.Field, out var text))
                 {
                     text = new HashSet<string>();
                     grouping.Add(clause.Field, text);

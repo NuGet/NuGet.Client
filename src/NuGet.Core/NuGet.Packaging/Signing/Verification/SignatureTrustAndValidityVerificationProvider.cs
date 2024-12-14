@@ -208,9 +208,8 @@ namespace NuGet.Packaging.Signing
         {
             var issues = new List<SignatureLog>();
             SignatureVerificationStatus status;
-            SignatureVerificationStatusFlags statusFlags;
 
-            var succeeded = signature.TryGetValidTimestamp(verifierSettings, _fingerprintAlgorithm, issues, out statusFlags, out timestamp);
+            var succeeded = signature.TryGetValidTimestamp(verifierSettings, _fingerprintAlgorithm, issues, out var statusFlags, out timestamp);
 
             status = VerificationUtility.GetSignatureVerificationStatus(statusFlags);
 
@@ -232,8 +231,7 @@ namespace NuGet.Packaging.Signing
             SignatureVerifySettings settings,
             X509Certificate2Collection certificateExtraStore)
         {
-            Timestamp timestamp;
-            var timestampSummary = GetTimestamp(signature, verifierSettings, out timestamp);
+            var timestampSummary = GetTimestamp(signature, verifierSettings, out var timestamp);
 
             var status = signature.Verify(
             timestamp,

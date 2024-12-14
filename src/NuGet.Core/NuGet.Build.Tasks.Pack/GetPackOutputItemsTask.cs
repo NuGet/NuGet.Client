@@ -41,8 +41,7 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-            NuGetVersion version;
-            if (!NuGetVersion.TryParse(PackageVersion, out version))
+            if (!NuGetVersion.TryParse(PackageVersion, out var version))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,

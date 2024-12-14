@@ -35,8 +35,7 @@ namespace NuGet.PackageManagement.UI
 
         public UserSettings GetSettings(string key)
         {
-            UserSettings settings;
-            if (_settings.WindowSettings.TryGetValue(key, out settings))
+            if (_settings.WindowSettings.TryGetValue(key, out var settings))
             {
                 return settings ?? new UserSettings();
             }

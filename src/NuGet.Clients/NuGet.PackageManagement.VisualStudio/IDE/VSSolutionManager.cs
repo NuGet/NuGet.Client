@@ -330,8 +330,7 @@ namespace NuGet.PackageManagement.VisualStudio
             foreach (var project in netCoreProjects)
             {
                 // check if this .Net core project is nominated or not.
-                DependencyGraphSpec projectRestoreInfo;
-                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo, nominationMessages: out _) ||
+                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out var projectRestoreInfo, nominationMessages: out _) ||
                     projectRestoreInfo == null)
                 {
                     // there are projects still to be nominated.
@@ -682,8 +681,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            NuGetProject nuGetProject;
-            _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+            _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out var nuGetProject);
 
             RemoveVsProjectAdapterFromCache(envDTEProject.FullName);
 
@@ -704,8 +702,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
                     var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(envDTEProject);
                     await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                    NuGetProject nuGetProject;
-                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+                    _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out var nuGetProject);
 
                     NuGetProjectAdded?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
                 }

@@ -410,8 +410,8 @@ namespace NuGet.Commands
             {
                 builder.Owners.AddRange(spec.Owners);
             }
-            Uri tempUri;
-            if (Uri.TryCreate(spec.LicenseUrl, UriKind.Absolute, out tempUri))
+
+            if (Uri.TryCreate(spec.LicenseUrl, UriKind.Absolute, out var tempUri))
             {
                 builder.LicenseUrl = tempUri;
             }
@@ -450,9 +450,7 @@ namespace NuGet.Commands
             {
                 if (spec.PackOptions.IncludeExcludeFiles != null)
                 {
-                    string fullExclude;
-                    string filesExclude;
-                    CalculateExcludes(spec.PackOptions.IncludeExcludeFiles, out fullExclude, out filesExclude);
+                    CalculateExcludes(spec.PackOptions.IncludeExcludeFiles, out var fullExclude, out var filesExclude);
 
                     if (spec.PackOptions.IncludeExcludeFiles.Include != null)
                     {
@@ -477,9 +475,7 @@ namespace NuGet.Commands
                 {
                     foreach (KeyValuePair<string, IncludeExcludeFiles> map in spec.PackOptions.Mappings)
                     {
-                        string fullExclude;
-                        string filesExclude;
-                        CalculateExcludes(map.Value, out fullExclude, out filesExclude);
+                        CalculateExcludes(map.Value, out var fullExclude, out var filesExclude);
 
                         if (map.Value.Include != null)
                         {

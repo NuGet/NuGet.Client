@@ -84,10 +84,8 @@ namespace NuGet.Protocol
 
                     var groupDependencies = new List<PackageDependency>();
 
-                    JToken dependenciesObj;
-
                     // Packages with no dependencies have 'dependencyGroups' but no 'dependencies'
-                    if (dependencyGroupObj.TryGetValue("dependencies", out dependenciesObj))
+                    if (dependencyGroupObj.TryGetValue("dependencies", out var dependenciesObj))
                     {
                         foreach (JObject dependencyObj in dependenciesObj)
                         {

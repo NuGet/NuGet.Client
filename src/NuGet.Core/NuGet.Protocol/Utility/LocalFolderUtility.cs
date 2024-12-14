@@ -598,8 +598,7 @@ namespace NuGet.Protocol
             {
                 var versionString = idVersionString.Substring(prefix.Length);
 
-                NuGetVersion version;
-                if (NuGetVersion.TryParse(versionString, out version))
+                if (NuGetVersion.TryParse(versionString, out var version))
                 {
                     return version;
                 }
@@ -1256,8 +1255,7 @@ namespace NuGet.Protocol
 
         private static LocalPackageInfo GetPackageV3(string root, string id, string version, ILogger log)
         {
-            NuGetVersion nugetVersion;
-            if (NuGetVersion.TryParse(version, out nugetVersion))
+            if (NuGetVersion.TryParse(version, out var nugetVersion))
             {
                 var identity = new PackageIdentity(id, nugetVersion);
 

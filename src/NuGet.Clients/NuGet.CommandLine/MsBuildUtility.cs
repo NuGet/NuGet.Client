@@ -809,10 +809,8 @@ namespace NuGet.CommandLine
             // without the safe fallback to 0.0 built into t.ParsedToolsVersion.
             selectedToolset = installedToolsets.FirstOrDefault(t =>
             {
-                Version parsedUserVersion;
-                Version parsedToolsVersion;
-                if (Version.TryParse(userVersionString, out parsedUserVersion) &&
-                    Version.TryParse(t.Version, out parsedToolsVersion))
+                if (Version.TryParse(userVersionString, out var parsedUserVersion) &&
+                    Version.TryParse(t.Version, out var parsedToolsVersion))
                 {
                     return parsedToolsVersion.Major == parsedUserVersion.Major &&
                         parsedToolsVersion.Minor == parsedUserVersion.Minor;
@@ -945,8 +943,7 @@ namespace NuGet.CommandLine
             while (true)
             {
                 var fetchedInstances = new ISetupInstance[3];
-                int fetched;
-                enumerator.Next(fetchedInstances.Length, fetchedInstances, out fetched);
+                enumerator.Next(fetchedInstances.Length, fetchedInstances, out var fetched);
                 if (fetched == 0)
                 {
                     break;
