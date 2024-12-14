@@ -18,7 +18,7 @@
   </UserControl.Resources>
   <Grid>
     <TextBlock Margin="0,0,9,0" TextWrapping="Wrap">
-        <Run Text="The General page for NuGet has moved to Unified Settings" />
+        <Run Text="This settings page has moved to unified settings." />
         <Control Margin="6,0,0,0" IsTabStop="False" />
         <controls:ButtonHyperlink Click="SettingsButtonClicked"
                    AutomationProperties.Name="Open the settings page">

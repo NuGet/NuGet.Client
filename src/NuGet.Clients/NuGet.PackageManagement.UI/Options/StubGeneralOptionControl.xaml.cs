@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI.Options
         private void SettingsButtonClicked(object sender, RoutedEventArgs e)
         {
             bool? isUserSavingChanges = MessageHelper.ShowQueryMessage(
-                message: "Save any changes made prior to closing this dialog?",
+                message: "Do you want to save any changes and open unified settings?",
                 title: null,
                 showCancelButton: true);
 
