@@ -94,15 +94,14 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logMessage));
             }
 
+            if (ShouldFormatWithTime)
+            {
+                logMessage = FormatWithTime(logMessage);
+            }
+
             lock (_streamWriterLock)
             {
-                string message = logMessage;
-                if (ShouldFormatWithTime)
-                {
-                    message = FormatWithTime(logMessage);
-                }
-                _streamWriter.Value.WriteLine(message);
-
+                _streamWriter.Value.WriteLine(logMessage);
             }
         }
 
