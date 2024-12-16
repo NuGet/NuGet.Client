@@ -56,7 +56,7 @@ namespace NuGet.Credentials
             Path = path;
             TimeoutSeconds = timeoutSeconds;
             var filename = System.IO.Path.GetFileName(path);
-            Id = $"{typeof(PluginCredentialProvider).Name}_{filename}_{Guid.NewGuid()}";
+            Id = $"{nameof(PluginCredentialProvider)}_{filename}_{Guid.NewGuid()}";
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _webProxyService = webProxyService;
             _joinableTaskFactory = joinableTaskFactory;
-            Id = $"{typeof(VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
+            Id = $"{nameof(VisualStudioCredentialProvider)}_{Guid.NewGuid()}";
         }
 
         /// <summary>

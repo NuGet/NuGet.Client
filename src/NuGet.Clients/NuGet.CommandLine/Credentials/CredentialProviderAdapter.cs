@@ -25,7 +25,7 @@ namespace NuGet.Credentials
             }
 
             _provider = provider;
-            Id = $"{typeof(CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
+            Id = $"{nameof(CredentialProviderAdapter)}_{provider.GetType().Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>

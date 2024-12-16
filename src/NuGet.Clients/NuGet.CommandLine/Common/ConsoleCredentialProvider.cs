@@ -13,7 +13,7 @@ namespace NuGet.CommandLine
         public ConsoleCredentialProvider(IConsole console)
         {
             Console = console;
-            Id = $"{typeof(ConsoleCredentialProvider).Name}_{Guid.NewGuid()}";
+            Id = $"{nameof(ConsoleCredentialProvider)}_{Guid.NewGuid()}";
         }
 
         /// <summary>

@@ -29,10 +29,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string TypeNamePropertyName = "typename";
         private const string WarningLevelPropertyName = "warninglevel";
 
-        private static readonly string LogMessageTypeName = typeof(LogMessage).Name;
-        private static readonly string PackagingLogMessageTypeName = typeof(PackagingLogMessage).Name;
-        private static readonly string RestoreLogMessageTypeName = typeof(RestoreLogMessage).Name;
-        private static readonly string SignatureLogTypeName = typeof(SignatureLog).Name;
+        private static readonly string LogMessageTypeName = nameof(LogMessage);
+        private static readonly string PackagingLogMessageTypeName = nameof(PackagingLogMessage);
+        private static readonly string RestoreLogMessageTypeName = nameof(RestoreLogMessage);
+        private static readonly string SignatureLogTypeName = nameof(SignatureLog);
 
         internal static readonly IMessagePackFormatter<ILogMessage?> Instance = new ILogMessageFormatter();
 
