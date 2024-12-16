@@ -276,7 +276,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void ClearFromCache_WhenCalled_PackageSearchMetadataMemoryCacheHasItemCleared()
+        public void ClearFromCache_WhenPackageSearchMetadataMemoryCacheHasItem_ItemCleared()
         {
             using (NuGetPackageSearchService searchService = SetupSearchService())
             {
@@ -290,16 +290,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
                 };
 
-                string cacheId = PackageSearchMetadataCacheItem.GetCacheId(packageMetadata.Identity.Id, true, packageSources);
+                string cacheId = PackageSearchMetadataCacheItem.GetCacheId(packageMetadata.Identity.Id, includePrerelease: true, packageSources);
                 var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, metadataProvider);
                 NuGetPackageSearchService.PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
 
-                string cacheIdToRemove = PackageSearchMetadataCacheItem.GetCacheId(packageMetadataToRemove.Identity.Id, true, packageSources);
+                string cacheIdToRemove = PackageSearchMetadataCacheItem.GetCacheId(packageMetadataToRemove.Identity.Id, includePrerelease: true, packageSources);
                 var cacheEntryToRemove = new PackageSearchMetadataCacheItem(packageMetadataToRemove, metadataProvider);
                 NuGetPackageSearchService.PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheIdToRemove, cacheEntryToRemove, _cacheItemPolicy);
 
 
-                searchService.ClearFromCache(packageMetadataToRemove.Identity.Id, packageSources, true);
+                searchService.ClearFromCache(packageMetadataToRemove.Identity.Id, packageSources, includePrerelease: true);
 
                 Assert.Equal(1, NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Count());
                 Assert.Null(NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Get(cacheIdToRemove));
