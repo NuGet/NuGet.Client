@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
 
-        private int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Where(i => i.IsPackageVulnerable).Count();
+        private int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Count(i => i.IsPackageVulnerable);
 
         public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
