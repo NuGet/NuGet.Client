@@ -910,6 +910,8 @@ namespace NuGet.Tests.Apex.Daily
             }
             else
             {
+                project.Unload();
+                project.Reload();
                 nugetTestService.WaitForAutoRestore();
             }
 
