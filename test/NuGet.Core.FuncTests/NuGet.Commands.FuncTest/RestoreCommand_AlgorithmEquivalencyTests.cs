@@ -1775,6 +1775,94 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeFalse();
         }
 
+        // Project1 -> A 1.0.*  -> C 1.0.0
+        //             B 1.0.*  -> C 1.0.0
+        //             Project2 -> C 1.0.*
+        [Theory]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.*")]
+        public async Task RestoreCommand_WithTransitiveFloatingVersion_ResolvesCorrectly(string floatingVersion)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("A", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("C", "1.0.0")
+                ]
+            };
+
+            var packageB = new SimpleTestPackageContext("B", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("C", "1.0.0")
+                ]
+            };
+
+            var packageC101 = new SimpleTestPackageContext("C", "1.0.1");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB,
+                packageC101);
+
+            var project2Spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(
+                "Project2",
+                pathContext.SolutionRoot,
+                @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                      ""dependencies"": {
+                        ""C"": """ + floatingVersion + @""",
+                      }
+                    }
+                  }
+                }");
+
+            var project1Spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(
+                "Project1",
+                pathContext.SolutionRoot,
+                @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                      ""dependencies"": {
+                        ""A"": ""1.0.*"",
+                        ""B"": ""1.0.*""
+                      }
+                    }
+                  }
+                }")
+                .WithTestProjectReference(project2Spec);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1Spec, project2Spec);
+
+            // Additional assert
+            result.Success.Should().BeTrue();
+            result.LogMessages.Should().BeEmpty();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("A");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("B");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.1"));
+
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
         // P1 -> P2 -> B *
         // P1 -> A -> B 1.0.0
         [Theory]
