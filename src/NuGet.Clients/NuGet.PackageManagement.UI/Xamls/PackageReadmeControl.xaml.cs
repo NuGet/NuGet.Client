@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -29,6 +30,22 @@ namespace NuGet.PackageManagement.UI
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
+
+        public async Task InitializeAsync()
+        {
+            if (_markdownPreview is null)
+            {
+                await TaskScheduler.Default;
+                var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+                var markdownPreviewSingleton = componentModel.GetService<MarkdownPreviewSingleton>();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _markdownPreview = markdownPreviewSingleton.GetInstance();
+            }
+            if (descriptionMarkdownPreview.Content is null)
+            {
+                descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
+            }
+        }
 
         private void ReadmeViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -79,7 +96,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
                 });
-                ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
         }
 
@@ -87,10 +103,6 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
-                var markdownPreviewSingleton = componentModel.GetService<MarkdownPreviewSingleton>();
-                _markdownPreview = markdownPreviewSingleton.GetInstance();
-                descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
                 await UpdateMarkdownAsync();
             });
         }

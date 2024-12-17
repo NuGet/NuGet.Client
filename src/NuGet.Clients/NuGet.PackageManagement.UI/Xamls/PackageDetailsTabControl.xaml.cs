@@ -24,7 +24,10 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
             DataContext = new PackageDetailsTabViewModel();
+            PackageReadmeControl = new PackageReadmeControl();
         }
+
+        public PackageReadmeControl PackageReadmeControl { get; private set; }
 
         public void Dispose()
         {

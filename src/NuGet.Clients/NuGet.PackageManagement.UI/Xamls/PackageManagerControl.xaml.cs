@@ -148,7 +148,7 @@ namespace NuGet.PackageManagement.UI
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
 
             await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.InitializeAsync(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab);
-
+            await _packageDetail._packageDetailsTabControl.PackageReadmeControl.InitializeAsync();
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
