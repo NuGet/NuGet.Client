@@ -37,13 +37,20 @@ namespace NuGet.PackageManagement.UI
             {
                 await TaskScheduler.Default;
                 var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
-                var markdownPreviewSingleton = componentModel.GetService<MarkdownPreviewSingleton>();
+                var markdownPreviewSingleton = componentModel?.GetService<MarkdownPreviewSingleton>();
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _markdownPreview = markdownPreviewSingleton.GetInstance();
+                if (markdownPreviewSingleton is null)
+                {
+                    await TelemetryUtility.PostFaultAsync(new InvalidOperationException("MarkdownPreviewSingleton is null"), nameof(PackageReadmeControl), nameof(InitializeAsync));
+                }
+                else
+                {
+                    _markdownPreview = markdownPreviewSingleton.GetInstance();
+                }
             }
             if (descriptionMarkdownPreview.Content is null)
             {
-                descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
+                descriptionMarkdownPreview.Content = _markdownPreview?.VisualElement;
             }
         }
 
@@ -59,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                if (_markdownPreview is not null && !string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
                     await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
                 }
@@ -90,7 +97,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (ReadmeViewModel is not null)
+            if (ReadmeViewModel is not null && _markdownPreview is not null)
             {
                 ThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
@@ -103,6 +110,11 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
+                await InitializeAsync();
+                if (_markdownPreview is null)
+                {
+                    ReadmeViewModel.SetVisibility(false);
+                }
                 await UpdateMarkdownAsync();
             });
         }
