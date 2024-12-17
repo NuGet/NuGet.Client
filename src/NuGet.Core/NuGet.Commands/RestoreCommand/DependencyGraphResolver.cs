@@ -91,7 +91,7 @@ namespace NuGet.Commands
                     hasInstallBeenCalledAlready = true;
                 }
 
-                TargetFrameworkInformation projectTargetFramework = _request.Project.GetTargetFramework(pair.Framework)!;
+                TargetFrameworkInformation? projectTargetFramework = _request.Project.GetTargetFramework(pair.Framework);
 
                 var unresolvedPackages = new HashSet<LibraryRange>();
 
@@ -151,6 +151,8 @@ namespace NuGet.Commands
                         pinnedPackageVersions[depIndex] = item.Value.VersionRange;
                     }
                 }
+
+                Dictionary<LibraryDependencyIndex, VersionRange>? prunedPackageVersions = GetAndIndexPackagesToPrune(libraryDependencyInterningTable, projectTargetFramework);
 
                 DependencyGraphItem rootProjectRefItem = new()
                 {
@@ -635,21 +637,21 @@ namespace NuGet.Commands
                         suppressions = currentSuppressions;
                     }
 
-                    List<int>? prunedPackageIndices = null;
+                    HashSet<int>? prunedPackageIndices = null;
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
                         LibraryDependency dep = refItemResult.Item.Data.Dependencies[i];
                         bool isPackage = dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
                         bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && isPackage;
 
-                        if (ShouldPrunePackage(projectTargetFramework!, refItemResult, dep, isPackage, isDirectPackageReferenceFromRootProject))
+                        LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
+
+                        if (ShouldPrunePackage(prunedPackageVersions, refItemResult, dep, depIndex, isPackage, isDirectPackageReferenceFromRootProject))
                         {
                             prunedPackageIndices ??= [];
                             prunedPackageIndices.Add(i);
                             continue;
                         }
-
-                        LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 
                         // Skip this node if the VersionRange is null or if its not transitively pinned and PrivateAssets=All
                         if (dep.LibraryRange.VersionRange == null || (!importRefItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(depIndex)))
@@ -760,7 +762,8 @@ namespace NuGet.Commands
                         {
                             foreach (var dep in runtimeDependencies)
                             {
-                                if (ShouldPrunePackage(projectTargetFramework!, refItemResult, dep, isPackage: true, isDirectPackageReferenceFromRootProject: false))
+                                var libraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex);
+                                if (ShouldPrunePackage(prunedPackageVersions, refItemResult, dep, libraryDependencyIndex, isPackage: true, isDirectPackageReferenceFromRootProject: false))
                                 {
                                     prunedPackageIndices ??= [];
                                     prunedPackageIndices.Add(runtimeDependencyIndex);
@@ -771,7 +774,7 @@ namespace NuGet.Commands
                                 DependencyGraphItem runtimeDependencyGraphItem = new()
                                 {
                                     LibraryDependency = dep,
-                                    LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
+                                    LibraryDependencyIndex = libraryDependencyIndex,
                                     LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
                                     Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
                                     Parent = currentRefRangeIndex,
@@ -806,7 +809,7 @@ namespace NuGet.Commands
                     // If the latest item was chosen, keep track of the pruned dependency indices.
                     if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out ResolvedDependencyGraphItem? resolvedGraphItem))
                     {
-                        resolvedGraphItem.PrunedDependencyIndices = prunedPackageIndices;
+                        resolvedGraphItem.PrunedDependencies = prunedPackageIndices;
                     }
                 }
 
@@ -864,7 +867,7 @@ namespace NuGet.Commands
                                 continue;
                             }
 
-                            if (foundItem.PrunedDependencyIndices != null && foundItem.PrunedDependencyIndices.Contains(i))
+                            if (foundItem.PrunedDependencies?.Contains(i) == true)
                             {
                                 continue;
                             }
@@ -1059,15 +1062,15 @@ namespace NuGet.Commands
                                 child: newGraphNode.Item.Key));
                         }
 
-                        if (foundItem.PrunedDependencyIndices != null && foundItem.PrunedDependencyIndices!.Count > 0)
+                        if (foundItem.PrunedDependencies?.Count > 0)
                         {
-                            int dependencyCount = node.Item.Data.Dependencies.Count - foundItem.PrunedDependencyIndices.Count;
+                            int dependencyCount = node.Item.Data.Dependencies.Count - foundItem.PrunedDependencies.Count;
 
                             List<LibraryDependency> dependencies = dependencyCount > 0 ? new(dependencyCount) : [];
 
                             for (int i = 0; dependencyCount > 0 && i < node.Item.Data.Dependencies.Count; i++)
                             {
-                                if (!foundItem.PrunedDependencyIndices.Contains(i))
+                                if (!foundItem.PrunedDependencies.Contains(i))
                                 {
                                     dependencies.Add(node.Item.Data.Dependencies[i]);
                                 }
@@ -1253,11 +1256,29 @@ namespace NuGet.Commands
             return (_success, allGraphs, allRuntimes);
         }
 
-        private bool ShouldPrunePackage(TargetFrameworkInformation projectTargetFramework, FindLibraryEntryResult refItemResult, LibraryDependency dep, bool isPackage, bool isDirectPackageReferenceFromRootProject)
+        private static Dictionary<LibraryDependencyIndex, VersionRange>? GetAndIndexPackagesToPrune(LibraryDependencyInterningTable libraryDependencyInterningTable, TargetFrameworkInformation? projectTargetFramework)
         {
-            if (projectTargetFramework!.PackagesToPrune.TryGetValue(dep.Name, out PrunePackageReference? prunableVersion))
+            Dictionary<LibraryDependencyIndex, VersionRange>? prunedPackageVersions = null;
+
+            if (projectTargetFramework?.PackagesToPrune.Count > 0)
             {
-                if (dep.LibraryRange!.VersionRange!.Satisfies(prunableVersion.VersionRange!.MaxVersion!))
+                prunedPackageVersions = new Dictionary<LibraryDependencyIndex, VersionRange>(capacity: projectTargetFramework.PackagesToPrune.Count);
+
+                foreach (var item in projectTargetFramework.PackagesToPrune)
+                {
+                    LibraryDependencyIndex depIndex = libraryDependencyInterningTable.Intern(item.Value);
+                    prunedPackageVersions[depIndex] = item.Value.VersionRange;
+                }
+            }
+
+            return prunedPackageVersions;
+        }
+
+        private bool ShouldPrunePackage(IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? packagesToPrune, FindLibraryEntryResult refItemResult, LibraryDependency dep, LibraryDependencyIndex libraryDependencyIndex, bool isPackage, bool isDirectPackageReferenceFromRootProject)
+        {
+            if (packagesToPrune?.TryGetValue(libraryDependencyIndex, out VersionRange? prunableVersion) == true)
+            {
+                if (dep.LibraryRange!.VersionRange!.Satisfies(prunableVersion!.MaxVersion!))
                 {
                     if (!isPackage)
                     {
@@ -1281,7 +1302,7 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.RestoreDebugPruningPackageReference, $"{dep.Name} {dep.LibraryRange.VersionRange.OriginalString}", refItemResult.Item.Key, prunableVersion.VersionRange.MaxVersion));
+                        _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.RestoreDebugPruningPackageReference, $"{dep.Name} {dep.LibraryRange.VersionRange.OriginalString}", refItemResult.Item.Key, prunableVersion.MaxVersion));
                         return true;
                     }
                 }
@@ -1381,7 +1402,7 @@ namespace NuGet.Commands
 
             public required List<HashSet<LibraryDependencyIndex>> Suppressions { get; set; }
 
-            public List<int>? PrunedDependencyIndices { get; set; }
+            public HashSet<int>? PrunedDependencies { get; set; }
         }
 
         internal sealed class LibraryDependencyInterningTable
@@ -1420,6 +1441,21 @@ namespace NuGet.Commands
                 }
 
                 return index;
+            }
+
+            public LibraryDependencyIndex Intern(PrunePackageReference prunePackageReference)
+            {
+                lock (_lockObject)
+                {
+                    string key = prunePackageReference.Name;
+                    if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
+                    {
+                        index = (LibraryDependencyIndex)_nextIndex++;
+                        _table.TryAdd(key, index);
+                    }
+
+                    return index;
+                }
             }
         }
 
