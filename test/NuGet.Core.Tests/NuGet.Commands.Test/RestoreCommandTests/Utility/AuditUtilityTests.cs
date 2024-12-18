@@ -443,11 +443,11 @@ public class AuditUtilityTests
 
         // Act
         var audit = new AuditUtility(
-            targetFrameworks: Enumerable.Empty<TargetFrameworkInformation>().ToList(),
             restoreAuditProperties: null,
             "/path/proj.csproj",
             graphs,
             vulnerabilityProviders,
+            targetFrameworks: Enumerable.Empty<TargetFrameworkInformation>().ToList(),
             log);
         await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
@@ -587,7 +587,7 @@ public class AuditUtilityTests
 
             var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
 
-            var audit = new AuditUtility(targetFrameworks: TargetFrameworks, restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
+            var audit = new AuditUtility(restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, targetFrameworks: TargetFrameworks, Log);
             await audit.CheckPackageVulnerabilitiesAsync(cancellationToken);
 
             return audit;
