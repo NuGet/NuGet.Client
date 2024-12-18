@@ -23,12 +23,12 @@ namespace NuGet.Commands.Restore.Utility
 {
     internal class AuditUtility
     {
-        private readonly IEnumerable<DownloadDependency> _downloadDependencies;
         private readonly RestoreAuditProperties? _restoreAuditProperties;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
         private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
         private readonly ILogger _logger;
+        private readonly IList<TargetFrameworkInformation> _targetFrameworks;
 
         internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
@@ -54,14 +54,14 @@ namespace NuGet.Commands.Restore.Utility
         internal int TotalWarningsSuppressedCount { get; private set; }
 
         public AuditUtility(
-            IEnumerable<DownloadDependency> downloadDependencies,
             RestoreAuditProperties? restoreAuditProperties,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
+            IList<TargetFrameworkInformation> targetFrameworks,
             ILogger logger)
         {
-            _downloadDependencies = downloadDependencies;
+            _targetFrameworks = targetFrameworks;
             _restoreAuditProperties = restoreAuditProperties;
             _projectFullPath = projectFullPath;
             _targetGraphs = graphs;
@@ -82,99 +82,27 @@ namespace NuGet.Commands.Restore.Utility
             }
         }
 
-        private void CheckDownloadDependenciesVulnerabilities(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
+        private void CheckPackageDownloadVulnerabilities(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
         {
-            Dictionary<PackageIdentity, PackageAuditInfo>? packagesWithKnownVulnerabilities = FindDownloadDependenciesWithKnownVulnerabilities(knownVulnerabilities);
-
-            if (packagesWithKnownVulnerabilities == null)
+            foreach (var targetFramework in _targetFrameworks)
             {
-                return;
-            }
-
-            PackageDownloadPackagesWithAdvisory = new(capacity: packagesWithKnownVulnerabilities.Values.Count);
-
-            // no-op checks DGSpec hash, which means the order of everything must be deterministic.
-            foreach ((PackageIdentity package, PackageAuditInfo auditInfo) in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
-            {
-                PackageDownloadPackagesWithAdvisory.Add(package.Id);
-
-                foreach (var advisory in auditInfo.GraphsPerVulnerability.Keys)
+                foreach (var downloadDependency in targetFramework.DownloadDependencies)
                 {
-                    PackageVulnerabilitySeverity severity = advisory.Severity;
-                    if (severity == PackageVulnerabilitySeverity.Low) { Sev0DirectMatches++; }
-                    else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1DirectMatches++; }
-                    else if (severity == PackageVulnerabilitySeverity.High) { Sev2DirectMatches++; }
-                    else if (severity == PackageVulnerabilitySeverity.Critical) { Sev3DirectMatches++; }
-                    else { InvalidSevDirectMatches++; }
-                }
-            }
-        }
+                    List<PackageVulnerabilityInfo>? knownVulnerabilitiesForPackage = GetKnownVulnerabilities(downloadDependency.Name, downloadDependency.VersionRange.MaxVersion!, knownVulnerabilities);
 
-        private Dictionary<PackageIdentity, PackageAuditInfo>? FindDownloadDependenciesWithKnownVulnerabilities(
-            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
-        {
-            Dictionary<PackageIdentity, PackageAuditInfo>? result = null;
-
-            foreach (var downloadDependency in _downloadDependencies)
-            {
-                List<PackageVulnerabilityInfo>? knownVulnerabilitiesForPackage = GetKnownVulnerabilities(downloadDependency.Name, downloadDependency.VersionRange.MaxVersion!, knownVulnerabilities);
-
-                if (knownVulnerabilitiesForPackage?.Count > 0)
-                {
-                    PackageIdentity packageIdentity = new(downloadDependency.Name, downloadDependency.VersionRange.MinVersion);
-
-                    foreach (PackageVulnerabilityInfo knownVulnerability in knownVulnerabilitiesForPackage)
+                    if (knownVulnerabilitiesForPackage?.Count > 0)
                     {
-                        if ((int)knownVulnerability.Severity < (int)MinSeverity && knownVulnerability.Severity != PackageVulnerabilitySeverity.Unknown)
-                        {
-                            continue;
-                        }
-
-                        if (SuppressedAdvisories?.TryGetValue(knownVulnerability.Url.OriginalString, out bool advisoryUsed) == true)
-                        {
-                            TotalWarningsSuppressedCount++;
-
-                            if (!advisoryUsed)
-                            {
-                                SuppressedAdvisories[knownVulnerability.Url.OriginalString] = true;
-                                DistinctAdvisoriesSuppressedCount++;
-                            }
-
-                            continue;
-                        }
-
-                        result ??= new();
-
-                        if (!result.TryGetValue(packageIdentity, out PackageAuditInfo? auditInfo))
-                        {
-                            auditInfo = new(packageIdentity);
-                            result.Add(packageIdentity, auditInfo);
-                        }
-
-                        if (!auditInfo.GraphsPerVulnerability.TryGetValue(knownVulnerability, out List<string>? affectedGraphs))
-                        {
-                            affectedGraphs = new();
-                            auditInfo.GraphsPerVulnerability.Add(knownVulnerability, affectedGraphs);
-                        }
-
-                        // Multiple package sources might list the same known vulnerability, so de-dupe those too.
-                        if (!affectedGraphs.Contains(downloadDependency.Name))
-                        {
-                            affectedGraphs.Add(downloadDependency.Name);
-                        }
-
-                        auditInfo.IsDirect = true;
+                        PackageDownloadPackagesWithAdvisory ??= new();
+                        PackageDownloadPackagesWithAdvisory.Add(downloadDependency.Name);
                     }
                 }
             }
-            return result;
         }
-
 
         public async Task<bool> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
             // Performance: Early exit if restore graph does not contain any packages.
-            if (!HasPackages() && (_downloadDependencies == null || !_downloadDependencies.Any()))
+            if (!HasPackages() && (_targetFrameworks.Count() == 0))
             {
                 // No packages means we've validated there are none with known vulnerabilities.
                 return true;
@@ -192,7 +120,7 @@ namespace NuGet.Commands.Restore.Utility
             }
 
             CheckPackageVulnerabilities(allVulnerabilityData);
-            CheckDownloadDependenciesVulnerabilities(allVulnerabilityData);
+            CheckPackageDownloadVulnerabilities(allVulnerabilityData);
             return true;
 
             bool HasPackages()

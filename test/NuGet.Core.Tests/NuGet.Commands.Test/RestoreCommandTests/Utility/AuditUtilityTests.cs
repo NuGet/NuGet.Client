@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -179,9 +180,19 @@ public class AuditUtilityTests
 
         context.PackagesDependencyProvider.Package("pkga", "1.0.0").DependsOn("pkgb", "1.0.0");
         context.PackagesDependencyProvider.Package("pkgb", "1.0.0");
-        context.PackageDownloadPackages.Add(new DownloadDependency("pkgDownload", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))));
-        context.PackageDownloadPackages.Add(new DownloadDependency("pkga", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))));
-        context.PackageDownloadPackages.Add(new DownloadDependency("pkgDownload12", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))));
+
+        ImmutableArray<DownloadDependency> downloadDependencies = ImmutableArray.Create<DownloadDependency>
+        (
+            new DownloadDependency("pkgDownload", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))),
+            new DownloadDependency("pkga", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))),
+            new DownloadDependency("pkgDownload12", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0")))
+        );
+
+        TargetFrameworkInformation targetFramework = new()
+        {
+            DownloadDependencies = downloadDependencies
+        };
+        context.TargetFrameworks.Add(targetFramework);
 
         // Act
         var auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
@@ -207,30 +218,25 @@ public class AuditUtilityTests
         auditUtility.TransitivePackagesWithAdvisory.Should().NotBeNull();
         auditUtility.TransitivePackagesWithAdvisory!.Should().BeEquivalentTo(new[] { "pkgb" });
 
-        int expectedDirectCount = severity == PackageVulnerabilitySeverity.Low ? 2 : 0;
-        int expectedTransitiveCount = severity == PackageVulnerabilitySeverity.Low ? 1 : 0;
-        auditUtility.Sev0DirectMatches.Should().Be(expectedDirectCount);
-        auditUtility.Sev0TransitiveMatches.Should().Be(expectedTransitiveCount);
+        int expectedCount = severity == PackageVulnerabilitySeverity.Low ? 1 : 0;
+        auditUtility.Sev0DirectMatches.Should().Be(expectedCount);
+        auditUtility.Sev0TransitiveMatches.Should().Be(expectedCount);
 
-        expectedDirectCount = severity == PackageVulnerabilitySeverity.Moderate ? 2 : 0;
-        expectedTransitiveCount = severity == PackageVulnerabilitySeverity.Moderate ? 1 : 0;
-        auditUtility.Sev1DirectMatches.Should().Be(expectedDirectCount);
-        auditUtility.Sev1TransitiveMatches.Should().Be(expectedTransitiveCount);
+        expectedCount = severity == PackageVulnerabilitySeverity.Moderate ? 1 : 0;
+        auditUtility.Sev1DirectMatches.Should().Be(expectedCount);
+        auditUtility.Sev1TransitiveMatches.Should().Be(expectedCount);
 
-        expectedDirectCount = severity == PackageVulnerabilitySeverity.High ? 2 : 0;
-        expectedTransitiveCount = severity == PackageVulnerabilitySeverity.High ? 1 : 0;
-        auditUtility.Sev2DirectMatches.Should().Be(expectedDirectCount);
-        auditUtility.Sev2TransitiveMatches.Should().Be(expectedTransitiveCount);
+        expectedCount = severity == PackageVulnerabilitySeverity.High ? 1 : 0;
+        auditUtility.Sev2DirectMatches.Should().Be(expectedCount);
+        auditUtility.Sev2TransitiveMatches.Should().Be(expectedCount);
 
-        expectedDirectCount = severity == PackageVulnerabilitySeverity.Critical ? 2 : 0;
-        expectedTransitiveCount = severity == PackageVulnerabilitySeverity.Critical ? 1 : 0;
-        auditUtility.Sev3DirectMatches.Should().Be(expectedDirectCount);
-        auditUtility.Sev3TransitiveMatches.Should().Be(expectedTransitiveCount);
+        expectedCount = severity == PackageVulnerabilitySeverity.Critical ? 1 : 0;
+        auditUtility.Sev3DirectMatches.Should().Be(expectedCount);
+        auditUtility.Sev3TransitiveMatches.Should().Be(expectedCount);
 
-        expectedDirectCount = severity == PackageVulnerabilitySeverity.Unknown ? 2 : 0;
-        expectedTransitiveCount = severity == PackageVulnerabilitySeverity.Unknown ? 1 : 0;
-        auditUtility.InvalidSevDirectMatches.Should().Be(expectedDirectCount);
-        auditUtility.InvalidSevTransitiveMatches.Should().Be(expectedTransitiveCount);
+        expectedCount = severity == PackageVulnerabilitySeverity.Unknown ? 1 : 0;
+        auditUtility.InvalidSevDirectMatches.Should().Be(expectedCount);
+        auditUtility.InvalidSevTransitiveMatches.Should().Be(expectedCount);
 
         auditUtility.PackageDownloadPackagesWithAdvisory.Should().BeEquivalentTo(new[] { "pkga" });
 
@@ -437,7 +443,7 @@ public class AuditUtilityTests
 
         // Act
         var audit = new AuditUtility(
-            downloadDependencies: new List<DownloadDependency>(),
+            targetFrameworks: Enumerable.Empty<TargetFrameworkInformation>().ToList(),
             restoreAuditProperties: null,
             "/path/proj.csproj",
             graphs,
@@ -514,7 +520,7 @@ public class AuditUtilityTests
         public string? Level { get; set; }
         public string? Mode { get; set; }
         public HashSet<string>? SuppressedAdvisories { get; set; }
-        public List<DownloadDependency> PackageDownloadPackages { get; set; } = new();
+        public List<TargetFrameworkInformation> TargetFrameworks { get; set; } = new();
 
         public TestLogger Log { get; } = new();
 
@@ -581,7 +587,7 @@ public class AuditUtilityTests
 
             var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
 
-            var audit = new AuditUtility(downloadDependencies: PackageDownloadPackages, restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
+            var audit = new AuditUtility(targetFrameworks: TargetFrameworks, restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
             await audit.CheckPackageVulnerabilitiesAsync(cancellationToken);
 
             return audit;

@@ -534,13 +534,12 @@ namespace NuGet.Commands
         /// <returns>False if no vulnerability database could be found (so packages were not scanned for vulnerabilities), true otherwise.</returns>
         private async Task<bool> PerformAuditAsync(IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
         {
-            telemetry.StartIntervalMeasure();
             var audit = new AuditUtility(
-                _request.Project.TargetFrameworks.SelectMany(t => t.DownloadDependencies),
                 _request.Project.RestoreMetadata.RestoreAuditProperties,
                 _request.Project.FilePath,
                 graphs,
                 _request.DependencyProviders.VulnerabilityInfoProviders,
+                _request.Project.TargetFrameworks,
                 _logger);
             bool auditRan = await audit.CheckPackageVulnerabilitiesAsync(token);
 
