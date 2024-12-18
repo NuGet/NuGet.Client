@@ -143,7 +143,7 @@ namespace NuGet.CommandLine
             }
 
             // This happens before we obtain warning properties, so this Logger is still IConsole.
-            var console = (IConsole) Logger;
+            var console = (IConsole)Logger;
             console.Verbosity = LogLevel switch
             {
                 LogLevel.Verbose => Verbosity.Detailed,
