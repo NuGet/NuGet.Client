@@ -3,11 +3,13 @@
 
 using System;
 using System.ComponentModel;
+//using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
@@ -23,7 +25,7 @@ namespace NuGet.PackageManagement.UI
 #pragma warning disable CS0618 // Type or member is obsolete
         private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
-
+        private bool _isInitializing = false;
         public PackageReadmeControl()
         {
             InitializeComponent();
@@ -31,26 +33,36 @@ namespace NuGet.PackageManagement.UI
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
 
-        public async Task InitializeAsync()
+        private async Task InitializeAsync()
         {
-            if (_markdownPreview is null)
+            if (_markdownPreview is null && !_isInitializing)
             {
+                _isInitializing = true;
                 await TaskScheduler.Default;
-                var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
-                var markdownPreviewSingleton = componentModel?.GetService<MarkdownPreviewSingleton>();
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                if (markdownPreviewSingleton is null)
+                IEditorOptionsFactoryService editorOptionsFactoryService;
+                try
                 {
-                    await TelemetryUtility.PostFaultAsync(new InvalidOperationException("MarkdownPreviewSingleton is null"), nameof(PackageReadmeControl), nameof(InitializeAsync));
+                    var componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+                    editorOptionsFactoryService = componentModel?.GetService<IEditorOptionsFactoryService>();
+                }
+                finally
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                }
+                if (editorOptionsFactoryService is not null)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var previewBuilder = new PreviewBuilder();
+#pragma warning restore CS0618 // Type or member is obsolete
+                    previewBuilder.EditorOptions = editorOptionsFactoryService.GlobalOptions;
+                    _markdownPreview = previewBuilder.Build();
+                    descriptionMarkdownPreview.Content = _markdownPreview?.VisualElement;
                 }
                 else
                 {
-                    _markdownPreview = markdownPreviewSingleton.GetInstance();
+                    await TelemetryUtility.PostFaultAsync(new InvalidOperationException("Failed to get IEditorOptionsFactoryService"), nameof(PackageReadmeControl), nameof(InitializeAsync));
+                    ReadmeViewModel.SetVisibility(false);
                 }
-            }
-            if (descriptionMarkdownPreview.Content is null)
-            {
-                descriptionMarkdownPreview.Content = _markdownPreview?.VisualElement;
             }
         }
 
@@ -83,9 +95,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
-                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                _ = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
+                    await _markdownPreview?.UpdateContentAsync("", ScrollHint.None);
                 });
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
@@ -108,13 +120,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            _ = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await InitializeAsync();
-                if (_markdownPreview is null)
-                {
-                    ReadmeViewModel.SetVisibility(false);
-                }
                 await UpdateMarkdownAsync();
             });
         }
