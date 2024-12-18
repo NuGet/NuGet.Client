@@ -878,10 +878,8 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [TestMethod]
-        [DataRow(ProjectTemplate.ConsoleApplication)]
-        [DataRow(ProjectTemplate.NetCoreConsoleApp)]
         [Timeout(DefaultTimeout)]
-        public async Task VerifyPackageRestoreAfterDeletingAssetsJsonFile(ProjectTemplate projectTemplate)
+        public async Task VerifyDeletedAssetsFileIsBackByRestoringPackage()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -891,7 +889,7 @@ namespace NuGet.Tests.Apex.Daily
 
             SolutionService solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
-            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ConsoleApplication, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -904,16 +902,38 @@ namespace NuGet.Tests.Apex.Daily
             File.Delete(assetsFilePath);
 
             // Act
-            if (projectTemplate.Equals(ProjectTemplate.ConsoleApplication))
-            {
-                CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
-            }
-            else
-            {
-                project.Unload();
-                project.Reload();
-                nugetTestService.WaitForAutoRestore();
-            }
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+
+            // Assert
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyDeletedAssetsFileIsBackByReloadingProject()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+            _pathContext.Settings.SetPackageFormatToPackageReference();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            var assetsFilePath = CommonUtility.GetAssetsFilePath(project.FullPath);
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
+            File.Delete(assetsFilePath);
+
+            // Act
+            CommonUtility.AutoRestorePackageByReloadingProject(VisualStudio, project);
 
             // Assert
             CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
