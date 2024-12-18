@@ -16,6 +16,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -146,9 +147,16 @@ namespace NuGet.PackageManagement.UI
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
+            var nuGetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
+            var readmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+            if (readmeTabEnabled)
+            {
+                var editorOptionsFactoryService = await ServiceLocator.GetComponentModelServiceAsync<IEditorOptionsFactoryService>();
+                readmeTabEnabled = _packageDetail._packageDetailsTabControl.PackageReadmeControl.Initialize(editorOptionsFactoryService);
+            }
 
-            await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.InitializeAsync(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab);
-            //await _packageDetail._packageDetailsTabControl.PackageReadmeControl.InitializeAsync();
+            _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab, readmeTabEnabled);
+
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
