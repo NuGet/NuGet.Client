@@ -8,7 +8,32 @@ namespace NuGet.PackageManagement.UI.ViewModels
     public class ClearNuGetLocalsViewModel : ViewModelBase
     {
         private bool _isCommandComplete;
-        private string _commandCompleteText = "Done clearing NuGet local resources at " + DateTime.Now.ToLongTimeString();
+        private string _commandCompleteText;
+        private Action _clearNuGetLocalsCommandExecute;
+        private bool _isExecuting;
+
+        private ClearNuGetLocalsViewModel()
+        { }
+
+        public ClearNuGetLocalsViewModel(Action clearNuGetLocalsCommandExecute)
+        {
+            _clearNuGetLocalsCommandExecute = clearNuGetLocalsCommandExecute ?? throw new ArgumentNullException(nameof(clearNuGetLocalsCommandExecute));
+        }
+
+        public void Execute()
+        {
+            if (_isExecuting)
+            {
+                return;
+            }
+
+            IsCommandComplete = false;
+            _isExecuting = true;
+            _clearNuGetLocalsCommandExecute();
+            _isExecuting = false;
+            CommandCompleteText = "Done clearing NuGet local resources at " + DateTime.Now.ToLongTimeString();
+            IsCommandComplete = true;
+        }
 
         public bool IsCommandComplete
         {

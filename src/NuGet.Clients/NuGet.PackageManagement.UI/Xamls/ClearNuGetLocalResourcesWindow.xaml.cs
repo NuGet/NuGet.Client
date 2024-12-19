@@ -11,9 +11,10 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class ClearNuGetLocalResourcesWindow : DialogWindow
     {
-        public ClearNuGetLocalResourcesWindow()
+        public ClearNuGetLocalResourcesWindow(ClearNuGetLocalsViewModel viewModel)
         {
-            DataContext = new ClearNuGetLocalsViewModel();
+            DataContext = viewModel;
+            viewModel.Execute();
             InitializeComponent();
         }
     }

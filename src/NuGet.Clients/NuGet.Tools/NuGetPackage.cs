@@ -24,6 +24,7 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Services;
 using NuGet.ProjectManagement;
@@ -1241,8 +1242,11 @@ namespace NuGetVSExtension
 
                 if (isUserContinuing == true)
                 {
-                    var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow();
+                    var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(StartWatching);
+
+                    var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
                     clearNuGetLocalResourcesWindow.ShowModal();
+
                     OutputConsoleLogger.Value.Start();
                     await ExecuteLocalsCommandRunner();
                     //await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
@@ -1255,7 +1259,16 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
-        private async Task ExecuteLocalsCommandRunner()
+        public void StartWatching()
+        {
+            // The outer delegate is synchronous, but kicks off async work via a method that accepts an async delegate.
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ExecuteLocalsCommandRunner();
+            });
+        }
+
+        public async Task ExecuteLocalsCommandRunner()
         {
             await TaskScheduler.Default;
             var arguments = new List<string> { "all" };
