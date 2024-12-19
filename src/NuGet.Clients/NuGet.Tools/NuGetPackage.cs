@@ -19,6 +19,8 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
@@ -169,7 +171,7 @@ namespace NuGetVSExtension
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
 
-            _vsMonitorSelection = new AsyncLazy<IVsMonitorSelection>(
+            _vsMonitorSelection = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection>(
                 async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1233,20 +1235,46 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var isUserContinuing = MessageHelper.ShowQueryMessage(
-                    message: "Let's clear the NuGet Local Resources....",
-                    title: "Clear NuGet Local Resources",
+                    message: "Clear NuGet local resources?",
+                    title: null,
                     showCancelButton: false);
 
                 if (isUserContinuing == true)
                 {
                     var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow();
-                    var result = clearNuGetLocalResourcesWindow.ShowModal() == true;
+                    clearNuGetLocalResourcesWindow.ShowModal();
+                    OutputConsoleLogger.Value.Start();
+                    await ExecuteLocalsCommandRunner();
+                    //await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                    MessageHelper.ShowInfoMessage("NuGet storage cleared", title: null);
                 }
                 else
                 {
                     //NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true);
                 }
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
+        }
+
+        private async Task ExecuteLocalsCommandRunner()
+        {
+            await TaskScheduler.Default;
+            var arguments = new List<string> { "all" };
+            var settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
+            var logError = new NuGet.Commands.LocalsArgs.Log(LogError);
+            var logInformation = new NuGet.Commands.LocalsArgs.Log(LogInformation);
+            var localsArgs = new NuGet.Commands.LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
+
+            LocalsCommandRunner localsCommandRunner = new();
+            localsCommandRunner.ExecuteCommand(localsArgs);
+        }
+        private void LogError(string message)
+        {
+            OutputConsoleLogger.Value.Log(new LogMessage(LogLevel.Error, message));
+        }
+
+        private void LogInformation(string message)
+        {
+            OutputConsoleLogger.Value.Log(new LogMessage(LogLevel.Information, message));
         }
 
         private void ShowOptionPageSafe(Type optionPageType)
