@@ -1132,7 +1132,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
     <comment>0 - package id and version, 1 - version</comment>
   </data>
   <data name="Error_RestorePruningDirectPackageReference" xml:space="preserve">
-    <value>A direct PackageReference cannot be pruned, {0}. Consider removing this package from your dependencies, as it is likely unnecessary.</value>
+    <value>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</value>
     <comment>0 - package id and version</comment>
   </data>
   <data name="Error_RestorePruningProjectReference" xml:space="preserve">

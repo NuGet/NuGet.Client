@@ -29,7 +29,7 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<CriteriaKey, List<(List<SelectionCriteria>, bool)>> _criteriaSets =
             new();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, int), Lazy<(LockFileTargetLibrary, bool)>> _lockFileTargetLibraryCache =
+        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, int dependencyCount), Lazy<(LockFileTargetLibrary, bool)>> _lockFileTargetLibraryCache =
             new();
 
         /// <summary>

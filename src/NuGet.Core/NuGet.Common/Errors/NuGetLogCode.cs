@@ -298,7 +298,7 @@ namespace NuGet.Common
         NU1509 = 1509,
 
         /// <summary>
-        /// Direct reference to a package that cannot be pruned.
+        /// Direct reference to a package that will not be pruned.
         /// </summary>
         NU1510 = 1510,
 

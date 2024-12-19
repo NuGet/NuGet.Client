@@ -1274,7 +1274,13 @@ namespace NuGet.Commands
             return prunedPackageVersions;
         }
 
-        private bool ShouldPrunePackage(IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? packagesToPrune, FindLibraryEntryResult refItemResult, LibraryDependency dep, LibraryDependencyIndex libraryDependencyIndex, bool isPackage, bool isDirectPackageReferenceFromRootProject)
+        private bool ShouldPrunePackage(
+            IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? packagesToPrune,
+            FindLibraryEntryResult refItemResult,
+            LibraryDependency dep,
+            LibraryDependencyIndex libraryDependencyIndex,
+            bool isPackage,
+            bool isDirectPackageReferenceFromRootProject)
         {
             if (packagesToPrune?.TryGetValue(libraryDependencyIndex, out VersionRange? prunableVersion) == true)
             {
