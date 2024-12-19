@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -72,13 +73,10 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
-                    {
-                        await UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown);
-                    }
-                }).PostOnFailure(nameof(PackageReadmeControl), nameof(ReadmeViewModel_PropertyChanged));
+                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).Forget();
+                }
             }
             if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
             {
@@ -90,7 +88,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task UpdateMarkdownAsync(string markdown)
+        private async Task UpdateMarkdownAsync(string markdown, CancellationToken token)
         {
             try
             {
@@ -103,21 +101,15 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
-                if (_cancellationTokenSource.IsCancellationRequested)
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    ReadmeViewModel.ErrorWithReadme = true;
-                    ReadmeViewModel.ReadmeMarkdown = string.Empty;
-                    await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
-                }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+                ReadmeViewModel.ErrorWithReadme = true;
+                ReadmeViewModel.ReadmeMarkdown = string.Empty;
+                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
             }
             finally
             {
-                if (!_cancellationTokenSource.IsCancellationRequested)
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    UpdateBusy(false);
-                }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+                UpdateBusy(false);
             }
         }
 
@@ -132,10 +124,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    await UpdateMarkdownAsync("");
-                }).PostOnFailure(nameof(PackageReadmeControl), nameof(UserControl_DataContextChanged));
+                UpdateMarkdownAsync("", _cancellationTokenSource.Token).Forget();
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
@@ -146,13 +135,10 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
             {
-                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
-                {
-                    await UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown);
-                }
-            }).PostOnFailure(nameof(PackageReadmeControl), nameof(PackageReadmeControl_Loaded));
+                UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).Forget();
+            }
         }
 
         public void Dispose()
