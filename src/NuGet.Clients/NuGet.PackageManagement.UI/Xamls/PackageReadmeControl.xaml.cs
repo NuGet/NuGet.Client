@@ -3,11 +3,13 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -17,15 +19,32 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageReadmeControl.xaml
     /// </summary>
-    public partial class PackageReadmeControl : UserControl
+    public partial class PackageReadmeControl : UserControl, IDisposable, INotifyPropertyChanged
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
+        private bool _isDisposed = false;
+        private CancellationTokenSource _cancellationTokenSource;
+
+        private bool _isBusy = true;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsBusy
+        {
+            get => _isBusy || ReadmeViewModel.IsBusy;
+        }
+
+        public bool IsReadmeReady
+        {
+            get => !_isBusy && ReadmeViewModel.IsReadmeReady;
+        }
 
         public PackageReadmeControl()
         {
             InitializeComponent();
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -53,35 +72,70 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(UpdateMarkdownAsync);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                    {
+                        await UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown);
+                    }
+                }).PostOnFailure(nameof(PackageReadmeControl), nameof(ReadmeViewModel_PropertyChanged));
+            }
+            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsBusy)));
+            }
+            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsReadmeReady))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsReadmeReady)));
             }
         }
 
-        private async Task UpdateMarkdownAsync()
+        private async Task UpdateMarkdownAsync(string markdown)
         {
             try
             {
-                if (_markdownPreview is not null && !string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                UpdateBusy(true);
+                if (_markdownPreview is not null)
                 {
-                    await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                    await TaskScheduler.Default;
+                    await _markdownPreview.UpdateContentAsync(markdown, ScrollHint.None);
                 }
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
-                ReadmeViewModel.ErrorWithReadme = true;
-                ReadmeViewModel.ReadmeMarkdown = string.Empty;
-                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    ReadmeViewModel.ErrorWithReadme = true;
+                    ReadmeViewModel.ReadmeMarkdown = string.Empty;
+                    await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
+                }
             }
+            finally
+            {
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    UpdateBusy(false);
+                }
+            }
+        }
+
+        private void UpdateBusy(bool isBusy)
+        {
+            _isBusy = isBusy;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsReadmeReady)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsBusy)));
         }
 
         private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await _markdownPreview?.UpdateContentAsync("", ScrollHint.None);
-                });
+                    await UpdateMarkdownAsync("");
+                }).PostOnFailure(nameof(PackageReadmeControl), nameof(UserControl_DataContextChanged));
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
@@ -90,20 +144,26 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void PackageReadmeControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if (ReadmeViewModel is not null && _markdownPreview is not null)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
-                });
-            }
-        }
-
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(UpdateMarkdownAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                {
+                    await UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown);
+                }
+            }).PostOnFailure(nameof(PackageReadmeControl), nameof(PackageReadmeControl_Loaded));
+        }
+
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _markdownPreview?.Dispose();
+            }
         }
     }
 }

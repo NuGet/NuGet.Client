@@ -44,6 +44,7 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 PackageDetailsTabViewModel.Dispose();
+                PackageReadmeControl.Dispose();
             }
             _disposed = true;
         }
