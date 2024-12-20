@@ -1305,9 +1305,7 @@ namespace NuGetVSExtension
             var localsArgs = new NuGet.Commands.LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
 
             LocalsCommandRunner localsCommandRunner = new();
-            //TODO: localsCommandRunner.ExecuteCommand(localsArgs);
-            await Task.Delay(3000);
-            throw new ApplicationException("Donnie put a test in here...");
+            localsCommandRunner.ExecuteCommand(localsArgs);
         }
         private void LogError(string message)
         {
