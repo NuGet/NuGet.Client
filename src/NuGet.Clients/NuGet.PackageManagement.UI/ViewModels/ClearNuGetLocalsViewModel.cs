@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -9,18 +10,18 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         private bool _isCommandComplete;
         private string _commandCompleteText;
-        private Action _clearNuGetLocalsCommandExecute;
+        private Func<Task> _clearNuGetLocalsCommandExecute;
         private bool _isExecuting;
 
         private ClearNuGetLocalsViewModel()
         { }
 
-        public ClearNuGetLocalsViewModel(Action clearNuGetLocalsCommandExecute)
+        public ClearNuGetLocalsViewModel(Func<Task> clearNuGetLocalsCommandExecute)
         {
             _clearNuGetLocalsCommandExecute = clearNuGetLocalsCommandExecute ?? throw new ArgumentNullException(nameof(clearNuGetLocalsCommandExecute));
         }
 
-        public void Execute()
+        internal void Execute()
         {
             if (_isExecuting)
             {
@@ -29,10 +30,22 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
             IsCommandComplete = false;
             _isExecuting = true;
-            _clearNuGetLocalsCommandExecute();
+            var task1 = GetDataWithBackgroundWork().ContinueWith(t => OnCommandComplete(), TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void OnCommandComplete()
+        {
             _isExecuting = false;
             CommandCompleteText = "Done clearing NuGet local resources at " + DateTime.Now.ToLongTimeString();
             IsCommandComplete = true;
+        }
+
+        private async Task GetDataWithBackgroundWork()
+        {
+            await Task.Run(async () =>
+            {
+                await _clearNuGetLocalsCommandExecute();
+            });
         }
 
         public bool IsCommandComplete

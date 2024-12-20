@@ -14,8 +14,17 @@ namespace NuGet.PackageManagement.UI
         public ClearNuGetLocalResourcesWindow(ClearNuGetLocalsViewModel viewModel)
         {
             DataContext = viewModel;
-            viewModel.Execute();
             InitializeComponent();
+        }
+
+        private void DialogWindow_ContentRendered(object sender, System.EventArgs e)
+        {
+            (DataContext as ClearNuGetLocalsViewModel)?.Execute();
+        }
+
+        private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

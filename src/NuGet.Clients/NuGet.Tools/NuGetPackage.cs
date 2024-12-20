@@ -1236,21 +1236,16 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var isUserContinuing = MessageHelper.ShowQueryMessage(
-                    message: "Clear NuGet local resources?",
-                    title: null,
+                    message: "Once started, this action cannot be cancelled",
+                    title: "Clear all NuGet local resources?",
                     showCancelButton: false);
 
                 if (isUserContinuing == true)
                 {
-                    var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(StartWatching);
-
+                    var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecute);
+                    OutputConsoleLogger.Value.Start();
                     var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
                     clearNuGetLocalResourcesWindow.ShowModal();
-
-                    OutputConsoleLogger.Value.Start();
-                    await ExecuteLocalsCommandRunner();
-                    //await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
-                    MessageHelper.ShowInfoMessage("NuGet storage cleared", title: null);
                 }
                 else
                 {
@@ -1259,14 +1254,15 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
-        public void StartWatching()
+        public async Task ClearNuGetLocalsCommandExecute()
         {
-            // The outer delegate is synchronous, but kicks off async work via a method that accepts an async delegate.
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            await TaskScheduler.Default;
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await ExecuteLocalsCommandRunner();
             });
         }
+
 
         public async Task ExecuteLocalsCommandRunner()
         {
@@ -1278,7 +1274,8 @@ namespace NuGetVSExtension
             var localsArgs = new NuGet.Commands.LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
 
             LocalsCommandRunner localsCommandRunner = new();
-            localsCommandRunner.ExecuteCommand(localsArgs);
+            //TODO: localsCommandRunner.ExecuteCommand(localsArgs);
+            await Task.Delay(3000);
         }
         private void LogError(string message)
         {
