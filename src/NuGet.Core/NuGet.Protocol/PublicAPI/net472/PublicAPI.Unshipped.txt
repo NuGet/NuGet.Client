@@ -1,6 +1,7 @@
 #nullable enable
 NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer() -> void
 virtual NuGet.Protocol.Plugins.PluginFactory.Dispose() -> void
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithVulnerabilities(System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata> pkgVulnerabilities) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
 ~NuGet.Protocol.Plugins.PluginFile.PluginFile(string filePath, System.Lazy<NuGet.Protocol.Plugins.PluginFileState> state, bool requiresDotnetHost) -> void
 ~NuGet.Protocol.Plugins.PluginManager.PluginManager(NuGet.Common.IEnvironmentVariableReader reader, System.Lazy<NuGet.Protocol.Plugins.IPluginDiscoverer> pluginDiscoverer, System.Func<System.TimeSpan, NuGet.Protocol.Plugins.PluginFactory> pluginFactoryCreator, System.Lazy<string> pluginsCacheDirectoryPath) -> void
 ~virtual NuGet.Protocol.Plugins.PluginFactory.GetOrCreateAsync(NuGet.Protocol.Plugins.PluginFile pluginFile, System.Collections.Generic.IEnumerable<string> arguments, NuGet.Protocol.Plugins.IRequestHandlers requestHandlers, NuGet.Protocol.Plugins.ConnectionOptions options, System.Threading.CancellationToken sessionCancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Plugins.IPlugin>

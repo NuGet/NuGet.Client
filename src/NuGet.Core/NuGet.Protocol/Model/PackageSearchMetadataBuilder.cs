@@ -19,6 +19,7 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
+        private IEnumerable<PackageVulnerabilityMetadata> _packageVulnerabilities;
 
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
@@ -111,7 +112,7 @@ namespace NuGet.Protocol.Core.Types
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
-                Vulnerabilities = _metadata.Vulnerabilities,
+                Vulnerabilities = _packageVulnerabilities ?? _metadata.Vulnerabilities,
 #pragma warning disable CS0618 // Type or member is obsolete
                 PackageReader =
                     (_metadata as LocalPackageSearchMetadata)?.PackageReader ??
@@ -138,6 +139,12 @@ namespace NuGet.Protocol.Core.Types
                 Authors = string.Empty
             };
             return FromMetadata(metadata);
+        }
+
+        public PackageSearchMetadataBuilder WithVulnerabilities(IEnumerable<PackageVulnerabilityMetadata> pkgVulnerabilities)
+        {
+            _packageVulnerabilities = pkgVulnerabilities;
+            return this;
         }
     }
 

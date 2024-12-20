@@ -16,6 +16,9 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Providers;
+using NuGet.Protocol.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
@@ -276,6 +279,29 @@ namespace NuGet.CommandLine.XPlat
             List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
+            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo = null;
+
+            if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources.Count > 0)
+            {
+                foreach (var source in listPackageArgs.AuditSources)
+                {
+                    var repository = Repository.Factory.GetCoreV3(source);
+                    var vulnerabilityProvider = new VulnerabilityInfoResourceV3Provider();
+                    var result = await vulnerabilityProvider.TryCreate(repository, listPackageArgs.CancellationToken);
+                    var vulnerabilityResource = result.Item2 as VulnerabilityInfoResourceV3;
+
+                    if (vulnerabilityResource != null)
+                    {
+                        var vulnerabilityInfoResult = await vulnerabilityResource.GetVulnerabilityInfoAsync(
+                            new SourceCacheContext(),
+                            listPackageArgs.Logger,
+                            listPackageArgs.CancellationToken);
+                        vulnerabilityInfo = vulnerabilityInfoResult.KnownVulnerabilities;
+                        break; // Use the first valid audit source
+                    }
+                }
+            }
+
             List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
             var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
 
@@ -284,7 +310,7 @@ namespace NuGet.CommandLine.XPlat
                 : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
             await ThrottledForEachAsync(allPackages,
-                async (packageId, cancellationToken) => await GetPackageVersionsAsync(packageId, listPackageArgs, cancellationToken),
+                async (packageId, cancellationToken) => await GetPackageVersionsAsync(packageId, listPackageArgs, vulnerabilityInfo, cancellationToken),
                 packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
                 maxParallel,
                 listPackageArgs.CancellationToken);
@@ -514,18 +540,20 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="package">The package to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
+        /// <param name="vulnerabilityInfo">Vulnerability information database</param>
         /// <param name="cancellationToken"></param>
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
         private async Task<KeyValuePair<string, List<IPackageSearchMetadata>>> GetPackageVersionsAsync(
             string package,
             ListPackageArgs listPackageArgs,
+            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo,
             CancellationToken cancellationToken)
         {
             var results = new List<IPackageSearchMetadata>();
             var sources = listPackageArgs.PackageSources;
 
             await ThrottledForEachAsync(sources,
-                async (source, innerCancellationToken) => await GetLatestVersionPerSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                async (source, innerCancellationToken) => await GetLatestVersionPerSourceAsync(source, listPackageArgs, package, vulnerabilityInfo, innerCancellationToken),
                 continuation: results.AddRange,
                 maxParallel: listPackageArgs.PackageSources.Count,
                 cancellationToken);
@@ -572,12 +600,14 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageSource">The source to look for packages at</param>
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="package">Package to look for updates for</param>
+        /// <param name="vulnerabilityInfo">Vulnerabilty information database</param>
         /// <param name="cancellationToken"></param>
         /// <returns>An updated package with the highest version at a single source</returns>
         private async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
+            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo,
             CancellationToken cancellationToken)
         {
             SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
@@ -593,7 +623,57 @@ namespace NuGet.CommandLine.XPlat
                     log: listPackageArgs.Logger,
                     token: listPackageArgs.CancellationToken);
 
+            if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources.Count > 0)
+            {
+                if (vulnerabilityInfo?.Count > 0)
+                {
+                    var updatedPackages = new List<IPackageSearchMetadata>();
+
+                    foreach (var pkg in packages)
+                    {
+                        var pkgVulnerabilities = PackageVulnerabilities(vulnerabilityInfo, pkg.Identity.Id, pkg.Identity.Version.ToNormalizedString());
+
+                        if (pkgVulnerabilities?.Any() == true)
+                        {
+                            // Update the package metadata with vulnerability information
+                            var updatedPackage = PackageSearchMetadataBuilder.FromMetadata(pkg)
+                                .WithVulnerabilities(pkgVulnerabilities)
+                                .Build();
+
+                            updatedPackages.Add(updatedPackage);
+                        }
+                        else
+                        {
+                            updatedPackages.Add(pkg);
+                        }
+                    }
+
+                    packages = updatedPackages;
+                }
+            }
+
             return packages;
+        }
+
+        private static IEnumerable<PackageVulnerabilityMetadata> PackageVulnerabilities(IEnumerable<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilities, string id, string version)
+        {
+            var packageVulnerabilities = new List<PackageVulnerabilityMetadata>().AsEnumerable();
+            if (vulnerabilities == null)
+            {
+                return packageVulnerabilities;
+            }
+            foreach (var vulnFile in vulnerabilities)
+            {
+                vulnFile.TryGetValue(id, out IReadOnlyList<PackageVulnerabilityInfo> vulnPackages);
+                if (vulnPackages != null)
+                {
+                    // The package has vulnerabilities
+                    packageVulnerabilities = vulnPackages.Where(
+                        package => package.Versions.Satisfies(new NuGetVersion(version))).Select(v => JsonExtensions.FromJson<PackageVulnerabilityMetadata>($"{{ \"AdvisoryUrl\": \"{v.Url}\", \"Severity\": \"{(int)v.Severity}\" }}"));
+                    return packageVulnerabilities;
+                }
+            }
+            return packageVulnerabilities;
         }
 
         /// <summary>

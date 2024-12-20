@@ -17,6 +17,7 @@ namespace NuGet.CommandLine.XPlat
         public ILogger Logger { get; }
         public string Path { get; }
         public List<PackageSource> PackageSources { get; }
+        public List<PackageSource> AuditSources { get; }
         public List<string> Frameworks { get; }
         public ReportType ReportType { get; }
         public IReportRenderer Renderer { get; }
@@ -41,6 +42,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
         /// <param name="highestMinor"> Bool for --highest-minor present </param>
+        /// <param name="auditSources"> A list of sources for performing vulnerability auditing</param>
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
         public ListPackageArgs(
@@ -53,6 +55,7 @@ namespace NuGet.CommandLine.XPlat
             bool prerelease,
             bool highestPatch,
             bool highestMinor,
+            List<PackageSource> auditSources,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -65,6 +68,7 @@ namespace NuGet.CommandLine.XPlat
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
+            AuditSources = auditSources;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
             ArgumentText = GetReportParameters();
