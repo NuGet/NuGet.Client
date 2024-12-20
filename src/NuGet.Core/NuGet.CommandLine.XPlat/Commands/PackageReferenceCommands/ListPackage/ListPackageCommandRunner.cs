@@ -627,8 +627,7 @@ namespace NuGet.CommandLine.XPlat
                 token: listPackageArgs.CancellationToken);
 
             var resolvedVersionsForPackage = packagesVersionsDict
-                .Where(p => p.Key.Equals(packageId, StringComparison.OrdinalIgnoreCase))
-                .Single()
+                .Single(p => p.Key.Equals(packageId, StringComparison.OrdinalIgnoreCase))
                 .Value;
 
             var resolvedPackageVersionMetadata = packages.SingleOrDefault(p => p.Identity.Version.Equals(requestedVersion));

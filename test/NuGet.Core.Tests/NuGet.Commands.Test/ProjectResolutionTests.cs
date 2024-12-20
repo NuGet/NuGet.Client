@@ -76,13 +76,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs()
-                {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Log = logger,
-                    CacheContext = new SourceCacheContext()
-                };
+                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -99,7 +93,7 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse("net45"), null);
-                var project2Lib = target.Libraries.Where(lib => lib.Name == "project2").Single();
+                var project2Lib = target.Libraries.Single(lib => lib.Name == "project2");
                 var frameworkReferences = project2Lib.FrameworkAssemblies;
 
                 // Assert
@@ -165,13 +159,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs()
-                {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Log = logger,
-                    CacheContext = new SourceCacheContext()
-                };
+                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -188,7 +176,7 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 var targetGraph = lockFile.GetTarget(NuGetFramework.Parse("net45"), null);
-                var project2Lib = targetGraph.Libraries.Where(lib => lib.Name == "project2").FirstOrDefault();
+                var project2Lib = targetGraph.Libraries.FirstOrDefault(lib => lib.Name == "project2");
 
                 var issue = result.CompatibilityCheckResults.SelectMany(ccr => ccr.Issues).Single();
 
@@ -261,13 +249,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs()
-                {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Log = logger,
-                    CacheContext = new SourceCacheContext()
-                };
+                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -283,7 +265,7 @@ namespace NuGet.Commands.Test
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
-                var project2Lib = lockFile.Libraries.Where(lib => lib.Name == "project2").FirstOrDefault();
+                var project2Lib = lockFile.Libraries.FirstOrDefault(lib => lib.Name == "project2");
 
                 var issue = result.CompatibilityCheckResults.SelectMany(ccr => ccr.Issues).Single();
 
@@ -351,13 +333,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs()
-                {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Log = logger,
-                    CacheContext = new SourceCacheContext()
-                };
+                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -436,7 +412,7 @@ namespace NuGet.Commands.Test
                     "project1",
                     spec1,
                     msbuidPath1,
-                    new string[] { "project2" }));
+                    new string[] {"project2"}));
 
                 request.ExternalProjects.Add(new ExternalProjectReference(
                     "project2",
@@ -513,13 +489,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs()
-                {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Log = logger,
-                    CacheContext = new SourceCacheContext()
-                };
+                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();

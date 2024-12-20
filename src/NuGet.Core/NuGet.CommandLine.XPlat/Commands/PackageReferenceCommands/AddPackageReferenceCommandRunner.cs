@@ -272,7 +272,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static string GetAliasForFramework(PackageSpec spec, NuGetFramework framework)
         {
-            return spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
+            return spec.TargetFrameworks.FirstOrDefault(e => e.FrameworkName.Equals(framework))?.TargetAlias;
         }
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string packageId, ILogger logger, bool prerelease)

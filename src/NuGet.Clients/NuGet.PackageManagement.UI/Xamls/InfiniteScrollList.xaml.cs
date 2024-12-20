@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for InfiniteScrollList.xaml
-    /// </summary>    
+    /// </summary>
     public partial class InfiniteScrollList : UserControl
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsView.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.TopLevel.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.TopLevel.ToString(), StringComparison.OrdinalIgnoreCase));
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsView.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.Transitive.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.Transitive.ToString(), StringComparison.OrdinalIgnoreCase));
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }

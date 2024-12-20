@@ -194,7 +194,7 @@ namespace NuGet.ProjectManagement
             }
 
             var installedPackagesList = GetInstalledPackagesList();
-            var packageReference = installedPackagesList.Where(p => p.PackageIdentity.Equals(packageIdentity)).FirstOrDefault();
+            var packageReference = installedPackagesList.FirstOrDefault(p => p.PackageIdentity.Equals(packageIdentity));
             if (packageReference == null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExisttInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
@@ -206,7 +206,7 @@ namespace NuGet.ProjectManagement
                 if (installedPackagesList.Any())
                 {
                     // Matching packageReference is found and is the only entry
-                    // Then just delete the packages.config file 
+                    // Then just delete the packages.config file
                     if (installedPackagesList.Count == 1 && nuGetProjectContext.ActionType == NuGetActionType.Uninstall)
                     {
                         FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
