@@ -154,7 +154,10 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 
         public Task OpenBackingStoreAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            //C17B308A-00BB-446E-9212-2D14E1005985
+            var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
+            optionsPageActivator.ActivatePage(OptionsPage.ConfigurationFiles, closeCallback: null);
+            return Task.CompletedTask;
         }
 
         public Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken) where T : notnull
