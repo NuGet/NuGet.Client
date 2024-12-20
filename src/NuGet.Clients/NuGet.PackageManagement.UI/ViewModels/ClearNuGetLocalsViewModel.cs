@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI.ViewModels
@@ -21,33 +22,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _clearNuGetLocalsCommandExecute = clearNuGetLocalsCommandExecute ?? throw new ArgumentNullException(nameof(clearNuGetLocalsCommandExecute));
         }
 
-        internal void Execute()
-        {
-            if (_isExecuting)
-            {
-                return;
-            }
-
-            IsCommandComplete = false;
-            _isExecuting = true;
-            var task1 = GetDataWithBackgroundWork().ContinueWith(t => OnCommandComplete(), TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private void OnCommandComplete()
-        {
-            _isExecuting = false;
-            CommandCompleteText = "Done clearing NuGet local resources at " + DateTime.Now.ToLongTimeString();
-            IsCommandComplete = true;
-        }
-
-        private async Task GetDataWithBackgroundWork()
-        {
-            await Task.Run(async () =>
-            {
-                await _clearNuGetLocalsCommandExecute();
-            });
-        }
-
         public bool IsCommandComplete
         {
             get
@@ -59,6 +33,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 SetAndRaisePropertyChanged(ref _isCommandComplete, value);
             }
         }
+
         public string CommandCompleteText
         {
             get
@@ -69,6 +44,56 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 SetAndRaisePropertyChanged(ref _commandCompleteText, value);
             }
+        }
+
+        internal void Execute()
+        {
+            if (_isExecuting)
+            {
+                return;
+            }
+
+            IsCommandComplete = false;
+            CommandCompleteText = string.Empty;
+            _isExecuting = true;
+
+            var _ = ExecuteBackgroundWork()
+                .ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        OnCommandComplete(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), task.Exception.InnerException.Message));
+                    }
+                    else
+                    {
+                        OnCommandComplete(message: string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)));
+                    }
+                },
+                TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private async Task ExecuteBackgroundWork()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    await _clearNuGetLocalsCommandExecute();
+                }
+                catch (Exception ex)
+                {
+                    string failureMessage = string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message);
+                    OnCommandComplete(failureMessage);
+                    throw ex;
+                }
+            });
+        }
+
+        private void OnCommandComplete(string message)
+        {
+            _isExecuting = false;
+            CommandCompleteText = message;
+            IsCommandComplete = true;
         }
     }
 }

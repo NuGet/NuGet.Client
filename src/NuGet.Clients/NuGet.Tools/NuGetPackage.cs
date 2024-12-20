@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -1234,37 +1235,67 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var isUserContinuing = MessageHelper.ShowQueryMessage(
-                    message: "Once started, this action cannot be cancelled",
-                    title: "Clear all NuGet local resources?",
-                    showCancelButton: false);
+                try
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var isUserContinuing = MessageHelper.ShowQueryMessage(
+                        message: "Once started, this action cannot be cancelled.",
+                        title: "Clear all local NuGet resources?",
+                        showCancelButton: false);
 
-                if (isUserContinuing == true)
-                {
-                    var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecute);
-                    OutputConsoleLogger.Value.Start();
-                    var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
-                    clearNuGetLocalResourcesWindow.ShowModal();
+                    NavigatedTelemetryEvent evt;
+
+                    if (isUserContinuing == true)
+                    {
+                        var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecute);
+                        OutputConsoleLogger.Value.Start();
+                        var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
+                        clearNuGetLocalResourcesWindow.ShowModal();
+                        evt = NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true, isPromptCancelled: false);
+                    }
+                    else
+                    {
+                        evt = NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true, isPromptCancelled: true);
+                    }
+                    TelemetryActivity.EmitTelemetryEvent(evt);
                 }
-                else
+                catch (Exception ex)
                 {
-                    //NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true);
+                    LogError(ex.Message);
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                    throw ex;
+                }
+                finally
+                {
+                    OutputConsoleLogger.Value.End();
                 }
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
         public async Task ClearNuGetLocalsCommandExecute()
         {
-            await TaskScheduler.Default;
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            try
             {
-                await ExecuteLocalsCommandRunner();
-            });
+                await TaskScheduler.Default;
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await ExecuteLocalsCommandRunner();
+                });
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.Message);
+                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                throw ex;
+            }
+            finally
+            {
+                OutputConsoleLogger.Value.End();
+            }
         }
 
 
-        public async Task ExecuteLocalsCommandRunner()
+        private async Task ExecuteLocalsCommandRunner()
         {
             await TaskScheduler.Default;
             var arguments = new List<string> { "all" };
@@ -1276,6 +1307,7 @@ namespace NuGetVSExtension
             LocalsCommandRunner localsCommandRunner = new();
             //TODO: localsCommandRunner.ExecuteCommand(localsArgs);
             await Task.Delay(3000);
+            throw new ApplicationException("Donnie put a test in here...");
         }
         private void LogError(string message)
         {
