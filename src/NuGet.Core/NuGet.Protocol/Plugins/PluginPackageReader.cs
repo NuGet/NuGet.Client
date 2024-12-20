@@ -268,7 +268,7 @@ namespace NuGet.Protocol.Plugins
                 return Enumerable.Empty<string>();
             }
 
-            // Normalized destination path 
+            // Normalized destination path
             var normalizedDestination = NormalizeDirectoryPath(destination);
 
             ValidatePackageEntries(normalizedDestination, packageFiles, _packageIdentity);
@@ -822,7 +822,7 @@ namespace NuGet.Protocol.Plugins
             if (referenceGroups.Any())
             {
                 // the 'any' group from references, for pre2.5 nuspecs this will be the only group
-                var fallbackGroup = referenceGroups.Where(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework)).FirstOrDefault();
+                var fallbackGroup = referenceGroups.FirstOrDefault(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework));
 
                 foreach (var fileGroup in fileGroups)
                 {

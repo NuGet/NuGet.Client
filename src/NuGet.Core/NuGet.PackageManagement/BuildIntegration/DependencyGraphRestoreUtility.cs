@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Do not restore global tools Project Style in VS. 
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson); // Do not restore global tools Project Style in VS.
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -306,7 +306,7 @@ namespace NuGet.PackageManagement
                 // Nothing to restore
                 return false;
             }
-            // NO Op will be checked in the restore command 
+            // NO Op will be checked in the restore command
             return true;
         }
 
@@ -314,9 +314,9 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            var projectSpec = specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
-               && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
-                .FirstOrDefault();
+            var projectSpec = specs
+                .FirstOrDefault(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+                                     && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool);
 
             return projectSpec;
         }
