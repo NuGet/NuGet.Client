@@ -104,7 +104,7 @@ namespace NuGet.Commands
                     // This is guaranteed to be computed before any graph with a RID, so we can assume this will return a value.
 
                     // PCL Projects with Supports have a runtime graph but no matching framework.
-                    var runtimeGraphPath = projectTargetFramework?.RuntimeIdentifierGraphPath;
+                    var runtimeGraphPath = projectTargetFramework.RuntimeIdentifierGraphPath;
 
                     RuntimeGraph? projectProviderRuntimeGraph = default;
                     if (runtimeGraphPath != null)
@@ -152,6 +152,8 @@ namespace NuGet.Commands
                     }
                 }
 
+                Dictionary<LibraryDependencyIndex, VersionRange>? prunedPackageVersions = GetAndIndexPackagesToPrune(libraryDependencyInterningTable, projectTargetFramework);
+
                 DependencyGraphItem rootProjectRefItem = new()
                 {
                     LibraryDependency = initialProject,
@@ -160,6 +162,8 @@ namespace NuGet.Commands
                     Suppressions = new HashSet<LibraryDependencyIndex>(),
                     IsDirectPackageReferenceFromRootProject = false,
                 };
+
+                LibraryRangeIndex[] rootedDependencyPath = new[] { rootProjectRefItem.LibraryRangeIndex };
 
                 _ = findLibraryEntryCache.GetOrAddAsync(
                     rootProjectRefItem.LibraryRangeIndex,
@@ -182,6 +186,8 @@ namespace NuGet.Commands
                     },
                     (rootProjectRefItem, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                     token);
+
+                HashSet<LibraryDependencyIndex>? directPackageReferences = default;
 
             ProcessDeepEviction:
 
@@ -207,6 +213,21 @@ namespace NuGet.Commands
                     }
 
                     FindLibraryEntryResult refItemResult = await refItemTask;
+
+                    if (importRefItem.LibraryRangeIndex == rootProjectRefItem.LibraryRangeIndex)
+                    {
+                        directPackageReferences = new HashSet<LibraryDependencyIndex>();
+
+                        for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
+                        {
+                            LibraryDependency dep = refItemResult.Item.Data.Dependencies[i];
+
+                            if (dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+                            {
+                                directPackageReferences.Add(refItemResult.GetDependencyIndexForDependency(i));
+                            }
+                        }
+                    }
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
                     if (evictions.TryGetValue(currentRefRangeIndex, out var eviction))
@@ -309,74 +330,46 @@ namespace NuGet.Commands
                         {
                             if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
-                                bool isParentCentrallyPinned = false;
-
-                                if (isCentralPackageTransitivePinningEnabled && importRefItem.Path.Length > 1)
+                                if (chosenResolvedItem.Parents != null)
                                 {
-                                    for (int pathIndex = importRefItem.Path.Length - 1; pathIndex > 0; pathIndex--)
+                                    bool atLeastOneCommonAncestor = false;
+
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
                                     {
-                                        LibraryRangeIndex parentLibraryRangeIndex = importRefItem.Path[pathIndex];
-
-                                        if (findLibraryEntryCache.TryGetValue(parentLibraryRangeIndex, out Task<FindLibraryEntryResult>? parentCacheEntryTask))
+                                        if (importRefItem.Path.Length > 2 && importRefItem.Path[importRefItem.Path.Length - 2] == parentRangeIndex)
                                         {
-                                            FindLibraryEntryResult result = await parentCacheEntryTask;
-
-                                            if (chosenResolvedItems.TryGetValue(result.DependencyIndex, out var parentChosenResolvedItem))
-                                            {
-                                                isParentCentrallyPinned = parentChosenResolvedItem.IsCentrallyPinnedTransitivePackage;
-
-                                                if (isParentCentrallyPinned)
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (!isParentCentrallyPinned)
-                                {
-                                    if (chosenResolvedItem.Parents != null)
-                                    {
-                                        bool atLeastOneCommonAncestor = false;
-
-                                        foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
-                                        {
-                                            if (importRefItem.Path.Length > 2 && importRefItem.Path[importRefItem.Path.Length - 2] == parentRangeIndex)
-                                            {
-                                                atLeastOneCommonAncestor = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (atLeastOneCommonAncestor)
-                                        {
-                                            continue;
+                                            atLeastOneCommonAncestor = true;
+                                            break;
                                         }
                                     }
 
-                                    if (HasCommonAncestor(chosenResolvedItem.Path, importRefItem.Path))
+                                    if (atLeastOneCommonAncestor)
                                     {
                                         continue;
                                     }
+                                }
 
-                                    if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed != null)
+                                if (HasCommonAncestor(chosenResolvedItem.Path, importRefItem.Path))
+                                {
+                                    continue;
+                                }
+
+                                if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed != null)
+                                {
+                                    bool hasAlreadyBeenEclipsed = false;
+
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.ParentPathsThatHaveBeenEclipsed)
                                     {
-                                        bool hasAlreadyBeenEclipsed = false;
-
-                                        foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.ParentPathsThatHaveBeenEclipsed)
+                                        if (importRefItem.Path.Contains(parentRangeIndex))
                                         {
-                                            if (importRefItem.Path.Contains(parentRangeIndex))
-                                            {
-                                                hasAlreadyBeenEclipsed = true;
-                                                break;
-                                            }
+                                            hasAlreadyBeenEclipsed = true;
+                                            break;
                                         }
+                                    }
 
-                                        if (hasAlreadyBeenEclipsed)
-                                        {
-                                            continue;
-                                        }
+                                    if (hasAlreadyBeenEclipsed)
+                                    {
+                                        continue;
                                     }
                                 }
                             }
@@ -462,7 +455,7 @@ namespace NuGet.Commands
                                 {
                                     LibraryDependency = currentRef,
                                     LibraryRangeIndex = currentRefRangeIndex,
-                                    Parents = isCentrallyPinnedTransitivePackage ? new HashSet<LibraryRangeIndex>() { pathToCurrentRef[pathToCurrentRef.Length - 1] } : null,
+                                    Parents = isCentrallyPinnedTransitivePackage && !directPackageReferenceFromRootProject ? new HashSet<LibraryRangeIndex>() { importRefItem.Parent } : null,
                                     Path = pathToCurrentRef,
                                     IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
                                     IsDirectPackageReferenceFromRootProject = directPackageReferenceFromRootProject,
@@ -509,10 +502,13 @@ namespace NuGet.Commands
                                 chosenResolvedItem.Parents = new HashSet<LibraryRangeIndex>();
                             }
 
-                            chosenResolvedItem.Parents?.Add(pathToCurrentRef[pathToCurrentRef.Length - 1]);
+                            if (!chosenResolvedItem.IsDirectPackageReferenceFromRootProject)
+                            {
+                                chosenResolvedItem.Parents?.Add(importRefItem.Parent);
+                            }
 
                             //If the one we already have chosen is pure, then we can skip this one.  Processing it wont bring any new info
-                            if (chosenSuppressions.Count == 1 && chosenSuppressions[0].Count == 0)
+                            if (chosenSuppressions.Count == 1 && chosenSuppressions[0].Count == 0 && HasCommonAncestor(chosenResolvedItem.Path, pathToCurrentRef))
                             {
                                 continue;
                             }
@@ -597,7 +593,7 @@ namespace NuGet.Commands
                             {
                                 LibraryDependency = currentRef,
                                 LibraryRangeIndex = currentRefRangeIndex,
-                                Parents = isCentrallyPinnedTransitivePackage ? new HashSet<LibraryRangeIndex>() { pathToCurrentRef[pathToCurrentRef.Length - 1] } : null,
+                                Parents = isCentrallyPinnedTransitivePackage && !directPackageReferenceFromRootProject ? new HashSet<LibraryRangeIndex>() { importRefItem.Parent } : null,
                                 Path = pathToCurrentRef,
                                 IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
                                 IsDirectPackageReferenceFromRootProject = directPackageReferenceFromRootProject,
@@ -641,10 +637,21 @@ namespace NuGet.Commands
                         suppressions = currentSuppressions;
                     }
 
+                    HashSet<int>? prunedPackageIndices = null;
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
                         LibraryDependency dep = refItemResult.Item.Data.Dependencies[i];
+                        bool isPackage = dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
+                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && isPackage;
+
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
+
+                        if (ShouldPrunePackage(prunedPackageVersions, refItemResult, dep, depIndex, isPackage, isDirectPackageReferenceFromRootProject))
+                        {
+                            prunedPackageIndices ??= [];
+                            prunedPackageIndices.Add(i);
+                            continue;
+                        }
 
                         // Skip this node if the VersionRange is null or if its not transitively pinned and PrivateAssets=All
                         if (dep.LibraryRange.VersionRange == null || (!importRefItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(depIndex)))
@@ -654,11 +661,12 @@ namespace NuGet.Commands
 
                         VersionRange? pinnedVersionRange = null;
 
-                        bool isPackage = dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
-                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && isPackage;
+                        if (!isDirectPackageReferenceFromRootProject && directPackageReferences?.Contains(depIndex) == true)
+                        {
+                            continue;
+                        }
 
                         bool isCentrallyPinnedTransitiveDependency = isCentralPackageTransitivePinningEnabled
-                            && !isDirectPackageReferenceFromRootProject
                             && isPackage
                             && pinnedPackageVersions?.TryGetValue(depIndex, out pinnedVersionRange) == true;
 
@@ -666,7 +674,7 @@ namespace NuGet.Commands
 
                         LibraryDependency actualLibraryDependency = dep;
 
-                        if (isCentrallyPinnedTransitiveDependency)
+                        if (isCentrallyPinnedTransitiveDependency && !isDirectPackageReferenceFromRootProject)
                         {
                             actualLibraryDependency = new LibraryDependency(dep)
                             {
@@ -687,7 +695,8 @@ namespace NuGet.Commands
                             LibraryDependency = actualLibraryDependency,
                             LibraryDependencyIndex = depIndex,
                             LibraryRangeIndex = rangeIndex,
-                            Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
+                            Path = isCentrallyPinnedTransitiveDependency || isDirectPackageReferenceFromRootProject ? rootedDependencyPath : LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
+                            Parent = currentRefRangeIndex,
                             Suppressions = suppressions,
                             IsDirectPackageReferenceFromRootProject = isDirectPackageReferenceFromRootProject,
                             IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitiveDependency
@@ -753,12 +762,22 @@ namespace NuGet.Commands
                         {
                             foreach (var dep in runtimeDependencies)
                             {
+                                var libraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex);
+                                if (ShouldPrunePackage(prunedPackageVersions, refItemResult, dep, libraryDependencyIndex, isPackage: true, isDirectPackageReferenceFromRootProject: false))
+                                {
+                                    prunedPackageIndices ??= [];
+                                    prunedPackageIndices.Add(runtimeDependencyIndex);
+                                    runtimeDependencyIndex++;
+                                    continue;
+                                }
+
                                 DependencyGraphItem runtimeDependencyGraphItem = new()
                                 {
                                     LibraryDependency = dep,
-                                    LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
+                                    LibraryDependencyIndex = libraryDependencyIndex,
                                     LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
                                     Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
+                                    Parent = currentRefRangeIndex,
                                     Suppressions = suppressions,
                                     IsDirectPackageReferenceFromRootProject = false,
                                 };
@@ -785,6 +804,12 @@ namespace NuGet.Commands
                                 runtimeDependencyIndex++;
                             }
                         }
+                    }
+
+                    // If the latest item was chosen, keep track of the pruned dependency indices.
+                    if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out ResolvedDependencyGraphItem? resolvedGraphItem))
+                    {
+                        resolvedGraphItem.PrunedDependencies = prunedPackageIndices;
                     }
                 }
 
@@ -829,18 +854,20 @@ namespace NuGet.Commands
                     LibraryRangeIndex[] pathToChosenRef = foundItem.Path;
                     bool directPackageReferenceFromRootProject = foundItem.IsDirectPackageReferenceFromRootProject;
                     List<HashSet<LibraryDependencyIndex>> chosenSuppressions = foundItem.Suppressions;
-
                     if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out Task<FindLibraryEntryResult>? nodeTask))
                     {
                         FindLibraryEntryResult node = await nodeTask;
-
-                        flattenedGraphItems.Add(node.Item);
 
                         for (int i = 0; i < node.Item.Data.Dependencies.Count; i++)
                         {
                             var dep = node.Item.Data.Dependencies[i];
 
                             if (dep.LibraryRange.VersionRange == null)
+                            {
+                                continue;
+                            }
+
+                            if (foundItem.PrunedDependencies?.Contains(i) == true)
                             {
                                 continue;
                             }
@@ -935,9 +962,9 @@ namespace NuGet.Commands
                                         {
                                             foreach (var parent in chosenItem.Parents)
                                             {
-                                                if (foundItem.Path.Contains(parent))
+                                                if (foundItem.Path.Contains(parent) && !foundItem.IsDirectPackageReferenceFromRootProject)
                                                 {
-                                                    downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, parent, chosenItem.LibraryDependency, false));
+                                                    downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, parent, chosenItem.LibraryDependency, isCentralPackageTransitivePinningEnabled ? chosenItem.IsCentrallyPinnedTransitivePackage : false));
 
                                                     foundParentDowngrade = true;
                                                     break;
@@ -945,9 +972,9 @@ namespace NuGet.Commands
                                             }
                                         }
 
-                                        if (!foundParentDowngrade)
+                                        if (!foundParentDowngrade && (!isCentralPackageTransitivePinningEnabled || !chosenItem.IsDirectPackageReferenceFromRootProject))
                                         {
-                                            downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, chosenItem.Path[chosenItem.Path.Length - 1], chosenItem.LibraryDependency, false));
+                                            downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, chosenItem.Path[chosenItem.Path.Length - 1], chosenItem.LibraryDependency, isCentralPackageTransitivePinningEnabled ? chosenItem.IsCentrallyPinnedTransitivePackage : false));
                                         }
                                     }
 
@@ -980,7 +1007,7 @@ namespace NuGet.Commands
                             var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
                             newGraphNode.Item = findLibraryEntryResult.Item;
 
-                            if (chosenItem.IsCentrallyPinnedTransitivePackage)
+                            if (chosenItem.IsCentrallyPinnedTransitivePackage && !chosenItem.IsDirectPackageReferenceFromRootProject)
                             {
                                 newGraphNode.Disposition = Disposition.Accepted;
                                 newGraphNode.Item.IsCentralTransitive = true;
@@ -993,7 +1020,7 @@ namespace NuGet.Commands
                                 currentGraphNode.InnerNodes.Add(newGraphNode);
                             }
 
-                            if (dep.SuppressParent != LibraryIncludeFlags.All && isCentralPackageTransitivePinningEnabled && !downgrades.ContainsKey(chosenItemRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenItem.LibraryDependency.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
+                            if (dep.SuppressParent != LibraryIncludeFlags.All && isCentralPackageTransitivePinningEnabled && !chosenItem.IsDirectPackageReferenceFromRootProject && !downgrades.ContainsKey(chosenItemRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenItem.LibraryDependency.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
                             {
                                 downgrades.Add(chosenItem.LibraryRangeIndex, (currentLibraryRangeIndex, dep, rootProjectRefItem.LibraryRangeIndex, chosenItem.LibraryDependency, true));
                             }
@@ -1034,6 +1061,31 @@ namespace NuGet.Commands
                                 range: newGraphNode.Key.VersionRange,
                                 child: newGraphNode.Item.Key));
                         }
+
+                        if (foundItem.PrunedDependencies?.Count > 0)
+                        {
+                            int dependencyCount = node.Item.Data.Dependencies.Count - foundItem.PrunedDependencies.Count;
+
+                            List<LibraryDependency> dependencies = dependencyCount > 0 ? new(dependencyCount) : [];
+
+                            for (int i = 0; dependencyCount > 0 && i < node.Item.Data.Dependencies.Count; i++)
+                            {
+                                if (!foundItem.PrunedDependencies.Contains(i))
+                                {
+                                    dependencies.Add(node.Item.Data.Dependencies[i]);
+                                }
+                            }
+
+                            RemoteResolveResult remoteResolveResult = new RemoteResolveResult()
+                            {
+                                Match = node.Item.Data.Match,
+                                Dependencies = dependencies,
+                            };
+
+                            node.Item.Data = remoteResolveResult;
+                        }
+
+                        flattenedGraphItems.Add(node.Item);
                     }
                 }
 
@@ -1081,7 +1133,7 @@ namespace NuGet.Commands
                                 {
                                     IsCentralTransitive = downgrade.Value.IsCentralTransitive
                                 },
-                                OuterNode = toNode,
+                                OuterNode = downgrade.Value.IsCentralTransitive ? rootGraphNode : toNode,
                             }
                         });
                     }
@@ -1093,7 +1145,7 @@ namespace NuGet.Commands
                     {
                         ResolvedDependencyGraphItem chosenResolvedItem = item.Value;
 
-                        if (!chosenResolvedItem.IsCentrallyPinnedTransitivePackage || chosenResolvedItem.Parents == null || chosenResolvedItem.Parents.Count == 0)
+                        if (!chosenResolvedItem.IsCentrallyPinnedTransitivePackage || chosenResolvedItem.IsDirectPackageReferenceFromRootProject || chosenResolvedItem.Parents == null || chosenResolvedItem.Parents.Count == 0)
                         {
                             continue;
                         }
@@ -1204,6 +1256,66 @@ namespace NuGet.Commands
             return (_success, allGraphs, allRuntimes);
         }
 
+        private static Dictionary<LibraryDependencyIndex, VersionRange>? GetAndIndexPackagesToPrune(LibraryDependencyInterningTable libraryDependencyInterningTable, TargetFrameworkInformation? projectTargetFramework)
+        {
+            Dictionary<LibraryDependencyIndex, VersionRange>? prunedPackageVersions = null;
+
+            if (projectTargetFramework?.PackagesToPrune.Count > 0)
+            {
+                prunedPackageVersions = new Dictionary<LibraryDependencyIndex, VersionRange>(capacity: projectTargetFramework.PackagesToPrune.Count);
+
+                foreach (var item in projectTargetFramework.PackagesToPrune)
+                {
+                    LibraryDependencyIndex depIndex = libraryDependencyInterningTable.Intern(item.Value);
+                    prunedPackageVersions[depIndex] = item.Value.VersionRange;
+                }
+            }
+
+            return prunedPackageVersions;
+        }
+
+        private bool ShouldPrunePackage(
+            IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? packagesToPrune,
+            FindLibraryEntryResult refItemResult,
+            LibraryDependency dep,
+            LibraryDependencyIndex libraryDependencyIndex,
+            bool isPackage,
+            bool isDirectPackageReferenceFromRootProject)
+        {
+            if (packagesToPrune?.TryGetValue(libraryDependencyIndex, out VersionRange? prunableVersion) == true)
+            {
+                if (dep.LibraryRange!.VersionRange!.Satisfies(prunableVersion!.MaxVersion!))
+                {
+                    if (!isPackage)
+                    {
+                        if (SdkAnalysisLevelMinimums.IsEnabled(
+                            _request.Project!.RestoreMetadata!.SdkAnalysisLevel,
+                            _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                            SdkAnalysisLevelMinimums.PruningWarnings))
+                        {
+                            _logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1511, string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningProjectReference, dep.Name)));
+                        }
+                    }
+                    else if (isDirectPackageReferenceFromRootProject)
+                    {
+                        if (SdkAnalysisLevelMinimums.IsEnabled(
+                            _request.Project!.RestoreMetadata!.SdkAnalysisLevel,
+                            _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                            SdkAnalysisLevelMinimums.PruningWarnings))
+                        {
+                            _logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, dep.Name)));
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.RestoreDebugPruningPackageReference, $"{dep.Name} {dep.LibraryRange.VersionRange.OriginalString}", refItemResult.Item.Key, prunableVersion.MaxVersion));
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
         {
             if (current == previous)
@@ -1295,6 +1407,8 @@ namespace NuGet.Commands
             public required LibraryRangeIndex[] Path { get; set; }
 
             public required List<HashSet<LibraryDependencyIndex>> Suppressions { get; set; }
+
+            public HashSet<int>? PrunedDependencies { get; set; }
         }
 
         internal sealed class LibraryDependencyInterningTable
@@ -1333,6 +1447,21 @@ namespace NuGet.Commands
                 }
 
                 return index;
+            }
+
+            public LibraryDependencyIndex Intern(PrunePackageReference prunePackageReference)
+            {
+                lock (_lockObject)
+                {
+                    string key = prunePackageReference.Name;
+                    if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
+                    {
+                        index = (LibraryDependencyIndex)_nextIndex++;
+                        _table.TryAdd(key, index);
+                    }
+
+                    return index;
+                }
             }
         }
 
@@ -1385,6 +1514,8 @@ namespace NuGet.Commands
             public LibraryRangeIndex LibraryRangeIndex { get; set; } = LibraryRangeIndex.Invalid;
 
             public LibraryRangeIndex[] Path { get; set; } = Array.Empty<LibraryRangeIndex>();
+
+            public LibraryRangeIndex Parent { get; set; }
 
             public HashSet<LibraryDependencyIndex>? Suppressions { get; set; }
         }
@@ -1524,9 +1655,9 @@ namespace NuGet.Commands
                         break;
                 }
 
-                return typeConstraint1 == typeConstraint2 &&
-                       VersionRangeComparer.Default.Equals(x.VersionRange, y.VersionRange) &&
-                       x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase);
+                return typeConstraint1 == typeConstraint2
+                    && x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase)
+                    && x.VersionRange.Equals(y.VersionRange);
             }
 
             public int GetHashCode(LibraryRange obj)
