@@ -74,6 +74,21 @@ namespace NuGet.CommandLine.XPlat
             ArgumentText = GetReportParameters();
         }
 
+        public ListPackageArgs(
+            string path,
+            List<PackageSource> packageSources,
+            List<string> frameworks,
+            ReportType reportType,
+            IReportRenderer renderer,
+            bool includeTransitive,
+            bool prerelease,
+            bool highestPatch,
+            bool highestMinor,
+            ILogger logger,
+            CancellationToken cancellationToken) : this(path, packageSources, frameworks, reportType, renderer, includeTransitive, prerelease, highestPatch, highestMinor, new List<PackageSource>(), logger, cancellationToken)
+        {
+        }
+
         private string GetReportParameters()
         {
             StringBuilder sb = new StringBuilder();
