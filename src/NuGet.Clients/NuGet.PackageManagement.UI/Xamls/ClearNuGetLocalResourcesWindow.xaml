@@ -37,8 +37,10 @@
       <!-- Buttons -->
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
+
     <!-- Top caption -->
-    <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" />
+    <TextBlock Grid.Row="0" Margin="0,12,0,12" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" Visibility="{Binding IsCommandComplete, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"/>
+    <TextBlock Grid.Row="0" Margin="0,12,0,12" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
     <!-- Content -->
     <Grid Grid.Row="1" Margin="0,6,0,0">
@@ -47,7 +49,6 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <ProgressBar Height="20" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100"/>
-      <TextBlock Grid.Row="1" Margin="0,12,0,12" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>
 
     <!-- Buttons -->
