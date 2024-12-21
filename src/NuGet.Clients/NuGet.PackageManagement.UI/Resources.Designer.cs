@@ -1809,7 +1809,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing all NuGet storage. .
+        ///   Looks up a localized string similar to Clearing all NuGet storage....
         /// </summary>
         public static string ShowMessage_LocalsCommandWorking {
             get {
