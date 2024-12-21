@@ -46,7 +46,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ProgressBar Height="20" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}"/>
+      <ProgressBar Height="20" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100"/>
       <TextBlock Grid.Row="1" Margin="0,12,0,12" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </Grid>
 
