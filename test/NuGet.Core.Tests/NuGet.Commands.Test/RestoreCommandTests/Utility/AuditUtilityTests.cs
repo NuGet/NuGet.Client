@@ -183,9 +183,9 @@ public class AuditUtilityTests
 
         ImmutableArray<DownloadDependency> downloadDependencies = ImmutableArray.Create<DownloadDependency>
         (
-            new DownloadDependency("pkgDownload", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))),
-            new DownloadDependency("pkga", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0"))),
-            new DownloadDependency("pkgDownload12", new VersionRange(new NuGetVersion("1.0.0"), maxVersion: new NuGetVersion("1.0.0")))
+            new DownloadDependency("pkgDownload", VersionRange.Parse("[1.0.0]")),
+            new DownloadDependency("pkga", VersionRange.Parse("[1.0.0]")),
+            new DownloadDependency("pkgDownload12", VersionRange.Parse("[1.0.0]"))
         );
 
         TargetFrameworkInformation targetFramework = new()
