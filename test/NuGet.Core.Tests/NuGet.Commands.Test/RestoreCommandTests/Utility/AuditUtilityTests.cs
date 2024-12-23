@@ -218,6 +218,9 @@ public class AuditUtilityTests
         auditUtility.TransitivePackagesWithAdvisory.Should().NotBeNull();
         auditUtility.TransitivePackagesWithAdvisory!.Should().BeEquivalentTo(new[] { "pkgb" });
 
+        auditUtility.PackageDownloadPackagesWithAdvisory.Should().NotBeNull();
+        auditUtility.PackageDownloadPackagesWithAdvisory.Should().BeEquivalentTo(new[] { "pkga" });
+
         int expectedCount = severity == PackageVulnerabilitySeverity.Low ? 1 : 0;
         auditUtility.Sev0DirectMatches.Should().Be(expectedCount);
         auditUtility.Sev0TransitiveMatches.Should().Be(expectedCount);
@@ -242,8 +245,6 @@ public class AuditUtilityTests
         auditUtility.InvalidSevDirectMatches.Should().Be(expectedCount);
         auditUtility.InvalidSevTransitiveMatches.Should().Be(expectedCount);
         auditUtility.InvalidSevPackageDownloadMatches.Should().Be(expectedCount);
-
-        auditUtility.PackageDownloadPackagesWithAdvisory.Should().BeEquivalentTo(new[] { "pkga" });
 
         static void ValidateRestoreLogMessage(RestoreLogMessage message, string packageId, NuGetLogCode expectedCode, AuditTestContext context)
         {
