@@ -978,4 +978,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Project '{0}' does not have MSBuild property ProjectAssetsFile defined. This may indicate that this project does not support NuGet PackageReference, or that project customization has prevented the .NET SDK setting default values.</value>
     <comment>{0} - Path to the project with the error</comment>
   </data>
+  <data name="ListPkg_AuditSourcesUsedDescription" xml:space="preserve">
+    <value>The following vulnerability audit sources were used:</value>
+  </data>
 </root>

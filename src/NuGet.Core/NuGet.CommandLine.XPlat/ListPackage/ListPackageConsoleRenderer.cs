@@ -73,6 +73,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 consoleOut.WriteLine();
                 consoleOut.WriteLine(Strings.ListPkg_SourcesUsedDescription);
                 PrintSources(consoleOut, listPackageArgs.PackageSources);
+
+                if (listPackageArgs.AuditSources.Count > 0)
+                {
+                    consoleOut.WriteLine();
+                    consoleOut.WriteLine(Strings.ListPkg_AuditSourcesUsedDescription);
+                    PrintSources(consoleOut, listPackageArgs.AuditSources);
+                }
+
                 consoleOut.WriteLine();
             }
         }

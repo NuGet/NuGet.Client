@@ -853,6 +853,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following vulnerability audit sources were used:.
+        /// </summary>
+        internal static string ListPkg_AuditSourcesUsedDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_AuditSourcesUsedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to (A) : Auto-referenced package..
         /// </summary>
         internal static string ListPkg_AutoReferenceDescription {
