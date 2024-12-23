@@ -179,6 +179,18 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
+            foreach (PackageSource packageSource in listPackageArgs.AuditSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
             if (httpPackageSources != null && httpPackageSources.Count != 0)
             {
                 if (httpPackageSources.Count == 1)
