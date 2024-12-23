@@ -183,7 +183,7 @@ namespace NuGet.Commands.Restore.Utility
         public async Task<bool> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
             // Performance: Early exit if restore graph does not contain any packages.
-            if (!HasPackages() && (_targetFrameworks.Count() == 0))
+            if (!HasPackages() && (_targetFrameworks.Count == 0))
             {
                 // No packages means we've validated there are none with known vulnerabilities.
                 return true;
