@@ -221,22 +221,27 @@ public class AuditUtilityTests
         int expectedCount = severity == PackageVulnerabilitySeverity.Low ? 1 : 0;
         auditUtility.Sev0DirectMatches.Should().Be(expectedCount);
         auditUtility.Sev0TransitiveMatches.Should().Be(expectedCount);
+        auditUtility.Sev0PackageDownloadMatches.Should().Be(expectedCount);
 
         expectedCount = severity == PackageVulnerabilitySeverity.Moderate ? 1 : 0;
         auditUtility.Sev1DirectMatches.Should().Be(expectedCount);
         auditUtility.Sev1TransitiveMatches.Should().Be(expectedCount);
+        auditUtility.Sev1PackageDownloadMatches.Should().Be(expectedCount);
 
         expectedCount = severity == PackageVulnerabilitySeverity.High ? 1 : 0;
         auditUtility.Sev2DirectMatches.Should().Be(expectedCount);
         auditUtility.Sev2TransitiveMatches.Should().Be(expectedCount);
+        auditUtility.Sev2PackageDownloadMatches.Should().Be(expectedCount);
 
         expectedCount = severity == PackageVulnerabilitySeverity.Critical ? 1 : 0;
         auditUtility.Sev3DirectMatches.Should().Be(expectedCount);
         auditUtility.Sev3TransitiveMatches.Should().Be(expectedCount);
+        auditUtility.Sev3PackageDownloadMatches.Should().Be(expectedCount);
 
         expectedCount = severity == PackageVulnerabilitySeverity.Unknown ? 1 : 0;
         auditUtility.InvalidSevDirectMatches.Should().Be(expectedCount);
         auditUtility.InvalidSevTransitiveMatches.Should().Be(expectedCount);
+        auditUtility.InvalidSevPackageDownloadMatches.Should().Be(expectedCount);
 
         auditUtility.PackageDownloadPackagesWithAdvisory.Should().BeEquivalentTo(new[] { "pkga" });
 
