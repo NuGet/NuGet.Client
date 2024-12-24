@@ -291,7 +291,7 @@ namespace NuGet.CommandLine.XPlat
             List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
-            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo = null;
+            var vulnerabilityInfo = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>();
 
             if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources.Count > 0)
             {
@@ -308,8 +308,11 @@ namespace NuGet.CommandLine.XPlat
                             new SourceCacheContext(),
                             listPackageArgs.Logger,
                             listPackageArgs.CancellationToken);
-                        vulnerabilityInfo = vulnerabilityInfoResult.KnownVulnerabilities;
-                        break; // Use the first valid audit source
+
+                        if (vulnerabilityInfoResult?.KnownVulnerabilities != null)
+                        {
+                            vulnerabilityInfo.AddRange(vulnerabilityInfoResult.KnownVulnerabilities);
+                        }
                     }
                 }
             }
