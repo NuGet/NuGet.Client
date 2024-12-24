@@ -292,7 +292,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_ShouldUseAuditSources_WhenReportTypeIsVulnerable()
+        public async Task GetReportDataAsync_WhenReportTypeIsVulnerable_ShouldUseAuditSources()
         {
             // Arrange
             var advisoryUrl = "https://test/";
