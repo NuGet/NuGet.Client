@@ -90,6 +90,16 @@ namespace NuGet.Commands.Restore.Utility
             }
         }
 
+        private int CountPackageDownloads()
+        {
+            int count = 0;
+            foreach (var targetFramework in _targetFrameworks.NoAllocEnumerate())
+            {
+                count += targetFramework.DownloadDependencies.Length;
+            }
+            return count;
+        }
+
         private void CheckPackageDownloadVulnerabilities(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
         {
             Dictionary<DownloadDependency, PackageDownloadAuditInfo>? packagesWithKnownVulnerabilities = FindPackageDownloadsWithKnownVulnerabilities(knownVulnerabilities);
@@ -183,7 +193,7 @@ namespace NuGet.Commands.Restore.Utility
         public async Task<bool> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
             // Performance: Early exit if restore graph does not contain any packages.
-            if (!HasPackages() && (_targetFrameworks.Count == 0))
+            if (!HasPackages() && (CountPackageDownloads() == 0))
             {
                 // No packages means we've validated there are none with known vulnerabilities.
                 return true;

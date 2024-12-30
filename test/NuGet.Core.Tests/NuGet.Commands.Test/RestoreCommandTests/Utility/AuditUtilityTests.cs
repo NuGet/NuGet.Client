@@ -453,7 +453,7 @@ public class AuditUtilityTests
             "/path/proj.csproj",
             graphs,
             vulnerabilityProviders,
-            targetFrameworks: Enumerable.Empty<TargetFrameworkInformation>().ToList(),
+            targetFrameworks: new List<TargetFrameworkInformation>(0),
             log);
         await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
@@ -526,7 +526,7 @@ public class AuditUtilityTests
         public string? Level { get; set; }
         public string? Mode { get; set; }
         public HashSet<string>? SuppressedAdvisories { get; set; }
-        public List<TargetFrameworkInformation> TargetFrameworks { get; set; } = new();
+        public List<TargetFrameworkInformation> TargetFrameworks { get; set; } = new() { new TargetFrameworkInformation() };
 
         public TestLogger Log { get; } = new();
 
