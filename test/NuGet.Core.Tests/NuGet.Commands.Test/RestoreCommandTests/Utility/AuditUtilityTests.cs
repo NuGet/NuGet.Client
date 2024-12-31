@@ -445,6 +445,17 @@ public class AuditUtilityTests
             await createGraphTasks[1]
         };
 
+        var targetFrameworks = new List<TargetFrameworkInformation>
+        {
+            new TargetFrameworkInformation()
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.Net60
+            },new TargetFrameworkInformation()
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.Net50
+            }
+        };
+
         var log = new TestLogger();
 
         // Act
@@ -453,7 +464,7 @@ public class AuditUtilityTests
             "/path/proj.csproj",
             graphs,
             vulnerabilityProviders,
-            targetFrameworks: new List<TargetFrameworkInformation>(0),
+            targetFrameworks: targetFrameworks,
             log);
         await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
@@ -521,12 +532,23 @@ public class AuditUtilityTests
 
     private class AuditTestContext
     {
+        public AuditTestContext()
+        {
+            TargetFrameworks = new()
+            {
+                new TargetFrameworkInformation()
+                {
+                    FrameworkName = _framework
+                }
+            };
+        }
+
         public string ProjectFullPath { get; set; } = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
         public string? Enabled { get; set; }
         public string? Level { get; set; }
         public string? Mode { get; set; }
         public HashSet<string>? SuppressedAdvisories { get; set; }
-        public List<TargetFrameworkInformation> TargetFrameworks { get; set; } = new() { new TargetFrameworkInformation() };
+        public List<TargetFrameworkInformation> TargetFrameworks { get; set; }
 
         public TestLogger Log { get; } = new();
 
@@ -536,6 +558,8 @@ public class AuditUtilityTests
         private LibraryRange? _walkTarget;
 
         private List<VulnerabilityProviderTestContext>? _vulnerabilityProviders;
+
+        private readonly NuGetFramework _framework = FrameworkConstants.CommonFrameworks.Net60;
 
         /// <summary>
         /// Set up the project that is being restored (not just a project reference)
@@ -605,12 +629,11 @@ public class AuditUtilityTests
                 walkContext.ProjectLibraryProviders.Add(ProjectDependencyProvider);
                 var walker = new RemoteDependencyWalker(walkContext);
 
-                var targetFramework = FrameworkConstants.CommonFrameworks.Net60;
-                var graph = await walker.WalkAsync(_walkTarget, targetFramework, "", RuntimeGraph.Empty, true);
+                var graph = await walker.WalkAsync(_walkTarget, _framework, "", RuntimeGraph.Empty, true);
 
                 RestoreTargetGraph[] graphs = new[]
                 {
-                    RestoreTargetGraph.Create(new[] { graph }, walkContext, NullLogger.Instance, targetFramework)
+                    RestoreTargetGraph.Create(new[] { graph }, walkContext, NullLogger.Instance, _framework)
                 };
 
                 return graphs;

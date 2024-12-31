@@ -140,8 +140,6 @@ namespace NuGet.Commands.Restore.Utility
 
                     if (knownVulnerabilitiesForPackage?.Count > 0)
                     {
-                        DownloadDependency downloadDependencyPackage = new(downloadDependency.Name, downloadDependency.VersionRange);
-
                         foreach (PackageVulnerabilityInfo knownVulnerability in knownVulnerabilitiesForPackage)
                         {
                             if ((int)knownVulnerability.Severity < (int)MinSeverity && knownVulnerability.Severity != PackageVulnerabilitySeverity.Unknown)
@@ -193,7 +191,7 @@ namespace NuGet.Commands.Restore.Utility
         public async Task<bool> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
             // Performance: Early exit if restore graph does not contain any packages.
-            if (!HasPackages() && (CountPackageDownloads() == 0))
+            if (!HasPackages())
             {
                 // No packages means we've validated there are none with known vulnerabilities.
                 return true;
@@ -216,13 +214,17 @@ namespace NuGet.Commands.Restore.Utility
 
             bool HasPackages()
             {
-                foreach (RestoreTargetGraph graph in _targetGraphs)
+                if (CountPackageDownloads() == 0)
                 {
-                    if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
+                    foreach (RestoreTargetGraph graph in _targetGraphs)
                     {
-                        return true;
+                        if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
+                        {
+                            return true;
+                        }
                     }
                 }
+
                 return false;
             }
 
