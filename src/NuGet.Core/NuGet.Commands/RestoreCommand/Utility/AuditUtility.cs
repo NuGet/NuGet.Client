@@ -214,14 +214,16 @@ namespace NuGet.Commands.Restore.Utility
 
             bool HasPackages()
             {
-                if (CountPackageDownloads() == 0)
+                if (CountPackageDownloads() > 0)
                 {
-                    foreach (RestoreTargetGraph graph in _targetGraphs)
+                    return true;
+                }
+
+                foreach (RestoreTargetGraph graph in _targetGraphs)
+                {
+                    if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
                     {
-                        if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
 
