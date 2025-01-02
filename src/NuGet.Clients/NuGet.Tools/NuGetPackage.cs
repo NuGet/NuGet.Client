@@ -85,7 +85,6 @@ namespace NuGetVSExtension
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
-        private CancellationToken _cancellationToken;
 
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
@@ -158,7 +157,6 @@ namespace NuGetVSExtension
             _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
 
             await base.InitializeAsync(cancellationToken, progress);
-            _cancellationToken = cancellationToken;
             // Add our command handlers for menu (commands must exist in the .vsct file)
             await AddMenuCommandHandlersAsync();
 
@@ -535,7 +533,7 @@ namespace NuGetVSExtension
                 isSolution: false,
                 editorFactoryGuid: GuidList.guidNuGetEditorType);
 
-            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value, _cancellationToken);
+            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value, VsShellUtilities.ShutdownToken);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
@@ -892,7 +890,7 @@ namespace NuGetVSExtension
                 SolutionName = solutionName
             };
 
-            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value, _cancellationToken);
+            PackageManagerControl control = await PackageManagerControl.CreateAsync(model, OutputConsoleLogger.Value, VsShellUtilities.ShutdownToken);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;

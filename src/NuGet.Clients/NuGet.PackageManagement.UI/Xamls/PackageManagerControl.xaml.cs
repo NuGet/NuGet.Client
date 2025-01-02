@@ -181,7 +181,6 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
-
             var sourceRepositories = sourceRepositoryProvider.GetRepositories();
             _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, _uiLogger);
 

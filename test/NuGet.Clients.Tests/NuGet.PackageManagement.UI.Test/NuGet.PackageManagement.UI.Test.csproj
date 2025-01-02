@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\customMetadata.jpeg" />
     <EmbeddedResource Include="Resources\grayicc.png" />
