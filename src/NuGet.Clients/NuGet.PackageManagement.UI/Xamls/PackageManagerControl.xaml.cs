@@ -69,6 +69,7 @@ namespace NuGet.PackageManagement.UI
         private bool _disposed = false;
         private IPackageVulnerabilityService _packageVulnerabilityService;
         private INuGetPackageFileService _nugetPackageFileService;
+        private bool _isReadmeTabEnabled;
 
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
@@ -154,13 +155,13 @@ namespace NuGet.PackageManagement.UI
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
-            var readmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
-            if (readmeTabEnabled)
+            _isReadmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+            if (_isReadmeTabEnabled)
             {
-                readmeTabEnabled = _packageDetail._packageDetailsTabControl.PackageReadmeControl.Initialize(editorOptionsFactoryService);
+                _isReadmeTabEnabled = _packageDetail._packageDetailsTabControl.PackageReadmeControl.Initialize(editorOptionsFactoryService);
             }
 
-            _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab, readmeTabEnabled);
+            _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab, _isReadmeTabEnabled);
 
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
@@ -219,6 +220,8 @@ namespace NuGet.PackageManagement.UI
         public ISettings Settings { get; private set; }
 
         public ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
+
+        public bool IsReadmeTabEnabled => _isReadmeTabEnabled;
 
         public bool IsSolution => Model.IsSolution;
 
