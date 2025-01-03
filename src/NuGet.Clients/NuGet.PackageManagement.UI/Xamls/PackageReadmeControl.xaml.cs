@@ -38,7 +38,8 @@ namespace NuGet.PackageManagement.UI
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// Added to allow the view to display the loading spinner while the markdown is being rendered 
+        /// Added to allow the view to display the loading spinner while the markdown is being rendered.
+        /// The markdown rendering occurs on the view so the view should have some control over this property.
         /// </summary>
         public bool IsBusy
         {
@@ -47,6 +48,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// Added to allow the view to hide the README while the markdown is being rendered
+        /// The markdown rendering occurs on the view so the view should have some control over this property.
         /// </summary>
         public bool IsReadmeReady
         {
