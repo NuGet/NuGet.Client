@@ -38,7 +38,4 @@ Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 
 # Assembly XML Documentation we ship in the VSIX
-#NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml
-
-#???
-Newtonsoft.Json.dll
+NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml
