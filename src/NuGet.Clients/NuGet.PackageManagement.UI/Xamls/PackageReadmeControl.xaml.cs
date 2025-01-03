@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).Forget();
+                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
                 }
             }
             if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
@@ -90,27 +90,19 @@ namespace NuGet.PackageManagement.UI
 
         private async Task UpdateMarkdownAsync(string markdown, CancellationToken token)
         {
-            try
+            UpdateBusy(true);
+            if (_markdownPreview is not null)
             {
-                UpdateBusy(true);
-                if (_markdownPreview is not null)
+                await TaskScheduler.Default;
+                var success = await _markdownPreview.UpdateContentAsync(markdown, ScrollHint.None).PostOnFailureAsync(nameof(PackageReadmeControl));
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+                if (!success)
                 {
-                    await TaskScheduler.Default;
-                    await _markdownPreview.UpdateContentAsync(markdown, ScrollHint.None);
+                    ReadmeViewModel.ErrorWithReadme = true;
+                    ReadmeViewModel.ReadmeMarkdown = string.Empty;
                 }
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-                ReadmeViewModel.ErrorWithReadme = true;
-                ReadmeViewModel.ReadmeMarkdown = string.Empty;
-                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
-            }
-            finally
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-                UpdateBusy(false);
-            }
+            UpdateBusy(false);
         }
 
         private void UpdateBusy(bool isBusy)
@@ -124,7 +116,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
-                UpdateMarkdownAsync("", _cancellationTokenSource.Token).Forget();
+                UpdateMarkdownAsync("", _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
@@ -137,7 +129,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
             {
-                UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).Forget();
+                UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
             }
         }
 
