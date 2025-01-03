@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio.Telemetry
     public static class TaskExtensions
     {
         /// <summary> Records error information when the given task faults. </summary>
-        /// <param name="task"> Joinable task to execute. </param>
+        /// <param name="task"> Task to execute. </param>
         /// <param name="callerClassName"> Caller class name. </param>
         /// <param name="callerMemberName"> Caller member name. </param>
         public static void PostOnFailure(this Task task, string callerClassName, [CallerMemberName] string callerMemberName = null)
@@ -33,7 +33,7 @@ namespace NuGet.VisualStudio.Telemetry
         }
 
         /// <summary> Records error information when the given task faults. </summary>
-        /// <param name="task"> Joinable task to execute. </param>
+        /// <param name="task"> Task to execute. </param>
         /// <param name="callerClassName"> Caller class name. </param>
         /// <param name="callerMemberName"> Caller member name. </param>
         /// <returns>True, if the task did now throw an unhandled exception</returns>

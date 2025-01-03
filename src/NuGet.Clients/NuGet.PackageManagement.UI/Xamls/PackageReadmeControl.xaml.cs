@@ -27,25 +27,30 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore CS0618 // Type or member is obsolete
         private bool _isDisposed = false;
         private CancellationTokenSource _controlDisposingTokenSource;
-
         private bool _isBusy = true;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public bool IsBusy
-        {
-            get => _isBusy || ReadmeViewModel.IsBusy;
-        }
-
-        public bool IsReadmeReady
-        {
-            get => !_isBusy && ReadmeViewModel.IsReadmeReady;
-        }
 
         public PackageReadmeControl()
         {
             InitializeComponent();
             _controlDisposingTokenSource = new CancellationTokenSource();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Added to allow the view to display the loading spinner while the markdown is being rendered 
+        /// </summary>
+        public bool IsBusy
+        {
+            get => _isBusy || ReadmeViewModel.IsBusy;
+        }
+
+        /// <summary>
+        /// Added to allow the view to hide the README while the markdown is being rendered
+        /// </summary>
+        public bool IsReadmeReady
+        {
+            get => !_isBusy && ReadmeViewModel.IsReadmeReady;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
