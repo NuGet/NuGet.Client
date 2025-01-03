@@ -17,6 +17,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             _ = Task.Run(async () =>
             {
+#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
@@ -27,6 +28,7 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     await TelemetryUtility.PostFaultAsync(e, callerClassName, callerMemberName);
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             });
         }
 
@@ -38,6 +40,7 @@ namespace NuGet.VisualStudio.Telemetry
         public static async Task<bool> PostOnFailureAsync(this Task task, string callerClassName, [CallerMemberName] string callerMemberName = null)
         {
             var success = true;
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
@@ -49,6 +52,7 @@ namespace NuGet.VisualStudio.Telemetry
                 await TelemetryUtility.PostFaultAsync(e, callerClassName, callerMemberName);
                 success = false;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
             return success;
         }
     }

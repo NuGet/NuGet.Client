@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
         private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
         private bool _isDisposed = false;
-        private CancellationTokenSource _cancellationTokenSource;
+        private CancellationTokenSource _controlDisposingTokenSource;
 
         private bool _isBusy = true;
 
@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI
         public PackageReadmeControl()
         {
             InitializeComponent();
-            _cancellationTokenSource = new CancellationTokenSource();
+            _controlDisposingTokenSource = new CancellationTokenSource();
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
+                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _controlDisposingTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
                 }
             }
             if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
-                UpdateMarkdownAsync("", _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
+                UpdateMarkdownAsync("", _controlDisposingTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
@@ -129,7 +129,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
             {
-                UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _cancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
+                UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _controlDisposingTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
             }
         }
 
@@ -138,8 +138,8 @@ namespace NuGet.PackageManagement.UI
             if (!_isDisposed)
             {
                 _isDisposed = true;
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource.Dispose();
+                _controlDisposingTokenSource.Cancel();
+                _controlDisposingTokenSource.Dispose();
                 _markdownPreview?.Dispose();
             }
         }
