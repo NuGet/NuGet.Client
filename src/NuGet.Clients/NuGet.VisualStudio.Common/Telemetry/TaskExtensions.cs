@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Telemetry
         /// <param name="task"> Joinable task to execute. </param>
         /// <param name="callerClassName"> Caller class name. </param>
         /// <param name="callerMemberName"> Caller member name. </param>
-        /// <returns>True, if the task finishes successfully</returns>
+        /// <returns>True, if the task did now throw an unhandled exception</returns>
         public static async Task<bool> PostOnFailureAsync(this Task task, string callerClassName, [CallerMemberName] string callerMemberName = null)
         {
             var success = true;
