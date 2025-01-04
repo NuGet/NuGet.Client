@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _controlDisposingTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl)); ;
+                    UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _controlDisposingTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
                 }
             }
             if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
