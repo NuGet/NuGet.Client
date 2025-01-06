@@ -2907,6 +2907,10 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["TreatWarningsAsErrors"] = value => value.Should().Be(false),
                 ["SDKAnalysisLevel"] = value => value.Should().Be(null),
                 ["UsingMicrosoftNETSdk"] = value => value.Should().Be(false),
+                ["IsPackageInstallationTrigger"] = value => value.Should().Be(false),
+                ["ForceRestore"] = value => value.Should().Be(false),
+                ["UpdatedAssetsFile"] = value => value.Should().Be(true),
+                ["UpdatedMSBuildFiles"] = value => value.Should().Be(true),
             };
 
             HashSet<string> actualProperties = new();
@@ -2981,7 +2985,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(30);
+            projectInformationEvent.Count.Should().Be(34);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -3012,6 +3016,10 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["TreatWarningsAsErrors"].Should().Be(true);
             projectInformationEvent["SDKAnalysisLevel"].Should().Be(NuGetVersion.Parse("9.0.100"));
             projectInformationEvent["UsingMicrosoftNETSdk"].Should().Be(true);
+            projectInformationEvent["IsPackageInstallationTrigger"].Should().Be(false);
+            projectInformationEvent["ForceRestore"].Should().Be(false);
+            projectInformationEvent["UpdatedAssetsFile"].Should().Be(false);
+            projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(false);
         }
 
         [Fact]
@@ -3069,12 +3077,16 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(36);
+            projectInformationEvent.Count.Should().Be(40);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
             projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
             projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
+            projectInformationEvent["UpdatedAssetsFile"].Should().Be(true);
+            projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(true);
+            projectInformationEvent["IsPackageInstallationTrigger"].Should().Be(false);
+            projectInformationEvent["ForceRestore"].Should().Be(false);
         }
 
         /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
