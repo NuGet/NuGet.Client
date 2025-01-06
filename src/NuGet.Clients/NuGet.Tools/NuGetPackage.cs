@@ -94,7 +94,7 @@ namespace NuGetVSExtension
     {
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
-        private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
+        private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
 
         private IVsMonitorSelection VsMonitorSelection => ThreadHelper.JoinableTaskFactory.Run(_vsMonitorSelection.GetValueAsync);
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
