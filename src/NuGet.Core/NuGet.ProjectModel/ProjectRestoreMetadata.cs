@@ -141,12 +141,6 @@ namespace NuGet.ProjectModel
         public NuGetVersion SdkAnalysisLevel { get; set; }
 
         /// <summary>
-        /// Indicates the .NET SDK Version if any.
-        /// In combination with SdkAnalysisLevel, it allows us to determine whether the analysis level is the default one or manually specified.
-        /// </summary>
-        public NuGetVersion SdkVersion { get; set; }
-
-        /// <summary>
         /// Indicates that Microsoft.NET.Sdk is being used.
         /// </summary>
         public bool UsingMicrosoftNETSdk { get; set; }

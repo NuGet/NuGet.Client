@@ -341,7 +341,7 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[TreatWarningsAsErrors] = _request.Project.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors;
             telemetry.TelemetryEvent[SDKAnalysisLevel] = _request.Project.RestoreMetadata.SdkAnalysisLevel;
             telemetry.TelemetryEvent[UsingMicrosoftNETSdk] = _request.Project.RestoreMetadata.UsingMicrosoftNETSdk;
-            telemetry.TelemetryEvent[NETSdkVersion] = _request.Project.RestoreMetadata.SdkVersion;
+            telemetry.TelemetryEvent[NETSdkVersion] = _request.Project.RestoreSettings.SdkVersion;
             telemetry.TelemetryEvent[IsPackageInstallationTrigger] = !_request.IsRestoreOriginalAction;
             _operationId = telemetry.OperationId;
 

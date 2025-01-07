@@ -1260,7 +1260,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
             msbuildMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
-\
+
             if (configFilePaths != null)
             {
                 msbuildMetadata.ConfigFilePaths = configFilePaths;

@@ -994,7 +994,6 @@ namespace NuGet.ProjectModel
             bool usingMicrosoftNetSdk = true;
             bool restoreUseLegacyDependencyResolver = false;
             NuGetVersion sdkAnalysisLevel = null;
-            NuGetVersion sdkVersion = null;
 
             jsonReader.ReadObject(propertyName =>
             {
