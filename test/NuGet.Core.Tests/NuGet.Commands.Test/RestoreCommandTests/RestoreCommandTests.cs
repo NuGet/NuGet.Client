@@ -2929,6 +2929,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
+        // TODO NK - Add here.
         [Fact]
         public async Task ExecuteAsync_WithSinglePackage_WhenNoOping_PopulatesCorrectTelemetry()
         {

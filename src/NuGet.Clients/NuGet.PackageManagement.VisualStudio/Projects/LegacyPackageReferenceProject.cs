@@ -538,6 +538,7 @@ namespace NuGet.PackageManagement.VisualStudio
 #pragma warning restore CS0618 // Type or member is obsolete
             string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
             string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
+            NuGetVersion.TryParse(_vsProjectAdapter.BuildProperties.GetPropertyValue("NETCoreSdkVersion"), out NuGetVersion sdkVersion);
 
             return new PackageSpec(tfis)
             {
@@ -585,6 +586,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString),
                     UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(usingNetSdk),
                     UseLegacyDependencyResolver = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreUseLegacyDependencyResolver)),
+                    SdkVersion = sdkVersion,
                 }
             };
         }

@@ -390,6 +390,8 @@ namespace NuGet.SolutionRestoreManager
                     SdkAnalysisLevel = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks),
                     UsingMicrosoftNETSdk = VSNominationUtilities.GetUsingMicrosoftNETSdk(targetFrameworks),
                     UseLegacyDependencyResolver = VSNominationUtilities.GetUseLegacyDependencyResolver(targetFrameworks),
+                    SdkVersion = VSNominationUtilities.GetSdkVersion(targetFrameworks),
+
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(targetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true },

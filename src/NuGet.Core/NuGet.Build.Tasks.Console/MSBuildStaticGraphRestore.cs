@@ -982,6 +982,8 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = project.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
+            NuGetVersion.TryParse(project.GetProperty("NETCoreSdkVersion"), out NuGetVersion version);
+            restoreMetadata.SdkVersion = version;
 
             return (restoreMetadata, targetFrameworkInfos);
 
