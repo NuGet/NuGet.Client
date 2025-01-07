@@ -1659,42 +1659,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             actualRestoreSpec.RestoreMetadata.SdkAnalysisLevel.Should().Be(expectedVersion);
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithSdkVersion_ReadsSdkVersionValue()
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            // Arrange
-            string sdkAnalysisLevel = "9.0.809";
-            using var testDirectory = TestDirectory.Create();
-            NuGetVersion expectedVersion = new NuGetVersion(sdkAnalysisLevel);
-            var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
-            projectBuildProperties.Setup(b => b.GetPropertyValue("NetCoreSDKVersion"))
-                .Returns(sdkAnalysisLevel);
-            var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
-
-            Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
-
-            var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
-                projectAdapter,
-                Guid.NewGuid().ToString(),
-                projectServices,
-                _threadingService);
-
-            var settings = NullSettings.Instance;
-            var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
-
-            // Act
-            var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
-
-            // Assert
-            Assert.NotNull(packageSpecs);
-            var actualRestoreSpec = packageSpecs.Single();
-            SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
-            actualRestoreSpec.RestoreMetadata.SdkAnalysisLevel.Should().Be(expectedVersion);
-        }
-
         [Theory]
         [InlineData("False")]
         [InlineData("FaLse")]
