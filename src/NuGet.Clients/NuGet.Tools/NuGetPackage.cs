@@ -192,7 +192,7 @@ namespace NuGetVSExtension
 
             VsShellUtilities.ShutdownToken.Register(InstanceCloseTelemetryEmitter.OnShutdown);
 
-            var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
+            var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
         }
@@ -209,7 +209,7 @@ namespace NuGetVSExtension
                     return;
                 }
 
-                var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
+                var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
                 Assumes.Present(componentModel);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

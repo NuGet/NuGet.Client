@@ -52,27 +52,6 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Fetches a service from the service provider in a free threaded fashion (ie. no UI thread transitions).
-        /// </summary>
-        /// <typeparam name="TService">Service type</typeparam>
-        /// <typeparam name="TInterface">Service interface</typeparam>
-        /// <returns>The service if available, null otherwise.</returns>
-        public static async Task<TInterface> GetGlobalServiceFreeThreadedAsync<TService, TInterface>() where TInterface : class
-        {
-            if (PackageServiceProvider != null)
-            {
-                TInterface service = await PackageServiceProvider.GetFreeThreadedServiceAsync<TService, TInterface>();
-
-                if (service != null)
-                {
-                    return service;
-                }
-            }
-
-            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<TService, TInterface>();
-        }
-
-        /// <summary>
         /// Fetches a MEF registered service if available.
         /// This method should be called from a background thread only. 
         /// </summary>
@@ -96,7 +75,7 @@ namespace NuGet.VisualStudio
 
         public static async Task<IComponentModel> GetComponentModelAsync()
         {
-            return await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+            return await GetGlobalServiceAsync<SComponentModel, IComponentModel>();
         }
 
         public static async Task<IServiceProvider> GetServiceProviderAsync()
