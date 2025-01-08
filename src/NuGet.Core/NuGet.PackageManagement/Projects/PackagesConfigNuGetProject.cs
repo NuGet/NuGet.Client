@@ -206,7 +206,7 @@ namespace NuGet.ProjectManagement
                 if (installedPackagesList.Any())
                 {
                     // Matching packageReference is found and is the only entry
-                    // Then just delete the packages.config file
+                    // Then just delete the packages.config file 
                     if (installedPackagesList.Count == 1 && nuGetProjectContext.ActionType == NuGetActionType.Uninstall)
                     {
                         FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);

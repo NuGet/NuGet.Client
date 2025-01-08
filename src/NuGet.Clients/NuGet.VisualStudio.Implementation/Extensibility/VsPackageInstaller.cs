@@ -229,7 +229,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 PumpingJTF.Run(async () =>
                     {
-                        // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source
+                        // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
                         // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
                         // folder version format.
                         if (isPreUnzipped)

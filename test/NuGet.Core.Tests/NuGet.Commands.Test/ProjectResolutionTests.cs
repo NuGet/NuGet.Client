@@ -76,7 +76,13 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -159,7 +165,13 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -249,7 +261,13 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -333,7 +351,13 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();
@@ -412,7 +436,7 @@ namespace NuGet.Commands.Test
                     "project1",
                     spec1,
                     msbuidPath1,
-                    new string[] {"project2"}));
+                    new string[] { "project2" }));
 
                 request.ExternalProjects.Add(new ExternalProjectReference(
                     "project2",
@@ -489,7 +513,13 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var restoreContext = new RestoreArgs() {Sources = new List<string>() {packageSource.FullName}, GlobalPackagesFolder = packagesDir.FullName, Log = logger, CacheContext = new SourceCacheContext()};
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
 
                 // Modify specs for netcore
                 spec2 = spec2.WithTestRestoreMetadata();

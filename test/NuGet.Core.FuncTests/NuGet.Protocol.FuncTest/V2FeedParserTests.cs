@@ -28,7 +28,7 @@ namespace NuGet.Protocol.FuncTest
 
             var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
 
-            // Act
+            // Act 
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
@@ -57,7 +57,7 @@ namespace NuGet.Protocol.FuncTest
 
             var parser = new V2FeedParser(httpSource, TestSources.NuGetV2Uri);
 
-            // Act
+            // Act 
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {

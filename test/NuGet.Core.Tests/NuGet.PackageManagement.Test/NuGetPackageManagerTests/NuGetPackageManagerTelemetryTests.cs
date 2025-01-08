@@ -231,8 +231,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
             Assert.True((string)telemetryEvents
-                .Where(p => p.Name == "ProjectRestoreInformation").
-                Last()["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
+                .Last(p => p.Name == "ProjectRestoreInformation")["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
 
             var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
             Assert.Equal(2, projectFilePaths.Count());
@@ -315,8 +314,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 Assert.Contains(telemetryEvents.Where(p => p.Name == "NugetActionSteps"), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
                 Assert.True((string)telemetryEvents
-                    .Where(p => p.Name == "ProjectRestoreInformation").
-                    Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
+                    .Last(p => p.Name == "ProjectRestoreInformation")["WarningCodes"] == NuGetLogCode.NU1603.ToString());
 
                 var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
                 Assert.Equal(2, projectFilePaths.Count());
@@ -385,8 +383,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
                 Assert.True((string)telemetryEvents
-                    .Where(p => p.Name == "ProjectRestoreInformation").
-                    Last()["WarningCodes"] == NuGetLogCode.NU1603.ToString());
+                    .Last(p => p.Name == "ProjectRestoreInformation")["WarningCodes"] == NuGetLogCode.NU1603.ToString());
 
                 var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
                 Assert.Equal(2, projectFilePaths.Count());

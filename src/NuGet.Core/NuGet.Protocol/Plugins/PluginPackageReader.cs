@@ -268,7 +268,7 @@ namespace NuGet.Protocol.Plugins
                 return Enumerable.Empty<string>();
             }
 
-            // Normalized destination path
+            // Normalized destination path 
             var normalizedDestination = NormalizeDirectoryPath(destination);
 
             ValidatePackageEntries(normalizedDestination, packageFiles, _packageIdentity);
