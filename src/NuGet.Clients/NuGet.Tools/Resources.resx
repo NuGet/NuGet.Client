@@ -163,7 +163,7 @@
     <value>Skip applying binding redirects</value>
   </data>
   <data name="showPackageManagementChooser" xml:space="preserve">
-    <value>Allow format selection on first package install</value>
+    <value>Prompt for format selection on first package install</value>
   </data>
   <data name="PackagesConfig" xml:space="preserve">
     <value>Packages.config</value>

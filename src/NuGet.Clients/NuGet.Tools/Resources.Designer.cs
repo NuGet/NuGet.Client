@@ -241,7 +241,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow format selection on first package install.
+        ///   Looks up a localized string similar to Prompt for format selection on first package install.
         /// </summary>
         internal static string showPackageManagementChooser {
             get {
