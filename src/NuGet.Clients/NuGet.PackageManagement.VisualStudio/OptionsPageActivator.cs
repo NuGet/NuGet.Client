@@ -98,8 +98,6 @@ namespace NuGet.PackageManagement.VisualStudio
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
             IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
-
-
             vsUIShell.PostExecCommand(
                 ref toolsGroupGuid,
                 VSConstants.cmdidToolsOptions,

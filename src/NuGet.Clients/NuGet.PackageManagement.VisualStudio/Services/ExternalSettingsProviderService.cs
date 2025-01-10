@@ -26,8 +26,6 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 
         private readonly ISettings _settings;
         private readonly VSSettings _vsSettings;
-        //private readonly INuGetUILogger _outputConsoleLogger;
-        //private readonly LocalsCommandRunner _localsCommandRunner;
 
         private PackageRestoreConsent _packageRestoreConsent;
         private BindingRedirectBehavior _bindingRedirectBehavior;
@@ -128,33 +126,10 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             }
 
             throw new ApplicationException("Unknown setting!");
-
-            // TODO ?
-            //    // Thrown during creating or saving NuGet.Config.
-            //    catch (NuGetConfigurationException ex)
-            //    {
-            //    MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-            //}
-            //    // Thrown if no nuget.config found.
-            //    catch (InvalidOperationException ex)
-            //    {
-            //    MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-            //}
-            //    catch (UnauthorizedAccessException)
-            //    {
-            //    MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
-            //}
-            //    // Unknown exception.
-            //    catch (Exception ex)
-            //    {
-            //    MessageHelper.ShowErrorMessage(Resources.ShowError_SettingActivatedFailed, Resources.ErrorDialogBoxTitle);
-            //    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-            //}
         }
 
         public Task OpenBackingStoreAsync(CancellationToken cancellationToken)
         {
-            //C17B308A-00BB-446E-9212-2D14E1005985
             var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
             optionsPageActivator.ActivatePage(OptionsPage.ConfigurationFiles, closeCallback: null);
             return Task.CompletedTask;

@@ -44,11 +44,13 @@
 
     <!-- Top caption -->
     <TextBlock Grid.Row="0" Margin="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" Visibility="{Binding IsCommandComplete, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"/>
+
+    <!-- Content -->
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <TextBlock Margin="0,12,0,12" TextWrapping="Wrap" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </ScrollViewer>
 
-    <!-- Content -->
+    <!-- Progress Bar -->
     <Grid Grid.Row="2" Margin="0,9,0,0">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
