@@ -1241,7 +1241,8 @@ namespace NuGetVSExtension
                     var isUserContinuing = MessageHelper.ShowQueryMessage(
                         message: "Once started, this action cannot be cancelled.",
                         title: "Clear all local NuGet resources?",
-                        showCancelButton: false);
+                        showCancelButton: false,
+                        defaultButton: OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_SECOND);
 
                     NavigatedTelemetryEvent evt;
 
