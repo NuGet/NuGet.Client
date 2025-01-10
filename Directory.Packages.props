@@ -72,6 +72,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.VS" Version="17.4.221-pre" />
+    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.28" />
     <!-- Microsoft.VisualStudio.SDK has vulnerable dependencies System.Text.json and Microsoft.IO.Redist. When it's upgraded, try removing the pinned packages -->
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.11.39714" />
     <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.11.8" />
