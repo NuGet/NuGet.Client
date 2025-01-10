@@ -11,15 +11,14 @@
   xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
   xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   mc:Ignorable="d"
-  Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
-  imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
-  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+  Background="{DynamicResource {x:Static vs:VsBrushes.WindowKey}}"
+  Foreground="{DynamicResource {x:Static vs:VsBrushes.WindowTextKey}}"
   WindowStartupLocation="CenterScreen"
   ShowInTaskbar="False"
   IsCloseButtonEnabled="{Binding IsCommandComplete}"
-  ContentRendered="DialogWindow_ContentRendered"  
+  ContentRendered="DialogWindow_ContentRendered"
   WindowStyle="SingleBorderWindow"
-  Title="NuGet Package Manager" Height="200" Width="600"
+  Title="NuGet Package Manager" Height="225" Width="600"
   ResizeMode="NoResize">
   <Window.Resources>
     <ResourceDictionary>
@@ -32,18 +31,25 @@
     <Grid.RowDefinitions>
       <!-- Top caption -->
       <RowDefinition Height="Auto" />
+
       <!-- Content -->
       <RowDefinition Height="*" />
+
+      <!-- Progress Bar -->
+      <RowDefinition Height="Auto" />
+
       <!-- Buttons -->
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <!-- Top caption -->
-    <TextBlock Grid.Row="0" Margin="0,12,0,12" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" Visibility="{Binding IsCommandComplete, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"/>
-    <TextBlock Grid.Row="0" Margin="0,12,0,12" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    <TextBlock Grid.Row="0" Margin="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" Visibility="{Binding IsCommandComplete, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"/>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <TextBlock Margin="0,12,0,12" TextWrapping="Wrap" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    </ScrollViewer>
 
     <!-- Content -->
-    <Grid Grid.Row="1" Margin="0,6,0,0">
+    <Grid Grid.Row="2" Margin="0,9,0,0">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -52,7 +58,7 @@
     </Grid>
 
     <!-- Buttons -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+    <StackPanel Grid.Row="3" Margin="0,18,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
       <Button x:Name ="CloseButton"
               Style="{DynamicResource {x:Static vs:VsResourceKeys.ThemedDialogButtonStyleKey}}"
               IsDefault="True"
