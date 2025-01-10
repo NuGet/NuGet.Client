@@ -169,7 +169,7 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/14030")]
+        [Fact]
         public void WhyCommand_EmptyPackageArgument_Fails()
         {
             // Arrange
