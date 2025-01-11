@@ -193,6 +193,7 @@
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.CommandLineUtils.Sources" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileProviders.Abstractions" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
+      <_allowBuildFromSourcePackage Include="Microsoft.VisualStudio.SolutionPersistence" />
       <_allowBuildFromSourcePackage Include="Microsoft.Web.Xdt" />
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
       <_allowBuildFromSourcePackage Include="System.Collections.Immutable" />
