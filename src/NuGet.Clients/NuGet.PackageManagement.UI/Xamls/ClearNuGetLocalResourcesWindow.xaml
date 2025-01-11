@@ -18,7 +18,7 @@
   IsCloseButtonEnabled="{Binding IsCommandComplete}"
   ContentRendered="DialogWindow_ContentRendered"
   WindowStyle="SingleBorderWindow"
-  Title="NuGet Package Manager" Height="225" Width="600"
+  Title="NuGet Package Manager" Height="200" Width="600"
   ResizeMode="NoResize">
   <Window.Resources>
     <ResourceDictionary>
