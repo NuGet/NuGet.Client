@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             Package = package ?? throw new ArgumentNullException(nameof(package));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            CancellationToken = cancellationToken; // can't use null-coalescing because CancellationToken is a struct
+            CancellationToken = cancellationToken;
         }
     }
 }
