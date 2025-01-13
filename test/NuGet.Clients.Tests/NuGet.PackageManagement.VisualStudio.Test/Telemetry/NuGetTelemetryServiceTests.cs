@@ -70,7 +70,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectFilePath = lastTelemetryEvent
                 .GetPiiData()
-                .First(kv => kv.Key == ProjectTelemetryEvent.ProjectFilePath).Value;
+                .First(kv => kv.Key == ProjectTelemetryEvent.ProjectFilePath)
+                .Value;
             Assert.IsType<string>(projectFilePath);
             Assert.True(!string.IsNullOrEmpty((string)projectFilePath));
         }
