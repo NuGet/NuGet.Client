@@ -2754,7 +2754,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do you want to save any changes before closing this window?.
+        ///   Looks up a localized string similar to Do you want to save changes before closing this dialog?.
         /// </summary>
         public static string VSOptions_Text_PromptShortcutUnifiedSettings {
             get {

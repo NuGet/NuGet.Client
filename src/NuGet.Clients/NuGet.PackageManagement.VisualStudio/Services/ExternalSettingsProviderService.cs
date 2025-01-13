@@ -199,7 +199,6 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             throw new ApplicationException("Unknown setting!");
         }
 
-
         private static Task<ExternalSettingOperationResult<T>> ConvertValueOrThrow<T>(object input) where T : notnull
         {
             if (input is T value)
@@ -225,19 +224,6 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             };
 
             return Task.FromResult(ExternalSettingOperationResult.SuccessResult(strValue));
-        }
-
-        private static Task<ExternalSettingOperationResult> SetValueOrThrow<T, TValue>(T originValue, Action<TValue> destination)
-            where T : notnull
-            where TValue : notnull
-        {
-            if (originValue is TValue destinationValue)
-            {
-                destination(destinationValue);
-                return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
-            }
-
-            throw new ApplicationException("Error saving setting!");
         }
     }
 }
