@@ -241,6 +241,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to These settings are stored in %NuGet.Config% files.
+        /// </summary>
+        internal static string SettingsStoredInNuGetConfiguration {
+            get {
+                return ResourceManager.GetString("SettingsStoredInNuGetConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Prompt for format selection on first package install.
         /// </summary>
         internal static string showPackageManagementChooser {

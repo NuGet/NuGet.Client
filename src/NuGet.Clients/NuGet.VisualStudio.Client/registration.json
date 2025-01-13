@@ -6,7 +6,7 @@
 
       // should be a resource ID in real registration
       // The text inside %...%, if any, will be rendered as a link which invokes IExternalSettingsProvider.OpenBackingStoreAsync when clicked.
-      "backingStoreDescription": "These settings are stored in %NuGet.config%",
+      "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
       // callback has two members, packageId and serviceId.  Both are GUIDs.  Either or both may be supplied.  If only packageId is supplied,
       // the package must implement IExternalSettingsProvider itself.  If only serviceId is supplied, the package must proffer a globally

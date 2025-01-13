@@ -186,4 +186,8 @@
   <data name="PackageManagement" xml:space="preserve">
     <value>Package Management</value>
   </data>
+  <data name="SettingsStoredInNuGetConfiguration" xml:space="preserve">
+    <value>These settings are stored in %NuGet.Config% files</value>
+    <comment>Do not translate % % or what is between them</comment>
+  </data>
 </root>
