@@ -41,7 +41,7 @@
         "bindingRedirects.skipBindingRedirects": {
           "type": "boolean",
           "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "helpUri": "https://learn.microsoft.com/en-us/nuget/reference/nuget-config-file#bindingredirects-section"
+          "helpUri": "https://learn.microsoft.com/nuget/reference/nuget-config-file#bindingredirects-section"
         },
         "packageManagement.defaultPackageManagementFormat": {
           "type": "string",
@@ -62,7 +62,8 @@
         },
         "packageManagement.showPackageManagementChooser": {
           "type": "boolean",
-          "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+          "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format"
         }
       },
       "categories": {
