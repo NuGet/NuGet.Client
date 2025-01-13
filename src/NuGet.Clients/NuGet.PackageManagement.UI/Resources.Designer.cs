@@ -2628,6 +2628,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string VSOptions_Button_Close {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Open.
         /// </summary>
         public static string VSOptions_Button_Open {
@@ -2709,11 +2718,47 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This settings page has moved to unified settings..
+        ///   Looks up a localized string similar to NuGet Package Manager.
+        /// </summary>
+        public static string VSOptions_Text_ClearLocalResourcesTitle {
+            get {
+                return ResourceManager.GetString("VSOptions_Text_ClearLocalResourcesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Once started, this action cannot be cancelled..
+        /// </summary>
+        public static string VSOptions_Text_ClearLocalsPromptMessage {
+            get {
+                return ResourceManager.GetString("VSOptions_Text_ClearLocalsPromptMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear all local NuGet resources?.
+        /// </summary>
+        public static string VSOptions_Text_ClearLocalsPromptTitle {
+            get {
+                return ResourceManager.GetString("VSOptions_Text_ClearLocalsPromptTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This settings page has moved to Unified Settings..
         /// </summary>
         public static string VSOptions_Text_MovedToUnifiedSettings {
             get {
                 return ResourceManager.GetString("VSOptions_Text_MovedToUnifiedSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you want to save any changes before closing this window?.
+        /// </summary>
+        public static string VSOptions_Text_PromptShortcutUnifiedSettings {
+            get {
+                return ResourceManager.GetString("VSOptions_Text_PromptShortcutUnifiedSettings", resourceCulture);
             }
         }
         

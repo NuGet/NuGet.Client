@@ -1239,8 +1239,8 @@ namespace NuGetVSExtension
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     var isUserContinuing = MessageHelper.ShowQueryMessage(
-                        message: "Once started, this action cannot be cancelled.",
-                        title: "Clear all local NuGet resources?",
+                        message: Resx.VSOptions_Text_ClearLocalsPromptMessage,
+                        title: Resx.VSOptions_Text_ClearLocalsPromptTitle,
                         showCancelButton: false,
                         defaultButton: OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_SECOND);
 

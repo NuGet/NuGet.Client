@@ -18,7 +18,8 @@
   IsCloseButtonEnabled="{Binding IsCommandComplete}"
   ContentRendered="DialogWindow_ContentRendered"
   WindowStyle="SingleBorderWindow"
-  Title="NuGet Package Manager" Height="200" Width="600"
+  Title="{x:Static nuget:Resources.VSOptions_Text_ClearLocalResourcesTitle}"
+  Height="200" Width="600"
   ResizeMode="NoResize">
   <Window.Resources>
     <ResourceDictionary>
@@ -64,7 +65,7 @@
       <Button x:Name ="CloseButton"
               Style="{DynamicResource {x:Static vs:VsResourceKeys.ThemedDialogButtonStyleKey}}"
               IsDefault="True"
-              Content="Close"
+              Content="{x:Static nuget:Resources.VSOptions_Button_Close}"
               Click="CloseButton_Click"
               Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </StackPanel>

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI.Options
 {
@@ -25,7 +26,7 @@ namespace NuGet.PackageManagement.UI.Options
         private void SettingsButtonClicked(object sender, RoutedEventArgs e)
         {
             bool? isUserSavingChanges = MessageHelper.ShowQueryMessage(
-                message: "Do you want to save any changes and open unified settings?",
+                message: Resx.VSOptions_Text_PromptShortcutUnifiedSettings,
                 title: null,
                 showCancelButton: true);
 
