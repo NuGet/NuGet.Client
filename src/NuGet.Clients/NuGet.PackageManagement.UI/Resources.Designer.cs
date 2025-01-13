@@ -2655,6 +2655,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open the settings page.
+        /// </summary>
+        public static string VSOptions_ButtonOpenSettingsPage {
+            get {
+                return ResourceManager.GetString("VSOptions_ButtonOpenSettingsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add New Package Source Mapping.
         /// </summary>
         public static string VSOptions_Label_AddPackageNamespace {
@@ -2696,6 +2705,15 @@ namespace NuGet.PackageManagement.UI {
         public static string VSOptions_Label_Source {
             get {
                 return ResourceManager.GetString("VSOptions_Label_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This settings page has moved to unified settings..
+        /// </summary>
+        public static string VSOptions_Text_MovedToUnifiedSettings {
+            get {
+                return ResourceManager.GetString("VSOptions_Text_MovedToUnifiedSettings", resourceCulture);
             }
         }
         

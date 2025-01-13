@@ -1095,4 +1095,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</value>
     <comment>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</comment>
   </data>
+  <data name="VSOptions_Text_MovedToUnifiedSettings" xml:space="preserve">
+    <value>This settings page has moved to unified settings.</value>
+  </data>
+  <data name="VSOptions_ButtonOpenSettingsPage" xml:space="preserve">
+    <value>Open the settings page</value>
+  </data>
 </root>

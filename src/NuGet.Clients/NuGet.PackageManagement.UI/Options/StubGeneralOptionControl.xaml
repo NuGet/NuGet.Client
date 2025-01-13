@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:controls="clr-namespace:NuGet.PackageManagement.UI.Controls"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI.Options"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
              Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
              mc:Ignorable="d" 
@@ -18,11 +19,11 @@
   </UserControl.Resources>
   <Grid>
     <TextBlock Margin="0,0,9,0" TextWrapping="Wrap">
-        <Run Text="This settings page has moved to unified settings." />
+        <Run Text="{x:Static nuget:Resources.VSOptions_Text_MovedToUnifiedSettings}" />
         <Control Margin="6,0,0,0" IsTabStop="False" />
         <controls:ButtonHyperlink Click="SettingsButtonClicked"
-                   AutomationProperties.Name="Open the settings page">
-          <TextBlock TextWrapping="Wrap" Text="Open the settings page" />
+                   AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_ButtonOpenSettingsPage}">
+          <TextBlock TextWrapping="Wrap" Text="{x:Static nuget:Resources.VSOptions_ButtonOpenSettingsPage}" />
         </controls:ButtonHyperlink>
       </TextBlock>
   </Grid>
