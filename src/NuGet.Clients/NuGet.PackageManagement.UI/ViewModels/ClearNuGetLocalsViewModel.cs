@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -46,18 +47,18 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        internal void Execute()
+        internal Task Execute()
         {
             if (_isExecuting)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             IsCommandComplete = false;
             CommandCompleteText = string.Empty;
             _isExecuting = true;
 
-            var _ = ExecuteBackgroundWork()
+            var task = ExecuteBackgroundWork()
                 .ContinueWith(task =>
                 {
                     if (task.IsFaulted)
@@ -70,11 +71,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     }
                 },
                 TaskScheduler.FromCurrentSynchronizationContext());
+
+            return task;
         }
 
         private async Task ExecuteBackgroundWork()
         {
-            await Task.Run(async () =>
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 try
                 {

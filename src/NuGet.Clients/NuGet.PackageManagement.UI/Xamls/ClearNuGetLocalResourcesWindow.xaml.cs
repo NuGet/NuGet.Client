@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -19,7 +22,11 @@ namespace NuGet.PackageManagement.UI
 
         private void DialogWindow_ContentRendered(object sender, System.EventArgs e)
         {
-            (DataContext as ClearNuGetLocalsViewModel)?.Execute();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await Task.Yield();
+                (DataContext as ClearNuGetLocalsViewModel)?.Execute();
+            }).PostOnFailure(nameof(ClearNuGetLocalResourcesWindow));
         }
 
         private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)
