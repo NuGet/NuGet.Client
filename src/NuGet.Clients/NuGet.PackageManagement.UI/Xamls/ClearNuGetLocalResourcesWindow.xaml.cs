@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await Task.Yield();
-                (DataContext as ClearNuGetLocalsViewModel)?.Execute();
+                await ((ClearNuGetLocalsViewModel)DataContext).Execute();
             }).PostOnFailure(nameof(ClearNuGetLocalResourcesWindow));
         }
 
