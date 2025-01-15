@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             CommandCompleteText = string.Empty;
             _isExecuting = true;
 
-            var task = ExecuteBackgroundWork()
+            var task = ExecuteBackgroundWorkAsync()
                 .ContinueWith(task =>
                 {
                     if (task.IsFaulted)
@@ -75,20 +75,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
             return task;
         }
 
-        private async Task ExecuteBackgroundWork()
+        private async Task ExecuteBackgroundWorkAsync()
         {
             await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                try
-                {
-                    await _clearNuGetLocalsCommandExecute();
-                }
-                catch (Exception ex)
-                {
-                    string failureMessage = string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message);
-                    OnCommandComplete(failureMessage);
-                    throw ex;
-                }
+                await _clearNuGetLocalsCommandExecute();
             });
         }
 
