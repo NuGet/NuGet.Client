@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -11,12 +13,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
     public class ClearNuGetLocalsViewModel : ViewModelBase
     {
         private bool _isCommandComplete;
-        private string _commandCompleteText;
+        private string? _commandCompleteText;
         private readonly Func<Task> _clearNuGetLocalsCommandExecute;
         private bool _isExecuting;
-
-        private ClearNuGetLocalsViewModel()
-        { }
 
         public ClearNuGetLocalsViewModel(Func<Task> clearNuGetLocalsCommandExecute)
         {
@@ -35,7 +34,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public string CommandCompleteText
+        public string? CommandCompleteText
         {
             get
             {
