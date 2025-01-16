@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private async Task ExecuteBackgroundWorkAsync()
         {
-            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await _clearNuGetLocalsCommandExecute();
             });
