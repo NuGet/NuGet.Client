@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             _packageRestoreConsent = null;
             _bindingRedirectBehavior = null;
             _packageManagementFormat = null;
-            SettingValuesChanged.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
+            SettingValuesChanged?.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
         }
 
         private BindingRedirectBehavior BindingRedirectBehavior
