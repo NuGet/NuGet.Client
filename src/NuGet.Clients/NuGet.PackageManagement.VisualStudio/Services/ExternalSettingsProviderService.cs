@@ -91,8 +91,12 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         }
 
         public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged;
+
+        // Event is unused at this time, so an empty add and remove accessor block is used to avoid a CS0067 analyzer warning.
         public event EventHandler<EnumSettingChoicesChangedEventArgs> EnumSettingChoicesChanged { add { } remove { } }
+        // Event is unused at this time, so an empty add and remove accessor block is used to avoid a CS0067 analyzer warning.
         public event EventHandler<DynamicMessageTextChangedEventArgs> DynamicMessageTextChanged { add { } remove { } }
+        // Event is unused at this time, so an empty add and remove accessor block is used to avoid a CS0067 analyzer warning.
         public event EventHandler ErrorConditionResolved { add { } remove { } }
 
         public void Dispose()
