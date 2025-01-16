@@ -19,16 +19,13 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Commands;
-using NuGet.Common;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
-using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Services;
 using NuGet.ProjectManagement;
+using NuGet.Tools.Commands;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Common.Telemetry;
@@ -209,6 +206,9 @@ namespace NuGetVSExtension
             var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+
+            ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
+            clearNuGetLocalResourcesCommand.Initialize();
         }
 
         /// <summary>
@@ -351,10 +351,6 @@ namespace NuGetVSExtension
                 var generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
                 var generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
-
-                var clearNuGetLocalResourcesCommandID = new CommandID(GuidList.guidClearNuGetLocalResourcesCmdSet, PkgCmdIDList.cmdidClearNuGetLocalResources);
-                var clearNuGetLocalResourcesCommand = new OleMenuCommand(ExecuteClearNuGetLocalResourcesCommand, clearNuGetLocalResourcesCommandID);
-                _mcs.AddCommand(clearNuGetLocalResourcesCommand);
 
                 // menu command for the Update option on each package or a selection of packages
                 var updatePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackage);
@@ -1229,93 +1225,6 @@ namespace NuGetVSExtension
         private void ShowGeneralSettingsOptionPage(object sender, EventArgs args)
         {
             ShowOptionPageSafe(typeof(GeneralOptionPage));
-        }
-
-        private void ExecuteClearNuGetLocalResourcesCommand(object sender, EventArgs e)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                try
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var isUserContinuing = MessageHelper.ShowQueryMessage(
-                        message: Resx.VSOptions_Text_ClearLocalsPromptMessage,
-                        title: Resx.VSOptions_Text_ClearLocalsPromptTitle,
-                        showCancelButton: false,
-                        defaultButton: OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_SECOND);
-
-                    NavigatedTelemetryEvent evt;
-
-                    if (isUserContinuing == true)
-                    {
-                        var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecute);
-                        OutputConsoleLogger.Value.Start();
-                        var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
-                        clearNuGetLocalResourcesWindow.ShowModal();
-                        evt = NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true, isPromptCancelled: false);
-                    }
-                    else
-                    {
-                        evt = NavigatedTelemetryEvent.CreateWithClearLocalsCommand(isUnifiedSettings: true, isPromptCancelled: true);
-                    }
-                    TelemetryActivity.EmitTelemetryEvent(evt);
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex.Message);
-                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-                    throw ex;
-                }
-                finally
-                {
-                    OutputConsoleLogger.Value.End();
-                }
-            }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
-        }
-
-        public async Task ClearNuGetLocalsCommandExecute()
-        {
-            try
-            {
-                await TaskScheduler.Default;
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await ExecuteLocalsCommandRunner();
-                });
-            }
-            catch (Exception ex)
-            {
-                LogError(ex.Message);
-                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-                throw ex;
-            }
-            finally
-            {
-                OutputConsoleLogger.Value.End();
-            }
-        }
-
-
-        private async Task ExecuteLocalsCommandRunner()
-        {
-            await TaskScheduler.Default;
-            var arguments = new List<string> { "all" };
-            var settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
-            var logError = new NuGet.Commands.LocalsArgs.Log(LogError);
-            var logInformation = new NuGet.Commands.LocalsArgs.Log(LogInformation);
-            var localsArgs = new NuGet.Commands.LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
-
-            LocalsCommandRunner localsCommandRunner = new();
-            localsCommandRunner.ExecuteCommand(localsArgs);
-        }
-        private void LogError(string message)
-        {
-            OutputConsoleLogger.Value.Log(new LogMessage(LogLevel.Error, message));
-        }
-
-        private void LogInformation(string message)
-        {
-            OutputConsoleLogger.Value.Log(new LogMessage(LogLevel.Information, message));
         }
 
         private void ShowOptionPageSafe(Type optionPageType)
