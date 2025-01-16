@@ -1,3 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -19,7 +24,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         [Fact]
         public void Constructor_WithNullClearNuGetLocalsCommandExecute_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new ClearNuGetLocalsViewModel(clearNuGetLocalsCommandExecute: null));
+            Assert.Throws<ArgumentNullException>(() => new ClearNuGetLocalsViewModel(clearNuGetLocalsCommandExecute: null!));
         }
 
         [Fact]

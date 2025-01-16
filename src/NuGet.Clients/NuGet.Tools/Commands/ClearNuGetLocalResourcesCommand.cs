@@ -1,3 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -33,6 +38,7 @@ namespace NuGet.Tools.Commands
 
         private readonly OleMenuCommandService _oleMenuCommandService;
         private readonly Lazy<INuGetUILogger> _outputConsoleLogger;
+
         public INuGetUILogger OutputConsoleLogger => _outputConsoleLogger.Value;
 
         public ClearNuGetLocalResourcesCommand(OleMenuCommandService oleMenuCommandService, Lazy<INuGetUILogger> outputConsoleLogger)
@@ -47,7 +53,6 @@ namespace NuGet.Tools.Commands
             var clearNuGetLocalResourcesCommand = new OleMenuCommand(ExecuteClearNuGetLocalResourcesCommand, clearNuGetLocalResourcesCommandID);
             _oleMenuCommandService.AddCommand(clearNuGetLocalResourcesCommand);
         }
-
 
         private void ExecuteClearNuGetLocalResourcesCommand(object sender, EventArgs e)
         {
@@ -122,6 +127,7 @@ namespace NuGet.Tools.Commands
             LocalsCommandRunner localsCommandRunner = new();
             localsCommandRunner.ExecuteCommand(localsArgs);
         }
+
         private void LogError(string message)
         {
             OutputConsoleLogger.Log(new LogMessage(LogLevel.Error, message));

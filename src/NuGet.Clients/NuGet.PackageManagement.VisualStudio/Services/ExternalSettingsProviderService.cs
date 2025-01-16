@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,12 +26,12 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         private const string MonikerPackagesConfig = "packages-config";
         private const string MonikerShowPackageManagementChooser = "packageManagement.showPackageManagementChooser";
 
-        private readonly ISettings _settings;
-        private readonly VSSettings _vsSettings;
+        private readonly ISettings? _settings;
+        private readonly VSSettings? _vsSettings;
 
-        private PackageRestoreConsent _packageRestoreConsent;
-        private BindingRedirectBehavior _bindingRedirectBehavior;
-        private PackageManagementFormat _packageManagementFormat;
+        private PackageRestoreConsent? _packageRestoreConsent;
+        private BindingRedirectBehavior? _bindingRedirectBehavior;
+        private PackageManagementFormat? _packageManagementFormat;
 
         public ExternalSettingsProviderService()
         {
@@ -90,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             }
         }
 
-        public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged;
+        public event EventHandler<ExternalSettingsChangedEventArgs>? SettingValuesChanged;
 
         // Event is unused at this time, so an empty add and remove accessor block is used to avoid a CS0067 analyzer warning.
         public event EventHandler<EnumSettingChoicesChangedEventArgs> EnumSettingChoicesChanged { add { } remove { } }
