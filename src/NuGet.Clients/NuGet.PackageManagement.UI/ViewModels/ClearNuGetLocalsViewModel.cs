@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         private bool _isCommandComplete;
         private string _commandCompleteText;
-        private Func<Task> _clearNuGetLocalsCommandExecute;
+        private readonly Func<Task> _clearNuGetLocalsCommandExecute;
         private bool _isExecuting;
 
         private ClearNuGetLocalsViewModel()
