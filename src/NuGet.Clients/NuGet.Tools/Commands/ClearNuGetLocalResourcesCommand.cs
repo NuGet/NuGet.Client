@@ -66,7 +66,7 @@ namespace NuGet.Tools.Commands
 
                     if (isUserContinuing == true)
                     {
-                        var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecute);
+                        var clearNuGetLocalsViewModel = new ClearNuGetLocalsViewModel(ClearNuGetLocalsCommandExecuteAsync);
                         OutputConsoleLogger.Start();
                         var clearNuGetLocalResourcesWindow = new ClearNuGetLocalResourcesWindow(clearNuGetLocalsViewModel);
                         clearNuGetLocalResourcesWindow.ShowModal();
@@ -91,15 +91,12 @@ namespace NuGet.Tools.Commands
             }).PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
-        public async Task ClearNuGetLocalsCommandExecute()
+        public async Task ClearNuGetLocalsCommandExecuteAsync()
         {
             try
             {
                 await TaskScheduler.Default;
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await ExecuteLocalsCommandRunner();
-                });
+                await ExecuteLocalsCommandRunnerAsync();
             }
             catch (Exception ex)
             {
@@ -113,7 +110,7 @@ namespace NuGet.Tools.Commands
             }
         }
 
-        private async Task ExecuteLocalsCommandRunner()
+        private async Task ExecuteLocalsCommandRunnerAsync()
         {
             await TaskScheduler.Default;
             var arguments = new List<string> { "all" };
