@@ -186,6 +186,8 @@
   <data name="PackageManagement" xml:space="preserve">
     <value>Package Management</value>
   </data>
+  <!-- The text inside %...%, if any, will be rendered as a hyperlink which tells Unified Settings to
+    invoke IExternalSettingsProvider.OpenBackingStoreAsync when clicked.-->
   <data name="SettingsStoredInNuGetConfiguration" xml:space="preserve">
     <value>These settings are stored in %NuGet.Config% files</value>
     <comment>Do not translate % % or what is between them</comment>
