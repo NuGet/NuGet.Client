@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+//using Microsoft.VisualStudio.Text.Editor.Commanding.Commands;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
@@ -126,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerAllowRestoreDownload: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsGrantedInSettings);
                 case MonikerPackageRestoreAutomatic: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsAutomatic);
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
-                case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(PackageManagementFormat.SelectedPackageManagementFormat);
+                case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat);
                 case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
                 default: break;
             }
@@ -215,21 +216,44 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             throw new ApplicationException("Error reading setting!");
         }
 
-        private static Task<ExternalSettingOperationResult<T>> ConvertDefaultPackageManagementFormatKeyOrThrow<T>(int input)
+        private static Task<ExternalSettingOperationResult<T>> ConvertDefaultPackageManagementFormatKeyOrThrow<T>(Func<int> input)
         {
             if (typeof(T) != typeof(string))
             {
                 throw new ApplicationException("Error reading setting!");
             }
 
-            T strValue = input switch
+            ExternalSettingOperationResult<T> result;
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
             {
-                0 => (T)(object)MonikerPackagesConfig,
-                1 => (T)(object)MonikerPackageReference,
-                _ => throw new ApplicationException("Error reading setting!"),
-            };
+                int inputValue = input();
+                T strValue = inputValue switch
+                {
+                    0 => (T)(object)MonikerPackagesConfig,
+                    1 => (T)(object)MonikerPackageReference,
+                    _ => throw new ApplicationException("Unknown value!")
+                };
 
-            return Task.FromResult(ExternalSettingOperationResult.SuccessResult(strValue));
+                result = ExternalSettingOperationResult.SuccessResult(strValue);
+            }
+            catch (Exception ex)
+            {
+                result = CreateSettingErrorResult<T>(ex.Message);
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            return Task.FromResult(result);
+        }
+
+        private static ExternalSettingOperationResult<T> CreateSettingErrorResult<T>(string errorMessage)
+        {
+            var failure = new ExternalSettingOperationResult<T>.Failure(
+                errorMessage,
+                scope: ExternalSettingsErrorScope.SingleSettingOnly,
+                isTransient: true);
+
+            return failure;
         }
     }
 }
