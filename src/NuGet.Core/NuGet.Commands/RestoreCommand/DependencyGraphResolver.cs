@@ -461,7 +461,7 @@ namespace NuGet.Commands
                                 {
                                     foreach (LibraryRangeIndex parentLibraryRangeIndex in childResolvedDependencyGraphItem.Parents)
                                     {
-                                        if (resolvedDependencyGraphItem.Path.Contains(parentLibraryRangeIndex) && !resolvedDependencyGraphItem.IsDirectPackageReferenceFromRootProject)
+                                        if (resolvedDependencyGraphItem.Path.Contains(parentLibraryRangeIndex) && !resolvedDependencyGraphItem.IsRootPackageReference)
                                         {
                                             downgrades.Add(
                                                 childResolvedLibraryRangeIndex,
@@ -480,7 +480,7 @@ namespace NuGet.Commands
                                 }
 
                                 // It is a downgrade if central transitive pinning is not being used or if the child is not a direct package reference
-                                if (!foundParentDowngrade && (!isCentralPackageTransitivePinningEnabled || !childResolvedDependencyGraphItem.IsDirectPackageReferenceFromRootProject))
+                                if (!foundParentDowngrade && (!isCentralPackageTransitivePinningEnabled || !childResolvedDependencyGraphItem.IsRootPackageReference))
                                 {
                                     downgrades.Add(
                                         childResolvedLibraryRangeIndex,
@@ -525,7 +525,7 @@ namespace NuGet.Commands
                         Item = childResolvedDependencyGraphItem.Item
                     };
 
-                    if (childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !childResolvedDependencyGraphItem.IsDirectPackageReferenceFromRootProject)
+                    if (childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !childResolvedDependencyGraphItem.IsRootPackageReference)
                     {
                         // If this child is transitively pinned, the GraphNode needs to have certain properties set
                         newGraphNode.Disposition = Disposition.Accepted;
@@ -542,7 +542,7 @@ namespace NuGet.Commands
                         currentGraphNode.InnerNodes.Add(newGraphNode);
                     }
 
-                    if (!childResolvedDependencyGraphItem.IsDirectPackageReferenceFromRootProject && isCentralPackageTransitivePinningEnabled && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All && !downgrades.ContainsKey(childResolvedLibraryRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange, childLibraryDependency.LibraryRange.VersionRange))
+                    if (!childResolvedDependencyGraphItem.IsRootPackageReference && isCentralPackageTransitivePinningEnabled && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All && !downgrades.ContainsKey(childResolvedLibraryRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange, childLibraryDependency.LibraryRange.VersionRange))
                     {
                         // This is a downgrade if:
                         // 1. This is not a direct dependency
@@ -693,7 +693,7 @@ namespace NuGet.Commands
                     // 3. It has not parents
                     // 4. A node was not created for it
                     if (!resolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage
-                        || resolvedDependencyGraphItem.IsDirectPackageReferenceFromRootProject
+                        || resolvedDependencyGraphItem.IsRootPackageReference
                         || resolvedDependencyGraphItem.Parents == null
                         || resolvedDependencyGraphItem.Parents.Count == 0
                         || !nodesById.TryGetValue(resolvedDependencyGraphItem.LibraryRangeIndex, out GraphNode<RemoteResolveResult>? currentNode))
@@ -941,12 +941,12 @@ namespace NuGet.Commands
                 LibraryRangeIndex currentLibraryRangeIndex = currentDependencyGraphItem.LibraryRangeIndex;
                 LibraryRangeIndex[] currentDependencyGraphItemPath = currentDependencyGraphItem.Path;
                 HashSet<LibraryDependencyIndex>? currentDependencyGraphItemSuppressions = currentDependencyGraphItem.Suppressions;
-                bool currentDependencyGraphItemIsDirectPackageReferenceFromRootProject = currentDependencyGraphItem.IsDirectPackageReferenceFromRootProject;
+                bool currentDependencyGraphItemIsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference;
 
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
 
-                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request, projectTargetFramework?.PackagesToPrune, isRootProject, context, _logger);
+                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework?.PackagesToPrune, isRootProject, _logger);
 
                 LibraryDependencyTarget typeConstraint = currentLibraryDependency.LibraryRange.TypeConstraint;
                 if (evictions.TryGetValue(currentLibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
@@ -970,10 +970,10 @@ namespace NuGet.Commands
                     {
                         LibraryDependency = currentLibraryDependency,
                         LibraryRangeIndex = currentLibraryRangeIndex,
-                        Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsDirectPackageReferenceFromRootProject ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
+                        Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
                         Path = currentDependencyGraphItemPath,
                         IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
-                        IsDirectPackageReferenceFromRootProject = currentDependencyGraphItemIsDirectPackageReferenceFromRootProject,
+                        IsRootPackageReference = currentDependencyGraphItemIsRootPackageReference,
                         Suppressions = new List<HashSet<LibraryDependencyIndex>>
                         {
                             currentDependencyGraphItemSuppressions!
@@ -987,11 +987,11 @@ namespace NuGet.Commands
                     LibraryDependency chosenLibraryDependency = chosenResolvedItem.LibraryDependency;
                     LibraryRangeIndex chosenLibraryRangeIndex = chosenResolvedItem.LibraryRangeIndex;
                     LibraryRangeIndex[] chosenDependencyGraphItemPath = chosenResolvedItem.Path;
-                    bool chosenDependencyGraphItemIsDirectPackageReferenceFromRootProject = chosenResolvedItem.IsDirectPackageReferenceFromRootProject;
+                    bool chosenDependencyGraphItemIsRootPackageReference = chosenResolvedItem.IsRootPackageReference;
                     List<HashSet<LibraryDependencyIndex>> chosenDependencyGraphItemSuppressions = chosenResolvedItem.Suppressions;
                     GraphItem<RemoteResolveResult> chosenGraphItem = chosenResolvedItem.Item;
 
-                    if (chosenDependencyGraphItemIsDirectPackageReferenceFromRootProject)
+                    if (chosenDependencyGraphItemIsRootPackageReference)
                     {
                         // If the chosen dependency graph item is a direct dependency, it should always be chosen regardless of version so do not process this dependency
                         continue;
@@ -1131,10 +1131,10 @@ namespace NuGet.Commands
                         {
                             LibraryDependency = currentLibraryDependency,
                             LibraryRangeIndex = currentLibraryRangeIndex,
-                            Parents = isCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsDirectPackageReferenceFromRootProject ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
+                            Parents = isCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
                             Path = currentDependencyGraphItemPath,
                             IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                            IsDirectPackageReferenceFromRootProject = currentDependencyGraphItemIsDirectPackageReferenceFromRootProject,
+                            IsRootPackageReference = currentDependencyGraphItemIsRootPackageReference,
                             Suppressions = new List<HashSet<LibraryDependencyIndex>>
                             {
                                 currentDependencyGraphItemSuppressions!
@@ -1177,7 +1177,7 @@ namespace NuGet.Commands
                     {
                         chosenResolvedItem.Parents ??= new HashSet<LibraryRangeIndex>();
 
-                        if (!chosenResolvedItem.IsDirectPackageReferenceFromRootProject)
+                        if (!chosenResolvedItem.IsRootPackageReference)
                         {
                             // Keep track of the parents of this item
                             chosenResolvedItem.Parents?.Add(currentDependencyGraphItem.Parent);
@@ -1202,7 +1202,7 @@ namespace NuGet.Commands
                                 Parents = chosenResolvedItem.Parents,
                                 Path = currentDependencyGraphItemPath,
                                 IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                                IsDirectPackageReferenceFromRootProject = chosenDependencyGraphItemIsDirectPackageReferenceFromRootProject,
+                                IsRootPackageReference = chosenDependencyGraphItemIsRootPackageReference,
                                 Suppressions = new List<HashSet<LibraryDependencyIndex>>
                                 {
                                     currentDependencyGraphItemSuppressions,
@@ -1241,7 +1241,7 @@ namespace NuGet.Commands
                                     Parents = chosenResolvedItem.Parents,
                                     Path = currentDependencyGraphItemPath,
                                     IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                                    IsDirectPackageReferenceFromRootProject = chosenDependencyGraphItemIsDirectPackageReferenceFromRootProject,
+                                    IsRootPackageReference = chosenDependencyGraphItemIsRootPackageReference,
                                     Suppressions =
                                     [
                                         currentDependencyGraphItemSuppressions,
@@ -1324,7 +1324,7 @@ namespace NuGet.Commands
                     }
 
                     bool isPackage = childLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
-                    bool isDirectPackageReferenceFromRootProject = (currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project) && isPackage;
+                    bool isRootPackageReference = (currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project) && isPackage;
 
                     // Skip this dependency if:
                     // 1. the VersionRange is null
@@ -1333,7 +1333,7 @@ namespace NuGet.Commands
                     if (childLibraryDependency.LibraryRange.VersionRange == null
                         || (!currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage
                         && suppressions!.Contains(childLibraryDependencyIndex))
-                        || (!isDirectPackageReferenceFromRootProject && directPackageReferences?.Contains(childLibraryDependencyIndex) == true))
+                        || (!isRootPackageReference && directPackageReferences?.Contains(childLibraryDependencyIndex) == true))
                     {
                         continue;
                     }
@@ -1347,7 +1347,7 @@ namespace NuGet.Commands
 
                     LibraryRangeIndex childLibraryRangeIndex = chosenResolvedItem.GetRangeIndexForDependencyAt(i);
 
-                    if (isCentrallyPinnedTransitiveDependency && !isDirectPackageReferenceFromRootProject)
+                    if (isCentrallyPinnedTransitiveDependency && !isRootPackageReference)
                     {
                         // If central transitive pinning is enabled the LibraryDependency must be recreated as not to mutate the in-memory copy
                         childLibraryDependency = new LibraryDependency(childLibraryDependency)
@@ -1365,10 +1365,10 @@ namespace NuGet.Commands
                         LibraryDependency = childLibraryDependency,
                         LibraryDependencyIndex = childLibraryDependencyIndex,
                         LibraryRangeIndex = childLibraryRangeIndex,
-                        Path = isCentrallyPinnedTransitiveDependency || isDirectPackageReferenceFromRootProject ? _rootedDependencyPath : DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItemPath, currentLibraryRangeIndex),
+                        Path = isCentrallyPinnedTransitiveDependency || isRootPackageReference ? _rootedDependencyPath : DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItemPath, currentLibraryRangeIndex),
                         Parent = currentLibraryRangeIndex,
                         Suppressions = suppressions,
-                        IsDirectPackageReferenceFromRootProject = isDirectPackageReferenceFromRootProject,
+                        IsRootPackageReference = isRootPackageReference,
                         IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitiveDependency,
                         RuntimeDependencies = runtimeDependencies,
                         FindLibraryTask = ResolverUtility.FindLibraryCachedAsync(

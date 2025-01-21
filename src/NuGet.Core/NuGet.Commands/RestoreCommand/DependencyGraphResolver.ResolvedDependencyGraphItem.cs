@@ -66,12 +66,12 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets a value indicating whether or not the dependency graph item is transitively pinned.
             /// </summary>
-            public bool IsCentrallyPinnedTransitivePackage { get; set; }
+            public bool IsCentrallyPinnedTransitivePackage { get; init; }
 
             /// <summary>
             /// Gets or sets a value indicating whether or not the dependency graph item is a direct package reference.
             /// </summary>
-            public bool IsDirectPackageReferenceFromRootProject { get; set; }
+            public bool IsRootPackageReference { get; init; }
 
             /// <summary>
             /// Gets the <see cref="GraphItem{TItem}" /> with a <see cref="RemoteResolveResult" /> of the resolved library.
@@ -81,12 +81,12 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets the <see cref="LibraryDependency" /> of the declared dependency in the graph.
             /// </summary>
-            public required LibraryDependency LibraryDependency { get; set; }
+            public required LibraryDependency LibraryDependency { get; init; }
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryRangeIndex" /> of this dependency graph item.
             /// </summary>
-            public LibraryRangeIndex LibraryRangeIndex { get; set; }
+            public LibraryRangeIndex LibraryRangeIndex { get; init; }
 
             /// <summary>
             /// Gets or sets a <see cref="HashSet{T}" /> of parent <see cref="LibraryRangeIndex" /> that have been eclipsed by this dependency graph item.
@@ -101,12 +101,12 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets an array containing the <see cref="LibraryRangeIndex" /> values of all parent dependency graph items and their parent up to the root.
             /// </summary>
-            public required LibraryRangeIndex[] Path { get; set; }
+            public required LibraryRangeIndex[] Path { get; init; }
 
             /// <summary>
             /// Gets or sets a <see cref="List{T}" /> of <see cref="HashSet{T}" /> containing <see cref="LibraryDependencyIndex" /> representing dependencies that should be suppressed under this item.
             /// </summary>
-            public required List<HashSet<LibraryDependencyIndex>> Suppressions { get; set; }
+            public required List<HashSet<LibraryDependencyIndex>> Suppressions { get; init; }
 
             /// <summary>
             /// Gets the <see cref="LibraryDependencyIndex" /> of the dependency at the specified position.

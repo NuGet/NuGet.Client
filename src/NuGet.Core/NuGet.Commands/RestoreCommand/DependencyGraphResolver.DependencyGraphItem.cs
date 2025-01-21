@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
@@ -25,67 +26,65 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets a <see cref="Task{TResult}" /> that returns a <see cref="GraphItem{TItem}" /> containing a <see cref="RemoteResolveResult" /> that represents the resolved graph item after looking it up in the configured feeds.
             /// </summary>
-            public required Task<GraphItem<RemoteResolveResult>> FindLibraryTask { get; set; }
+            public required Task<GraphItem<RemoteResolveResult>> FindLibraryTask { get; init; }
 
             /// <summary>
             /// Gets or sets a value indicating whether or not this dependency graph item is a transitively pinned dependency.
             /// </summary>
-            public bool IsCentrallyPinnedTransitivePackage { get; set; }
+            public bool IsCentrallyPinnedTransitivePackage { get; init; }
 
             /// <summary>
             /// Gets or sets a value indicating whether or not this dependency graph item is a direct package reference from the root project.
             /// </summary>
-            public bool IsDirectPackageReferenceFromRootProject { get; set; }
+            public bool IsRootPackageReference { get; init; }
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryDependency" /> used to declare this dependency graph item.
             /// </summary>
-            public required LibraryDependency LibraryDependency { get; set; }
+            public required LibraryDependency LibraryDependency { get; init; }
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryDependencyIndex" /> associated with this dependency graph item.
             /// </summary>
-            public LibraryDependencyIndex LibraryDependencyIndex { get; set; } = LibraryDependencyIndex.Invalid;
+            public LibraryDependencyIndex LibraryDependencyIndex { get; init; } = LibraryDependencyIndex.Invalid;
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryRangeIndex" /> associated with this dependency graph item.
             /// </summary>
-            public LibraryRangeIndex LibraryRangeIndex { get; set; } = LibraryRangeIndex.Invalid;
+            public LibraryRangeIndex LibraryRangeIndex { get; init; } = LibraryRangeIndex.Invalid;
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryRangeIndex" /> of this dependency graph item's parent.
             /// </summary>
-            public LibraryRangeIndex Parent { get; set; }
+            public LibraryRangeIndex Parent { get; init; }
 
             /// <summary>
             /// Gets or sets an array representing all of the parent <see cref="LibraryRangeIndex" /> values of this dependency graph item.
             /// </summary>
-            public LibraryRangeIndex[] Path { get; set; } = Array.Empty<LibraryRangeIndex>();
+            public LibraryRangeIndex[] Path { get; init; } = Array.Empty<LibraryRangeIndex>();
 
             /// <summary>
             /// Gets or sets a <see cref="HashSet{T}" /> containing <see cref="LibraryDependency" /> objects representing any runtime specific dependencies.
             /// </summary>
-            public HashSet<LibraryDependency>? RuntimeDependencies { get; set; }
+            public HashSet<LibraryDependency>? RuntimeDependencies { get; init; }
 
             /// <summary>
             /// Gets or sets a <see cref="HashSet{T}" /> containing <see cref="LibraryDependencyIndex" /> values representing any libraries that should be suppressed under this dependency graph item.
             /// </summary>
-            public HashSet<LibraryDependencyIndex>? Suppressions { get; set; }
+            public HashSet<LibraryDependencyIndex>? Suppressions { get; init; }
 
             /// <summary>
             /// Gets the <see cref="GraphItem{TItem}" /> with the <see cref="RemoteResolveResult" /> of this dependency graph item from calling the delegate specified in <see cref="FindLibraryTask" />.
             /// </summary>
-            /// <param name="restoreRequest">The <see cref="RestoreRequest" /> of the current restore.</param>
+            /// <param name="projectRestoreMetadata">The <see cref="ProjectRestoreMetadata" /> of the current restore.</param>
             /// <param name="packagesToPrune">An optional <see cref="IReadOnlyDictionary{TKey, TValue}" /> containing any packages to prune from the defined dependencies.</param>
             /// <param name="isRootProject">Indicates whether or not the dependency graph item is the root project.</param>
-            /// <param name="context">The <see cref="RemoteWalkContext" /> of the restore.</param>
             /// <param name="logger">An <see cref="ILogger" /> used for logging.</param>
             /// <returns>A <see cref="GraphItem{TItem}" /> with the <see cref="RemoteResolveResult" /> of the result of finding the library.</returns>
             public async Task<GraphItem<RemoteResolveResult>> GetGraphItemAsync(
-                RestoreRequest restoreRequest,
+                ProjectRestoreMetadata projectRestoreMetadata,
                 IReadOnlyDictionary<string, PrunePackageReference>? packagesToPrune,
                 bool isRootProject,
-                RemoteWalkContext context,
                 ILogger logger)
             {
                 // Call the task to get the library, this may returned a cached result
@@ -106,7 +105,7 @@ namespace NuGet.Commands
                     LibraryDependency dependency = item.Data.Dependencies[i];
 
                     // Skip any packages that should be pruned or will be replaced with a runtime dependency
-                    if (ShouldPrunePackage(restoreRequest, packagesToPrune, dependency, item.Key, isRootProject, context, logger)
+                    if (ShouldPrunePackage(projectRestoreMetadata, packagesToPrune, dependency, item.Key, isRootProject, logger)
                         || RuntimeDependencies?.Contains(dependency) == true)
                     {
                         continue;
@@ -120,7 +119,7 @@ namespace NuGet.Commands
                     // Add any runtime dependencies unless they should be pruned
                     foreach (LibraryDependency runtimeDependency in RuntimeDependencies)
                     {
-                        if (ShouldPrunePackage(restoreRequest, packagesToPrune, runtimeDependency, item.Key, isRootProject, context, logger) == true)
+                        if (ShouldPrunePackage(projectRestoreMetadata, packagesToPrune, runtimeDependency, item.Key, isRootProject, logger) == true)
                         {
                             continue;
                         }
@@ -143,27 +142,28 @@ namespace NuGet.Commands
             /// <summary>
             /// Determines whether or not a package should be pruned from the list of defined dependencies.
             /// </summary>
-            /// <param name="restoreRequest">The <see cref="RestoreRequest" /> of the current restore.</param>
+            /// <remarks>
+            /// A package is not pruned if it is a project reference or a direct package reference from the root project.
+            /// </remarks>
+            /// <param name="projectRestoreMetadata">The <see cref="ProjectRestoreMetadata" /> of the current restore.</param>
             /// <param name="packagesToPrune">An optional <see cref="IReadOnlyDictionary{TKey, TValue}" /> containing any packages to prune from the defined dependencies.</param>
             /// <param name="dependency">The <see cref="LibraryDependency" /> of the defined dependency.</param>
             /// <param name="parentLibrary">The <see cref="LibraryIdentity" /> of the parent library that defined this dependency.</param>
             /// <param name="isRootProject">Indicates if the parent library is the root project.</param>
-            /// <param name="context">The <see cref="RemoteWalkContext" /> of the restore.</param>
             /// <param name="logger">An <see cref="ILogger" /> used for logging.</param>
             /// <returns><see langword="true" /> if the package should be pruned, otherwise <see langword="false" />.</returns>
             private static bool ShouldPrunePackage(
-                RestoreRequest restoreRequest,
+                ProjectRestoreMetadata projectRestoreMetadata,
                 IReadOnlyDictionary<string, PrunePackageReference>? packagesToPrune,
                 LibraryDependency dependency,
                 LibraryIdentity parentLibrary,
                 bool isRootProject,
-                RemoteWalkContext context,
                 ILogger logger)
             {
-                // Do not prune the package if the prune list is null, it is not in the list, or if the version is not satisfied by the range of versions to of the library to prune
                 if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference? packageToPrune) != true
                     || !dependency.LibraryRange!.VersionRange!.Satisfies(packageToPrune!.VersionRange!.MaxVersion!))
                 {
+                    // There is either no packages to prune or the package to prune does not match the version range of the dependency
                     return false;
                 }
 
@@ -171,13 +171,11 @@ namespace NuGet.Commands
 
                 if (!isPackage)
                 {
-                    // Do not prune the package if it is a project reference
                     if (SdkAnalysisLevelMinimums.IsEnabled(
-                        restoreRequest.Project!.RestoreMetadata!.SdkAnalysisLevel,
-                        restoreRequest.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                        projectRestoreMetadata.SdkAnalysisLevel,
+                        projectRestoreMetadata.UsingMicrosoftNETSdk,
                         SdkAnalysisLevelMinimums.PruningWarnings))
                     {
-                        // Log a warning only if configured
                         logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1511, string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningProjectReference, dependency.Name)));
                     }
 
@@ -186,13 +184,11 @@ namespace NuGet.Commands
 
                 if (isRootProject)
                 {
-                    // Do not prune direct package references
                     if (SdkAnalysisLevelMinimums.IsEnabled(
-                        restoreRequest.Project!.RestoreMetadata!.SdkAnalysisLevel,
-                        restoreRequest.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                        projectRestoreMetadata.SdkAnalysisLevel,
+                        projectRestoreMetadata.UsingMicrosoftNETSdk,
                         SdkAnalysisLevelMinimums.PruningWarnings))
                     {
-                        // Log a warning only if configured
                         logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, dependency.Name)));
                     }
 

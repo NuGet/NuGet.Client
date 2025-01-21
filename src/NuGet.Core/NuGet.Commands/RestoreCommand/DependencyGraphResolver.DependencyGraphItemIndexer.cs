@@ -164,9 +164,7 @@ namespace NuGet.Commands
             {
                 // Create a new array, copy the existing path into it, and add the new library range index
                 LibraryRangeIndex[] newPath = new LibraryRangeIndex[existingPath.Length + 1];
-
                 Array.Copy(existingPath, newPath, existingPath.Length);
-
                 newPath[newPath.Length - 1] = libraryRangeIndex;
 
                 return newPath;
