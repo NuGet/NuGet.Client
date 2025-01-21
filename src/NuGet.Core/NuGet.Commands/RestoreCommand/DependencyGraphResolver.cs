@@ -162,7 +162,7 @@ namespace NuGet.Commands
                 }
 
                 // Get the corresponding TargetFrameworkInformation from the restore request
-                TargetFrameworkInformation? projectTargetFramework = _request.Project.GetTargetFramework(frameworkRuntimePair.Framework);
+                TargetFrameworkInformation projectTargetFramework = _request.Project.GetTargetFramework(frameworkRuntimePair.Framework)!;
 
                 // Keeps track of the unresolved packages
                 HashSet<LibraryRange> unresolvedPackages = new();
@@ -989,7 +989,6 @@ namespace NuGet.Commands
                     LibraryRangeIndex[] chosenDependencyGraphItemPath = chosenResolvedItem.Path;
                     bool chosenDependencyGraphItemIsRootPackageReference = chosenResolvedItem.IsRootPackageReference;
                     List<HashSet<LibraryDependencyIndex>> chosenDependencyGraphItemSuppressions = chosenResolvedItem.Suppressions;
-                    GraphItem<RemoteResolveResult> chosenGraphItem = chosenResolvedItem.Item;
 
                     if (chosenDependencyGraphItemIsRootPackageReference)
                     {
@@ -1009,11 +1008,11 @@ namespace NuGet.Commands
                     // Determine if the chosen item should be evicted based on type constraint.
                     bool evictOnTypeConstraint = ShouldEvictOnTypeConstraint(currentDependencyGraphItem, chosenResolvedItem);
 
-                    VersionRange nvr = currentLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
-                    VersionRange ovr = chosenLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
+                    VersionRange currentVersionRange = currentLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
+                    VersionRange chosenVersionRange = chosenLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
 
                     // The chosen item should be evicted or the current item has a greater version, determine if the current item should be chosen instead
-                    if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
+                    if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenVersionRange, currentVersionRange))
                     {
                         if (chosenLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                         {
@@ -1066,7 +1065,6 @@ namespace NuGet.Commands
 
                         // Remove the chosen item
                         resolvedDependencyGraphItems.Remove(currentLibraryDependencyIndex);
-                        chosenResolvedItem = null;
 
                         // Record an eviction for the item we are replacing.  The eviction path is for the current item.
                         LibraryRangeIndex evictedLibraryRangeIndex = chosenLibraryRangeIndex;
@@ -1158,7 +1156,7 @@ namespace NuGet.Commands
 
                         dependencyGraphItemQueue = newDependencyGraphItemQueue;
                     }
-                    else if (!VersionRangePreciseEquals(ovr, nvr)) // The current item has a lower version
+                    else if (!VersionRangePreciseEquals(chosenVersionRange, currentVersionRange)) // The current item has a lower version
                     {
                         bool hasCommonAncestor = HasCommonAncestor(chosenResolvedItem.Path, currentDependencyGraphItemPath);
 
@@ -1331,8 +1329,7 @@ namespace NuGet.Commands
                     // 2. It is not transitively pinned and PrivateAssets=All
                     // 3. This child is not a direct package reference and there is already a direct package reference to it
                     if (childLibraryDependency.LibraryRange.VersionRange == null
-                        || (!currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage
-                        && suppressions!.Contains(childLibraryDependencyIndex))
+                        || (!currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(childLibraryDependencyIndex))
                         || (!isRootPackageReference && directPackageReferences?.Contains(childLibraryDependencyIndex) == true))
                     {
                         continue;
