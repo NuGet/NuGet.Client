@@ -85,12 +85,12 @@ namespace NuGet.Commands
             public GraphItem<RemoteResolveResult> Item { get; }
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryDependency" /> of the declared dependency in the graph.
+            /// Gets the <see cref="LibraryDependency" /> of the declared dependency in the graph.
             /// </summary>
             public LibraryDependency LibraryDependency { get; }
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryRangeIndex" /> of this dependency graph item.
+            /// Gets the <see cref="LibraryRangeIndex" /> of this dependency graph item.
             /// </summary>
             public LibraryRangeIndex LibraryRangeIndex { get; }
 
@@ -105,7 +105,7 @@ namespace NuGet.Commands
             public HashSet<LibraryRangeIndex>? Parents { get; set; }
 
             /// <summary>
-            /// Gets or sets an array containing the <see cref="LibraryRangeIndex" /> values of all parent dependency graph items and their parent up to the root.
+            /// Gets an array containing the <see cref="LibraryRangeIndex" /> values of all parent dependency graph items and their parent up to the root.
             /// </summary>
             public LibraryRangeIndex[] Path { get; }
 

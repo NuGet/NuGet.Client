@@ -1358,7 +1358,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="localRepositories">A <see cref="List{T}" /> containing <see cref="NuGetv3LocalRepository" /> objects to find local packages in.</param>
         /// <param name="graphsByTargetFramework">A <see cref="Dictionary{TKey, TValue}" /> containing the dependency graphs by target framework.</param>
-        /// <param name="frameworkRuntimePair">The <see cref="FrameworkRuntimePair" /> the current target framework and runtime identifier to get a runtime graph for.</param>
+        /// <param name="frameworkRuntimePair">The <see cref="FrameworkRuntimePair" /> representing the current target framework and runtime identifier for which to get a runtime graph.</param>
         /// <param name="projectTargetFramework">The <see cref="TargetFrameworkInformation" /> containing target framework information for the project.</param>
         /// <param name="runtimeGraph">Receives the <see cref="RuntimeGraph" /> for the <see cref="FrameworkRuntimePair" /> if one was found, otherwise <see langword="null" />.</param>
         /// <returns><see langword="true" /> if a runtime was found, otherwise <see langword="false" />.</returns>
@@ -1368,7 +1368,7 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier) || !graphsByTargetFramework.TryGetValue(frameworkRuntimePair.Framework, out RestoreTargetGraph? restoreTargetGraphForTargetFramework))
             {
-                // If this this pair has no runtime or there is no corresponding RID-less dependency graph for the target framework, there is no runtime graph
+                // If this pair has no runtime or there is no corresponding RID-less dependency graph for the target framework, there is no runtime graph
                 return false;
             }
 
