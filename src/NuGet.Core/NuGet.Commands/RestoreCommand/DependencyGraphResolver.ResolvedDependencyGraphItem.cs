@@ -33,12 +33,18 @@ namespace NuGet.Commands
             /// Initializes a new instance of the <see cref="ResolvedDependencyGraphItem" /> class.
             /// </summary>
             /// <param name="item">The <see cref="GraphItem{TItem}" /> with a <see cref="RemoteResolveResult" /> of the resolved library.</param>
+            /// <param name="dependencyGraphItem">The <see cref="DependencyGraphItem" /> that is being resolved.</param>
             /// <param name="indexingTable">The <see cref="DependencyGraphItemIndexer" /> to use when indexing dependencies.</param>
             public ResolvedDependencyGraphItem(
                 GraphItem<RemoteResolveResult> item,
+                DependencyGraphItem dependencyGraphItem,
                 DependencyGraphItemIndexer indexingTable)
             {
                 Item = item;
+
+                LibraryDependency = dependencyGraphItem.LibraryDependency;
+                LibraryRangeIndex = dependencyGraphItem.LibraryRangeIndex;
+                Path = dependencyGraphItem.Path;
 
                 int dependencyCount = item.Data.Dependencies.Count;
 
@@ -81,12 +87,12 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets the <see cref="LibraryDependency" /> of the declared dependency in the graph.
             /// </summary>
-            public required LibraryDependency LibraryDependency { get; init; }
+            public LibraryDependency LibraryDependency { get; }
 
             /// <summary>
             /// Gets or sets the <see cref="LibraryRangeIndex" /> of this dependency graph item.
             /// </summary>
-            public LibraryRangeIndex LibraryRangeIndex { get; init; }
+            public LibraryRangeIndex LibraryRangeIndex { get; }
 
             /// <summary>
             /// Gets or sets a <see cref="HashSet{T}" /> of parent <see cref="LibraryRangeIndex" /> that have been eclipsed by this dependency graph item.
@@ -101,7 +107,7 @@ namespace NuGet.Commands
             /// <summary>
             /// Gets or sets an array containing the <see cref="LibraryRangeIndex" /> values of all parent dependency graph items and their parent up to the root.
             /// </summary>
-            public required LibraryRangeIndex[] Path { get; init; }
+            public LibraryRangeIndex[] Path { get; }
 
             /// <summary>
             /// Gets or sets a <see cref="List{T}" /> of <see cref="HashSet{T}" /> containing <see cref="LibraryDependencyIndex" /> representing dependencies that should be suppressed under this item.

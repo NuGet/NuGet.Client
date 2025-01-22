@@ -885,7 +885,7 @@ namespace NuGet.Commands
         }
 
         private async Task<Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem>> ResolveDependencyGraphItemsAsync(
-                                                    bool isCentralPackageTransitivePinningEnabled,
+            bool isCentralPackageTransitivePinningEnabled,
             FrameworkRuntimePair pair,
             TargetFrameworkInformation? projectTargetFramework,
             RuntimeGraph? runtimeGraph,
@@ -936,68 +936,53 @@ namespace NuGet.Commands
             while (dependencyGraphItemQueue.Count > 0)
             {
                 DependencyGraphItem currentDependencyGraphItem = dependencyGraphItemQueue.Dequeue();
-                LibraryDependency currentLibraryDependency = currentDependencyGraphItem.LibraryDependency!;
-                LibraryDependencyIndex currentLibraryDependencyIndex = currentDependencyGraphItem.LibraryDependencyIndex;
-                LibraryRangeIndex currentLibraryRangeIndex = currentDependencyGraphItem.LibraryRangeIndex;
-                LibraryRangeIndex[] currentDependencyGraphItemPath = currentDependencyGraphItem.Path;
-                HashSet<LibraryDependencyIndex>? currentDependencyGraphItemSuppressions = currentDependencyGraphItem.Suppressions;
-                bool currentDependencyGraphItemIsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference;
 
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
 
                 GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework?.PackagesToPrune, isRootProject, _logger);
 
-                LibraryDependencyTarget typeConstraint = currentLibraryDependency.LibraryRange.TypeConstraint;
-                if (evictions.TryGetValue(currentLibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
+                LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
+                if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
                 {
                     (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 
                     // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
                     // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
                     if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
-                        currentLibraryDependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
+                        currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
                     {
                         continue;
                     }
                 }
 
                 // Determine if a dependency with the same name has not already been chosen
-                if (!resolvedDependencyGraphItems.TryGetValue(currentLibraryDependencyIndex, out ResolvedDependencyGraphItem? chosenResolvedItem))
+                if (!resolvedDependencyGraphItems.TryGetValue(currentDependencyGraphItem.LibraryDependencyIndex, out ResolvedDependencyGraphItem? chosenResolvedItem))
                 {
                     // Create a resolved dependency graph item and add it to the list of chosen items
-                    chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, _indexingTable)
+                    chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                     {
-                        LibraryDependency = currentLibraryDependency,
-                        LibraryRangeIndex = currentLibraryRangeIndex,
-                        Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
-                        Path = currentDependencyGraphItemPath,
+                        Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItem.IsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
                         IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
-                        IsRootPackageReference = currentDependencyGraphItemIsRootPackageReference,
+                        IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
                         Suppressions = new List<HashSet<LibraryDependencyIndex>>
                         {
-                            currentDependencyGraphItemSuppressions!
+                            currentDependencyGraphItem.Suppressions!
                         }
                     };
 
-                    resolvedDependencyGraphItems.Add(currentLibraryDependencyIndex, chosenResolvedItem);
+                    resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
                 }
                 else // A dependency with the same name has already been chosen so we need to decide what to do with it
                 {
-                    LibraryDependency chosenLibraryDependency = chosenResolvedItem.LibraryDependency;
-                    LibraryRangeIndex chosenLibraryRangeIndex = chosenResolvedItem.LibraryRangeIndex;
-                    LibraryRangeIndex[] chosenDependencyGraphItemPath = chosenResolvedItem.Path;
-                    bool chosenDependencyGraphItemIsRootPackageReference = chosenResolvedItem.IsRootPackageReference;
-                    List<HashSet<LibraryDependencyIndex>> chosenDependencyGraphItemSuppressions = chosenResolvedItem.Suppressions;
-
-                    if (chosenDependencyGraphItemIsRootPackageReference)
+                    if (chosenResolvedItem.IsRootPackageReference)
                     {
                         // If the chosen dependency graph item is a direct dependency, it should always be chosen regardless of version so do not process this dependency
                         continue;
                     }
 
                     if (chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject
-                        && currentLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
                         && currentGraphItem.Key.Type == LibraryType.Project)
                     {
                         // If the chosen dependency graph item is a project reference, it should always be chosen over a package reference. In this case, a project has already been chosen
@@ -1008,13 +993,13 @@ namespace NuGet.Commands
                     // Determine if the chosen item should be evicted based on type constraint.
                     bool evictOnTypeConstraint = ShouldEvictOnTypeConstraint(currentDependencyGraphItem, chosenResolvedItem);
 
-                    VersionRange currentVersionRange = currentLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
-                    VersionRange chosenVersionRange = chosenLibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
+                    VersionRange currentVersionRange = currentDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
+                    VersionRange chosenVersionRange = chosenResolvedItem.LibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
 
                     // The chosen item should be evicted or the current item has a greater version, determine if the current item should be chosen instead
                     if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenVersionRange, currentVersionRange))
                     {
-                        if (chosenLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+                        if (chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                         {
                             if (chosenResolvedItem.Parents != null)
                             {
@@ -1064,10 +1049,10 @@ namespace NuGet.Commands
                         }
 
                         // Remove the chosen item
-                        resolvedDependencyGraphItems.Remove(currentLibraryDependencyIndex);
+                        resolvedDependencyGraphItems.Remove(currentDependencyGraphItem.LibraryDependencyIndex);
 
                         // Record an eviction for the item we are replacing.  The eviction path is for the current item.
-                        LibraryRangeIndex evictedLibraryRangeIndex = chosenLibraryRangeIndex;
+                        LibraryRangeIndex evictedLibraryRangeIndex = chosenResolvedItem.LibraryRangeIndex;
 
                         bool shouldStartOver = false;
 
@@ -1083,7 +1068,7 @@ namespace NuGet.Commands
                             {
                                 // if evictee.Key (depIndex) == currentDepIndex && evictee.TypeConstraint == ExternalProject --> Don't remove it.  It must remain evicted.
                                 // If the evictee to remove is the same dependency, but the project version of said dependency, then do not remove it - it must remain evicted in favor of the package.
-                                if (!(evicteeDepIndex == currentLibraryDependencyIndex &&
+                                if (!(evicteeDepIndex == currentDependencyGraphItem.LibraryDependencyIndex &&
                                     (evicteeTypeConstraint == LibraryDependencyTarget.ExternalProject || evicteeTypeConstraint == LibraryDependencyTarget.PackageProjectExternal)))
                                 {
                                     evicteesToRemove ??= new HashSet<LibraryRangeIndex>();
@@ -1115,31 +1100,26 @@ namespace NuGet.Commands
                         }
 
                         // Add the eviction to be used later
-                        evictions[evictedLibraryRangeIndex] = (DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItemPath, currentLibraryRangeIndex), currentLibraryDependencyIndex, chosenLibraryDependency.LibraryRange.TypeConstraint);
+                        evictions[evictedLibraryRangeIndex] = (DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItem.Path, currentDependencyGraphItem.LibraryRangeIndex), currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraint);
 
                         if (shouldStartOver)
                         {
                             goto StartOver;
                         }
 
-                        bool isCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage;
-
                         // Add the item to the list of chosen items
-                        chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, _indexingTable)
+                        chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                         {
-                            LibraryDependency = currentLibraryDependency,
-                            LibraryRangeIndex = currentLibraryRangeIndex,
-                            Parents = isCentrallyPinnedTransitivePackage && !currentDependencyGraphItemIsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
-                            Path = currentDependencyGraphItemPath,
-                            IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                            IsRootPackageReference = currentDependencyGraphItemIsRootPackageReference,
+                            Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItem.IsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
+                            IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
+                            IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
                             Suppressions = new List<HashSet<LibraryDependencyIndex>>
                             {
-                                currentDependencyGraphItemSuppressions!
+                                currentDependencyGraphItem.Suppressions!
                             },
                         };
 
-                        resolvedDependencyGraphItems.Add(currentLibraryDependencyIndex, chosenResolvedItem);
+                        resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
 
                         // Recreate the queue but leave out any items that are children of the chosen item that was just removed which essentially evicts unprocessed children from the queue
                         Queue<DependencyGraphItem> newDependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
@@ -1158,14 +1138,14 @@ namespace NuGet.Commands
                     }
                     else if (!VersionRangePreciseEquals(chosenVersionRange, currentVersionRange)) // The current item has a lower version
                     {
-                        bool hasCommonAncestor = HasCommonAncestor(chosenResolvedItem.Path, currentDependencyGraphItemPath);
+                        bool hasCommonAncestor = HasCommonAncestor(chosenResolvedItem.Path, currentDependencyGraphItem.Path);
 
                         if (!hasCommonAncestor)
                         {
                             chosenResolvedItem.ParentPathsThatHaveBeenEclipsed ??= new HashSet<LibraryRangeIndex>();
 
                             // Keeps track of parents that have been eclipsed
-                            chosenResolvedItem.ParentPathsThatHaveBeenEclipsed.Add(currentDependencyGraphItemPath[currentDependencyGraphItemPath.Length - 1]);
+                            chosenResolvedItem.ParentPathsThatHaveBeenEclipsed.Add(currentDependencyGraphItem.Path[currentDependencyGraphItem.Path.Length - 1]);
                         }
 
                         // Do not process this item
@@ -1181,40 +1161,35 @@ namespace NuGet.Commands
                             chosenResolvedItem.Parents?.Add(currentDependencyGraphItem.Parent);
                         }
 
-                        if (chosenDependencyGraphItemSuppressions.Count == 1 && chosenDependencyGraphItemSuppressions[0].Count == 0 && HasCommonAncestor(chosenResolvedItem.Path, currentDependencyGraphItemPath))
+                        if (chosenResolvedItem.Suppressions.Count == 1 && chosenResolvedItem.Suppressions[0].Count == 0 && HasCommonAncestor(chosenResolvedItem.Path, currentDependencyGraphItem.Path))
                         {
                             // Skip this item if it has no suppressions and has a common ancestor
                             continue;
                         }
-                        else if (currentDependencyGraphItemSuppressions!.Count == 0) // The current item has no suppressions
+                        else if (currentDependencyGraphItem.Suppressions!.Count == 0) // The current item has no suppressions
                         {
                             // Replace the chosen item with the current one since they are basically the same and process its children
-                            resolvedDependencyGraphItems.Remove(currentLibraryDependencyIndex);
+                            resolvedDependencyGraphItems.Remove(currentDependencyGraphItem.LibraryDependencyIndex);
 
-                            bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
-
-                            chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, _indexingTable)
+                            chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                             {
-                                LibraryDependency = currentLibraryDependency,
-                                LibraryRangeIndex = currentLibraryRangeIndex,
                                 Parents = chosenResolvedItem.Parents,
-                                Path = currentDependencyGraphItemPath,
-                                IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                                IsRootPackageReference = chosenDependencyGraphItemIsRootPackageReference,
+                                IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
+                                IsRootPackageReference = chosenResolvedItem.IsRootPackageReference,
                                 Suppressions = new List<HashSet<LibraryDependencyIndex>>
                                 {
-                                    currentDependencyGraphItemSuppressions,
+                                    currentDependencyGraphItem.Suppressions,
                                 },
                             };
 
-                            resolvedDependencyGraphItems.Add(currentLibraryDependencyIndex, chosenResolvedItem);
+                            resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
                         }
                         else // The chosen item and current item have a different set of suppressions
                         {
                             bool isEqualOrSuperSetDisposition = false;
-                            foreach (HashSet<LibraryDependencyIndex> chosenDependencyGraphItemSuppression in chosenDependencyGraphItemSuppressions)
+                            foreach (HashSet<LibraryDependencyIndex> chosenDependencyGraphItemSuppression in chosenResolvedItem.Suppressions)
                             {
-                                if (currentDependencyGraphItemSuppressions.IsSupersetOf(chosenDependencyGraphItemSuppression))
+                                if (currentDependencyGraphItem.Suppressions.IsSupersetOf(chosenDependencyGraphItemSuppression))
                                 {
                                     isEqualOrSuperSetDisposition = true;
                                 }
@@ -1227,27 +1202,22 @@ namespace NuGet.Commands
                             }
                             else
                             {
-                                bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
-
                                 // Replace the chosen item with the current item with the the combined list of suppressions and process its children
-                                resolvedDependencyGraphItems.Remove(currentLibraryDependencyIndex);
+                                resolvedDependencyGraphItems.Remove(currentDependencyGraphItem.LibraryDependencyIndex);
 
-                                chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, _indexingTable)
+                                chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                                 {
-                                    LibraryDependency = currentLibraryDependency,
-                                    LibraryRangeIndex = currentLibraryRangeIndex,
                                     Parents = chosenResolvedItem.Parents,
-                                    Path = currentDependencyGraphItemPath,
-                                    IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
-                                    IsRootPackageReference = chosenDependencyGraphItemIsRootPackageReference,
+                                    IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
+                                    IsRootPackageReference = chosenResolvedItem.IsRootPackageReference,
                                     Suppressions =
                                     [
-                                        currentDependencyGraphItemSuppressions,
-                                        .. chosenDependencyGraphItemSuppressions
+                                        currentDependencyGraphItem.Suppressions,
+                                        .. chosenResolvedItem.Suppressions
                                     ],
                                 };
 
-                                resolvedDependencyGraphItems.Add(currentLibraryDependencyIndex, chosenResolvedItem);
+                                resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
                             }
                         }
                     }
@@ -1276,10 +1246,10 @@ namespace NuGet.Commands
                     // If this is not the root project, loop through the dependencies and keep track of which ones have PrivateAssets=All which we consider a "suppression"
                     for (int i = 0; i < chosenResolvedItem.Item.Data.Dependencies.Count; i++)
                     {
-                        LibraryDependency chosenResolvedItemChildLibraryDependency = chosenResolvedItem.Item.Data.Dependencies[i];
+                        LibraryDependency dependency = chosenResolvedItem.Item.Data.Dependencies[i];
 
                         // Skip any packages with a missing versions
-                        if (chosenResolvedItemChildLibraryDependency.LibraryRange.VersionRange == null)
+                        if (dependency.LibraryRange.VersionRange == null)
                         {
                             continue;
                         }
@@ -1287,7 +1257,7 @@ namespace NuGet.Commands
                         LibraryDependencyIndex chosenResolvedItemChildLibraryDependencyIndex = chosenResolvedItem.GetDependencyIndexForDependencyAt(i);
 
                         // Suppress this dependency if PrivateAssets is set to "All"
-                        if (chosenResolvedItemChildLibraryDependency.SuppressParent == LibraryIncludeFlags.All)
+                        if (dependency.SuppressParent == LibraryIncludeFlags.All)
                         {
                             suppressions ??= new HashSet<LibraryDependencyIndex>();
 
@@ -1299,36 +1269,36 @@ namespace NuGet.Commands
                 // The list of suppressions should be an aggregate of all parent item's suppressions so add the parent suppressions to the list, otherwise just use the current item's suppressions
                 if (suppressions != null)
                 {
-                    suppressions.AddRange(currentDependencyGraphItemSuppressions);
+                    suppressions.AddRange(currentDependencyGraphItem.Suppressions);
                 }
                 else
                 {
-                    suppressions = currentDependencyGraphItemSuppressions;
+                    suppressions = currentDependencyGraphItem.Suppressions;
                 }
 
                 // Loop through the dependencies now that we know which ones to suppress
                 for (int i = 0; i < chosenResolvedItem.Item.Data.Dependencies.Count; i++)
                 {
-                    LibraryDependency childLibraryDependency = chosenResolvedItem.Item.Data.Dependencies[i];
+                    LibraryDependency childDependency = chosenResolvedItem.Item.Data.Dependencies[i];
                     LibraryDependencyIndex childLibraryDependencyIndex = chosenResolvedItem.GetDependencyIndexForDependencyAt(i);
 
                     HashSet<LibraryDependency>? runtimeDependencies = default;
 
                     // Evaluate the runtime dependencies if any
-                    if (EvaluateRuntimeDependencies(ref childLibraryDependency, runtimeGraph, pair.RuntimeIdentifier, ref runtimeDependencies))
+                    if (EvaluateRuntimeDependencies(ref childDependency, runtimeGraph, pair.RuntimeIdentifier, ref runtimeDependencies))
                     {
                         // EvaluateRuntimeDependencies() returns true if the version of the dependency was changed, which also changes the LibraryRangeIndex so that must be updated in the chosen item's array of library range indices.
-                        chosenResolvedItem.SetRangeIndexForDependencyAt(i, _indexingTable.Index(childLibraryDependency.LibraryRange));
+                        chosenResolvedItem.SetRangeIndexForDependencyAt(i, _indexingTable.Index(childDependency.LibraryRange));
                     }
 
-                    bool isPackage = childLibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
+                    bool isPackage = childDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
                     bool isRootPackageReference = (currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project) && isPackage;
 
                     // Skip this dependency if:
                     // 1. the VersionRange is null
                     // 2. It is not transitively pinned and PrivateAssets=All
                     // 3. This child is not a direct package reference and there is already a direct package reference to it
-                    if (childLibraryDependency.LibraryRange.VersionRange == null
+                    if (childDependency.LibraryRange.VersionRange == null
                         || (!currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(childLibraryDependencyIndex))
                         || (!isRootPackageReference && directPackageReferences?.Contains(childLibraryDependencyIndex) == true))
                     {
@@ -1347,29 +1317,29 @@ namespace NuGet.Commands
                     if (isCentrallyPinnedTransitiveDependency && !isRootPackageReference)
                     {
                         // If central transitive pinning is enabled the LibraryDependency must be recreated as not to mutate the in-memory copy
-                        childLibraryDependency = new LibraryDependency(childLibraryDependency)
+                        childDependency = new LibraryDependency(childDependency)
                         {
-                            LibraryRange = new LibraryRange(childLibraryDependency.LibraryRange) { VersionRange = pinnedVersionRange },
+                            LibraryRange = new LibraryRange(childDependency.LibraryRange) { VersionRange = pinnedVersionRange },
                         };
 
                         // Since the version range could have changed, we must also update the LibraryRangeIndex
-                        childLibraryRangeIndex = _indexingTable.Index(childLibraryDependency.LibraryRange);
+                        childLibraryRangeIndex = _indexingTable.Index(childDependency.LibraryRange);
                     }
 
                     // Create a DependencyGraphItem and add it to the queue for processing
                     DependencyGraphItem dependencyGraphItem = new()
                     {
-                        LibraryDependency = childLibraryDependency,
+                        LibraryDependency = childDependency,
                         LibraryDependencyIndex = childLibraryDependencyIndex,
                         LibraryRangeIndex = childLibraryRangeIndex,
-                        Path = isCentrallyPinnedTransitiveDependency || isRootPackageReference ? _rootedDependencyPath : DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItemPath, currentLibraryRangeIndex),
-                        Parent = currentLibraryRangeIndex,
+                        Path = isCentrallyPinnedTransitiveDependency || isRootPackageReference ? _rootedDependencyPath : DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItem.Path, currentDependencyGraphItem.LibraryRangeIndex),
+                        Parent = currentDependencyGraphItem.LibraryRangeIndex,
                         Suppressions = suppressions,
                         IsRootPackageReference = isRootPackageReference,
                         IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitiveDependency,
                         RuntimeDependencies = runtimeDependencies,
                         FindLibraryTask = ResolverUtility.FindLibraryCachedAsync(
-                            childLibraryDependency.LibraryRange,
+                            childDependency.LibraryRange,
                             pair.Framework,
                             runtimeIdentifier: string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) ? null : pair.RuntimeIdentifier,
                             context,
