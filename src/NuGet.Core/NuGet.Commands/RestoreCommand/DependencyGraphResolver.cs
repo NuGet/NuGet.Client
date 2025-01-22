@@ -899,7 +899,7 @@ namespace NuGet.Commands
             Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem> resolvedDependencyGraphItems = new(ResolvedDependencyGraphItemDictionarySize);
 
             // Stores a list of direct package references by their LibraryDependencyIndex so that we can quickly determine if a transitive package can be ignored
-            HashSet<LibraryDependencyIndex> directPackageReferences = new();
+            HashSet<LibraryDependencyIndex>? directPackageReferences = default;
 
             // Stores the queue of DependencyGraphItem objects to process
             Queue<DependencyGraphItem> dependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
@@ -1227,6 +1227,13 @@ namespace NuGet.Commands
                 // should be ignored when there is a direct dependency.
                 if (isRootProject)
                 {
+
+#if NETSTANDARD
+                    directPackageReferences = new HashSet<LibraryDependencyIndex>();
+#else
+                    directPackageReferences = new HashSet<LibraryDependencyIndex>(capacity: chosenResolvedItem.Item.Data.Dependencies.Count);
+#endif
+
                     for (int i = 0; i < chosenResolvedItem.Item.Data.Dependencies.Count; i++)
                     {
                         LibraryDependency rootLibraryDependency = chosenResolvedItem.Item.Data.Dependencies[i];
