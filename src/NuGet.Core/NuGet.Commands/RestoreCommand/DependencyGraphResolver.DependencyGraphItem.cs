@@ -24,52 +24,52 @@ namespace NuGet.Commands
         public class DependencyGraphItem
         {
             /// <summary>
-            /// Gets or sets a <see cref="Task{TResult}" /> that returns a <see cref="GraphItem{TItem}" /> containing a <see cref="RemoteResolveResult" /> that represents the resolved graph item after looking it up in the configured feeds.
+            /// Gets or initializes a <see cref="Task{TResult}" /> that returns a <see cref="GraphItem{TItem}" /> containing a <see cref="RemoteResolveResult" /> that represents the resolved graph item after looking it up in the configured feeds.
             /// </summary>
             public required Task<GraphItem<RemoteResolveResult>> FindLibraryTask { get; init; }
 
             /// <summary>
-            /// Gets or sets a value indicating whether or not this dependency graph item is a transitively pinned dependency.
+            /// Gets or initializes a value indicating whether or not this dependency graph item is a transitively pinned dependency.
             /// </summary>
             public bool IsCentrallyPinnedTransitivePackage { get; init; }
 
             /// <summary>
-            /// Gets or sets a value indicating whether or not this dependency graph item is a direct package reference from the root project.
+            /// Gets or initializes a value indicating whether or not this dependency graph item is a direct package reference from the root project.
             /// </summary>
             public bool IsRootPackageReference { get; init; }
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryDependency" /> used to declare this dependency graph item.
+            /// Gets or initializes the <see cref="LibraryDependency" /> used to declare this dependency graph item.
             /// </summary>
             public required LibraryDependency LibraryDependency { get; init; }
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryDependencyIndex" /> associated with this dependency graph item.
+            /// Gets or initializes the <see cref="LibraryDependencyIndex" /> associated with this dependency graph item.
             /// </summary>
             public LibraryDependencyIndex LibraryDependencyIndex { get; init; } = LibraryDependencyIndex.Invalid;
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryRangeIndex" /> associated with this dependency graph item.
+            /// Gets or initializes the <see cref="LibraryRangeIndex" /> associated with this dependency graph item.
             /// </summary>
             public LibraryRangeIndex LibraryRangeIndex { get; init; } = LibraryRangeIndex.Invalid;
 
             /// <summary>
-            /// Gets or sets the <see cref="LibraryRangeIndex" /> of this dependency graph item's parent.
+            /// Gets or initializes the <see cref="LibraryRangeIndex" /> of this dependency graph item's parent.
             /// </summary>
             public LibraryRangeIndex Parent { get; init; }
 
             /// <summary>
-            /// Gets or sets an array representing all of the parent <see cref="LibraryRangeIndex" /> values of this dependency graph item.
+            /// Gets or initializes an array representing all of the parent <see cref="LibraryRangeIndex" /> values of this dependency graph item.
             /// </summary>
             public LibraryRangeIndex[] Path { get; init; } = Array.Empty<LibraryRangeIndex>();
 
             /// <summary>
-            /// Gets or sets a <see cref="HashSet{T}" /> containing <see cref="LibraryDependency" /> objects representing any runtime specific dependencies.
+            /// Gets or initializes a <see cref="HashSet{T}" /> containing <see cref="LibraryDependency" /> objects representing any runtime specific dependencies.
             /// </summary>
             public HashSet<LibraryDependency>? RuntimeDependencies { get; init; }
 
             /// <summary>
-            /// Gets or sets a <see cref="HashSet{T}" /> containing <see cref="LibraryDependencyIndex" /> values representing any libraries that should be suppressed under this dependency graph item.
+            /// Gets or initializes a <see cref="HashSet{T}" /> containing <see cref="LibraryDependencyIndex" /> values representing any libraries that should be suppressed under this dependency graph item.
             /// </summary>
             public HashSet<LibraryDependencyIndex>? Suppressions { get; init; }
 
