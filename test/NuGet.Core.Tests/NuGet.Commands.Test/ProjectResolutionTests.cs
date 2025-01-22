@@ -537,7 +537,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, result.GetAllUnresolved().Count);
-                Assert.Equal(0, logger.Messages.Where(s => s.IndexOf("Dependency specified was") > -1).Count());
+                Assert.Equal(0, logger.Messages.Count(s => s.IndexOf("Dependency specified was") > -1));
             }
         }
 

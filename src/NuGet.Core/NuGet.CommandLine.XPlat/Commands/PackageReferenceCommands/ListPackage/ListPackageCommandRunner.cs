@@ -440,9 +440,8 @@ namespace NuGet.CommandLine.XPlat
 
                         // Update resolved version with additional metadata information returned by the server.
                         var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
-                            .Where(v => v.SearchMetadata.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version &&
-                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null))
-                            .FirstOrDefault();
+                            .FirstOrDefault(v => v.SearchMetadata.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version &&
+                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null));
 
                         if (resolvedVersionFromServer != null)
                         {
@@ -469,9 +468,8 @@ namespace NuGet.CommandLine.XPlat
 
                         // Update resolved version with additional metadata information returned by the server.
                         var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
-                            .Where(v => v.SearchMetadata.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version &&
-                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null))
-                            .FirstOrDefault();
+                            .FirstOrDefault(v => v.SearchMetadata.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version &&
+                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null));
 
                         if (resolvedVersionFromServer != null)
                         {
