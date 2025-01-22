@@ -1,6 +1,8 @@
 <Project>
+
   <ItemGroup>
     <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
-              IsShipping="true" />
+              PublishFlatContainer="false" />
   </ItemGroup>
+  
 </Project>
