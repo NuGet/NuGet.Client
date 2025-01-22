@@ -132,7 +132,8 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 default: break;
             }
 
-            throw new ApplicationException("Unknown setting!");
+            // Shouldn't happen as these are monikers we declared in registration.json.
+            throw new InvalidOperationException();
         }
 
         public Task OpenBackingStoreAsync(CancellationToken cancellationToken)
@@ -168,6 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                     {
                         if (value is bool boolValue)
                         {
+                            // Note that BindingRedirectBehavior defaults to `false` for any parsing errors.
                             BindingRedirectBehavior.IsSkipped = boolValue;
                             return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
                         }
@@ -181,7 +183,8 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                             {
                                 MonikerPackagesConfig => 0,
                                 MonikerPackageReference => 1,
-                                _ => throw new ApplicationException("Error saving setting!"),
+                                // Shouldn't happen as these are monikers we declared in registration.json.
+                                _ => throw new ArgumentOutOfRangeException(),
                             };
 
                             PackageManagementFormat.ApplyChanges();
@@ -203,7 +206,8 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 default: break;
             }
 
-            throw new ApplicationException("Unknown setting!");
+            // Shouldn't happen as these are monikers we declared in registration.json.
+            throw new InvalidOperationException();
         }
 
         private static Task<ExternalSettingOperationResult<T>> ConvertValueOrThrow<T>(object input) where T : notnull
@@ -212,17 +216,15 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             {
                 return Task.FromResult(ExternalSettingOperationResult.SuccessResult(value));
             }
-
-            throw new ApplicationException("Error reading setting!");
+            else
+            {
+                // Shouldn't happen as these are types we declared in registration.json.
+                throw new IncompatibleSettingTypeException(input.GetType().Name, typeof(T).Name);
+            }
         }
 
         private static Task<ExternalSettingOperationResult<T>> ConvertDefaultPackageManagementFormatKeyOrThrow<T>(Func<int> input)
         {
-            if (typeof(T) != typeof(string))
-            {
-                throw new ApplicationException("Error reading setting!");
-            }
-
             ExternalSettingOperationResult<T> result;
 #pragma warning disable CA1031 // Do not catch general exception types
             try
@@ -232,14 +234,17 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 {
                     0 => (T)(object)MonikerPackagesConfig,
                     1 => (T)(object)MonikerPackageReference,
-                    _ => throw new ApplicationException("Unknown value!")
+                    _ => throw new ArgumentOutOfRangeException(
+                        paramName: nameof(input),
+                        actualValue: inputValue,
+                        message: nameof(MonikerDefaultPackageManagementFormat))
                 };
 
                 result = ExternalSettingOperationResult.SuccessResult(strValue);
             }
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult<T>(ex.Message);
+                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerDefaultPackageManagementFormat + "')");
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
