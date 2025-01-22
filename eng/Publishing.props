@@ -1,11 +1,6 @@
 <Project>
-
   <ItemGroup>
-    <ItemsToPushToBlobFeed Include="$(ArtifactsDir)nupkgs/*.nupkg"
-                           IsShipping="true"
-                           UploadPathSegment="nuget-client" />
-    <_SymbolsPackages Include="$(ArtifactsDir)nupkgs/*.symbols.nupkg" />
-    <ItemsToPushToBlobFeed Remove="@(_SymbolsPackages)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
+              IsShipping="true" />
   </ItemGroup>
-
 </Project>
