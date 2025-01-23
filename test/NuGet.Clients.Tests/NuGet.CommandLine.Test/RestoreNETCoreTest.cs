@@ -9820,7 +9820,6 @@ namespace NuGet.CommandLine.Test
                     source.Add(result);
                     return result;
                 }
-                ;
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "projectA",
@@ -10072,7 +10071,6 @@ namespace NuGet.CommandLine.Test
                     source.Add(result);
                     return result;
                 }
-                ;
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "projectA",
