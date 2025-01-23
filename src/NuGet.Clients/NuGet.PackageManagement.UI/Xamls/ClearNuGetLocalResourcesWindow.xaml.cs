@@ -3,10 +3,8 @@
 
 #nullable enable
 
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.UI.ViewModels;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
@@ -24,11 +22,8 @@ namespace NuGet.PackageManagement.UI
 
         private void DialogWindow_ContentRendered(object sender, System.EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                await Task.Yield();
-                await ((ClearNuGetLocalsViewModel)DataContext).Execute();
-            }).PostOnFailure(nameof(ClearNuGetLocalResourcesWindow));
+            ((ClearNuGetLocalsViewModel)DataContext).Execute()
+                .PostOnFailure(nameof(ClearNuGetLocalResourcesWindow));
         }
 
         private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)
