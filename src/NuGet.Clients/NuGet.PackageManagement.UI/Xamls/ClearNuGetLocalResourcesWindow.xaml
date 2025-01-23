@@ -53,11 +53,29 @@
 
     <!-- Progress Bar -->
     <Grid Grid.Row="2" Margin="0,9,0,0">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
       <ProgressBar Height="20" AutomationProperties.Name="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100" />
+      <!--
+        Special TextBlock to report loading status to assistive technologies (narrator).
+        Changes to the Text property will trigger a narrator event.
+      -->
+      <vsui:LiveTextBlock
+        Visibility="Collapsed"
+        IsFrequencyLimited="True"
+        Focusable="False"
+        AutomationProperties.IsOffscreenBehavior="Offscreen">
+        <vsui:LiveTextBlock.Resources>
+          <Style TargetType="vsui:LiveTextBlock">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsCommandComplete}" Value="False">
+                <Setter Property="Text" Value="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}"/>
+              </DataTrigger>
+              <DataTrigger Binding="{Binding IsCommandComplete}" Value="True">
+                <Setter Property="Text" Value="{Binding CommandCompleteText}"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </vsui:LiveTextBlock.Resources>
+      </vsui:LiveTextBlock>
     </Grid>
 
     <!-- Buttons -->
