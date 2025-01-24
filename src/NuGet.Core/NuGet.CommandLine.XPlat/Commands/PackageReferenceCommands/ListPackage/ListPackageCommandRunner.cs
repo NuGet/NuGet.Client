@@ -16,6 +16,9 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Providers;
+using NuGet.Protocol.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
@@ -33,15 +36,15 @@ namespace NuGet.CommandLine.XPlat
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
-        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs, IReadOnlyList<PackageSource> auditSources)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
-            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
+            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs, auditSources);
             reportRenderer.Render(reportModel);
             return exitCode;
         }
 
-        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
+        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs, IReadOnlyList<PackageSource> auditSources)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
@@ -68,7 +71,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (string projectPath in projectsPaths)
             {
-                await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs);
+                await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs, auditSources);
             }
 
             // if there is any error then return failure code.
@@ -84,7 +87,8 @@ namespace NuGet.CommandLine.XPlat
             string projectPath,
             ListPackageReportModel listPackageReportModel,
             MSBuildAPIUtility msBuild,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            IReadOnlyList<PackageSource> auditSources)
         {
             //Open project to evaluate properties for the assets
             //file and the name of the project
@@ -132,7 +136,65 @@ namespace NuGet.CommandLine.XPlat
                     {
                         if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                         {
-                            WarnForHttpSources(listPackageArgs, projectModel);
+                            WarnForHttpSources(listPackageArgs, projectModel, auditSources);
+
+                            if (listPackageArgs.ReportType == ReportType.Vulnerable && auditSources.Count > 0)
+                            {
+                                // AuditSources being used. Get vulnerabilities data from the AuditSources VulnerabilityInfoResource.
+                                var vulnerabilities = await GetVulnerabilityData(projectModel, auditSources, listPackageArgs.Logger, listPackageArgs.CancellationToken);
+
+                                foreach (var frameworkPackages in frameworks)
+                                {
+                                    ListPackageReportFrameworkPackage frameworkPackage = new ListPackageReportFrameworkPackage(frameworkPackages.Framework);
+                                    frameworkPackage.TransitivePackages = new List<ListReportPackage>();
+                                    frameworkPackage.TopLevelPackages = new List<ListReportPackage>();
+
+                                    foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
+                                    {
+                                        var vuln = GetPackageVulnerabilities(
+                                            vulnerabilities,
+                                            topLevelPackage.Name,
+                                            topLevelPackage.ResolvedPackageMetadata.Identity.Version.ToNormalizedString()
+                                            ).ToList();
+
+                                        if (vuln != null && vuln.Count > 0)
+                                        {
+                                            ListReportPackage package = new ListReportPackage(
+                                            topLevelPackage.Name,
+                                            topLevelPackage.ResolvedPackageMetadata.Identity.Version.ToString(),
+                                            vuln);
+                                            frameworkPackage.TopLevelPackages.Add(package);
+                                        }
+                                    }
+
+                                    foreach (var transitivePackage in frameworkPackages.TransitivePackages)
+                                    {
+                                        var vuln = GetPackageVulnerabilities(
+                                            vulnerabilities,
+                                            transitivePackage.Name,
+                                            transitivePackage.ResolvedPackageMetadata.Identity.Version.ToNormalizedString()
+                                            ).ToList();
+
+                                        if (vuln != null && vuln.Count > 0)
+                                        {
+                                            ListReportPackage package = new ListReportPackage(
+                                            transitivePackage.Name,
+                                            transitivePackage.ResolvedPackageMetadata.Identity.Version.ToString(),
+                                            vuln);
+                                            frameworkPackage.TransitivePackages.Add(package);
+                                        }
+                                    }
+
+                                    if (projectModel.TargetFrameworkPackages == null)
+                                    {
+                                        projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
+                                    }
+
+                                    projectModel.TargetFrameworkPackages.Add(frameworkPackage);
+                                }
+
+                                return;
+                            }
                             var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
                             await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
                         }
@@ -163,10 +225,103 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel)
+        private static async Task<List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>> GetVulnerabilityData(
+            ListPackageProjectModel projectModel,
+            IReadOnlyList<PackageSource> sources,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            var vulnerabilityInfo = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>();
+
+            foreach (var source in sources)
+            {
+                if (!await TryAddSourceVulnerabilityInfo(source, projectModel, logger, cancellationToken, vulnerabilityInfo))
+                {
+                    projectModel.AddProjectInformation(
+                        ProblemType.Warning,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Warning_AuditSourceWithoutData, source.Name)
+                    );
+                }
+            }
+
+            return vulnerabilityInfo;
+        }
+
+        private static async Task<bool> TryAddSourceVulnerabilityInfo(
+            PackageSource source,
+            ListPackageProjectModel projectModel,
+            ILogger logger,
+            CancellationToken cancellationToken,
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo)
+        {
+            var repository = Repository.Factory.GetCoreV3(source);
+            var vulnerabilityProvider = new VulnerabilityInfoResourceV3Provider();
+            var (isCreated, resource) = await vulnerabilityProvider.TryCreate(repository, cancellationToken);
+
+            if (!isCreated || resource is not VulnerabilityInfoResourceV3 vulnerabilityResource)
+            {
+                return false;
+            }
+
+            projectModel.PackageSourcesUsed.Add(source);
+
+            var vulnerabilityInfoResult = await vulnerabilityResource.GetVulnerabilityInfoAsync(
+                new SourceCacheContext(),
+                logger,
+                cancellationToken
+            );
+
+            if (vulnerabilityInfoResult?.KnownVulnerabilities != null)
+            {
+                vulnerabilityInfo.AddRange(vulnerabilityInfoResult.KnownVulnerabilities);
+            }
+
+            return true;
+        }
+
+
+        private static IEnumerable<PackageVulnerabilityMetadata> GetPackageVulnerabilities(
+            IEnumerable<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilities,
+            string id,
+            string version)
+        {
+            if (vulnerabilities == null)
+            {
+                return Enumerable.Empty<PackageVulnerabilityMetadata>();
+            }
+
+            var parsedVersion = new NuGetVersion(version);
+            foreach (var vulnFile in vulnerabilities)
+            {
+                if (vulnFile.TryGetValue(id, out IReadOnlyList<PackageVulnerabilityInfo> vulnPackages) && vulnPackages != null)
+                {
+                    return vulnPackages
+                        .Where(package => package.Versions.Satisfies(parsedVersion))
+                        .Select(v => JsonExtensions.FromJson<PackageVulnerabilityMetadata>($"{{ \"AdvisoryUrl\": \"{v.Url}\", \"Severity\": \"{(int)v.Severity}\" }}"))
+                        .ToList();
+                }
+            }
+
+            return Enumerable.Empty<PackageVulnerabilityMetadata>();
+        }
+
+
+        private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel, IReadOnlyList<PackageSource> auditSources)
         {
             List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in listPackageArgs.PackageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            foreach (PackageSource packageSource in auditSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {

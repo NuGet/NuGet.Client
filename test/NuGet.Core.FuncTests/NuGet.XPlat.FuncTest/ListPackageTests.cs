@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,6 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -231,7 +233,7 @@ namespace NuGet.XPlat.FuncTest
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
-            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, Array.Empty<PackageSource>());
 
             // Assert
             Assert.True(result == 0, userMessage: logger.ShowMessages());
@@ -347,6 +349,317 @@ namespace NuGet.XPlat.FuncTest
             Assert.True(result == 0, userMessage: logger.ShowMessages());
         }
 
+        [Fact]
+        public async Task GetReportDataAsync_WhenReportTypeIsVulnerable_ShouldUseAuditSources()
+        {
+            // Arrange
+            var advisoryUrl = "https://test/";
+            var severity = 2;
+            var mockRenderer = new Mock<IReportRenderer>();
+            var mockServer = new MockServer();
+            string index = $@"{{
+                    ""version"": ""3.0.0"",
+                    ""resources"": [
+                        {{
+                            ""@id"": ""{mockServer.Uri}v3/vulnerabilities/index.json"",
+                            ""@type"": ""VulnerabilityInfo/6.7.0"",
+                            ""comment"": ""This is a test feed for vulnerabilities""
+                        }}
+                    ]
+                }}";
+
+            string vulnerabilities = $@"
+[
+    {{
+        ""@name"": ""base"",
+        ""@id"": ""{mockServer.Uri}v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json"",
+        ""@updated"": ""2024-12-21T05:12:11.2008556Z"",
+        ""comment"": ""The base data for vulnerability update periodically""
+    }}
+]";
+
+            string baseVulnerability = $@"
+{{
+    ""mypkg"": [
+        {{
+            ""url"": ""{advisoryUrl}"",
+            ""severity"": {severity},
+            ""versions"": ""(, 5.8.4)""
+        }}
+    ]
+}}
+";
+            mockServer.Get.Add("/v3/index.json", r => index);
+            mockServer.Get.Add("/v3/vulnerabilities/index.json", r => vulnerabilities);
+            mockServer.Get.Add("/v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json", r => baseVulnerability);
+            mockServer.Start();
+
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
+            auditSource.AllowInsecureConnections = true;
+
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
+                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
+                string objFolder = Path.Combine(projectFolder, "obj");
+                string assetsPath = Path.Combine(objFolder, "project.assets.json");
+
+                //setup package
+                var packageContext = new SimpleTestPackageContext()
+                {
+                    Id = "mypkg",
+                    Version = "5.8.2",
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>mypkg</id>
+                            <version>5.8.2</version>
+                            <title />
+                            <frameworkAssemblies>
+                                <frameworkAssembly assemblyName=""System.Runtime"" />
+                            </frameworkAssemblies>
+                            <contentFiles>
+                                <files include=""lib/net45/mypkg.dll"" copyToOutput=""true"" flatten=""false"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>")
+                };
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageContext);
+
+                // Define the content for csproj
+                var csprojContent = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""mypkg"" Version=""5.8.2"" />
+  </ItemGroup>
+</Project>";
+
+                // Define the content for assets.json
+                var assetsContent = @"
+{
+  ""version"": 3,
+  ""targets"": {
+    "".NETCoreApp,Version=v5.0"": {
+      ""mypkg/5.8.2"": {
+        ""type"": ""package"",
+        ""compile"": {
+          ""lib/net5.0/mypkg.dll"": {}
+        },
+        ""runtime"": {
+          ""lib/net5.0/mypkg.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""mypkg/5.8.2"": {
+      ""sha512"": ""<hash-value>"",
+      ""type"": ""package"",
+      ""path"": ""mypkg/5.8.2""
+    }
+  },
+  ""project"": {
+    ""version"": ""5.0"",
+    ""restore"": {
+      ""projectStyle"": ""PackageReference""
+    },
+    ""frameworks"": {
+      ""net5.0"": {
+        ""dependencies"": {
+          ""mypkg"": {
+            ""version"": ""5.8.2"",
+            ""type"": ""direct""
+          }
+        }
+      }
+    }
+  }
+}";
+                if (!Directory.Exists(projectFolder))
+                {
+                    Directory.CreateDirectory(projectFolder);
+                }
+
+                if (!Directory.Exists(objFolder))
+                {
+                    Directory.CreateDirectory(objFolder);
+                }
+
+                File.WriteAllText(csprojPath, csprojContent);
+                File.WriteAllText(assetsPath, assetsContent);
+
+                var listPackageArgs = new ListPackageArgs(
+                    path: csprojPath,
+                    packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    frameworks: new List<string>(),
+                    ReportType.Vulnerable,
+                    mockRenderer.Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
+                    logger: new Mock<ILogger>().Object,
+                    CancellationToken.None);
+
+                var listPackageCommandRunner = new ListPackageCommandRunner();
+
+
+                // Act
+                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs, new List<PackageSource> { auditSource });
+
+                // Assert
+                Assert.Equal(1, result.Item2.Projects.Count);
+                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.Count);
+                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
+                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().Vulnerabilities.Count);
+                Assert.Equal(severity, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().Severity);
+                Assert.Equal(advisoryUrl, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().AdvisoryUrl.ToString());
+
+            }
+        }
+
+        [Fact]
+        public async Task GetReportDataAsync_WhenReportTypeIsVulnerableAuditSourcesWithNoVulnerabilityInfoResource_ShouldWarn()
+        {
+            // Arrange
+            var mockRenderer = new Mock<IReportRenderer>();
+            var mockServer = new MockServer();
+            string index = $@"{{
+                    ""version"": ""3.0.0"",
+                    ""resources"": [
+                        {{
+                        }}
+                    ]
+                }}";
+
+            mockServer.Get.Add("/v3/index.json", r => index);
+            mockServer.Start();
+
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
+            auditSource.AllowInsecureConnections = true;
+
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
+                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
+                string objFolder = Path.Combine(projectFolder, "obj");
+                string assetsPath = Path.Combine(objFolder, "project.assets.json");
+
+                //setup package
+                var packageContext = new SimpleTestPackageContext()
+                {
+                    Id = "mypkg",
+                    Version = "5.8.2",
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>mypkg</id>
+                            <version>5.8.2</version>
+                            <title />
+                            <frameworkAssemblies>
+                                <frameworkAssembly assemblyName=""System.Runtime"" />
+                            </frameworkAssemblies>
+                            <contentFiles>
+                                <files include=""lib/net45/mypkg.dll"" copyToOutput=""true"" flatten=""false"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>")
+                };
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageContext);
+
+                // Define the content for csproj
+                var csprojContent = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""mypkg"" Version=""5.8.2"" />
+  </ItemGroup>
+</Project>";
+
+                // Define the content for assets.json
+                var assetsContent = @"
+{
+  ""version"": 3,
+  ""targets"": {
+    "".NETCoreApp,Version=v5.0"": {
+      ""mypkg/5.8.2"": {
+        ""type"": ""package"",
+        ""compile"": {
+          ""lib/net5.0/mypkg.dll"": {}
+        },
+        ""runtime"": {
+          ""lib/net5.0/mypkg.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""mypkg/5.8.2"": {
+      ""sha512"": ""<hash-value>"",
+      ""type"": ""package"",
+      ""path"": ""mypkg/5.8.2""
+    }
+  },
+  ""project"": {
+    ""version"": ""5.0"",
+    ""restore"": {
+      ""projectStyle"": ""PackageReference""
+    },
+    ""frameworks"": {
+      ""net5.0"": {
+        ""dependencies"": {
+          ""mypkg"": {
+            ""version"": ""5.8.2"",
+            ""type"": ""direct""
+          }
+        }
+      }
+    }
+  }
+}";
+                if (!Directory.Exists(projectFolder))
+                {
+                    Directory.CreateDirectory(projectFolder);
+                }
+
+                if (!Directory.Exists(objFolder))
+                {
+                    Directory.CreateDirectory(objFolder);
+                }
+
+                File.WriteAllText(csprojPath, csprojContent);
+                File.WriteAllText(assetsPath, assetsContent);
+
+                var listPackageArgs = new ListPackageArgs(
+                    path: csprojPath,
+                    packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    frameworks: new List<string>(),
+                    ReportType.Vulnerable,
+                    mockRenderer.Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
+                    logger: new Mock<ILogger>().Object,
+                    CancellationToken.None);
+
+                var listPackageCommandRunner = new ListPackageCommandRunner();
+
+
+                // Act
+                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs, new List<PackageSource> { auditSource });
+
+                // Assert
+                Assert.Equal(1, result.Item2.Projects.Count);
+                Assert.Equal(1, result.Item2.Projects.First().ProjectProblems.Count);
+                Assert.Equal(ProblemType.Warning, result.Item2.Projects.First().ProjectProblems.First().ProblemType);
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Warning_AuditSourceWithoutData, auditSource.Name), result.Item2.Projects.First().ProjectProblems.First().Text);
+                Assert.Equal(0, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
+                Assert.Equal(0, result.Item2.Projects.First().TargetFrameworkPackages.First().TransitivePackages.Count);
+            }
+        }
+
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
         {
             // Arrange
@@ -360,7 +673,7 @@ namespace NuGet.XPlat.FuncTest
                 var testApp = new CommandLineApplication();
                 var mockCommandRunner = new Mock<IListPackageCommandRunner>();
                 mockCommandRunner
-                    .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
+                    .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>(), Array.Empty<PackageSource>()))
                     .Returns(Task.FromResult(0));
 
                 testApp.Name = "dotnet nuget_test";

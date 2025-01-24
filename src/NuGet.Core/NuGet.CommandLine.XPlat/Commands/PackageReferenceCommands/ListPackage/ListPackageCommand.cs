@@ -129,7 +129,7 @@ namespace NuGet.CommandLine.XPlat
                         isVulnerable: vulnerableReport.HasValue());
 
                     IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
-
+                    var provider = new PackageSourceProvider(settings);
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
@@ -148,7 +148,7 @@ namespace NuGet.CommandLine.XPlat
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     var listPackageCommandRunner = getCommandRunner();
-                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, provider.LoadAuditSources());
                 });
             });
         }
