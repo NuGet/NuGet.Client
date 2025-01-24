@@ -533,6 +533,7 @@ static readonly NuGet.Configuration.NuGetConstants.ManifestSymbolsExtension -> s
 static readonly NuGet.Configuration.NuGetConstants.NuGetHostName -> string!
 static readonly NuGet.Configuration.NuGetConstants.NuGetSolutionSettingsFolder -> string!
 static readonly NuGet.Configuration.NuGetConstants.NuGetSymbolHostName -> string!
+static readonly NuGet.Configuration.NuGetConstants.AndroidFeedName -> string!
 static readonly NuGet.Configuration.NuGetConstants.PackageExtension -> string!
 static readonly NuGet.Configuration.NuGetConstants.PackageReferenceFile -> string!
 static readonly NuGet.Configuration.NuGetConstants.PackageSpecFileName -> string!
@@ -541,6 +542,7 @@ static readonly NuGet.Configuration.NuGetConstants.ReadmeFileName -> string!
 static readonly NuGet.Configuration.NuGetConstants.SnupkgExtension -> string!
 static readonly NuGet.Configuration.NuGetConstants.SymbolsExtension -> string!
 static readonly NuGet.Configuration.NuGetConstants.V1FeedUrl -> string!
+static readonly NuGet.Configuration.NuGetConstants.AndroidFeedUrl -> string!
 static readonly NuGet.Configuration.NuGetConstants.V2LegacyFeedUrl -> string!
 static readonly NuGet.Configuration.NuGetConstants.V2LegacyOfficialPackageSourceUrl -> string!
 static readonly NuGet.Configuration.OwnersItem.OwnersListSeparator -> char
