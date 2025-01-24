@@ -55,7 +55,18 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 return;
             }
 
-            WriteSources(_consoleOut, listPackageReportModel.ListPackageArgs);
+            if (listPackageReportModel.ListPackageArgs.ReportType != ReportType.Vulnerable && listPackageReportModel.SourcesUsed.Count > 0)
+            {
+                _consoleOut.WriteLine();
+                _consoleOut.WriteLine(Strings.ListPkg_SourcesUsedDescription);
+                PrintSources(_consoleOut, listPackageReportModel.SourcesUsed);
+                _consoleOut.WriteLine();
+            }
+            else
+            {
+                WriteSources(_consoleOut, listPackageReportModel.ListPackageArgs);
+            }
+
             WriteProjects(_consoleOut, _consoleError, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
 
             // Print a legend message for auto-reference markers used

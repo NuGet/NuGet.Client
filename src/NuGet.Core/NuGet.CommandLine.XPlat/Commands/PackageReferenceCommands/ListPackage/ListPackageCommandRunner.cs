@@ -141,7 +141,7 @@ namespace NuGet.CommandLine.XPlat
                             if (listPackageArgs.ReportType == ReportType.Vulnerable && auditSources.Count > 0)
                             {
                                 // AuditSources being used. Get vulnerabilities data from the AuditSources VulnerabilityInfoResource.
-                                var vulnerabilities = await GetVulnerabilityData(projectModel, auditSources, listPackageArgs.Logger, listPackageArgs.CancellationToken);
+                                var vulnerabilities = await GetVulnerabilityData(projectModel, listPackageReportModel, auditSources, listPackageArgs.Logger, listPackageArgs.CancellationToken);
 
                                 foreach (var frameworkPackages in frameworks)
                                 {
@@ -227,6 +227,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static async Task<List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>> GetVulnerabilityData(
             ListPackageProjectModel projectModel,
+            ListPackageReportModel reportModel,
             IReadOnlyList<PackageSource> sources,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -235,7 +236,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var source in sources)
             {
-                if (!await TryAddSourceVulnerabilityInfo(source, projectModel, logger, cancellationToken, vulnerabilityInfo))
+                if (!await TryAddSourceVulnerabilityInfo(source, reportModel, logger, cancellationToken, vulnerabilityInfo))
                 {
                     projectModel.AddProjectInformation(
                         ProblemType.Warning,
@@ -249,7 +250,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static async Task<bool> TryAddSourceVulnerabilityInfo(
             PackageSource source,
-            ListPackageProjectModel projectModel,
+            ListPackageReportModel reportModel,
             ILogger logger,
             CancellationToken cancellationToken,
             List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilityInfo)
@@ -263,7 +264,7 @@ namespace NuGet.CommandLine.XPlat
                 return false;
             }
 
-            projectModel.PackageSourcesUsed.Add(source);
+            reportModel.SourcesUsed.Add(source);
 
             var vulnerabilityInfoResult = await vulnerabilityResource.GetVulnerabilityInfoAsync(
                 new SourceCacheContext(),
