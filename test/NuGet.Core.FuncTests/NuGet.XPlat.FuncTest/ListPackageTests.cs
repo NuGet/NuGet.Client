@@ -345,7 +345,7 @@ namespace NuGet.XPlat.FuncTest
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
-            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, Array.Empty<PackageSource>());
             Assert.True(result == 0, userMessage: logger.ShowMessages());
         }
 
