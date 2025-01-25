@@ -37,6 +37,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _telemetryProvider = telemetryProvider;
         }
 
+        // TODO NK - Add success telemetry?
+
+        // TODO NK - Explore automatic migration and how that was done before?
+
+        // Look at telemetry to see how many projects exist
+
         public async Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
             const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);

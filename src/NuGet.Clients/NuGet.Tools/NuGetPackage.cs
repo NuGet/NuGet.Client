@@ -25,6 +25,7 @@ using NuGet.PackageManagement.UI.Options;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Services;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Tools.Commands;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
@@ -152,6 +153,9 @@ namespace NuGetVSExtension
 
         [Import]
         private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
+
+        [Import]
+        private Lazy<IVsProjectJsonToPackageReferenceMigrator> ProjectJsonMigrator { get; set; }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -308,6 +312,12 @@ namespace NuGetVSExtension
                 var upgradePackagesConfigCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommand, null,
                     BeforeQueryStatusForUpgradePackagesConfig, upgradePackagesConfigCommandID);
                 _mcs.AddCommand(upgradePackagesConfigCommand);
+
+                // menu command for upgrading project.json files to PackageReference - References context menu
+                var upgradeProjectJsonNuGetProjectCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradeProjectJsonNuGetProject);
+                var upgradeProjectJsonNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeProjectJsonNuGetProjectCommand, null,
+                    BeforeQueryStatusForUpgradeProjectJsonNuGetProject, upgradeProjectJsonNuGetProjectCommandID);
+                _mcs.AddCommand(upgradeProjectJsonNuGetProjectCommand);
 
                 // menu command for opening Package Manager Console
                 var toolwndCommandID = new CommandID(GuidList.guidNuGetConsoleCmdSet, PkgCmdIDList.cmdidPowerConsole);
@@ -645,6 +655,50 @@ namespace NuGetVSExtension
                 await uiController.UIContext.UIActionEngine.UpgradeNuGetProjectAsync(uiController, projectContextInfo);
 
                 uiController.UIContext.UserSettingsManager.PersistSettings();
+            }
+        }
+
+        private void ExecuteUpgradeProjectJsonNuGetProjectCommand(object sender, EventArgs e)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(sender, e);
+            })
+           .PostOnFailure(nameof(NuGetPackage), nameof(ExecuteUpgradeNuGetProjectCommand));
+        }
+
+        private async Task ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(object sender, EventArgs e)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (ShouldInitializeSolutionExperiences())
+            {
+                await InitializeSolutionExperiencesAsync();
+            }
+
+            Project project = VsMonitorSelection.GetActiveProject();
+
+            string uniqueName = await project.GetCustomUniqueNameAsync();
+            NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+
+            if (await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject as ProjectJsonNuGetProject))
+            {
+                MessageHelper.ShowWarningMessage(Resources.ProjectMigrateErrorMessage, Resources.ErrorDialogBoxTitle); // TODO NK - change message
+                return;
+            }
+
+            // Close NuGet Package Manager if it is open for this project
+            IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
+            windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
+
+            var result = await ProjectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(project.GetFullProjectPath());
+
+            if (result is IVsProjectJsonToPackageReferenceMigrateResult migrationResult)
+            {
+                if (!migrationResult.IsSuccess)
+                {
+                    MessageHelper.ShowWarningMessage(migrationResult.ErrorMessage, Resources.ErrorDialogBoxTitle); // TODO NK - change message
+                }
             }
         }
 
@@ -1074,6 +1128,30 @@ namespace NuGetVSExtension
             });
         }
 
+        private void BeforeQueryStatusForUpgradeProjectJsonNuGetProject(object sender, EventArgs args)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                if (ShouldInitializeSolutionExperiences())
+                {
+                    await InitializeSolutionExperiencesAsync();
+                }
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var command = (OleMenuCommand)sender;
+
+                var isConsoleBusy = false;
+                if (ConsoleStatus != null)
+                {
+                    isConsoleBusy = ConsoleStatus.Value.IsBusy;
+                }
+
+                command.Visible = GetIsSolutionOpen() && await IsProjectJsonBasedAsync();
+                command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && await HasActiveLoadedSupportedProjectAsync();
+            });
+        }
+
         private void BeforeQueryStatusForUpgradePackagesConfig(object sender, EventArgs args)
         {
             // Check whether to show context menu item on packages.config
@@ -1097,6 +1175,30 @@ namespace NuGetVSExtension
                 command.Visible = GetIsSolutionOpen() && IsPackagesConfigSelected();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && await HasActiveLoadedSupportedProjectAsync();
             });
+        }
+
+        private async Task<bool> IsProjectJsonBasedAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var dteProject = VsMonitorSelection.GetActiveProject();
+
+            var uniqueName = dteProject.GetUniqueName();
+            var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+
+            if (nuGetProject == null)
+            {
+                return false;
+            }
+
+            var msBuildNuGetProject = nuGetProject as ProjectJsonNuGetProject;
+
+            if (msBuildNuGetProject == null)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<bool> IsPackagesConfigBasedProjectAsync()
