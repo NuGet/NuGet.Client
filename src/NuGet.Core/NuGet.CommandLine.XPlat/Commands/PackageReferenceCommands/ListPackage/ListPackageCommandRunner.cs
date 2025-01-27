@@ -306,7 +306,6 @@ namespace NuGet.CommandLine.XPlat
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
         }
 
-
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel, IReadOnlyList<PackageSource> auditSources)
         {
             List<PackageSource> httpPackageSources = null;
