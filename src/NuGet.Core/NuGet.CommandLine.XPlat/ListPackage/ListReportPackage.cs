@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             : this(
                   packageId: packageId,
                   requestedVersion: version,
-                  resolvedVersion: version,
+                  resolvedVersion: null,
                   latestVersion: null,
                   vulnerabilities: vulnerabilities.Count == 0 ? null : vulnerabilities)
         { }

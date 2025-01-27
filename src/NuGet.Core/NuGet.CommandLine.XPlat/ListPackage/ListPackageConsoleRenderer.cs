@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 return;
             }
 
-            if (listPackageReportModel.ListPackageArgs.ReportType != ReportType.Vulnerable && listPackageReportModel.SourcesUsed.Count > 0)
+            if (listPackageReportModel.ListPackageArgs.ReportType == ReportType.Vulnerable && listPackageReportModel.SourcesUsed.Count > 0)
             {
                 _consoleOut.WriteLine();
                 _consoleOut.WriteLine(Strings.ListPkg_SourcesUsedDescription);
