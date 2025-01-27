@@ -79,6 +79,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <RestoreEnablePackagePruning Condition="'$(RestoreEnablePackagePruning)' == ''
                     AND '$(UsingMicrosoftNETSdk)' == 'true'
+                    AND '$(NuGetExeSkipSdkAnalysisLevelCheck)' != 'true'
                     AND '$(SdkAnalysisLevel)' != ''
                     AND $([MSBuild]::VersionGreaterThanOrEquals('$(SdkAnalysisLevel)', '10.0.100'))
                     AND ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'
