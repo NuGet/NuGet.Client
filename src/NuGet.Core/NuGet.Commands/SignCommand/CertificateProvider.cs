@@ -102,7 +102,9 @@ namespace NuGet.Commands
                                     options.CertificatePath)));
 
                         default:
-                            throw;
+                            throw new SignCommandException(
+                                LogMessage.CreateError(NuGetLogCode.NU3001,
+                                $"HRResult: '{ex.HResult}'"));
                     }
                 }
                 catch (FileNotFoundException)
