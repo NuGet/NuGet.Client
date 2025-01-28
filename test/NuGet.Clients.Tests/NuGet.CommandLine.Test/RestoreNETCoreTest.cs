@@ -10025,7 +10025,7 @@ namespace NuGet.CommandLine.Test
                 var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    "net8.0-windows");
+                    "net9.0-windows");
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
