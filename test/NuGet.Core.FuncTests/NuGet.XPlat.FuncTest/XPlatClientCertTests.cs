@@ -930,7 +930,7 @@ namespace NuGet.XPlat.FuncTest
                 using (var store = new X509Store(CertificateStoreName, CertificateStoreLocation))
                 {
                     store.Open(OpenFlags.ReadWrite);
-                    Certificate = X509CertificateLoader.LoadCertificate(CreateCertificate());
+                    Certificate = X509CertificateLoader.LoadPkcs12(CreateCertificate(), CertificatePassword, X509KeyStorageFlags.Exportable);
                     store.Add(Certificate);
                 }
             }
