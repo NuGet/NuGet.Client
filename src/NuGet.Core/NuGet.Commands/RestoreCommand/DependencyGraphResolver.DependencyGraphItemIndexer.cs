@@ -87,6 +87,16 @@ namespace NuGet.Commands
             private LibraryRangeIndex _nextLibraryRangeIndex = LibraryRangeIndex.Project + 1;
 
             /// <summary>
+            /// Initializes a new instance of the <see cref="DependencyGraphItemIndexer" /> class.
+            /// </summary>
+            /// <param name="libraryDependency">A <see cref="LibraryDependency" /> representing the root project.</param>
+            public DependencyGraphItemIndexer(LibraryDependency libraryDependency)
+            {
+                _libraryDependencyTable.TryAdd(libraryDependency.Name, LibraryDependencyIndex.Project);
+                _libraryRangeTable.TryAdd(libraryDependency.LibraryRange, LibraryRangeIndex.Project);
+            }
+
+            /// <summary>
             /// Indexes a <see cref="LibraryDependency" /> and returns a <see cref="LibraryDependencyIndex" /> associated with the its name.
             /// </summary>
             /// <param name="libraryDependency">The <see cref="LibraryDependency" /> of the library to index.</param>
