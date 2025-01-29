@@ -22,10 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class ProjectJsonToPackageRefMigrator
     {
         public static async Task MigrateAsync(
-            BuildIntegratedNuGetProject project, bool createBackup = true)
+            BuildIntegratedNuGetProject project)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
-
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dteProjectFullName = project.MSBuildProjectPath;
@@ -55,11 +53,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
-            if (createBackup)
-            {
-                await CreateBackupAsync(project,
-                    projectJsonFilePath);
-            }
+            await CreateBackupAsync(project,
+                projectJsonFilePath);
         }
 
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
@@ -122,6 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 buildProject.RemoveItem(projectJsonItem);
             }
         }
+
 
         private static async Task CreateBackupAsync(
             BuildIntegratedNuGetProject project,

@@ -12,7 +12,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -82,24 +81,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return await IsProjectPackageReferenceCompatibleAsync(envDTEProject);
-        }
-
-        public static async Task<bool> IsNuGetProjectUpgradeableAsync(ProjectJsonNuGetProject nuGetProject)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (nuGetProject == null)
-            {
-                return false;
-            }
-
-            // this further check if current project system supports VSProject4 or not which is essential
-            if (!nuGetProject.ProjectServices.Capabilities.SupportsPackageReferences)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private static async Task<NuGetProject> GetNuGetProject(Project envDTEProject)

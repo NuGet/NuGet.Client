@@ -218,7 +218,7 @@
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidRestorePackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradePackagesConfig" context="UICONTEXT_UpgradeableProjectLoaded" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeNuGetProject" context="UICONTEXT_UpgradeableProjectLoaded" />
-    <!--<VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeProjectJsonNuGetProject" context="UICONTEXT_UpgradeableProjectLoaded" />-->
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidUpgradeProjectJsonNuGetProject" context="UICONTEXT_UpgradeableProjectLoaded" />
   </VisibilityConstraints>
 
   <CommandPlacements>

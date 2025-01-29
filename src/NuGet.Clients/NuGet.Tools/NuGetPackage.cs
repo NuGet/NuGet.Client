@@ -1147,7 +1147,11 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                command.Visible = GetIsSolutionOpen() && await IsProjectJsonBasedAsync();
+                string uniqueName = VsMonitorSelection.GetActiveProject().GetUniqueName();
+                NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+
+                command.Visible = GetIsSolutionOpen() && nuGetProject != null && nuGetProject is ProjectJsonNuGetProject;
+
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && await HasActiveLoadedSupportedProjectAsync();
             });
         }
@@ -1175,30 +1179,6 @@ namespace NuGetVSExtension
                 command.Visible = GetIsSolutionOpen() && IsPackagesConfigSelected();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && await HasActiveLoadedSupportedProjectAsync();
             });
-        }
-
-        private async Task<bool> IsProjectJsonBasedAsync()
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var dteProject = VsMonitorSelection.GetActiveProject();
-
-            var uniqueName = dteProject.GetUniqueName();
-            var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-
-            if (nuGetProject == null)
-            {
-                return false;
-            }
-
-            var msBuildNuGetProject = nuGetProject as ProjectJsonNuGetProject;
-
-            if (msBuildNuGetProject == null)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private async Task<bool> IsPackagesConfigBasedProjectAsync()
