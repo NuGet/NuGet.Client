@@ -67,6 +67,8 @@ namespace NuGet.PackageManagement.Telemetry
             var dotnetCuratedFeed = false;
             var httpsV2 = 0;
             var httpsV3 = 0;
+            int numHTTPNotSecureFeedsThatAllowInsecureConnections = 0;
+            int numHTTPSFeedsThatDisableTLSCertificateValidation = 0;
 
             if (packageSources != null)
             {
@@ -85,6 +87,18 @@ namespace NuGet.PackageManagement.Telemetry
                                 if (source.IsHttps)
                                 {
                                     httpsV3++;
+
+                                    if (source.DisableTLSCertificateValidation)
+                                    {
+                                        numHTTPSFeedsThatDisableTLSCertificateValidation++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (source.AllowInsecureConnections)
+                                    {
+                                        numHTTPNotSecureFeedsThatAllowInsecureConnections++;
+                                    }
                                 }
 
                                 if (UriUtility.IsNuGetOrg(source.Source))
@@ -100,6 +114,18 @@ namespace NuGet.PackageManagement.Telemetry
                                 if (source.IsHttps)
                                 {
                                     httpsV2++;
+
+                                    if (source.DisableTLSCertificateValidation)
+                                    {
+                                        numHTTPSFeedsThatDisableTLSCertificateValidation++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (source.AllowInsecureConnections)
+                                    {
+                                        numHTTPNotSecureFeedsThatAllowInsecureConnections++;
+                                    }
                                 }
 
                                 if (UriUtility.IsNuGetOrg(source.Source))
@@ -142,7 +168,9 @@ namespace NuGet.PackageManagement.Telemetry
                 dotnetCuratedFeed,
                 protocolDiagnosticTotals,
                 httpsV2,
-                httpsV3);
+                httpsV3,
+                numHTTPNotSecureFeedsThatAllowInsecureConnections,
+                numHTTPSFeedsThatDisableTLSCertificateValidation);
         }
 
         /// <summary>
@@ -172,7 +200,9 @@ namespace NuGet.PackageManagement.Telemetry
                 bool dotnetCuratedFeed,
                 PackageSourceTelemetry.Totals protocolDiagnosticTotals,
                 int httpsV2,
-                int httpsV3)
+                int httpsV3,
+                int numHTTPNotSecureFeedsThatAllowInsecureConnections,
+                int numHTTPSFeedsThatDisableTLSCertificateValidation)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
