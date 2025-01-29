@@ -653,7 +653,7 @@ namespace NuGet.CommandLine.Test
 
                 var prefix = "MSBuild P2P timeout [ms]: ";
 
-                var timeoutLineResult = lines.Where(line => line.Contains(prefix)).SingleOrDefault();
+                var timeoutLineResult = lines.SingleOrDefault(line => line.Contains(prefix));
 
                 Assert.NotNull(timeoutLineResult);
 

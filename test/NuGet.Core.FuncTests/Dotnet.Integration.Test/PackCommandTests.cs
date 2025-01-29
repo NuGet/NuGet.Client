@@ -4004,7 +4004,7 @@ namespace ClassLibrary
                             NuGetFrameworkSorter.Instance)
                         .ToList();
 
-                    Assert.Equal(expectedFrameworks.Where(t => !string.IsNullOrEmpty(t)).Count(),
+                    Assert.Equal(expectedFrameworks.Count(t => !string.IsNullOrEmpty(t)),
                         dependencyGroups.Count);
 
                     if (dependencyGroups.Count > 0)
