@@ -96,133 +96,157 @@ namespace NuGet.CommandLine.XPlat
             var projectName = project.GetPropertyValue(ProjectName);
             ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, projectName);
 
-            if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
+            if (!IsProjectPackageReference(project, projectModel, projectPath))
             {
-                projectModel.AddProjectInformation(problemType: ProblemType.Error,
-                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
                 return;
             }
 
             var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
+            if (!IsProjectAssetsFileValid(assetsPath, projectPath, projectModel, out LockFile assetsFile))
+            {
+                return;
+            }
+
+            List<FrameworkPackages> frameworks;
+
+            try
+            {
+                frameworks = MSBuildAPIUtility.GetResolvedVersions(project, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
+            }
+            catch (InvalidOperationException ex)
+            {
+                projectModel.AddProjectInformation(ProblemType.Error, ex.Message);
+                return;
+            }
+
+            if (frameworks.Count > 0)
+            {
+                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                {
+                    WarnForHttpSources(listPackageArgs, projectModel, auditSources);
+
+                    if (listPackageArgs.ReportType == ReportType.Vulnerable && auditSources.Count > 0)
+                    {
+                        await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks, auditSources);
+                        return;
+                    }
+
+                    var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                    await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                }
+
+                bool printPackages = FilterPackages(frameworks, listPackageArgs) || ReportType.Default == listPackageArgs.ReportType;
+
+                if (printPackages)
+                {
+                    var hasAutoReference = false;
+                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(frameworks, listPackageArgs, ref hasAutoReference);
+                    projectModel.TargetFrameworkPackages = projectFrameworkPackages;
+                    projectModel.AutoReferenceFound = hasAutoReference;
+                }
+                else
+                {
+                    projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
+                }
+            }
+        }
+
+        private static async Task GetVulnerabilitiesFromAuditSourcesAsync(
+            ListPackageArgs listPackageArgs,
+            ListPackageReportModel listPackageReportModel,
+            ListPackageProjectModel projectModel,
+            List<FrameworkPackages> frameworks,
+            IReadOnlyList<PackageSource> auditSources)
+        {
+            var vulnerabilities = await GetVulnerabilityData(
+                projectModel,
+                listPackageReportModel,
+                auditSources,
+                listPackageArgs.Logger,
+                listPackageArgs.CancellationToken);
+
+            foreach (var frameworkPackages in frameworks)
+            {
+                var frameworkPackage = new ListPackageReportFrameworkPackage(frameworkPackages.Framework)
+                {
+                    TransitivePackages = new List<ListReportPackage>(),
+                    TopLevelPackages = new List<ListReportPackage>()
+                };
+
+                ProcessPackages(frameworkPackages.TopLevelPackages, vulnerabilities, frameworkPackage.TopLevelPackages);
+                ProcessPackages(frameworkPackages.TransitivePackages, vulnerabilities, frameworkPackage.TransitivePackages);
+
+                projectModel.TargetFrameworkPackages ??= new List<ListPackageReportFrameworkPackage>();
+                projectModel.TargetFrameworkPackages.Add(frameworkPackage);
+            }
+        }
+
+        private static void ProcessPackages(
+            IEnumerable<InstalledPackageReference> packages,
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilities,
+            List<ListReportPackage> reportPackages)
+        {
+            foreach (var package in packages)
+            {
+                var vuln = GetPackageVulnerabilities(
+                    vulnerabilities,
+                    package.Name,
+                    package.ResolvedPackageMetadata.Identity.Version.ToNormalizedString()
+                    ).ToList();
+
+                if (vuln != null && vuln.Count > 0)
+                {
+                    reportPackages.Add(
+                        new ListReportPackage(
+                            package.Name,
+                            package.ResolvedPackageMetadata.Identity.Version.ToString(),
+                            vuln));
+                }
+            }
+        }
+
+        private static bool IsProjectAssetsFileValid(string assetsPath, string projectPath, ListPackageProjectModel projectModel, out LockFile assetsFile)
+        {
+            assetsFile = null;
+
             if (!File.Exists(assetsPath))
             {
                 projectModel.AddProjectInformation(ProblemType.Error,
                     string.Format(CultureInfo.CurrentCulture, Strings.Error_AssetsFileNotFound, projectPath));
+                return false;
             }
             else
             {
                 var lockFileFormat = new LockFileFormat();
-                LockFile assetsFile = lockFileFormat.Read(assetsPath);
+                assetsFile = lockFileFormat.Read(assetsPath);
 
                 // Assets file validation
-                if (assetsFile.PackageSpec != null &&
-                    assetsFile.Targets != null &&
-                    assetsFile.Targets.Count != 0)
-                {
-                    // Get all the packages that are referenced in a project
-                    List<FrameworkPackages> frameworks;
-                    try
-                    {
-                        frameworks = MSBuildAPIUtility.GetResolvedVersions(project, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        projectModel.AddProjectInformation(ProblemType.Error, ex.Message);
-                        return;
-                    }
-
-                    if (frameworks.Count > 0)
-                    {
-                        if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
-                        {
-                            WarnForHttpSources(listPackageArgs, projectModel, auditSources);
-
-                            if (listPackageArgs.ReportType == ReportType.Vulnerable && auditSources.Count > 0)
-                            {
-                                // AuditSources being used. Get vulnerabilities data from the AuditSources VulnerabilityInfoResource.
-                                var vulnerabilities = await GetVulnerabilityData(projectModel, listPackageReportModel, auditSources, listPackageArgs.Logger, listPackageArgs.CancellationToken);
-
-                                foreach (var frameworkPackages in frameworks)
-                                {
-                                    ListPackageReportFrameworkPackage frameworkPackage = new ListPackageReportFrameworkPackage(frameworkPackages.Framework);
-                                    frameworkPackage.TransitivePackages = new List<ListReportPackage>();
-                                    frameworkPackage.TopLevelPackages = new List<ListReportPackage>();
-
-                                    foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
-                                    {
-                                        var vuln = GetPackageVulnerabilities(
-                                            vulnerabilities,
-                                            topLevelPackage.Name,
-                                            topLevelPackage.ResolvedPackageMetadata.Identity.Version.ToNormalizedString()
-                                            ).ToList();
-
-                                        if (vuln != null && vuln.Count > 0)
-                                        {
-                                            ListReportPackage package = new ListReportPackage(
-                                            topLevelPackage.Name,
-                                            topLevelPackage.ResolvedPackageMetadata.Identity.Version.ToString(),
-                                            vuln);
-                                            frameworkPackage.TopLevelPackages.Add(package);
-                                        }
-                                    }
-
-                                    foreach (var transitivePackage in frameworkPackages.TransitivePackages)
-                                    {
-                                        var vuln = GetPackageVulnerabilities(
-                                            vulnerabilities,
-                                            transitivePackage.Name,
-                                            transitivePackage.ResolvedPackageMetadata.Identity.Version.ToNormalizedString()
-                                            ).ToList();
-
-                                        if (vuln != null && vuln.Count > 0)
-                                        {
-                                            ListReportPackage package = new ListReportPackage(
-                                            transitivePackage.Name,
-                                            transitivePackage.ResolvedPackageMetadata.Identity.Version.ToString(),
-                                            vuln);
-                                            frameworkPackage.TransitivePackages.Add(package);
-                                        }
-                                    }
-
-                                    if (projectModel.TargetFrameworkPackages == null)
-                                    {
-                                        projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
-                                    }
-
-                                    projectModel.TargetFrameworkPackages.Add(frameworkPackage);
-                                }
-
-                                return;
-                            }
-                            var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
-                            await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
-                        }
-
-                        bool printPackages = FilterPackages(frameworks, listPackageArgs);
-                        printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
-                        if (printPackages)
-                        {
-                            var hasAutoReference = false;
-                            List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(frameworks, listPackageArgs, ref hasAutoReference);
-                            projectModel.TargetFrameworkPackages = projectFrameworkPackages;
-                            projectModel.AutoReferenceFound = hasAutoReference;
-                        }
-                        else
-                        {
-                            projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
-                        }
-                    }
-                }
-                else
+                if (assetsFile.PackageSpec == null ||
+                    assetsFile.Targets == null ||
+                    assetsFile.Targets.Count == 0)
                 {
                     projectModel.AddProjectInformation(ProblemType.Error,
                         string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
+                    return false;
                 }
-
-                // Unload project
-                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                else
+                {
+                    return true;
+                }
             }
+        }
+
+        private static bool IsProjectPackageReference(Project project, ListPackageProjectModel projectModel, string projectPath)
+        {
+            if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
+            {
+                projectModel.AddProjectInformation(problemType: ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
+                return false;
+            }
+
+            return true;
         }
 
         private static async Task<List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>> GetVulnerabilityData(
@@ -280,7 +304,6 @@ namespace NuGet.CommandLine.XPlat
             return true;
         }
 
-
         private static IEnumerable<PackageVulnerabilityMetadata> GetPackageVulnerabilities(
             IEnumerable<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilities,
             string id,
@@ -306,55 +329,37 @@ namespace NuGet.CommandLine.XPlat
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
         }
 
-        private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel, IReadOnlyList<PackageSource> auditSources)
+        private static void WarnForHttpSources(
+            ListPackageArgs listPackageArgs,
+            ListPackageProjectModel projectModel,
+            IReadOnlyList<PackageSource> auditSources)
         {
-            List<PackageSource> httpPackageSources = null;
-            foreach (PackageSource packageSource in listPackageArgs.PackageSources)
+            var httpPackageSources = new List<PackageSource>();
+
+            AddHttpPackageSources(listPackageArgs.PackageSources, httpPackageSources);
+            AddHttpPackageSources(auditSources, httpPackageSources);
+
+            if (httpPackageSources.Count == 0)
+            {
+                return;
+            }
+
+            string warningMessage = httpPackageSources.Count == 1
+                ? string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "list package", httpPackageSources[0])
+                : string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage_MultipleSources, "list package", Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
+
+            projectModel.AddProjectInformation(ProblemType.Warning, warningMessage);
+        }
+
+        private static void AddHttpPackageSources(IEnumerable<PackageSource> packageSources, List<PackageSource> httpPackageSources)
+        {
+            foreach (var packageSource in packageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new();
-                    }
                     httpPackageSources.Add(packageSource);
                 }
             }
-
-            foreach (PackageSource packageSource in auditSources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
-                {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new();
-                    }
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            if (httpPackageSources != null && httpPackageSources.Count != 0)
-            {
-                if (httpPackageSources.Count == 1)
-                {
-                    projectModel.AddProjectInformation(
-                        ProblemType.Warning,
-                        string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "list package",
-                        httpPackageSources[0]));
-                }
-                else
-                {
-                    projectModel.AddProjectInformation(
-                        ProblemType.Warning,
-                        string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage_MultipleSources,
-                        "list package",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
-                }
-            }
-
         }
 
         public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
