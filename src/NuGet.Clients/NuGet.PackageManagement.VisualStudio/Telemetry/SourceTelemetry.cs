@@ -210,6 +210,8 @@ namespace NuGet.PackageManagement.Telemetry
                 this["NumHTTPv3Feeds"] = httpV3;
                 this["NumHTTPSv2Feeds"] = httpsV2;
                 this["NumHTTPSv3Feeds"] = httpsV3;
+                this["NumHTTPNotSecureFeedsThatAllowInsecureConnections"] = numHTTPNotSecureFeedsThatAllowInsecureConnections;
+                this["NumHTTPSFeedsThatDisableTLSCertificateValidation"] = numHTTPSFeedsThatDisableTLSCertificateValidation;
                 this["NuGetOrg"] = nugetOrg;
                 this["VsOfflinePackages"] = vsOfflinePackages;
                 this["DotnetCuratedFeed"] = dotnetCuratedFeed;
