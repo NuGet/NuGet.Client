@@ -476,7 +476,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public void LocalAndHttpSources_WithAllowInsecureConnectionsAndDisableTlsCertificateValidation_FeedCountsAreCorrect()
+        public void HttpSources_WithAllowInsecureConnectionsAndDisableTlsCertificateValidation_FeedCountsAreCorrect()
         {
             PackageSource source1 = new PackageSource("http://test");
             source1.AllowInsecureConnections = true;
