@@ -681,9 +681,9 @@ namespace NuGetVSExtension
             string uniqueName = await project.GetCustomUniqueNameAsync();
             NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
-            if (await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject as ProjectJsonNuGetProject))
+            if (nuGetProject is not ProjectJsonNuGetProject)
             {
-                MessageHelper.ShowWarningMessage(Resources.ProjectMigrateErrorMessage, Resources.ErrorDialogBoxTitle); // TODO NK - change message
+                MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
                 return;
             }
 
@@ -697,7 +697,7 @@ namespace NuGetVSExtension
             {
                 if (!migrationResult.IsSuccess)
                 {
-                    MessageHelper.ShowWarningMessage(migrationResult.ErrorMessage, Resources.ErrorDialogBoxTitle); // TODO NK - change message
+                    MessageHelper.ShowWarningMessage(migrationResult.ErrorMessage, Resources.ErrorDialogBoxTitle);
                 }
             }
         }
