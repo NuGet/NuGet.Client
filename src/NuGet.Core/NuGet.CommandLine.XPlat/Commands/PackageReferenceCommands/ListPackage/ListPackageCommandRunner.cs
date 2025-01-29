@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     WarnForHttpSources(listPackageArgs, projectModel);
 
-                    if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources.Count > 0)
+                    if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources != null && listPackageArgs.AuditSources.Count > 0)
                     {
                         await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks);
                         return;
@@ -350,6 +350,11 @@ namespace NuGet.CommandLine.XPlat
 
         private static void AddHttpPackageSources(IEnumerable<PackageSource> packageSources, List<PackageSource> httpPackageSources)
         {
+            if (packageSources == null)
+            {
+                return;
+            }
+
             foreach (var packageSource in packageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
