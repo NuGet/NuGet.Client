@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -391,45 +390,8 @@ namespace NuGet.XPlat.FuncTest
     ]
 }}
 ";
-            mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Get.Add("/v3/vulnerabilities/index.json", r => vulnerabilities);
-            mockServer.Get.Add("/v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json", r => baseVulnerability);
-            mockServer.Start();
-
-            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
-            auditSource.AllowInsecureConnections = true;
-
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
-            {
-                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
-                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
-                string objFolder = Path.Combine(projectFolder, "obj");
-                string assetsPath = Path.Combine(objFolder, "project.assets.json");
-
-                //setup package
-                var packageContext = new SimpleTestPackageContext()
-                {
-                    Id = "mypkg",
-                    Version = "5.8.2",
-                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>mypkg</id>
-                            <version>5.8.2</version>
-                            <title />
-                            <frameworkAssemblies>
-                                <frameworkAssembly assemblyName=""System.Runtime"" />
-                            </frameworkAssemblies>
-                            <contentFiles>
-                                <files include=""lib/net45/mypkg.dll"" copyToOutput=""true"" flatten=""false"" />
-                            </contentFiles>
-                        </metadata>
-                        </package>")
-                };
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageContext);
-
-                // Define the content for csproj
-                var csprojContent = @"
+            // Define the content for csproj
+            var csprojContent = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -440,8 +402,8 @@ namespace NuGet.XPlat.FuncTest
   </ItemGroup>
 </Project>";
 
-                // Define the content for assets.json
-                var assetsContent = @"
+            // Define the content for assets.json
+            var assetsContent = @"
 {
   ""version"": 3,
   ""targets"": {
@@ -481,15 +443,23 @@ namespace NuGet.XPlat.FuncTest
     }
   }
 }";
-                if (!Directory.Exists(projectFolder))
-                {
-                    Directory.CreateDirectory(projectFolder);
-                }
+            mockServer.Get.Add("/v3/index.json", r => index);
+            mockServer.Get.Add("/v3/vulnerabilities/index.json", r => vulnerabilities);
+            mockServer.Get.Add("/v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json", r => baseVulnerability);
+            mockServer.Start();
 
-                if (!Directory.Exists(objFolder))
-                {
-                    Directory.CreateDirectory(objFolder);
-                }
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
+            auditSource.AllowInsecureConnections = true;
+
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
+                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
+                string objFolder = Path.Combine(projectFolder, "obj");
+                string assetsPath = Path.Combine(objFolder, "project.assets.json");
+
+                Directory.CreateDirectory(projectFolder);
+                Directory.CreateDirectory(objFolder);
 
                 File.WriteAllText(csprojPath, csprojContent);
                 File.WriteAllText(assetsPath, assetsContent);
@@ -526,8 +496,6 @@ namespace NuGet.XPlat.FuncTest
         public async Task GetReportDataAsync_WhenReportTypeIsVulnerableAuditSourcesWithNoVulnerabilityInfoResource_ShouldWarn()
         {
             // Arrange
-            var mockRenderer = new Mock<IReportRenderer>();
-            var mockServer = new MockServer();
             string index = $@"{{
                     ""version"": ""3.0.0"",
                     ""resources"": [
@@ -535,44 +503,8 @@ namespace NuGet.XPlat.FuncTest
                         }}
                     ]
                 }}";
-
-            mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Start();
-
-            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
-            auditSource.AllowInsecureConnections = true;
-
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
-            {
-                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
-                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
-                string objFolder = Path.Combine(projectFolder, "obj");
-                string assetsPath = Path.Combine(objFolder, "project.assets.json");
-
-                //setup package
-                var packageContext = new SimpleTestPackageContext()
-                {
-                    Id = "mypkg",
-                    Version = "5.8.2",
-                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>mypkg</id>
-                            <version>5.8.2</version>
-                            <title />
-                            <frameworkAssemblies>
-                                <frameworkAssembly assemblyName=""System.Runtime"" />
-                            </frameworkAssemblies>
-                            <contentFiles>
-                                <files include=""lib/net45/mypkg.dll"" copyToOutput=""true"" flatten=""false"" />
-                            </contentFiles>
-                        </metadata>
-                        </package>")
-                };
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageContext);
-
-                // Define the content for csproj
-                var csprojContent = @"
+            // Define the content for csproj
+            var csprojContent = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -583,8 +515,8 @@ namespace NuGet.XPlat.FuncTest
   </ItemGroup>
 </Project>";
 
-                // Define the content for assets.json
-                var assetsContent = @"
+            // Define the content for assets.json
+            var assetsContent = @"
 {
   ""version"": 3,
   ""targets"": {
@@ -624,15 +556,24 @@ namespace NuGet.XPlat.FuncTest
     }
   }
 }";
-                if (!Directory.Exists(projectFolder))
-                {
-                    Directory.CreateDirectory(projectFolder);
-                }
 
-                if (!Directory.Exists(objFolder))
-                {
-                    Directory.CreateDirectory(objFolder);
-                }
+            var mockRenderer = new Mock<IReportRenderer>();
+            var mockServer = new MockServer();
+            mockServer.Get.Add("/v3/index.json", r => index);
+            mockServer.Start();
+
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
+            auditSource.AllowInsecureConnections = true;
+
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
+                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
+                string objFolder = Path.Combine(projectFolder, "obj");
+                string assetsPath = Path.Combine(objFolder, "project.assets.json");
+
+                Directory.CreateDirectory(projectFolder);
+                Directory.CreateDirectory(objFolder);
 
                 File.WriteAllText(csprojPath, csprojContent);
                 File.WriteAllText(assetsPath, assetsContent);
