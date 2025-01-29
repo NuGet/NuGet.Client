@@ -140,6 +140,7 @@ namespace NuGet.CommandLine.XPlat
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
+                        provider.LoadAuditSources().ToList(),
                         logger,
                         CancellationToken.None);
 
@@ -148,7 +149,7 @@ namespace NuGet.CommandLine.XPlat
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     var listPackageCommandRunner = getCommandRunner();
-                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, provider.LoadAuditSources());
+                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                 });
             });
         }

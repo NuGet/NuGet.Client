@@ -230,10 +230,11 @@ namespace NuGet.XPlat.FuncTest
                                         prerelease: false,
                                         highestPatch: false,
                                         highestMinor: false,
+                                        auditSources: null,
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
-            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, Array.Empty<PackageSource>());
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
 
             // Assert
             Assert.True(result == 0, userMessage: logger.ShowMessages());
@@ -342,10 +343,11 @@ namespace NuGet.XPlat.FuncTest
                                         prerelease: false,
                                         highestPatch: false,
                                         highestMinor: false,
+                                        auditSources: null,
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
-            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs, Array.Empty<PackageSource>());
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
             Assert.True(result == 0, userMessage: logger.ShowMessages());
         }
 
@@ -499,6 +501,7 @@ namespace NuGet.XPlat.FuncTest
                     ReportType.Vulnerable,
                     mockRenderer.Object,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
+                    new List<PackageSource> { auditSource },
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -506,7 +509,7 @@ namespace NuGet.XPlat.FuncTest
 
 
                 // Act
-                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs, new List<PackageSource> { auditSource });
+                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
 
                 // Assert
                 Assert.Equal(1, result.Item2.Projects.Count);
@@ -641,6 +644,7 @@ namespace NuGet.XPlat.FuncTest
                     ReportType.Vulnerable,
                     mockRenderer.Object,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
+                    new List<PackageSource> { auditSource },
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -648,7 +652,7 @@ namespace NuGet.XPlat.FuncTest
 
 
                 // Act
-                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs, new List<PackageSource> { auditSource });
+                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
 
                 // Assert
                 Assert.Equal(1, result.Item2.Projects.Count);
@@ -673,7 +677,7 @@ namespace NuGet.XPlat.FuncTest
                 var testApp = new CommandLineApplication();
                 var mockCommandRunner = new Mock<IListPackageCommandRunner>();
                 mockCommandRunner
-                    .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>(), Array.Empty<PackageSource>()))
+                    .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
                     .Returns(Task.FromResult(0));
 
                 testApp.Name = "dotnet nuget_test";

@@ -51,6 +51,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -197,6 +198,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -295,6 +297,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -384,6 +387,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -487,6 +491,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -598,6 +603,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -678,6 +684,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -848,6 +855,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -978,6 +986,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -1120,6 +1129,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -1221,6 +1231,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 
@@ -1317,6 +1328,7 @@ namespace NuGet.XPlat.FuncTest
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
+                                auditSources: null,
                                 NullLogger.Instance,
                                 CancellationToken.None);
 

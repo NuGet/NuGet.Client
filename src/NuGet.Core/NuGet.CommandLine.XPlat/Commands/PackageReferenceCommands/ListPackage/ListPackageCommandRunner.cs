@@ -36,15 +36,15 @@ namespace NuGet.CommandLine.XPlat
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
-        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs, IReadOnlyList<PackageSource> auditSources)
+        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
-            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs, auditSources);
+            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
             reportRenderer.Render(reportModel);
             return exitCode;
         }
 
-        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs, IReadOnlyList<PackageSource> auditSources)
+        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (string projectPath in projectsPaths)
             {
-                await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs, auditSources);
+                await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs);
             }
 
             // if there is any error then return failure code.
@@ -87,8 +87,7 @@ namespace NuGet.CommandLine.XPlat
             string projectPath,
             ListPackageReportModel listPackageReportModel,
             MSBuildAPIUtility msBuild,
-            ListPackageArgs listPackageArgs,
-            IReadOnlyList<PackageSource> auditSources)
+            ListPackageArgs listPackageArgs)
         {
             //Open project to evaluate properties for the assets
             //file and the name of the project
@@ -124,11 +123,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    WarnForHttpSources(listPackageArgs, projectModel, auditSources);
+                    WarnForHttpSources(listPackageArgs, projectModel);
 
-                    if (listPackageArgs.ReportType == ReportType.Vulnerable && auditSources.Count > 0)
+                    if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources.Count > 0)
                     {
-                        await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks, auditSources);
+                        await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks);
                         return;
                     }
 
@@ -156,13 +155,12 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             ListPackageReportModel listPackageReportModel,
             ListPackageProjectModel projectModel,
-            List<FrameworkPackages> frameworks,
-            IReadOnlyList<PackageSource> auditSources)
+            List<FrameworkPackages> frameworks)
         {
             var vulnerabilities = await GetVulnerabilityData(
                 projectModel,
                 listPackageReportModel,
-                auditSources,
+                listPackageArgs.AuditSources,
                 listPackageArgs.Logger,
                 listPackageArgs.CancellationToken);
 
@@ -331,13 +329,12 @@ namespace NuGet.CommandLine.XPlat
 
         private static void WarnForHttpSources(
             ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel,
-            IReadOnlyList<PackageSource> auditSources)
+            ListPackageProjectModel projectModel)
         {
             var httpPackageSources = new List<PackageSource>();
 
             AddHttpPackageSources(listPackageArgs.PackageSources, httpPackageSources);
-            AddHttpPackageSources(auditSources, httpPackageSources);
+            AddHttpPackageSources(listPackageArgs.AuditSources, httpPackageSources);
 
             if (httpPackageSources.Count == 0)
             {
