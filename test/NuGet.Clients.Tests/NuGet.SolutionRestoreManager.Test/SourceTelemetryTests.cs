@@ -32,8 +32,8 @@ namespace NuGet.SolutionRestoreManager.Test
         private const string ProtocolDuration = "protocol.duration";
         private const string NumHTTPSv2Feeds = "NumHTTPSv2Feeds";
         private const string NumHTTPSv3Feeds = "NumHTTPSv3Feeds";
-        private const string NumHTTPNotSecureFeedsThatAllowInsecureConnections = "NumHTTPNotSecureFeedsThatAllowInsecureConnections";
-        private const string NumHTTPSFeedsThatDisableTLSCertificateValidation = "NumHTTPSFeedsThatDisableTLSCertificateValidation";
+        private const string AllowInsecureConnections = "NumHTTPNotSecureFeedsThatAllowInsecureConnections";
+        private const string DisableTLSCertificateValidation = "NumHTTPSFeedsThatDisableTLSCertificateValidation";
 
         private static readonly Guid Parent = Guid.Parse("33411664-388A-4C48-A607-A2C554171FCE");
         private static readonly PackageSourceTelemetry.Totals ProtocolDiagnosticTotals = new PackageSourceTelemetry.Totals(1, 2, TimeSpan.FromMilliseconds(3), numberOfSourcesWithAnHttpResource: 0);
@@ -498,14 +498,10 @@ namespace NuGet.SolutionRestoreManager.Test
             };
 
             var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
-            var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
-            var summaryBools = GetValuesAsBools(summary);
 
-            summaryStrings[ParentId].Should().Be(Parent.ToString());
-
-            int? numHTTPSFeedsThatDisableTLSCertificateValidation = summaryInts[NumHTTPSFeedsThatDisableTLSCertificateValidation];
-            int? numHTTPNotSecureFeedsThatAllowInsecureConnections = summaryInts[NumHTTPNotSecureFeedsThatAllowInsecureConnections];
+            int? numHTTPSFeedsThatDisableTLSCertificateValidation = summaryInts[DisableTLSCertificateValidation];
+            int? numHTTPNotSecureFeedsThatAllowInsecureConnections = summaryInts[AllowInsecureConnections];
 
             numHTTPSFeedsThatDisableTLSCertificateValidation.Should().Be(1);
             numHTTPNotSecureFeedsThatAllowInsecureConnections.Should().Be(2);
