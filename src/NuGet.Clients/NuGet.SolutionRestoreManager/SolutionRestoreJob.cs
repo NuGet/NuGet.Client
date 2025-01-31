@@ -68,7 +68,7 @@ namespace NuGet.SolutionRestoreManager
         private int _currentCount;
         private AuditCheckResult _auditCheckResult;
         private bool _solutionHasVulnerabilities;
-        private bool _newVulnerabilityCheckToBeConsidered;
+        private bool _didNewAuditCheckRun;
 
         /// <summary>
         /// Restore end status. For testing purposes
@@ -268,7 +268,7 @@ namespace NuGet.SolutionRestoreManager
                     }
 
                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                    if (_newVulnerabilityCheckToBeConsidered)
+                    if (_didNewAuditCheckRun)
                     {
                         await _vulnerabilitiesFoundService.Value.ReportVulnerabilitiesAsync(_solutionHasVulnerabilities, token);
                     }
@@ -512,7 +512,7 @@ namespace NuGet.SolutionRestoreManager
                                     isRestoreSucceeded = restoreSummaries.All(summary => summary.Success == true);
                                     _noOpProjectsCount += restoreSummaries.Count(summary => summary.NoOpRestore == true);
                                     _solutionUpToDateChecker.SaveRestoreStatus(restoreSummaries);
-                                    _newVulnerabilityCheckToBeConsidered = true; //  this has a bug about vulnerability if the project with vulnerabilities was never updated.
+                                    _didNewAuditCheckRun = true;
                                     _solutionHasVulnerabilities |= AnyProjectHasVulnerablePackageWarning(restoreSummaries);
                                 }
                                 catch
@@ -713,7 +713,7 @@ namespace NuGet.SolutionRestoreManager
                         _status = NuGetOperationStatus.Succeeded;
                     }
                     _auditResultCachingService.LastAuditCheckResult = _auditCheckResult;
-                    _newVulnerabilityCheckToBeConsidered = true;
+                    _didNewAuditCheckRun = true;
                 }
                 else
                 {
@@ -727,7 +727,7 @@ namespace NuGet.SolutionRestoreManager
                         AuditChecker auditChecker = new(sourceRepositories, sourceCacheContext, _logger);
                         AuditCheckResult result = await auditChecker.CheckPackageVulnerabilitiesAsync(packages, auditProperties, token);
                         _auditResultCachingService.LastAuditCheckResult = result;
-                        _newVulnerabilityCheckToBeConsidered = true;
+                        _didNewAuditCheckRun = true;
                     }
                     else
                     {
