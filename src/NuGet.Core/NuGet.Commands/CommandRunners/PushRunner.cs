@@ -78,6 +78,12 @@ namespace NuGet.Commands
                 {
                     symbolApiKey ??= apiKey;
                 }
+                // If the symbolPackageUpdateResource is null at this point that means symbolSource was set by the param
+                // symbolPackageUpdateResource is used to determine if snupgk is supported
+                else
+                {
+                    symbolPackageUpdateResource = new SymbolPackageUpdateResourceV3(symbolSource, null);
+                }
             }
 
             await packageUpdateResource.Push(
