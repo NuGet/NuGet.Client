@@ -1099,4 +1099,7 @@ Only the package maintainer can add a README. If you are not the maintainer, ple
 For instructions on how to add a README, please visit [aka.ms/nuget/readme](https://aka.ms/nuget/readme)</value>
     <comment>{Locked="[aka.ms/nuget/readme](https://aka.ms/nuget/readme)"} "[aka.ms/nuget/readme](https://aka.ms/nuget/readme)" this is a URL link and should not be translated</comment>
   </data>
+  <data name="CopyMenuCommandLabel" xml:space="preserve">
+    <value>_Copy</value>
+  </data>
 </root>
