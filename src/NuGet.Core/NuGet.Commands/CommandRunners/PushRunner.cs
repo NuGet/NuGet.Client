@@ -49,18 +49,24 @@ namespace NuGet.Commands
             }
 
             packageUpdateResource.Settings = settings;
+            bool allowSnupkg = false;
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource = null;
 
             // figure out from index.json if pushing snupkg is supported
             var sourceUri = packageUpdateResource.SourceUri;
-            if (string.IsNullOrEmpty(symbolSource)
-                && !noSymbols
+
+            if (!string.IsNullOrEmpty(symbolSource))
+            {
+                allowSnupkg = true;
+            }
+            else if (!noSymbols
                 && !sourceUri.IsFile
                 && sourceUri.IsAbsoluteUri)
             {
                 symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, source, CancellationToken.None);
                 if (symbolPackageUpdateResource != null)
                 {
+                    allowSnupkg = true;
                     symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                 }
             }
@@ -78,15 +84,9 @@ namespace NuGet.Commands
                 {
                     symbolApiKey ??= apiKey;
                 }
-                // If the symbolPackageUpdateResource is null at this point that means symbolSource was set by the param
-                // symbolPackageUpdateResource is used to determine if snupgk is supported
-                else
-                {
-                    symbolPackageUpdateResource = new SymbolPackageUpdateResourceV3(symbolSource, null);
-                }
             }
 
-            await packageUpdateResource.Push(
+            await packageUpdateResource.PushAsync(
                 packagePaths,
                 symbolSource,
                 timeoutSeconds,
@@ -95,7 +95,7 @@ namespace NuGet.Commands
                 _ => symbolApiKey,
                 noServiceEndpoint,
                 skipDuplicate,
-                symbolPackageUpdateResource,
+                allowSnupkg,
                 packageSource.AllowInsecureConnections,
                 logger);
         }
