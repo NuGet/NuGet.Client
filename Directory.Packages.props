@@ -9,7 +9,8 @@
     <!-- Read docs/updating-packages.md before updating System.Text.Json's version -->
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
-    <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.25072.1</SystemCommandLineVersion>
+    <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == '' AND '$(TargetFramework)' != 'net9.0'">2.0.0-beta4.25072.1</SystemCommandLineVersion>
+    <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
   </PropertyGroup>
 

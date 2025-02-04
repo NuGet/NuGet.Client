@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
@@ -41,7 +40,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             var whyCommand = new DocumentedCommand("why", Strings.WhyCommand_Description, "https://aka.ms/dotnet/nuget/why");
 
-            Argument<string> path = new Argument<string>("PROJECT|SOLUTION")
+            ArgumentOfString path = new("PROJECT|SOLUTION")
             {
                 Description = Strings.WhyCommand_PathArgument_Description,
                 // We really want this to be zero or one, however, because this is the first argument, it doesn't work.
@@ -76,13 +75,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 }
             };
 
-            Argument<string> package = new Argument<string>("PACKAGE")
+            ArgumentOfString package = new("PACKAGE")
             {
                 Description = Strings.WhyCommand_PackageArgument_Description,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            Option<List<string>> frameworks = new Option<List<string>>("--framework", "-f")
+            OptionOfListOfStrings frameworks = new("--framework", "-f")
             {
                 Description = Strings.WhyCommand_FrameworksOption_Description,
                 Arity = ArgumentArity.OneOrMore

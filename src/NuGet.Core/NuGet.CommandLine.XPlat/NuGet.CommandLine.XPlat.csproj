@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>NuGet executable wrapper for the dotnet CLI nuget functionality.</Description>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(NETCoreTargetFramework);net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591;CS1701;NU5104;CA1307;CA2000</NoWarn>
     <OutputType>Exe</OutputType>
     <Shipping>true</Shipping>

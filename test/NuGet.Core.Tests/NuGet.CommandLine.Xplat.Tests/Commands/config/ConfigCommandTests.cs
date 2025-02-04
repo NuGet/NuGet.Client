@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.config
         public void ConfigCommand_HasHelpUrl()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             // Act
             ConfigCommand.Register(rootCommand, NullLoggerWithColor.GetInstance);

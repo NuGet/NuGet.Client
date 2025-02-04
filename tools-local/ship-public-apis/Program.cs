@@ -12,10 +12,10 @@ namespace NuGet.Internal.Tools.ShipPublicApis
         {
             var nugetSlnDirectory = FindNuGetSlnDirectory();
             var pathArgument = nugetSlnDirectory == null
-                ? new Argument<DirectoryInfo>("path")
-                : new Argument<DirectoryInfo>("path") { DefaultValueFactory = _ => nugetSlnDirectory };
+                ? new CliArgument<DirectoryInfo>("path")
+                : new CliArgument<DirectoryInfo>("path") { DefaultValueFactory = _ => nugetSlnDirectory };
 
-            var resortOption = new Option<bool>("--resort");
+            var resortOption = new CliOption<bool>("--resort");
 
             var rootCommand = new CliRootCommand()
             {

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.IO;
@@ -23,69 +22,69 @@ namespace NuGet.CommandLine.XPlat
 
         public static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
-            var searchCommand = new DocumentedCommand("search", Strings.pkgSearch_Description, "https://aka.ms/dotnet/package/search");
+            DocumentedCommand searchCommand = new("search", Strings.pkgSearch_Description, "https://aka.ms/dotnet/package/search");
 
-            var searchTerm = new Argument<string>("Search Term")
+            ArgumentOfString searchTerm = new("Search Term")
             {
                 Description = Strings.pkgSearch_termDescription,
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
-            var sources = new Option<List<string>>("--source")
+            OptionOfListOfStrings sources = new("--source")
             {
                 Description = Strings.pkgSearch_SourceDescription,
                 Arity = ArgumentArity.OneOrMore
             };
 
-            var exactMatch = new Option<bool>("--exact-match")
+            OptionOfBoolean exactMatch = new("--exact-match")
             {
                 Description = Strings.pkgSearch_ExactMatchDescription,
                 Arity = ArgumentArity.Zero
             };
 
-            var prerelease = new Option<bool>("--prerelease")
+            OptionOfBoolean prerelease = new("--prerelease")
             {
                 Description = Strings.pkgSearch_PrereleaseDescription,
                 Arity = ArgumentArity.Zero
             };
 
-            var interactive = new Option<bool>("--interactive")
+            OptionOfBoolean interactive = new("--interactive")
             {
                 Description = Strings.pkgSearch_InteractiveDescription,
                 Arity = ArgumentArity.Zero
             };
 
-            var take = new Option<string>("--take")
+            OptionOfString take = new("--take")
             {
                 Description = Strings.pkgSearch_TakeDescription,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var skip = new Option<string>("--skip")
+            OptionOfString skip = new("--skip")
             {
                 Description = Strings.pkgSearch_SkipDescription,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var format = new Option<string>("--format")
+            OptionOfString format = new("--format")
             {
                 Description = Strings.pkgSearch_FormatDescription,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var verbosity = new Option<string>("--verbosity")
+            OptionOfString verbosity = new("--verbosity")
             {
                 Description = Strings.pkgSearch_VerbosityDescription,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var configFile = new Option<string>("--configfile")
+            OptionOfString configFile = new("--configfile")
             {
                 Description = Strings.Option_ConfigFile,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var help = new HelpOption()
+            HelpOption help = new()
             {
                 Arity = ArgumentArity.Zero
             };

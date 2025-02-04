@@ -4,7 +4,6 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Help;
-using System.CommandLine.Parsing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -20,44 +19,44 @@ namespace NuGet.CommandLine.XPlat
             Arity = ArgumentArity.Zero
         };
 
-        private static Argument<string> SetConfigKeyArgument = new Argument<string>(name: "config-key")
+        private static ArgumentOfString SetConfigKeyArgument = new(name: "config-key")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = Strings.ConfigSetConfigKeyDescription,
         };
 
-        private static Argument<string> UnsetConfigKeyArgument = new Argument<string>(name: "config-key")
+        private static ArgumentOfString UnsetConfigKeyArgument = new(name: "config-key")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = Strings.ConfigUnsetConfigKeyDescription,
         };
 
-        private static Argument<string> ConfigValueArgument = new Argument<string>(name: "config-value")
+        private static ArgumentOfString ConfigValueArgument = new(name: "config-value")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = Strings.ConfigSetConfigValueDescription,
         };
 
-        private static Argument<string> AllOrConfigKeyArgument = new Argument<string>(name: "all-or-config-key")
+        private static ArgumentOfString AllOrConfigKeyArgument = new(name: "all-or-config-key")
         {
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = Strings.ConfigGetAllOrConfigKeyDescription,
             Description = Strings.ConfigGetAllOrConfigKeyDescription
         };
 
-        private static Option<string> WorkingDirectory = new Option<string>(name: "--working-directory")
+        private static OptionOfString WorkingDirectory = new(name: "--working-directory")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = Strings.ConfigPathsWorkingDirectoryDescription
         };
 
-        private static Option<bool> ShowPathOption = new Option<bool>(name: "--show-path")
+        private static OptionOfBoolean ShowPathOption = new(name: "--show-path")
         {
             Arity = ArgumentArity.Zero,
             Description = Strings.ConfigGetShowPathDescription,
         };
 
-        private static Option<string> ConfigFileOption = new Option<string>(name: "--configfile")
+        private static OptionOfString ConfigFileOption = new(name: "--configfile")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = Strings.Option_ConfigFile,

@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void WhyCommand_HasHelpUrl()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             // Act
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance);
@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void WithTwoArguments_PathAndPackageAreSet()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void WithOneArguments_PackageIsSet()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void WithZeroArguments_HasParseError()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -90,7 +90,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void WithThreeArguments_HasParseError()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void FrameworkOption_CanBeAtAnyPosition(string args)
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -133,7 +133,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void FrameworkOption_CanBeLongOrShortForm(string arg)
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -154,7 +154,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void FrameworkOption_AcceptsMultipleValues()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
@@ -175,7 +175,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
         public void HelpOption_ShowsHelp()
         {
             // Arrange
-            Command rootCommand = new("nuget");
+            CliCommand rootCommand = new("nuget");
 
             WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
             {
