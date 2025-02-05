@@ -23,7 +23,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Minimum SDK Analysis Level required for enabling the new algorithm for lock files
         /// </summary>
-        internal static readonly NuGetVersion NewResolverAndLockFiles = new("10.0.100");
+        internal static readonly NuGetVersion NewResolverWithLockFiles = new("10.0.100");
 
         /// <summary>
         /// Determines whether the feature is enabled based on the SDK analysis level.
