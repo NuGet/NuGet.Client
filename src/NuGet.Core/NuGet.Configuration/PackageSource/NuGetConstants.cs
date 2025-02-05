@@ -7,7 +7,6 @@ namespace NuGet.Configuration
     {
         public static readonly string NuGetHostName = "nuget.org";
         public static readonly string NuGetSymbolHostName = "nuget.smbsrc.net";
-        public static readonly string AndroidFeedName = "AndroidFeed";
 
         public const string V3FeedUrl = "https://api.nuget.org/v3/index.json";
         public const string V2FeedUrl = "https://www.nuget.org/api/v2/";
@@ -15,7 +14,6 @@ namespace NuGet.Configuration
         public static readonly string V2LegacyFeedUrl = "https://go.microsoft.com/fwlink/?LinkID=230477";
 
         public static readonly string V1FeedUrl = "https://go.microsoft.com/fwlink/?LinkID=206669";
-        public static readonly string AndroidFeedUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-android-a8cd27e4/nuget/v3/index.json";
 
         /// <summary>
         /// NuGet.org gallery Url used as a source display name and as a default "id" when storing nuget.org API key.
