@@ -95,8 +95,10 @@ namespace NuGet.CommandLine.XPlat
             var projectName = project.GetPropertyValue(ProjectName);
             ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, projectName);
 
-            if (!IsProjectPackageReference(project, projectModel, projectPath))
+            if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
+                projectModel.AddProjectInformation(problemType: ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
                 return;
             }
 
@@ -157,7 +159,7 @@ namespace NuGet.CommandLine.XPlat
             ListPackageProjectModel projectModel,
             List<FrameworkPackages> frameworks)
         {
-            var vulnerabilities = await GetVulnerabilityData(
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> vulnerabilities = await GetVulnerabilityData(
                 projectModel,
                 listPackageReportModel,
                 listPackageArgs.AuditSources,
@@ -233,18 +235,6 @@ namespace NuGet.CommandLine.XPlat
                     return true;
                 }
             }
-        }
-
-        private static bool IsProjectPackageReference(Project project, ListPackageProjectModel projectModel, string projectPath)
-        {
-            if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
-            {
-                projectModel.AddProjectInformation(problemType: ProblemType.Error,
-                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
-                return false;
-            }
-
-            return true;
         }
 
         private static async Task<List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>> GetVulnerabilityData(

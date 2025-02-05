@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.XPlat
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
-                        provider.LoadAuditSources().ToList(),
+                        provider.LoadAuditSources(),
                         logger,
                         CancellationToken.None);
 

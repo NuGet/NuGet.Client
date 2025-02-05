@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat
         public bool HighestPatch { get; }
         public bool HighestMinor { get; }
         public CancellationToken CancellationToken { get; }
-        public List<PackageSource> AuditSources { get; }
+        public IReadOnlyList<PackageSource> AuditSources { get; }
 
         /// <summary>
         /// A constructor for the arguments of list package
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
             bool prerelease,
             bool highestPatch,
             bool highestMinor,
-            List<PackageSource> auditSources,
+            IReadOnlyList<PackageSource> auditSources,
             ILogger logger,
             CancellationToken cancellationToken)
         {

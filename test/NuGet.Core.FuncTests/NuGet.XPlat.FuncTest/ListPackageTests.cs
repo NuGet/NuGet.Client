@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.ListPackage;
@@ -19,6 +20,8 @@ using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -354,256 +357,104 @@ namespace NuGet.XPlat.FuncTest
         public async Task GetReportDataAsync_WhenReportTypeIsVulnerable_ShouldUseAuditSources()
         {
             // Arrange
-            var advisoryUrl = "https://test/";
-            var severity = 2;
+            using var mockServer = SetupMockServer();
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json") { AllowInsecureConnections = true };
+
             var mockRenderer = new Mock<IReportRenderer>();
-            var mockServer = new MockServer();
-            string index = $@"{{
-                    ""version"": ""3.0.0"",
-                    ""resources"": [
-                        {{
-                            ""@id"": ""{mockServer.Uri}v3/vulnerabilities/index.json"",
-                            ""@type"": ""VulnerabilityInfo/6.7.0"",
-                            ""comment"": ""This is a test feed for vulnerabilities""
-                        }}
-                    ]
-                }}";
+            var mockLogger = new Mock<ILogger>();
 
-            string vulnerabilities = $@"
-[
-    {{
-        ""@name"": ""base"",
-        ""@id"": ""{mockServer.Uri}v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json"",
-        ""@updated"": ""2024-12-21T05:12:11.2008556Z"",
-        ""comment"": ""The base data for vulnerability update periodically""
-    }}
-]";
+            using var pathContext = new SimpleTestPathContext();
+            var project = SetupTestProject(pathContext);
+            SetupAssetsAndProps(project);
 
-            string baseVulnerability = $@"
-{{
-    ""mypkg"": [
-        {{
-            ""url"": ""{advisoryUrl}"",
-            ""severity"": {severity},
-            ""versions"": ""(, 5.8.4)""
-        }}
-    ]
-}}
-";
-            // Define the content for csproj
-            var csprojContent = @"
-<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include=""mypkg"" Version=""5.8.2"" />
-  </ItemGroup>
-</Project>";
+            var listPackageArgs = new ListPackageArgs(
+                path: project.ProjectPath,
+                packageSources: new List<PackageSource> { new PackageSource(pathContext.PackageSource) },
+                frameworks: new List<string>(),
+                ReportType.Vulnerable,
+                mockRenderer.Object,
+                includeTransitive: true,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                new List<PackageSource> { auditSource },
+                mockLogger.Object,
+                CancellationToken.None
+            );
 
-            // Define the content for assets.json
-            var assetsContent = @"
-{
-  ""version"": 3,
-  ""targets"": {
-    "".NETCoreApp,Version=v5.0"": {
-      ""mypkg/5.8.2"": {
-        ""type"": ""package"",
-        ""compile"": {
-          ""lib/net5.0/mypkg.dll"": {}
-        },
-        ""runtime"": {
-          ""lib/net5.0/mypkg.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""mypkg/5.8.2"": {
-      ""sha512"": ""<hash-value>"",
-      ""type"": ""package"",
-      ""path"": ""mypkg/5.8.2""
-    }
-  },
-  ""project"": {
-    ""version"": ""5.0"",
-    ""restore"": {
-      ""projectStyle"": ""PackageReference""
-    },
-    ""frameworks"": {
-      ""net5.0"": {
-        ""dependencies"": {
-          ""mypkg"": {
-            ""version"": ""5.8.2"",
-            ""type"": ""direct""
-          }
-        }
-      }
-    }
-  }
-}";
-            mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Get.Add("/v3/vulnerabilities/index.json", r => vulnerabilities);
-            mockServer.Get.Add("/v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json", r => baseVulnerability);
-            mockServer.Start();
-
-            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
-            auditSource.AllowInsecureConnections = true;
-
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
-            {
-                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
-                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
-                string objFolder = Path.Combine(projectFolder, "obj");
-                string assetsPath = Path.Combine(objFolder, "project.assets.json");
-
-                Directory.CreateDirectory(projectFolder);
-                Directory.CreateDirectory(objFolder);
-
-                File.WriteAllText(csprojPath, csprojContent);
-                File.WriteAllText(assetsPath, assetsContent);
-
-                var listPackageArgs = new ListPackageArgs(
-                    path: csprojPath,
-                    packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    frameworks: new List<string>(),
-                    ReportType.Vulnerable,
-                    mockRenderer.Object,
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
-                    new List<PackageSource> { auditSource },
-                    logger: new Mock<ILogger>().Object,
-                    CancellationToken.None);
-
-                var listPackageCommandRunner = new ListPackageCommandRunner();
+            var listPackageCommandRunner = new ListPackageCommandRunner();
 
 
-                // Act
-                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
+            // Act
+            var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
 
-                // Assert
-                Assert.Equal(1, result.Item2.Projects.Count);
-                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.Count);
-                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
-                Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().Vulnerabilities.Count);
-                Assert.Equal(severity, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().Severity);
-                Assert.Equal(advisoryUrl, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().AdvisoryUrl.ToString());
-
-            }
+            // Assert
+            Assert.Equal(1, result.Item2.Projects.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().Vulnerabilities.Count);
+            Assert.Equal(2, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().Severity);
+            Assert.Equal("https://test/", result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().AdvisoryUrl.ToString());
         }
 
         [Fact]
         public async Task GetReportDataAsync_WhenReportTypeIsVulnerableAuditSourcesWithNoVulnerabilityInfoResource_ShouldWarn()
         {
             // Arrange
-            string index = $@"{{
-                    ""version"": ""3.0.0"",
-                    ""resources"": [
-                        {{
-                        }}
-                    ]
-                }}";
-            // Define the content for csproj
-            var csprojContent = @"
-<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include=""mypkg"" Version=""5.8.2"" />
-  </ItemGroup>
-</Project>";
+            const string indexJson = """
+    {
+        "version": "3.0.0",
+        "resources": [{}]
+    }
+    """;
 
-            // Define the content for assets.json
-            var assetsContent = @"
-{
-  ""version"": 3,
-  ""targets"": {
-    "".NETCoreApp,Version=v5.0"": {
-      ""mypkg/5.8.2"": {
-        ""type"": ""package"",
-        ""compile"": {
-          ""lib/net5.0/mypkg.dll"": {}
-        },
-        ""runtime"": {
-          ""lib/net5.0/mypkg.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""mypkg/5.8.2"": {
-      ""sha512"": ""<hash-value>"",
-      ""type"": ""package"",
-      ""path"": ""mypkg/5.8.2""
-    }
-  },
-  ""project"": {
-    ""version"": ""5.0"",
-    ""restore"": {
-      ""projectStyle"": ""PackageReference""
-    },
-    ""frameworks"": {
-      ""net5.0"": {
-        ""dependencies"": {
-          ""mypkg"": {
-            ""version"": ""5.8.2"",
-            ""type"": ""direct""
-          }
-        }
-      }
-    }
-  }
-}";
-
-            var mockRenderer = new Mock<IReportRenderer>();
-            var mockServer = new MockServer();
-            mockServer.Get.Add("/v3/index.json", r => index);
+            using var mockServer = new MockServer();
+            mockServer.Get.Add("/v3/index.json", _ => indexJson);
             mockServer.Start();
 
-            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json");
-            auditSource.AllowInsecureConnections = true;
+            var auditSource = new PackageSource($"{mockServer.Uri}v3/index.json") { AllowInsecureConnections = true };
 
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
-            {
-                string projectFolder = Path.Combine(pathContext.SolutionRoot, "MyProject");
-                string csprojPath = Path.Combine(projectFolder, "MyProject.csproj");
-                string objFolder = Path.Combine(projectFolder, "obj");
-                string assetsPath = Path.Combine(objFolder, "project.assets.json");
+            using var pathContext = new SimpleTestPathContext();
+            var project = SetupTestProject(pathContext);
+            SetupAssetsAndProps(project);
 
-                Directory.CreateDirectory(projectFolder);
-                Directory.CreateDirectory(objFolder);
+            var mockRenderer = new Mock<IReportRenderer>();
+            var mockLogger = new Mock<ILogger>();
 
-                File.WriteAllText(csprojPath, csprojContent);
-                File.WriteAllText(assetsPath, assetsContent);
+            var listPackageArgs = new ListPackageArgs(
+                project.ProjectPath,
+                new List<PackageSource> { new PackageSource(pathContext.PackageSource) },
+                new List<string>(),
+                ReportType.Vulnerable,
+                mockRenderer.Object,
+                includeTransitive: true,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                new List<PackageSource> { auditSource },
+                mockLogger.Object,
+                CancellationToken.None
+            );
 
-                var listPackageArgs = new ListPackageArgs(
-                    path: csprojPath,
-                    packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    frameworks: new List<string>(),
-                    ReportType.Vulnerable,
-                    mockRenderer.Object,
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
-                    new List<PackageSource> { auditSource },
-                    logger: new Mock<ILogger>().Object,
-                    CancellationToken.None);
+            var listPackageCommandRunner = new ListPackageCommandRunner();
 
-                var listPackageCommandRunner = new ListPackageCommandRunner();
+            // Act
+            var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
+            var projectResult = result.Item2.Projects.First();
+            var warning = projectResult.ProjectProblems.First();
 
-
-                // Act
-                var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
-
-                // Assert
-                Assert.Equal(1, result.Item2.Projects.Count);
-                Assert.Equal(1, result.Item2.Projects.First().ProjectProblems.Count);
-                Assert.Equal(ProblemType.Warning, result.Item2.Projects.First().ProjectProblems.First().ProblemType);
-                Assert.Equal(string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Warning_AuditSourceWithoutData, auditSource.Name), result.Item2.Projects.First().ProjectProblems.First().Text);
-                Assert.Equal(0, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
-                Assert.Equal(0, result.Item2.Projects.First().TargetFrameworkPackages.First().TransitivePackages.Count);
-            }
+            // Assert
+            Assert.Single(result.Item2.Projects);
+            Assert.Single(projectResult.ProjectProblems);
+            Assert.Equal(ProblemType.Warning, warning.ProblemType);
+            Assert.Equal(
+                string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Warning_AuditSourceWithoutData, auditSource.Name),
+                warning.Text
+            );
+            Assert.Empty(projectResult.TargetFrameworkPackages.First().TopLevelPackages);
+            Assert.Empty(projectResult.TargetFrameworkPackages.First().TransitivePackages);
         }
+
 
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
         {
@@ -646,5 +497,88 @@ namespace NuGet.XPlat.FuncTest
             FieldInfo[] fields = listPackageArgsType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             Assert.True(13 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
+
+        private static SimpleTestProjectContext SetupTestProject(SimpleTestPathContext pathContext)
+        {
+            var package = new SimpleTestPackageContext { Id = "newtonsoft.json", Version = "10.0.2" };
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateNETCore("ProjectA", pathContext.SolutionRoot, NuGetFramework.Parse("net5.0"));
+            project.Type = ProjectStyle.PackageReference;
+            project.SingleTargetFramework = true;
+            project.AddPackageToAllFrameworks(package);
+
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
+
+            return project;
+        }
+
+        private void SetupAssetsAndProps(SimpleTestProjectContext project)
+        {
+            string objFolder = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "obj");
+            Directory.CreateDirectory(objFolder);
+
+            string assetsPath = Path.Combine(objFolder, "project.assets.json");
+            string propsPath = Path.Combine(objFolder, "ProjectA.csproj.nuget.g.props");
+
+            string assetsContent = ResourceTestUtility.GetResource(
+                "NuGet.XPlat.FuncTest.compiler.resources.Test.OnePackage.project.assets.json",
+                GetType()
+            );
+            string propsContent = ResourceTestUtility.GetResource(
+                "NuGet.XPlat.FuncTest.compiler.resources.Test.ProjectA.csproj.nuget.g.props",
+                GetType()
+            );
+
+            File.WriteAllText(assetsPath, assetsContent);
+            File.WriteAllText(propsPath, propsContent);
+        }
+
+        private static MockServer SetupMockServer()
+        {
+            var mockServer = new MockServer();
+
+            string indexJson = $@"
+    {{
+        ""version"": ""3.0.0"",
+        ""resources"": [
+            {{
+                ""@id"": ""{mockServer.Uri}v3/vulnerabilities/index.json"",
+                ""@type"": ""VulnerabilityInfo/6.7.0"",
+                ""comment"": ""This is a test feed for vulnerabilities""
+            }}
+        ]
+    }}";
+
+            string vulnerabilitiesJson = $@"
+    [
+        {{
+            ""@name"": ""base"",
+            ""@id"": ""{mockServer.Uri}v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json"",
+            ""@updated"": ""2024-12-21T05:12:11.2008556Z"",
+            ""comment"": ""The base data for vulnerability update periodically""
+        }}
+    ]";
+
+            string baseVulnerabilityJson = $@"
+    {{
+        ""newtonsoft.json"": [
+            {{
+                ""url"": ""https://test/"",
+                ""severity"": 2,
+                ""versions"": ""(, 10.0.3)""
+            }}
+        ]
+    }}";
+
+            mockServer.Get.Add("/v3/index.json", _ => indexJson);
+            mockServer.Get.Add("/v3/vulnerabilities/index.json", _ => vulnerabilitiesJson);
+            mockServer.Get.Add("/v3-vulnerabilities/2024.12.21.05.12.11/vulnerability.base.json", _ => baseVulnerabilityJson);
+            mockServer.Start();
+
+            return mockServer;
+        }
+
     }
 }
