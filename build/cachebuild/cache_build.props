@@ -1,0 +1,53 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Reference: https://github.com/microsoft/MSBuildCache -->
+    <MSBuildCacheEnabled>true</MSBuildCacheEnabled>
+    <MSBuildCacheEnabled Condition=" '$(BuildingInsideVisualStudio)' == 'true'">false</MSBuildCacheEnabled>
+    <MSBuildCacheBlobUri Condition="'$(MSBuildCacheBlobUri)' == ''">https://avtestbuildcache.blob.core.windows.net/</MSBuildCacheBlobUri>
+
+    <!-- Set to TokenCredential to use the service connection to upload cache data -->
+    <MSBuildCacheCredentialsType>TokenCredential</MSBuildCacheCredentialsType>
+
+    <!-- Set to ConnectionString to use the 1ES Build Cache on the agent machine. -->
+    <!-- <MSBuildCacheCredentialsType>ConnectionString</MSBuildCacheCredentialsType> -->
+
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);IsGraphBuild</MSBuildCacheGlobalPropertiesToIgnore>
+    <!--
+      Ignore the sln contents to allow a projects built in two different solutions to get cache hits.
+      Relatedly, ignore how unresolved projects (projects not in the sln) are handled.
+      These do impact the build, but they only impact how Configuration and Platform are resolved for
+      references and get translated to global properties which are *not* ignored.
+    -->
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);CurrentSolutionConfigurationContents</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);ShouldUnsetParentConfigurationAndPlatform</MSBuildCacheGlobalPropertiesToIgnore>
+
+    <!--
+      Also ignore other related sln-based build properties. These *could* impact the build, but if it
+      does so in a meaningful way it would be unlikely to work outside the sln or from other slns anyway.
+    -->
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);BuildingInsideVisualStudio</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);BuildingSolutionFile</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);SolutionDir</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);SolutionExt</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);SolutionFileName</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);SolutionName</MSBuildCacheGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);SolutionPath</MSBuildCacheGlobalPropertiesToIgnore>
+
+    <!-- Azure Pipelines provides _MSDeployUserAgent as a global property which we do not need to care about -->
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);_MSDeployUserAgent</MSBuildCacheGlobalPropertiesToIgnore>
+
+    <!-- Prevent file links in the output folders -->
+    <MSBuildCacheIdenticalDuplicateOutputPatterns>**</MSBuildCacheIdenticalDuplicateOutputPatterns>
+
+    <!-- Ignoring SDK patch version-->
+    <MSBuildCacheIgnoreDotNetSdkPatchVersion>true</MSBuildCacheIgnoreDotNetSdkPatchVersion>
+  </PropertyGroup>
+
+  <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.AzureBlobStorage\build\Microsoft.MSBuildCache.AzureBlobStorage.props" />
+  <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.SharedCompilation\build\Microsoft.MSBuildCache.SharedCompilation.props" />
+
+  <!-- Used for creating a Local cache on the machine instead of upload to azure storage -->
+  <!-- <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.Local\build\Microsoft.MSBuildCache.Local.props" /> -->
+
+</Project>

@@ -1,0 +1,89 @@
+trigger:
+  branches:
+    include:
+    - main
+
+variables:
+- group: 'Connected Experience'
+- name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+  value: true
+- name: NUGET_PACKAGES
+  value: $(Agent.TempDirectory)/.nuget/packages
+- name: DisableOptProf
+  value: false
+
+stages:
+- stage: Build
+  jobs:
+  - job: Windows
+    timeoutInMinutes: 300
+    # pool: VS-Platform-Cache-Generation
+    pool: VSEngSS-MicroBuild2022-1ES
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk defined in global.json'
+      inputs:
+        useGlobalJson: true
+
+    - powershell: '& (./azure-pipelines/Get-nbgv.ps1) cloud'
+      displayName: Set build number
+
+    - task: NuGetToolInstaller@0
+      displayName: Install Nuget
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate NuGet feeds
+      inputs:
+        forceReinstallCredentialProvider: true
+
+    - script: |
+        dir c:\
+        dir "c:\program files\microsoft visual studio\2022"
+        dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer"
+      displayName: 'Inspect Drives'
+
+    - task: NuGetCommand@2
+      displayName: 'Install AzureBlobStorage'
+      inputs:
+        command: custom
+        arguments: 'install Microsoft.MSBuildCache.AzureBlobStorage -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Source https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/VS-Platform/nuget/v3/index.json'
+
+    - task: NuGetCommand@2
+      displayName: 'Install Local Storage'
+      inputs:
+        command: custom
+        arguments: 'install Microsoft.MSBuildCache.Local  -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Source https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/VS-Platform/nuget/v3/index.json'
+
+    - task: NuGetCommand@2
+      displayName: 'Install MS SharedCompilation'
+      inputs:
+        command: custom
+        arguments: 'install Microsoft.MSBuildCache.SharedCompilation -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Source https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/VS-Platform/nuget/v3/index.json'
+
+    - task: AzureCLI@2
+      displayName: Build
+      inputs:
+        azureSubscription: 'VSEngMSBuildCache'
+        scriptType: ps
+        scriptPath: 'build/cachebuild/cache_build.ps1'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Build Logs'
+      inputs:
+        targetPath: '$(Agent.TempDirectory)\MSBuildBuildBinLog'
+        artifact: MSBuildBuildBinLog
+      condition: always()
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Cache Logs'
+      inputs:
+        targetPath: '$(Agent.TempDirectory)\MSBuildCacheLogs'
+        artifact: MSBuildCacheLogs
+      condition: always()
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Cache Logs'
+      inputs:
+        targetPath: '$(Agent.TempDirectory)\MSBuildCacheLocalRoot'
+        artifact: MSBuildCacheLocalRoot
+      condition: always()
