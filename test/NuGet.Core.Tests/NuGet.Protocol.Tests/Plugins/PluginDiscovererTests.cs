@@ -520,6 +520,73 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPaths_Windows_CaseInsensitiveMatching()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            var pluginFilePath1 = Path.Combine(testDirectory.Path, "nuget-plugin-test.exe");
+            var pluginFilePath2 = Path.Combine(testDirectory.Path, "NUGET-PLUGIN-TEST.exe"); // Different casing
+
+            File.Create(pluginFilePath1).Dispose();
+            File.Create(pluginFilePath2).Dispose();
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns($"{pluginFilePath1}{Path.PathSeparator}{pluginFilePath2}");
+
+            var pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
+
+            // Assert
+            Assert.Equal(2, plugins.Count);
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void GetPluginsInNuGetPluginPaths_Linux_CaseSensitiveMatching()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            var correctCasePlugin = Path.Combine(testDirectory.Path, "nuget-plugin-test");
+            var incorrectCasePlugin = Path.Combine(testDirectory.Path, "NUGET-PLUGIN-TEST"); // Different casing
+
+            File.Create(correctCasePlugin).Dispose();
+            File.Create(incorrectCasePlugin).Dispose();
+
+#if NET8_0_OR_GREATER
+            File.SetUnixFileMode(correctCasePlugin, UnixFileMode.UserExecute | UnixFileMode.UserRead);
+#else
+            // Use chmod for older .NET versions
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod +x {correctCasePlugin} {incorrectCasePlugin}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Failed to set execute permissions for {correctCasePlugin} or {incorrectCasePlugin}");
+            }
+#endif
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns($"{correctCasePlugin}{Path.PathSeparator}{incorrectCasePlugin}");
+
+            var pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Contains(plugins, p => p.Path == correctCasePlugin);
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void IsValidPluginFile_ExeFile_ReturnsTrue()
         {
             // Arrange
