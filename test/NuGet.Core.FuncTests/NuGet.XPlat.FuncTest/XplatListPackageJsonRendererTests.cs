@@ -1255,7 +1255,7 @@ namespace NuGet.XPlat.FuncTest
                             projectProblems: null
                       )
                     );
-                    listPackageReportModel.SourcesUsed.Add(source);
+                    listPackageReportModel.AuditSourcesUsed.Add(source);
 
                     // Act
                     jsonRenderer.Render(listPackageReportModel);
@@ -1352,7 +1352,7 @@ namespace NuGet.XPlat.FuncTest
                             projectProblems: null
                       )
                     );
-                    listPackageReportModel.SourcesUsed.Add(source);
+                    listPackageReportModel.AuditSourcesUsed.Add(source);
 
                     // Act
                     jsonRenderer.Render(listPackageReportModel);
