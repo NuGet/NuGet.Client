@@ -500,10 +500,10 @@ namespace NuGet.XPlat.FuncTest
 
         private static SimpleTestProjectContext SetupTestProject(SimpleTestPathContext pathContext)
         {
-            var package = new SimpleTestPackageContext { Id = "newtonsoft.json", Version = "10.0.2" };
+            var package = new SimpleTestPackageContext { Id = "task", Version = "1.0.0" };
 
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var project = SimpleTestProjectContext.CreateNETCore("ProjectA", pathContext.SolutionRoot, NuGetFramework.Parse("net5.0"));
+            var project = SimpleTestProjectContext.CreateNETCore("ProjectA", pathContext.SolutionRoot, NuGetFramework.Parse("net8.0"));
             project.Type = ProjectStyle.PackageReference;
             project.SingleTargetFramework = true;
             project.AddPackageToAllFrameworks(package);
@@ -563,7 +563,7 @@ namespace NuGet.XPlat.FuncTest
 
             string baseVulnerabilityJson = $@"
     {{
-        ""newtonsoft.json"": [
+        ""task"": [
             {{
                 ""url"": ""https://test/"",
                 ""severity"": 2,
