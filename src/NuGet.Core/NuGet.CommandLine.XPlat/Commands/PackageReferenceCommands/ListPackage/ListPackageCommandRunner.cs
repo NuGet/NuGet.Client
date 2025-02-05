@@ -123,6 +123,8 @@ namespace NuGet.CommandLine.XPlat
 
             if (frameworks.Count > 0)
             {
+                bool vulnerabilitiesCheckedFromAuditSources = false;
+
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
                     WarnForHttpSources(listPackageArgs, projectModel);
@@ -130,25 +132,30 @@ namespace NuGet.CommandLine.XPlat
                     if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources != null && listPackageArgs.AuditSources.Count > 0)
                     {
                         await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks);
-                        return;
+                        vulnerabilitiesCheckedFromAuditSources = true;
                     }
-
-                    var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
-                    await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                    else
+                    {
+                        var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                        await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                    }
                 }
 
-                bool printPackages = FilterPackages(frameworks, listPackageArgs) || ReportType.Default == listPackageArgs.ReportType;
+                if (!vulnerabilitiesCheckedFromAuditSources)
+                {
+                    bool filterPackages = FilterPackages(frameworks, listPackageArgs) || ReportType.Default == listPackageArgs.ReportType;
 
-                if (printPackages)
-                {
-                    var hasAutoReference = false;
-                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(frameworks, listPackageArgs, ref hasAutoReference);
-                    projectModel.TargetFrameworkPackages = projectFrameworkPackages;
-                    projectModel.AutoReferenceFound = hasAutoReference;
-                }
-                else
-                {
-                    projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
+                    if (filterPackages)
+                    {
+                        var hasAutoReference = false;
+                        List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(frameworks, listPackageArgs, ref hasAutoReference);
+                        projectModel.TargetFrameworkPackages = projectFrameworkPackages;
+                        projectModel.AutoReferenceFound = hasAutoReference;
+                    }
+                    else
+                    {
+                        projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
+                    }
                 }
             }
         }
@@ -276,7 +283,7 @@ namespace NuGet.CommandLine.XPlat
                 return false;
             }
 
-            reportModel.SourcesUsed.Add(source);
+            reportModel.AuditSourcesUsed.Add(source);
 
             var vulnerabilityInfoResult = await vulnerabilityResource.GetVulnerabilityInfoAsync(
                 new SourceCacheContext(),
@@ -309,7 +316,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     return vulnPackages
                         .Where(package => package.Versions.Satisfies(parsedVersion))
-                        .Select(v => JsonExtensions.FromJson<PackageVulnerabilityMetadata>($"{{ \"AdvisoryUrl\": \"{v.Url}\", \"Severity\": \"{(int)v.Severity}\" }}"))
+                        .Select(v => new PackageVulnerabilityMetadata(v.Url, (int)v.Severity))
                         .ToList();
                 }
             }

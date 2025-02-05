@@ -151,9 +151,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WritePropertyName(SourcesProperty);
             writer.WriteStartArray();
 
-            if (listPackageReportModel.ListPackageArgs.ReportType == ReportType.Vulnerable && listPackageReportModel.SourcesUsed.Count > 0)
+            if (listPackageReportModel.ListPackageArgs.ReportType == ReportType.Vulnerable && listPackageReportModel.AuditSourcesUsed.Count > 0)
             {
-                foreach (PackageSource packageSource in listPackageReportModel.SourcesUsed)
+                foreach (PackageSource packageSource in listPackageReportModel.AuditSourcesUsed)
                 {
                     writer.WriteValue(PathUtility.GetPathWithForwardSlashes(packageSource.Source));
                 }

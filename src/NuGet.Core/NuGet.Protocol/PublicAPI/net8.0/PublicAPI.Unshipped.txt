@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.Protocol.PackageVulnerabilityMetadata.PackageVulnerabilityMetadata(System.Uri advisoryUrl, int severity) -> void

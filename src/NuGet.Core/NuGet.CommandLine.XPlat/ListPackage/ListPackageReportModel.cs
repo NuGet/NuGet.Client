@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal ListPackageArgs ListPackageArgs { get; }
         internal List<ListPackageProjectModel> Projects { get; } = new();
         internal MSBuildAPIUtility MSBuildAPIUtility { get; }
-        internal HashSet<PackageSource> SourcesUsed { get; set; } = new HashSet<PackageSource>();
+        internal HashSet<PackageSource> AuditSourcesUsed { get; set; } = new HashSet<PackageSource>();
 
         private ListPackageReportModel()
         { }
