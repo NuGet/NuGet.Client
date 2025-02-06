@@ -401,7 +401,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The restore inputs for '{0}' have changed. Continuing restore.</value>
   </data>
   <data name="Log_RestoreNoOpFinish" xml:space="preserve">
-    <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
+    <value>The restore inputs for '{0}' have not changed.</value>
   </data>
   <data name="Log_SkippingAssetsFile" xml:space="preserve">
     <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
