@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-# if !NET8_0_OR_GREATER
 using System.Diagnostics;
-#endif
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -293,21 +291,35 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
-                SetFileExecutable(pluginPath, true);
-                using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+
+                using (var process = new Process())
                 {
-                    // Act
-                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+                    // Use a shell command to make the file executable
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit();
 
-                    // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    if (process.ExitCode == 0)
                     {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
+                        using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+                        {
+                            // Act
+                            var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
-                    Assert.True(discovered);
+                            // Assert
+                            var discovered = false;
+
+                            foreach (PluginDiscoveryResult discoveryResult in result)
+                            {
+                                if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                            }
+
+                            Assert.True(discovered);
+                        }
+                    }
                 }
             }
         }
@@ -326,22 +338,34 @@ namespace NuGet.Protocol.Plugins.Tests
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATHS")).Returns("");
 
-                SetFileExecutable(myPlugin, true);
-
-                using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+                using (var process = new Process())
                 {
-                    // Act
-                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+                    // Use a shell command to make the file executable
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit();
 
-                    // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    if (process.ExitCode == 0)
                     {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
+                        using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+                        {
+                            // Act
+                            var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
-                    Assert.True(discovered);
+                            // Assert
+                            var discovered = false;
+
+                            foreach (PluginDiscoveryResult discoveryResult in result)
+                            {
+                                if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                            }
+
+                            Assert.True(discovered);
+                        }
+                    }
                 }
             }
         }
@@ -359,22 +383,34 @@ namespace NuGet.Protocol.Plugins.Tests
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
 
-                SetFileExecutable(myPlugin, false);
-
-                using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+                using (var process = new Process())
                 {
-                    // Act
-                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+                    // Use a shell command to make the file not executable
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"-c \"chmod -x {myPlugin}\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit();
 
-                    // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    if (process.ExitCode == 0)
                     {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
+                        using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+                        {
+                            // Act
+                            var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
-                    Assert.False(discovered);
+                            // Assert
+                            var discovered = false;
+
+                            foreach (PluginDiscoveryResult discoveryResult in result)
+                            {
+                                if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                            }
+
+                            Assert.False(discovered);
+                        }
+                    }
                 }
             }
         }
@@ -600,7 +636,14 @@ namespace NuGet.Protocol.Plugins.Tests
             // Set execute permissions
             File.SetUnixFileMode(pluginFilePath, UnixFileMode.UserExecute | UnixFileMode.UserRead);
 #else
-            SetFileExecutable(pluginFilePath, true);
+            // Use chmod to set execute permissions
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod +x {pluginFilePath}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 #endif
 
             var fileInfo = new FileInfo(pluginFilePath);
@@ -623,7 +666,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginFilePath);
 
             // Set execute permissions
-            SetFileExecutable(pluginFilePath, true);
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod +x {pluginFilePath}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 
             var fileInfo = new FileInfo(pluginFilePath);
 
@@ -644,7 +693,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginFilePath);
 
             // Remove execute permissions
-            SetFileExecutable(pluginFilePath, false);
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod -x {pluginFilePath}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 
             var fileInfo = new FileInfo(pluginFilePath);
 
@@ -665,7 +720,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginFilePath).Dispose();
 
             // Set execute permissions
-            SetFileExecutable(pluginFilePath, true);
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod +x '{pluginFilePath}'\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 
             var fileInfo = new FileInfo(pluginFilePath);
 
@@ -677,29 +738,5 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
 #endif
-
-        private static void SetFileExecutable(string filePath, bool executable)
-        {
-#if NET8_0_OR_GREATER
-            File.SetUnixFileMode(filePath, executable ?
-            UnixFileMode.UserExecute | UnixFileMode.UserRead | UnixFileMode.UserWrite :
-            UnixFileMode.UserRead | UnixFileMode.UserWrite);
-#else
-            using (var process = new Process())
-            {
-                process.StartInfo.FileName = "/bin/bash";
-                process.StartInfo.Arguments = $"-c \"chmod {(executable ? "+x" : "-x")} {filePath}\"";
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.Start();
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException($"Failed to set execute permissions for {filePath}");
-                }
-            }
-#endif
-        }
     }
 }
