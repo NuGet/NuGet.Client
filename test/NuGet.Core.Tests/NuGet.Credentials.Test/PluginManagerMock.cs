@@ -71,9 +71,9 @@ namespace NuGet.Credentials.Test
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -250,7 +250,7 @@ namespace NuGet.Credentials.Test
             _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[]
                     {
-                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost: !RequiresDotNetHost))
+                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost: RequiresDotNetHost))
                     });
         }
 

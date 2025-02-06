@@ -22,9 +22,9 @@ namespace NuGet.Protocol.Plugins.Tests
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
 
                 Tuple<bool, PluginCreationResult> result = await pluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -88,7 +88,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -126,7 +126,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -175,7 +175,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -225,7 +225,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,

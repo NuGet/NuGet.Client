@@ -22,9 +22,9 @@ namespace NuGet.Credentials.Test
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -106,7 +106,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -141,7 +141,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -178,7 +178,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -218,7 +218,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
                 var proxy = new System.Net.WebProxy()
                 {
@@ -255,7 +255,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -285,7 +285,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectations2))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -323,7 +323,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -356,7 +356,7 @@ namespace NuGet.Credentials.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(result);
 
-            var pluginDiscoveryResult = new PluginDiscoveryResult(new PluginFile("c", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+            var pluginDiscoveryResult = new PluginDiscoveryResult(new PluginFile("c", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
             var logger = new Mock<ILogger>(MockBehavior.Strict);
 
             logger.Setup(x => x.LogError(It.Is<string>(data => data == expectedMessage)));
@@ -391,7 +391,7 @@ namespace NuGet.Credentials.Test
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 IWebProxy proxy = null;
@@ -409,7 +409,7 @@ namespace NuGet.Credentials.Test
 
         private PluginDiscoveryResult CreatePluginDiscoveryResult(PluginFileState pluginState = PluginFileState.Valid)
         {
-            return new PluginDiscoveryResult(new PluginFile(Path.Combine(_testDirectory.Path, "plugin.exe"), new Lazy<PluginFileState>(() => pluginState), requiresDotnetHost: !RequiresDotNetHost));
+            return new PluginDiscoveryResult(new PluginFile(Path.Combine(_testDirectory.Path, "plugin.exe"), new Lazy<PluginFileState>(() => pluginState), requiresDotnetHost: RequiresDotNetHost));
         }
 
         private PluginManager CreateDefaultPluginManager()

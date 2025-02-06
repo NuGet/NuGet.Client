@@ -13,9 +13,9 @@ namespace NuGet.Protocol.Plugins.Tests
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -25,7 +25,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("")]
         public void Constructor_ThrowsForNullOrEmptyFilePath(string filePath)
         {
-            var exception = Assert.Throws<ArgumentException>(() => new PluginFile(filePath, state: new Lazy<PluginFileState>(() => PluginFileState.NotFound), requiresDotnetHost: !RequiresDotNetHost));
+            var exception = Assert.Throws<ArgumentException>(() => new PluginFile(filePath, state: new Lazy<PluginFileState>(() => PluginFileState.NotFound), requiresDotnetHost: RequiresDotNetHost));
 
             Assert.Equal("filePath", exception.ParamName);
         }
@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !RequiresDotNetHost);
+            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: RequiresDotNetHost);
 
             Assert.Equal("a", pluginFile.Path);
             Assert.Equal(PluginFileState.Valid, pluginFile.State.Value);

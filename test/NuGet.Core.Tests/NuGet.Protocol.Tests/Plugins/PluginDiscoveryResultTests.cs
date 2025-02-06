@@ -13,9 +13,9 @@ namespace NuGet.Protocol.Plugins.Tests
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.InvalidEmbeddedSignature), requiresDotnetHost: !RequiresDotNetHost);
+            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.InvalidEmbeddedSignature), requiresDotnetHost: RequiresDotNetHost);
 
             var result = new PluginDiscoveryResult(pluginFile);
 

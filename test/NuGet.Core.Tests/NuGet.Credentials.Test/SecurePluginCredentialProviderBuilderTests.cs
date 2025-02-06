@@ -22,9 +22,9 @@ namespace NuGet.Credentials.Test
             get
             {
 #if IS_DESKTOP
-                return true;
-#else
                 return false;
+#else
+                return true;
 #endif
             }
         }
@@ -181,7 +181,7 @@ namespace NuGet.Credentials.Test
                 var results = new List<PluginDiscoveryResult>();
                 foreach (var plugin in plugins)
                 {
-                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value), requiresDotnetHost: !RequiresDotNetHost);
+                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value), requiresDotnetHost: RequiresDotNetHost);
                     results.Add(new PluginDiscoveryResult(file));
                 }
 
