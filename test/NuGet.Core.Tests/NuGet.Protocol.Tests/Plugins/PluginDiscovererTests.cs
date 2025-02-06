@@ -293,7 +293,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
-                SetFileExecutable(pluginPath, true);
+                SetFileExecutable(myPlugin, true);
                 using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
                 {
                     // Act
@@ -701,7 +701,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 using (var process = new Process())
                 {
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"-c \"chmod {(executable ? "+x" : "-x")} {filePath}\"";
+                    process.StartInfo.Arguments = $"-c \"chmod {(executable ? "+x" : "-x")} '{filePath}'\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
