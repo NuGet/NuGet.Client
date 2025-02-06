@@ -1574,7 +1574,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have not changed..
+        ///   Looks up a localized string similar to The restore inputs for &apos;{0}&apos; have not changed. No further actions are required to complete the restore..
         /// </summary>
         internal static string Log_RestoreNoOpFinish {
             get {

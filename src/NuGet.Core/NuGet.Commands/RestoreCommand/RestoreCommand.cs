@@ -391,8 +391,8 @@ namespace NuGet.Commands
                 if (noOpSuccess)
                 {
                     telemetry.StartIntervalMeasure();
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
-                    // TODO NK -  No further actions are required to complete the restore.
                     // Replay Warnings and Errors from an existing lock file in case of a no-op.
                     await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
 
@@ -418,6 +418,8 @@ namespace NuGet.Commands
                         restoreTime.Elapsed), noOpCacheFileEvaluation, cacheFile);
                 }
             }
+
+            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
 
             return (null, noOpCacheFileEvaluation, cacheFile);
         }
@@ -971,13 +973,11 @@ namespace NuGet.Commands
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheFileMatchesProject(cacheFile))
                 {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     noOpCacheFileEvaluation = true;
                 }
                 else
                 {
                     cacheFile = new CacheFile(newDgSpecHash);
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
                 }
             }
             else
