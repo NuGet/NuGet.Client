@@ -17,11 +17,6 @@ namespace NuGet.Commands
         public enum LibraryDependencyIndex : int
         {
             /// <summary>
-            /// An invalid value used only for default initialization.
-            /// </summary>
-            Invalid = -1,
-
-            /// <summary>
             /// The index of the root project.
             /// </summary>
             Project = 0,
@@ -32,11 +27,6 @@ namespace NuGet.Commands
         /// </summary>
         public enum LibraryRangeIndex : int
         {
-            /// <summary>
-            /// An invalid value used only for default initialization.
-            /// </summary>
-            Invalid = -2,
-
             /// <summary>
             /// The index used as a parent of the root project.
             /// </summary>
