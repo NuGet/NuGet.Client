@@ -555,23 +555,8 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(correctCasePlugin).Dispose();
             File.Create(incorrectCasePlugin).Dispose();
 
-#if NET8_0_OR_GREATER
-            File.SetUnixFileMode(correctCasePlugin, UnixFileMode.UserExecute | UnixFileMode.UserRead);
-#else
-            // Use chmod for older .NET versions
-            var process = new Process();
-            process.StartInfo.FileName = "/bin/bash";
-            process.StartInfo.Arguments = $"-c \"chmod +x {correctCasePlugin} {incorrectCasePlugin}\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.Start();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                throw new InvalidOperationException($"Failed to set execute permissions for {correctCasePlugin} or {incorrectCasePlugin}");
-            }
-#endif
+            SetFileExecutable(correctCasePlugin, executable: true);
+            SetFileExecutable(incorrectCasePlugin, executable: true);
 
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns($"{correctCasePlugin}{Path.PathSeparator}{incorrectCasePlugin}");
