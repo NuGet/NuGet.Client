@@ -12,18 +12,6 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginFactoryTests
     {
-        public bool RequiresDotNetHost
-        {
-            get
-            {
-#if IS_DESKTOP
-                return false;
-#else
-                return true;
-#endif
-            }
-        }
-
         [Fact]
         public void Constructor_ThrowsForTimeSpanBelowMinimum()
         {
@@ -60,7 +48,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: filePath, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: filePath, state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     PluginConstants.PluginArguments,
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
@@ -76,7 +64,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     arguments: null,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
@@ -92,7 +80,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: null,
                     options: ConnectionOptions.CreateDefault(),
@@ -108,7 +96,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: null,
@@ -124,7 +112,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             await Assert.ThrowsAsync<OperationCanceledException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
@@ -140,7 +128,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
                 () => factory.GetOrCreateAsync(
-                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), RequiresDotNetHost),
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid)),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),

@@ -226,17 +226,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
         private sealed class PluginResourceProviderNegativeTest : IDisposable
         {
-            public static bool RequiresDotNetHost
-            {
-                get
-                {
-#if IS_DESKTOP
-                    return false;
-#else
-                    return true;
-#endif
-                }
-            }
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly PluginManager _pluginManager;
             private readonly Mock<IEnvironmentVariableReader> _environmentVariableReader;
@@ -310,7 +299,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 foreach (var path in pluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var state = path == "a" ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
-                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state), RequiresDotNetHost);
+                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state));
                     results.Add(new PluginDiscoveryResult(file));
                 }
 
@@ -320,17 +309,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
         private sealed class PluginResourceProviderPositiveTest : IDisposable
         {
-            public static bool RequiresDotNetHost
-            {
-                get
-                {
-#if IS_DESKTOP
-                    return false;
-#else
-                    return true;
-#endif
-                }
-            }
             private readonly Mock<IConnection> _connection;
             private readonly IEnumerable<PositiveTestExpectation> _expectations;
             private readonly Mock<PluginFactory> _factory;
@@ -377,7 +355,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new[]
                         {
-                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), RequiresDotNetHost))
+                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState)))
                         });
 
                 _connection = new Mock<IConnection>(MockBehavior.Strict);

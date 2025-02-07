@@ -66,18 +66,6 @@ namespace NuGet.Credentials.Test
 
     internal sealed class PluginManagerMock : IDisposable
     {
-        public static bool RequiresDotNetHost
-        {
-            get
-            {
-#if IS_DESKTOP
-                return false;
-#else
-                return true;
-#endif
-            }
-        }
-
         private readonly Mock<IConnection> _connection;
         private readonly TestExpectation _expectations;
         private readonly Mock<PluginFactory> _factory;
@@ -250,7 +238,7 @@ namespace NuGet.Credentials.Test
             _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[]
                     {
-                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), RequiresDotNetHost))
+                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState)))
                     });
         }
 

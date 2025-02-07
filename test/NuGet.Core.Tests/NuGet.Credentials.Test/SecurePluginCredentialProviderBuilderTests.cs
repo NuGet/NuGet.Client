@@ -17,17 +17,6 @@ namespace NuGet.Credentials.Test
 {
     public class SecurePluginCredentialProviderBuilderTests : IDisposable
     {
-        public static bool RequiresDotNetHost
-        {
-            get
-            {
-#if IS_DESKTOP
-                return false;
-#else
-                return true;
-#endif
-            }
-        }
         private readonly TestDirectory _testDirectory;
 
         public SecurePluginCredentialProviderBuilderTests()
@@ -181,7 +170,7 @@ namespace NuGet.Credentials.Test
                 var results = new List<PluginDiscoveryResult>();
                 foreach (var plugin in plugins)
                 {
-                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value), RequiresDotNetHost);
+                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value));
                     results.Add(new PluginDiscoveryResult(file));
                 }
 

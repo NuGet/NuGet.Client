@@ -23,17 +23,6 @@ namespace NuGet.Protocol.Plugins
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
-        private static bool RequiresDotNetHost
-        {
-            get
-            {
-#if IS_DESKTOP
-                return false;
-#else
-                return true;
-#endif
-            }
-        }
 
         public PluginDiscoverer()
             : this(EnvironmentVariableWrapper.Instance)
@@ -179,7 +168,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         return PluginFileState.InvalidFilePath;
                     }
-                }), RequiresDotNetHost);
+                }));
                 files.Add(pluginFile);
             }
 
@@ -216,7 +205,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             // A non DotNet tool plugin file
                             var state = new Lazy<PluginFileState>(() => PluginFileState.Valid);
-                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state, RequiresDotNetHost));
+                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
                         }
                     }
                     else if (Directory.Exists(path))
@@ -226,7 +215,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), RequiresDotNetHost));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
             }
 
