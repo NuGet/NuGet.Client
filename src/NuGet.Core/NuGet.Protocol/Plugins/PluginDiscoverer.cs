@@ -192,8 +192,7 @@ namespace NuGet.Protocol.Plugins
                     if (File.Exists(path))
                     {
                         FileInfo fileInfo = new FileInfo(path);
-                        StringComparison comparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-                        if (fileInfo.Name.StartsWith("nuget-plugin-", comparisonType))
+                        if (fileInfo.Name.StartsWith("nuget-plugin-", PathUtility.GetStringComparisonBasedOnOS()))
                         {
                             // A DotNet tool plugin
                             if (IsValidPluginFile(fileInfo))
