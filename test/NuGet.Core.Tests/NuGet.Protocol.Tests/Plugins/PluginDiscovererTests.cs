@@ -209,14 +209,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.True(discovered);
+                    Assert.Contains(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
@@ -243,14 +236,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.True(discovered);
+                    Assert.Contains(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
@@ -277,14 +263,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.False(discovered);
+                    Assert.DoesNotContain(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
@@ -308,14 +287,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.True(discovered);
+                    Assert.Contains(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
@@ -342,14 +314,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.True(discovered);
+                    Assert.Contains(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
@@ -375,14 +340,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
 
                     // Assert
-                    var discovered = false;
-
-                    foreach (PluginDiscoveryResult discoveryResult in result)
-                    {
-                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
-                    }
-
-                    Assert.False(discovered);
+                    Assert.DoesNotContain(result, discoveryResult => myPlugin == discoveryResult.PluginFile.Path);
                 }
             }
         }
