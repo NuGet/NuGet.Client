@@ -181,7 +181,7 @@ namespace NuGet.Credentials.Test
                 var results = new List<PluginDiscoveryResult>();
                 foreach (var plugin in plugins)
                 {
-                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value), requiresDotnetHost: RequiresDotNetHost);
+                    var file = new PluginFile(plugin.Key, new Lazy<PluginFileState>(() => plugin.Value), RequiresDotNetHost);
                     results.Add(new PluginDiscoveryResult(file));
                 }
 

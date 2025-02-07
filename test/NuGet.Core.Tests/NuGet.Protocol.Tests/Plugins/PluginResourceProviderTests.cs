@@ -310,7 +310,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 foreach (var path in pluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var state = path == "a" ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
-                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state), requiresDotnetHost: RequiresDotNetHost);
+                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state), RequiresDotNetHost);
                     results.Add(new PluginDiscoveryResult(file));
                 }
 
@@ -377,7 +377,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new[]
                         {
-                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost : RequiresDotNetHost))
+                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), RequiresDotNetHost))
                         });
 
                 _connection = new Mock<IConnection>(MockBehavior.Strict);
