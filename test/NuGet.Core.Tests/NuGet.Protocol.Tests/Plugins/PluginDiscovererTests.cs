@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 # if !NET8_0_OR_GREATER
-using System.Diagnostics;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 #endif
 using System.IO;
 using System.Linq;
@@ -14,11 +14,19 @@ using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginDiscovererTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public PluginDiscovererTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -678,7 +686,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
 #endif
 
-        private static void SetFileExecutable(string filePath, bool executable)
+        private void SetFileExecutable(string filePath, bool executable)
         {
             if (!File.Exists(filePath))
             {
@@ -698,22 +706,14 @@ namespace NuGet.Protocol.Plugins.Tests
 #else
             try
             {
-                using (var process = new Process())
+                CommandRunnerResult result = CommandRunner.Run(
+                    filename: "/bin/bash",
+                    arguments: $"-c \"chmod {(executable ? "+x" : "-x")} '{filePath}'\"",
+                    testOutputHelper: _testOutputHelper);
+
+                if (!result.Success)
                 {
-                    process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"-c \"chmod {(executable ? "+x" : "-x")} '{filePath}'\"";
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-
-                    process.Start();
-                    string errorOutput = process.StandardError.ReadToEnd();
-                    process.WaitForExit();
-
-                    if (process.ExitCode != 0)
-                    {
-                        throw new InvalidOperationException($"Failed to set execute permissions for {filePath}. Error: {errorOutput}");
-                    }
+                    throw new InvalidOperationException($"Failed to set execute permissions for {filePath}. Error: {result.Errors}");
                 }
             }
             catch (Exception ex)
