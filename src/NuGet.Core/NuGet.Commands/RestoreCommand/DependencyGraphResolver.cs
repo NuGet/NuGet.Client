@@ -1320,17 +1320,15 @@ namespace NuGet.Commands
                     if (resolvedDependencyGraphItems.TryGetValue(childLibraryDependencyIndex, out ResolvedDependencyGraphItem? childResolvedDependencyGraphItem)
                         && childResolvedDependencyGraphItem.LibraryRangeIndex == childLibraryRangeIndex
                         && childResolvedDependencyGraphItem.Suppressions.Count == 1
-                        && childResolvedDependencyGraphItem.Suppressions[0].Count == 0)
+                        && childResolvedDependencyGraphItem.Suppressions[0].Count == 0
+                        && HasCommonAncestor(childResolvedDependencyGraphItem.Path, currentDependencyGraphItem.Path))
                     {
-                        if (childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage)
-                        {
-                            childResolvedDependencyGraphItem.Parents ??= new HashSet<LibraryRangeIndex>();
+                        childResolvedDependencyGraphItem.Parents ??= new HashSet<LibraryRangeIndex>();
 
-                            if (!childResolvedDependencyGraphItem.IsRootPackageReference)
-                            {
-                                // Keep track of the parents of this item
-                                childResolvedDependencyGraphItem.Parents?.Add(currentDependencyGraphItem.LibraryRangeIndex);
-                            }
+                        if (!childResolvedDependencyGraphItem.IsRootPackageReference)
+                        {
+                            // Keep track of the parents of this item
+                            childResolvedDependencyGraphItem.Parents?.Add(currentDependencyGraphItem.LibraryRangeIndex);
                         }
 
                         continue;
