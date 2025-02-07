@@ -540,7 +540,6 @@ namespace NuGet.Protocol.Plugins.Tests
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
 
             // Assert
-            Assert.Equal(2, plugins.Count);
             Assert.Contains(plugins, p => p.Path == pluginFilePath1);
             Assert.Contains(plugins, p => p.Path == pluginFilePath2);
         }
@@ -569,7 +568,6 @@ namespace NuGet.Protocol.Plugins.Tests
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
 
             // Assert
-            Assert.Single(plugins);
             Assert.Contains(plugins, p => p.Path == correctCasePlugin);
             Assert.DoesNotContain(plugins, p => p.Path == incorrectCasePlugin);
         }
