@@ -541,6 +541,8 @@ namespace NuGet.Protocol.Plugins.Tests
 
             // Assert
             Assert.Equal(2, plugins.Count);
+            Assert.Contains(plugins, p => p.Path == pluginFilePath1);
+            Assert.Contains(plugins, p => p.Path == pluginFilePath2);
         }
 
         [PlatformFact(Platform.Linux)]
@@ -569,6 +571,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.Single(plugins);
             Assert.Contains(plugins, p => p.Path == correctCasePlugin);
+            Assert.DoesNotContain(plugins, p => p.Path == incorrectCasePlugin);
         }
 
         [PlatformFact(Platform.Windows)]
