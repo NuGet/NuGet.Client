@@ -519,6 +519,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Empty(plugins);
         }
 
+#if !IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public void GetPluginsInNuGetPluginPaths_Windows_CaseInsensitiveMatching()
         {
@@ -540,8 +541,8 @@ namespace NuGet.Protocol.Plugins.Tests
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
 
             // Assert
-            Assert.Contains(plugins, p => p.Path == pluginFilePath1);
-            Assert.Contains(plugins, p => p.Path == pluginFilePath2);
+            Assert.Contains(plugins, p => p.Path == pluginFilePath1 && p.RequiresDotnetHost == false);
+            Assert.Contains(plugins, p => p.Path == pluginFilePath2 && p.RequiresDotnetHost == false);
         }
 
         [PlatformFact(Platform.Linux)]
@@ -568,9 +569,10 @@ namespace NuGet.Protocol.Plugins.Tests
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
 
             // Assert
-            Assert.Contains(plugins, p => p.Path == correctCasePlugin);
-            Assert.DoesNotContain(plugins, p => p.Path == incorrectCasePlugin);
+            Assert.Contains(plugins, p => p.Path == correctCasePlugin && p.RequiresDotnetHost == false);
+            Assert.DoesNotContain(plugins, p => p.Path == incorrectCasePlugin && p.RequiresDotnetHost == false);
         }
+#endif
 
         [PlatformFact(Platform.Windows)]
         public void IsValidPluginFile_ExeFile_ReturnsTrue()
