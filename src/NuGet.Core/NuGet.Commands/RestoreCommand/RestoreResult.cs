@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -315,8 +316,7 @@ namespace NuGet.Commands
 
         private async Task CommitDgSpecFileAsync(ILogger log, bool toolCommit)
         {
-            // TODO NK - did hash change?
-            if (!toolCommit && DidDGHashChange && _dependencyGraphSpecFilePath != null && _dependencyGraphSpec != null)
+            if (!toolCommit && _dependencyGraphSpecFilePath != null && _dependencyGraphSpec != null && (DidDGHashChange || !File.Exists(_dependencyGraphSpecFilePath)))
             {
                 log.LogVerbose($"Persisting dg to {_dependencyGraphSpecFilePath}");
 
