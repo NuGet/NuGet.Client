@@ -1320,13 +1320,12 @@ namespace NuGet.Commands
                     if (resolvedDependencyGraphItems.TryGetValue(childLibraryDependencyIndex, out ResolvedDependencyGraphItem? childResolvedDependencyGraphItem)
                         && childResolvedDependencyGraphItem.LibraryRangeIndex == childLibraryRangeIndex
                         && childResolvedDependencyGraphItem.Suppressions.Count == 1
-                        && childResolvedDependencyGraphItem.Suppressions[0].Count == 0
-                        && HasCommonAncestor(childResolvedDependencyGraphItem.Path, currentDependencyGraphItem.Path))
+                        && childResolvedDependencyGraphItem.Suppressions[0].Count == 0)
                     {
-                        childResolvedDependencyGraphItem.Parents ??= new HashSet<LibraryRangeIndex>();
-
                         if (!childResolvedDependencyGraphItem.IsRootPackageReference)
                         {
+                            childResolvedDependencyGraphItem.Parents ??= new HashSet<LibraryRangeIndex>();
+
                             // Keep track of the parents of this item
                             childResolvedDependencyGraphItem.Parents?.Add(currentDependencyGraphItem.LibraryRangeIndex);
                         }
