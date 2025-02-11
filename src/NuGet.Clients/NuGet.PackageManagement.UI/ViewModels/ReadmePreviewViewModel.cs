@@ -68,6 +68,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
             set => SetAndRaisePropertyChanged(ref _rawReadme, value);
         }
 
+        //For testing purposes
+        internal DetailedPackageMetadata PackageMetadata => _packageMetadata;
+
         public async Task ItemFilterChangedAsync(ItemFilter filter)
         {
             var oldRenderLocalReadme = _canRenderLocalReadme;
