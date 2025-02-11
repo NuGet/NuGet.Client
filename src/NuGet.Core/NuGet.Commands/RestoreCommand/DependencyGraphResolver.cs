@@ -968,7 +968,6 @@ namespace NuGet.Commands
                     // Create a resolved dependency graph item and add it to the list of chosen items
                     chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                     {
-                        Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItem.IsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
                         IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
                         IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
                         Suppressions = new List<HashSet<LibraryDependencyIndex>>
@@ -1116,7 +1115,6 @@ namespace NuGet.Commands
                         // Add the item to the list of chosen items
                         chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
                         {
-                            Parents = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !currentDependencyGraphItem.IsRootPackageReference ? new HashSet<LibraryRangeIndex>() { currentDependencyGraphItem.Parent } : null,
                             IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
                             IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
                             Suppressions = new List<HashSet<LibraryDependencyIndex>>
@@ -1159,8 +1157,6 @@ namespace NuGet.Commands
                     }
                     else // The current item and chosen item have the same version
                     {
-                        chosenResolvedItem.Parents ??= new HashSet<LibraryRangeIndex>();
-
                         if (!chosenResolvedItem.IsRootPackageReference)
                         {
                             // Keep track of the parents of this item
@@ -1177,9 +1173,8 @@ namespace NuGet.Commands
                             // Replace the chosen item with the current one since they are basically the same and process its children
                             resolvedDependencyGraphItems.Remove(currentDependencyGraphItem.LibraryDependencyIndex);
 
-                            chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
+                            chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable, chosenResolvedItem.Parents)
                             {
-                                Parents = chosenResolvedItem.Parents,
                                 IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
                                 IsRootPackageReference = chosenResolvedItem.IsRootPackageReference,
                                 Suppressions = new List<HashSet<LibraryDependencyIndex>>
@@ -1211,9 +1206,8 @@ namespace NuGet.Commands
                                 // Replace the chosen item with the current item with the the combined list of suppressions and process its children
                                 resolvedDependencyGraphItems.Remove(currentDependencyGraphItem.LibraryDependencyIndex);
 
-                                chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable)
+                                chosenResolvedItem = new ResolvedDependencyGraphItem(currentGraphItem, currentDependencyGraphItem, _indexingTable, chosenResolvedItem.Parents)
                                 {
-                                    Parents = chosenResolvedItem.Parents,
                                     IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
                                     IsRootPackageReference = chosenResolvedItem.IsRootPackageReference,
                                     Suppressions =
@@ -1324,8 +1318,6 @@ namespace NuGet.Commands
                     {
                         if (!childResolvedDependencyGraphItem.IsRootPackageReference)
                         {
-                            childResolvedDependencyGraphItem.Parents ??= new HashSet<LibraryRangeIndex>();
-
                             // Keep track of the parents of this item
                             childResolvedDependencyGraphItem.Parents?.Add(currentDependencyGraphItem.LibraryRangeIndex);
                         }
