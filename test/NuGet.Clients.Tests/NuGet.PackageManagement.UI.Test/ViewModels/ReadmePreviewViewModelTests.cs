@@ -157,7 +157,6 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             //Act
             await target.SetPackageMetadataAsync(newPackage, CancellationToken.None);
 
-
             //Assert
             Assert.Equal(target.PackageMetadata, newPackage);
         }
