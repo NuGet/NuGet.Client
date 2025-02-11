@@ -1,1 +1,4 @@
 #nullable enable
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net10_0 -> NuGet.Frameworks.NuGetFramework!
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net90 -> NuGet.Frameworks.NuGetFramework!
+static readonly NuGet.Frameworks.FrameworkConstants.Version9 -> System.Version!
