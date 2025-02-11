@@ -1310,7 +1310,7 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    // See if a dependency with the same version and suppressions has already been chosen
+                    // See if a dependency with the same version and no suppressions has already been resolved.  If so, its children have already been added to the queue.
                     if (resolvedDependencyGraphItems.TryGetValue(childLibraryDependencyIndex, out ResolvedDependencyGraphItem? childResolvedDependencyGraphItem)
                         && childResolvedDependencyGraphItem.LibraryRangeIndex == childLibraryRangeIndex
                         && childResolvedDependencyGraphItem.Suppressions.Count == 1
