@@ -2,8 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
@@ -13,7 +11,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         private bool _disposed = false;
         private bool _readmeTabEnabled;
-        private CancellationTokenSource _readmeRenderingCancellationTokenSource = new CancellationTokenSource();
 
         public ReadmePreviewViewModel ReadmePreviewViewModel { get; private set; }
 
@@ -73,8 +70,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 return;
             }
             _disposed = true;
-            _readmeRenderingCancellationTokenSource.Cancel();
-            _readmeRenderingCancellationTokenSource.Dispose();
+            ReadmePreviewViewModel?.Dispose();
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
             foreach (var tab in Tabs)
             {
@@ -107,17 +103,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private void DetailControlModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (_readmeTabEnabled
+                && e.PropertyName == nameof(DetailControlModel.PackageMetadata))
             {
-                if (_readmeTabEnabled && e.PropertyName == nameof(DetailControlModel.PackageMetadata))
-                {
-                    var newCts = new CancellationTokenSource();
-                    var oldCts = Interlocked.Exchange(ref _readmeRenderingCancellationTokenSource, newCts);
-                    oldCts?.Cancel();
-                    oldCts?.Dispose();
-                    await ReadmePreviewViewModel.SetPackageMetadataAsync(DetailControlModel.PackageMetadata, _readmeRenderingCancellationTokenSource.Token);
-                }
-            }).PostOnFailure(nameof(PackageDetailsTabViewModel), nameof(DetailControlModel_PropertyChanged));
+                ReadmePreviewViewModel.SetPackageMetadataAsync(DetailControlModel.PackageMetadata).PostOnFailure(nameof(PackageDetailsTabViewModel), nameof(DetailControlModel_PropertyChanged));
+            }
         }
     }
 }
