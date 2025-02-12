@@ -39,6 +39,10 @@ stages:
         dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer"
       displayName: 'Inspect Drives'
 
+    - powershell: |
+        ../../scripts/Install-Workloads.ps1
+      displayName: Install Workloads
+
     - task: NuGetCommand@2
       displayName: 'Install AzureBlobStorage'
       inputs:

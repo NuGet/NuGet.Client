@@ -1,0 +1,5 @@
+$VSpath = & "$PSScriptRoot\Get-VSPath.ps1"
+$VSSetupPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
+$VSConfigPath = "$PSScriptRoot\..\.vsconfig"
+
+& $VSSetupPath\setup.exe --installPath $VSpath --config $VSConfigPath --includeRecommended --quiet --norestart
