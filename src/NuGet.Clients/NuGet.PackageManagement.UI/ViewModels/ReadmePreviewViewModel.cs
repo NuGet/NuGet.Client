@@ -95,7 +95,8 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public bool ShouldUpdatePackageMetadata(DetailedPackageMetadata packageMetadata)
+        // for testing purposes
+        internal bool ShouldUpdatePackageMetadata(DetailedPackageMetadata packageMetadata)
         {
             return packageMetadata != null && (
                 !string.Equals(packageMetadata.Id, _packageMetadata?.Id)
