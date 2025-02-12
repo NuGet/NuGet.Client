@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private bool _canRenderLocalReadme;
         private bool _isBusy;
         private bool _disposed;
-        private CancellationTokenSource _viewModelDisposedCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _readmeLoadingCancellationTokenSource = new CancellationTokenSource();
 
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private CancellationTokenSource ExchangeCancellationTokenSource()
         {
             var newCts = new CancellationTokenSource();
-            var oldCts = Interlocked.Exchange(ref _viewModelDisposedCancellationTokenSource, newCts);
+            var oldCts = Interlocked.Exchange(ref _readmeLoadingCancellationTokenSource, newCts);
             oldCts?.Cancel();
             oldCts?.Dispose();
             return newCts;
@@ -175,8 +175,8 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 if (disposing)
                 {
-                    _viewModelDisposedCancellationTokenSource?.Cancel();
-                    _viewModelDisposedCancellationTokenSource?.Dispose();
+                    _readmeLoadingCancellationTokenSource?.Cancel();
+                    _readmeLoadingCancellationTokenSource?.Dispose();
                 }
                 _disposed = true;
             }
