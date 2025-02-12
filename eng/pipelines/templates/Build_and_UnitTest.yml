@@ -394,19 +394,21 @@ steps:
     azureSubscription: "Darc: Maestro Production"
     scriptType: ps
     scriptLocation: inlineScript
-    inlineScript: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog  
+    inlineScript: >
+    dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj 
+    /t:PublishToBuildAssetRegistry 
+    /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) 
+    /property:BUILD_BUILDNUMBER=$(Build.BuildNumber)
+    /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName)
+    /property:BUILD_SOURCEVERSION=$(Build.SourceVersion)
+    /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) 
+    /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name)
+    /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\
+    /property:MaestroApiEndpoint=$(MaestroApiEndpoint)
+    /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog
     workingDirectory: cli
     failOnStderr: true
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
   condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
-
-  - task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
