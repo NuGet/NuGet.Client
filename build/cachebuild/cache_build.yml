@@ -40,7 +40,7 @@ stages:
       displayName: 'Inspect Drives'
 
     - powershell: |
-        scripts/Install-Workloads.ps1
+        ./scripts/Install-Workloads.ps1
       displayName: Install Workloads
 
     - task: NuGetCommand@2
