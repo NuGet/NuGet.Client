@@ -1,15 +1,18 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemFormatsAsn1PackageVersion Condition="'$(SystemFormatsAsn1PackageVersion)' == ''">8.0.1</SystemFormatsAsn1PackageVersion>
+
     <!-- Read docs/updating-packages.md before updating System.Text.Json's version -->
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
   </PropertyGroup>
+
   <!-- MSBuild has vulnerable dependencies Microsoft.IO.Redist and System.Security.Cryptography.Xml. When it's upgraded, try removing pinned packages-->
   <PropertyGroup>
     <!-- Read docs/updating-packages.md before updating MSBuild's version -->
@@ -19,6 +22,7 @@
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
   </PropertyGroup>
+
   <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
   <!-- For each property in this group, there is an appropriate package dependency in eng/Version.Details.xml -->
   <!-- All .NET package dependencies have to use proper version property names -->
@@ -31,6 +35,7 @@
     <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. This property can be probably removed when MSBuild is updated to a newer version. -->
     <SystemSecurityCryptographyXmlVersion Condition="'$(SystemSecurityCryptographyXmlVersion)' == ''">8.0.1</SystemSecurityCryptographyXmlVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageVersion Include="FluentAssertions" Version="6.12.0" />
     <PackageVersion Include="ILMerge" Version="3.0.41" />
@@ -114,6 +119,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.StaFact" Version="1.1.11" />
   </ItemGroup>
+
   <!--
     These PackageVersions are only used to resolve transitive packages with known vulnerabilities.
     Once the packages depending on these packages are upgraded, these PackageVersions can be removed.
@@ -123,6 +129,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="5.7.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
   </ItemGroup>
+
   <!--
     Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
     there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
@@ -131,40 +138,52 @@
     These individual package versions should be equal to or less than the package version within the VS SDK that our
     customers use, otherwise they might get NU1605 or MSB3277 warnings.
   -->
-  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
+  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
     <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.5.31" />
     <PackageVersion Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.10.191" />
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />
     <!-- Microsoft.VisualStudio.Shell.15.0 has vulnerable dependencies System.Text.Json and Microsoft.IO.Redist. When it's upgraded, try removing the pinned packages -->
     <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="17.10.40173" />
   </ItemGroup>
+
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="1.0.0" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
+
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
+
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(SkipAnalyzers)' != 'true' AND '$(DotNetBuildSourceOnly)' != 'true'">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)build\BannedSymbols.txt" Condition="'$(TestProject)' != 'true'" />
   </ItemGroup>
+
   <!-- DotNetBuildSourceOnly can only use packages that are open source -->
   <Target Name="CheckSourceBuildPackageReferences" AfterTargets="CollectPackageReferences" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
     <ItemGroup>
       <_allowBuildFromSourcePackage Remove="@(_allowBuildFromSourcePackage)" />
       <_sourceBuildUnexpectedPackage Remove="@(_sourceBuildUnexpectedPackage)" />
+
       <_allowBuildFromSourcePackage Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' == 'true' " />
+
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Framework" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Tasks.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
@@ -186,8 +205,10 @@
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Xml" />
       <_allowBuildFromSourcePackage Include="System.Text.Json" />
+
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
     <Error Text="Found @(_sourceBuildUnexpectedPackage-&gt;Count()) PackageReferences not on DotNetBuildSourceOnly allow list: '@(_sourceBuildUnexpectedPackage)'" Condition=" '@(_sourceBuildUnexpectedPackage)' != '' " />
   </Target>
+
 </Project>
