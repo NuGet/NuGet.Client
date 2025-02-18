@@ -23,9 +23,9 @@
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
   </PropertyGroup>
 
-  <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
-  <!-- For each property in this group, there is an appropriate package dependency in eng/Version.Details.xml -->
-  <!-- All .NET package dependencies have to use proper version property names -->
+    <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
+    <!-- For each property in this group, there is an appropriate package dependency in eng/Version.Details.xml -->
+    <!-- All .NET package dependencies have to use proper version property names -->
   <PropertyGroup>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion Condition="'$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
