@@ -69,13 +69,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 return;
             }
-            _disposed = true;
-            ReadmePreviewViewModel?.Dispose();
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
             foreach (var tab in Tabs)
             {
                 tab.PropertyChanged -= IsVisible_PropertyChanged;
             }
+            ReadmePreviewViewModel?.Dispose();
+            _disposed = true;
         }
 
         private void IsVisible_PropertyChanged(object sender, PropertyChangedEventArgs e)
