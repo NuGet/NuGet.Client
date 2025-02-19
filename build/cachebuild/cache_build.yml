@@ -47,7 +47,7 @@ stages:
       displayName: 'Install AzureBlobStorage'
       inputs:
         command: custom
-        arguments: 'install Microsoft.MSBuildCache.AzureBlobStorage -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Source https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/VS-Platform/nuget/v3/index.json'
+        arguments: 'install Microsoft.MSBuildCache.AzureBlobStorage -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Source https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/VS-Platform/nuget/v3/index.json -Verbosity detailed'
 
     - task: NuGetCommand@2
       displayName: 'Install Local Storage'
