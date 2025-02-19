@@ -1333,6 +1333,21 @@ namespace NuGet.Commands
                         childLibraryRangeIndex = _indexingTable.Index(childDependency.LibraryRange);
                     }
 
+                    // See if a dependency with the same version and no suppressions has already been resolved.  If so, its children have already been added to the queue.
+                    if (resolvedDependencyGraphItems.TryGetValue(childLibraryDependencyIndex, out ResolvedDependencyGraphItem? childResolvedDependencyGraphItem)
+                        && childResolvedDependencyGraphItem.LibraryRangeIndex == childLibraryRangeIndex
+                        && childResolvedDependencyGraphItem.Suppressions.Count == 1
+                        && childResolvedDependencyGraphItem.Suppressions[0].Count == 0)
+                    {
+                        if (!childResolvedDependencyGraphItem.IsRootPackageReference)
+                        {
+                            // Keep track of the parents of this item
+                            childResolvedDependencyGraphItem.Parents?.Add(currentDependencyGraphItem.LibraryRangeIndex);
+                        }
+
+                        continue;
+                    }
+
                     // Create a DependencyGraphItem and add it to the queue for processing
                     DependencyGraphItem dependencyGraphItem = new()
                     {
