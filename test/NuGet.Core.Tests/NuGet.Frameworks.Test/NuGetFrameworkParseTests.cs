@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace NuGet.Frameworks.Test
@@ -437,8 +438,7 @@ namespace NuGet.Frameworks.Test
             Assert.Same(framework1, framework2);
         }
 
-        [Fact]
-        public void NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance()
+        public static IEnumerable<object[]> NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data()
         {
             var commonFrameworksType = typeof(FrameworkConstants.CommonFrameworks);
 
@@ -450,19 +450,33 @@ namespace NuGet.Frameworks.Test
                     Assert.Fail($"FrameworkConstants.CommonFrameworks.{field.Name} is not a NuGetFramework");
                 }
 
-                if ((frameworkObject.Framework == FrameworkConstants.FrameworkIdentifiers.Net && frameworkObject.Version.Major >= 4)
-                    || frameworkObject.Framework == FrameworkConstants.FrameworkIdentifiers.NetStandard
+                // Check all versions of .NET Standard and .NET (CoreApp)
+                if (frameworkObject.Framework == FrameworkConstants.FrameworkIdentifiers.NetStandard
                     || frameworkObject.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
                 {
                     var shortFolderName = frameworkObject.GetShortFolderName();
+                    yield return [shortFolderName, frameworkObject];
+                }
 
-                    // Act
-                    NuGetFramework parsedFramework = NuGetFramework.Parse(shortFolderName);
-
-                    // Assert
-                    Assert.Same(frameworkObject, parsedFramework);
+                // For .NET Framework, only check versions 4.0 and above, since few packages target older versions
+                if (frameworkObject.Framework == FrameworkConstants.FrameworkIdentifiers.Net
+                    && frameworkObject.Version.Major >= 4)
+                {
+                    var shortFolderName = frameworkObject.GetShortFolderName();
+                    yield return [shortFolderName, frameworkObject];
                 }
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data))]
+        public void NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance(string frameworkString, NuGetFramework frameworkObject)
+        {
+            // Act
+            NuGetFramework parsedFramework = NuGetFramework.Parse(frameworkString);
+
+            // Assert
+            Assert.Same(frameworkObject, parsedFramework);
         }
     }
 }

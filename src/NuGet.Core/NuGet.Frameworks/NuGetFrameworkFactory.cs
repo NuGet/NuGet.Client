@@ -580,6 +580,12 @@ namespace NuGet.Frameworks
                 case "net472":
                     framework = FrameworkConstants.CommonFrameworks.Net472;
                     break;
+                case "net48":
+                    framework = FrameworkConstants.CommonFrameworks.Net48;
+                    break;
+                case "net481":
+                    framework = FrameworkConstants.CommonFrameworks.Net481;
+                    break;
                 case "win8":
                     framework = FrameworkConstants.CommonFrameworks.Win8;
                     break;
