@@ -1,0 +1,90 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NuGet.Protocol;
+using NuGet.VisualStudio.Internal.Contracts;
+using Xunit;
+
+namespace NuGet.PackageManagement.UI.Test
+{
+    public class VulnerableCapabilityTests
+    {
+        [Theory]
+        [InlineData(1, true)]
+        [InlineData(0, false)]
+        public void IsVulnerable_VariousVulnerabilities_ReturnsExpected(int severity, bool expected)
+        {
+            // Arrange
+            IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = severity > 0
+                ? [new(new Uri("http://example.com"), severity)]
+                : [];
+            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+
+            // Act
+            var result = vulnerableCapability.IsVulnerable;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void IsVulnerable_NullVulnerabilityInCollection_ReturnsFalse()
+        {
+            // Arrange
+            PackageVulnerabilityMetadataContextInfo[] vulnerabilities = [null];
+            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+
+            // Act
+            var result = vulnerableCapability.IsVulnerable;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(new int[] { (int)PackageVulnerabilitySeverity.Low, (int)PackageVulnerabilitySeverity.High }, PackageVulnerabilitySeverity.High)]
+        [InlineData(new int[] { (int)PackageVulnerabilitySeverity.Critical, (int)PackageVulnerabilitySeverity.Unknown }, PackageVulnerabilitySeverity.Critical)]
+        [InlineData(new int[] { }, PackageVulnerabilitySeverity.Unknown)]
+        [InlineData(new int[] { -2 }, PackageVulnerabilitySeverity.Unknown)]
+        public void VulnerabilityMaxSeverity_VariousVulnerabilities_ReturnsExpected(int[] severities, PackageVulnerabilitySeverity expected)
+        {
+            // Arrange
+            var vulnerabilities = severities.Select(severity => new PackageVulnerabilityMetadataContextInfo(new Uri("http://example.com"), severity)).ToList();
+            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+
+            // Act
+            var result = vulnerableCapability.VulnerabilityMaxSeverity;
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void Constructor_OrdersVulnerabilitiesBySeverity_DescendingOrder()
+        {
+            // Arrange
+            var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
+            {
+                new(new Uri("http://example.com/high"), (int)PackageVulnerabilitySeverity.High),
+                new(new Uri("http://example.com/low"), (int)PackageVulnerabilitySeverity.Low),
+                new(new Uri("http://example.com/moderate"), (int)PackageVulnerabilitySeverity.Moderate),
+                new(new Uri("http://example.com/critical"), (int)PackageVulnerabilitySeverity.Critical)
+            };
+
+            // Act
+            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+            var orderedVulnerabilities = vulnerableCapability.Vulnerabilities.ToList();
+
+            // Assert
+            Assert.Collection(orderedVulnerabilities,
+                item => Assert.Equal((int)PackageVulnerabilitySeverity.Critical, item.Severity),
+                item => Assert.Equal((int)PackageVulnerabilitySeverity.High, item.Severity),
+                item => Assert.Equal((int)PackageVulnerabilitySeverity.Moderate, item.Severity),
+                item => Assert.Equal((int)PackageVulnerabilitySeverity.Low, item.Severity)
+            );
+        }
+    }
+}
