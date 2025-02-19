@@ -110,11 +110,14 @@ namespace NuGet.Frameworks
             /// <summary>net481 (.NETFramework,Version=v4.8.1)</summary>
             public static readonly NuGetFramework Net481 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 8, 1, 0));
 
-            /// <summary>net11 (.NETFramework,Version=v1.1)</summary>
+            /// <summary>netcore45 (.NETCore,Version=v4.5)</summary>
+            /// <remarks>This is not .NET Core. You are probably looking for netcoreapp.</remarks>
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
-            /// <summary>net11 (.NETFramework,Version=v1.1)</summary>
+            /// <summary>netcore451 (.NETCore,Version=v4.5.1)</summary>
+            /// <remarks>This is not .NET Core. You are probably looking for netcoreapp.</remarks>
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
-            /// <summary>net11 (.NETFramework,Version=v1.1)</summary>
+            /// <summary>netcore50 (.NETCore,Version=v5.0)</summary>
+            /// <remarks>This is not .NET 5. You are probably looking for net50 (.NETCoreApp,Version=v5.0)</remarks>
             public static readonly NuGetFramework NetCore50 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(5, 0, 0, 0));
 
             public static readonly NuGetFramework Win8 = new NuGetFramework(FrameworkIdentifiers.Windows, new Version(8, 0, 0, 0));
