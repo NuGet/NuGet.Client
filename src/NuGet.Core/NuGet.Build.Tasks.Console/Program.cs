@@ -99,7 +99,7 @@ namespace NuGet.Build.Tasks.Console
                 {
                     using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore())
                     {
-                        return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                        return await dependencyGraphSpecGenerator.WriteDependencyGraphSpecAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
                     }
                 }
 

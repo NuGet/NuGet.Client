@@ -13,7 +13,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -22,6 +21,9 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
 using Microsoft.Build.Logging;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -101,7 +103,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
+            var dependencyGraphSpec = await GetDependencyGraphSpecAsync(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -134,7 +136,8 @@ namespace NuGet.Build.Tasks.Console
             }
 
             bool restorePackagesConfig = IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options);
-            if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
+            if ((string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Path.GetExtension(entryProjectFilePath), ".slnx", StringComparison.OrdinalIgnoreCase))
                     && !HasProjectToRestore(dependencyGraphSpec, restorePackagesConfig))
             {
                 MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
@@ -180,13 +183,13 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
         /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
         /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
-        public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
+        public async ValueTask<bool> WriteDependencyGraphSpecAsync(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
+            var dependencyGraphSpec = await GetDependencyGraphSpecAsync(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
 
             try
             {
@@ -206,7 +209,9 @@ namespace NuGet.Build.Tasks.Console
                     LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_MissingRestoreGraphOutputPath);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogErrorFromException(e);
             }
@@ -664,26 +669,23 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> representing the global properties for the project.</param>
         /// <returns></returns>
-        private List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
+        private static async ValueTask<List<ProjectGraphEntryPoint>> GetProjectGraphEntryPointsAsync(string entryProjectPath, IDictionary<string, string> globalProperties)
         {
             // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
-            if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
+            var extension = Path.GetExtension(entryProjectPath);
+            if (string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(extension, ".slnx", StringComparison.OrdinalIgnoreCase))
             {
-                var solutionFile = SolutionFile.Parse(entryProjectPath);
+                ISolutionSerializer solutionSerializer = SolutionSerializers.GetSerializerByMoniker(entryProjectPath);
+                SolutionModel solution = await solutionSerializer.OpenAsync(entryProjectPath, CancellationToken.None);
 
-                IEnumerable<ProjectInSolution> projectsKnownToMSBuild = solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat);
-                IEnumerable<ProjectInSolution> projectsNotKnownToMSBuild = solutionFile.ProjectsInOrder.Except(projectsKnownToMSBuild);
-
-                if (projectsNotKnownToMSBuild.Any())
+                List<ProjectGraphEntryPoint> projects = new List<ProjectGraphEntryPoint>(solution.SolutionProjects.Count);
+                foreach (var project in solution.SolutionProjects)
                 {
-                    IList<string> projects = projectsNotKnownToMSBuild.Select(project => project.ProjectName).ToList();
-
-                    MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ProjectsInSolutionNotKnowntoMSBuild,
-                        projects.Count, string.Join(",", projects)));
+                    projects.Add(new ProjectGraphEntryPoint(project.FilePath, globalProperties));
                 }
 
-                return projectsKnownToMSBuild.Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
+                return projects;
             }
 
             // Return just the main project in a list if its not a solution file
@@ -761,13 +763,13 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters)
+        private async ValueTask<DependencyGraphSpec> GetDependencyGraphSpecAsync(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters)
         {
             try
             {
                 MSBuildLogger.LogMinimal(Strings.DeterminingProjectsToRestore);
 
-                var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
+                var entryProjects = await GetProjectGraphEntryPointsAsync(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
                 var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters)?.ToArray();
@@ -817,7 +819,9 @@ namespace NuGet.Build.Tasks.Console
                         }
                     });
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     LogErrorFromException(e);
 
@@ -848,7 +852,9 @@ namespace NuGet.Build.Tasks.Console
 
                 return dependencyGraphSpec;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogErrorFromException(e);
             }

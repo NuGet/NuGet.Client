@@ -28,6 +28,9 @@
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
+    <!-- MSBuild ships the solutionpersistence dll, so for .NET Framework we only need compile assets. It shouldn't go into NuGet's vsix -->
+    <PackageReference Update="Microsoft.VisualStudio.SolutionPersistence" IncludeAssets="compile" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
