@@ -58,7 +58,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
@@ -75,7 +75,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
@@ -92,7 +92,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
@@ -109,7 +109,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
@@ -127,7 +127,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
@@ -145,7 +145,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
