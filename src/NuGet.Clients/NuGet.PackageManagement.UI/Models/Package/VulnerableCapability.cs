@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerableCapability : IVulnerable
     {
-        private IEnumerable<PackageVulnerabilityMetadataContextInfo> _vulnerabilities;
+        private IEnumerable<PackageVulnerabilityMetadataContextInfo> _vulnerabilities = [];
 
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
         {
@@ -40,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         public VulnerableCapability(IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
         {
-            Vulnerabilities = vulnerabilities;
+            Vulnerabilities = vulnerabilities ?? throw new ArgumentNullException(nameof(vulnerabilities));
         }
     }
 }
