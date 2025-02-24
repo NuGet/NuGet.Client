@@ -55,7 +55,8 @@ namespace NuGet.Commands
             // figure out from index.json if pushing snupkg is supported
             var sourceUri = packageUpdateResource.SourceUri;
 
-            if (!string.IsNullOrEmpty(symbolSource))
+            // assume we allow snupkg when the symbol source is set
+            if (!string.IsNullOrEmpty(symbolSource) && !noSymbols)
             {
                 allowSnupkg = true;
             }
