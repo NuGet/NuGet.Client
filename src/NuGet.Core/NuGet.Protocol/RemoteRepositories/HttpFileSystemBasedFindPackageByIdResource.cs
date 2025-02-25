@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -42,6 +44,7 @@ namespace NuGet.Protocol
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
+        private static readonly byte[] VersionsPropertyName = Encoding.UTF8.GetBytes("versions");
 
         /// <summary>
         /// Initializes a new <see cref="HttpFileSystemBasedFindPackageByIdResource" /> class.
@@ -478,15 +481,15 @@ namespace NuGet.Protocol
                             IsRetry = retry > 1,
                             IsLastAttempt = retry == maxTries
                         },
-                        async httpSourceResult =>
+                        httpSourceResult =>
                         {
-                            var result = new SortedDictionary<NuGetVersion, PackageInfo>();
+                            SortedDictionary<NuGetVersion, PackageInfo> result;
 
                             if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
                             {
                                 try
                                 {
-                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
+                                    result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
                                 }
                                 catch
                                 {
@@ -497,10 +500,14 @@ namespace NuGet.Protocol
                             }
                             else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
                             {
-                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
+                                result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                            }
+                            else
+                            {
+                                result = new SortedDictionary<NuGetVersion, PackageInfo>();
                             }
 
-                            return result;
+                            return Task.FromResult(result);
                         },
                         logger,
                         cancellationToken);
@@ -540,55 +547,51 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri, CancellationToken token)
+        private static SortedDictionary<NuGetVersion, PackageInfo> ConsumeFlatContainerIndex(Stream stream, string id, string baseUri)
         {
-            var doc = await stream.AsJObjectAsync(token);
-
+            var reader = new Utf8JsonStreamReader(stream);
             var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
 
-            var versions = doc["versions"];
-            if (versions == null)
+            if (reader.TokenType == JsonTokenType.StartObject)
             {
-                return streamResults;
-            }
-
-            foreach (var packageInfo in versions
-                .Select(x => BuildModel(baseUri, id, x.ToString()))
-                .Where(x => x != null))
-            {
-                if (!streamResults.ContainsKey(packageInfo.Identity.Version))
+                while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    streamResults.Add(packageInfo.Identity.Version, packageInfo);
+                    if (reader.ValueTextEquals(VersionsPropertyName))
+                    {
+                        reader.Read();
+                        reader.ProcessStringArray(static (s, args) =>
+                        {
+                            var (streamResults, baseUri, id) = args;
+                            var packageInfo = BuildModel(baseUri, id, s);
+                            if (!streamResults.ContainsKey(packageInfo.Identity.Version))
+                            {
+                                streamResults.Add(packageInfo.Identity.Version, packageInfo);
+                            }
+                        }, (streamResults, baseUri, id));
+
+                        break;
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
                 }
             }
+
+            reader.Dispose();
 
             return streamResults;
         }
 
-        private PackageInfo BuildModel(string baseUri, string id, string version)
+        private static PackageInfo BuildModel(string baseUri, string id, string version)
         {
             var parsedVersion = NuGetVersion.Parse(version);
-            var normalizedVersionString = parsedVersion.ToNormalizedString();
-            string idInLowerCase = id.ToLowerInvariant();
-
-            var builder = StringBuilderPool.Shared.Rent(256);
-
-            builder.Append(baseUri);
-            builder.Append(idInLowerCase);
-            builder.Append('/');
-            builder.Append(normalizedVersionString);
-            builder.Append('/');
-            builder.Append(idInLowerCase);
-            builder.Append('.');
-            builder.Append(normalizedVersionString);
-            builder.Append(".nupkg");
-
-            string contentUri = StringBuilderPool.Shared.ToStringAndReturn(builder);
 
             return new PackageInfo
             {
+                BaseUri = baseUri,
+                Id = id,
                 Identity = new PackageIdentity(id, parsedVersion),
-                ContentUri = contentUri,
             };
         }
 
@@ -598,7 +601,31 @@ namespace NuGet.Protocol
 
             public string Path { get; set; }
 
-            public string ContentUri { get; set; }
+            public string BaseUri { private get; set; }
+            public string Id { private get; set; }
+
+            public string ContentUri
+            {
+                get
+                {
+                    var normalizedVersionString = Identity.Version.ToNormalizedString();
+                    string idInLowerCase = Id.ToLowerInvariant();
+
+                    var builder = StringBuilderPool.Shared.Rent(256);
+
+                    builder.Append(BaseUri);
+                    builder.Append(idInLowerCase);
+                    builder.Append('/');
+                    builder.Append(normalizedVersionString);
+                    builder.Append('/');
+                    builder.Append(idInLowerCase);
+                    builder.Append('.');
+                    builder.Append(normalizedVersionString);
+                    builder.Append(".nupkg");
+
+                    return StringBuilderPool.Shared.ToStringAndReturn(builder);
+                }
+            }
         }
     }
 }
