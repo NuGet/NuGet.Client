@@ -905,7 +905,7 @@ namespace NuGet.PackageManagement.UI
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Use ShutdownToken to avoid canceling on search changes, only on VS shutdown.
+            // Use ShutdownToken to ensure the operation is canceled if it's still running when VS shuts down.
             IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
                         await _vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, VsShellUtilities.ShutdownToken);
 

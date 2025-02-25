@@ -1051,8 +1051,8 @@ namespace NuGet.PackageManagement.UI
             IInstalledAndTransitivePackages installedAndTransitivePackages = await PackageCollection.GetInstalledAndTransitivePackagesAsync(loadContext.ServiceBroker, loadContext.Projects, includeTransitiveOrigins: true, token);
             installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages.Where(p => p.TransitiveOrigins.Any()));
-            // Use ShutdownToken to avoid canceling on search changes, only on VS shutdown.
-            IEnumerable<IEnumerable<PackageVulnerabilityMetadataContextInfo>> transitivePackageVulnerabilities = await _packageVulnerabilityService.GetVulnerabilityInfoAsync(transitivePackageCollection, VsShellUtilities.ShutdownToken);
+            //Use ShutdownToken to ensure the operation is canceled if it's still running when VS shuts down.
+            IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => _packageVulnerabilityService.GetVulnerabilityInfoAsync(p, VsShellUtilities.ShutdownToken)));
 
             foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
             {
@@ -1772,7 +1772,6 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ExecuteRestartSearchCommandAsync()
         {
-            // reset vulnerability data
             _packageVulnerabilityService?.ResetVulnerabilityData();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             await RefreshConsolidatablePackagesCountAsync();
