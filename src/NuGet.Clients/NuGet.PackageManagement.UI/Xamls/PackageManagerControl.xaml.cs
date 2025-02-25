@@ -1051,7 +1051,8 @@ namespace NuGet.PackageManagement.UI
             IInstalledAndTransitivePackages installedAndTransitivePackages = await PackageCollection.GetInstalledAndTransitivePackagesAsync(loadContext.ServiceBroker, loadContext.Projects, includeTransitiveOrigins: true, token);
             installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages.Where(p => p.TransitiveOrigins.Any()));
-            IEnumerable<IEnumerable<PackageVulnerabilityMetadataContextInfo>> transitivePackageVulnerabilities = await _packageVulnerabilityService.GetVulnerabilityInfoAsync(transitivePackageCollection, token);
+            // Use ShutdownToken to avoid canceling on search changes, only on VS shutdown.
+            IEnumerable<IEnumerable<PackageVulnerabilityMetadataContextInfo>> transitivePackageVulnerabilities = await _packageVulnerabilityService.GetVulnerabilityInfoAsync(transitivePackageCollection, VsShellUtilities.ShutdownToken);
 
             foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
             {
