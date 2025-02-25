@@ -805,7 +805,7 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(encodedBytes))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                var results = reader.ReadObjectAsList(Utf8JsonStreamLockFileTargetLibraryConverter.LockFileItemConverter);
                 Assert.Equal(3, results.Count);
             }
         }
@@ -819,7 +819,7 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(encodedBytes))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                var results = reader.ReadObjectAsList(Utf8JsonStreamLockFileTargetLibraryConverter.LockFileItemConverter);
                 Assert.Equal(0, results.Count);
                 Assert.IsType(Array.Empty<LockFileItem>().GetType(), results);
             }
@@ -836,7 +836,7 @@ namespace NuGet.ProjectModel.Test
                 using (var stream = new MemoryStream(encodedBytes))
                 using (var reader = new Utf8JsonStreamReader(stream))
                 {
-                    reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    reader.ReadObjectAsList(Utf8JsonStreamLockFileTargetLibraryConverter.LockFileItemConverter);
                 }
             });
         }

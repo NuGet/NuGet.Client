@@ -43,6 +43,8 @@ namespace NuGet.ProjectModel
         private static readonly byte[] LibraryIdPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.LIBRARY_ID);
         private static readonly byte[] TargetGraphsPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.TARGET_GRAPHS);
 
+        internal static readonly Utf8JsonStreamIAssetsLogMessageConverter IAssetsLogMessageConverter = new Utf8JsonStreamIAssetsLogMessageConverter();
+
         public IAssetsLogMessage Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)

@@ -16,6 +16,8 @@ namespace NuGet.ProjectModel
     /// </example>
     internal class Utf8JsonStreamLockFileTargetConverter : IUtf8JsonStreamReaderConverter<LockFileTarget>
     {
+        internal static readonly Utf8JsonStreamLockFileTargetConverter LockFileTargetConverter = new Utf8JsonStreamLockFileTargetConverter();
+
         public LockFileTarget Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -32,7 +34,7 @@ namespace NuGet.ProjectModel
             lockFileTarget.RuntimeIdentifier = runTimeFramework;
 
             reader.Read();
-            lockFileTarget.Libraries = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileTargetLibraryConverter);
+            lockFileTarget.Libraries = reader.ReadObjectAsList(Utf8JsonStreamLockFileLibraryConverter.LockFileTargetLibraryConverter);
 
             return lockFileTarget;
         }

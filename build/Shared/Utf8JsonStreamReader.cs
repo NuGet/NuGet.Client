@@ -9,11 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using NuGet.Common;
 
-namespace NuGet.ProjectModel
+namespace NuGet
 {
     /// <summary>
-    /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
+    /// This struct is used to read over a memory stream in parts, in order to avoid reading the entire stream into memory.
     /// It functions as a wrapper around <see cref="Utf8JsonStreamReader"/>, while maintaining a stream and a buffer to read from.
     /// </summary>
     internal ref struct Utf8JsonStreamReader
@@ -106,6 +107,17 @@ namespace NuGet.ProjectModel
             if (!wasSkipped)
             {
                 _reader.Skip();
+            }
+        }
+
+        internal void ProcessStringArray<TArg>(Action<string, TArg> callback, TArg arg)
+        {
+            if (TokenType == JsonTokenType.StartArray)
+            {
+                while (Read() && TokenType != JsonTokenType.EndArray)
+                {
+                    callback(_reader.ReadTokenAsString(), arg);
+                }
             }
         }
 
@@ -234,7 +246,7 @@ namespace NuGet.ProjectModel
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                    Strings.Invalid_AttributeValue,
+                    PublicStrings.Invalid_AttributeValue,
                     Encoding.UTF8.GetString(propertyName),
                     _reader.ReadTokenAsString(),
                     "false"));

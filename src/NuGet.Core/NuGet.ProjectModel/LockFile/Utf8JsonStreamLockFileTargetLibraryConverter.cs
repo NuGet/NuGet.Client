@@ -68,6 +68,12 @@ namespace NuGet.ProjectModel
         private static readonly byte[] EmbedPropertyName = Encoding.UTF8.GetBytes("embed");
         private static readonly byte[] FrameworkReferencesPropertyName = Encoding.UTF8.GetBytes("frameworkReferences");
 
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileContentFile> LockFileContentFileConverter = new Utf8JsonStreamLockFileItemConverter<LockFileContentFile>((string filePath) => new LockFileContentFile(filePath));
+
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileItem> LockFileItemConverter = new Utf8JsonStreamLockFileItemConverter<LockFileItem>((string filePath) => new LockFileItem(filePath));
+
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileRuntimeTarget> LockFileRuntimeTargetConverter = new Utf8JsonStreamLockFileItemConverter<LockFileRuntimeTarget>((string filePath) => new LockFileRuntimeTarget(filePath));
+
         public LockFileTargetLibrary Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -112,52 +118,52 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(RuntimePropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.RuntimeAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.RuntimeAssemblies = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(CompilePropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.CompileTimeAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.CompileTimeAssemblies = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(ResourcePropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.ResourceAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.ResourceAssemblies = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(NativePropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.NativeLibraries = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.NativeLibraries = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(BuildPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.Build = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.Build = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(BuildMultiTargetingPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.BuildMultiTargeting = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.BuildMultiTargeting = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(ContentFilesPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.ContentFiles = reader.ReadObjectAsList<LockFileContentFile>(Utf8JsonReaderExtensions.LockFileContentFileConverter);
+                    lockFileTargetLibrary.ContentFiles = reader.ReadObjectAsList<LockFileContentFile>(LockFileContentFileConverter);
                 }
                 else if (reader.ValueTextEquals(RuntimeTargetsPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.RuntimeTargets = reader.ReadObjectAsList<LockFileRuntimeTarget>(Utf8JsonReaderExtensions.LockFileRuntimeTargetConverter);
+                    lockFileTargetLibrary.RuntimeTargets = reader.ReadObjectAsList<LockFileRuntimeTarget>(LockFileRuntimeTargetConverter);
                 }
                 else if (reader.ValueTextEquals(ToolsPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.ToolsAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.ToolsAssemblies = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(EmbedPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.EmbedAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                    lockFileTargetLibrary.EmbedAssemblies = reader.ReadObjectAsList<LockFileItem>(LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(FrameworkReferencesPropertyName))
                 {

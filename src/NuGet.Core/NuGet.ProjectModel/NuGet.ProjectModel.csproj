@@ -37,6 +37,9 @@
     <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
+    <Compile Include="$(SharedDirectory)\Utf8JsonReaderExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\Utf8JsonStreamReader.cs" />
+    <Compile Include="$(SharedDirectory)\Utf8JsonStreamReaderConverter.cs" />
   </ItemGroup>
 
   <ItemGroup>

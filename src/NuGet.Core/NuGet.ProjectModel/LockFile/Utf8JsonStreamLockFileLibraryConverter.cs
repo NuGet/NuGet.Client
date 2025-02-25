@@ -34,6 +34,10 @@ namespace NuGet.ProjectModel
         private static readonly byte[] HasToolsPropertyName = Encoding.UTF8.GetBytes("hasTools");
         private static readonly byte[] FilesPropertyName = Encoding.UTF8.GetBytes("files");
 
+        internal static readonly Utf8JsonStreamLockFileTargetLibraryConverter LockFileTargetLibraryConverter = new Utf8JsonStreamLockFileTargetLibraryConverter();
+
+        internal static readonly Utf8JsonStreamLockFileLibraryConverter LockFileLibraryConverter = new Utf8JsonStreamLockFileLibraryConverter();
+
         public LockFileLibrary Read(ref Utf8JsonStreamReader reader)
         {
 

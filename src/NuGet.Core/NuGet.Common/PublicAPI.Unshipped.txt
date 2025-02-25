@@ -1,1 +1,6 @@
 #nullable enable
+NuGet.Common.PublicStrings
+~static NuGet.Common.PublicStrings.Culture.get -> System.Globalization.CultureInfo
+~static NuGet.Common.PublicStrings.Culture.set -> void
+~static NuGet.Common.PublicStrings.Invalid_AttributeValue.get -> string
+~static NuGet.Common.PublicStrings.ResourceManager.get -> System.Resources.ResourceManager
