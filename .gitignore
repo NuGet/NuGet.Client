@@ -203,3 +203,7 @@ launchSettings.json
 
 # Image manifests are generated at build-time for VSIX
 *.imagemanifest
+
+# MSBuild Cache logs
+MSBuildCacheLogs/
+.msbuildcache/
