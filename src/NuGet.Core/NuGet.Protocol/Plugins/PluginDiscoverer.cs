@@ -187,6 +187,11 @@ namespace NuGet.Protocol.Plugins
 
             foreach (var path in paths)
             {
+                if (string.IsNullOrEmpty(path))
+                {
+                    continue;
+                }
+
                 if (PathValidator.IsValidLocalPath(path) || PathValidator.IsValidUncPath(path))
                 {
                     if (File.Exists(path))
@@ -213,7 +218,7 @@ namespace NuGet.Protocol.Plugins
                         pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
                     }
                 }
-                else if (!string.IsNullOrEmpty(path))
+                else
                 {
                     pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
