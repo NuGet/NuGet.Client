@@ -589,11 +589,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 CommandRunnerResult result = null;
 
                 using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
-                using (var symbolServer = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string symbolSourceName))
                 {
                     sourcePushUrl = SetupMockServerAlwaysCreate(server);
                     pathContext.Settings.AddSource(sourceName, sourceName, "true");
-                    pathContext.Settings.AddSource(symbolSourceName, symbolSourceName, "true");
 
                     // Act
                     //Since this is V3, this will trigger 2 pushes: one for nupkgs, and one for snupkgs.
@@ -681,7 +679,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         /// When pushing *.Nupkg, (no skip duplicate) a 409 Conflict is returned and halts the secondary symbols push.
         /// </summary>
         [Fact]
-        public void PushCommand_Server_Nupkg_SeperateSymbolUrl_NoSymbolTrue_SnupkgNotPushed()
+        public void PushCommand_Server_Nupkg_SeparateSymbolUrl_NoSymbolTrue_SnupkgNotPushed()
         {
             // Arrange
             using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
