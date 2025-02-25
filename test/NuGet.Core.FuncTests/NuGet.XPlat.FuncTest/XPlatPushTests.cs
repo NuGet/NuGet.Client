@@ -197,7 +197,6 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task PushCommand_ConfigFile_Succeeds()
         {
-
             using (var packageDirectory = TestDirectory.Create())
             using (var source = TestDirectory.Create())
             {
@@ -238,7 +237,6 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task PushCommand_ConfigFile_DifferentDirectory_Succeeds()
         {
-
             using (var configDirectory = TestDirectory.Create())
             using (var packageDirectory = TestDirectory.Create())
             using (var source = TestDirectory.Create())
@@ -274,6 +272,45 @@ namespace NuGet.XPlat.FuncTest
 
                 Assert.Contains($"Pushing {testPackageInfo.Name}", log.ShowMessages());
                 Assert.True(File.Exists(Path.Combine(source, testPackageInfo.Name)));
+            }
+        }
+
+
+        [Fact]
+        public async Task PushCommand_ConfigFile_InvalidXML_Errors()
+        {
+            using (var configDirectory = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
+            {
+                // Arrange
+                var log = new TestCommandOutputLogger(_testOutputHelper);
+                FileInfo testPackageInfo = await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageA", "1.1.0");
+                var configPath = Path.Combine(configDirectory, Settings.DefaultSettingsFileName);
+
+                string nugetConfigContent =
+                    $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuratio> // wrong XML
+                            <config>
+                                <add key=""defaultPushSource"" value=""{source}"" />
+                            </config>
+                        </configuration>";
+                File.WriteAllText(configPath, nugetConfigContent);
+
+                var pushArgs = new List<string>
+                {
+                    "push",
+                    testPackageInfo.FullName,
+                    "--configfile",
+                    configPath
+                };
+
+                // Act
+                var exitCode = CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log, TestEnvironmentVariableReader.EmptyInstance);
+
+                // Assert
+                Assert.Contains("NuGet.Config is not valid XML", log.ShowErrors());
+                Assert.Equal(1, exitCode);
             }
         }
 
