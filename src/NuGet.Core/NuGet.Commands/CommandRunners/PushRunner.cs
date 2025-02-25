@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 if (symbolPackageUpdateResource != null)
                 {
                     allowSnupkg = true;
-                    symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbolSource = symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                 }
             }
 
