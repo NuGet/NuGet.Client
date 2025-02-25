@@ -54,11 +54,17 @@ namespace NuGet.Commands
 
             // figure out from index.json if pushing snupkg is supported
             var sourceUri = packageUpdateResource.SourceUri;
+            var symbeSourceUri = symbolSource;
 
-            // assume we allow snupkg when the symbol source is set
             if (!string.IsNullOrEmpty(symbolSource) && !noSymbols)
             {
-                allowSnupkg = true;
+                //If the symbol source is set we try try to get the symbol package resource to determine if Snupkg are supported.
+                symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, symbolSource, CancellationToken.None);
+                if (symbolPackageUpdateResource != null)
+                {
+                    allowSnupkg = true;
+                    symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                }
             }
             else if (!noSymbols
                 && !sourceUri.IsFile
@@ -68,7 +74,7 @@ namespace NuGet.Commands
                 if (symbolPackageUpdateResource != null)
                 {
                     allowSnupkg = true;
-                    symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                 }
             }
 
@@ -78,7 +84,7 @@ namespace NuGet.Commands
             // Precedence for symbol package API key: -SymbolApiKey param, config, package API key (Only for symbol source from SymbolPackagePublish service)
             if (!string.IsNullOrEmpty(symbolSource))
             {
-                symbolApiKey ??= CommandRunnerUtility.GetApiKey(settings, symbolSource, symbolSource);
+                symbolApiKey ??= CommandRunnerUtility.GetApiKey(settings, symbeSourceUri, symbolSource);
 
                 // Only allow falling back to API key when the symbol source was obtained from SymbolPackagePublish service
                 if (symbolPackageUpdateResource != null)
@@ -89,7 +95,7 @@ namespace NuGet.Commands
 
             await packageUpdateResource.PushAsync(
                 packagePaths,
-                symbolSource,
+                symbeSourceUri,
                 timeoutSeconds,
                 disableBuffering,
                 _ => apiKey,

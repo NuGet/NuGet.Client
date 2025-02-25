@@ -659,7 +659,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     result = CommandRunner.Run(
                         nuget,
                         pathContext.WorkingDirectory,
-                        $"push {wildcardPush} -Source {sourceName} -SymbolSource {symbolPushUrl} -Timeout 110",
+                        $"push {wildcardPush} -Source {sourceName} -SymbolSource {symbolSourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
                         testOutputHelper: _testOutputHelper); // 120 seconds
                 }
