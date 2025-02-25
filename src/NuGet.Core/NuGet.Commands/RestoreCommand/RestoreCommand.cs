@@ -409,13 +409,15 @@ namespace NuGet.Commands
                     if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
 
                     return (new NoOpRestoreResult(
-                        _success,
-                        _request.LockFilePath,
-                        new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
-                        cacheFile,
-                        _request.Project.RestoreMetadata.CacheFilePath,
-                        _request.ProjectStyle,
-                        restoreTime.Elapsed), noOpCacheFileEvaluation, cacheFile);
+                            _success,
+                            _request.LockFilePath,
+                            new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
+                            cacheFile,
+                            _request.Project.RestoreMetadata.CacheFilePath,
+                            _request.ProjectStyle,
+                            restoreTime.Elapsed),
+                        noOpCacheFileEvaluation,
+                        cacheFile);
                 }
             }
 
