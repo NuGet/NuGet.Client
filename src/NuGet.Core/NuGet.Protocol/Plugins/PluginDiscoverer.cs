@@ -213,7 +213,7 @@ namespace NuGet.Protocol.Plugins
                         pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
                     }
                 }
-                else
+                else if (!string.IsNullOrEmpty(path))
                 {
                     pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
