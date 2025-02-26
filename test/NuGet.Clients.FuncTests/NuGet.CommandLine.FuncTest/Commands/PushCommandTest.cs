@@ -561,9 +561,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        /// <summary>
-        /// When pushing *.Nupkg, (no skip duplicate) a 409 Conflict is returned and halts the secondary symbols push.
-        /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByWildcard_NupkgAndSnupkgPushed()
         {
@@ -616,9 +613,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        /// <summary>
-        /// When pushing *.Nupkg, (no skip duplicate) a 409 Conflict is returned and halts the secondary symbols push.
-        /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByWildcard_SeparateSymbolUrl_NupkgAndSnupkgPushedToDifferentSources()
         {
