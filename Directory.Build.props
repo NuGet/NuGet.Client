@@ -14,7 +14,4 @@
     <!-- Reset AssemblySearchPaths to empty to let Microsoft.Common.targets pick the legacy defaults -->
     <AssemblySearchPaths Condition="'$(UsingMicrosoftNETSdk)' != 'true'" />
   </PropertyGroup>
-  <PropertyGroup>
-    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-  </PropertyGroup>
 </Project>
