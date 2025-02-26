@@ -23,17 +23,6 @@ namespace NuGet.Protocol.Plugins
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
-        private static bool IsDesktop
-        {
-            get
-            {
-#if IS_DESKTOP
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
 
         public PluginDiscoverer()
             : this(EnvironmentVariableWrapper.Instance)
@@ -179,7 +168,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         return PluginFileState.InvalidFilePath;
                     }
-                }), requiresDotnetHost: !IsDesktop);
+                }));
                 files.Add(pluginFile);
             }
 
@@ -194,7 +183,7 @@ namespace NuGet.Protocol.Plugins
         internal List<PluginFile> GetPluginsInNuGetPluginPaths()
         {
             var pluginFiles = new List<PluginFile>();
-            string[] paths = _nuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            string[] paths = _nuGetPluginPaths?.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {
@@ -216,7 +205,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             // A non DotNet tool plugin file
                             var state = new Lazy<PluginFileState>(() => PluginFileState.Valid);
-                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state, requiresDotnetHost: !IsDesktop));
+                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
                         }
                     }
                     else if (Directory.Exists(path))
@@ -226,7 +215,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), requiresDotnetHost: !IsDesktop));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
             }
 
