@@ -15,8 +15,8 @@
   -->
   <Target Name="_ensureSbomExists" BeforeTargets="Build" Condition=" '$(SkipSbomExistsCheck)' != 'true' AND '$(MSBuildProjectExtension)' == '.vsmanproj' ">
     <Error Condition="!Exists($(SBOMFileLocation)) AND '$(SBOMFileLocation)' != ''"
-      Message="SBOM file '$(SBOMFileLocation)' does not exist" />
+      Text="SBOM file '$(SBOMFileLocation)' does not exist" />
     <Error Condition="'$(SBOMFileLocation)' == ''"
-      Message="Property 'SBOMFileLocation' is not defined" />
+      Text="Property 'SBOMFileLocation' is not defined" />
   </Target>
 </Project>
