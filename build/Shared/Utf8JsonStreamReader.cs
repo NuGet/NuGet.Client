@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using NuGet.Common;
 
 namespace NuGet
 {
@@ -246,7 +245,7 @@ namespace NuGet
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                    PublicStrings.Invalid_AttributeValue,
+                    SharedStrings.Invalid_AttributeValue,
                     Encoding.UTF8.GetString(propertyName),
                     _reader.ReadTokenAsString(),
                     "false"));

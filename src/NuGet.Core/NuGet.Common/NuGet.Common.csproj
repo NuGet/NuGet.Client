@@ -31,11 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="PublicStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PublicStrings.resx</DependentUpon>
-    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -53,11 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="PublicStrings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <PublicClass>true</PublicClass>
-      <LastGenOutput>PublicStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>

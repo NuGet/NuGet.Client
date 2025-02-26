@@ -37,6 +37,11 @@
     <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
+    <Compile Include="$(SharedDirectory)\SharedStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>$(SharedDirectory)\SharedStrings.resx</DependentUpon>
+    </Compile>
     <Compile Include="$(SharedDirectory)\Utf8JsonReaderExtensions.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonStreamReader.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonStreamReaderConverter.cs" />
@@ -46,6 +51,11 @@
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(SharedDirectory)\SharedStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SharedStrings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>NuGet</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 
