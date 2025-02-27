@@ -42,6 +42,11 @@ namespace NuGet.Commands
 
         public Guid ParentId { get; }
 
+        /// <summary>
+        /// ex: [NU1901]Package.A
+        /// </summary>
+        private const string SuppressedWarningFormat = "[{0}]{1}";
+
         private const string ProjectRestoreInformation = nameof(ProjectRestoreInformation);
 
         // status names for ProjectRestoreInformation
@@ -616,7 +621,15 @@ namespace NuGet.Commands
 
                 var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
                 var warningCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code)));
-                var suppressedWarningCodes = ConcatAsString(new HashSet<NuGetLogCode>(_logger.SuppressedWarnings.Select(l => l.Code)));
+                var suppressedWarningCodes = ConcatAsString(new HashSet<string>(_logger.SuppressedWarnings.Select(l =>
+                {
+                    if (string.IsNullOrEmpty(l.LibraryId))
+                    {
+                        return l.Code.ToString();
+                    }
+                    return string.Format(CultureInfo.InvariantCulture, SuppressedWarningFormat, l.Code, l.LibraryId);
+                }
+                )));
 
                 if (!string.IsNullOrEmpty(errorCodes))
                 {

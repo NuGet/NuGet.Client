@@ -2963,7 +2963,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-            Assert.Equal("NU1603", projectInformationEvent["SuppressedWarningCodes"]);
+            Assert.Contains("NU1603", projectInformationEvent["SuppressedWarningCodes"].ToString());
+            Assert.Contains("a", projectInformationEvent["SuppressedWarningCodes"].ToString());
             Assert.Null(projectInformationEvent["WarningCodes"]);
         }
 
