@@ -226,29 +226,29 @@ namespace NuGet.Commands
         /// <returns>bool indicating if the message should be suppressed.</returns>
         private bool IsWarningSuppressed(IRestoreLogMessage message)
         {
-            var isWarningSupressed = false;
+            var isWarningSuppressed = false;
             if (message.Level == LogLevel.Warning)
             {
                 // If the ProjectWarningPropertiesCollection is present then test if the warning is suppressed in
                 // project wide no warn or package specific no warn
                 if (ProjectWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true)
                 {
-                    isWarningSupressed = true;
+                    isWarningSuppressed = true;
                 }
                 else
                 {
                     // Use transitive warning properties only if the project does not suppress the warning
                     // In transitive warning properties look at only the package specific ones as all properties are per package reference.
-                    isWarningSupressed = TransitiveWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true;
+                    isWarningSuppressed = TransitiveWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true;
                 }
             }
 
-            if (isWarningSupressed)
+            if (isWarningSuppressed)
             {
                 _suppressedWarnings.Enqueue(message);
             }
 
-            return isWarningSupressed;
+            return isWarningSuppressed;
         }
 
         /// <summary>
