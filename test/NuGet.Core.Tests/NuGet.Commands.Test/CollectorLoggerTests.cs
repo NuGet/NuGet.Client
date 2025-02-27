@@ -1081,7 +1081,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void CollectorLogger_PackageSpecificNoWarnSet_SupressedWarningsTracked()
+        public void CollectorLogger_PackageSpecificNoWarnSet_SuppressedWarningsTracked()
         {
             // Arrange
             var libraryId = "test_library";
