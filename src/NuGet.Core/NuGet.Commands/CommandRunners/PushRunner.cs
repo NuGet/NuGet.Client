@@ -54,16 +54,16 @@ namespace NuGet.Commands
 
             // figure out from index.json if pushing snupkg is supported
             var sourceUri = packageUpdateResource.SourceUri;
-            var symbeSourceUri = symbolSource;
+            var symbolSourceUri = symbolSource;
 
             if (!string.IsNullOrEmpty(symbolSource) && !noSymbols)
             {
-                //If the symbol source is set we try try to get the symbol package resource to determine if Snupkg are supported.
+                //If the symbol source is set we try to get the symbol package resource to determine if Snupkg are supported.
                 symbolPackageUpdateResource = await CommandRunnerUtility.GetSymbolPackageUpdateResource(sourceProvider, symbolSource, CancellationToken.None);
                 if (symbolPackageUpdateResource != null)
                 {
                     allowSnupkg = true;
-                    symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbolSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                 }
             }
             else if (!noSymbols
@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 if (symbolPackageUpdateResource != null)
                 {
                     allowSnupkg = true;
-                    symbolSource = symbeSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
+                    symbolSource = symbolSourceUri = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                 }
             }
 
@@ -84,7 +84,7 @@ namespace NuGet.Commands
             // Precedence for symbol package API key: -SymbolApiKey param, config, package API key (Only for symbol source from SymbolPackagePublish service)
             if (!string.IsNullOrEmpty(symbolSource))
             {
-                symbolApiKey ??= CommandRunnerUtility.GetApiKey(settings, symbeSourceUri, symbolSource);
+                symbolApiKey ??= CommandRunnerUtility.GetApiKey(settings, symbolSourceUri, symbolSource);
 
                 // Only allow falling back to API key when the symbol source was obtained from SymbolPackagePublish service
                 if (symbolPackageUpdateResource != null)
@@ -95,7 +95,7 @@ namespace NuGet.Commands
 
             await packageUpdateResource.PushAsync(
                 packagePaths,
-                symbeSourceUri,
+                symbolSourceUri,
                 timeoutSeconds,
                 disableBuffering,
                 _ => apiKey,
