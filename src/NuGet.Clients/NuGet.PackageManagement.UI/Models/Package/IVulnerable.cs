@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
 {
     interface IVulnerable
     {
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; }
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; }
 
         public bool IsVulnerable { get; }
 

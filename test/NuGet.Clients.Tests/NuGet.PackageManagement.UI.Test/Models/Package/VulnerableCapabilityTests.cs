@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI.Test
         public void IsVulnerable_VariousVulnerabilities_ReturnsExpected(int severity, bool expected)
         {
             // Arrange
-            IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = severity > 0
+            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = severity > 0
                 ? [new(new Uri("http://example.com"), severity)]
                 : [];
             var vulnerableCapability = new VulnerableCapability(vulnerabilities);
@@ -30,20 +30,6 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Assert
             Assert.Equal(expected, result);
-        }
-
-        [Fact]
-        public void IsVulnerable_NullVulnerabilityInCollection_ReturnsFalse()
-        {
-            // Arrange
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [null];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
-
-            // Act
-            var result = vulnerableCapability.IsVulnerable;
-
-            // Assert
-            Assert.False(result);
         }
 
         [Theory]
@@ -65,16 +51,26 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
+        public void VulnerabilityMaxSeverity_EmptyVulnerabilitiesList_ThrowsException()
+        {
+            // Arrange
+            var vulnerableCapability = new VulnerableCapability([]);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => vulnerableCapability.VulnerabilityMaxSeverity);
+        }
+
+        [Fact]
         public void Constructor_OrdersVulnerabilitiesBySeverity_DescendingOrder()
         {
             // Arrange
-            var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
-            {
+            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities =
+            [
                 new(new Uri("http://example.com/high"), (int)PackageVulnerabilitySeverity.High),
                 new(new Uri("http://example.com/low"), (int)PackageVulnerabilitySeverity.Low),
                 new(new Uri("http://example.com/moderate"), (int)PackageVulnerabilitySeverity.Moderate),
                 new(new Uri("http://example.com/critical"), (int)PackageVulnerabilitySeverity.Critical)
-            };
+            ];
 
             // Act
             var vulnerableCapability = new VulnerableCapability(vulnerabilities);
@@ -87,6 +83,13 @@ namespace NuGet.PackageManagement.UI.Test
                 item => Assert.Equal((int)PackageVulnerabilitySeverity.Moderate, item.Severity),
                 item => Assert.Equal((int)PackageVulnerabilitySeverity.Low, item.Severity)
             );
+        }
+
+        [Fact]
+        public void Constructor_WithNullRequiredArgument_ThrowsException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentNullException>(() => new VulnerableCapability(null!));
         }
     }
 }

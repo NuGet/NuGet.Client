@@ -13,23 +13,27 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerableCapability : IVulnerable
     {
-        private IEnumerable<PackageVulnerabilityMetadataContextInfo> _vulnerabilities = [];
-
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
+        private IReadOnlyList<PackageVulnerabilityMetadataContextInfo> _vulnerabilities = [];
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
         {
             get => _vulnerabilities;
-            private set => _vulnerabilities = value.OrderByDescending(v => v?.Severity ?? -1);
+            private set => _vulnerabilities = [.. value.OrderByDescending(v => v.Severity)];
         }
 
-        public bool IsVulnerable => Vulnerabilities.Any(v => v != null);
+        public bool IsVulnerable => Vulnerabilities.Count > 0;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity
         {
             get
             {
-                // Vulnerabilities are ordered so the first element is always the highest severity
-                int? severity = Vulnerabilities.FirstOrDefault()?.Severity;
-                if (severity != null && Enum.IsDefined(typeof(PackageVulnerabilitySeverity), severity))
+                if (!IsVulnerable)
+                {
+                    throw new InvalidOperationException("Vulnerabilities is empty");
+                }
+
+                // Vulnerabilities are ordered on set so the first element is always the highest severity
+                int severity = Vulnerabilities[0].Severity;
+                if (Enum.IsDefined(typeof(PackageVulnerabilitySeverity), severity))
                 {
                     return (PackageVulnerabilitySeverity)severity;
                 }
@@ -40,9 +44,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public VulnerableCapability(IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
+        public VulnerableCapability(List<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
         {
-            Vulnerabilities = vulnerabilities ?? throw new ArgumentNullException(nameof(vulnerabilities));
+            if (vulnerabilities == null)
+            {
+                throw new ArgumentNullException(nameof(vulnerabilities));
+            }
+
+            Vulnerabilities = vulnerabilities;
         }
     }
 }
