@@ -1,9 +1,10 @@
 {
   "path": "",
-  "plugInVersion": "0.1.309-preview",
+  "plugInVersion": "0.1.312-preview",
   "settings": {
     "CredentialsType": "",
-    "BlobUri": "https://avtestbuildcache.blob.core.windows.net/",
+    "AllowInteractiveAuth": "true",
+    "BuildCacheResourceId": "/subscriptions/cc0a8f52-91fe-4858-bbce-ab3b1b4fd3e3/resourceGroups/1esresources/providers/Microsoft.CloudTest/buildcaches/VS-Platform-Cache-Generation-CACHE",
     "ManagedIdentityClientId": "",
     "InteractiveAuthTokenDirectory": "",
     "LogDirectory": "",
