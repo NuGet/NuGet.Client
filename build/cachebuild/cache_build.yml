@@ -45,12 +45,6 @@ stages:
         arguments: 'install Microsoft.MSBuildCache.AzureBlobStorage -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease -Verbosity detailed'
 
     - task: NuGetCommand@2
-      displayName: 'Install Local Storage'
-      inputs:
-        command: custom
-        arguments: 'install Microsoft.MSBuildCache.Local  -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease'
-
-    - task: NuGetCommand@2
       displayName: 'Install MS SharedCompilation'
       inputs:
         command: custom
