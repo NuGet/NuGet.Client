@@ -20,6 +20,10 @@ stages:
     # pool: VS-Platform-Cache-Generation
     pool: VS-Platform-Cache-Generation
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk defined in global.json'
+      inputs:
+        useGlobalJson: true
     - task: NuGetToolInstaller@0
       displayName: Install Nuget
 
