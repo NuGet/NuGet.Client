@@ -1,0 +1,29 @@
+{
+  "path": "",
+  "plugInVersion": "0.1.309-preview",
+  "settings": {
+    "CredentialsType": "",
+    "BlobUri": "https://avtestbuildcache.blob.core.windows.net/",
+    "ManagedIdentityClientId": "",
+    "InteractiveAuthTokenDirectory": "",
+    "LogDirectory": "",
+    "CacheUniverse": "",
+    "MaxConcurrentCacheContentOperations": "",
+    "LocalCacheRootPath": "",
+    "LocalCacheSizeInMegabytes": "",
+    "IgnoredInputPatterns": ".gitignore;/**/microsoft.visualstudioeng.microbuild.plugins.*/**",
+    "IgnoredOutputPatterns": ";*.assets.cache;*assemblyreference.cache",
+    "IdenticalDuplicateOutputPatterns": "**",
+    "IgnoreDotNetSdkPatchVersion": "true",
+    "RemoteCacheIsReadOnly": "",
+    "AsyncCachePublishing": "",
+    "AsyncCacheMaterialization": "",
+    "AllowFileAccessAfterProjectFinishProcessPatterns": "\\**\\vctip.exe",
+    "AllowFileAccessAfterProjectFinishFilePatterns": "",
+    "AllowProcessCloseAfterProjectFinishProcessPatterns": "\\**\\mspdbsrv.exe",
+    "GetResultsForUnqueriedDependencies": "true",
+    "TargetsToIgnore": "GetTargetFrameworks;GetNativeManifest;GetCopyToOutputDirectoryItems;GetTargetFrameworksWithPlatformForSingleTargetFramework",
+    "SkipUnchangedOutputFiles": "true",
+    "GlobalPropertiesToIgnore": ";CurrentSolutionConfigurationContents;ShouldUnsetParentConfigurationAndPlatform;BuildingInsideVisualStudio;BuildingSolutionFile;SolutionDir;SolutionExt;SolutionFileName;SolutionName;SolutionPath;_MSDeployUserAgent;MSBuildCacheEnabled;MSBuildCacheLogDirectory;MSBuildCacheCacheUniverse;MSBuildCacheMaxConcurrentCacheContentOperations;MSBuildCacheLocalCacheRootPath;MSBuildCacheLocalCacheSizeInMegabytes;MSBuildCacheIgnoredInputPatterns;MSBuildCacheIgnoredOutputPatterns;MSBuildCacheIdenticalDuplicateOutputPatterns;MSBuildCacheRemoteCacheIsReadOnly;MSBuildCacheAsyncCachePublishing;MSBuildCacheAsyncCacheMaterialization;MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns;MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns;MSBuildCacheAllowProcessCloseAfterProjectFinishProcessPatterns;MSBuildCacheGlobalPropertiesToIgnore;UseHostCompilerIfAvailable;IsGraphBuild;LangID;LangName;DefineExplicitDefaults;DevEnvDir;VSIDEResolvedNonMSBuildProjectOutputs;FastUpToDateCheckIgnoresKinds;IsImplicitlyTriggeredBuild;MSBuildCacheGetResultsForUnqueriedDependencies;MSBuildCacheIgnoreDotNetSdkPatchVersion"
+  }
+}
