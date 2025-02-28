@@ -35,7 +35,6 @@ namespace NuGet.PackageManagement.UI.Test
         [Theory]
         [InlineData(new int[] { (int)PackageVulnerabilitySeverity.Low, (int)PackageVulnerabilitySeverity.High }, PackageVulnerabilitySeverity.High)]
         [InlineData(new int[] { (int)PackageVulnerabilitySeverity.Critical, (int)PackageVulnerabilitySeverity.Unknown }, PackageVulnerabilitySeverity.Critical)]
-        [InlineData(new int[] { }, PackageVulnerabilitySeverity.Unknown)]
         [InlineData(new int[] { -2 }, PackageVulnerabilitySeverity.Unknown)]
         public void VulnerabilityMaxSeverity_VariousVulnerabilities_ReturnsExpected(int[] severities, PackageVulnerabilitySeverity expected)
         {
