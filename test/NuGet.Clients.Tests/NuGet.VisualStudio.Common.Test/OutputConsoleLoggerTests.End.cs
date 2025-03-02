@@ -3,6 +3,7 @@
 
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
@@ -15,25 +16,35 @@ namespace NuGet.VisualStudio.Common.Test
                 : base(sp)
             {
                 _outputConsole.Reset();
-                _outputConsoleLogger.End();
             }
 
             [Fact]
             public void Writes_message_that_it_is_finished()
             {
+                _outputConsoleLogger.End();
                 _outputConsole.Verify(oc => oc.WriteLineAsync(Resources.Finished));
             }
 
             [Fact]
             public void Writes_empty_line()
             {
+                _outputConsoleLogger.End();
                 _outputConsole.Verify(oc => oc.WriteLineAsync(string.Empty));
             }
 
             [Fact]
-            public void Gives_error_list_focus()
+            public void BringToFrontIfSettingsPermitAsync_WhenAnyCallsToReportError_IsCalled()
             {
+                _outputConsoleLogger.ReportError(new LogMessage(NuGet.Common.LogLevel.Error, "message"));
+                _outputConsoleLogger.End();
                 _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync());
+            }
+
+            [Fact]
+            public void BringToFrontIfSettingsPermitAsync_WhenNoCallsToReportError_IsNotCalled()
+            {
+                _outputConsoleLogger.End();
+                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync(), Times.Never);
             }
         }
     }
