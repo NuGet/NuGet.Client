@@ -35,7 +35,9 @@ namespace NuGet.VisualStudio.Common.Test
             [Fact]
             public void BringToFrontIfSettingsPermitAsync_WhenAnyCallsToReportError_IsCalled()
             {
-                _outputConsoleLogger.ReportError(new LogMessage(NuGet.Common.LogLevel.Error, "message"));
+                // ReportError will always add error entries regardless of log level.
+                LogLevel irrelevantLogLevel = LogLevel.Information;
+                _outputConsoleLogger.ReportError(new LogMessage(irrelevantLogLevel, "message"));
                 _outputConsoleLogger.End();
                 _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync());
             }
