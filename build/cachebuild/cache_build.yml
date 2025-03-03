@@ -18,7 +18,7 @@ stages:
   - job: Windows
     timeoutInMinutes: 300
     # pool: VS-Platform-Cache-Generation
-    pool: VS-Platform-Cache-Generation
+    pool: VSEngSS-MicroBuild2022-1ES
     steps:
     - task: UseDotNet@2
       displayName: 'Use .NET Core sdk defined in global.json'
