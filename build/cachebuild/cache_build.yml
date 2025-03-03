@@ -23,7 +23,8 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use .NET Core sdk defined in global.json'
       inputs:
-        useGlobalJson: true
+        version: '9.0.x'
+        includePreviewVersions: true
     - task: NuGetToolInstaller@0
       displayName: Install Nuget
 
