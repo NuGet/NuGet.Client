@@ -803,7 +803,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Directory.CreateDirectory(dllDir);
                 Directory.CreateDirectory(Path.Combine(testDir, "obj"));
                 File.WriteAllBytes(dllPath, new byte[0]);
-                var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "project.assets.json");
+                var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "json.assets.project");
                 using (var reader = new StreamReader(GetType().Assembly.GetManifestResourceStream(path)))
                 {
                     var contents = reader.ReadToEnd();
