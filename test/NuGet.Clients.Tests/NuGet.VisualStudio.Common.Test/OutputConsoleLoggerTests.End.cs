@@ -43,10 +43,10 @@ namespace NuGet.VisualStudio.Common.Test
             }
 
             [Fact]
-            public void BringToFrontIfSettingsPermitAsync_WhenNoCallsToReportError_IsNotCalled()
+            public void BringToFrontIfSettingsPermitAsync_WhenNoCallsToReportError_IsCalledOnce()
             {
                 _outputConsoleLogger.End();
-                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync(), Times.Never);
+                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync(), Times.Once);
             }
         }
     }

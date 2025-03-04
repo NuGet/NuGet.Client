@@ -103,13 +103,13 @@ namespace NuGet.VisualStudio.Common.Test
 
             [Theory]
             [MemberData(nameof(GetMessageVariationsWhichAreNotReported))]
-            public async Task BringToFrontIfSettingsPermitAsync_WhenNoCallsToLogAreErrorLevels_IsNotCalled(LogLevel logLevelNonError, int verbosityLevel)
+            public async Task BringToFrontIfSettingsPermitAsync_WhenNoCallsToLogAreErrorLevels_IsCalled(LogLevel logLevelNonError, int verbosityLevel)
             {
                 _msBuildOutputVerbosity = verbosityLevel;
                 _outputConsoleLogger.Log(new LogMessage(logLevelNonError, "message"));
                 await WaitForInitializationAsync();
                 _outputConsoleLogger.End();
-                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync(), Times.Never);
+                _errorList.Verify(el => el.BringToFrontIfSettingsPermitAsync(), Times.Once);
             }
         }
     }
