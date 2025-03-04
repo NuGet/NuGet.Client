@@ -14,7 +14,7 @@ using Xunit;
 namespace NuGet.Build.Tasks.Pack.Test
 {
     /*
-       This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file.
+       This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\json.assets.project file which is written to disk as project.assets.json when each test is run.
        To regenerate that file, create a project with these contents:
 
     <Project Sdk="Microsoft.NET.Sdk">
