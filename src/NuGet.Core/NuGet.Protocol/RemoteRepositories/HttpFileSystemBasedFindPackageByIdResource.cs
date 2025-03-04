@@ -558,16 +558,17 @@ namespace NuGet.Protocol
                 {
                     if (reader.ValueTextEquals(VersionsPropertyName))
                     {
-                        reader.Read();
-                        reader.ProcessStringArray(static (s, args) =>
+                        if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
                         {
-                            var (streamResults, baseUri, id) = args;
-                            var packageInfo = BuildModel(baseUri, id, s);
-                            if (!streamResults.ContainsKey(packageInfo.Identity.Version))
+                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                             {
-                                streamResults.Add(packageInfo.Identity.Version, packageInfo);
+                                var packageInfo = BuildModel(baseUri, id, reader.ReadTokenAsString());
+                                if (!streamResults.ContainsKey(packageInfo.Identity.Version))
+                                {
+                                    streamResults.Add(packageInfo.Identity.Version, packageInfo);
+                                }
                             }
-                        }, (streamResults, baseUri, id));
+                        }
 
                         break;
                     }

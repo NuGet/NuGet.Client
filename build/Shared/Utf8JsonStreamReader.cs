@@ -109,17 +109,6 @@ namespace NuGet
             }
         }
 
-        internal void ProcessStringArray<TArg>(Action<string, TArg> callback, TArg arg)
-        {
-            if (TokenType == JsonTokenType.StartArray)
-            {
-                while (Read() && TokenType != JsonTokenType.EndArray)
-                {
-                    callback(_reader.ReadTokenAsString(), arg);
-                }
-            }
-        }
-
         internal IList<T> ReadObjectAsList<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
         {
             if (TokenType == JsonTokenType.Null)
@@ -171,6 +160,13 @@ namespace NuGet
                 }
             }
             return objectList ?? Array.Empty<T>();
+        }
+
+        internal string ReadTokenAsString()
+        {
+            ThrowExceptionIfDisposed();
+
+            return _reader.ReadTokenAsString();
         }
 
         internal string ReadNextTokenAsString()
