@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -17,7 +16,13 @@ namespace NuGet.PackageManagement.UI
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
         {
             get => _vulnerabilities;
-            private set => _vulnerabilities = [.. value.OrderByDescending(v => v.Severity)];
+            private set
+            {
+                List<PackageVulnerabilityMetadataContextInfo> sortedList = [.. value];
+                // Sort the list in descending order.
+                sortedList.Sort((b, a) => a.Severity.CompareTo(b.Severity));
+                _vulnerabilities = sortedList;
+            }
         }
 
         public bool IsVulnerable => Vulnerabilities.Count > 0;
