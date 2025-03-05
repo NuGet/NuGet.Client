@@ -55,12 +55,8 @@ stages:
         command: custom
         arguments: 'install Microsoft.MSBuildCache.SharedCompilation -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease'
 
-    - task: AzureCLI@2
+    - pwsh: build/cachebuild/cache_build.ps1
       displayName: Build
-      inputs:
-        azureSubscription: 'VSEngMSBuildCache'
-        scriptType: ps
-        scriptPath: 'build/cachebuild/cache_build.ps1'
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Build Logs'
