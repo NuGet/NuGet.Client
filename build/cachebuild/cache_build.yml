@@ -65,7 +65,11 @@ stages:
       inputs:
         solution: 'Nuget.sln'
         msbuildVersion: 'latest'
-        msbuildArguments: "/t:Build /graph /reportfileaccesses /m:1 /property:Configuration=Debug /property:Platform='Any CPU' /v:minimal /bl:'$(Agent.TempDirectory)\\MSBuildBuildBinLog\\build.binlog'"
+        msbuildArchitecture: x64
+        configuration: Debug
+        platform: 'Any CPU'
+        logFileVerbosity: minimal
+        msbuildArguments: "/t:Build /graph /reportfileaccesses /m:1 /bl:'$(Agent.TempDirectory)\\MSBuildBuildBinLog\\build.binlog'"
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Build Logs'
