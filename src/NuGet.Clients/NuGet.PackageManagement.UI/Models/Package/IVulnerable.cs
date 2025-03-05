@@ -1,0 +1,20 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
+using System.Collections.Generic;
+using NuGet.Protocol;
+using NuGet.VisualStudio.Internal.Contracts;
+
+namespace NuGet.PackageManagement.UI
+{
+    interface IVulnerable
+    {
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; }
+
+        public bool IsVulnerable { get; }
+
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity { get; }
+    }
+}
