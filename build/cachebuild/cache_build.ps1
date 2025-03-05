@@ -1,5 +1,5 @@
-$CacheEnlistmentRoot = "$PSScriptRoot\..\.."
-$MSBuildPath = & "$CacheEnlistmentRoot\scripts\Get-MSBuildPath.ps1" -SixtyFourBit
+$CacheEnlistmentRoot = [IO.Path]::GetFullPath("$PSScriptRoot\..\..")
+$MSBuildPath = & "$CacheEnlistmentRoot\Scripts\Get-MSBuildPath.ps1" -SixtyFourBit
 
 if (-not $MSBuildPath) {
     Write-Error "Unable to continue without MSBuildPath"
@@ -23,6 +23,5 @@ $Env:MSBuildCacheLocalCacheRootPath = "$Env:Agent_TempDirectory\MSBuildCacheLoca
 # Set the location for the cache auth file
 $Env:MSBuildCacheBuildCacheConfigurationFile = 'c:\buildcacheconfig.json'
 
-Set-Location -Path "$CacheEnlistmentRoot"
-Write-Host "Running $MSBuildPath\msbuild.exe /m:1 /graph /reportfileaccesses /property:Configuration=Debug /property:Platform='Any CPU' `"Nuget.sln`" /v:minimal /bl:`"$Env:Agent_TempDirectory\MSBuildBuildBinLog\build.binlog`""
-& $MSBuildPath\msbuild.exe /m:1 /graph /reportfileaccesses /property:Configuration=Debug /property:Platform='Any CPU' `"Nuget.sln`" /v:minimal /bl:`"$Env:Agent_TempDirectory\MSBuildBuildBinLog\build.binlog`"
+Write-Host "Running $MSBuildPath\msbuild.exe /m:1 /graph /reportfileaccesses /property:Configuration=Debug /property:Platform='Any CPU' `"$CacheEnlistmentRoot\Nuget.sln`" /v:minimal /bl:`"$Env:Agent_TempDirectory\MSBuildBuildBinLog\build.binlog`""
+& $MSBuildPath\msbuild.exe /m:1 /graph /reportfileaccesses /property:Configuration=Debug /property:Platform='Any CPU' `"$CacheEnlistmentRoot\Nuget.sln`" /v:minimal /bl:`"$Env:Agent_TempDirectory\MSBuildBuildBinLog\build.binlog`"
