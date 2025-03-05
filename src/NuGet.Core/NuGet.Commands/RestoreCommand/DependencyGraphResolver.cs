@@ -930,10 +930,10 @@ namespace NuGet.Commands
             Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(EvictionsDictionarySize);
 
             // Keeps track of the number of times the entire walk is started over
-            int? restartCount = NuGetEventSource.IsEnabled ? -1 : null;
+            int restartCount = -1;
 
             // Keeps track of the total number of items that have been queued for processing
-            int? totalQueuedItemCount = NuGetEventSource.IsEnabled ? 0 : null;
+            int totalQueuedItemCount = 0;
 
         // Used to start over when a dependency has multiple descendants of an item to be evicted.
         //
@@ -1403,7 +1403,7 @@ namespace NuGet.Commands
 
             if (NuGetEventSource.IsEnabled)
             {
-                TraceEvents.ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair, resolvedDependencyGraphItems.Count, restartCount!.Value, totalQueuedItemCount!.Value);
+                TraceEvents.ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair, resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
             }
 
             return resolvedDependencyGraphItems;
