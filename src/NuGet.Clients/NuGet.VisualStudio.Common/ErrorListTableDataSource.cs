@@ -29,7 +29,6 @@ namespace NuGet.VisualStudio.Common
         private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IReadOnlyList<TableSubscription> _subscriptions = new List<TableSubscription>();
         private readonly List<ErrorListTableEntry> _entries = new List<ErrorListTableEntry>();
-        private bool _errorsReported;
 
         public string SourceTypeIdentifier => StandardTableDataSources.ErrorTableDataSource;
 
@@ -115,7 +114,6 @@ namespace NuGet.VisualStudio.Common
                 {
                     // Clear all entries
                     _entries.Clear();
-                    _errorsReported = false;
                 }
 
                 var subscriptions = _subscriptions;
@@ -149,7 +147,6 @@ namespace NuGet.VisualStudio.Common
                 {
                     // Update the full set of entries
                     _entries.AddRange(entries);
-                    _errorsReported = true;
                 }
 
                 // Add new entries to each sink
@@ -178,7 +175,7 @@ namespace NuGet.VisualStudio.Common
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!_errorsReported)
+            if (_entries.Count == 0)
             {
                 return;
             }
