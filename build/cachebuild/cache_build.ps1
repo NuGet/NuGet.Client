@@ -9,9 +9,9 @@ Copy-Item -Path "$PSScriptRoot\cache_build.props" -Destination $ImportBeforeFold
 Copy-Item -Path "$PSScriptRoot\cache_build.targets" -Destination $ImportAfterFolder -Force
 
 # Set the cache log directory so we tell it where to go
-[Environment]::SetEnvironmentVariable("MSBuildCacheLogDirectory", "$Env:Agent_TempDirectory\MSBuildCacheLogs", "User")
-[Environment]::SetEnvironmentVariable("MSBuildCacheLocalCacheRootPath", "$Env:Agent_TempDirectory\MSBuildCacheLocalRoot", "User")
+[Environment]::SetEnvironmentVariable("MSBuildCacheLogDirectory", "$Env:Agent_TempDirectory\MSBuildCacheLogs", "Machine")
+[Environment]::SetEnvironmentVariable("MSBuildCacheLocalCacheRootPath", "$Env:Agent_TempDirectory\MSBuildCacheLocalRoot", "Machine")
 
 
 # Set the location for the cache auth file
-[Environment]::SetEnvironmentVariable("MSBuildCacheBuildCacheConfigurationFile", "c:\buildcacheconfig.json", "User")
+[Environment]::SetEnvironmentVariable("MSBuildCacheBuildCacheConfigurationFile", "c:\buildcacheconfig.json", "Machine")
