@@ -171,14 +171,14 @@ namespace NuGet.VisualStudio.Common
         /// </summary>
         public async Task BringToFrontIfSettingsPermitAsync()
         {
-            EnsureInitialized();
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (_entries.Count == 0)
             {
                 return;
             }
+
+            EnsureInitialized();
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             bool showErrorListOnBuildEnd = true;
 
