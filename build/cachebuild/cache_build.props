@@ -3,14 +3,9 @@
   <PropertyGroup>
     <!-- Reference: https://github.com/microsoft/MSBuildCache -->
     <MSBuildCacheEnabled>true</MSBuildCacheEnabled>
-    <MSBuildCacheEnabled Condition=" '$(BuildingInsideVisualStudio)' == 'true'">false</MSBuildCacheEnabled>
-    <MSBuildCacheBlobUri Condition="'$(MSBuildCacheBlobUri)' == ''">https://avtestbuildcache.blob.core.windows.net/</MSBuildCacheBlobUri>
 
     <!-- Set to TokenCredential to use the service connection to upload cache data -->
     <MSBuildCacheCredentialsType>TokenCredential</MSBuildCacheCredentialsType>
-
-    <!-- Set to ConnectionString to use the 1ES Build Cache on the agent machine. -->
-    <!-- <MSBuildCacheCredentialsType>ConnectionString</MSBuildCacheCredentialsType> -->
 
     <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);IsGraphBuild</MSBuildCacheGlobalPropertiesToIgnore>
     <!--
@@ -49,8 +44,5 @@
 
   <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.AzureBlobStorage\build\Microsoft.MSBuildCache.AzureBlobStorage.props" />
   <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.SharedCompilation\build\Microsoft.MSBuildCache.SharedCompilation.props" />
-
-  <!-- Used for creating a Local cache on the machine instead of upload to azure storage -->
-  <!-- <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.Local\build\Microsoft.MSBuildCache.Local.props" /> -->
 
 </Project>

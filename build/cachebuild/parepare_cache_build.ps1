@@ -1,3 +1,4 @@
+# This section inject cache plugin into msbuild and add cache plugin settings.
 Write-Host "Copying cache_build.props and cache_build.targets to the ImportBefore and ImportAFter folders respectively"
 $LocalAppDataFolder = $Env:LOCALAPPDATA
 $ImportAfterFolder = Join-Path $LocalAppDataFolder "Microsoft\MSBuild\Current\Imports\Microsoft.Common.props\ImportAfter"
@@ -11,7 +12,6 @@ Copy-Item -Path "$PSScriptRoot\cache_build.targets" -Destination $ImportAfterFol
 # Set the cache log directory so we tell it where to go
 $MSBuildCacheLogDirectory = "$Env:Agent_TempDirectory\MSBuildCacheLogs"
 $MSBuildCacheLocalCacheRootPath = "$Env:Agent_TempDirectory\MSBuildCacheLocalRoot"
-
 
 # Set the location for the cache auth file
 $MSBuildCacheBuildCacheConfigurationFile = "c:\buildcacheconfig.json"

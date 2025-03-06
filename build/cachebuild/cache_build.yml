@@ -55,7 +55,7 @@ stages:
         command: custom
         arguments: 'install Microsoft.MSBuildCache.SharedCompilation -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease'
 
-    - pwsh: build/cachebuild/cache_build.ps1
+    - pwsh: build/cachebuild/prepare_cache_build.ps1
       displayName: 'Prerequisites'
 
     - task: MSBuild@1

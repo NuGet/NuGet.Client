@@ -3,7 +3,4 @@
   <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.AzureBlobStorage\build\Microsoft.MSBuildCache.AzureBlobStorage.targets" />
   <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.SharedCompilation\build\Microsoft.MSBuildCache.SharedCompilation.targets" />
 
-  <!-- Used for creating a Local cache on the machine instead of upload to azure storage -->
-  <!-- <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.Local\build\Microsoft.MSBuildCache.Local.targets" /> -->
-
 </Project>
