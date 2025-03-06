@@ -55,8 +55,16 @@ stages:
         command: custom
         arguments: 'install Microsoft.MSBuildCache.SharedCompilation -OutputDirectory $(Agent.TempDirectory) -ExcludeVersion -Prerelease'
 
-    - powershell: build/cachebuild/cache_build.ps1
-      displayName: Build
+    - task: MSBuild@1
+      displayName: 'Build target'
+      inputs:
+        solution: 'Nuget.sln'
+        msbuildVersion: 'latest'
+        msbuildArchitecture: x64
+        configuration: Debug
+        platform: "Any CPU"
+        logFileVerbosity: minimal
+        msbuildArguments: "/t:Build /graph /reportfileaccesses /m:1 /bl:$(Agent.TempDirectory)\\MSBuildBuildBinLog\\build.binlog"
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Build Logs'
