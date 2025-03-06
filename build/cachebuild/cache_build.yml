@@ -68,6 +68,10 @@ stages:
         platform: "Any CPU"
         logFileVerbosity: minimal
         msbuildArguments: "/t:Build /graph /reportfileaccesses /m:1 /bl:$(Agent.TempDirectory)\\MSBuildBuildBinLog\\build.binlog"
+      env:
+        MSBuildCacheLogDirectory: $(MSBuildCacheLogDirectory)
+        MSBuildCacheLocalCacheRootPath: $(MSBuildCacheLocalCacheRootPath)
+        MSBuildCacheBuildCacheConfigurationFile: $(MSBuildCacheBuildCacheConfigurationFile)
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Build Logs'
