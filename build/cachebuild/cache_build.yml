@@ -3,15 +3,6 @@ trigger:
     include:
     - main
 
-variables:
-- group: 'Connected Experience'
-- name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
-  value: true
-- name: NUGET_PACKAGES
-  value: $(Agent.TempDirectory)/.nuget/packages
-- name: DisableOptProf
-  value: false
-
 stages:
 - stage: Build
   jobs:
