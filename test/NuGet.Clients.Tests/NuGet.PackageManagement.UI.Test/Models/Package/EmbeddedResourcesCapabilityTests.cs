@@ -27,21 +27,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Throws<ArgumentNullException>(() => new EmbeddedResourcesCapability(null, identity, null));
         }
 
-        [Fact]
-        public void Ctor_WithReadmeUri_ReadmeUriSet()
-        {
-            // Arrange
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var mockPackageFileService = new Mock<INuGetPackageFileService>();
-            var uri = new Uri(@"C:\path\to\readme");
-
-            // Act
-            var capability = new EmbeddedResourcesCapability(mockPackageFileService.Object, identity, uri);
-
-            // Assert
-            Assert.Equal(uri, capability.ReadmeUri);
-        }
-
 
         [Fact]
         public void Constructor_WithoutIdentity_EnforcesRequiredParameter()
@@ -98,7 +83,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var mockPackageFileService = new Mock<INuGetPackageFileService>();
             mockPackageFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), default)).ReturnsAsync(stream);
-            EmbeddedResourcesCapability test = new EmbeddedResourcesCapability(mockPackageFileService.Object, identity, new Uri(@"C:\path\to\image.png"));
+            var readmeUri = new Uri(@"C:\path\to\image.png");
+            EmbeddedResourcesCapability test = new EmbeddedResourcesCapability(mockPackageFileService.Object, identity, readmeUri);
 
             // Act
             var result = await test.GetReadmeAsync(CancellationToken.None);
@@ -106,6 +92,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             Assert.NotNull(result);
             mockPackageFileService.Verify(x => x.GetReadmeAsync(It.IsAny<Uri>(), default), Times.Once);
+            Assert.Equal(readmeUri, test.ReadmeUri);
         }
 
         [Fact]
@@ -124,6 +111,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             Assert.Null(result);
             mockPackageFileService.Verify(x => x.GetReadmeAsync(It.IsAny<Uri>(), default), Times.Never);
+            Assert.Null(test.ReadmeUri);
         }
     }
 }
