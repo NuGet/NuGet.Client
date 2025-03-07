@@ -11,7 +11,7 @@
     "MaxConcurrentCacheContentOperations": "",
     "LocalCacheRootPath": "",
     "LocalCacheSizeInMegabytes": "",
-    "IgnoredInputPatterns": ".gitignore;/**/microsoft.visualstudioeng.microbuild.plugins.*/**",
+    "IgnoredInputPatterns": ".gitignore;/**/microsoft.visualstudioeng.microbuild.plugins.*/**;/**/microsoft.netcore.app.ref/**;/**/microsoft.netcore.app.host.win-x64/**",
     "IgnoredOutputPatterns": ";*.assets.cache;*assemblyreference.cache",
     "IdenticalDuplicateOutputPatterns": "**",
     "IgnoreDotNetSdkPatchVersion": "true",

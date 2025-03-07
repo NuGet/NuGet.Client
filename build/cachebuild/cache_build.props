@@ -39,7 +39,7 @@
     <MSBuildCacheIgnoreDotNetSdkPatchVersion>true</MSBuildCacheIgnoreDotNetSdkPatchVersion>
 
     <!-- Ignoring MicroBuild PlugIns-->
-    <MSBuildCacheIgnoredInputPatterns>.gitignore;/**/microsoft.visualstudioeng.microbuild.plugins.*/**</MSBuildCacheIgnoredInputPatterns>
+    <MSBuildCacheIgnoredInputPatterns>.gitignore;/**/microsoft.visualstudioeng.microbuild.plugins.*/**;/**/microsoft.netcore.app.ref/**;/**/microsoft.netcore.app.host.win-x64/**</MSBuildCacheIgnoredInputPatterns>
   </PropertyGroup>
 
   <Import Project="$(Agent_TempDirectory)\Microsoft.MSBuildCache.AzureBlobStorage\build\Microsoft.MSBuildCache.AzureBlobStorage.props" />
