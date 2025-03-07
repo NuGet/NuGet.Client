@@ -74,44 +74,29 @@ namespace NuGet.PackageManagement.UI.Test.Models
             mockPackageFileService.Verify(x => x.GetEmbeddedLicenseAsync(It.IsAny<PackageIdentity>(), default), Times.Once);
         }
 
-
-        [Fact]
-        public async Task GetReadmeAsync_WithUrl_ReturnsStream()
+        [Theory]
+        [InlineData(@"C:\path\to\image.png")]
+        [InlineData(null)]
+        public async Task GetReadmeAsync_ReadmeUrlPassed(string readmePath)
         {
             // Arrange
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes("stream"));
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var mockPackageFileService = new Mock<INuGetPackageFileService>();
+            var readmeUri = readmePath != null ? new Uri(@"C:\path\to\image.png") : null;
+            var expectedTimes = readmePath != null ? Times.Once() : Times.Never();
+            var expectedResult = readmePath != null ? stream : null;
+
             mockPackageFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), default)).ReturnsAsync(stream);
-            var readmeUri = new Uri(@"C:\path\to\image.png");
             EmbeddedResourcesCapability test = new EmbeddedResourcesCapability(mockPackageFileService.Object, identity, readmeUri);
 
             // Act
             var result = await test.GetReadmeAsync(CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            mockPackageFileService.Verify(x => x.GetReadmeAsync(It.IsAny<Uri>(), default), Times.Once);
+            Assert.Equal(expectedResult, result);
+            mockPackageFileService.Verify(x => x.GetReadmeAsync(It.IsAny<Uri>(), default), expectedTimes);
             Assert.Equal(readmeUri, test.ReadmeUri);
-        }
-
-        [Fact]
-        public async Task GetReadmeAsync_NoUrl_ReturnsNull()
-        {
-            // Arrange
-            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes("stream"));
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var mockPackageFileService = new Mock<INuGetPackageFileService>();
-            mockPackageFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), default)).ReturnsAsync(stream);
-            EmbeddedResourcesCapability test = new EmbeddedResourcesCapability(mockPackageFileService.Object, identity, null);
-
-            // Act
-            var result = await test.GetReadmeAsync(CancellationToken.None);
-
-            // Assert
-            Assert.Null(result);
-            mockPackageFileService.Verify(x => x.GetReadmeAsync(It.IsAny<Uri>(), default), Times.Never);
-            Assert.Null(test.ReadmeUri);
         }
     }
 }
