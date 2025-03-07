@@ -18,10 +18,10 @@ The following guidelines should be viewed as suggestions, unless explicitely sta
 - Focus on small, iterative, changes when possible.
 
 ### Addressing Feedback
+- **Required**: Focus on collaboration when responding to feedback.
 - Try your best not to take feedback personally, we're all working towards the same goals.
 - When conflict arises try to address it directly with the commentor offline, preferably synchronously.
 - Provide an explantion if you decide not to implement a recommendation.
-- Focus on collaboration when responding to feedback.
 - Use GitHub's tooling. Re-request review after feedback has been addressed.
 
 ### Merging Pull Requests
@@ -35,8 +35,8 @@ The following guidelines should be viewed as suggestions, unless explicitely sta
 ![Bad Commit Message](images/bad-commit-message.png)
 
 ### Providing Pull Request Feedback
+- **Required**: Focus on collaboration when providing feedback.
 - Use [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request), but please never commit them for a PR you did not create.
-
 - Make sure your intent is clear.
   - State your suggestion clearly in the comment, before explaining or justifying it.
   - Use "nit" or "non-blocking" for optional suggestions.
