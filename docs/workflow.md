@@ -10,7 +10,7 @@ Stale PRs will be auto closed.
 The following guidelines should be viewed as suggestions, unless explicitly stated they are required.
 
 ### Requesting a Pull Request
-- **Required**: Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
+- Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
 - Follow the pull request template, as it helps the maintainers drive quality across the product.
 - Request at least 2 reviewers, and re-request their review when feedback has been addressed.
 - Include screenshots and PM when making UX changes.
@@ -37,9 +37,13 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 ### Providing Pull Request Feedback
 - **Required**: Focus on collaboration when providing feedback.
 - Use [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request), but please never commit them for a PR you did not create.
-- Make sure your intent is clear.
-  - State your suggestion clearly in the comment, before explaining or justifying it.
-  - Use "nit" or "non-blocking" for optional suggestions.
+- Make the intent of your comment clear.
+  - ex. "Consider changing the color of this boarder because..."
+  - ex. "I've never seen this before! Can you help me understand..."
+  - ex. "Nit: Spelling mistake"
+- Focus on actionable feedback when requesting changes.
+  - ❌ This button won't do anything
+  - ✔️ You need to add a listener to the button for it to respond
 - Ensure the subject of your feedback is the code and not the PR author.
 - Use soft language if you must address the author directly.
 
