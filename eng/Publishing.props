@@ -2,7 +2,8 @@
 
   <ItemGroup>
     <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
-              PublishFlatContainer="false" />
+              PublishFlatContainer="false"
+              Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true'" />
   </ItemGroup>
 
 </Project>
