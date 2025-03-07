@@ -70,10 +70,8 @@ namespace NuGet.PackageManagement.UI.Test
             var package = new TestRemotePackageModel(identity, vulnerableCapability.Object);
 
             // Act
-            var isVulnerable = package.IsPackageVulnerable();
-
             // Assert
-            Assert.Equal(isVulnerable, isPackageVulnerable);
+            Assert.Equal(package.IsVulnerable, isPackageVulnerable);
         }
     }
 }

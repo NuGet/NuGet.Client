@@ -12,8 +12,10 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    class RemotePackageModel : PackageModel
+    class RemotePackageModel : PackageModel, IVulnerable
     {
+        private readonly IVulnerable _vulnerableCapability;
+
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerable vulnerableCapability,
@@ -35,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
             DependencySets = dependencySets;
-            VulnerableCapability = vulnerableCapability;
+            _vulnerableCapability = vulnerableCapability;
         }
 
         public bool IsListed { get; }
@@ -43,21 +45,11 @@ namespace NuGet.PackageManagement.UI
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
         public IEnumerable<PackageDependencyGroup>? DependencySets { get; }
-        IVulnerable VulnerableCapability { get; }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> GetPackageVulnerabilities()
-        {
-            return VulnerableCapability.Vulnerabilities;
-        }
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
-        public bool IsPackageVulnerable()
-        {
-            return VulnerableCapability.IsVulnerable;
-        }
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
-        public PackageVulnerabilitySeverity GetPackageVulnerabilityMaxSeverity()
-        {
-            return VulnerableCapability.VulnerabilityMaxSeverity;
-        }
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
     }
 }

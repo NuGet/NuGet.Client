@@ -11,8 +11,10 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    class LocalPackageModel : PackageModel
+    class LocalPackageModel : PackageModel, IVulnerable
     {
+        private readonly IVulnerable _vulnerableCapability;
+
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerable vulnerableCapability,
@@ -25,25 +27,15 @@ namespace NuGet.PackageManagement.UI
             : base(identity, title, description, authors, projectUrl, tags, copyright)
         {
             PackagePath = packagePath;
-            VulnerableCapability = vulnerableCapability;
+            _vulnerableCapability = vulnerableCapability;
         }
 
         public string PackagePath { get; }
-        IVulnerable VulnerableCapability { get; }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> GetPackageVulnerabilities()
-        {
-            return VulnerableCapability.Vulnerabilities;
-        }
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
-        public bool IsPackageVulnerable()
-        {
-            return VulnerableCapability.IsVulnerable;
-        }
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
-        public PackageVulnerabilitySeverity GetPackageVulnerabilityMaxSeverity()
-        {
-            return VulnerableCapability.VulnerabilityMaxSeverity;
-        }
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
     }
 }

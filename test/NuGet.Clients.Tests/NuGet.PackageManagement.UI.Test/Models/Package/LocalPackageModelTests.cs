@@ -57,10 +57,8 @@ namespace NuGet.PackageManagement.UI.Test
             var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
 
             // Act
-            var isVulnerable = package.IsPackageVulnerable();
-
             // Assert
-            Assert.Equal(isVulnerable, isPackageVulnerable);
+            Assert.Equal(package.IsVulnerable, isPackageVulnerable);
         }
     }
 }
