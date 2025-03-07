@@ -5,9 +5,9 @@ In here we describe the general workflow guidelines the NuGet developer/contribu
 ## Pull Requests & Code Reviews
 To help ensure that only the highest quality code makes its way into the project, all code changes need to be submitted to GitHub as PRs.
 This repo has bots that manage all stale PRs.
-Stale PRs will be autoclosed.
+Stale PRs will be auto closed.
 
-The following guidelines should be viewed as suggestions, unless explicitely stated they are required.
+The following guidelines should be viewed as suggestions, unless explicitly stated they are required.
 
 ### Requesting a Pull Request
 - **Required**: Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
@@ -21,14 +21,14 @@ The following guidelines should be viewed as suggestions, unless explicitely sta
 - **Required**: Focus on collaboration when responding to feedback.
 - Try your best not to take feedback personally, we're all working towards the same goals.
 - When conflict arises try to address it directly with the commentor offline, preferably synchronously.
-- Provide an explantion if you decide not to implement a recommendation.
+- Provide an explanation if you decide not to implement a recommendation.
 - Use GitHub's tooling. Re-request review after feedback has been addressed.
 
 ### Merging Pull Requests
-- **Required:** All comments must be resolved before merging.
+- **Required**: All comments must be resolved before merging.
 - **Required**: use the GitHub `Squash and Merge` button for this repository.
 - Merge a PR when you are confident it has been sufficiently reviewed.
-- When possible wait 24h after the last signficant change before merging.
+- When possible wait 24h after the last significant change before merging.
 - Ensure commit message is descriptive and helpful
 ![Good Commit Message](images/good-commit-message.png)
 ![Good Commit Message With More Details](images/good-commit-message-expanded.png)
@@ -41,11 +41,11 @@ The following guidelines should be viewed as suggestions, unless explicitely sta
   - State your suggestion clearly in the comment, before explaining or justifying it.
   - Use "nit" or "non-blocking" for optional suggestions.
 - Ensure the subject of your feedback is the code and not the PR author.
-- Use soft language if you have to address the author directly.
+- Use soft language if you must address the author directly.
 
 #### When to mark a PR as "Approved"
-- You feel confident that the code meets a high quality bar, has adequate test coverage, is ready to merge.
-- Any comments left are uncontroversial and do not need to be resolved before merging.
+- You feel confident that the code meets a high-quality bar, has adequate test coverage, and is ready to merge.
+- Any comments submitted are uncontroversial and do not need to be resolved before merging.
 - Previous feedback has been sufficiently addressed.
 #### When to leave comments without approval
 - You are not confident you can approve the PR with the requirements stated above.
@@ -55,7 +55,7 @@ The following guidelines should be viewed as suggestions, unless explicitely sta
 
 ### Draft Pull Requests
 
-Draft pull requests are allowed, but should have a clear plan for transition to a review ready pull request.
+Draft pull requests are allowed but should have a clear plan for transitioning to a review ready pull request.
 
 ## Branching strategy
 
@@ -63,7 +63,7 @@ The active development branch in our repo is `dev`. What we ship comes from the 
 
 ### Adding fixes in release branches
 
-NuGet primarily works on the dev branch and that's where most of the commmits will be merged. At a certain point, NuGet branches to a release branch during the release stabilization phase and the last few commits usually go into that branch.
+NuGet primarily works on the dev branch and that's where most of the commits will be merged. At a certain point, NuGet branches to a release branch during the release stabilization phase and the last few commits usually go into that branch.
 
 In most cases, a fix will be originally developed on the dev branch and then moved to the release branch.
 When moving to the release branch the recommended approach is the following:
@@ -100,3 +100,5 @@ The general naming pattern is `NuGet.<area>.<subarea>`.
 - All NuGet assemblies ship together and follow the same assembly versioning, save for some exceptions like `NuGet.VisualStudio.Interop`.
 - All assemblies have the same name as their project.
 - All package versions are the same. No exceptions.
+
+
