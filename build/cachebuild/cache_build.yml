@@ -12,7 +12,7 @@ stages:
     pool: VSEngSS-MicroBuild2022-1ES
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET Core sdk 9.0.300-preview.0.25127.19
+      displayName: 'Use .NET Core sdk 9.0.300-preview.0.25127.19'
       inputs:
         version: '9.0.300-preview.0.25127.19'
         includePreviewVersions: true
