@@ -12,9 +12,9 @@ stages:
     pool: VSEngSS-MicroBuild2022-1ES
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET Core sdk defined in global.json'
+      displayName: 'Use .NET Core sdk 9.0.3xx'
       inputs:
-        version: '9.0.x'
+        version: '9.0.3xx'
         includePreviewVersions: true
     - task: NuGetToolInstaller@0
       displayName: Install Nuget
