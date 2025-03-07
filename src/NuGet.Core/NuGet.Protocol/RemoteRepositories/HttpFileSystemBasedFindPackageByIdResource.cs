@@ -423,7 +423,7 @@ namespace NuGet.Protocol
             }
         }
 
-        private async Task<HashSet<NuGetVersion>> GetAvailablePackageVersionsAsync(
+        private async ValueTask<HashSet<NuGetVersion>> GetAvailablePackageVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
@@ -485,7 +485,7 @@ namespace NuGet.Protocol
                         },
                         async httpSourceResult =>
                         {
-                            HashSet<NuGetVersion> result = [];
+                            HashSet<NuGetVersion> result = null;
 
                             if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
                             {
@@ -544,7 +544,7 @@ namespace NuGet.Protocol
                 }
             }
 
-            return [];
+            return null;
         }
 
         private static async Task<HashSet<NuGetVersion>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri, CancellationToken token)
