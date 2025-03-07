@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI.Test
     internal class TestRemotePackageModel : RemotePackageModel
     {
         public TestRemotePackageModel(PackageIdentity identity,
-            VulnerableCapability vulnerableCapability,
+            IVulnerable vulnerableCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Test
     {
         public TestLocalPackageModel(PackageIdentity identity,
             string packagePath,
-            VulnerableCapability vulnerableCapability,
+            IVulnerable vulnerableCapability,
             string? title = null,
             string? description = null,
             string? authors = null,

@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
     {
         public RemotePackageModel(
             PackageIdentity identity,
-            VulnerableCapability vulnerableCapability,
+            IVulnerable vulnerableCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
         public IEnumerable<PackageDependencyGroup>? DependencySets { get; }
-        VulnerableCapability VulnerableCapability { get; }
+        IVulnerable VulnerableCapability { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> GetPackageVulnerabilities()
         {

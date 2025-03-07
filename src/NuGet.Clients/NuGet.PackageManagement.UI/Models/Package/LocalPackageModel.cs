@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
     {
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
-            VulnerableCapability vulnerableCapability,
+            IVulnerable vulnerableCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public string PackagePath { get; }
-        VulnerableCapability VulnerableCapability { get; }
+        IVulnerable VulnerableCapability { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> GetPackageVulnerabilities()
         {

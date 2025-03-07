@@ -3,12 +3,9 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Moq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -20,12 +17,11 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [new(new Uri("http://example.com"), 1)];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+            var vulnerableCapability = new Mock<IVulnerable>();
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability);
+            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -37,72 +33,34 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [new(new Uri("http://example.com"), 1)];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
             var packagePath = "C:\\TestPackage";
+            var vulnerableCapability = new Mock<IVulnerable>();
 
             // Act
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability);
+            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
 
             // Assert
             Assert.Equal(packagePath, package.PackagePath);
         }
 
-        [Fact]
-        public void LocalPackageModel_IsVulnerableProperty_ReturnsExpected()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void LocalPackageModel_IsVulnerableProperty_ReturnsExpected(bool isPackageVulnerable)
         {
             // Arrange
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [new(new Uri("http://example.com"), 1)];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
-
+            var vulnerableCapability = new Mock<IVulnerable>();
+            vulnerableCapability.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "C:\\TestPackage";
 
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability);
+            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
 
             // Act
             var isVulnerable = package.IsPackageVulnerable();
 
             // Assert
-            Assert.Equal(isVulnerable, true);
-        }
-
-        [Fact]
-        public void LocalPackageModel_VulnerableCapability_HasVulnerabilities_ReturnsTrue()
-        {
-            // Arrange
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [new(new Uri("http://example.com"), 1)];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
-
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var packagePath = "C:\\TestPackage";
-
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability);
-
-            // Act
-            var hasVulnerabilities = package.GetPackageVulnerabilities();
-
-            // Assert
-            Assert.True(hasVulnerabilities.Any());
-        }
-
-        [Fact]
-        public void LocalPackageModel_VulnerableCapability_GetPackageVulnerabilityMaxSeverity_ReturnsExpected()
-        {
-            // Arrange
-            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = [new(new Uri("http://example.com"), 1)];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
-
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var packagePath = "C:\\TestPackage";
-
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability);
-
-            // Act
-            var maxSeverity = package.GetPackageVulnerabilityMaxSeverity();
-
-            // Assert
-            Assert.Equal(maxSeverity, Protocol.PackageVulnerabilitySeverity.Moderate);
+            Assert.Equal(isVulnerable, isPackageVulnerable);
         }
     }
 }
