@@ -13,8 +13,8 @@ namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class EmbeddedResourcesCapability : IEmbeddedResources
     {
-        private INuGetPackageFileService _nugetPackageFileService;
-        private PackageIdentity _packageIdentity;
+        private readonly INuGetPackageFileService _nugetPackageFileService;
+        private readonly PackageIdentity _packageIdentity;
 
         public EmbeddedResourcesCapability(INuGetPackageFileService nugetPackageFileService, PackageIdentity packageIdentity, Uri? readmeUri)
         {

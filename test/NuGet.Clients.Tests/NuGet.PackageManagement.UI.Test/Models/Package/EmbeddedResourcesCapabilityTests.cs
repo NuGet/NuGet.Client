@@ -38,11 +38,13 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Throws<ArgumentNullException>(() => new EmbeddedResourcesCapability(mockPackageFileService.Object, null, null));
         }
 
-        [Fact]
-        public async Task GetIconAsync_WithFile_ReturnsStream()
+        [Theory]
+        [InlineData("stream")]
+        [InlineData(null)]
+        public async Task GetIconAsync_WithDifferentFileServiceResults_ReturnsFileServiceResults(string streamText)
         {
             // Arrange
-            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes("stream"));
+            using Stream stream = streamText == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(streamText));
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var mockPackageFileService = new Mock<INuGetPackageFileService>();
             mockPackageFileService.Setup(x => x.GetPackageIconAsync(It.IsAny<PackageIdentity>(), default)).ReturnsAsync(stream);
@@ -52,15 +54,18 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var result = await test.GetIconAsync(CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.Equal(stream, result);
             mockPackageFileService.Verify(x => x.GetPackageIconAsync(It.IsAny<PackageIdentity>(), default), Times.Once);
         }
 
-        [Fact]
-        public async Task GetLicenseAsync_WithFile_ReturnsStream()
+        [Theory]
+        [InlineData("stream")]
+        [InlineData(null)]
+        public async Task GetLicenseAsync_WithDifferentFileServiceResults_ReturnsFileServiceResults(string streamText)
         {
             // Arrange
-            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes("stream"));
+            using Stream stream = streamText == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(streamText));
+
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var mockPackageFileService = new Mock<INuGetPackageFileService>();
             mockPackageFileService.Setup(x => x.GetEmbeddedLicenseAsync(It.IsAny<PackageIdentity>(), default)).ReturnsAsync(stream);
@@ -70,14 +75,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var result = await test.GetLicenseAsync(CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
+            Assert.Equal(stream, result);
             mockPackageFileService.Verify(x => x.GetEmbeddedLicenseAsync(It.IsAny<PackageIdentity>(), default), Times.Once);
         }
 
         [Theory]
         [InlineData(@"C:\path\to\image.png")]
         [InlineData(null)]
-        public async Task GetReadmeAsync_ReadmeUrlPassed(string readmePath)
+        public async Task GetReadmeAsync_WithDifferentReadmeUri_ReturnStreamOrNull(string readmePath)
         {
             // Arrange
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes("stream"));
