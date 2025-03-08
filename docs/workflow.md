@@ -38,7 +38,7 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 - **Required**: Focus on collaboration when providing feedback.
 - Use [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request), but please never commit them for a PR you did not create.
 - Make the intent of your comment clear.
-  - ex. "Consider changing the color of this boarder because..."
+  - ex. "Consider changing the color of this border because..."
   - ex. "I've never seen this before! Can you help me understand..."
   - ex. "Nit: Spelling mistake"
 - Focus on actionable feedback when requesting changes.
