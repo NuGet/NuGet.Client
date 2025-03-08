@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return stream;
         }
 
-        private async ValueTask<Stream?> GetEmbeddedFileAsync(Uri uri, CancellationToken cancellationToken)
+        public static async ValueTask<Stream?> GetEmbeddedFileAsync(Uri uri, CancellationToken cancellationToken)
         {
             string packagePath = uri.LocalPath;
             if (File.Exists(packagePath))
