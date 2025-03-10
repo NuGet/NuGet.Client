@@ -19,7 +19,9 @@ namespace NuGet.ProjectModel
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new AssetsLogMessageConverter() }
+            Converters = { new AssetsLogMessageConverter() },
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            AllowTrailingCommas = true
         };
 
         /// <summary>

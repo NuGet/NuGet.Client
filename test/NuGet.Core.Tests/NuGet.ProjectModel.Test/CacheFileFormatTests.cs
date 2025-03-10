@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using NuGet.Common;
@@ -20,9 +19,9 @@ namespace NuGet.ProjectModel.Test
             var logger = new TestLogger();
 
             var contents = $@"{{
-  ""version"": 1,
+  ""version"": ""1"",
   ""dgSpecHash"": ""LhkXQGGI+FQMy9dhLYjG5sWcHX3z/copzi4hjjBiY3Fotv0i7zQCikMZQ+rOKJ03gtx0hoHwIx5oKkM7sVHu7g=="",
-  ""success"": true
+  ""success"": true,
 }}";
             CacheFile cacheFile = null;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(contents)))
@@ -68,9 +67,8 @@ namespace NuGet.ProjectModel.Test
   ""logs"": [
     {{
       ""code"": ""NU1000"",
-      ""level"": ""Warning"",
-      ""message"": ""Test"",
-      ""warningLevel"": 2
+      ""level"": ""Information"",
+      ""message"": ""Test""
     }}
   ]
 }}";
@@ -84,8 +82,6 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(bool.Parse(success), cacheFile.Success);
                 Assert.Equal(dgSpecHash, cacheFile.DgSpecHash);
                 Assert.Equal(int.Parse(version), cacheFile.Version);
-                Assert.Equal(WarningLevel.Important, cacheFile.LogMessages.FirstOrDefault().WarningLevel);
-                Assert.Equal(LogLevel.Warning, cacheFile.LogMessages.FirstOrDefault().Level);
 
                 Assert.Equal(projectFullPath, cacheFile.ProjectFilePath);
                 Assert.Equal(1, cacheFile.LogMessages.Count);
@@ -119,10 +115,9 @@ namespace NuGet.ProjectModel.Test
   ],
   ""logs"": [
     {{
-      ""level"": ""Warning"",
-      ""code"": ""NU5003"",
-      ""message"": ""Test"",
-      ""warningLevel"": 1
+      ""code"": ""NU1000"",
+      ""level"": ""Information"",
+      ""message"": ""Test""
     }}
   ]
 }}";
@@ -138,7 +133,7 @@ namespace NuGet.ProjectModel.Test
                 },
                     LogMessages = new List<IAssetsLogMessage>
                 {
-                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU5003, "Test")
+                    new AssetsLogMessage(LogLevel.Information, NuGetLogCode.NU1000, "Test")
                 }
                 };
 

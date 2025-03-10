@@ -12,10 +12,9 @@ namespace NuGet.ProjectModel
     public class AssetsLogMessage : IAssetsLogMessage, IEquatable<IAssetsLogMessage>
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public LogLevel Level { get; }
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public NuGetLogCode Code { get; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public LogLevel Level { get; }
         public string Message { get; }
         public string ProjectPath { get; set; }
 
