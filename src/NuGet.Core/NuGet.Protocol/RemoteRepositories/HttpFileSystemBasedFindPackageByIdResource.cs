@@ -352,7 +352,7 @@ namespace NuGet.Protocol
             cancellationToken.ThrowIfCancellationRequested();
 
             HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
-            if (packageVersions != null && !packageVersions.Contains(packageIdentity.Version))
+            if (packageVersions == null || !packageVersions.Contains(packageIdentity.Version))
             {
                 return null;
             }
