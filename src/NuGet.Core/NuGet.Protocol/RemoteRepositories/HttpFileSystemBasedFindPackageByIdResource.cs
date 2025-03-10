@@ -130,9 +130,9 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                return packageVersions;
+                return (IEnumerable<NuGetVersion>)packageVersions ?? Array.Empty<NuGetVersion>();
             }
             finally
             {
@@ -195,15 +195,14 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                if (!packageVersions.Contains(version))
+                if (!TryGetVersionString(version, packageVersions, out string versionString))
                 {
-                    // package version not found
                     return null;
                 }
 
-                var nupkgUrl = GetNupkgUrl(id, version);
+                var nupkgUrl = GetNupkgUrl(id, versionString);
 
                 var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
                     new PackageIdentity(id, version),
@@ -283,15 +282,15 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                if (!packageVersions.Contains(version))
+                if (!TryGetVersionString(version, packageVersions, out string versionString))
                 {
                     return false;
                 }
 
                 var packageIdentity = new PackageIdentity(id, version);
-                var nupkgUrl = GetNupkgUrl(id, version);
+                var nupkgUrl = GetNupkgUrl(id, versionString);
 
                 return await _nupkgDownloader.CopyNupkgToStreamAsync(
                     packageIdentity,
@@ -349,8 +348,8 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var packageVersions = await GetAvailablePackageVersionsAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
-            if (!packageVersions.Contains(packageIdentity.Version))
+            HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
+            if (packageVersions != null && !packageVersions.Contains(packageIdentity.Version))
             {
                 return null;
             }
@@ -408,9 +407,9 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                return packageVersions.Contains(version);
+                return packageVersions != null && packageVersions.Contains(version);
             }
             finally
             {
@@ -421,6 +420,35 @@ namespace NuGet.Protocol
                     nameof(DoesPackageExistAsync),
                     stopwatch.Elapsed));
             }
+        }
+
+        private static bool TryGetVersionString(NuGetVersion version, HashSet<NuGetVersion> packageVersions, out string versionString)
+        {
+            if (packageVersions == null || packageVersions.Count == 0)
+            {
+                versionString = null;
+                return false;
+            }
+
+#if !NETSTANDARD
+            if (!packageVersions.TryGetValue(version, out NuGetVersion originalVersion))
+            {
+                versionString = null;
+                return false;
+            }
+            versionString = originalVersion.ToNormalizedString();
+#else
+            // .NET Standard 2.0 doesn't support HashSet<T>.TryGetValue. The API docs say the version should be lowercase, but if
+            // a server doesn't follow the spec and uses case sensitive URLs, this might result in 404 responses.
+            if (!packageVersions.Contains(version))
+            {
+                versionString = null;
+                return false;
+            }
+            versionString = version.ToNormalizedString().ToLowerInvariant();
+#endif
+
+            return true;
         }
 
         private async ValueTask<HashSet<NuGetVersion>> GetAvailablePackageVersionsAsync(
@@ -567,23 +595,12 @@ namespace NuGet.Protocol
             return result;
         }
 
-        private string GetNupkgUrl(string id, NuGetVersion version)
+        private string GetNupkgUrl(string id, string version)
         {
-            var normalizedVersionString = version.ToNormalizedString().ToLowerInvariant();
             string idInLowerCase = id.ToLowerInvariant();
             var baseUri = _chosenBaseUri ?? _baseUris[0].OriginalString;
 
-            string contentUri = string.Concat(
-                baseUri,
-                idInLowerCase,
-                "/",
-                normalizedVersionString,
-                "/",
-                idInLowerCase,
-                ".",
-                normalizedVersionString,
-                ".nupkg");
-
+            string contentUri = $"{baseUri}{idInLowerCase}/{version}/{idInLowerCase}.{version}.nupkg";
             return contentUri;
         }
 
