@@ -3,6 +3,7 @@
 In here we describe the general workflow guidelines the NuGet developer/contributor.
 
 ## Pull Requests & Code Reviews
+
 To help ensure that only the highest quality code makes its way into the project, all code changes need to be submitted to GitHub as PRs.
 This repo has bots that manage all stale PRs.
 Stale PRs will be auto closed.
@@ -10,6 +11,7 @@ Stale PRs will be auto closed.
 The following guidelines should be viewed as suggestions, unless explicitly stated they are required.
 
 ### Requesting a Pull Request
+
 - Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
 - Follow the pull request template, as it helps the maintainers drive quality across the product.
 - Request at least 2 reviewers, and re-request their review when feedback has been addressed.
@@ -18,6 +20,7 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 - Focus on small, iterative, changes when possible.
 
 ### Addressing Feedback
+
 - **Required**: Focus on collaboration when responding to feedback.
 - Try your best not to take feedback personally, we're all working towards the same goals.
 - When conflict arises try to address it directly with the commentor offline, preferably synchronously.
@@ -25,6 +28,7 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 - Use GitHub's tooling. Re-request review after feedback has been addressed.
 
 ### Merging Pull Requests
+
 - **Required**: All comments must be resolved before merging.
 - **Required**: use the GitHub `Squash and Merge` button for this repository.
 - Merge a PR when you are confident it has been sufficiently reviewed.
@@ -35,6 +39,7 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 ![Bad Commit Message](images/bad-commit-message.png)
 
 ### Providing Pull Request Feedback
+
 - **Required**: Focus on collaboration when providing feedback.
 - Use [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request), but please never commit them for a PR you did not create.
 - Make the intent of your comment clear.
@@ -48,13 +53,18 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
 - Use soft language if you must address the author directly.
 
 #### When to mark a PR as "Approved"
+
 - You feel confident that the code meets a high-quality bar, has adequate test coverage, and is ready to merge.
 - Any comments submitted are uncontroversial and do not need to be resolved before merging.
 - Previous feedback has been sufficiently addressed.
+
 #### When to leave comments without approval
+
 - You are not confident you can approve the PR with the requirements stated above.
 - You have feedback that you would like addressed but do not want to block the PR from merging.
+
 #### When to mark a PR as "Request Changes"
+
 - You have significant concerns that must be addressed before this PR should be merged such as unintentional breaking changes, security issues, or potential data loss.
 
 ### Draft Pull Requests
@@ -104,5 +114,3 @@ The general naming pattern is `NuGet.<area>.<subarea>`.
 - All NuGet assemblies ship together and follow the same assembly versioning, save for some exceptions like `NuGet.VisualStudio.Interop`.
 - All assemblies have the same name as their project.
 - All package versions are the same. No exceptions.
-
-
