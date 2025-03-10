@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -36,10 +39,10 @@ namespace NuGet.Protocol
         private const int DefaultMaxRetries = 3;
         private int _maxRetries;
         private readonly HttpSource _httpSource;
-        private readonly ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>>> _packageVersionsCache =
-            new ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>> _packageVersionsCache =
+            new ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
-        private string _chosenBaseUri;
+        private string? _chosenBaseUri;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
@@ -130,9 +133,9 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                return (IEnumerable<NuGetVersion>)packageVersions ?? Array.Empty<NuGetVersion>();
+                return (IEnumerable<NuGetVersion>?)packageVersions ?? Array.Empty<NuGetVersion>();
             }
             finally
             {
@@ -163,7 +166,7 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+        public override async Task<FindPackageByIdDependencyInfo?> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
@@ -195,9 +198,9 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                if (!TryGetVersionString(version, packageVersions, out string versionString))
+                if (!TryGetVersionString(version, packageVersions, out string? versionString))
                 {
                     return null;
                 }
@@ -282,9 +285,9 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
-                if (!TryGetVersionString(version, packageVersions, out string versionString))
+                if (!TryGetVersionString(version, packageVersions, out string? versionString))
                 {
                     return false;
                 }
@@ -325,7 +328,7 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public override async Task<IPackageDownloader> GetPackageDownloaderAsync(
+        public override async Task<IPackageDownloader?> GetPackageDownloaderAsync(
             PackageIdentity packageIdentity,
             SourceCacheContext cacheContext,
             ILogger logger,
@@ -348,7 +351,7 @@ namespace NuGet.Protocol
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
+            HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(packageIdentity.Id, cacheContext, logger, cancellationToken);
             if (packageVersions != null && !packageVersions.Contains(packageIdentity.Version))
             {
                 return null;
@@ -407,7 +410,7 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                HashSet<NuGetVersion> packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+                HashSet<NuGetVersion>? packageVersions = await GetAvailablePackageVersionsAsync(id, cacheContext, logger, cancellationToken);
 
                 return packageVersions != null && packageVersions.Contains(version);
             }
@@ -422,7 +425,7 @@ namespace NuGet.Protocol
             }
         }
 
-        private static bool TryGetVersionString(NuGetVersion version, HashSet<NuGetVersion> packageVersions, out string versionString)
+        private static bool TryGetVersionString(NuGetVersion version, HashSet<NuGetVersion>? packageVersions, [NotNullWhen(true)] out string? versionString)
         {
             if (packageVersions == null || packageVersions.Count == 0)
             {
@@ -431,7 +434,7 @@ namespace NuGet.Protocol
             }
 
 #if !NETSTANDARD
-            if (!packageVersions.TryGetValue(version, out NuGetVersion originalVersion))
+            if (!packageVersions.TryGetValue(version, out NuGetVersion? originalVersion))
             {
                 versionString = null;
                 return false;
@@ -451,16 +454,16 @@ namespace NuGet.Protocol
             return true;
         }
 
-        private async ValueTask<HashSet<NuGetVersion>> GetAvailablePackageVersionsAsync(
+        private async ValueTask<HashSet<NuGetVersion>?> GetAvailablePackageVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            AsyncLazy<HashSet<NuGetVersion>> result = null;
+            AsyncLazy<HashSet<NuGetVersion>?> result;
 
-            Func<string, AsyncLazy<HashSet<NuGetVersion>>> findPackages =
-                (keyId) => new AsyncLazy<HashSet<NuGetVersion>>(
+            Func<string, AsyncLazy<HashSet<NuGetVersion>?>> findPackages =
+                (keyId) => new AsyncLazy<HashSet<NuGetVersion>?>(
                     () => FindPackagesByIdAsync(
                         keyId,
                         cacheContext,
@@ -481,7 +484,7 @@ namespace NuGet.Protocol
             return await result;
         }
 
-        private async Task<HashSet<NuGetVersion>> FindPackagesByIdAsync(
+        private async Task<HashSet<NuGetVersion>?> FindPackagesByIdAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
@@ -513,7 +516,7 @@ namespace NuGet.Protocol
                         },
                         async httpSourceResult =>
                         {
-                            HashSet<NuGetVersion> result = null;
+                            HashSet<NuGetVersion>? result = null;
 
                             if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
                             {
@@ -583,10 +586,10 @@ namespace NuGet.Protocol
 #if NETSTANDARD
                 new HashSet<NuGetVersion>();
 #else
-                new HashSet<NuGetVersion>(capacity: json.Versions.Count);
+                new HashSet<NuGetVersion>(capacity: json.Versions?.Count ?? 0);
 #endif
 
-            foreach (var versionString in json.Versions)
+            foreach (var versionString in json.Versions ?? [])
             {
                 NuGetVersion parsedVersion = NuGetVersion.Parse(versionString);
                 result.Add(parsedVersion);
@@ -604,10 +607,10 @@ namespace NuGet.Protocol
             return contentUri;
         }
 
-        record FlatContainerVersionList
+        record struct FlatContainerVersionList
         {
             [JsonPropertyName("versions")]
-            public List<string> Versions { get; set; }
+            public List<string>? Versions { get; set; }
         }
     }
 }
