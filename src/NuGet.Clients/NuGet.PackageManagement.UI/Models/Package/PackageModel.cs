@@ -20,7 +20,6 @@ namespace NuGet.PackageManagement.UI
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
-            string? owners = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null)
@@ -32,19 +31,8 @@ namespace NuGet.PackageManagement.UI
             ProjectUrl = projectUrl;
             Tags = tags;
             Copyright = copyright;
-            Owners = owners;
             OwnersList = ownersList;
             Summary = summary;
-
-            if (Owners != null && OwnersList == null)
-            {
-                OwnersList = Owners.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList();
-            }
-
-            if (OwnersList != null && Owners == null)
-            {
-                Owners = string.Join(", ", OwnersList);
-            }
 
             if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
             {
@@ -63,8 +51,6 @@ namespace NuGet.PackageManagement.UI
         public string? Description { get; }
 
         public string? Authors { get; }
-
-        public string? Owners { get; }
 
         public IReadOnlyList<string>? OwnersList { get; }
 
