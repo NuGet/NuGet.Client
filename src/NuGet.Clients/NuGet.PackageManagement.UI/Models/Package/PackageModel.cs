@@ -22,7 +22,8 @@ namespace NuGet.PackageManagement.UI
             string? copyright = null,
             string? owners = null,
             IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null)
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null)
         {
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Title = title;
@@ -33,6 +34,7 @@ namespace NuGet.PackageManagement.UI
             Copyright = copyright;
             Owners = owners;
             OwnersList = ownersList;
+            Summary = summary;
 
             if (Owners != null && OwnersList == null)
             {
@@ -71,6 +73,8 @@ namespace NuGet.PackageManagement.UI
         public Uri? ProjectUrl { get; }
 
         public string[]? Tags { get; }
+
+        public string? Summary { get; }
 
         public string? Copyright { get; }
     }
