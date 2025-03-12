@@ -8,7 +8,7 @@ To help ensure that only the highest quality code makes its way into the project
 This repo has bots that manage all stale PRs.
 Stale PRs will be auto closed.
 
-These are guidelines to follow but unless indicated, they are not required. 
+These are guidelines to follow but unless indicated, they are not required.
  [❗] = Required
  [🤖] = Enforced with tooling
 
@@ -16,22 +16,22 @@ These are guidelines to follow but unless indicated, they are not required.
 
 - Focus on small, iterative, changes when possible.
 - Follow the pull request template, as it helps the maintainers drive quality across the product.
-- Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
+- [❗] Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
 - Request at least 2 reviewers, and re-request their review when feedback has been addressed.
 - Include screenshots and PM when making UX changes.
 - Include perf traces when making performance improvements.
 
 ### Addressing Feedback
 
-- **Required**: Focus on collaboration when responding to feedback.
+- [❗] Focus on collaboration when responding to feedback.
   - Try your best not to take feedback personally, we're all working towards the same goals.
   - When conflict arises try to address it directly with the commentor offline, preferably synchronously.
   - Provide an explanation if you decide not to implement a recommendation.
 
 ### Merging Pull Requests
 
-- **Required**: All comments must be resolved before merging.
-- **Required**: use the GitHub `Squash and Merge` button for this repository.
+- [🤖] All comments must be resolved before merging.
+- [🤖] use the GitHub `Squash and Merge` button for this repository.
 - Merge a PR when you are confident it has been sufficiently reviewed.
 - When possible wait 24h after the last significant change before merging.
 - Ensure commit message is descriptive and helpful
@@ -41,7 +41,7 @@ These are guidelines to follow but unless indicated, they are not required.
 
 ### Providing Pull Request Feedback
 
-- **Required**: Focus on collaboration when providing feedback.
+- [❗] Focus on collaboration when providing feedback.
 - Use [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request), but please never commit them for a PR you did not create.
 - Make the intent of your comment clear.
   - ex. "Consider changing the color of this border because..."
