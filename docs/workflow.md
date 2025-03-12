@@ -48,7 +48,7 @@ These are guidelines to follow but unless indicated, they are not required.
   - ex. "I've never seen this before! Can you help me understand..."
   - ex. "Nit: Spelling mistake"
 - Focus on actionable feedback when requesting changes.
-  - **Be Constructive**: Offer suggestions for improvement rather than just pointing out what's wrong.
+  - **Be Constructive**: Offer suggestions for improvement, or guide the author in the right direction, rather than just pointing out what's wrong.
   - **Provide Context**: Explain why a change is necessary or how it aligns with project goals
   - **Be Specific**: Clearly point out the exact lines or sections of code that need attention.
 - Ensure the subject of your feedback is the code and not the PR author.
@@ -58,6 +58,7 @@ These are guidelines to follow but unless indicated, they are not required.
 
 - You feel confident that the code meets a high-quality bar, has adequate test coverage, and is ready to merge.
 - Any comments submitted are uncontroversial and do not need to be resolved before merging.
+  - If the author addresses your comments you may need to re-approve, since changes reset previous approval statuses.
 - Previous feedback has been sufficiently addressed.
 
 #### When to leave comments without approval
