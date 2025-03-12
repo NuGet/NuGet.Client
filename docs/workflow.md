@@ -8,7 +8,9 @@ To help ensure that only the highest quality code makes its way into the project
 This repo has bots that manage all stale PRs.
 Stale PRs will be auto closed.
 
-The following guidelines should be viewed as suggestions, unless explicitly stated they are required.
+These are guidelines to follow but unless indicated, they are not required. 
+ [❗] = Required
+ [🤖] = Enforced with tooling
 
 ### Requesting a Pull Request Review
 
