@@ -10,22 +10,21 @@ Stale PRs will be auto closed.
 
 The following guidelines should be viewed as suggestions, unless explicitly stated they are required.
 
-### Requesting a Pull Request
+### Requesting a Pull Request Review
 
-- Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
+- Focus on small, iterative, changes when possible.
 - Follow the pull request template, as it helps the maintainers drive quality across the product.
+- Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
 - Request at least 2 reviewers, and re-request their review when feedback has been addressed.
 - Include screenshots and PM when making UX changes.
 - Include perf traces when making performance improvements.
-- Focus on small, iterative, changes when possible.
 
 ### Addressing Feedback
 
 - **Required**: Focus on collaboration when responding to feedback.
-- Try your best not to take feedback personally, we're all working towards the same goals.
-- When conflict arises try to address it directly with the commentor offline, preferably synchronously.
-- Provide an explanation if you decide not to implement a recommendation.
-- Use GitHub's tooling. Re-request review after feedback has been addressed.
+  - Try your best not to take feedback personally, we're all working towards the same goals.
+  - When conflict arises try to address it directly with the commentor offline, preferably synchronously.
+  - Provide an explanation if you decide not to implement a recommendation.
 
 ### Merging Pull Requests
 
@@ -47,10 +46,11 @@ The following guidelines should be viewed as suggestions, unless explicitly stat
   - ex. "I've never seen this before! Can you help me understand..."
   - ex. "Nit: Spelling mistake"
 - Focus on actionable feedback when requesting changes.
-  - ❌ This button won't do anything
-  - ✔️ You need to add a listener to the button for it to respond
+  - **Be Constructive**: Offer suggestions for improvement rather than just pointing out what's wrong.
+  - **Provide Context**: Explain why a change is necessary or how it aligns with project goals
+  - **Be Specific**: Clearly point out the exact lines or sections of code that need attention.
 - Ensure the subject of your feedback is the code and not the PR author.
-- Use soft language if you must address the author directly.
+  - Use soft language if you must address the author directly.
 
 #### When to mark a PR as "Approved"
 
