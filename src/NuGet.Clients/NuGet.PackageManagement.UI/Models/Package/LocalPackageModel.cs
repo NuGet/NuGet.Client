@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -23,8 +24,12 @@ namespace NuGet.PackageManagement.UI
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright)
+            string? copyright = null,
+            IReadOnlyList<string>? ownersList = null,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null,
+            DateTimeOffset? published = null)
+            : base(identity, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, published)
         {
             PackagePath = packagePath;
             _vulnerableCapability = vulnerableCapability;

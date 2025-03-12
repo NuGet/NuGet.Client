@@ -22,7 +22,8 @@ namespace NuGet.PackageManagement.UI
             string? copyright = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null)
+            string? summary = null,
+            DateTimeOffset? published = null)
         {
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Title = title;
@@ -33,6 +34,7 @@ namespace NuGet.PackageManagement.UI
             Copyright = copyright;
             OwnersList = ownersList;
             Summary = summary;
+            Published = published;
 
             if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
             {
@@ -63,5 +65,7 @@ namespace NuGet.PackageManagement.UI
         public string? Summary { get; }
 
         public string? Copyright { get; }
+
+        public DateTimeOffset? Published { get; }
     }
 }

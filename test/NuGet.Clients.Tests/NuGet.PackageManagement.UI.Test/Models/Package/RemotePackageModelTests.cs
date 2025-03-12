@@ -4,10 +4,8 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using Moq;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
@@ -42,10 +40,9 @@ namespace NuGet.PackageManagement.UI.Test
             var packageDetailsUrl = new Uri("http://example.com");
             var downloadCount = 1000;
             var framework = new NuGetFramework("net8.0");
-            var dependencySets = new List<PackageDependencyGroup> { new PackageDependencyGroup(framework, [new PackageDependency("non_existing", VersionRange.Parse("1.1"))]) };
 
             // Act
-            var package = new TestRemotePackageModel(identity, vulnerableCapability.Object, null, null, null, null, null, null, isListed, dateTimeOffset, packageDetailsUrl, downloadCount, dependencySets);
+            var package = new TestRemotePackageModel(identity, vulnerableCapability.Object, null, null, null, null, null, null, isListed, dateTimeOffset, packageDetailsUrl, downloadCount);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -54,7 +51,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(dateTimeOffset, package.Published);
             Assert.Equal(packageDetailsUrl, package.PackageDetailsUrl);
             Assert.Equal(downloadCount, package.DownloadCount);
-            Assert.Equal(dependencySets, package.DependencySets);
         }
 
         [Theory]

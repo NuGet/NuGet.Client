@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI.Test
             DateTimeOffset? dateTimeOffset = null,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            IEnumerable<PackageDependencyGroup>? dependencySets = null)
+            IReadOnlyCollection<PackageDependencyGroup>? dependencySets = null)
             : base(identity, vulnerableCapability, title, description, authors, projectUrl, tags, copyright, isListed, dateTimeOffset, packageDetailsUrl, downloadCount, dependencySets)
         {
         }

@@ -26,25 +26,21 @@ namespace NuGet.PackageManagement.UI
             string[]? tags = null,
             string? copyright = null,
             bool isListed = false,
-            DateTimeOffset? dateTimeOffset = null,
+            DateTimeOffset? publishedDate = null,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            IEnumerable<PackageDependencyGroup>? dependencySets = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright)
+            IReadOnlyCollection<PackageDependencyGroup>? dependencySets = null)
+            : base(identity, title, description, authors, projectUrl, tags, copyright, packageDependencyGroups: dependencySets, published: publishedDate)
         {
             IsListed = isListed;
-            Published = dateTimeOffset;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
-            DependencySets = dependencySets;
             _vulnerableCapability = vulnerableCapability;
         }
 
         public bool IsListed { get; }
-        public DateTimeOffset? Published { get; }
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
-        public IEnumerable<PackageDependencyGroup>? DependencySets { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
