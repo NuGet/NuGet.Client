@@ -3,6 +3,9 @@
 
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -16,7 +19,10 @@ namespace NuGet.PackageManagement.UI
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null)
+            string? copyright = null,
+            IReadOnlyList<string>? ownersList = null,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null)
         {
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Title = title;
@@ -25,6 +31,13 @@ namespace NuGet.PackageManagement.UI
             ProjectUrl = projectUrl;
             Tags = tags;
             Copyright = copyright;
+            OwnersList = ownersList;
+            Summary = summary;
+
+            if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
+            {
+                DependencySets = packageDependencyGroups.Select(e => new PackageDependencySetMetadata(e)).ToArray();
+            }
         }
 
         public PackageIdentity Identity { get; }
@@ -39,9 +52,15 @@ namespace NuGet.PackageManagement.UI
 
         public string? Authors { get; }
 
+        public IReadOnlyList<string>? OwnersList { get; }
+
+        public IReadOnlyCollection<PackageDependencySetMetadata>? DependencySets { get; }
+
         public Uri? ProjectUrl { get; }
 
         public string[]? Tags { get; }
+
+        public string? Summary { get; }
 
         public string? Copyright { get; }
     }
