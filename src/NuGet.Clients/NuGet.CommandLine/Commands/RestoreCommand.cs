@@ -834,8 +834,7 @@ namespace NuGet.CommandLine
             {
                 packageRestoreInputs.RestoreV3Context.Inputs.Add(projectFilePath);
             }
-            else if (projectFileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
-                || projectFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase))
+            else if (projectFileName.IsSolutionFile())
             {
                 ProcessSolutionFile(projectFilePath, packageRestoreInputs);
             }
@@ -859,9 +858,7 @@ namespace NuGet.CommandLine
             var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
 
             //  Solution files
-            var solutionFiles = topLevelFiles.Where(file =>
-                file.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
+            var solutionFiles = topLevelFiles.Where(file => file.IsSolutionFile()).ToArray();
 
             if (solutionFiles.Length > 0)
             {
@@ -925,7 +922,7 @@ namespace NuGet.CommandLine
                     lastFourCharacters = extension.Substring(length - 4);
                 }
 
-                return (string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase)
+                return (fileName.IsSolutionFile()
                         || string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase));
             }
             return false;
