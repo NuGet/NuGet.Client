@@ -16,9 +16,11 @@ These are guidelines to follow but unless indicated, they are not required.
 
 - Focus on small, iterative, changes when possible.
 - Follow the pull request template, as it helps the maintainers drive quality across the product.
-- [❗] Include the Subject Matter Expert (SME) for the area you are working on. If you don't know the SME, someone on the team will help you identify them.
+- [❗] Include the Subject Matter Expert (SME) for the area you are working on.
+  - If you don't know the SME, someone on the team will help you identify them.
 - Request at least 2 reviewers, and re-request their review when feedback has been addressed.
 - Include screenshots and PM when making UX changes.
+  - If you do not know who the PM is someone on the team will help you identify them.
 - Include perf traces when making performance improvements.
 
 ### Addressing Feedback
