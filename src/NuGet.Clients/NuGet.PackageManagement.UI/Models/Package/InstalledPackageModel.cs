@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    internal class InstalledPackageModel : LocalPackageModel
+    public class InstalledPackageModel : LocalPackageModel
     {
         public InstalledPackageModel(
             PackageIdentity identity,

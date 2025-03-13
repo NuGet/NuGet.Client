@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    internal class TransitivePackageModel : InstalledPackageModel
+    public class TransitivePackageModel : InstalledPackageModel
     {
         public TransitivePackageModel(
             PackageIdentity identity,

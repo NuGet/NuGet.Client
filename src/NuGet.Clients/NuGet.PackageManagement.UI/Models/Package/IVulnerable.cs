@@ -9,7 +9,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    interface IVulnerable
+    public interface IVulnerable
     {
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; }
 

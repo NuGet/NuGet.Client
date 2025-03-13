@@ -12,7 +12,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    class RemotePackageModel : PackageModel, IVulnerable
+    public class RemotePackageModel : PackageModel, IVulnerable
     {
         private readonly IVulnerable _vulnerableCapability;
 
