@@ -16,6 +16,7 @@ namespace NuGet.PackageManagement.UI.Models
             PackageIdentity identity,
             string packagePath,
             IVulnerable vulnerabilityCapability,
+            IEmbeddedResources embeddedResources,
             IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
             string? description = null,
@@ -26,11 +27,16 @@ namespace NuGet.PackageManagement.UI.Models
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
-            DateTimeOffset? published = null,
+            DateTimeOffset? publishedDate = null,
+            LicenseMetadata? licenseMetadata = null,
+            Uri? licenseUrl = null,
+            bool requireLicenseAcceptance = false,
+            bool isListed = false,
             string? reportAbuseUrl = null)
             : base(identity,
                   packagePath,
                   vulnerabilityCapability,
+                  embeddedResources,
                   title,
                   description,
                   authors,
@@ -40,7 +46,12 @@ namespace NuGet.PackageManagement.UI.Models
                   ownersList,
                   packageDependencyGroups,
                   summary,
-                  published)
+                  publishedDate,
+                  licenseMetadata,
+                  licenseUrl,
+                  requireLicenseAcceptance,
+                  isListed,
+                  reportAbuseUrl)
         {
             TransitiveOrigins = transitiveOrigins;
         }

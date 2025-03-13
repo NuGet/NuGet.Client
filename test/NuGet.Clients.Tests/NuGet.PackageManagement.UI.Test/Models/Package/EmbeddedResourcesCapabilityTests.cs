@@ -13,7 +13,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class EmbeddedResourcesCapabilityTests
     {

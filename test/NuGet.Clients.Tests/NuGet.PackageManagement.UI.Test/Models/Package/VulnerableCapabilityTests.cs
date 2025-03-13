@@ -10,7 +10,7 @@ using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class VulnerableCapabilityTests
     {

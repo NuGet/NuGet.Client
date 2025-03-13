@@ -19,6 +19,7 @@ namespace NuGet.PackageManagement.UI
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerable vulnerableCapability,
+            IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -28,8 +29,12 @@ namespace NuGet.PackageManagement.UI
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
-            DateTimeOffset? published = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, published)
+            DateTimeOffset? publishedDate = null,
+            LicenseMetadata? licenseMetadata = null,
+            Uri? licenseUrl = null,
+            bool requireLicenseAcceptance = false,
+            bool isListed = false)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             PackagePath = packagePath;
             _vulnerableCapability = vulnerableCapability;

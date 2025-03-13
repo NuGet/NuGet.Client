@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class RemotePackageModelTests
     {
@@ -20,9 +20,10 @@ namespace NuGet.PackageManagement.UI.Test
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerable>();
+            var embeddedCapability = new Mock<IEmbeddedResources>();
 
             // Act
-            var package = new TestRemotePackageModel(identity, vulnerableCapability.Object);
+            var package = new RemotePackageModel(identity, vulnerableCapability.Object, embeddedCapability.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -35,20 +36,19 @@ namespace NuGet.PackageManagement.UI.Test
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerable>();
+            var embeddedCapability = new Mock<IEmbeddedResources>();
             var isListed = true;
-            var dateTimeOffset = DateTimeOffset.Now;
             var packageDetailsUrl = new Uri("http://example.com");
             var downloadCount = 1000;
             var framework = new NuGetFramework("net8.0");
 
             // Act
-            var package = new TestRemotePackageModel(identity, vulnerableCapability.Object, null, null, null, null, null, null, isListed, dateTimeOffset, packageDetailsUrl, downloadCount);
+            var package = new RemotePackageModel(identity, vulnerableCapability.Object, embeddedCapability.Object, isListed: isListed, packageDetailsUrl: packageDetailsUrl, downloadCount: downloadCount);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
             Assert.Equal(new NuGetVersion("1.0.0"), package.Version);
             Assert.Equal(isListed, package.IsListed);
-            Assert.Equal(dateTimeOffset, package.Published);
             Assert.Equal(packageDetailsUrl, package.PackageDetailsUrl);
             Assert.Equal(downloadCount, package.DownloadCount);
         }
@@ -62,8 +62,9 @@ namespace NuGet.PackageManagement.UI.Test
             var vulnerableCapability = new Mock<IVulnerable>();
             vulnerableCapability.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+            var embeddedCapability = new Mock<IEmbeddedResources>();
 
-            var package = new TestRemotePackageModel(identity, vulnerableCapability.Object);
+            var package = new RemotePackageModel(identity, vulnerableCapability.Object, embeddedCapability.Object);
 
             // Act
             // Assert

@@ -19,6 +19,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "path/to/package";
             var vulnerabilityCapability = new Mock<IVulnerable>();
+            var embeddedCapability = new Mock<IEmbeddedResources>();
             var transitiveOrigins = new List<PackageIdentity>
             {
                 new PackageIdentity("OriginPackage1", new NuGetVersion("1.0.0")),
@@ -30,6 +31,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 identity,
                 packagePath,
                 vulnerabilityCapability.Object,
+                embeddedCapability.Object,
                 transitiveOrigins);
 
             // Assert

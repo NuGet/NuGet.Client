@@ -19,28 +19,37 @@ namespace NuGet.PackageManagement.UI
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerable vulnerableCapability,
+            IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
-            bool isListed = false,
+            IReadOnlyList<string>? ownersList = null,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null,
             DateTimeOffset? publishedDate = null,
+            LicenseMetadata? licenseMetadata = null,
+            Uri? licenseUrl = null,
+            bool requireLicenseAcceptance = false,
+            bool isListed = false,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            IReadOnlyCollection<PackageDependencyGroup>? dependencySets = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright, packageDependencyGroups: dependencySets, published: publishedDate)
+            Uri? readmeUrl = null)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             IsListed = isListed;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
             _vulnerableCapability = vulnerableCapability;
+            ReadmeUrl = readmeUrl;
         }
 
         public bool IsListed { get; }
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
+        public Uri? ReadmeUrl { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
