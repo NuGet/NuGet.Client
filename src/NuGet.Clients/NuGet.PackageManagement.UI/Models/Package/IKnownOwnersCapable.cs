@@ -8,7 +8,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    interface IKnownOwnersCapable
+    public interface IKnownOwnersCapable
     {
         IReadOnlyList<KnownOwner>? KnownOwners { get; }
     }
