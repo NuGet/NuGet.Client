@@ -10,13 +10,14 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class InstalledPackageModel : LocalPackageModel
+    public class TransitivelyReferencedPackageModel : ReferencedPackageModel
     {
-        public InstalledPackageModel(
+        public TransitivelyReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
             IVulnerable vulnerabilityCapability,
             IEmbeddedResources embeddedResources,
+            IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -49,11 +50,11 @@ namespace NuGet.PackageManagement.UI.Models
                   licenseMetadata,
                   licenseUrl,
                   requireLicenseAcceptance,
-                  isListed)
+                  isListed,
+                  reportAbuseUrl)
         {
-            ReportAbuseUrl = reportAbuseUrl;
+            TransitiveOrigins = transitiveOrigins;
         }
-
-        public string? ReportAbuseUrl { get; }
+        public IReadOnlyCollection<PackageIdentity> TransitiveOrigins { get; }
     }
 }

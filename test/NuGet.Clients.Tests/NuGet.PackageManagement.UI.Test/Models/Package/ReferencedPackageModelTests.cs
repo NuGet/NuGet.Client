@@ -1,41 +1,38 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using NuGet.Packaging.Core;
 using NuGet.PackageManagement.UI.Models;
 using Xunit;
-using Moq;
 using NuGet.Versioning;
+using Moq;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
-    public class TransitivePackageModelTests
+    public class ReferencedPackageModelTests
     {
-        [Fact]
-        public void Constructor_InitializesTransitiveOrigins()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("String")]
+        public void Constructor_SetReportAbuseUrl_InitializeReportAbuseUrl(string reportAbuseUrl)
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "path/to/package";
             var vulnerabilityCapability = new Mock<IVulnerable>();
-            var embeddedCapability = new Mock<IEmbeddedResources>();
-            var transitiveOrigins = new List<PackageIdentity>
-            {
-                new PackageIdentity("OriginPackage1", new NuGetVersion("1.0.0")),
-                new PackageIdentity("OriginPackage2", new NuGetVersion("2.0.0"))
-            };
+            var mockEmbeddedResource = new Mock<IEmbeddedResources>();
+
 
             // Act
-            var model = new TransitivePackageModel(
+            var model = new ReferencedPackageModel(
                 identity,
                 packagePath,
                 vulnerabilityCapability.Object,
-                embeddedCapability.Object,
-                transitiveOrigins);
+                mockEmbeddedResource.Object,
+                reportAbuseUrl: reportAbuseUrl);
 
             // Assert
-            Assert.Equal(transitiveOrigins, model.TransitiveOrigins);
+            Assert.Equal(reportAbuseUrl, model.ReportAbuseUrl);
         }
     }
 }
