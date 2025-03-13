@@ -339,7 +339,7 @@ namespace NuGet.SolutionRestoreManager
         {
             string? enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
             string? auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
-            string? auditMode = GetAuditMode(tfms); // 
+            string? auditMode = GetAuditMode(tfms);
             HashSet<string>? suppressedAdvisories = GetSuppressedAdvisories(tfms);
 
             return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode) || suppressedAdvisories is not null
