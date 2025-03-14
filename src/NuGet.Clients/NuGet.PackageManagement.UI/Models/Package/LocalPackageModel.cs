@@ -32,8 +32,7 @@ namespace NuGet.PackageManagement.UI
             DateTimeOffset? publishedDate = null,
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            bool isListed = false)
+            bool requireLicenseAcceptance = false)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             PackagePath = packagePath;
