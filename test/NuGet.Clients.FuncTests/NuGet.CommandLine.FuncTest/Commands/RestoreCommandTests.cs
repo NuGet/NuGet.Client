@@ -995,14 +995,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
             return r;
         }
 
-        [Fact]
-        public async Task Restore_PackageSourceMapping_Succeed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Restore_PackageSourceMapping_Succeed(bool useSlnx)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, useSlnx);
 
                 var net461 = NuGetFramework.Parse("net461");
 
@@ -1101,14 +1103,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
 
-        [Fact]
-        public async Task Restore_PackageSourceMapping_Fails()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Restore_PackageSourceMapping_Fails(bool useSlnx)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, useSlnx);
 
                 var net461 = NuGetFramework.Parse("net461");
 
