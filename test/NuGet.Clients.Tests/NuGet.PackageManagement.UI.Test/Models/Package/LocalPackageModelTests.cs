@@ -8,7 +8,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class LocalPackageModelTests
     {
@@ -18,10 +18,11 @@ namespace NuGet.PackageManagement.UI.Test
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerable>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
+            var package = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -35,9 +36,10 @@ namespace NuGet.PackageManagement.UI.Test
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "C:\\TestPackage";
             var vulnerableCapability = new Mock<IVulnerable>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
 
             // Act
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
+            var package = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Assert
             Assert.Equal(packagePath, package.PackagePath);
@@ -53,8 +55,9 @@ namespace NuGet.PackageManagement.UI.Test
             vulnerableCapability.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "C:\\TestPackage";
+            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
 
-            var package = new TestLocalPackageModel(identity, packagePath, vulnerableCapability.Object);
+            var package = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Act
             // Assert
