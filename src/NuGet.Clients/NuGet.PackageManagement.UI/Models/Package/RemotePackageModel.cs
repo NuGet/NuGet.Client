@@ -15,6 +15,7 @@ namespace NuGet.PackageManagement.UI
     public class RemotePackageModel : PackageModel, IVulnerable, IKnownOwnersCapable
     {
         private readonly IVulnerable _vulnerableCapability;
+        private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
@@ -44,15 +45,15 @@ namespace NuGet.PackageManagement.UI
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
             _vulnerableCapability = vulnerableCapability;
+            _knownOwnersCapability = knownOwnersCapability;
             ReadmeUrl = readmeUrl;
-            KnownOwners = knownOwnersCapability?.KnownOwners;
         }
 
         public bool IsListed { get; }
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
         public Uri? ReadmeUrl { get; }
-        public IReadOnlyList<KnownOwner>? KnownOwners { get; }
+        public IReadOnlyList<KnownOwner>? KnownOwners => _knownOwnersCapability?.KnownOwners;
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
