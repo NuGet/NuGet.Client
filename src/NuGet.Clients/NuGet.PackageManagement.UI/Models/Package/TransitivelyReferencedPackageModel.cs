@@ -31,7 +31,6 @@ namespace NuGet.PackageManagement.UI.Models
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false,
-            bool isListed = false,
             string? reportAbuseUrl = null)
             : base(identity,
                   packagePath,
@@ -50,7 +49,6 @@ namespace NuGet.PackageManagement.UI.Models
                   licenseMetadata,
                   licenseUrl,
                   requireLicenseAcceptance,
-                  isListed,
                   reportAbuseUrl)
         {
             TransitiveOrigins = transitiveOrigins;
