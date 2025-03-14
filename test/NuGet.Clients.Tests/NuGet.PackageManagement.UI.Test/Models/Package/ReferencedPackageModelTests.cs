@@ -22,7 +22,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var vulnerabilityCapability = new Mock<IVulnerable>();
             var mockEmbeddedResource = new Mock<IEmbeddedResources>();
 
-
             // Act
             var model = new ReferencedPackageModel(
                 identity,
