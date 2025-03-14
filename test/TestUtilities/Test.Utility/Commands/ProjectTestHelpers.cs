@@ -69,20 +69,6 @@ namespace NuGet.Commands.Test
             return dgSpec;
         }
 
-        /// <summary>
-        /// Add restore metadata only if not already set.
-        /// Sets the project style to ProjectJson.
-        /// </summary>
-        public static PackageSpec EnsureProjectJsonRestoreMetadata(this PackageSpec spec)
-        {
-            //if (string.IsNullOrEmpty(spec.RestoreMetadata?.ProjectUniqueName))
-            //{
-            //    return spec.WithProjectJsonTestRestoreMetadata();
-            //}
-
-            return spec.WithTestRestoreMetadata();
-        }
-
         public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, params NuGetFramework[] frameworks)
         {
             return parent.WithTestProjectReference(child, privateAssets: LibraryIncludeFlagUtils.DefaultSuppressParent, frameworks);
@@ -160,35 +146,6 @@ namespace NuGet.Commands.Test
             {
                 updated.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName) { TargetAlias = framework.TargetAlias });
             }
-            return updated;
-        }
-
-        private static PackageSpec WithProjectJsonTestRestoreMetadata(this PackageSpec spec)
-        {
-            var updated = spec.Clone();
-            var metadata = new ProjectRestoreMetadata();
-            updated.RestoreMetadata = metadata;
-
-            var msbuildProjectFilePath = Path.Combine(Path.GetDirectoryName(spec.FilePath), spec.Name + ".csproj");
-            var msbuildProjectExtensionsPath = Path.Combine(Path.GetDirectoryName(spec.FilePath), "obj");
-            metadata.ProjectStyle = ProjectStyle.ProjectJson;
-            metadata.OutputPath = msbuildProjectExtensionsPath;
-            metadata.ProjectPath = msbuildProjectFilePath;
-            metadata.ProjectJsonPath = spec.FilePath;
-            metadata.ProjectName = spec.Name;
-            metadata.ProjectUniqueName = msbuildProjectFilePath;
-            metadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(msbuildProjectExtensionsPath);
-            metadata.ConfigFilePaths = new List<string>();
-            metadata.RestoreAuditProperties = new RestoreAuditProperties()
-            {
-                EnableAudit = bool.FalseString
-            };
-
-            foreach (var framework in updated.TargetFrameworks)
-            {
-                metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName) { });
-            }
-
             return updated;
         }
 
