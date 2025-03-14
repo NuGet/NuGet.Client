@@ -7,11 +7,15 @@ using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class ReferencedPackageModel : LocalPackageModel
+    public class ReferencedPackageModel : PackageModel, IVulnerable
     {
+        private readonly IVulnerable _vulnerableCapability;
+
         public ReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
@@ -30,11 +34,8 @@ namespace NuGet.PackageManagement.UI.Models
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false,
-            bool isListed = false,
             string? reportAbuseUrl = null)
             : base(identity,
-                  packagePath,
-                  vulnerabilityCapability,
                   embeddedResources,
                   title,
                   description,
@@ -48,12 +49,21 @@ namespace NuGet.PackageManagement.UI.Models
                   publishedDate,
                   licenseMetadata,
                   licenseUrl,
-                  requireLicenseAcceptance,
-                  isListed)
+                  requireLicenseAcceptance)
         {
             ReportAbuseUrl = reportAbuseUrl;
+            _vulnerableCapability = vulnerabilityCapability;
+            PackagePath = packagePath;
         }
 
+        public string PackagePath { get; }
+
         public string? ReportAbuseUrl { get; }
+
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
     }
 }
