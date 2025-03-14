@@ -158,29 +158,11 @@ namespace NuGet.Commands.Test
             var projectToRestore = projects[0];
             var sources = projectToRestore.RestoreMetadata.Sources.Any() ?
                        projectToRestore.RestoreMetadata.Sources.ToList() :
-                       new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+                       [new PackageSource(pathContext.PackageSource)];
 
             var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.RestoreMetadata.ProjectUniqueName).ToList();
 
             return new TestRestoreRequest(projectToRestore, sources, pathContext.UserPackagesFolder, logger)
-            {
-                LockFilePath = Path.Combine(projectToRestore.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName),
-                DependencyGraphSpec = dgSpec,
-                ExternalProjects = externalClosure,
-            };
-        }
-
-        public static TestRestoreRequest CreateRestoreRequest(List<PackageSource> sourceList, string globalPackagesFolder, ILogger logger, params PackageSpec[] projects)
-        {
-            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projects);
-            var projectToRestore = projects[0];
-            var sources = projectToRestore.RestoreMetadata.Sources.Any() ?
-                       projectToRestore.RestoreMetadata.Sources.ToList() :
-                       sourceList;
-
-            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.RestoreMetadata.ProjectUniqueName).ToList();
-
-            return new TestRestoreRequest(projectToRestore, sources, globalPackagesFolder, logger)
             {
                 LockFilePath = Path.Combine(projectToRestore.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName),
                 DependencyGraphSpec = dgSpec,
