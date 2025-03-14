@@ -264,6 +264,7 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
+                // TODO NK - Rewrite how the project references are added.
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
                 request.ExternalProjects.Add(new ExternalProjectReference(

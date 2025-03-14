@@ -836,13 +836,7 @@ namespace NuGet.Commands.Test
             using (var workingDir = TestDirectory.Create())
             {
                 var configJson2 = @"{
-                    ""dependencies"": {
-                        ""packageX"": {
-                            ""version"": ""1.0.0"",
-                            ""suppressParent"": ""all""
-                        },
-                        ""packageZ"": ""1.0.0""
-                    },
+                    
                     ""frameworks"": {
                     ""net46"": {}
                     },
@@ -850,10 +844,16 @@ namespace NuGet.Commands.Test
                 }";
 
                 var configJson1 = @"{
-                    ""dependencies"": {
-                    },
                     ""frameworks"": {
-                    ""net46"": {}
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""packageX"": {
+                                ""version"": ""1.0.0"",
+                                ""suppressParent"": ""all""
+                            },
+                            ""packageZ"": ""1.0.0""
+                    }
+}
                     },
                     ""runtimes"": { ""any"": { } }
                 }";
@@ -1889,7 +1889,7 @@ namespace NuGet.Commands.Test
             Directory.CreateDirectory(testProject2Dir);
 
             var specPath1 = Path.Combine(testProject1Dir, "project.json");
-            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).EnsureProjectJsonRestoreMetadata();
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).WithTestRestoreMetadata();
 
             using (var writer = new StreamWriter(File.OpenWrite(specPath1)))
             {
@@ -1897,7 +1897,7 @@ namespace NuGet.Commands.Test
             }
 
             var specPath2 = Path.Combine(testProject2Dir, "project.json");
-            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).EnsureProjectJsonRestoreMetadata();
+            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).WithTestRestoreMetadata();
 
             using (var writer = new StreamWriter(File.OpenWrite(specPath2)))
             {
@@ -1960,21 +1960,21 @@ namespace NuGet.Commands.Test
             Directory.CreateDirectory(testProject3Dir);
 
             var specPath1 = Path.Combine(testProject1Dir, "project.json");
-            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).EnsureProjectJsonRestoreMetadata();
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(configJson1, "TestProject1", specPath1).WithTestRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath1)))
             {
                 writer.WriteLine(configJson1);
             }
 
             var specPath2 = Path.Combine(testProject2Dir, "project.json");
-            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).EnsureProjectJsonRestoreMetadata();
+            var spec2 = JsonPackageSpecReader.GetPackageSpec(configJson2, "TestProject2", specPath2).WithTestRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath2)))
             {
                 writer.WriteLine(configJson2);
             }
 
             var specPath3 = Path.Combine(testProject3Dir, "project.json");
-            var spec3 = JsonPackageSpecReader.GetPackageSpec(configJson3, "TestProject3", specPath3).EnsureProjectJsonRestoreMetadata();
+            var spec3 = JsonPackageSpecReader.GetPackageSpec(configJson3, "TestProject3", specPath3).WithTestRestoreMetadata();
             using (var writer = new StreamWriter(File.OpenWrite(specPath3)))
             {
                 writer.WriteLine(configJson3);
@@ -2026,7 +2026,7 @@ namespace NuGet.Commands.Test
             };
 
             var specPath = Path.Combine(testProjectDir, "project.json");
-            var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath).WithTestRestoreMetadata();
 
             var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
             {
@@ -2167,7 +2167,7 @@ namespace NuGet.Commands.Test
             {
                 result.Add(dir.Name, new HashSet<string>());
 
-                var targets = dir.GetFiles("*.nuget.targets").SingleOrDefault();
+                var targets = dir.GetFiles("*.nuget.g.targets", SearchOption.AllDirectories).SingleOrDefault();
 
                 if (targets != null)
                 {

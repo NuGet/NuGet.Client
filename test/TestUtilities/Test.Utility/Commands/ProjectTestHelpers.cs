@@ -75,12 +75,12 @@ namespace NuGet.Commands.Test
         /// </summary>
         public static PackageSpec EnsureProjectJsonRestoreMetadata(this PackageSpec spec)
         {
-            if (string.IsNullOrEmpty(spec.RestoreMetadata?.ProjectUniqueName))
-            {
-                return spec.WithProjectJsonTestRestoreMetadata();
-            }
+            //if (string.IsNullOrEmpty(spec.RestoreMetadata?.ProjectUniqueName))
+            //{
+            //    return spec.WithProjectJsonTestRestoreMetadata();
+            //}
 
-            return spec;
+            return spec.WithTestRestoreMetadata();
         }
 
         public static PackageSpec WithTestProjectReference(this PackageSpec parent, PackageSpec child, params NuGetFramework[] frameworks)
@@ -123,7 +123,7 @@ namespace NuGet.Commands.Test
             var updated = spec.Clone();
             var packageSpecFile = new FileInfo(spec.FilePath);
 
-            var projectDir = (packageSpecFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory && !spec.FilePath.EndsWith(".csproj") ?
+            var projectDir = (packageSpecFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory && !spec.FilePath.EndsWith(".csproj") && !spec.FilePath.EndsWith(".json") ?
                 packageSpecFile.FullName :
                 packageSpecFile.Directory.FullName;
 
