@@ -5,26 +5,36 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    class LocalPackageModel : PackageModel, IVulnerable
+    public class LocalPackageModel : PackageModel, IVulnerable
     {
         private readonly IVulnerable _vulnerableCapability;
 
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerable vulnerableCapability,
+            IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright)
+            string? copyright = null,
+            IReadOnlyList<string>? ownersList = null,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null,
+            DateTimeOffset? publishedDate = null,
+            LicenseMetadata? licenseMetadata = null,
+            Uri? licenseUrl = null,
+            bool requireLicenseAcceptance = false,
+            bool isListed = false)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             PackagePath = packagePath;
             _vulnerableCapability = vulnerableCapability;

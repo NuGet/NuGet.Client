@@ -12,39 +12,44 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    class RemotePackageModel : PackageModel, IVulnerable
+    public class RemotePackageModel : PackageModel, IVulnerable
     {
         private readonly IVulnerable _vulnerableCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerable vulnerableCapability,
+            IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
+            IReadOnlyList<string>? ownersList = null,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+            string? summary = null,
+            DateTimeOffset? publishedDate = null,
+            LicenseMetadata? licenseMetadata = null,
+            Uri? licenseUrl = null,
+            bool requireLicenseAcceptance = false,
             bool isListed = false,
-            DateTimeOffset? dateTimeOffset = null,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            IEnumerable<PackageDependencyGroup>? dependencySets = null)
-            : base(identity, title, description, authors, projectUrl, tags, copyright)
+            Uri? readmeUrl = null)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             IsListed = isListed;
-            Published = dateTimeOffset;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
-            DependencySets = dependencySets;
             _vulnerableCapability = vulnerableCapability;
+            ReadmeUrl = readmeUrl;
         }
 
         public bool IsListed { get; }
-        public DateTimeOffset? Published { get; }
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
-        public IEnumerable<PackageDependencyGroup>? DependencySets { get; }
+        public Uri? ReadmeUrl { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
