@@ -12,7 +12,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IVulnerable
+    public class RemotePackageModel : PackageModel, IVulnerable, IKnownOwnersCapable
     {
         private readonly IVulnerable _vulnerableCapability;
 
@@ -20,6 +20,7 @@ namespace NuGet.PackageManagement.UI
             PackageIdentity identity,
             IVulnerable vulnerableCapability,
             IEmbeddedResources embeddedResources,
+            IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -44,12 +45,14 @@ namespace NuGet.PackageManagement.UI
             DownloadCount = downloadCount;
             _vulnerableCapability = vulnerableCapability;
             ReadmeUrl = readmeUrl;
+            KnownOwners = knownOwnersCapability?.KnownOwners;
         }
 
         public bool IsListed { get; }
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
         public Uri? ReadmeUrl { get; }
+        public IReadOnlyList<KnownOwner>? KnownOwners { get; }
 
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
