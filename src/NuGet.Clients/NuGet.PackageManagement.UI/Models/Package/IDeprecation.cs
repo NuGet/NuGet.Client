@@ -3,14 +3,14 @@
 
 #nullable enable
 
+using NuGet.Protocol.Model;
+
 namespace NuGet.PackageManagement.UI
 {
-    interface IDeprecated
+    interface IDeprecation
     {
         public bool IsDeprecated { get; }
 
-        public string? AlternatePackageText { get; }
-
-        public string PackageDeprecationReasons { get; }
+        public PackageDeprecationReason PackageDeprecationReasons { get; }
     }
 }

@@ -5,77 +5,62 @@
 
 using System;
 using System.Linq;
-using NuGet.Versioning;
+using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DeprecationCapability : IDeprecated
+    public class DeprecationCapability : IDeprecation
     {
-        private static readonly string StarAll = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*"), VersionRangeFormatter.Instance);
-        private static readonly string StarAllFloating = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*-*"), VersionRangeFormatter.Instance);
-
         public DeprecationCapability(PackageDeprecationMetadataContextInfo deprecatedInfo)
         {
-            _deprecated = deprecatedInfo;
+            DeprecationMetadata = deprecatedInfo;
         }
 
-        private PackageDeprecationMetadataContextInfo _deprecated;
-        public PackageDeprecationMetadataContextInfo DeprecationMetadata
-        {
-            get => _deprecated;
-            private set => _deprecated = value;
-        }
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata { get; private set; }
 
         public bool IsDeprecated => DeprecationMetadata != null;
-        public string? AlternatePackageText
-        {
-            get
-            {
-                if (DeprecationMetadata.AlternatePackage == null)
-                {
-                    return null;
-                }
 
-                // pretty print
-                string versionString = VersionRangeFormatter.Instance.Format("p", DeprecationMetadata.AlternatePackage.VersionRange, VersionRangeFormatter.Instance);
-
-                if (StarAll.Equals(versionString, StringComparison.InvariantCultureIgnoreCase) || StarAllFloating.Equals(versionString, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return DeprecationMetadata.AlternatePackage.PackageId;
-                }
-
-                return $"{DeprecationMetadata.AlternatePackage.PackageId} {versionString}";
-            }
-        }
-
-        public string PackageDeprecationReasons
+        public PackageDeprecationReason PackageDeprecationReasons
         {
             get
             {
                 if (DeprecationMetadata.Reasons == null || !DeprecationMetadata.Reasons.Any())
                 {
-                    return Resources.Label_DeprecationReasons_Unknown;
+                    return PackageDeprecationReason.Unknown;
                 }
-                else if (DeprecationMetadata.Reasons.Contains("CriticalBugs", StringComparer.OrdinalIgnoreCase))
+
+                bool hasCriticalBugs = false;
+                bool hasLegacy = false;
+
+                foreach (var reason in DeprecationMetadata.Reasons)
                 {
-                    if (DeprecationMetadata.Reasons.Contains("Legacy", StringComparer.OrdinalIgnoreCase))
+                    if (string.Equals(reason, "CriticalBugs", StringComparison.OrdinalIgnoreCase))
                     {
-                        return Resources.Label_DeprecationReasons_LegacyAndCriticalBugs;
+                        hasCriticalBugs = true;
                     }
-                    else
+                    else if (string.Equals(reason, "Legacy", StringComparison.OrdinalIgnoreCase))
                     {
-                        return Resources.Label_DeprecationReasons_CriticalBugs;
+                        hasLegacy = true;
                     }
                 }
-                else if (DeprecationMetadata.Reasons.Contains("Legacy", StringComparer.OrdinalIgnoreCase))
+
+                if (hasCriticalBugs && hasLegacy)
                 {
-                    return Resources.Label_DeprecationReasons_Legacy;
+                    return PackageDeprecationReason.LegacyAndCriticalBugs;
                 }
-                else
+
+                if (hasCriticalBugs)
                 {
-                    return Resources.Label_DeprecationReasons_Unknown;
+                    return PackageDeprecationReason.CriticalBugs;
                 }
+
+                if (hasLegacy)
+                {
+                    return PackageDeprecationReason.Legacy;
+                }
+
+                return PackageDeprecationReason.Unknown;
             }
         }
     }

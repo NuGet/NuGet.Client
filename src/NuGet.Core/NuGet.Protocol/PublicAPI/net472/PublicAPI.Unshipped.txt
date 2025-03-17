@@ -1,3 +1,8 @@
 #nullable enable
+NuGet.Protocol.Model.PackageDeprecationReason
+NuGet.Protocol.Model.PackageDeprecationReason.CriticalBugs = 1 -> NuGet.Protocol.Model.PackageDeprecationReason
+NuGet.Protocol.Model.PackageDeprecationReason.Legacy = 0 -> NuGet.Protocol.Model.PackageDeprecationReason
+NuGet.Protocol.Model.PackageDeprecationReason.LegacyAndCriticalBugs = 2 -> NuGet.Protocol.Model.PackageDeprecationReason
+NuGet.Protocol.Model.PackageDeprecationReason.Unknown = -1 -> NuGet.Protocol.Model.PackageDeprecationReason
 ~NuGet.Protocol.PackageVulnerabilityMetadata.PackageVulnerabilityMetadata(System.Uri advisoryUrl, int severity) -> void
 ~NuGet.Protocol.Plugins.PluginFile.PluginFile(string filePath, System.Lazy<NuGet.Protocol.Plugins.PluginFileState> state) -> void
