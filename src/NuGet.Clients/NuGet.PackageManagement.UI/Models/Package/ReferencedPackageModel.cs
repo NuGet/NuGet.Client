@@ -12,14 +12,14 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class ReferencedPackageModel : PackageModel, IVulnerable
+    public class ReferencedPackageModel : PackageModel, IVulnerableCapable
     {
-        private readonly IVulnerable _vulnerableCapability;
+        private readonly IVulnerableCapable _vulnerableCapability;
 
         public ReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
-            IVulnerable vulnerabilityCapability,
+            IVulnerableCapable vulnerabilityCapability,
             IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,

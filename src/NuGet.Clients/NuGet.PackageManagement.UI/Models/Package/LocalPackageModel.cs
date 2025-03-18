@@ -12,13 +12,13 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LocalPackageModel : PackageModel, IVulnerable
+    public class LocalPackageModel : PackageModel, IVulnerableCapable
     {
-        private readonly IVulnerable _vulnerableCapability;
+        private readonly IVulnerableCapable _vulnerableCapability;
 
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
-            IVulnerable vulnerableCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,

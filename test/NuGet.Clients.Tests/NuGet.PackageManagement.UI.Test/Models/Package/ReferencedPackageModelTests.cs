@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "path/to/package";
-            var vulnerabilityCapability = new Mock<IVulnerable>();
+            var vulnerabilityCapability = new Mock<IVulnerableCapable>();
             var mockEmbeddedResource = new Mock<IEmbeddedResources>();
 
             // Act

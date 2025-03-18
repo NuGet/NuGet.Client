@@ -12,14 +12,14 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IVulnerable, IKnownOwnersCapable
+    public class RemotePackageModel : PackageModel, IVulnerableCapable, IKnownOwnersCapable
     {
-        private readonly IVulnerable _vulnerableCapability;
+        private readonly IVulnerableCapable _vulnerableCapability;
         private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
-            IVulnerable vulnerableCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
             IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
