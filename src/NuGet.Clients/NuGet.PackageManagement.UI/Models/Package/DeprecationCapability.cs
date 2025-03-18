@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
-using static NuGet.PackageManagement.UI.DetailControlModel;
 
 namespace NuGet.PackageManagement.UI
 {
