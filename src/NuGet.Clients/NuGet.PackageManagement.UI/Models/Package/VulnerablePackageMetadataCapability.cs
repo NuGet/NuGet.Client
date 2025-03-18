@@ -15,33 +15,26 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerablePackageMetadataCapability : VulnerableCapability
     {
+        INuGetSearchService _nuGetSearchService;
+        PackageIdentity _packageIdentity;
+        IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        bool _includePrerelease;
+
         public VulnerablePackageMetadataCapability(INuGetSearchService nuGetSearchService,
-            PackageIdentity packageIdentity,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease) :
-            base(GetVulnerabilitiesFactory(nuGetSearchService, packageIdentity, packageSources, includePrerelease))
-        {
-            if (nuGetSearchService == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetSearchService));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-        }
-
-        private static Func<Task<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>>> GetVulnerabilitiesFactory(INuGetSearchService nuGetSearchService,
             PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease)
         {
-            return new Func<Task<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>>>(async () =>
-            {
-                var vulnerabilities = await nuGetSearchService.GetPackageMetadataAsync(packageIdentity, packageSources, includePrerelease, CancellationToken.None);
-                return vulnerabilities.Item1.Vulnerabilities.ToList();
-            });
+            _nuGetSearchService = nuGetSearchService ?? throw new ArgumentNullException(nameof(nuGetSearchService));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+            _includePrerelease = includePrerelease;
+        }
+
+        public async override Task RefreshAsync(CancellationToken cancellationToken)
+        {
+            (var packageMetadata, _) = await _nuGetSearchService.GetPackageMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken); ;
+            _vulnerabilities = packageMetadata.Vulnerabilities.ToList();
         }
     }
 }

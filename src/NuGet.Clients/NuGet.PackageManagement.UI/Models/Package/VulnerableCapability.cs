@@ -5,46 +5,35 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Threading;
 using NuGet.Protocol;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VulnerableCapability : IVulnerableCapable
+    public abstract class VulnerableCapability : IVulnerableCapable
     {
-        private readonly AsyncLazy<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>> _vulnerabilitiesLazy;
+        protected IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
 
-        public VulnerableCapability(Func<Task<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>>> vulnerabilitiesFactory)
+        internal VulnerableCapability()
         {
-            if (vulnerabilitiesFactory == null)
-            {
-                throw new ArgumentNullException(nameof(vulnerabilitiesFactory));
-            }
 
-            _vulnerabilitiesLazy = new AsyncLazy<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>>(async () =>
-            {
-                var vulnerabilities = await vulnerabilitiesFactory();
-                List<PackageVulnerabilityMetadataContextInfo> sortedList = [.. vulnerabilities];
-                // Sort the list in descending order.
-                sortedList.Sort((b, a) => a.Severity.CompareTo(b.Severity));
-                return sortedList.AsReadOnly();
-            }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
-        {
-            get => NuGetUIThreadHelper.JoinableTaskFactory.Run(_vulnerabilitiesLazy.GetValueAsync);
-        }
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerabilities;
 
-        public bool IsVulnerable => Vulnerabilities.Count > 0;
+        public bool IsVulnerable => Vulnerabilities?.Count > 0;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity
         {
             get
             {
+                if (Vulnerabilities is null)
+                {
+                    throw new InvalidOperationException("Vulnerabilities is null");
+
+                }
                 if (!IsVulnerable)
                 {
                     throw new InvalidOperationException("Vulnerabilities is empty");
@@ -62,5 +51,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
+
+        public abstract Task RefreshAsync(CancellationToken cancellationToken);
     }
 }

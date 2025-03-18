@@ -1,37 +1,25 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
-using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
     public class VulnerableDatabaseCapability : VulnerableCapability
     {
+        private IPackageVulnerabilityService _vulnerabilityService;
+        private PackageIdentity _packageIdentity;
 
         public VulnerableDatabaseCapability(IPackageVulnerabilityService vulnerabilityService, PackageIdentity packageIdentity)
-            : base(GetVulnerabilitiesFactory(vulnerabilityService, packageIdentity))
         {
-            if (vulnerabilityService == null)
-            {
-                throw new ArgumentNullException(nameof(vulnerabilityService));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
+            _vulnerabilityService = vulnerabilityService ?? throw new ArgumentNullException(nameof(vulnerabilityService));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
         }
 
-        private static Func<Task<IReadOnlyList<PackageVulnerabilityMetadataContextInfo>>> GetVulnerabilitiesFactory(IPackageVulnerabilityService vulnerabilityService, PackageIdentity packageIdentity)
+        public override async Task RefreshAsync(CancellationToken cancellationToken)
         {
-            return async () =>
-            {
-                var vulnerabilities = await vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, CancellationToken.None);
-                return vulnerabilities;
-            };
+            _vulnerabilities = await _vulnerabilityService.GetVulnerabilityInfoAsync(_packageIdentity, cancellationToken);
         }
     }
 }

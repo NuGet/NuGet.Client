@@ -4,6 +4,8 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -11,10 +13,12 @@ namespace NuGet.PackageManagement.UI
 {
     public interface IVulnerableCapable
     {
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; }
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; }
 
         public bool IsVulnerable { get; }
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity { get; }
+
+        public Task RefreshAsync(CancellationToken cancellationToken);
     }
 }
