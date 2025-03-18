@@ -266,7 +266,6 @@ namespace NuGet.PackageManagement.UI
 
             foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
             {
-                // Create package model
                 var packageId = metadataContextInfo.Identity.Id;
                 var packageVersion = metadataContextInfo.Identity.Version;
                 var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
@@ -316,8 +315,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
                     }
-
-                    var package = new RemotePackageModel(metadataContextInfo.Identity, null);
 
                     var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
                     {

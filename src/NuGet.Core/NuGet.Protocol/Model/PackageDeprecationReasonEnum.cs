@@ -5,11 +5,17 @@
 
 namespace NuGet.Protocol.Model
 {
-    public enum PackageDeprecationReason
+    public enum PackageDeprecationReasonEnum
     {
         Unknown = -1,
         Legacy = 0,
         CriticalBugs = 1,
         LegacyAndCriticalBugs = 2
+    }
+
+    public static class PackageDeprecationReason
+    {
+        public const string CriticalBugs = nameof(CriticalBugs);
+        public const string Legacy = nameof(Legacy);
     }
 }

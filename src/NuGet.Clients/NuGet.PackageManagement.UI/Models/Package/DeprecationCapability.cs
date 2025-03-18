@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
+using static NuGet.PackageManagement.UI.DetailControlModel;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,17 +18,17 @@ namespace NuGet.PackageManagement.UI
             DeprecationMetadata = deprecatedInfo;
         }
 
-        public PackageDeprecationMetadataContextInfo DeprecationMetadata { get; private set; }
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; }
 
         public bool IsDeprecated => DeprecationMetadata != null;
 
-        public PackageDeprecationReason PackageDeprecationReasons
+        public PackageDeprecationReasonEnum PackageDeprecationReasons
         {
             get
             {
-                if (DeprecationMetadata.Reasons == null || !DeprecationMetadata.Reasons.Any())
+                if (DeprecationMetadata?.Reasons == null || !DeprecationMetadata.Reasons.Any())
                 {
-                    return PackageDeprecationReason.Unknown;
+                    return PackageDeprecationReasonEnum.Unknown;
                 }
 
                 bool hasCriticalBugs = false;
@@ -35,11 +36,11 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var reason in DeprecationMetadata.Reasons)
                 {
-                    if (string.Equals(reason, "CriticalBugs", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(reason, PackageDeprecationReason.CriticalBugs, StringComparison.OrdinalIgnoreCase))
                     {
                         hasCriticalBugs = true;
                     }
-                    else if (string.Equals(reason, "Legacy", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(reason, PackageDeprecationReason.Legacy, StringComparison.OrdinalIgnoreCase))
                     {
                         hasLegacy = true;
                     }
@@ -47,20 +48,20 @@ namespace NuGet.PackageManagement.UI
 
                 if (hasCriticalBugs && hasLegacy)
                 {
-                    return PackageDeprecationReason.LegacyAndCriticalBugs;
+                    return PackageDeprecationReasonEnum.LegacyAndCriticalBugs;
                 }
 
                 if (hasCriticalBugs)
                 {
-                    return PackageDeprecationReason.CriticalBugs;
+                    return PackageDeprecationReasonEnum.CriticalBugs;
                 }
 
                 if (hasLegacy)
                 {
-                    return PackageDeprecationReason.Legacy;
+                    return PackageDeprecationReasonEnum.Legacy;
                 }
 
-                return PackageDeprecationReason.Unknown;
+                return PackageDeprecationReasonEnum.Unknown;
             }
         }
     }

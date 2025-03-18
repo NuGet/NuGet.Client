@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI.Test
     public class DeprecationCapabilityTests
     {
         [Fact]
-        public void IsDeprecated_WithPackageDeprecationMetadataContextInfo_ReturnsExpected()
+        public void IsDeprecated_WithDeprecationMetadata_IsTrue()
         {
             // Arrange
             PackageDeprecationMetadataContextInfo deprecationMetadataContextInfo = new PackageDeprecationMetadataContextInfo(null, null, null);
@@ -26,18 +26,18 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Theory]
-        [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReason.CriticalBugs)]
-        [InlineData(new[] { "Legacy" }, PackageDeprecationReason.Legacy)]
-        [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReason.LegacyAndCriticalBugs)]
-        [InlineData(new[] { "Other" }, PackageDeprecationReason.Unknown)]
-        public void PackageDeprecationReasons_MultipleDeprecationReasons_ReturnsExpected(string[] reasons, PackageDeprecationReason expectedMessage)
+        [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReasonEnum.CriticalBugs)]
+        [InlineData(new[] { "Legacy" }, PackageDeprecationReasonEnum.Legacy)]
+        [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReasonEnum.LegacyAndCriticalBugs)]
+        [InlineData(new[] { "Other" }, PackageDeprecationReasonEnum.Unknown)]
+        public void PackageDeprecationReasons_MultipleDeprecationReasons_ReturnsExpected(string[] reasons, PackageDeprecationReasonEnum expectedMessage)
         {
             // Arrange
             PackageDeprecationMetadataContextInfo deprecationMetadataContextInfo = new PackageDeprecationMetadataContextInfo(null, reasons, null);
             var deprecatedCapability = new DeprecationCapability(deprecationMetadataContextInfo);
 
             // Act
-            PackageDeprecationReason result = deprecatedCapability.PackageDeprecationReasons;
+            PackageDeprecationReasonEnum result = deprecatedCapability.PackageDeprecationReasons;
 
             // Assert
             Assert.Equal(expectedMessage, result);

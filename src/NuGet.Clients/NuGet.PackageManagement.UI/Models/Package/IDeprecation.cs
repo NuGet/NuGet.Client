@@ -11,6 +11,6 @@ namespace NuGet.PackageManagement.UI
     {
         public bool IsDeprecated { get; }
 
-        public PackageDeprecationReason PackageDeprecationReasons { get; }
+        public PackageDeprecationReasonEnum PackageDeprecationReasons { get; }
     }
 }
