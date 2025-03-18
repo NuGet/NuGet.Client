@@ -768,7 +768,7 @@ namespace NuGet.Build.Tasks.Console
         private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
         {
             string envVar = environmentVariableReader.GetEnvironmentVariable("NUGET_USE_NEW_PACKAGESPEC_FACTORY");
-            if (string.Equals(envVar, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(envVar, bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
                 return GetDependencyGraphSpec(
                     entryProjectPath,

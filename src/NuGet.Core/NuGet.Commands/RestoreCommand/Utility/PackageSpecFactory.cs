@@ -22,6 +22,16 @@ using NuGet.Versioning;
 
 namespace NuGet.Commands.Restore.Utility
 {
+    /// <summary>
+    /// <seealso cref="RestoreRequest"/> uses <see cref="PackageSpec"/> instances to represent project restore inputs.
+    /// This class provides a single implementation of creating a <see cref="PackageSpec"/> from an <see cref="IProject"/>,
+    /// which each restore entry point is responsible for creating an adapter for.
+    /// </summary>
+    /// <remarks>
+    /// When modifying PackageSpecFactory with new properties or items, you still need to modify NuGet.targets for
+    /// MSBuild restore, and the dotnet/project-system repo for SDK style projects in Visual Studio. In addition, it
+    /// would be a good idea to manually test new features with non-SDK style projects in Visual Studio, and also static graph evaluation restores on the command line, to test all 4 restore entry points.
+    /// </remarks>
     public static class PackageSpecFactory
     {
         /// <summary>
