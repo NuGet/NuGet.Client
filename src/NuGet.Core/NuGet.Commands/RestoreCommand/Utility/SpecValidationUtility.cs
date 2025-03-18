@@ -172,7 +172,7 @@ namespace NuGet.Commands
                 {
                     hasInvalidFrameworks |= true;
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.SpecValidationInvalidFramework, framework.TargetAlias);
-                    logger.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1105, message) { FilePath = spec.FilePath });
+                    logger.Log(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.NU1105, message) { FilePath = spec.FilePath, ProjectPath = spec.FilePath });
                 }
             }
 
