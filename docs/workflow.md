@@ -9,8 +9,8 @@ This repo has bots that manage all stale PRs.
 Stale PRs will be auto closed.
 
 These are guidelines to follow but unless indicated, they are not required.
- [❗] = Required
- [🤖] = Enforced with tooling
+- [❗] = Required
+- [🤖] = Enforced with tooling
 
 ### Requesting a Pull Request Review
 
