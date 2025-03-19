@@ -28,26 +28,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         }
 
         [Fact]
-        public void Constructor_WithNullPackageIdentity_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object!));
-        }
-
-        [Fact]
-        public void Constructor_WithNullPackageSources_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object));
-        }
-
-        [Fact]
         public async Task PopulateDataAsync_WithValidData_PopulatesVulnerabilities()
         {
             // Arrange
