@@ -9,7 +9,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
-    internal class TestVulnerableCapability : VulnerableCapability
+    internal class TestVulnerableCapability : VulnerableCapabilityBase
     {
         public TestVulnerableCapability(IReadOnlyList<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
         {

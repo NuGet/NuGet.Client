@@ -12,7 +12,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
-    public class VulnerableCapabilityTests
+    public class VulnerableCapabilityBaseTests
     {
         [Theory]
         [InlineData(1, true)]

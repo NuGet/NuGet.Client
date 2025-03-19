@@ -13,7 +13,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VulnerablePackageMetadataCapability : VulnerableCapability
+    public class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {
         private IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
         private PackageIdentity _packageIdentity;

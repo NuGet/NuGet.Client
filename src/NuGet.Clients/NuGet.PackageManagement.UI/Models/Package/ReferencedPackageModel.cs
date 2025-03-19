@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI.Models
         public ReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
-            IVulnerableCapable vulnerabilityCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Models
                   requireLicenseAcceptance)
         {
             ReportAbuseUrl = reportAbuseUrl;
-            _vulnerableCapability = vulnerabilityCapability;
+            _vulnerableCapability = vulnerableCapability;
             PackagePath = packagePath;
         }
 

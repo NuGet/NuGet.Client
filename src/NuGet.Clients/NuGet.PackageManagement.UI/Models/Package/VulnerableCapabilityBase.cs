@@ -12,7 +12,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public abstract class VulnerableCapability : IVulnerableCapable
+    public abstract class VulnerableCapabilityBase : IVulnerableCapable
     {
         private IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
 
@@ -41,8 +41,8 @@ namespace NuGet.PackageManagement.UI
                 if (Vulnerabilities is null)
                 {
                     throw new InvalidOperationException("Vulnerabilities is null");
-
                 }
+
                 if (!IsVulnerable)
                 {
                     throw new InvalidOperationException("Vulnerabilities is empty");
