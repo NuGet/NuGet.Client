@@ -15,31 +15,31 @@ namespace NuGet.PackageManagement.UI
     internal class PackageMetadataRetrievalAdapter : IPackageMetadataRetrievalAdapter
     {
         private readonly INuGetSearchService _nugetSearchService;
+        private readonly PackageIdentity _packageIdentity;
         private ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> _packageMetadataTask;
         private readonly object _lock = new();
 
-        public PackageMetadataRetrievalAdapter(INuGetSearchService nugetSearchService)
+        public PackageMetadataRetrievalAdapter(INuGetSearchService nugetSearchService, PackageIdentity packageIdentity)
         {
-            _nugetSearchService = nugetSearchService;
+            _nugetSearchService = nugetSearchService ?? throw new ArgumentNullException(nameof(nugetSearchService));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
         }
 
         public async Task<PackageSearchMetadataContextInfo> GetPackageMetadataAsync(
-            PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(packageIdentity, packageSources, includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(_packageIdentity, packageSources, includePrerelease, cancellationToken);
             return packageMetadata.Item1;
         }
 
         public async Task<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationInfoAsync(
-            PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(packageIdentity, packageSources, includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(_packageIdentity, packageSources, includePrerelease, cancellationToken);
             return packageMetadata.Item2;
         }
 
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
                     if (_packageMetadataTask == null)
                     {
                         _packageMetadataTask = _nugetSearchService.GetPackageMetadataAsync(
-                            packageIdentity,
+                            _packageIdentity,
                             packageSources,
                             includePrerelease,
                             cancellationToken);

@@ -6,7 +6,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -14,13 +13,11 @@ namespace NuGet.PackageManagement.UI
     internal interface IPackageMetadataRetrievalAdapter
     {
         public Task<PackageSearchMetadataContextInfo> GetPackageMetadataAsync(
-            PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken);
 
         public Task<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationInfoAsync(
-            PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             CancellationToken cancellationToken);
