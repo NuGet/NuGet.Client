@@ -19,6 +19,6 @@ namespace NuGet.PackageManagement.UI
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity { get; }
 
-        public Task RefreshAsync(CancellationToken cancellationToken);
+        public Task PopulateDataAsync(CancellationToken cancellationToken);
     }
 }

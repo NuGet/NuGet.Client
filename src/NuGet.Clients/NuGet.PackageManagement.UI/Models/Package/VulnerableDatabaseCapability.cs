@@ -17,9 +17,9 @@ namespace NuGet.PackageManagement.UI
             _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
         }
 
-        public override async Task RefreshAsync(CancellationToken cancellationToken)
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            _vulnerabilities = await _vulnerabilityService.GetVulnerabilityInfoAsync(_packageIdentity, cancellationToken);
+            Vulnerabilities = await _vulnerabilityService.GetVulnerabilityInfoAsync(_packageIdentity, cancellationToken);
         }
     }
 }

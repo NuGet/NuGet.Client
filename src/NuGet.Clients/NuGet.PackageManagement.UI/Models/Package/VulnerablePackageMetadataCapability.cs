@@ -15,26 +15,26 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerablePackageMetadataCapability : VulnerableCapability
     {
-        INuGetSearchService _nuGetSearchService;
-        PackageIdentity _packageIdentity;
-        IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
-        bool _includePrerelease;
+        private IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+        private PackageIdentity _packageIdentity;
+        private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        private bool _includePrerelease;
 
-        public VulnerablePackageMetadataCapability(INuGetSearchService nuGetSearchService,
+        public VulnerablePackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter,
             PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease)
         {
-            _nuGetSearchService = nuGetSearchService ?? throw new ArgumentNullException(nameof(nuGetSearchService));
+            _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
             _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             _includePrerelease = includePrerelease;
         }
 
-        public async override Task RefreshAsync(CancellationToken cancellationToken)
+        public async override Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            (var packageMetadata, _) = await _nuGetSearchService.GetPackageMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken); ;
-            _vulnerabilities = packageMetadata.Vulnerabilities.ToList();
+            var packageMetadata = await _packageMetadataRetrievalAdapter.GetPackageMetadataAsync(_packageSources, _includePrerelease, cancellationToken);
+            Vulnerabilities = packageMetadata.Vulnerabilities.ToList();
         }
     }
 }

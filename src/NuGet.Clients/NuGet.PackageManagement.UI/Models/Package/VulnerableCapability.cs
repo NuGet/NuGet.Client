@@ -14,14 +14,23 @@ namespace NuGet.PackageManagement.UI
 {
     public abstract class VulnerableCapability : IVulnerableCapable
     {
-        protected IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
+        private IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
 
-        internal VulnerableCapability()
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities
         {
-
+            get => _vulnerabilities;
+            protected set
+            {
+                List<PackageVulnerabilityMetadataContextInfo>? sortedList = null;
+                if (value != null)
+                {
+                    sortedList = [.. value];
+                    // Sort the list in descending order.
+                    sortedList.Sort((b, a) => a.Severity.CompareTo(b.Severity));
+                }
+                _vulnerabilities = sortedList;
+            }
         }
-
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerabilities;
 
         public bool IsVulnerable => Vulnerabilities?.Count > 0;
 
@@ -52,6 +61,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public abstract Task RefreshAsync(CancellationToken cancellationToken);
+        public abstract Task PopulateDataAsync(CancellationToken cancellationToken);
     }
 }

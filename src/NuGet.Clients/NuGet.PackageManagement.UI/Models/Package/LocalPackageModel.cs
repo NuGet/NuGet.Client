@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -41,10 +43,15 @@ namespace NuGet.PackageManagement.UI
 
         public string PackagePath { get; }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
         public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
+
+        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+        }
     }
 }
