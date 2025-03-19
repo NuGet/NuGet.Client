@@ -314,7 +314,7 @@ namespace NuGet.CommandLine.Test.Caching
 
         public void WriteProject(PackageIdentity packageIdentity)
         {
-            var projectContext = SimpleTestProjectContext.CreateLegacyPackageReference("project", TestDirectory, FrameworkConstants.CommonFrameworks.Net472);
+            var projectContext = SimpleTestProjectContext.CreateLegacyPackageReference("project", TestDirectory, PackageFramework);
             projectContext.AddPackageToAllFrameworks(new SimpleTestPackageContext(packageIdentity));
             projectContext.Save();
         }
