@@ -8,10 +8,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
@@ -24,14 +22,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             IPackageMetadataRetrievalAdapter? packageMetadataRetrievalAdapter = null;
-            var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packageSources = new List<PackageSourceContextInfo>
             {
                 new PackageSourceContextInfo("http://testsource.com")
             };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter!, packageIdentity, packageSources, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter!, packageSources, includePrerelease: false));
         }
 
         [Fact]
@@ -39,14 +36,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            PackageIdentity? packageIdentity = null;
             var packageSources = new List<PackageSourceContextInfo>
             {
                 new PackageSourceContextInfo("http://testsource.com")
             };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageIdentity!, packageSources, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object!, packageSources, includePrerelease: false));
         }
 
         [Fact]
@@ -54,11 +50,10 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             IReadOnlyCollection<PackageSourceContextInfo>? packageSources = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageIdentity, packageSources!, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources!, includePrerelease: false));
         }
 
         [Fact]
@@ -66,7 +61,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packageSources = new List<PackageSourceContextInfo>
             {
                 new PackageSourceContextInfo("http://testsource.com")
@@ -81,7 +75,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 .ReturnsAsync(packageMetadata);
             var vulnExpected = packageMetadata.Vulnerabilities;
 
-            var capability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageIdentity, packageSources, includePrerelease: false);
+            var capability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
 
             // Act
             await capability.PopulateDataAsync(CancellationToken.None);

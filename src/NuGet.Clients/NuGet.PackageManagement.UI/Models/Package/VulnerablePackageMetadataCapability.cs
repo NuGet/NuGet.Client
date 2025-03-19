@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -16,17 +15,14 @@ namespace NuGet.PackageManagement.UI
     public class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {
         private IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
-        private PackageIdentity _packageIdentity;
         private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
         private bool _includePrerelease;
 
         public VulnerablePackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter,
-            PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease)
         {
             _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
-            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             _includePrerelease = includePrerelease;
         }
