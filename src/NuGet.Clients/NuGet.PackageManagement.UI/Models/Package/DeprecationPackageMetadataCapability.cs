@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
-        IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+        private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
 
         public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {
