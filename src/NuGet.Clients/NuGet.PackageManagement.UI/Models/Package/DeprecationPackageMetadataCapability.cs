@@ -4,20 +4,31 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DeprecationCapability : IDeprecation
+    public class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
-        public DeprecationCapability(PackageDeprecationMetadataContextInfo deprecatedInfo)
+        IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+        private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        private bool _includePrerelease;
+
+        public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease)
         {
-            DeprecationMetadata = deprecatedInfo;
+            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+            _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
+            _includePrerelease = includePrerelease;
         }
 
-        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; }
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; private set; }
 
         public bool IsDeprecated => DeprecationMetadata != null;
 
@@ -62,6 +73,11 @@ namespace NuGet.PackageManagement.UI
 
                 return PackageDeprecationReasonEnum.Unknown;
             }
+        }
+
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            DeprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(_packageSources, _includePrerelease, cancellationToken);
         }
     }
 }
