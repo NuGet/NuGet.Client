@@ -1,4 +1,12 @@
 #nullable enable
+const NuGet.Protocol.Model.PackageDeprecationReason.CriticalBugs = "CriticalBugs" -> string!
+const NuGet.Protocol.Model.PackageDeprecationReason.Legacy = "Legacy" -> string!
+NuGet.Protocol.Model.PackageDeprecationReason
+NuGet.Protocol.Model.PackageDeprecationReasonEnum
+NuGet.Protocol.Model.PackageDeprecationReasonEnum.CriticalBugs = 1 -> NuGet.Protocol.Model.PackageDeprecationReasonEnum
+NuGet.Protocol.Model.PackageDeprecationReasonEnum.Legacy = 0 -> NuGet.Protocol.Model.PackageDeprecationReasonEnum
+NuGet.Protocol.Model.PackageDeprecationReasonEnum.LegacyAndCriticalBugs = 2 -> NuGet.Protocol.Model.PackageDeprecationReasonEnum
+NuGet.Protocol.Model.PackageDeprecationReasonEnum.Unknown = -1 -> NuGet.Protocol.Model.PackageDeprecationReasonEnum
 ~NuGet.Protocol.Core.Types.PackageUpdateResource.PushAsync(System.Collections.Generic.IList<string> packagePaths, string symbolSource, int timeoutInSecond, bool disableBuffering, System.Func<string, string> getApiKey, System.Func<string, string> getSymbolApiKey, bool noServiceEndpoint, bool skipDuplicate, bool allowSnupkg, bool allowInsecureConnections, NuGet.Common.ILogger log) -> System.Threading.Tasks.Task
 ~NuGet.Protocol.PackageVulnerabilityMetadata.PackageVulnerabilityMetadata(System.Uri advisoryUrl, int severity) -> void
 ~NuGet.Protocol.Plugins.PluginFile.PluginFile(string filePath, System.Lazy<NuGet.Protocol.Plugins.PluginFileState> state) -> void
