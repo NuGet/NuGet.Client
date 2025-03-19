@@ -15,21 +15,15 @@ namespace NuGet.PackageManagement.UI
     public class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {
         private IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
-        private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
-        private bool _includePrerelease;
 
-        public VulnerablePackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease)
+        public VulnerablePackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {
             _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
-            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
-            _includePrerelease = includePrerelease;
         }
 
         public async override Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            var packageMetadata = await _packageMetadataRetrievalAdapter.GetPackageMetadataAsync(_packageSources, _includePrerelease, cancellationToken);
+            var packageMetadata = await _packageMetadataRetrievalAdapter.GetPackageMetadataAsync(cancellationToken);
             Vulnerabilities = packageMetadata.Vulnerabilities?.ToList() ?? new List<PackageVulnerabilityMetadataContextInfo>();
         }
     }

@@ -22,13 +22,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             IPackageMetadataRetrievalAdapter? packageMetadataRetrievalAdapter = null;
-            var packageSources = new List<PackageSourceContextInfo>
-            {
-                new PackageSourceContextInfo("http://testsource.com")
-            };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter!, packageSources, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter!));
         }
 
         [Fact]
@@ -36,13 +32,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageSources = new List<PackageSourceContextInfo>
-            {
-                new PackageSourceContextInfo("http://testsource.com")
-            };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object!, packageSources, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object!));
         }
 
         [Fact]
@@ -50,10 +42,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            IReadOnlyCollection<PackageSourceContextInfo>? packageSources = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources!, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object));
         }
 
         [Fact]
@@ -61,21 +52,17 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageSources = new List<PackageSourceContextInfo>
-            {
-                new PackageSourceContextInfo("http://testsource.com")
-            };
             var vulnerabilities = new List<PackageVulnerabilityMetadata>
             {
                 new PackageVulnerabilityMetadata(new Uri("http://test.com/vuln1"), 1),
                 new PackageVulnerabilityMetadata(new Uri("http://test.com/vuln2"), 2)
             };
             var packageMetadata = PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata() { Vulnerabilities = vulnerabilities });
-            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageMetadataAsync(packageSources, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageMetadataAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(packageMetadata);
             var vulnExpected = packageMetadata.Vulnerabilities;
 
-            var capability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
+            var capability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object);
 
             // Act
             await capability.PopulateDataAsync(CancellationToken.None);
