@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,16 +15,10 @@ namespace NuGet.PackageManagement.UI
     public class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
         IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
-        private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
-        private bool _includePrerelease;
 
-        public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease)
+        public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {
-            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
-            _includePrerelease = includePrerelease;
         }
 
         public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; private set; }
@@ -77,7 +70,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            DeprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(_packageSources, _includePrerelease, cancellationToken);
+            DeprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(cancellationToken);
         }
     }
 }

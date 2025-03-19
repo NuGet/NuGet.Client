@@ -27,18 +27,7 @@ namespace NuGet.PackageManagement.UI.Test
             };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter!, packageSources, includePrerelease: false));
-        }
-
-        [Fact]
-        public void Constructor_WithNullPackageSources_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            IReadOnlyCollection<PackageSourceContextInfo>? packageSources = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources!, includePrerelease: false));
+            Assert.Throws<ArgumentNullException>(() => new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter!));
         }
 
         [Fact]
@@ -46,15 +35,11 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageSources = new List<PackageSourceContextInfo>
-            {
-                new PackageSourceContextInfo("http://testsource.com")
-            };
             var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", new List<string> { "Legacy" }, null);
-            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(packageSources, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
-            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
+            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object);
 
             // Act
             await capability.PopulateDataAsync(CancellationToken.None);
@@ -68,15 +53,11 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var packageMetadataRetrievalAdapterMock = new Mock<IPackageMetadataRetrievalAdapter>();
-            var packageSources = new List<PackageSourceContextInfo>
-            {
-                new PackageSourceContextInfo("http://testsource.com")
-            };
             var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", new List<string> { "Legacy" }, null);
-            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(packageSources, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
-            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
+            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object);
             await capability.PopulateDataAsync(CancellationToken.None);
 
             // Act
@@ -96,10 +77,10 @@ namespace NuGet.PackageManagement.UI.Test
                 new PackageSourceContextInfo("http://testsource.com")
             };
             PackageDeprecationMetadataContextInfo? deprecationMetadata = null;
-            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(packageSources, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
-            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
+            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object);
             await capability.PopulateDataAsync(CancellationToken.None);
 
             // Act
@@ -123,10 +104,10 @@ namespace NuGet.PackageManagement.UI.Test
                 new PackageSourceContextInfo("http://testsource.com")
             };
             var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", reasons, null);
-            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(packageSources, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
-            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object, packageSources, includePrerelease: false);
+            var capability = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapterMock.Object);
             await capability.PopulateDataAsync(CancellationToken.None);
 
             // Act
