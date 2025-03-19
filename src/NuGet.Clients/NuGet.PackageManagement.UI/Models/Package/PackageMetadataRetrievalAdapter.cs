@@ -16,13 +16,17 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly INuGetSearchService _nugetSearchService;
         private readonly PackageIdentity _packageIdentity;
-        private ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> _packageMetadataTask;
+        private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        private readonly bool _includePrerelease;
+        private Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)>? _packageMetadataTask;
         private readonly object _lock = new();
 
-        public PackageMetadataRetrievalAdapter(INuGetSearchService nugetSearchService, PackageIdentity packageIdentity)
+        public PackageMetadataRetrievalAdapter(INuGetSearchService nugetSearchService, PackageIdentity packageIdentity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease)
         {
             _nugetSearchService = nugetSearchService ?? throw new ArgumentNullException(nameof(nugetSearchService));
             _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+            _includePrerelease = includePrerelease;
         }
 
         public async Task<PackageSearchMetadataContextInfo> GetPackageMetadataAsync(
@@ -30,7 +34,7 @@ namespace NuGet.PackageManagement.UI
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(_packageIdentity, packageSources, includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken);
             return packageMetadata.Item1;
         }
 
@@ -39,11 +43,11 @@ namespace NuGet.PackageManagement.UI
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(_packageIdentity, packageSources, includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken);
             return packageMetadata.Item2;
         }
 
-        private ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> FetchMetadataAsync(
+        private Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> FetchMetadataAsync(
             PackageIdentity packageIdentity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
@@ -58,14 +62,11 @@ namespace NuGet.PackageManagement.UI
             {
                 lock (_lock)
                 {
-                    if (_packageMetadataTask == null)
-                    {
-                        _packageMetadataTask = _nugetSearchService.GetPackageMetadataAsync(
-                            _packageIdentity,
-                            packageSources,
-                            includePrerelease,
-                            cancellationToken);
-                    }
+                    _packageMetadataTask ??= _nugetSearchService.GetPackageMetadataAsync(
+                        _packageIdentity,
+                        packageSources,
+                        includePrerelease,
+                        cancellationToken).AsTask();
                 }
             }
 
