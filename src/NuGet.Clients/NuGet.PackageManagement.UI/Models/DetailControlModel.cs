@@ -12,6 +12,7 @@ using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -493,12 +494,6 @@ namespace NuGet.PackageManagement.UI
             {
                 return Resources.Label_DeprecationReasons_Unknown;
             }
-        }
-
-        private static class PackageDeprecationReason
-        {
-            public const string CriticalBugs = nameof(CriticalBugs);
-            public const string Legacy = nameof(Legacy);
         }
 
         private DetailedPackageMetadata _packageMetadata;
