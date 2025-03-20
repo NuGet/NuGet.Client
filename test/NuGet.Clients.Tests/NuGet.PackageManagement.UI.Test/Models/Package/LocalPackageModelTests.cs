@@ -73,7 +73,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             Assert.Equal(package.IsVulnerable, isPackageVulnerable);
         }
 
-
         [Fact]
         public void Vulnerabilities_WithVulnerabilities_ReturnsCorrectValue()
         {
