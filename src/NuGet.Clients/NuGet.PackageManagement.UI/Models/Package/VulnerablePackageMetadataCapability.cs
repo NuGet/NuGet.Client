@@ -4,11 +4,9 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -24,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         public async override Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             var packageMetadata = await _packageMetadataRetrievalAdapter.GetPackageMetadataAsync(cancellationToken);
-            Vulnerabilities = packageMetadata.Vulnerabilities?.ToList() ?? new List<PackageVulnerabilityMetadataContextInfo>();
+            Vulnerabilities = packageMetadata.Vulnerabilities?.ToList() ?? [];
         }
     }
 }
