@@ -12,7 +12,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DeprecationPackageMetadataCapability : IDeprecationCapable
+    internal class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
         private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
 

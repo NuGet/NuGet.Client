@@ -30,42 +30,30 @@ namespace NuGet.PackageManagement.UI
         }
 
         public async Task<PackageSearchMetadataContextInfo> GetPackageMetadataAsync(
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(cancellationToken);
             return packageMetadata.Item1;
         }
 
         public async Task<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationInfoAsync(
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            var packageMetadata = await FetchMetadataAsync(_packageIdentity, _packageSources, _includePrerelease, cancellationToken);
+            var packageMetadata = await FetchMetadataAsync(cancellationToken);
             return packageMetadata.Item2;
         }
 
         private Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> FetchMetadataAsync(
-            PackageIdentity packageIdentity,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
             CancellationToken cancellationToken)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
             if (_packageMetadataTask == null)
             {
                 lock (_lock)
                 {
                     _packageMetadataTask ??= _nugetSearchService.GetPackageMetadataAsync(
                         _packageIdentity,
-                        packageSources,
-                        includePrerelease,
+                        _packageSources,
+                        _includePrerelease,
                         cancellationToken).AsTask();
                 }
             }

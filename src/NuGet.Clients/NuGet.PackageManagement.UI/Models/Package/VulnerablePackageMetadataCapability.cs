@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
+    internal class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {
         private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
 
