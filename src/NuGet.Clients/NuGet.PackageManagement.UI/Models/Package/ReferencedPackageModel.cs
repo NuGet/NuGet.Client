@@ -9,19 +9,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
-using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.Protocol.Model;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class ReferencedPackageModel : PackageModel, IVulnerableCapable
+    public class ReferencedPackageModel : PackageModel, IDeprecationCapable
     {
-        private readonly IVulnerableCapable _vulnerableCapability;
+        private readonly IDeprecationCapable _deprecationCapability;
 
         public ReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             string? title = null,
             string? description = null,
@@ -39,6 +39,7 @@ namespace NuGet.PackageManagement.UI.Models
             string? reportAbuseUrl = null)
             : base(identity,
                   embeddedResources,
+                  vulnerableCapability,
                   title,
                   description,
                   authors,
@@ -54,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Models
                   requireLicenseAcceptance)
         {
             ReportAbuseUrl = reportAbuseUrl;
-            _vulnerableCapability = vulnerableCapability;
+            _deprecationCapability = deprecationCapability;
             PackagePath = packagePath;
         }
 
@@ -62,15 +63,14 @@ namespace NuGet.PackageManagement.UI.Models
 
         public string? ReportAbuseUrl { get; }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+        public bool IsDeprecated => _deprecationCapability.IsDeprecated;
 
-        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+        public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
-        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
-
-        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            await base.PopulateDataAsync(cancellationToken);
+            await _deprecationCapability.PopulateDataAsync(cancellationToken);
         }
     }
 }

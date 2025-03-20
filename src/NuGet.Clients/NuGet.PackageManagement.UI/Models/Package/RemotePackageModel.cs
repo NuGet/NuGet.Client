@@ -9,19 +9,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
+using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IVulnerableCapable, IKnownOwnersCapable
+    public class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable
     {
-        private readonly IVulnerableCapable _vulnerableCapability;
+        private readonly IDeprecationCapable _deprecationCapability;
         private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
@@ -41,12 +42,12 @@ namespace NuGet.PackageManagement.UI
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
             Uri? readmeUrl = null)
-            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
+            : base(identity, embeddedResources, vulnerableCapability, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
             IsListed = isListed;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
-            _vulnerableCapability = vulnerableCapability;
+            _deprecationCapability = deprecationCapability;
             _knownOwnersCapability = knownOwnersCapability;
             ReadmeUrl = readmeUrl;
         }
@@ -57,15 +58,14 @@ namespace NuGet.PackageManagement.UI
         public Uri? ReadmeUrl { get; }
         public IReadOnlyList<KnownOwner>? KnownOwners => _knownOwnersCapability?.KnownOwners;
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+        public bool IsDeprecated => _deprecationCapability.IsDeprecated;
 
-        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+        public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
-        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
-
-        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            await base.PopulateDataAsync(cancellationToken);
+            await _deprecationCapability.PopulateDataAsync(cancellationToken);
         }
     }
 }
