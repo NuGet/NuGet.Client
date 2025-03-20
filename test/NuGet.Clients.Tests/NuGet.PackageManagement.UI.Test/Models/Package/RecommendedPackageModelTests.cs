@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
     public class RecommendedPackageModelTests
     {
         [Fact]
-        public void Constructor_InitializesRecommenderVersion()
+        public void Constructor_InitializesRecommenderVersion_ReturnsExpected()
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
