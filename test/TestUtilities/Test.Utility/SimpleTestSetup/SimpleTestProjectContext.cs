@@ -169,6 +169,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
+                    case ProjectStyle.PackagesConfig:
                         if (Properties.ContainsKey("NuGetLockFilePath"))
                         {
                             return Properties["NuGetLockFilePath"];
@@ -412,6 +413,16 @@ namespace NuGet.Test.Utility
             NuGetFramework framework)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.Unknown, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            return context;
+        }
+
+        public static SimpleTestProjectContext CreatePackagesConfigProject(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework)
+        {
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackagesConfig, solutionRoot);
             context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
             return context;
         }
