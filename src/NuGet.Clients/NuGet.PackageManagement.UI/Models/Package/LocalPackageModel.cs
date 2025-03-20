@@ -28,14 +28,15 @@ namespace NuGet.PackageManagement.UI
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
-            IReadOnlyList<string>? ownersList = null,
+            string? owners = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false)
-            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
+            bool requireLicenseAcceptance = false,
+            Uri? iconUrl = null)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, owners, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
             _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             PackagePath = packagePath;

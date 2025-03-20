@@ -26,13 +26,14 @@ namespace NuGet.PackageManagement.UI
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
-            IReadOnlyList<string>? ownersList = null,
+            string? owners = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false)
+            bool requireLicenseAcceptance = false,
+            Uri? iconUrl = null)
         {
             _embeddedResources = embeddedResources ?? throw new ArgumentNullException(nameof(embeddedResources));
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
@@ -42,12 +43,13 @@ namespace NuGet.PackageManagement.UI
             ProjectUrl = projectUrl;
             Tags = tags;
             Copyright = copyright;
-            OwnersList = ownersList;
+            Owners = owners;
             Summary = summary;
             PublishedDate = publishedDate;
             LicenseMetadata = licenseMetadata;
             LicenseUrl = licenseUrl;
             RequireLicenseAcceptance = requireLicenseAcceptance;
+            IconUrl = iconUrl;
 
             if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
             {
@@ -67,7 +69,7 @@ namespace NuGet.PackageManagement.UI
 
         public string? Authors { get; }
 
-        public IReadOnlyList<string>? OwnersList { get; }
+        public string? Owners { get; }
 
         public IReadOnlyCollection<PackageDependencySetMetadata>? DependencySets { get; }
 
@@ -86,6 +88,8 @@ namespace NuGet.PackageManagement.UI
         public bool RequireLicenseAcceptance { get; }
 
         public DateTimeOffset? PublishedDate { get; }
+
+        public Uri? IconUrl { get; }
 
         public Uri? ReadmeUri => _embeddedResources.ReadmeUri;
 

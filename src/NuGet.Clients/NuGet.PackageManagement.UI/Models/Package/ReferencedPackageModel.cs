@@ -32,14 +32,15 @@ namespace NuGet.PackageManagement.UI.Models
             Uri? projectUrl = null,
             string[]? tags = null,
             string? copyright = null,
-            IReadOnlyList<string>? ownersList = null,
+            string? owners = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false,
-            string? reportAbuseUrl = null)
+            string? reportAbuseUrl = null,
+            Uri? iconUrl = null)
             : base(identity,
                   embeddedResources,
                   title,
@@ -48,13 +49,14 @@ namespace NuGet.PackageManagement.UI.Models
                   projectUrl,
                   tags,
                   copyright,
-                  ownersList,
+                  owners,
                   packageDependencyGroups,
                   summary,
                   publishedDate,
                   licenseMetadata,
                   licenseUrl,
-                  requireLicenseAcceptance)
+                  requireLicenseAcceptance,
+                  iconUrl)
         {
             ReportAbuseUrl = reportAbuseUrl;
             _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));

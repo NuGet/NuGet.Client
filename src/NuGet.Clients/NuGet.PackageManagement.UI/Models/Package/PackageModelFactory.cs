@@ -1,0 +1,147 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using NuGet.PackageManagement.UI.Models;
+using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
+
+namespace NuGet.PackageManagement.UI
+{
+    public class PackageModelFactory
+    {
+        private readonly INuGetSearchService _searchService;
+        private readonly INuGetPackageFileService _packageFileService;
+        private readonly IPackageVulnerabilityService _packageVulnerabilityService;
+        private readonly bool _includePrerelease;
+        private IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+
+        public PackageModelFactory(INuGetSearchService searchService, INuGetPackageFileService packageFileService, IPackageVulnerabilityService packageVulnerabilityService, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
+        {
+            _searchService = searchService;
+            _packageFileService = packageFileService;
+            _packageVulnerabilityService = packageVulnerabilityService;
+            _includePrerelease = includePrerelease;
+            _packageSources = packageSources;
+        }
+
+        public PackageModel Create(PackageSearchMetadataContextInfo metadata, ContractItemFilter itemFilter)
+        {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
+            PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+
+            if (metadata.PackagePath != null)
+            {
+                if (metadata.TransitiveOrigins != null)
+                {
+                    VulnerableDatabaseCapability vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
+
+                    return new TransitivelyReferencedPackageModel(
+                        metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                        metadata.PackagePath,
+                        vulnerableDatabaseCapability,
+                        embeddedResources,
+                        metadata.TransitiveOrigins,
+                        metadata.Title,
+                        metadata.Description,
+                        metadata.Authors,
+                        metadata.ProjectUrl,
+                        metadata.Tags?.Split(','),
+                        null, /*metadata.Copyright*/
+                        metadata.Owners,
+                        metadata.DependencySets,
+                        metadata.Summary,
+                        metadata.Published,
+                        metadata.LicenseMetadata,
+                        metadata.LicenseUrl,
+                        metadata.RequireLicenseAcceptance,
+                        metadata.ReportAbuseUrl?.ToString(),
+                        metadata.IconUrl);
+                }
+
+                VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+                if (!itemFilter.Equals(ContractItemFilter.Installed))
+                {
+                    return new LocalPackageModel(
+                        metadata.Identity!,
+                        metadata.PackagePath,
+                        vulnerableCapability,
+                        embeddedResources,
+                        metadata.Title,
+                        metadata.Description,
+                        metadata.Authors,
+                        metadata.ProjectUrl,
+                        metadata.Tags?.Split(','),
+                        null, //metadata.Copyright,
+                        metadata.Owners,
+                        metadata.DependencySets,
+                        metadata.Summary,
+                        metadata.Published,
+                        metadata.LicenseMetadata,
+                        metadata.LicenseUrl,
+                        metadata.RequireLicenseAcceptance,
+                        metadata.IconUrl);
+                }
+
+                // installed and no transitive origins
+                return new ReferencedPackageModel(
+                    metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                    metadata.PackagePath,
+                    vulnerableCapability,
+                    embeddedResources,
+                    metadata.Title,
+                    metadata.Description,
+                    metadata.Authors,
+                    metadata.ProjectUrl,
+                    metadata.Tags?.Split(','),
+                    null, /*metadata.Copyright*/
+                    metadata.Owners,
+                    metadata.DependencySets,
+                    metadata.Summary,
+                    metadata.Published,
+                    metadata.LicenseMetadata,
+                    metadata.LicenseUrl,
+                    metadata.RequireLicenseAcceptance,
+                    metadata.ReportAbuseUrl?.ToString(),
+                    metadata.IconUrl);
+            }
+            else
+            {
+                VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+
+                return new RemotePackageModel(
+                    metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                    vulnerableCapability,
+                    embeddedResources,
+                    metadata.Title,
+                    metadata.Description,
+                    metadata.Authors,
+                    metadata.ProjectUrl,
+                    metadata.Tags?.Split(','),
+                    null, /*metadata.Copyright*/
+                    metadata.Owners,
+                    metadata.DependencySets,
+                    metadata.Summary,
+                    metadata.Published,
+                    metadata.LicenseMetadata,
+                    metadata.LicenseUrl,
+                    metadata.RequireLicenseAcceptance,
+                    metadata.IsListed,
+                    metadata.PackageDetailsUrl,
+                    metadata.DownloadCount,
+                    metadata.ReadmeUrl,
+                    metadata.IconUrl);
+            }
+        }
+    }
+}

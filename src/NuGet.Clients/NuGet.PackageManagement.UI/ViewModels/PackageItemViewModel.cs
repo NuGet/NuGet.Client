@@ -38,11 +38,15 @@ namespace NuGet.PackageManagement.UI
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
 
-        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default)
+        private readonly PackageModel _packageModel;
+
+        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default, PackageModel packageModel = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
+
+            _packageModel = packageModel;
         }
 
         // same URIs can reuse the bitmapImage that we've already used.
@@ -56,9 +60,9 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Id { get; set; }
+        public string Id => _packageModel.Id;
 
-        public NuGetVersion Version { get; set; }
+        public NuGetVersion Version => _packageModel.Version;
 
         public VersionRange AllowedVersions { get; set; }
 
@@ -70,20 +74,13 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; internal set; }
 
-        public string Owner { get; internal set; }
+        public string Owner => _packageModel.Owners;
 
-        private string _author;
         public string Author
         {
             get
             {
-                return _author;
-            }
-            set
-            {
-                _author = value;
-                OnPropertyChanged(nameof(Author));
-                OnPropertyChanged(nameof(ByAuthor));
+                return _packageModel.Authors;
             }
         }
 
@@ -123,7 +120,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return !string.IsNullOrWhiteSpace(_author) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
+                return !string.IsNullOrWhiteSpace(_packageModel.Authors) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _packageModel.Authors) : null;
             }
         }
 
@@ -134,7 +131,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return ByOwner ?? ByAuthor;
+                return ByOwner ?? _packageModel.Authors;
             }
         }
 
@@ -329,22 +326,15 @@ namespace NuGet.PackageManagement.UI
             return v1.Equals(v2, VersionComparison.Default);
         }
 
-        private long? _downloadCount;
-
         public long? DownloadCount
         {
             get
             {
-                return _downloadCount;
-            }
-            set
-            {
-                _downloadCount = value;
-                OnPropertyChanged(nameof(DownloadCount));
+                return (_packageModel as RemotePackageModel)?.DownloadCount ?? 0;
             }
         }
 
-        public string Summary { get; set; }
+        public string Summary => _packageModel.Summary;
 
         private PackageStatus _status;
         public PackageStatus Status
@@ -471,7 +461,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageVulnerable
         {
-            get => VulnerabilityMaxSeverity > -1;
+            get => (_packageModel as IVulnerableCapable).IsVulnerable;
         }
 
         private int _vulnerabilityMaxSeverity = -1;
@@ -509,16 +499,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private Uri _iconUrl;
-        public Uri IconUrl
-        {
-            get { return _iconUrl; }
-            set
-            {
-                _iconUrl = value;
-                OnPropertyChanged(nameof(IconUrl));
-            }
-        }
+        public Uri IconUrl => _packageModel.IconUrl;
 
         private IconBitmapStatus _bitmapStatus;
 
@@ -647,7 +628,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable).Vulnerabilities;
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -711,7 +692,7 @@ namespace NuGet.PackageManagement.UI
 
             Assumes.NotNull(IconUrl);
 
-            using (Stream stream = await PackageFileService.GetPackageIconAsync(new PackageIdentity(Id, Version), CancellationToken.None))
+            using (Stream stream = await _packageModel.GetIconAsync(CancellationToken.None))
             {
                 if (stream != null)
                 {
@@ -1005,8 +986,7 @@ namespace NuGet.PackageManagement.UI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string PackagePath { get; set; }
-        public INuGetPackageFileService PackageFileService { get; internal set; }
+        public string PackagePath => (_packageModel as LocalPackageModel)?.PackagePath;
 
         public override string ToString()
         {
