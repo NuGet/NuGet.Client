@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -21,216 +22,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreProjectJsonTest
     {
         [Fact]
-        public async Task RestoreProjectJson_MinClientVersionFailAsync()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = pathContext.PackageSource;
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-
-                var packageContext = new SimpleTestPackageContext()
-                {
-                    Id = "packageA",
-                    Version = "1.0.0",
-                    MinClientVersion = "9.9.9"
-                };
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageContext);
-
-                var projectJson = @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.0.0""
-                                                    },
-                                                    ""frameworks"": {
-                                                            ""uap10.0"": { }
-                                                        }
-                                                 }";
-
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
-
-                var args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath,
-                    projectPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Errors);
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_RestoreFolder_VerifyFailure()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "test1");
-                var projectDir2 = Path.Combine(workingPath, "test2");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(projectDir2);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
-                Util.CreateFile(projectDir2, "project.json",
-                                    @"{
-                                        ""version"": ""1.0.0-*"",
-                                        ""dependencies"": {
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }");
-
-                var args = new string[] {
-                    "restore",
-                    workingPath,
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
-
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
-
-                Assert.False(test1Lock.Exists);
-                Assert.False(test2Lock.Exists);
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_RestoreForSingleProject()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "test1");
-                var projectDir2 = Path.Combine(workingPath, "test2");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(projectDir2);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
-                var project1Path = Path.Combine(projectDir1, "test1.csproj");
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
-
-                Util.CreateFile(projectDir2, "project.json",
-                                    @"{
-                                        ""version"": ""1.0.0-*"",
-                                        ""dependencies"": {
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }");
-
-                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
-
-                var slnPath = Path.Combine(workingPath, "xyz.sln");
-
-                Util.CreateFile(workingPath, "xyz.sln",
-                           @"
-                        Microsoft Visual Studio Solution File, Format Version 12.00
-                        # Visual Studio 14
-                        VisualStudioVersion = 14.0.23107.0
-                        MinimumVisualStudioVersion = 10.0.40219.1
-                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""test2\test2.csproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Global
-                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
-                                Debug|Any CPU = Debug|Any CPU
-                                Release|Any CPU = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                            EndGlobalSection
-                            GlobalSection(SolutionProperties) = preSolution
-                                HideSolutionNode = FALSE
-                            EndGlobalSection
-                        EndGlobal
-                        ");
-
-                var args = new string[] {
-                    "restore",
-                    project1Path,
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
-
-                Assert.True(test1Lock.Exists);
-                Assert.False(test2Lock.Exists);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreProjectJson_RestoreWithFallbackFolderAsync()
+        public async Task Restore_RestoreWithFallbackFolderAsync()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -265,18 +57,8 @@ namespace NuGet.CommandLine.Test
 </configuration>";
 
                 File.WriteAllText(Path.Combine(workingPath, "NuGet.Config"), config);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
                 var project1Path = Path.Combine(projectDir1, "test1.csproj");
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetUAPCSProjXML("test1"));
 
                 Util.CreateFile(projectDir2, "project.json",
                                     @"{
@@ -309,7 +91,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
 
                 Assert.True(test1Lock.Exists);
                 Assert.Equal(0, Directory.GetDirectories(globalPath).Length);
@@ -318,7 +100,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreFromSlnWithCsproj()
+        public void Restore_RestoreFromSlnWithCsproj()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -331,16 +113,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetUAPCSProjXML("test1"));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -382,7 +155,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -392,53 +165,29 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreFromSlnWithCsproj_InconsitentCaseForProjectRef()
+        public void Restore_RestoreFromSlnWithCsproj_InconsistentCaseForProjectRef()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "FolderA", "test1");
-                var projectDir2 = Path.Combine(workingPath, "FolderB", "test2");
-                var projectDir3 = Path.Combine(workingPath, "FolderB", "test3");
-                var nugetexe = Util.GetNuGetExePath();
+                var folderA = Path.Combine(workingPath, "FolderA");
+                var folderB = Path.Combine(workingPath, "FolderB");
+                var projectDir1 = Path.Combine(folderA, "test1");
+                var projectDir2 = Path.Combine(folderB, "test2");
+                var projectDir3 = Path.Combine(folderB, "test3");
 
-                Directory.CreateDirectory(Path.Combine(workingPath, "FolderA"));
-                Directory.CreateDirectory(Path.Combine(workingPath, "FolderB"));
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(projectDir2);
-                Directory.CreateDirectory(projectDir3);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""net45"": { }
-                                                            }
-                                                    }");
-                Util.CreateFile(projectDir2, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""net45"": { }
-                                                            }
-                                                    }");
-                Util.CreateFile(projectDir3, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""net45"": { }
-                                                            }
-                                                    }");
+                var test1 = SimpleTestProjectContext.CreateLegacyPackageReference("test1", folderA, FrameworkConstants.CommonFrameworks.Net472);
+                var test2 = SimpleTestProjectContext.CreateLegacyPackageReference("test2", folderB, FrameworkConstants.CommonFrameworks.Net472);
+                var test3 = SimpleTestProjectContext.CreateLegacyPackageReference("test3", folderB, FrameworkConstants.CommonFrameworks.Net472);
 
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
-                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
-                Util.CreateFile(projectDir3, "test3.csproj", Util.GetCSProjXML("test3"));
+                var solution = new SimpleTestSolutionContext(workingPath, test1, test2, test3);
+                solution.Create();
+                var slnPath = solution.SolutionPath;
+
                 using (var stream = new FileStream(Path.Combine(projectDir2, "test2.csproj"), FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
@@ -482,40 +231,6 @@ namespace NuGet.CommandLine.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-
-                var slnPath = Path.Combine(workingPath, "xyz.sln");
-
-                Util.CreateFile(workingPath, "xyz.sln",
-                           @"
-                        Microsoft Visual Studio Solution File, Format Version 12.00
-                        # Visual Studio 14
-                        VisualStudioVersion = 14.0.23107.0
-                        MinimumVisualStudioVersion = 10.0.40219.1
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""FolderA\test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""FolderB\test2\test2.csproj"", ""{CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}""
-                        EndProject
-                        Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test3"", ""FolderB\test3\test3.csproj"", ""{D39F3B98-4518-4204-858F-3B7BF88D6DC1}""
-                        EndProject
-                        Global
-                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
-                                Debug|Any CPU = Debug|Any CPU
-                                Release|Any CPU = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {CBDF173F-6E99-44A7-937F-E4A87BF3A3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {D39F3B98-4518-4204-858F-3B7BF88D6DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                            EndGlobalSection
-                            GlobalSection(SolutionProperties) = preSolution
-                                HideSolutionNode = FALSE
-                            EndGlobalSection
-                        EndGlobal
-                        ");
-
                 var args = new string[] {
                     "restore",
                     "-Source",
@@ -527,17 +242,16 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = CommandRunner.Run(
-                    nugetexe,
+                    Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args));
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.True(test1Lock.Exists);
-
             }
         }
 
@@ -550,7 +264,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("-1", 1, 2 * 60 * 1000)]
         [InlineData("10", 1, 10000)]
         [InlineData("10", 2, 10000)]
-        public void RestoreProjectJson_P2PTimeouts(string timeout, int projectCount, int expectedTimeOut)
+        public void Restore_P2PTimeouts(string timeout, int projectCount, int expectedTimeOut)
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -568,17 +282,7 @@ namespace NuGet.CommandLine.Test
                     var projectDir = getProjectDir(i);
 
                     Directory.CreateDirectory(projectDir);
-
-                    Util.CreateFile(projectDir, "project.json",
-                                                    @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
-                    Util.CreateFile(projectDir, $"test{i}.csproj", Util.GetCSProjXML($"test{i}"));
+                    Util.CreateFile(projectDir, $"test{i}.csproj", Util.GetUAPCSProjXML($"test{i}"));
                 }
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
@@ -662,7 +366,7 @@ namespace NuGet.CommandLine.Test
 
                 for (var i = 1; i < projectCount + 1; i++)
                 {
-                    var test1Lock = new FileInfo(Path.Combine(getProjectDir(i), "project.lock.json"));
+                    var test1Lock = new FileInfo(Path.Combine(getProjectDir(i), "obj", "project.assets.json"));
 
                     Assert.True(test1Lock.Exists);
                 }
@@ -670,7 +374,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_RestoreFromSlnWithReferenceOutputAssemblyFalse()
+        public async Task Restore_RestoreFromSlnWithReferenceOutputAssemblyFalse()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -686,16 +390,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
-
-                var test1Xml = Util.GetCSProjXML("test1");
+                var test1Xml = Util.GetUAPCSProjXML("test1");
                 var doc = XDocument.Parse(test1Xml);
                 var projectNode = doc.Root;
 
@@ -711,19 +406,7 @@ namespace NuGet.CommandLine.Test
                 var xml = doc.ToString().Replace("xmlns=\"\"", "");
 
                 Util.CreateFile(projectDir1, "test1.csproj", xml);
-
-                Util.CreateFile(projectDir2, "project.json",
-                                    @"{
-                                        ""version"": ""1.0.0-*"",
-                                        ""dependencies"": {
-                                            ""packageA"": ""1.0.0""
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }");
-
-                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
+                Util.CreateFile(projectDir2, "test2.csproj", Util.GetUAPCSProjXML("test2", [("packageA", "1.0.0")]));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -776,8 +459,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "obj", LockFileFormat.AssetsFileName));
 
                 var format = new LockFileFormat();
                 var lockFile1 = format.Read(test1Lock.FullName);
@@ -801,7 +484,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreProjectFileNotFound()
+        public void Restore_RestoreProjectFileNotFound()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -840,146 +523,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreProjectJsonFileNotFound()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                var projectJsonPath = Path.Combine(workingPath, "project.json");
-
-                var args = new string[] {
-                "restore",
-                projectJsonPath,
-                "-Source",
-                repositoryPath,
-                "-solutionDir",
-                workingPath
-            };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
-
-                // Assert
-                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.False(test1Lock.Exists);
-                Assert.Contains("input file does not exist", r.Errors, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_RestoreCSProj()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "test1");
-                var project1Path = Path.Combine(projectDir1, "test1.csproj");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                            ""dependencies"": {
-                                            },
-                                            ""frameworks"": {
-                                                        ""uap10.0"": { }
-                                                    }
-                                            }");
-
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
-
-                var args = new string[] {
-                    "restore",
-                    project1Path,
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.True(test1Lock.Exists);
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_RestoreUnknownProj()
-        {
-            // Arrange
-            using (var workingPath = TestDirectory.Create())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir1 = Path.Combine(workingPath, "test1");
-                var project1Path = Path.Combine(projectDir1, "test1.abcproj");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                            ""dependencies"": {
-                                            },
-                                            ""frameworks"": {
-                                                        ""uap10.0"": { }
-                                                    }
-                                            }");
-
-                Util.CreateFile(projectDir1, "test1.abcproj", Util.GetCSProjXML("test1"));
-
-                var args = new string[] {
-                    "restore",
-                    project1Path,
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.True(test1Lock.Exists);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreProjectJson_RestoreFromSlnWithUnknownProjAndCsproj()
+        public async Task Restore_RestoreFromSlnWithUnknownProjAndCsproj()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -998,31 +542,8 @@ namespace NuGet.CommandLine.Test
                 var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 packageA.AddFile("lib/uap/a.dll", "a");
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
-
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                            ""dependencies"": {
-                                            ""packageA"": ""1.1.0-beta-*""
-                                            },
-                                            ""frameworks"": {
-                                                        ""uap10.0"": { }
-                                                    }
-                                            }");
-
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
-
-                Util.CreateFile(projectDir2, "project.json",
-                                    @"{
-                                        ""version"": ""1.0.0-*"",
-                                        ""dependencies"": {
-                                        ""packageA"": ""1.1.0-beta-*""
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }");
-
-                Util.CreateFile(projectDir2, "test2.abcproj", Util.GetCSProjXML("test2"));
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetUAPCSProjXML("test1", [("packageA", "1.1.0-beta-*")]));
+                Util.CreateFile(projectDir2, "test2.abcproj", Util.GetUAPCSProjXML("test2", [("packageA", "1.1.0-beta-*")]));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -1071,8 +592,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "obj", LockFileFormat.AssetsFileName));
 
                 Assert.True(test1Lock.Exists);
                 Assert.True(test2Lock.Exists);
@@ -1081,7 +602,7 @@ namespace NuGet.CommandLine.Test
 
         // Verify that the settings for the solution are used for all projects
         [Fact]
-        public async Task RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettingsAsync()
+        public async Task Restore_RestoreFromSlnUsesNuGetFolderSettingsAsync()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -1091,16 +612,6 @@ namespace NuGet.CommandLine.Test
                 var solutionDir = Path.Combine(workingPath, "a", "b", "solution");
                 var nugetDir = Path.Combine(solutionDir, ".nuget");
 
-                // Project 1 is under the solution
-                var projectDir1 = Path.Combine(solutionDir, "test1");
-
-                // Project 2 is above
-                var projectDir2 = Path.Combine(workingPath, "test2");
-
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(projectDir1);
-                Directory.CreateDirectory(projectDir2);
                 Directory.CreateDirectory(nugetDir);
 
                 // Write the config to the .nuget folder, this contains the source needed for restore
@@ -1109,79 +620,38 @@ namespace NuGet.CommandLine.Test
                 // Move the NuGet.Config file down into the .nuget folder
                 File.Move(Path.Combine(workingPath, "NuGet.Config"), Path.Combine(nugetDir, "NuGet.Config"));
 
-                Util.CreateFile(projectDir1, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                        ""packageA"": ""1.0.0""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                    }");
+                var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
+                var packageB = new SimpleTestPackageContext("packageB", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
-                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+                // Project 1 is under the solution
+                var projectDir1 = Path.Combine(solutionDir, "test1");
+                var test1 = SimpleTestProjectContext.CreateLegacyPackageReference("test1", solutionDir, FrameworkConstants.CommonFrameworks.Net472);
+                test1.AddPackageToAllFrameworks(packageA);
 
-                Util.CreateFile(projectDir2, "project.json",
-                                    @"{
-                                        ""version"": ""1.0.0-*"",
-                                        ""dependencies"": {
-                                            ""packageB"": ""1.0.0""
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }");
-
-                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
+                // Project 2 is above
+                var projectDir2 = Path.Combine(workingPath, "test2");
+                var test2 = SimpleTestProjectContext.CreateLegacyPackageReference("test2", workingPath, FrameworkConstants.CommonFrameworks.Net472);
+                test2.AddPackageToAllFrameworks(packageB);
 
                 // Create bad configs in the project directories, this will cause
                 // the restore to fail if they are used (they shouldn't be used)
                 Util.CreateFile(projectDir1, "NuGet.Config", "<badXml");
                 Util.CreateFile(projectDir2, "NuGet.Config", "<badXml");
 
-                var slnPath = Path.Combine(solutionDir, "xyz.sln");
-
-                Util.CreateFile(solutionDir, "xyz.sln",
-                           @"
-                        Microsoft Visual Studio Solution File, Format Version 12.00
-                        # Visual Studio 14
-                        VisualStudioVersion = 14.0.23107.0
-                        MinimumVisualStudioVersion = 10.0.40219.1
-                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""$TEST1DIR$\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""$TEST2DIR$\test2.csproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Global
-                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
-                                Debug|Any CPU = Debug|Any CPU
-                                Release|Any CPU = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                            EndGlobalSection
-                            GlobalSection(SolutionProperties) = preSolution
-                                HideSolutionNode = FALSE
-                            EndGlobalSection
-                        EndGlobal
-                        ".Replace("$TEST1DIR$", projectDir1).Replace("$TEST2DIR$", projectDir2));
+                var solution = new SimpleTestSolutionContext(solutionDir, test1, test2);
+                solution.Create();
 
                 var args = new string[] {
                     "restore",
                     "-solutionDir",
                     workingPath,
-                    slnPath
+                    solution.SolutionPath
                 };
-
-                // Create the packages needed by the projects
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repositoryPath, "packageA", "1.0.0");
-                await SimpleTestPackageUtility.CreateFullPackageAsync(repositoryPath, "packageB", "1.0.0");
 
                 // Act
                 var r = CommandRunner.Run(
-                    nugetexe,
+                    Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args));
 
@@ -1190,8 +660,8 @@ namespace NuGet.CommandLine.Test
                 // the solution level nuget.config.
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "obj", LockFileFormat.AssetsFileName));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "obj", LockFileFormat.AssetsFileName));
 
                 Assert.True(test1Lock.Exists);
                 Assert.True(test2Lock.Exists);
@@ -1199,7 +669,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_FloatReleaseLabelHighestPrelease()
+        public void Restore_FloatReleaseLabelHighestPrelease()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1213,16 +683,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
-                var projectJson = @"{
-                                        ""dependencies"": {
-                                        ""packageA"": ""1.0.0-*""
-                                        },
-                                        ""frameworks"": {
-                                                ""uap10.0"": { }
-                                            }
-                                        }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0-*")]);
 
                 var args = new string[] {
                     "restore",
@@ -1240,7 +702,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1254,7 +716,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_FloatReleaseLabelTakesStable()
+        public void Restore_FloatReleaseLabelTakesStable()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1269,16 +731,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
-                var projectJson = @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.0.0-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                            ""uap10.0"": { }
-                                                        }
-                                                  }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0-*")]);
 
                 var args = new string[] {
                     "restore",
@@ -1295,7 +749,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1309,7 +763,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_FloatIncludesStableOnly()
+        public void Restore_FloatIncludesStableOnly()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1327,16 +781,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageA", "1.0.15-beta", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.9-beta", repositoryPath);
 
-                var projectJson = @"{
-                                        ""dependencies"": {
-                                        ""packageA"": ""1.0.*""
-                                        },
-                                        ""frameworks"": {
-                                                ""uap10.0"": { }
-                                            }
-                                        }";
-
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.*")]);
 
                 var args = new string[] {
                     "restore",
@@ -1353,7 +798,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1367,7 +812,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreFiltersToStablePackages()
+        public void Restore_RestoreFiltersToStablePackages()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1381,16 +826,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "3.0.0", repositoryPath);
-                var projectJson = @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.0.0""
-                                                    },
-                                                    ""frameworks"": {
-                                                            ""uap10.0"": { }
-                                                        }
-                                                 }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0")]);
 
                 var args = new string[] {
                     "restore",
@@ -1407,7 +844,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1422,7 +859,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreBumpsFromStableToPrereleaseWhenNeeded()
+        public void Restore_RestoreBumpsFromStableToPrereleaseWhenNeeded()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1437,17 +874,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "2.0.0-beta");
                 Util.CreateTestPackage("packageC", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageC", "2.0.0-beta", repositoryPath);
-                var projectJson = @"{
-                                        ""dependencies"": {
-                                        ""packageA"": ""1.0.0"",
-                                        ""packageB"": ""1.0.0-*""
-                                        },
-                                        ""frameworks"": {
-                                                ""uap10.0"": { }
-                                            }
-                                        }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0"), ("packageB", "1.0.0-*")]);
 
                 var args = new string[] {
                     "restore",
@@ -1464,7 +892,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1478,7 +906,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreDowngradesStableDependency()
+        public void Restore_RestoreDowngradesStableDependency()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1493,17 +921,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageB", "1.0.0", repositoryPath, "win8", "packageC", "[2.1.0]");
                 Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
                 Util.CreateTestPackage("packageC", "2.1.0", repositoryPath);
-                var projectJson = @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.0.0"",
-                                                    ""packageB"": ""1.0.0""
-                                                    },
-                                                    ""frameworks"": {
-                                                            ""uap10.0"": { }
-                                                        }
-                                                }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0"), ("packageB", "1.0.0")]);
 
                 var args = new string[] {
                     "restore",
@@ -1520,7 +939,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1533,8 +952,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/1330")]
-        public void RestoreProjectJson_RestoreDowngradesFromStableToPrereleaseWhenNeeded()
+        [Fact]
+        public void Restore_RestoreDowngradesFromStableToPrereleaseWhenNeeded()
         {
             // Arrange
             using (var workingPath = TestDirectory.Create())
@@ -1549,17 +968,8 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
                 Util.CreateTestPackage("packageC", "2.0.0-beta", repositoryPath);
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                var projectJson = @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.0.0"",
-                                                    ""packageB"": ""1.0.0-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                            ""uap10.0"": { }
-                                                        }
-                                                  }";
 
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.0.0"), ("packageB", "1.0.0-*")]);
 
                 var args = new string[] {
                         "restore",
@@ -1576,7 +986,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args));
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
@@ -1590,178 +1000,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_SolutionFileWithAllProjectsInOneFolder()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                string workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var projectDir = Path.Combine(workingPath, "abc");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(projectDir);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-
-                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
-                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-                packageA.AddFile("build/uap/packageA.targets", targetContent);
-                packageA.AddFile("lib/uap/a.dll", "a");
-                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
-
-                Util.CreateFile(projectDir, "testA.project.json",
-                                                @"{
-                                            ""dependencies"": {
-                                            ""packageA"": ""1.1.0-beta-*""
-                                            },
-                                            ""frameworks"": {
-                                                        ""uap10.0"": { }
-                                                    }
-                                            }");
-
-                Util.CreateFile(projectDir, "testB.project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.1.0-beta-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                 }");
-
-                Util.CreateFile(projectDir, "packages.testC.config",
-                          @"<packages>
-                                <package id=""packageA"" version=""1.1.0-beta-01"" targetFramework=""net45"" />
-                            </packages>");
-
-                Util.CreateFile(projectDir, "testA.csproj", Util.GetCSProjXML("testA")); // testA.project.json
-                Util.CreateFile(projectDir, "testB.csproj", Util.GetCSProjXML("testB")); // testB.project.json
-                Util.CreateFile(projectDir, "testC.csproj", Util.GetCSProjXML("testC")); // packages.testC.config
-                Util.CreateFile(projectDir, "testD.csproj", Util.GetCSProjXML("testD")); // Non-nuget
-
-                var slnPath = Path.Combine(workingPath, "xyz.sln");
-
-                Util.CreateFile(workingPath, "xyz.sln",
-                        @"
-                        Microsoft Visual Studio Solution File, Format Version 12.00
-                        # Visual Studio 14
-                        VisualStudioVersion = 14.0.23107.0
-                        MinimumVisualStudioVersion = 10.0.40219.1
-                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""testA"", ""abc\testA.csproj"", ""{6A6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{ABE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""testB"", ""abc\testB.csproj"", ""{6A6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{ACE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""testC"", ""abc\testC.csproj"", ""{6A6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Project(""{ADE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""testD"", ""abc\testD.csproj"", ""{6A6279C1-B5EE-4C6B-9FA3-A794CE195136}""
-                        EndProject
-                        Global
-                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
-                                Debug|Any CPU = Debug|Any CPU
-                                Release|Any CPU = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
-                                {6A6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                                {6A6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                                {6A6279C1-B5EE-4C6B-9FA3-A794CE195136}.Release|Any CPU.ActiveCfg = Release|Any CPU
-                                {6A6279C1-B5EE-4C6B-9FA3-A794CE195136}.Release|Any CPU.Build.0 = Release|Any CPU
-                            EndGlobalSection
-                            GlobalSection(SolutionProperties) = preSolution
-                                HideSolutionNode = FALSE
-                            EndGlobalSection
-                        EndGlobal
-                        ");
-
-                var args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath,
-                    slnPath
-                };
-
-                var targetFileA = Path.Combine(projectDir, "testA.nuget.targets");
-                var targetFileB = Path.Combine(projectDir, "testB.nuget.targets");
-                var lockFileA = Path.Combine(projectDir, "testA.project.lock.json");
-                var lockFileB = Path.Combine(projectDir, "testB.project.lock.json");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.True(File.Exists(targetFileA));
-                Assert.True(File.Exists(targetFileB));
-                Assert.True(File.Exists(lockFileA));
-                Assert.True(File.Exists(lockFileB));
-                Assert.True(File.Exists(Path.Combine(workingPath, "globalPackages", "packageA", "1.1.0-beta-01", "packageA.1.1.0-beta-01.nupkg")));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreProjectJson_GenerateFilesWithProjectNameFromCSProj()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                string workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
-                packageA.AddFile("build/uap/packageA.targets", targetContent);
-                packageA.AddFile("lib/uap/a.dll", "a");
-                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
-
-                Util.CreateFile(workingPath, "test.project.json",
-                                                @"{
-                                                        ""dependencies"": {
-                                                        ""packageA"": ""1.1.0-beta-*""
-                                                        },
-                                                        ""frameworks"": {
-                                                                    ""uap10.0"": { }
-                                                        }
-                                                   }");
-
-                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
-
-                var csprojPath = Path.Combine(workingPath, "test.csproj");
-
-                var args = new string[] {
-                "restore",
-                "-Source",
-                repositoryPath,
-                "-solutionDir",
-                workingPath,
-                csprojPath
-            };
-
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
-                var lockFilePath = Path.Combine(workingPath, $"test.project.lock.json");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.True(File.Exists(lockFilePath));
-                Assert.True(File.Exists(targetFilePath));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsFileFromSln()
+        public async Task Restore_GenerateTargetsFileFromSln()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1782,17 +1021,7 @@ namespace NuGet.CommandLine.Test
                 packageA.AddFile("lib/uap/a.dll", "a");
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
-                Util.CreateFile(projectDir, "project.json",
-                                                @"{
-                                            ""dependencies"": {
-                                            ""packageA"": ""1.1.0-beta-*""
-                                            },
-                                            ""frameworks"": {
-                                                        ""uap10.0"": { }
-                                                    }
-                                            }");
-
-                Util.CreateFile(projectDir, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(projectDir, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "1.1.0-beta-*")]));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -1832,7 +1061,7 @@ namespace NuGet.CommandLine.Test
                     slnPath
                 };
 
-                var targetFilePath = Path.Combine(projectDir, "test.nuget.targets");
+                var targetFilePath = Path.Combine(projectDir, "obj", "test.csproj.nuget.g.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1850,7 +1079,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsFileFromCSProj()
+        public async Task Restore_GenerateTargetsFileFromCSProj()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1872,19 +1101,7 @@ namespace NuGet.CommandLine.Test
                 packageB.AddFile("lib/uap/b.dll", "b");
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
-
-                Util.CreateFile(workingPath, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.1.0-beta-*"",
-                                                    ""packageB"": ""2.2.0-beta-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                }");
-
-                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(workingPath, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "1.1.0-beta-*"), ("packageB", "2.2.0-beta-*")]));
 
                 var csprojPath = Path.Combine(workingPath, "test.csproj");
 
@@ -1897,7 +1114,7 @@ namespace NuGet.CommandLine.Test
                     csprojPath
                 };
 
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "obj", $"{Path.GetFileName(csprojPath)}.nuget.g.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1916,7 +1133,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsForFallbackFolderAsync()
+        public async Task Restore_GenerateTargetsForFallbackFolderAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1969,18 +1186,7 @@ namespace NuGet.CommandLine.Test
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(fallback2, saveMode, Directory.GetFiles(repositoryPath));
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageB);
 
-                Util.CreateFile(projectDir, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.1.0-beta-*"",
-                                                    ""packageB"": ""2.2.0-beta-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                }");
-
-                Util.CreateFile(projectDir, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(projectDir, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "1.1.0-beta-*"), ("packageB", "2.2.0-beta-*")]));
 
                 var csprojPath = Path.Combine(projectDir, "test.csproj");
 
@@ -1989,7 +1195,7 @@ namespace NuGet.CommandLine.Test
                     csprojPath
                 };
 
-                var targetFilePath = Path.Combine(projectDir, "test.nuget.targets");
+                var targetFilePath = Path.Combine(projectDir, "obj", "test.csproj.nuget.g.targets");
 
                 // A comes from the fallback folder
                 var packageAPath = Path.Combine("fallback2", "packagea", "1.1.0-beta-01", "build", "uap", "packageA.targets");
@@ -2016,69 +1222,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsFileFromNuProj()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = pathContext.PackageSource;
-                var nugetexe = Util.GetNuGetExePath();
-
-                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
-                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-                packageA.AddFile("build/uap/packageA.targets", targetContent);
-                packageA.AddFile("lib/uap/a.dll", "a");
-                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
-                targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-                packageB.AddFile("build/uap/packageB.targets", targetContent);
-                packageB.AddFile("lib/uap/b.dll", "b");
-                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
-
-                Util.CreateFile(workingPath, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.1.0-beta-*"",
-                                                    ""packageB"": ""2.2.0-beta-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                }");
-
-                Util.CreateFile(workingPath, "test.nuproj", Util.GetCSProjXML("test"));
-
-                var nuProjPath = Path.Combine(workingPath, "test.nuproj");
-
-                var args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath,
-                    nuProjPath
-                };
-
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-                Assert.True(File.Exists(targetFilePath));
-
-                var targetsFile = File.ReadAllText(targetFilePath);
-                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
-                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsFileWithFolder()
+        public async Task Restore_GenerateTargetsFileWithFolder()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2100,18 +1244,7 @@ namespace NuGet.CommandLine.Test
                 packageB.AddFile("lib/uap/b.dll", "b");
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
-                Util.CreateFile(workingPath, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""1.1.0-beta-*"",
-                                                    ""packageB"": ""2.2.0-beta-*""
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                            }
-                                                  }");
-
-                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(workingPath, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "1.1.0-beta-*"), ("packageB", "2.2.0-beta-*")]));
 
                 var args = new string[] {
                     "restore",
@@ -2122,7 +1255,7 @@ namespace NuGet.CommandLine.Test
                     "test.csproj"
                 };
 
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "obj", "test.csproj.nuget.g.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -2141,7 +1274,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
+        public async Task Restore_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2160,19 +1293,7 @@ namespace NuGet.CommandLine.Test
                 packageA.AddFile("build/net45/packageA.targets", targetContent);
                 packageA.AddFile("build/packageA.targets", targetContent);
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
-
-
-                Util.CreateFile(workingPath, "project.json",
-                                                @"{
-                                                    ""dependencies"": {
-                                                    ""packageA"": ""3.1.0"",
-                                                    },
-                                                    ""frameworks"": {
-                                                                ""uap10.0"": { }
-                                                  }
-                                               }");
-
-                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(workingPath, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "3.1.0")]));
 
 
                 var args = new string[] {
@@ -2184,7 +1305,7 @@ namespace NuGet.CommandLine.Test
                     "test.csproj"
                 };
 
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "obj", "test.csproj.nuget.g.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -2206,7 +1327,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreProjectJson_GenerateTargetsPersistsWithMultipleRestores()
+        public async Task Restore_GenerateTargetsPersistsWithMultipleRestores()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2240,7 +1361,7 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                 }");
 
-                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+                Util.CreateFile(workingPath, "test.csproj", Util.GetUAPCSProjXML("test", [("packageA", "1.1.0-beta-*"), ("packageB", "2.2.0-beta-*")]));
 
                 var args = new string[] {
                     "restore",
@@ -2251,7 +1372,7 @@ namespace NuGet.CommandLine.Test
                     "test.csproj"
                 };
 
-                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "obj", "test.csproj.nuget.g.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -2307,7 +1428,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_CorruptedLockFile()
+        public void Restore_CorruptedLockFile()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2320,17 +1441,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-                var projectJson = @"{
-                                        ""dependencies"": {
-                                        ""packageA"": ""1.1.0"",
-                                        ""packageB"": ""2.2.0""
-                                        },
-                                        ""frameworks"": {
-                                                    ""uap10.0"": { }
-                                                }
-                                        }";
-
-                var projectPath = Util.CreateUAPProject(workingPath, projectJson);
+                var projectPath = Util.CreateUAPProject(workingPath, [("packageA", "1.1.0"), ("packageB", "2.2.0")]);
 
                 var args = new string[] {
                     "restore",
@@ -2341,8 +1452,9 @@ namespace NuGet.CommandLine.Test
                     projectPath
                 };
 
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+                var lockFilePath = Path.Combine(workingPath, "obj", LockFileFormat.AssetsFileName);
                 var lockFileFormat = new LockFileFormat();
+                Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath));
                 using (var writer = new StreamWriter(lockFilePath))
                 {
                     writer.WriteLine("{ \"CORRUPTED!\": \"yep\"");

@@ -257,7 +257,7 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Create 3 projects, each with their own nuget.config file and source.
         /// When restoring without a solution settings should be found from the project folder.
-        /// Solution settings are verified in RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings and RestoreNetCore_WithNuGetExe_WhenRestoringASolution_VerifyPerProjectConfigSourcesAreNotUsed
+        /// Solution settings are verified in RestoreNetCore_WithNuGetExe_WhenRestoringASolution_VerifyPerProjectConfigSourcesAreNotUsed
         /// </summary>
         [Fact]
         public async Task RestoreNetCore_WithNuGetExe_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolutionAsync()
@@ -783,67 +783,6 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SetProjectStyleWithProperty_ProjectJsonAsync()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                // Create a .NETCore project, but add a project.json file to it.
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net45"));
-
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                        'x': '1.0.0'
-                                                    },
-                                                    'frameworks': {
-                                                        'net45': { }
-                                                    }
-                                                  }");
-
-                // Force this project to ProjectJson
-                projectA.Properties.Clear();
-                projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
-                projectA.Type = ProjectStyle.ProjectJson;
-
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-
-                File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
-
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-
-                packageX.AddFile("build/net45/x.targets");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                var projectXML = XDocument.Load(projectA.ProjectPath);
-                projectXML.Root.AddFirst(new XElement(XName.Get("Target", "http://schemas.microsoft.com/developer/msbuild/2003"), new XAttribute(XName.Get("Name"), "_SplitProjectReferencesByFileExistence")));
-                projectXML.Save(projectA.ProjectPath);
-
-                // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
-
-                // Assert
-                var assetsFile = projectA.AssetsFile;
-                Assert.NotNull(assetsFile);
-                Assert.Equal(ProjectStyle.ProjectJson, assetsFile.PackageSpec.RestoreMetadata.ProjectStyle);
-            }
-        }
-
-        [Fact]
         public void RestoreNetCore_ProjectToProject_Recursive()
         {
             // Arrange
@@ -1121,33 +1060,24 @@ namespace NuGet.CommandLine.Test
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                        'x': '1.0.0'
-                                                    },
-                                                    'frameworks': {
-                                                        'net45': {
-                                                    }
-                                                  },
-                                                  'runtimes': { 'win7-x86': {} }
-                                               }");
-
-                var projectA = SimpleTestProjectContext.CreateUAP(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net45"),
-                    projectJson);
-
                 var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
                     Version = "1.0.0"
                 };
 
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    "win7-x86",
+                    packageX);
+
                 packageX.AddFile("ref/net45/x.dll");
                 packageX.AddFile("lib/win8/x.dll");
 
                 projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Add("ValidateRuntimeIdentifierCompatibility", "true");
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -2820,58 +2750,6 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsNotAddedForUAPAsync()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'net45': {
-                                                            'x': '1.0.0'
-                                                    }
-                                                  }
-                                               }");
-
-                var projectA = SimpleTestProjectContext.CreateUAP(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net45"),
-                    projectJson);
-
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-
-                packageX.AddFile("buildCrossTargeting/x.targets");
-                packageX.AddFile("lib/net45/test.dll");
-
-                projectA.AddPackageToAllFrameworks(packageX);
-
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
-
-                // Assert
-                Assert.False(File.Exists(projectA.TargetsOutput), r.Output);
-            }
-        }
-
-        [Fact]
         public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportRequiresPackageNameAsync()
         {
             // Arrange
@@ -3057,21 +2935,21 @@ namespace NuGet.CommandLine.Test
                                                   }
                                                }");
 
-                var projectA = SimpleTestProjectContext.CreateUAP(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net45"),
-                    projectJson);
-
                 var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
                     Version = "1.0.0"
                 };
-
                 packageX.AddFile("build/x.props", "<Project>This is a bad props file!!!!<");
                 packageX.AddFile("build/x.targets", "<Project>This is a bad target file!!!!<");
                 packageX.AddFile("lib/net45/test.dll");
+
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    string.Empty,
+                    packageX);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -3109,19 +2987,11 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"));
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'net45': { }
-                                                  }
-                                               }");
-
                 var projectB = SimpleTestProjectContext.CreateUAP(
                     "b",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"),
-                    projectJson);
+                    string.Empty);
 
                 var projectC = SimpleTestProjectContext.CreateNonNuGet(
                     "c",
@@ -3137,7 +3007,7 @@ namespace NuGet.CommandLine.Test
                     "e",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"),
-                    projectJson);
+                    string.Empty);
 
                 var projectF = SimpleTestProjectContext.CreateNonNuGet(
                     "f",
@@ -3264,19 +3134,11 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"));
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'net45': { }
-                                                  }
-                                               }");
-
                 var projectB = SimpleTestProjectContext.CreateUAP(
                     "b",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"),
-                    projectJson);
+                    string.Empty);
 
                 // A -> B
                 projectA.AddProjectToAllFrameworks(projectB);
@@ -3299,7 +3161,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
                 Assert.Equal("project", libB.Type);
                 Assert.Equal("../b/b.csproj", libB.MSBuildProject);
-                Assert.Equal("../b/project.json", libB.Path); // TODO: is this right?
+                Assert.Equal("../b/b.csproj", libB.Path);
             }
         }
 
@@ -3311,20 +3173,11 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'UAP10.0': { }
-                                                  }
-                                               }");
-
                 var projectA = SimpleTestProjectContext.CreateUAP(
                     "a",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("UAP10.0"),
-                    projectJson);
+                    string.Empty);
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                     "b",
@@ -3387,137 +3240,6 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreNetCore_ProjectToProject_UAPToUnknown()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'UAP10.0': { }
-                                                  }
-                                               }");
-
-                var projectA = SimpleTestProjectContext.CreateUAP(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("UAP10.0"),
-                    projectJson);
-
-                var projectB = SimpleTestProjectContext.CreateNonNuGet(
-                    "b",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("netstandard1.3"));
-
-                // A -> B
-                projectA.AddProjectToAllFrameworks(projectB);
-
-                solution.Projects.Add(projectA);
-                solution.Projects.Add(projectB);
-                solution.Create(pathContext.SolutionRoot);
-
-                // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
-
-                // Assert
-                var targetB = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("UAP10.0"))).Libraries.SingleOrDefault(e => e.Name == "b");
-                var libB = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "b");
-
-                Assert.Equal("1.0.0", targetB.Version.ToNormalizedString());
-                Assert.Equal("project", targetB.Type);
-                Assert.Null(targetB.Framework);
-
-                Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
-                Assert.Equal("project", libB.Type);
-                Assert.Equal("../b/b.csproj", libB.MSBuildProject);
-                Assert.Equal("../b/b.csproj", libB.Path);
-            }
-        }
-
-        [Fact]
-        public void RestoreNetCore_ProjectToProject_UAPToUAP_RestoreCSProjDirect()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var projectJsonA = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'NETCoreApp1.0': { }
-                                                  }
-                                               }");
-
-                var projectA = SimpleTestProjectContext.CreateUAP(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("NETCoreApp1.0"),
-                    projectJsonA);
-
-                var projectJsonB = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'netstandard1.5': { }
-                                                  }
-                                               }");
-
-                var projectB = SimpleTestProjectContext.CreateUAP(
-                    "b",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("NETCoreApp1.0"),
-                    projectJsonB);
-
-                // A -> B
-                projectA.AddProjectToAllFrameworks(projectB);
-
-                solution.Projects.Add(projectA);
-                solution.Projects.Add(projectB);
-                solution.Create(pathContext.SolutionRoot);
-
-                // Act
-                var nugetexe = Util.GetNuGetExePath();
-
-                var args = new string[] {
-                    "restore",
-                    projectA.ProjectPath,
-                    "-Verbosity",
-                    "detailed"
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
-
-                // Assert
-                var targetB = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("NETCoreApp1.0"))).Libraries.SingleOrDefault(e => e.Name == "b");
-                var libB = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "b");
-
-                Assert.Equal("1.0.0", targetB.Version.ToNormalizedString());
-                Assert.Equal("project", targetB.Type);
-                Assert.Equal(NuGetFramework.Parse("netstandard1.5"), NuGetFramework.Parse(targetB.Framework));
-
-                Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
-                Assert.Equal("project", libB.Type);
-                Assert.Equal("../b/b.csproj", libB.MSBuildProject);
-                Assert.Equal("../b/project.json", libB.Path);
-            }
-        }
-
-        [Fact]
         public void RestoreNetCore_ProjectToProject_NETCore_TransitiveForAllEdges()
         {
             // Arrange
@@ -3536,19 +3258,11 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net462"));
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'net462': { }
-                                                  }
-                                               }");
-
                 var projectC = SimpleTestProjectContext.CreateUAP(
                     "c",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net462"),
-                    projectJson);
+                    string.Empty);
 
                 var projectD = SimpleTestProjectContext.CreateNonNuGet(
                     "d",
@@ -3636,19 +3350,11 @@ namespace NuGet.CommandLine.Test
                     NuGetFramework.Parse("net462"));
                 projectB.PrivateAssets = "compile";
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                    },
-                                                    'frameworks': {
-                                                        'net462': { }
-                                                  }
-                                               }");
-
                 var projectC = SimpleTestProjectContext.CreateUAP(
                     "c",
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net462"),
-                    projectJson);
+                    string.Empty);
                 projectC.PrivateAssets = "compile";
 
                 var projectD = SimpleTestProjectContext.CreateNonNuGet(
@@ -4457,29 +4163,21 @@ namespace NuGet.CommandLine.Test
                     NuGetFramework.Parse("net46"),
                     NuGetFramework.Parse("netstandard1.6"));
 
-                var projectJson = JObject.Parse(@"{
-                                                    'dependencies': {
-                                                        'x': '1.0.0'
-                                                    },
-                                                    'frameworks': {
-                                                        'netstandard1.3': { }
-                                                  }
-                                               }");
-
-                var projectB = SimpleTestProjectContext.CreateUAP(
-                    "b",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("netstandard1.3"),
-                    projectJson);
-
-                // A -> B
-                projectA.AddProjectToAllFrameworks(projectB);
-
                 var packageX = new SimpleTestPackageContext()
                 {
                     Id = "x",
                     Version = "1.0.0"
                 };
+
+                var projectB = SimpleTestProjectContext.CreateUAP(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("netstandard1.3"),
+                    string.Empty,
+                    packageX);
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
 
                 // B -> X
                 projectB.Frameworks[0].PackageReferences.Add(packageX);
