@@ -5,19 +5,23 @@
 
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DeprecationCapability : IDeprecation
+    public class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
-        public DeprecationCapability(PackageDeprecationMetadataContextInfo deprecatedInfo)
+        private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+
+        public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {
-            DeprecationMetadata = deprecatedInfo;
+            _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
         }
 
-        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; }
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; private set; }
 
         public bool IsDeprecated => DeprecationMetadata != null;
 
@@ -62,6 +66,11 @@ namespace NuGet.PackageManagement.UI
 
                 return PackageDeprecationReasonEnum.Unknown;
             }
+        }
+
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            DeprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(cancellationToken);
         }
     }
 }
