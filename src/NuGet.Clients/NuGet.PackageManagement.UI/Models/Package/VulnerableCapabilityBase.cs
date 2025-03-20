@@ -12,7 +12,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public abstract class VulnerableCapabilityBase : IVulnerableCapable
+    internal abstract class VulnerableCapabilityBase : IVulnerableCapable
     {
         private IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
 
