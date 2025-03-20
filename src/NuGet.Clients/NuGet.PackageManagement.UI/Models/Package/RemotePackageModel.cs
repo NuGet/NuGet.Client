@@ -10,18 +10,21 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
+using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IVulnerableCapable, IKnownOwnersCapable
+    internal class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
     {
+        private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapability;
         private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
@@ -46,8 +49,9 @@ namespace NuGet.PackageManagement.UI
             IsListed = isListed;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
-            _vulnerableCapability = vulnerableCapability;
-            _knownOwnersCapability = knownOwnersCapability;
+            _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));
+            _knownOwnersCapability = knownOwnersCapability ?? throw new ArgumentNullException(nameof(knownOwnersCapability));
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             ReadmeUrl = readmeUrl;
         }
 
@@ -57,15 +61,20 @@ namespace NuGet.PackageManagement.UI
         public Uri? ReadmeUrl { get; }
         public IReadOnlyList<KnownOwner>? KnownOwners => _knownOwnersCapability?.KnownOwners;
 
+        public bool IsDeprecated => _deprecationCapability.IsDeprecated;
+
+        public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
+
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
         public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
-        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            await _deprecationCapability.PopulateDataAsync(cancellationToken);
         }
     }
 }

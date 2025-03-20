@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class LocalPackageModel : PackageModel, IVulnerableCapable
     {
-        private readonly IVulnerableCapable _vulnerableCapability;
+        private IVulnerableCapable _vulnerableCapability;
 
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
@@ -37,8 +37,8 @@ namespace NuGet.PackageManagement.UI
             bool requireLicenseAcceptance = false)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             PackagePath = packagePath;
-            _vulnerableCapability = vulnerableCapability;
         }
 
         public string PackagePath { get; }
@@ -49,9 +49,9 @@ namespace NuGet.PackageManagement.UI
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
-        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
         }
     }
 }
