@@ -6,7 +6,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VulnerableDatabaseCapability : VulnerableCapabilityBase
+    internal class VulnerableDatabaseCapability : VulnerableCapabilityBase
     {
         private readonly IPackageVulnerabilityService _vulnerabilityService;
         private readonly PackageIdentity _packageIdentity;

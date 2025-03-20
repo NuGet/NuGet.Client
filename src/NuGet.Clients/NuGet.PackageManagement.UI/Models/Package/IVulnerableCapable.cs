@@ -11,7 +11,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public interface IVulnerableCapable
+    internal interface IVulnerableCapable
     {
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; }
 

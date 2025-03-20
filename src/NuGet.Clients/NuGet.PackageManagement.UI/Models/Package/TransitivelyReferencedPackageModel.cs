@@ -10,12 +10,13 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class TransitivelyReferencedPackageModel : ReferencedPackageModel
+    internal class TransitivelyReferencedPackageModel : ReferencedPackageModel
     {
         public TransitivelyReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
@@ -35,6 +36,7 @@ namespace NuGet.PackageManagement.UI.Models
             : base(identity,
                   packagePath,
                   vulnerableCapability,
+                  deprecationCapability,
                   embeddedResources,
                   title,
                   description,
