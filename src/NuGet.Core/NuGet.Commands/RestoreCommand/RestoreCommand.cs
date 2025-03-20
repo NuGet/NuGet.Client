@@ -765,62 +765,144 @@ namespace NuGet.Commands
                 return true;
             }
 
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = restoreRequest.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
-
-            if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled)
-            {
-                // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
-                bool hasVersionOverrides = false;
-                foreach (var item in dependenciesWithVersionOverride)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1013, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, item.Name)));
-                    hasVersionOverrides = true;
-                }
-
-                if (hasVersionOverrides)
-                {
-                    return false;
-                }
-            }
+            bool result = true;
 
             if (!restoreRequest.PackageSourceMapping.IsEnabled && httpSourcesCount > 1)
             {
                 // Log a warning if there are more than one configured source and package source mapping is not enabled
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, httpSourcesCount, string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1507,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping,
+                            httpSourcesCount,
+                            string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
             }
 
-            // The dependencies should not have versions explicitly defined if cpvm is enabled.
-            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced && d.VersionOverride == null));
-            if (dependenciesWithDefinedVersion.Any())
-            {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
-                return false;
-            }
-            IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
-            if (autoReferencedAndDefinedInCentralFile.Any())
-            {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+            List<LibraryDependency> dependenciesWithVersionOverride = restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled ? new() : null;
 
-                return false;
-            }
-            IEnumerable<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null));
-            if (packageReferencedDependenciesWithoutCentralVersionDefined.Any())
-            {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
-                return false;
-            }
+            List<LibraryDependency> dependenciesWithDefinedVersion = new();
 
-            if (!restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
+            List<LibraryDependency> autoReferencedAndDefinedInCentralFile = new();
+
+            List<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = new();
+
+            List<CentralPackageVersion> floatingVersionDependencies = restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled ? null : new();
+
+            foreach (TargetFrameworkInformation targetFrameworkInformation in _request.Project.TargetFrameworks)
             {
-                var floatingVersionDependencies = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.CentralPackageVersions.Values).Where(cpv => cpv.VersionRange.IsFloating);
-                if (floatingVersionDependencies.Any())
+                foreach (LibraryDependency libraryDependency in targetFrameworkInformation.Dependencies)
                 {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1011, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
-                    return false;
+                    if (libraryDependency.AutoReferenced)
+                    {
+                        // Implicitly defined packages that the user specified a version for
+                        if (targetFrameworkInformation.CentralPackageVersions.ContainsKey(libraryDependency.Name))
+                        {
+                            autoReferencedAndDefinedInCentralFile.Add(libraryDependency);
+                        }
+                    }
+                    else
+                    {
+                        // VersionOverride is specified but that functionality is disabled
+                        if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled && libraryDependency.VersionOverride != null)
+                        {
+                            dependenciesWithVersionOverride.Add(libraryDependency);
+                        }
+
+                        // Dependencies that have a version specified
+                        if (!libraryDependency.VersionCentrallyManaged && libraryDependency.LibraryRange.VersionRange != null && libraryDependency.VersionOverride == null)
+                        {
+                            dependenciesWithDefinedVersion.Add(libraryDependency);
+                        }
+
+                        // Dependencies that have no version specified
+                        if (libraryDependency.LibraryRange?.VersionRange == null)
+                        {
+                            packageReferencedDependenciesWithoutCentralVersionDefined.Add(libraryDependency);
+                        }
+                    }
+                }
+
+                if (!restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
+                {
+                    foreach (KeyValuePair<string, CentralPackageVersion> centralPackageVersion in targetFrameworkInformation.CentralPackageVersions.NoAllocEnumerate())
+                    {
+                        // Floating version dependencies
+                        if (centralPackageVersion.Value.VersionRange.IsFloating)
+                        {
+                            floatingVersionDependencies.Add(centralPackageVersion.Value);
+                        }
+                    }
                 }
             }
 
-            return true;
+            if (dependenciesWithDefinedVersion.Count > 0)
+            {
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1008,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageVersions_VersionsNotAllowed,
+                            string.Join(", ", dependenciesWithDefinedVersion.Select(d => d.Name)))));
+
+                result = false;
+            }
+
+            if (autoReferencedAndDefinedInCentralFile.Count > 0)
+            {
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1009,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed,
+                            string.Join(", ", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+
+                result = false;
+            }
+
+            if (packageReferencedDependenciesWithoutCentralVersionDefined.Count > 0)
+            {
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1010,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageVersions_MissingPackageVersion,
+                            string.Join(", ", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
+
+                result = false;
+            }
+
+            if (floatingVersionDependencies != null && floatingVersionDependencies.Count > 0)
+            {
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1011,
+                        Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
+
+                result = false;
+            }
+
+            if (dependenciesWithVersionOverride != null)
+            {
+                result = false;
+
+                foreach (var item in dependenciesWithVersionOverride)
+                {
+                    await _logger.LogAsync(
+                        RestoreLogMessage.CreateError(
+                            NuGetLogCode.NU1013,
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Error_CentralPackageVersions_VersionOverrideDisabled,
+                                item.Name)));
+                }
+            }
+
+            return result;
         }
 
         private string ConcatAsString<T>(IEnumerable<T> enumerable)

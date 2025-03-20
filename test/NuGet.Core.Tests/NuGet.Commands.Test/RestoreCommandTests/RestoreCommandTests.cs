@@ -2061,7 +2061,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task RestoreCommand_CentralVersion_ErrorWhenNotAllPRItemsHaveCorespondingPackageVersion()
+        public async Task RestoreCommand_CentralVersion_ErrorWhenNotAllPRItemsHaveCorrespondingPackageVersion()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -2070,7 +2070,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
                 // Package Bar does not have a corresponding PackageVersion
-                var packageRefDependecyBar = new LibraryDependency()
+                var packageRefDependencyBar = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("bar", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
                 };
@@ -2078,7 +2078,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
 
                 var tfi = CreateTargetFrameworkInformation(
-                    [packageRefDependecyBar],
+                    [packageRefDependencyBar],
                     new List<CentralPackageVersion>() { centralVersionFoo });
 
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
@@ -2118,7 +2118,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task RestoreCommand_CentralVersion_Multitargeting_NoFailureSamePackageInTwoFrameworsDirectAndTransitive()
+        public async Task RestoreCommand_CentralVersion_Multitargeting_NoFailureSamePackageInTwoFrameworksDirectAndTransitive()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
