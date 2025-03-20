@@ -38,12 +38,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if (Vulnerabilities is null)
-                {
-                    throw new InvalidOperationException("Vulnerabilities is null");
-                }
-
-                if (!IsVulnerable)
+                if (!IsVulnerable || Vulnerabilities is null)
                 {
                     throw new InvalidOperationException("Vulnerabilities is empty");
                 }
