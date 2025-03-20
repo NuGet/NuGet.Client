@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI.Models
         public TransitivelyReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
-            IVulnerable vulnerabilityCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
             IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Models
             string? reportAbuseUrl = null)
             : base(identity,
                   packagePath,
-                  vulnerabilityCapability,
+                  vulnerableCapability,
                   embeddedResources,
                   title,
                   description,
