@@ -5,33 +5,40 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VulnerableCapability : IVulnerable
+    public abstract class VulnerableCapabilityBase : IVulnerableCapable
     {
-        private IReadOnlyList<PackageVulnerabilityMetadataContextInfo> _vulnerabilities = [];
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
+        private IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? _vulnerabilities;
+
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities
         {
             get => _vulnerabilities;
-            private set
+            protected set
             {
-                List<PackageVulnerabilityMetadataContextInfo> sortedList = [.. value];
-                // Sort the list in descending order.
-                sortedList.Sort((b, a) => a.Severity.CompareTo(b.Severity));
+                List<PackageVulnerabilityMetadataContextInfo>? sortedList = null;
+                if (value != null)
+                {
+                    sortedList = [.. value];
+                    // Sort the list in descending order.
+                    sortedList.Sort((b, a) => a.Severity.CompareTo(b.Severity));
+                }
                 _vulnerabilities = sortedList;
             }
         }
 
-        public bool IsVulnerable => Vulnerabilities.Count > 0;
+        public bool IsVulnerable => Vulnerabilities?.Count > 0;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity
         {
             get
             {
-                if (!IsVulnerable)
+                if (!IsVulnerable || Vulnerabilities is null)
                 {
                     throw new InvalidOperationException("Vulnerabilities is empty");
                 }
@@ -49,14 +56,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public VulnerableCapability(List<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
-        {
-            if (vulnerabilities == null)
-            {
-                throw new ArgumentNullException(nameof(vulnerabilities));
-            }
-
-            Vulnerabilities = vulnerabilities;
-        }
+        public abstract Task PopulateDataAsync(CancellationToken cancellationToken);
     }
 }

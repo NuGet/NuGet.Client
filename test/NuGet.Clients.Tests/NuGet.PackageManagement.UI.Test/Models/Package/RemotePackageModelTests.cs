@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerable>();
+            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedCapability = new Mock<IEmbeddedResources>();
             var knownOwnersCapability = new Mock<IKnownOwnersCapable>();
 
@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerable>();
+            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedCapability = new Mock<IEmbeddedResources>();
             var knownOwnersCapability = new Mock<IKnownOwnersCapable>();
             var isListed = true;
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         public void RemotePackageModel_IsVulnerableProperty_ReturnsExpected(bool isPackageVulnerable)
         {
             // Arrange
-            var vulnerableCapability = new Mock<IVulnerable>();
+            var vulnerableCapability = new Mock<IVulnerableCapable>();
             vulnerableCapability.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var embeddedCapability = new Mock<IEmbeddedResources>();

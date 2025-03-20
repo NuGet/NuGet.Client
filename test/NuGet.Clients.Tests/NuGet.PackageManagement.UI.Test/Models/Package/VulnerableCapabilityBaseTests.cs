@@ -12,7 +12,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
-    public class VulnerableCapabilityTests
+    public class VulnerableCapabilityBaseTests
     {
         [Theory]
         [InlineData(1, true)]
@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             List<PackageVulnerabilityMetadataContextInfo> vulnerabilities = severity > 0
                 ? [new(new Uri("http://example.com"), severity)]
                 : [];
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+            var vulnerableCapability = new TestVulnerableCapability(vulnerabilities);
 
             // Act
             var result = vulnerableCapability.IsVulnerable;
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var vulnerabilities = severities.Select(severity => new PackageVulnerabilityMetadataContextInfo(new Uri("http://example.com"), severity)).ToList();
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+            var vulnerableCapability = new TestVulnerableCapability(vulnerabilities);
 
             // Act
             var result = vulnerableCapability.VulnerabilityMaxSeverity;
@@ -53,7 +53,17 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         public void VulnerabilityMaxSeverity_EmptyVulnerabilitiesList_ThrowsException()
         {
             // Arrange
-            var vulnerableCapability = new VulnerableCapability([]);
+            var vulnerableCapability = new TestVulnerableCapability([]);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => vulnerableCapability.VulnerabilityMaxSeverity);
+        }
+
+        [Fact]
+        public void VulnerabilityMaxSeverity_NullVulnerabilitiesList_ThrowsException()
+        {
+            // Arrange
+            var vulnerableCapability = new TestVulnerableCapability(null);
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => vulnerableCapability.VulnerabilityMaxSeverity);
@@ -72,7 +82,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             ];
 
             // Act
-            var vulnerableCapability = new VulnerableCapability(vulnerabilities);
+            var vulnerableCapability = new TestVulnerableCapability(vulnerabilities);
             var orderedVulnerabilities = vulnerableCapability.Vulnerabilities.ToList();
 
             // Assert
@@ -82,13 +92,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 item => Assert.Equal((int)PackageVulnerabilitySeverity.Moderate, item.Severity),
                 item => Assert.Equal((int)PackageVulnerabilitySeverity.Low, item.Severity)
             );
-        }
-
-        [Fact]
-        public void Constructor_WithNullRequiredArgument_ThrowsException()
-        {
-            // Arrange & Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new VulnerableCapability(null!));
         }
     }
 }

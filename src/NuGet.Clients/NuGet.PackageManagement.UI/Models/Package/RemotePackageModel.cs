@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -12,14 +14,14 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IVulnerable, IKnownOwnersCapable
+    public class RemotePackageModel : PackageModel, IVulnerableCapable, IKnownOwnersCapable
     {
-        private readonly IVulnerable _vulnerableCapability;
+        private readonly IVulnerableCapable _vulnerableCapability;
         private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
-            IVulnerable vulnerableCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
             IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
@@ -55,10 +57,15 @@ namespace NuGet.PackageManagement.UI
         public Uri? ReadmeUrl { get; }
         public IReadOnlyList<KnownOwner>? KnownOwners => _knownOwnersCapability?.KnownOwners;
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
         public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
+
+        public Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            return _vulnerableCapability.PopulateDataAsync(cancellationToken);
+        }
     }
 }
