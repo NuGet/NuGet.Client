@@ -14,9 +14,8 @@ namespace NuGet.PackageManagement.UI.Models
     {
         public RecommendedPackageModel(
             PackageIdentity identity,
-            IVulnerable vulnerableCapability,
+            IVulnerableCapable vulnerableCapability,
             IEmbeddedResources embeddedResources,
-            IKnownOwnersCapable knownOwnersCapability,
             (string modelVersion, string vsixVersion) recommenderVersion,
             string? title = null,
             string? description = null,
@@ -35,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Models
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
             Uri? readmeUrl = null)
-                : base(identity, vulnerableCapability, embeddedResources, knownOwnersCapability, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl)
+                : base(identity, vulnerableCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl)
         {
             RecommenderVersion = recommenderVersion;
         }

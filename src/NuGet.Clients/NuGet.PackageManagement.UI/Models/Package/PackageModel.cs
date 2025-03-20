@@ -25,8 +25,7 @@ namespace NuGet.PackageManagement.UI
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
-            string? owners = null,
+            IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
@@ -42,8 +41,7 @@ namespace NuGet.PackageManagement.UI
             Authors = authors;
             ProjectUrl = projectUrl;
             Tags = tags;
-            Copyright = copyright;
-            Owners = owners;
+            OwnersList = ownersList;
             Summary = summary;
             PublishedDate = publishedDate;
             LicenseMetadata = licenseMetadata;
@@ -69,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
         public string? Authors { get; }
 
-        public string? Owners { get; }
+        public IReadOnlyList<string>? OwnersList { get; }
 
         public IReadOnlyCollection<PackageDependencySetMetadata>? DependencySets { get; }
 
@@ -78,8 +76,6 @@ namespace NuGet.PackageManagement.UI
         public string[]? Tags { get; }
 
         public string? Summary { get; }
-
-        public string? Copyright { get; }
 
         public LicenseMetadata? LicenseMetadata { get; }
 

@@ -18,6 +18,7 @@ using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI.Models;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -73,7 +74,7 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; internal set; }
 
-        public string Owner => _packageModel.Owners;
+        public string Owner => string.Join(",", _packageModel.OwnersList);
 
         public string Author
         {
@@ -404,30 +405,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _recommended;
-        public bool Recommended
-        {
-            get { return _recommended; }
-            set
-            {
-                if (_recommended != value)
-                {
-                    _recommended = value;
-                    OnPropertyChanged(nameof(Recommended));
-                }
-            }
-        }
+        public bool Recommended => (_packageModel as RecommendedPackageModel) is not null;
 
-        private (string modelVersion, string vsixVersion)? _recommenderVersion;
-        public (string modelVersion, string vsixVersion)? RecommenderVersion
-        {
-            get { return _recommenderVersion; }
-            set
-            {
-                _recommenderVersion = value;
-                OnPropertyChanged(nameof(RecommenderVersion));
-            }
-        }
+        public (string modelVersion, string vsixVersion)? RecommenderVersion => (_packageModel as RecommendedPackageModel)?.RecommenderVersion;
 
         private bool _prefixReserved;
         public bool PrefixReserved

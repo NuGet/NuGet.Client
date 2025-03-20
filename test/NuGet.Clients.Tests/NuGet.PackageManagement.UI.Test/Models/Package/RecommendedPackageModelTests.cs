@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var vulnerabilityCapability = new Mock<IVulnerable>();
+            var vulnerabilityCapability = new Mock<IVulnerableCapable>();
             var embeddedCapability = new Mock<IEmbeddedResources>();
             var knownOwnersCapability = new Mock<IKnownOwnersCapable>();
             (string modelVersion, string vsixVersion) recommenderVersion = ("1.0.0", "1.0.0");
@@ -28,7 +28,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 identity,
                 vulnerabilityCapability.Object,
                 embeddedCapability.Object,
-                knownOwnersCapability.Object,
                 recommenderVersion);
 
             // Assert

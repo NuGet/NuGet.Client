@@ -30,8 +30,7 @@ namespace NuGet.PackageManagement.UI
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
-            string? owners = null,
+            IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
@@ -43,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             long? downloadCount = null,
             Uri? readmeUrl = null,
             Uri? iconUrl = null)
-            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, owners, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
             IsListed = isListed;
             PackageDetailsUrl = packageDetailsUrl;

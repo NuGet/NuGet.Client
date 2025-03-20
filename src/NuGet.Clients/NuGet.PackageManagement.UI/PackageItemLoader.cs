@@ -326,8 +326,6 @@ namespace NuGet.PackageManagement.UI
                         AllowedVersions = allowedVersions,
                         VersionOverride = versionOverride,
                         PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
-                        Recommended = metadataContextInfo.IsRecommended, // Missing recommended package model?
-                        RecommenderVersion = metadataContextInfo.RecommenderVersion, // Missing recommended package model?
                         Sources = _packageSources,
                         IncludePrerelease = _includePrerelease,
                         PackageLevel = packageLevel,

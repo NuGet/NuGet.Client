@@ -307,7 +307,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel)));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel: packageModel)));
 
             list.LoadItemsCompleted += (sender, args) =>
             {
