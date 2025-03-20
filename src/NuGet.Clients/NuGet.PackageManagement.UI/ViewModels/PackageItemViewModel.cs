@@ -45,7 +45,6 @@ namespace NuGet.PackageManagement.UI
             _cancellationTokenSource = new CancellationTokenSource();
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
-
             _packageModel = packageModel;
         }
 
@@ -330,7 +329,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return (_packageModel as RemotePackageModel)?.DownloadCount ?? 0;
+                return (_packageModel as RemotePackageModel)?.DownloadCount;
             }
         }
 
@@ -461,7 +460,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageVulnerable
         {
-            get => (_packageModel as IVulnerableCapable).IsVulnerable;
+            get => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false;
         }
 
         private int _vulnerabilityMaxSeverity = -1;
@@ -628,7 +627,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable).Vulnerabilities;
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable)?.Vulnerabilities ?? [];
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {

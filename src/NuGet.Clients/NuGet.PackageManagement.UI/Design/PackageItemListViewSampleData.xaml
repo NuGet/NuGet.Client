@@ -8,4 +8,5 @@
   Type="{x:Type nuget:PackageItemViewModel}"
   >
   <nuget:PackageItemViewModel />
+  <nuget:PackageItemViewModel />
 </x:Array>

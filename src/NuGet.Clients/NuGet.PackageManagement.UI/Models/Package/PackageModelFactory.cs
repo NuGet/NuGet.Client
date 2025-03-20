@@ -23,11 +23,11 @@ namespace NuGet.PackageManagement.UI
 
         public PackageModelFactory(INuGetSearchService searchService, INuGetPackageFileService packageFileService, IPackageVulnerabilityService packageVulnerabilityService, bool includePrerelease, IReadOnlyCollection<PackageSourceContextInfo> packageSources)
         {
-            _searchService = searchService;
-            _packageFileService = packageFileService;
-            _packageVulnerabilityService = packageVulnerabilityService;
+            _searchService = searchService ?? throw new ArgumentNullException(nameof(_searchService));
+            _packageFileService = packageFileService ?? throw new ArgumentNullException(nameof(_packageFileService));
+            _packageVulnerabilityService = packageVulnerabilityService ?? throw new ArgumentNullException(nameof(_packageVulnerabilityService));
             _includePrerelease = includePrerelease;
-            _packageSources = packageSources;
+            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(_packageSources));
         }
 
         public PackageModel Create(PackageSearchMetadataContextInfo metadata, ContractItemFilter itemFilter)
@@ -38,16 +38,15 @@ namespace NuGet.PackageManagement.UI
             }
 
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
-            PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
 
             if (metadata.PackagePath != null)
             {
                 if (metadata.TransitiveOrigins != null)
                 {
-                    VulnerableDatabaseCapability vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
+                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
 
                     return new TransitivelyReferencedPackageModel(
-                        metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                        metadata.Identity!,
                         metadata.PackagePath,
                         vulnerableDatabaseCapability,
                         embeddedResources,
@@ -69,7 +68,9 @@ namespace NuGet.PackageManagement.UI
                         metadata.IconUrl);
                 }
 
-                VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+                IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+
                 if (!itemFilter.Equals(ContractItemFilter.Installed))
                 {
                     return new LocalPackageModel(
@@ -95,7 +96,7 @@ namespace NuGet.PackageManagement.UI
 
                 // installed and no transitive origins
                 return new ReferencedPackageModel(
-                    metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                    metadata.Identity!,
                     metadata.PackagePath,
                     vulnerableCapability,
                     embeddedResources,
@@ -117,10 +118,11 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
                 VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
                 return new RemotePackageModel(
-                    metadata.Identity ?? throw new ArgumentNullException(nameof(metadata.Identity)),
+                    metadata.Identity!,
                     vulnerableCapability,
                     embeddedResources,
                     metadata.Title,
