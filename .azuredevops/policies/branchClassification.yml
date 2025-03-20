@@ -11,5 +11,10 @@ configuration:
       branchNames:
       - dev
       - main
-      - release-*
+      - release-6.13.x
+      - release-6.12.x
+      - release-6.11.x
+      - release-6.10.x
+      - release-6.8.x
+      - release-5.11.x
       classification: production
