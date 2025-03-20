@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
     internal class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
-        private readonly IVulnerableCapable _vulnerableCapable;
+        private readonly IVulnerableCapable _vulnerableCapability;
         private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.UI
             DownloadCount = downloadCount;
             _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));
             _knownOwnersCapability = knownOwnersCapability ?? throw new ArgumentNullException(nameof(knownOwnersCapability));
-            _vulnerableCapable = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             ReadmeUrl = readmeUrl;
         }
 
@@ -65,15 +65,15 @@ namespace NuGet.PackageManagement.UI
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapable.Vulnerabilities;
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
-        public bool IsVulnerable => _vulnerableCapable.IsVulnerable;
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
-        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapable.VulnerabilityMaxSeverity;
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
         public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            await _vulnerableCapable.PopulateDataAsync(cancellationToken);
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
             await _deprecationCapability.PopulateDataAsync(cancellationToken);
         }
     }
