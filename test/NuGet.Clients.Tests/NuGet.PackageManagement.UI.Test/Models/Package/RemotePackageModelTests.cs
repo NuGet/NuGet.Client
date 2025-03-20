@@ -4,12 +4,15 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Model;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
@@ -111,7 +114,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            _deprecationCapabilityMock.Setup(d => d.PopulateDataAsync(cancellationToken)).Returns(Task.CompletedTask);
 
             // Act
             var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
@@ -119,6 +121,55 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             // Assert
             _deprecationCapabilityMock.Verify(d => d.PopulateDataAsync(cancellationToken), Times.Once);
+            _vulnerableCapabilityMock.Verify(d => d.PopulateDataAsync(cancellationToken), Times.Once);
+        }
+
+        [Fact]
+        public void Vulnerabilities_WithVulnerabilities_ReturnsCorrectValue()
+        {
+            // Arrange
+            var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
+            {
+                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory1"), 1),
+                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory2"), 2)
+            };
+            _vulnerableCapabilityMock.Setup(v => v.Vulnerabilities).Returns(vulnerabilities);
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+
+            // Act
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+
+            // Assert
+            Assert.Equal(vulnerabilities, package.Vulnerabilities);
+        }
+
+        [Fact]
+        public void IsVulnerable_WithVulnerabilities_ReturnsTrue()
+        {
+            // Arrange
+            _vulnerableCapabilityMock.Setup(v => v.IsVulnerable).Returns(true);
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+
+            // Act
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+
+            // Assert
+            Assert.True(package.IsVulnerable);
+        }
+
+        [Fact]
+        public void VulnerabilityMaxSeverity_WithVulnerabilities_ReturnsCorrectValue()
+        {
+            // Arrange
+            var severity = PackageVulnerabilitySeverity.High;
+            _vulnerableCapabilityMock.Setup(v => v.VulnerabilityMaxSeverity).Returns(severity);
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+
+            // Act
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+
+            // Assert
+            Assert.Equal(severity, package.VulnerabilityMaxSeverity);
         }
     }
 }

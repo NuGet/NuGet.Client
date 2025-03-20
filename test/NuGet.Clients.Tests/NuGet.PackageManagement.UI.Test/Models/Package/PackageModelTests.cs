@@ -14,20 +14,16 @@ using Xunit;
 using System.Collections.Generic;
 using NuGet.Packaging;
 using NuGet.Frameworks;
-using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.Protocol;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class PackageModelTests
     {
         private readonly Mock<IEmbeddedResources> _embeddedResourcesMock;
-        private readonly Mock<IVulnerableCapable> _vulnerableCapabilityMock;
 
         public PackageModelTests()
         {
             _embeddedResourcesMock = new Mock<IEmbeddedResources>();
-            _vulnerableCapabilityMock = new Mock<IVulnerableCapable>();
         }
 
         [Fact]
@@ -37,7 +33,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
+            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -52,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             // Act
             // Assert
-            Assert.Throws<ArgumentNullException>("identity", () => new TestPackageModel(identity!, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object));
+            Assert.Throws<ArgumentNullException>("identity", () => new TestPackageModel(identity!, _embeddedResourcesMock.Object));
         }
 
         [Fact]
@@ -64,19 +60,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             // Act
             // Assert
-            Assert.Throws<ArgumentNullException>("embeddedResources", () => new TestPackageModel(identity, embeddedResources!, _vulnerableCapabilityMock.Object));
-        }
-
-        [Fact]
-        public void Constructor_NullVulnerableCapability_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            IVulnerableCapable? vulnerableCapability = null;
-
-            // Act
-            // Assert
-            Assert.Throws<ArgumentNullException>("vulnerableCapability", () => new TestPackageModel(identity, _embeddedResourcesMock.Object, vulnerableCapability!));
+            Assert.Throws<ArgumentNullException>("embeddedResources", () => new TestPackageModel(identity, embeddedResources!));
         }
 
         [Fact]
@@ -103,7 +87,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var package = new TestPackageModel(
                 identity,
                 _embeddedResourcesMock.Object,
-                _vulnerableCapabilityMock.Object,
                 title,
                 description,
                 authors,
@@ -145,7 +128,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _embeddedResourcesMock.Setup(e => e.ReadmeUri).Returns(readmeUri);
 
             // Act
-            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
+            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(readmeUri, package.ReadmeUri);
@@ -160,7 +143,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _embeddedResourcesMock.Setup(e => e.GetIconAsync(It.IsAny<CancellationToken>())).ReturnsAsync(iconStream);
 
             // Act
-            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
+            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object);
             var result = await package.GetIconAsync(CancellationToken.None);
 
             // Assert
@@ -176,7 +159,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _embeddedResourcesMock.Setup(e => e.GetLicenseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(licenseStream);
 
             // Act
-            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
+            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object);
             var result = await package.GetLicenseAsync(CancellationToken.None);
 
             // Assert
@@ -192,71 +175,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _embeddedResourcesMock.Setup(e => e.GetReadmeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(readmeStream);
 
             // Act
-            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
+            var package = new TestPackageModel(identity, _embeddedResourcesMock.Object);
             var result = await package.GetReadmeAsync(CancellationToken.None);
 
             // Assert
             Assert.Equal(readmeStream, result);
-        }
-
-        [Fact]
-        public void Vulnerabilities_WithVulnerabilities_ReturnsCorrectValue()
-        {
-            // Arrange
-            var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
-            {
-                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory1"), 1),
-                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory2"), 2)
-            };
-            _vulnerableCapabilityMock.Setup(v => v.Vulnerabilities).Returns(vulnerabilities);
-
-            // Act
-            var package = new TestPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
-
-            // Assert
-            Assert.Equal(vulnerabilities, package.Vulnerabilities);
-        }
-
-        [Fact]
-        public void IsVulnerable_WithVulnerabilities_ReturnsTrue()
-        {
-            // Arrange
-            _vulnerableCapabilityMock.Setup(v => v.IsVulnerable).Returns(true);
-
-            // Act
-            var package = new TestPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
-
-            // Assert
-            Assert.True(package.IsVulnerable);
-        }
-
-        [Fact]
-        public void VulnerabilityMaxSeverity_WithVulnerabilities_ReturnsCorrectValue()
-        {
-            // Arrange
-            var severity = PackageVulnerabilitySeverity.High;
-            _vulnerableCapabilityMock.Setup(v => v.VulnerabilityMaxSeverity).Returns(severity);
-
-            // Act
-            var package = new TestPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
-
-            // Assert
-            Assert.Equal(severity, package.VulnerabilityMaxSeverity);
-        }
-
-        [Fact]
-        public async Task PopulateDataAsync_CalledWithVulnerability_PopulateAsyncCalledOnce()
-        {
-            // Arrange
-            var cancellationToken = new CancellationToken();
-            _vulnerableCapabilityMock.Setup(v => v.PopulateDataAsync(cancellationToken)).Returns(Task.CompletedTask);
-
-            // Act
-            var package = new TestPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _embeddedResourcesMock.Object, _vulnerableCapabilityMock.Object);
-            await package.PopulateDataAsync(cancellationToken);
-
-            // Assert
-            _vulnerableCapabilityMock.Verify(v => v.PopulateDataAsync(cancellationToken), Times.Once);
         }
     }
 }

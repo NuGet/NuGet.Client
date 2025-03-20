@@ -9,13 +9,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Model;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class ReferencedPackageModel : PackageModel, IDeprecationCapable
+    public class ReferencedPackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
+        private readonly IVulnerableCapable _vulnerableCapability;
 
         public ReferencedPackageModel(
             PackageIdentity identity,
@@ -39,7 +42,6 @@ namespace NuGet.PackageManagement.UI.Models
             string? reportAbuseUrl = null)
             : base(identity,
                   embeddedResources,
-                  vulnerableCapability,
                   title,
                   description,
                   authors,
@@ -55,7 +57,8 @@ namespace NuGet.PackageManagement.UI.Models
                   requireLicenseAcceptance)
         {
             ReportAbuseUrl = reportAbuseUrl;
-            _deprecationCapability = deprecationCapability;
+            _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             PackagePath = packagePath;
         }
 
@@ -67,9 +70,15 @@ namespace NuGet.PackageManagement.UI.Models
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
-        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
+
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            await base.PopulateDataAsync(cancellationToken);
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
             await _deprecationCapability.PopulateDataAsync(cancellationToken);
         }
     }

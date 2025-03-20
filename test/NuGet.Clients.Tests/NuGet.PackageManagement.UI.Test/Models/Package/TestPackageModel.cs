@@ -14,7 +14,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
     {
         public TestPackageModel(PackageIdentity identity,
             IEmbeddedResources embeddedResources,
-            IVulnerableCapable vulnerableCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
@@ -28,7 +27,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false)
-            : base(identity, embeddedResources, vulnerableCapability, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
         }
     }

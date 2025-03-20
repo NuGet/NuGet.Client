@@ -5,13 +5,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LocalPackageModel : PackageModel
+    public class LocalPackageModel : PackageModel, IVulnerableCapable
     {
+        private IVulnerableCapable _vulnerableCapability;
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,
@@ -29,11 +34,23 @@ namespace NuGet.PackageManagement.UI
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false)
-            : base(identity, embeddedResources, vulnerableCapability, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             PackagePath = packagePath;
         }
 
         public string PackagePath { get; }
+
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
+
+        public async Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
+        }
     }
 }
