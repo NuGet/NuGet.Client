@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {
-        private IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+        private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
 
         public VulnerablePackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {

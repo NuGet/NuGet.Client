@@ -8,8 +8,8 @@ namespace NuGet.PackageManagement.UI
 {
     public class VulnerableDatabaseCapability : VulnerableCapabilityBase
     {
-        private IPackageVulnerabilityService _vulnerabilityService;
-        private PackageIdentity _packageIdentity;
+        private readonly IPackageVulnerabilityService _vulnerabilityService;
+        private readonly PackageIdentity _packageIdentity;
 
         public VulnerableDatabaseCapability(IPackageVulnerabilityService vulnerabilityService, PackageIdentity packageIdentity)
         {
