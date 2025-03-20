@@ -17,6 +17,7 @@ namespace NuGet.PackageManagement.UI
     public class LocalPackageModel : PackageModel, IVulnerableCapable
     {
         private IVulnerableCapable _vulnerableCapability;
+
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,

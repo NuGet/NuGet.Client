@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class TransitivelyReferencedPackageModel : ReferencedPackageModel
+    internal class TransitivelyReferencedPackageModel : ReferencedPackageModel
     {
         public TransitivelyReferencedPackageModel(
             PackageIdentity identity,

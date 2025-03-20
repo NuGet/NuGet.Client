@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    public abstract class PackageModel : IEmbeddedResources
+    internal abstract class PackageModel : IEmbeddedResources
     {
         private readonly IEmbeddedResources _embeddedResources;
 

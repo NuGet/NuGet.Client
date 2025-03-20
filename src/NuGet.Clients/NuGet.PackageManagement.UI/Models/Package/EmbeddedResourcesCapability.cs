@@ -11,7 +11,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    public class EmbeddedResourcesCapability : IEmbeddedResources
+    internal class EmbeddedResourcesCapability : IEmbeddedResources
     {
         private readonly INuGetPackageFileService _nugetPackageFileService;
         private readonly PackageIdentity _packageIdentity;

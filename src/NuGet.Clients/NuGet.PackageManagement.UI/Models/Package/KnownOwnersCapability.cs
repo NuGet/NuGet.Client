@@ -9,7 +9,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class KnownOwnersCapability : IKnownOwnersCapable
+    internal class KnownOwnersCapability : IKnownOwnersCapable
     {
         public KnownOwnersCapability(IReadOnlyList<string> ownersList, IOwnerDetailsUriService? ownerDetailsUriService)
         {

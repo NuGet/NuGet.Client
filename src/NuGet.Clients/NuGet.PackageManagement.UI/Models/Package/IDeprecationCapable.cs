@@ -9,7 +9,7 @@ using NuGet.Protocol.Model;
 
 namespace NuGet.PackageManagement.UI
 {
-    public interface IDeprecationCapable
+    internal interface IDeprecationCapable
     {
         public bool IsDeprecated { get; }
 

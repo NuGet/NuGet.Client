@@ -15,7 +15,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
+    internal class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapable;
