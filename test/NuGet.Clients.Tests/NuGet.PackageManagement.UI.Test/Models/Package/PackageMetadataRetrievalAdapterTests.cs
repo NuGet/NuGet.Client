@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 .ReturnsAsync((expectedMetadata, null));
 
             // Act
-            var result = await _adapter.GetPackageMetadataAsync(_packageSources, _includePrerelease, cancellationToken);
+            var result = await _adapter.GetPackageMetadataAsync(cancellationToken);
 
             // Assert
             Assert.Equal(expectedMetadata, result);
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 .ReturnsAsync((expectedMetadata, expectedDeprecationInfo));
 
             // Act
-            var result = await _adapter.GetPackageDeprecationInfoAsync(_packageSources, _includePrerelease, cancellationToken);
+            var result = await _adapter.GetPackageDeprecationInfoAsync(cancellationToken);
 
             // Assert
             Assert.Equal(expectedDeprecationInfo, result);
@@ -100,8 +100,8 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 .ReturnsAsync((expectedMetadata, expectedDeprecationInfo));
 
             // Act
-            var task1 = _adapter.GetPackageMetadataAsync(_packageSources, _includePrerelease, cancellationToken);
-            var task2 = _adapter.GetPackageDeprecationInfoAsync(_packageSources, _includePrerelease, cancellationToken);
+            var task1 = _adapter.GetPackageMetadataAsync(cancellationToken);
+            var task2 = _adapter.GetPackageDeprecationInfoAsync(cancellationToken);
 
             await Task.WhenAll(task1, task2);
 
