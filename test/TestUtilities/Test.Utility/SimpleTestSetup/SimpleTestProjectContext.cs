@@ -39,6 +39,10 @@ namespace NuGet.Test.Utility
             ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
             ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
+            if (Type == ProjectStyle.PackageReference)
+            {
+                Properties.Add("RestoreProjectStyle", "PackageReference");
+            }
         }
 
         public string Version { get; set; } = "1.0.0";
@@ -323,17 +327,6 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
-        /// Package references from all TFMs
-        /// </summary>
-        public List<SimpleTestPackageContext> AllPackageDependencies
-        {
-            get
-            {
-                return Frameworks.SelectMany(f => f.PackageReferences).Distinct().ToList();
-            }
-        }
-
-        /// <summary>
         /// Project references from all TFMs
         /// </summary>
         public List<SimpleTestProjectContext> AllProjectReferences => Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
@@ -383,7 +376,6 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -399,7 +391,6 @@ namespace NuGet.Test.Utility
                 frameworkContext.TargetAlias = e;
                 return frameworkContext;
             }));
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -411,7 +402,6 @@ namespace NuGet.Test.Utility
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f }));
             context.ToolingVersion15 = true;
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             context.Properties.Add("BuildWithNetFrameworkHostedCompiler", bool.FalseString);
             return context;
         }
