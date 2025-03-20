@@ -3,14 +3,18 @@
 
 #nullable enable
 
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Protocol.Model;
 
 namespace NuGet.PackageManagement.UI
 {
-    interface IDeprecation
+    interface IDeprecationCapable
     {
         public bool IsDeprecated { get; }
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons { get; }
+
+        public Task PopulateDataAsync(CancellationToken cancellationToken);
     }
 }
