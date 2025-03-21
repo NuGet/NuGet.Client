@@ -24,7 +24,6 @@ namespace NuGet.PackageManagement.UI.Models
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
@@ -32,7 +31,8 @@ namespace NuGet.PackageManagement.UI.Models
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
             bool requireLicenseAcceptance = false,
-            string? reportAbuseUrl = null)
+            string? reportAbuseUrl = null,
+            Uri? iconUrl = null)
             : base(identity,
                   packagePath,
                   vulnerableCapability,
@@ -43,7 +43,6 @@ namespace NuGet.PackageManagement.UI.Models
                   authors,
                   projectUrl,
                   tags,
-                  copyright,
                   ownersList,
                   packageDependencyGroups,
                   summary,
@@ -51,7 +50,8 @@ namespace NuGet.PackageManagement.UI.Models
                   licenseMetadata,
                   licenseUrl,
                   requireLicenseAcceptance,
-                  reportAbuseUrl)
+                  reportAbuseUrl,
+                  iconUrl)
         {
             TransitiveOrigins = transitiveOrigins;
         }
