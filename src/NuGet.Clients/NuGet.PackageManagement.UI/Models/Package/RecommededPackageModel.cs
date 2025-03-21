@@ -10,20 +10,19 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class RecommendedPackageModel : RemotePackageModel
+    internal class RecommendedPackageModel : RemotePackageModel
     {
         public RecommendedPackageModel(
             PackageIdentity identity,
-            IVulnerable vulnerableCapability,
+            IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
-            IKnownOwnersCapable knownOwnersCapability,
             (string modelVersion, string vsixVersion) recommenderVersion,
             string? title = null,
             string? description = null,
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
@@ -34,8 +33,9 @@ namespace NuGet.PackageManagement.UI.Models
             bool isListed = false,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            Uri? readmeUrl = null)
-                : base(identity, vulnerableCapability, embeddedResources, knownOwnersCapability, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl)
+            Uri? readmeUrl = null,
+            Uri? iconUrl = null)
+                : base(identity, vulnerableCapability, deprecationCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl, iconUrl)
         {
             RecommenderVersion = recommenderVersion;
         }

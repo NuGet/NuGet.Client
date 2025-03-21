@@ -7,10 +7,6 @@
   xmlns:sys="clr-namespace:System;assembly=mscorlib"
   Type="{x:Type nuget:PackageItemViewModel}"
   >
-  <nuget:PackageItemViewModel
-    Id="TestPackage1"
-    />
-  <nuget:PackageItemViewModel
-    Id="TestPackage2"
-    />
+  <nuget:PackageItemViewModel />
+  <nuget:PackageItemViewModel />
 </x:Array>

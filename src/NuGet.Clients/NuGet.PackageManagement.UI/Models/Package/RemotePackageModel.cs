@@ -15,24 +15,21 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
+    internal class RemotePackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapability;
-        private readonly IKnownOwnersCapable _knownOwnersCapability;
 
         public RemotePackageModel(
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
-            IKnownOwnersCapable knownOwnersCapability,
             string? title = null,
             string? description = null,
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
@@ -43,14 +40,14 @@ namespace NuGet.PackageManagement.UI
             bool isListed = false,
             Uri? packageDetailsUrl = null,
             long? downloadCount = null,
-            Uri? readmeUrl = null)
-            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, copyright, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
+            Uri? readmeUrl = null,
+            Uri? iconUrl = null)
+            : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
             IsListed = isListed;
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
             _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));
-            _knownOwnersCapability = knownOwnersCapability ?? throw new ArgumentNullException(nameof(knownOwnersCapability));
             _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             ReadmeUrl = readmeUrl;
         }
@@ -59,7 +56,6 @@ namespace NuGet.PackageManagement.UI
         public Uri? PackageDetailsUrl { get; }
         public long? DownloadCount { get; }
         public Uri? ReadmeUrl { get; }
-        public IReadOnlyList<KnownOwner>? KnownOwners => _knownOwnersCapability?.KnownOwners;
 
         public bool IsDeprecated => _deprecationCapability.IsDeprecated;
 
