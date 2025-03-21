@@ -505,7 +505,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
                 // Assert
                 Assert.True(_successCode == r.ExitCode, r.Output + "" + r.Errors);
-                Assert.True(string.IsNullOrEmpty(r.Errors)); // No error
+                Assert.Empty(r.Errors); // No error
 
                 if (string.IsNullOrEmpty(proj1ConfigFileName) && string.IsNullOrEmpty(proj2ConfigFileName))
                 {
