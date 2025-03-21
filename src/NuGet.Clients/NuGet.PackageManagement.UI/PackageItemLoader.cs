@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.UI
 
                     PackageModel packageModel = _packageModelFactory.Create(metadataContextInfo, _itemFilter);
 
-                    var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService, packageModel)
+                    var listItem = new PackageItemViewModel(_searchService, packageModel, _packageVulnerabilityService)
                     {
                         KnownOwnerViewModels = knownOwnerViewModels,
                         AllowedVersions = allowedVersions,

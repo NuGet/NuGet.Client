@@ -118,6 +118,34 @@ namespace NuGet.PackageManagement.UI
                 PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
                 VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
+                if (metadata.IsRecommended)
+                {
+                    var recommenderVersion = metadata.RecommenderVersion ?? throw new ArgumentNullException(nameof(metadata.RecommenderVersion));
+
+                    return new RecommendedPackageModel(
+                        metadata.Identity!,
+                        vulnerableCapability,
+                        embeddedResources,
+                        recommenderVersion,
+                        metadata.Title,
+                        metadata.Description,
+                        metadata.Authors,
+                        metadata.ProjectUrl,
+                        metadata.Tags?.Split(','),
+                        metadata.OwnersList,
+                        metadata.DependencySets,
+                        metadata.Summary,
+                        metadata.Published,
+                        metadata.LicenseMetadata,
+                        metadata.LicenseUrl,
+                        metadata.RequireLicenseAcceptance,
+                        metadata.IsListed,
+                        metadata.PackageDetailsUrl,
+                        metadata.DownloadCount,
+                        metadata.ReadmeUrl,
+                        metadata.IconUrl);
+                }
+
                 return new RemotePackageModel(
                     metadata.Identity!,
                     vulnerableCapability,

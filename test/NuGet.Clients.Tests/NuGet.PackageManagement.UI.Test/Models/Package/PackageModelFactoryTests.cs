@@ -39,6 +39,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         [Fact]
         public void Constructor_WithNullSearchService_ThrowsArgumentNullException()
         {
+            // Assert
             Assert.Throws<ArgumentNullException>(() => new PackageModelFactory(
                 null!,
                 _mockPackageFileService.Object,
@@ -50,6 +51,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         [Fact]
         public void Create_WithValidMetadata_ReturnsPackageModel()
         {
+            // Arrange
             var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
                 Identity = new PackageIdentity("TestPackage", NuGetVersion.Parse("4.3.0")),
@@ -57,8 +59,10 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
 
+            // Act
             var result = _factory.Create(packageSearchMetadataContextInfo, ContractItemFilter.All);
 
+            // Assert
             Assert.NotNull(result);
             Assert.Equal("TestPackage", result.Identity.Id);
         }

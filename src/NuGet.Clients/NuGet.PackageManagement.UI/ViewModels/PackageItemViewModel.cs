@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI
 
         private readonly PackageModel _packageModel;
 
-        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default, PackageModel packageModel = null)
+        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, IPackageVulnerabilityService vulnerabilityService = default)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _searchService = searchService;
@@ -76,13 +76,7 @@ namespace NuGet.PackageManagement.UI
 
         public string Owner => string.Join(",", _packageModel.OwnersList);
 
-        public string Author
-        {
-            get
-            {
-                return _packageModel.Authors;
-            }
-        }
+        public string Author => _packageModel.Authors;
 
         /// <summary>
         /// When a collection of <see cref="KnownOwnerViewModels"/> is available, this property returns the <see cref="PackageSearchMetadataContextInfo.Owners"/>
@@ -131,7 +125,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return ByOwner ?? _packageModel.Authors;
+                return ByOwner ?? ByAuthor;
             }
         }
 
@@ -326,13 +320,7 @@ namespace NuGet.PackageManagement.UI
             return v1.Equals(v2, VersionComparison.Default);
         }
 
-        public long? DownloadCount
-        {
-            get
-            {
-                return (_packageModel as RemotePackageModel)?.DownloadCount;
-            }
-        }
+        public long? DownloadCount => (_packageModel as RemotePackageModel)?.DownloadCount;
 
         public string Summary => _packageModel.Summary;
 
@@ -438,10 +426,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsPackageVulnerable
-        {
-            get => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false;
-        }
+        public bool IsPackageVulnerable => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false;
 
         private int _vulnerabilityMaxSeverity = -1;
         public int VulnerabilityMaxSeverity

@@ -80,46 +80,55 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.ProjectK)]
         public void Options_ShowClassicOptions_WhenProjectKindIsNotProjectConfig_ReturnsFalse(NuGetProjectKind projectKind)
         {
+            // Arrange
             var project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind)
                 .Returns(projectKind);
 
+            // Act
             var model = new PackageDetailControlModel(
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object },
                 uiController: Mock.Of<INuGetUI>());
 
+            // Assert
             Assert.False(model.Options.ShowClassicOptions);
         }
 
         [Fact]
         public void Options_ShowClassicOptions_WhenProjectKindIsProjectConfig_ReturnsTrue()
         {
+            // Assert
             var project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind)
                 .Returns(NuGetProjectKind.PackagesConfig);
 
+            // Act
             var model = new PackageDetailControlModel(
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object },
                 uiController: Mock.Of<INuGetUI>());
 
+            // Assert
             Assert.True(model.Options.ShowClassicOptions);
         }
 
         [Fact]
         public void IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNull_ReturnsFalse()
         {
+            // Arrange
+            // Act
             var model = new PackageDetailControlModel(
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>(),
                 uiController: Mock.Of<INuGetUI>());
 
+            // Assert
             Assert.Null(model.SelectedVersion);
             Assert.Null(model.InstalledVersion);
             Assert.False(model.IsSelectedVersionInstalled);
@@ -128,6 +137,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreNotEqual_ReturnsFalse()
         {
+            // Arrange
             var model = new PackageDetailControlModel(
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
@@ -156,6 +166,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             model.SelectedVersion = new DisplayVersion(selectedVersion, additionalInfo: null);
 
+            // Assert
             Assert.NotNull(model.SelectedVersion);
             Assert.NotNull(model.InstalledVersion);
             Assert.False(model.IsSelectedVersionInstalled);
@@ -164,6 +175,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public async Task IsSelectedVersionInstalled_WhenSelectedVersionAndInstalledVersionAreEqual_ReturnsTrue()
         {
+            // Arrange
             var model = new PackageDetailControlModel(
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
@@ -184,6 +196,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 InstalledVersion = installedVersion,
             };
 
+            // Act
             await model.SetCurrentPackageAsync(
                 packageItemModel,
                 ItemFilter.All,
@@ -191,6 +204,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             model.SelectedVersion = new DisplayVersion(installedVersion, additionalInfo: null);
 
+            // Assert
             Assert.NotNull(model.SelectedVersion);
             Assert.NotNull(model.InstalledVersion);
             Assert.True(model.IsSelectedVersionInstalled);

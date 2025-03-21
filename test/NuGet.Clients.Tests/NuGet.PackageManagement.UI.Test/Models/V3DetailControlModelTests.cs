@@ -66,7 +66,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResources>();
             var packagePath = "C:\\TestPackage";
 
-            // Act
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // pass PackageSearchMetadataContextInfo to a factory to create the PackageItemViewModel
@@ -202,6 +201,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void SetInstalledOrUpdateButtonIsEnabled_AfterPackageSourceMappingChanges_CanInstallWithPackageSourceMapping()
         {
+            // Arrange
             var packageIDWithSourceMapping = "a";
             var patterns = new Dictionary<string, IReadOnlyList<string>>
             {
@@ -294,11 +294,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void PackageVulnerabilities_WhenMetadataHasVulnerability_IsOrderedBySeverityDescending()
         {
+            // Arrange
+            // Act
             IEnumerable<PackageVulnerabilityMetadataContextInfo> sortedTestVulnerabilities =
                 _testData.TestData.Vulnerabilities
                 .OrderByDescending(v => v.Severity)
                 .Select(v => new PackageVulnerabilityMetadataContextInfo(v.AdvisoryUrl, v.Severity));
 
+            // Assert
             Assert.Equal(sortedTestVulnerabilities, _testInstance.PackageVulnerabilities);
         }
 
@@ -336,7 +339,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
@@ -391,7 +393,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
@@ -444,7 +445,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 tab,
@@ -452,6 +452,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
 
+            // Assert
             Assert.Equal(_testInstance.SelectedVersion.Version, selectedVersion);
         }
 
@@ -505,7 +506,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.PropertyChanged += mockPropertyChangedEventHandler.Object.PropertyChanged;
 
             // Act
-
             //Select a different VM which should clear the Versions list from the previous selection.
             await _testInstance.SetCurrentPackageAsync(
                 vm,
@@ -513,7 +513,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 () => vm);
 
             // Assert
-
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
             Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
         }
@@ -1532,7 +1531,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
@@ -1595,6 +1593,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
 
+            // Assert
             Assert.Equal(_testInstance.SelectedVersion.Version, selectedVersion);
         }
 
@@ -1647,7 +1646,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.PropertyChanged += mockPropertyChangedEventHandler.Object.PropertyChanged;
 
             // Act
-
             //Select a different VM which should clear the Versions list from the previous selection.
             await _testInstance.SetCurrentPackageAsync(
                 vm,
@@ -1655,7 +1653,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 () => vm);
 
             // Assert
-
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
             Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
         }
@@ -1663,6 +1660,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void SetInstalledOrUpdateButtonIsEnabled_AfterPackageSourceMappingChanges_CanInstallWithPackageSourceMapping()
         {
+            // Arrange
             var packageIDWithSourceMapping = "a";
             var patterns = new Dictionary<string, IReadOnlyList<string>>
             {
