@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _deprecationCapabilityMock.Setup(d => d.IsDeprecated).Returns(true);
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.True(package.IsDeprecated);
