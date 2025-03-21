@@ -21,12 +21,14 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var vulnerabilityCapability = new Mock<IVulnerableCapable>();
             var embeddedCapability = new Mock<IEmbeddedResources>();
             var knownOwnersCapability = new Mock<IKnownOwnersCapable>();
+            var deprecatedCapability = new Mock<IDeprecationCapable>();
             (string modelVersion, string vsixVersion) recommenderVersion = ("1.0.0", "1.0.0");
 
             // Act
             var model = new RecommendedPackageModel(
                 identity,
                 vulnerabilityCapability.Object,
+                deprecatedCapability.Object,
                 embeddedCapability.Object,
                 recommenderVersion);
 

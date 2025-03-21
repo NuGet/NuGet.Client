@@ -13,7 +13,7 @@ using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class PackageModelFactory
+    internal class PackageModelFactory
     {
         private readonly INuGetSearchService _searchService;
         private readonly INuGetPackageFileService _packageFileService;
@@ -38,17 +38,19 @@ namespace NuGet.PackageManagement.UI
             }
 
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
+            PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+            IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
 
             if (metadata.PackagePath != null)
             {
                 if (metadata.TransitiveOrigins != null)
                 {
                     IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
-
                     return new TransitivelyReferencedPackageModel(
                         metadata.Identity!,
                         metadata.PackagePath,
                         vulnerableDatabaseCapability,
+                        deprecationCapable,
                         embeddedResources,
                         metadata.TransitiveOrigins,
                         metadata.Title,
@@ -67,7 +69,6 @@ namespace NuGet.PackageManagement.UI
                         metadata.IconUrl);
                 }
 
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
                 IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
                 if (!itemFilter.Equals(ContractItemFilter.Installed))
@@ -97,6 +98,7 @@ namespace NuGet.PackageManagement.UI
                     metadata.Identity!,
                     metadata.PackagePath,
                     vulnerableCapability,
+                    deprecationCapable,
                     embeddedResources,
                     metadata.Title,
                     metadata.Description,
@@ -115,7 +117,6 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
                 VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
                 if (metadata.IsRecommended)
@@ -125,6 +126,7 @@ namespace NuGet.PackageManagement.UI
                     return new RecommendedPackageModel(
                         metadata.Identity!,
                         vulnerableCapability,
+                        deprecationCapable,
                         embeddedResources,
                         recommenderVersion,
                         metadata.Title,
@@ -149,6 +151,7 @@ namespace NuGet.PackageManagement.UI
                 return new RemotePackageModel(
                     metadata.Identity!,
                     vulnerableCapability,
+                    deprecationCapable,
                     embeddedResources,
                     metadata.Title,
                     metadata.Description,

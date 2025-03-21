@@ -10,11 +10,12 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    public class RecommendedPackageModel : RemotePackageModel
+    internal class RecommendedPackageModel : RemotePackageModel
     {
         public RecommendedPackageModel(
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
+            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             (string modelVersion, string vsixVersion) recommenderVersion,
             string? title = null,
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement.UI.Models
             long? downloadCount = null,
             Uri? readmeUrl = null,
             Uri? iconUrl = null)
-                : base(identity, vulnerableCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl, iconUrl)
+                : base(identity, vulnerableCapability, deprecationCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl, iconUrl)
         {
             RecommenderVersion = recommenderVersion;
         }

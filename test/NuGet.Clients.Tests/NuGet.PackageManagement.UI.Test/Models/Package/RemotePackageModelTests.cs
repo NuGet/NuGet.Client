@@ -22,14 +22,12 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         private readonly Mock<IVulnerableCapable> _vulnerableCapabilityMock;
         private readonly Mock<IDeprecationCapable> _deprecationCapabilityMock;
         private readonly Mock<IEmbeddedResources> _embeddedResourcesMock;
-        private readonly Mock<IKnownOwnersCapable> _knownOwnersCapabilityMock;
 
         public RemotePackageModelTests()
         {
             _vulnerableCapabilityMock = new Mock<IVulnerableCapable>();
             _deprecationCapabilityMock = new Mock<IDeprecationCapable>();
             _embeddedResourcesMock = new Mock<IEmbeddedResources>();
-            _knownOwnersCapabilityMock = new Mock<IKnownOwnersCapable>();
         }
 
         [Fact]
@@ -39,7 +37,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -56,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var downloadCount = 1000;
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object, isListed: isListed, packageDetailsUrl: packageDetailsUrl, downloadCount: downloadCount);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, isListed: isListed, packageDetailsUrl: packageDetailsUrl, downloadCount: downloadCount);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -75,7 +73,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _vulnerableCapabilityMock.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Act
             // Assert
@@ -103,7 +101,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _deprecationCapabilityMock.Setup(d => d.PackageDeprecationReasons).Returns(reasons);
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(reasons, package.PackageDeprecationReasons);
@@ -116,7 +114,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var cancellationToken = new CancellationToken();
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
             await package.PopulateDataAsync(cancellationToken);
 
             // Assert
@@ -137,7 +135,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(vulnerabilities, package.Vulnerabilities);
@@ -151,7 +149,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.True(package.IsVulnerable);
@@ -166,7 +164,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, _knownOwnersCapabilityMock.Object);
+            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(severity, package.VulnerabilityMaxSeverity);

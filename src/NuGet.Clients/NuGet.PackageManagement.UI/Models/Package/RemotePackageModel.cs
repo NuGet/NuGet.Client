@@ -15,7 +15,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class RemotePackageModel : PackageModel, IKnownOwnersCapable, IDeprecationCapable, IVulnerableCapable
+    internal class RemotePackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapability;
@@ -48,7 +48,6 @@ namespace NuGet.PackageManagement.UI
             PackageDetailsUrl = packageDetailsUrl;
             DownloadCount = downloadCount;
             _deprecationCapability = deprecationCapability ?? throw new ArgumentNullException(nameof(deprecationCapability));
-            _knownOwnersCapability = knownOwnersCapability ?? throw new ArgumentNullException(nameof(knownOwnersCapability));
             _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             ReadmeUrl = readmeUrl;
         }

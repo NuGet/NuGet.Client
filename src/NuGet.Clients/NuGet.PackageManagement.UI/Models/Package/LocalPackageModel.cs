@@ -14,7 +14,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LocalPackageModel : PackageModel, IVulnerableCapable
+    internal class LocalPackageModel : PackageModel, IVulnerableCapable
     {
         private IVulnerableCapable _vulnerableCapability;
 
