@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal abstract class PackageModel : IEmbeddedResources
+    public abstract class PackageModel : IEmbeddedResources
     {
         private readonly IEmbeddedResources _embeddedResources;
 
@@ -25,14 +25,14 @@ namespace NuGet.PackageManagement.UI
             string? authors = null,
             Uri? projectUrl = null,
             string[]? tags = null,
-            string? copyright = null,
             IReadOnlyList<string>? ownersList = null,
             IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
             string? summary = null,
             DateTimeOffset? publishedDate = null,
             LicenseMetadata? licenseMetadata = null,
             Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false)
+            bool requireLicenseAcceptance = false,
+            Uri? iconUrl = null)
         {
             _embeddedResources = embeddedResources ?? throw new ArgumentNullException(nameof(embeddedResources));
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
@@ -41,13 +41,13 @@ namespace NuGet.PackageManagement.UI
             Authors = authors;
             ProjectUrl = projectUrl;
             Tags = tags;
-            Copyright = copyright;
             OwnersList = ownersList;
             Summary = summary;
             PublishedDate = publishedDate;
             LicenseMetadata = licenseMetadata;
             LicenseUrl = licenseUrl;
             RequireLicenseAcceptance = requireLicenseAcceptance;
+            IconUrl = iconUrl;
 
             if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
             {
@@ -77,8 +77,6 @@ namespace NuGet.PackageManagement.UI
 
         public string? Summary { get; }
 
-        public string? Copyright { get; }
-
         public LicenseMetadata? LicenseMetadata { get; }
 
         public Uri? LicenseUrl { get; }
@@ -86,6 +84,8 @@ namespace NuGet.PackageManagement.UI
         public bool RequireLicenseAcceptance { get; }
 
         public DateTimeOffset? PublishedDate { get; }
+
+        public Uri? IconUrl { get; }
 
         public Uri? ReadmeUri => _embeddedResources.ReadmeUri;
 

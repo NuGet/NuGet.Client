@@ -42,6 +42,7 @@ namespace NuGet.PackageManagement.UI
         public IItemLoaderState State => _state;
         private IServiceBroker _serviceBroker;
         private INuGetPackageFileService _packageFileService;
+        private PackageModelFactory _packageModelFactory;
 
         public bool IsMultiSource => _packageSources.Count > 1;
 
@@ -135,6 +136,7 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageFileService = packageFileService ?? await GetPackageFileServiceAsync(CancellationToken.None);
+            _packageModelFactory = new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
         }
 
@@ -318,25 +320,15 @@ namespace NuGet.PackageManagement.UI
                         knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
                     }
 
-                    var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
+                    PackageModel packageModel = _packageModelFactory.Create(metadataContextInfo, _itemFilter);
+
+                    var listItem = new PackageItemViewModel(_searchService, packageModel, _packageVulnerabilityService)
                     {
-                        Id = metadataContextInfo.Identity.Id,
-                        Version = metadataContextInfo.Identity.Version,
-                        IconUrl = metadataContextInfo.IconUrl,
-                        Owner = metadataContextInfo.Owners,
                         KnownOwnerViewModels = knownOwnerViewModels,
-                        Author = metadataContextInfo.Authors,
-                        DownloadCount = metadataContextInfo.DownloadCount,
-                        Summary = metadataContextInfo.Summary,
                         AllowedVersions = allowedVersions,
                         VersionOverride = versionOverride,
                         PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
-                        Recommended = metadataContextInfo.IsRecommended,
-                        RecommenderVersion = metadataContextInfo.RecommenderVersion,
-                        Vulnerabilities = metadataContextInfo.Vulnerabilities,
                         Sources = _packageSources,
-                        PackagePath = metadataContextInfo.PackagePath,
-                        PackageFileService = _packageFileService,
                         IncludePrerelease = _includePrerelease,
                         PackageLevel = packageLevel,
                         AutoReferenced = autoReferenced,

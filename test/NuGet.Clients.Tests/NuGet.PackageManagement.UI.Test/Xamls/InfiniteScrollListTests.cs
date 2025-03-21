@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -276,6 +278,11 @@ namespace NuGet.PackageManagement.UI.Test
             var tcs = new TaskCompletionSource<int>();
             var list = new InfiniteScrollList();
             var searchService = new Mock<INuGetSearchService>();
+            var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+            var embeddedResource = new Mock<IEmbeddedResources>();
+            var vulnerableCapability = new Mock<IVulnerableCapable>();
+            var deprecatedCapability = new Mock<IDeprecationCapable>();
+            var packageModel = new RemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);
 
             var currentStatus = LoadingStatus.Loading;
 
@@ -301,7 +308,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object)));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel: packageModel)));
 
             list.LoadItemsCompleted += (sender, args) =>
             {

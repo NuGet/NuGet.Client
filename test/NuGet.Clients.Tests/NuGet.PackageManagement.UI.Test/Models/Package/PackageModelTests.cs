@@ -73,7 +73,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var authors = "Test Authors";
             var projectUrl = new Uri("http://test.com");
             var tags = new[] { "tag1", "tag2" };
-            var copyright = "Test Copyright";
             var ownersList = new List<string> { "Owner1", "Owner2" };
             var packageDependencyGroups = new List<PackageDependencyGroup>();
             var summary = "Test Summary";
@@ -92,7 +91,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 authors,
                 projectUrl,
                 tags,
-                copyright,
                 ownersList,
                 packageDependencyGroups,
                 summary,
@@ -108,7 +106,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             Assert.Equal(authors, package.Authors);
             Assert.Equal(projectUrl, package.ProjectUrl);
             Assert.Equal(tags, package.Tags);
-            Assert.Equal(copyright, package.Copyright);
             Assert.Equal(ownersList, package.OwnersList);
             Assert.NotNull(package.DependencySets);
             Assert.Equal(packageDependencyGroups.Count, package.DependencySets.Count);
