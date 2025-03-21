@@ -117,10 +117,7 @@ namespace NuGet.CommandLine.XPlat
                 catch (Exception ex)
                 {
                     LogException(ex, log);
-                    var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
-                    tokenList.Add("-h");
-                    rootCommand.Parse(tokenList).Invoke();
-                    exitCodeValue = 1;
+                    exitCodeValue = ExitCodes.Error;
                 }
 
                 return exitCodeValue;
