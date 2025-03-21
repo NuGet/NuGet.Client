@@ -445,7 +445,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: "author1", owners: [string.Empty]);
 
-            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel)
             {
                 KnownOwnerViewModels = new List<KnownOwnerViewModel>()
                 {
