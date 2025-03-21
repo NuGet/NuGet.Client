@@ -769,7 +769,7 @@ namespace NuGet.Commands
 
             if (!restoreRequest.PackageSourceMapping.IsEnabled && httpSourcesCount > 1)
             {
-                // Log a warning if there are more than one configured source and package source mapping is not enabled
+                // Log a warning if there are more than one configured HTTP source and package source mapping is not enabled
                 await _logger.LogAsync(
                     RestoreLogMessage.CreateWarning(
                         NuGetLogCode.NU1507,
@@ -780,15 +780,11 @@ namespace NuGet.Commands
                             string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
             }
 
-            List<LibraryDependency> dependenciesWithVersionOverride = restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled ? new() : null;
-
-            List<LibraryDependency> dependenciesWithDefinedVersion = new();
-
-            List<LibraryDependency> autoReferencedAndDefinedInCentralFile = new();
-
-            List<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = new();
-
-            List<CentralPackageVersion> floatingVersionDependencies = restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled ? null : new();
+            List<CentralPackageVersion> packageVersionItemsWithFloatingVersion = null;
+            List<LibraryDependency> implicitPackageReferenceItemsWithPackageVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithNoPackageVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithVersionOverride = null;
 
             foreach (TargetFrameworkInformation targetFrameworkInformation in _request.Project.TargetFrameworks)
             {
@@ -799,7 +795,9 @@ namespace NuGet.Commands
                         // Implicitly defined packages that the user specified a version for
                         if (targetFrameworkInformation.CentralPackageVersions.ContainsKey(libraryDependency.Name))
                         {
-                            autoReferencedAndDefinedInCentralFile.Add(libraryDependency);
+                            implicitPackageReferenceItemsWithPackageVersion ??= new();
+
+                            implicitPackageReferenceItemsWithPackageVersion.Add(libraryDependency);
                         }
                     }
                     else
@@ -807,19 +805,25 @@ namespace NuGet.Commands
                         // VersionOverride is specified but that functionality is disabled
                         if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled && libraryDependency.VersionOverride != null)
                         {
-                            dependenciesWithVersionOverride.Add(libraryDependency);
+                            packageReferenceItemsWithVersionOverride ??= new();
+
+                            packageReferenceItemsWithVersionOverride.Add(libraryDependency);
                         }
 
                         // Dependencies that have a version specified
                         if (!libraryDependency.VersionCentrallyManaged && libraryDependency.LibraryRange.VersionRange != null && libraryDependency.VersionOverride == null)
                         {
-                            dependenciesWithDefinedVersion.Add(libraryDependency);
+                            packageReferenceItemsWithVersion ??= new();
+
+                            packageReferenceItemsWithVersion.Add(libraryDependency);
                         }
 
                         // Dependencies that have no version specified
                         if (libraryDependency.LibraryRange?.VersionRange == null)
                         {
-                            packageReferencedDependenciesWithoutCentralVersionDefined.Add(libraryDependency);
+                            packageReferenceItemsWithNoPackageVersion ??= new();
+
+                            packageReferenceItemsWithNoPackageVersion.Add(libraryDependency);
                         }
                     }
                 }
@@ -831,66 +835,71 @@ namespace NuGet.Commands
                         // Floating version dependencies
                         if (centralPackageVersion.Value.VersionRange.IsFloating)
                         {
-                            floatingVersionDependencies.Add(centralPackageVersion.Value);
+                            packageVersionItemsWithFloatingVersion ??= new();
+
+                            packageVersionItemsWithFloatingVersion.Add(centralPackageVersion.Value);
                         }
                     }
                 }
             }
 
-            if (dependenciesWithDefinedVersion.Count > 0)
+            if (packageReferenceItemsWithVersion != null && packageReferenceItemsWithVersion.Count > 0)
             {
+                result = false;
+
                 await _logger.LogAsync(
                     RestoreLogMessage.CreateError(
                         NuGetLogCode.NU1008,
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed,
-                            string.Join(", ", dependenciesWithDefinedVersion.Select(d => d.Name)))));
-
-                result = false;
+                            string.Join(", ", packageReferenceItemsWithVersion.Select(d => d.Name)))));
             }
 
-            if (autoReferencedAndDefinedInCentralFile.Count > 0)
+            if (implicitPackageReferenceItemsWithPackageVersion != null && implicitPackageReferenceItemsWithPackageVersion.Count > 0)
             {
+                result = false;
+
                 await _logger.LogAsync(
                     RestoreLogMessage.CreateError(
                         NuGetLogCode.NU1009,
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_CentralPackageManagement_ImplicitPackageReferenceWithVersionNotAllowed,
-                            string.Join(", ", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
-
-                result = false;
+                            string.Join(", ", implicitPackageReferenceItemsWithPackageVersion.Select(d => d.Name)))));
             }
 
-            if (packageReferencedDependenciesWithoutCentralVersionDefined.Count > 0)
+            if (packageReferenceItemsWithNoPackageVersion != null && packageReferenceItemsWithNoPackageVersion.Count > 0)
             {
+                result = false;
+
                 await _logger.LogAsync(
                     RestoreLogMessage.CreateError(
                         NuGetLogCode.NU1010,
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_CentralPackageManagement_MissingPackageVersion,
-                            string.Join(", ", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
-
-                result = false;
+                            string.Join(", ", packageReferenceItemsWithNoPackageVersion.Select(d => d.Name)))));
             }
 
-            if (floatingVersionDependencies != null && floatingVersionDependencies.Count > 0)
+            if (packageVersionItemsWithFloatingVersion != null && packageVersionItemsWithFloatingVersion.Count > 0)
             {
+                result = false;
+
                 await _logger.LogAsync(
                     RestoreLogMessage.CreateError(
                         NuGetLogCode.NU1011,
-                        Strings.Error_CentralPackageManagement_FloatingVersionsNotAllowed));
-
-                result = false;
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageManagement_FloatingVersionsNotAllowed,
+                            string.Join(", ", packageVersionItemsWithFloatingVersion.Select(i => i.Name)))));
             }
 
-            if (dependenciesWithVersionOverride != null)
+            if (packageReferenceItemsWithVersionOverride != null && packageReferenceItemsWithVersionOverride.Count > 0)
             {
                 result = false;
 
-                foreach (var item in dependenciesWithVersionOverride)
+                foreach (var item in packageReferenceItemsWithVersionOverride)
                 {
                     await _logger.LogAsync(
                         RestoreLogMessage.CreateError(
