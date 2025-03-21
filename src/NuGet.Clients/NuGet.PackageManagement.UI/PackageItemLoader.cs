@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -276,7 +275,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (packageLevel == PackageLevel.Transitive)
                     {
-                        UpdateTransitiveInfo(existingListItem, metadataContextInfo);
+                        existingListItem.UpdateTransitiveInfo(metadataContextInfo);
                     }
 
                     existingListItem.UpdateInstalledPackagesVulnerabilities(metadataContextInfo.Identity);
@@ -337,8 +336,8 @@ namespace NuGet.PackageManagement.UI
                     }
                     else
                     {
-                        UpdateTransitiveInfo(listItem, metadataContextInfo);
-                        listItem.UpdateTransitivePackageStatus(metadataContextInfo.Identity.Version);
+                        listItem.UpdateTransitiveInfo(metadataContextInfo);
+                        listItem.UpdateTransitivePackageStatus();
                     }
 
                     listItemViewModels[packageId] = listItem;
@@ -346,13 +345,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             return listItemViewModels.Values.ToArray();
-        }
-
-        private static void UpdateTransitiveInfo(PackageItemViewModel listItem, PackageSearchMetadataContextInfo metadataContextInfo)
-        {
-            listItem.TransitiveInstalledVersions.Add(metadataContextInfo.Identity.Version);
-            listItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
-            listItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", listItem.TransitiveInstalledVersions), string.Join(", ", listItem.TransitiveOrigins));
         }
 
         private static ImmutableList<KnownOwnerViewModel> LoadKnownOwnerViewModels(PackageSearchMetadataContextInfo metadataContextInfo)

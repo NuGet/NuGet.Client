@@ -38,19 +38,18 @@ namespace NuGet.PackageManagement.UI
             }
 
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
-            PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
-            IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
 
             if (metadata.PackagePath != null)
             {
                 if (metadata.TransitiveOrigins != null)
                 {
                     IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
+                    IDeprecationCapable noDeprecationCapable = new NoDeprecationCapability();
                     return new TransitivelyReferencedPackageModel(
                         metadata.Identity!,
                         metadata.PackagePath,
                         vulnerableDatabaseCapability,
-                        deprecationCapable,
+                        noDeprecationCapable,
                         embeddedResources,
                         metadata.TransitiveOrigins,
                         metadata.Title,
@@ -69,6 +68,8 @@ namespace NuGet.PackageManagement.UI
                         metadata.IconUrl);
                 }
 
+                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
                 IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
                 if (!itemFilter.Equals(ContractItemFilter.Installed))
@@ -117,6 +118,8 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
                 VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
                 if (metadata.IsRecommended)
