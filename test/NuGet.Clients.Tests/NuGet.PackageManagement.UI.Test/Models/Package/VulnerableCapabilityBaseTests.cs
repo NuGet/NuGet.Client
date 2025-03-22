@@ -50,23 +50,23 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         }
 
         [Fact]
-        public void VulnerabilityMaxSeverity_EmptyVulnerabilitiesList_ThrowsException()
+        public void VulnerabilityMaxSeverity_EmptyVulnerabilitiesList_ReturnsUnknown()
         {
             // Arrange
             var vulnerableCapability = new TestVulnerableCapability([]);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => vulnerableCapability.VulnerabilityMaxSeverity);
+            Assert.Equal(PackageVulnerabilitySeverity.Unknown, vulnerableCapability.VulnerabilityMaxSeverity);
         }
 
         [Fact]
-        public void VulnerabilityMaxSeverity_NullVulnerabilitiesList_ThrowsException()
+        public void VulnerabilityMaxSeverity_NullVulnerabilitiesList_ReturnsUnknown()
         {
             // Arrange
             var vulnerableCapability = new TestVulnerableCapability(null);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => vulnerableCapability.VulnerabilityMaxSeverity);
+            Assert.Equal(PackageVulnerabilitySeverity.Unknown, vulnerableCapability.VulnerabilityMaxSeverity);
         }
 
         [Fact]

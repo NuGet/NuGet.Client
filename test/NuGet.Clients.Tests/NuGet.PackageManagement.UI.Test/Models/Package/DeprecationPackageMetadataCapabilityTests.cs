@@ -4,11 +4,11 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Protocol.Model;
+using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
@@ -38,7 +38,8 @@ namespace NuGet.PackageManagement.UI.Test
         public async Task PopulateDataAsync_WithValidData_PopulatesDeprecationMetadata()
         {
             // Arrange
-            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", new List<string> { "Legacy" }, null);
+            var alternatePackageMetadata = new AlternatePackageMetadataContextInfo("Test.Package", It.IsAny<VersionRange>());
+            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", ["Legacy"], alternatePackageMetadata);
             _packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
@@ -48,14 +49,14 @@ namespace NuGet.PackageManagement.UI.Test
             await capability.PopulateDataAsync(CancellationToken.None);
 
             // Assert
-            Assert.Equal(deprecationMetadata, capability.DeprecationMetadata);
+            Assert.Equal(alternatePackageMetadata, capability.AlternatePackage);
         }
 
         [Fact]
         public async Task IsDeprecated_WithDeprecationMetadata_IsTrue()
         {
             // Arrange
-            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", new List<string> { "Legacy" }, null);
+            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", ["Legacy"], null);
             _packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deprecationMetadata);
 
