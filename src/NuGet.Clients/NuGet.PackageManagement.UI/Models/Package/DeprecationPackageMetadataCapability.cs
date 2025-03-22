@@ -15,21 +15,22 @@ namespace NuGet.PackageManagement.UI
     internal class DeprecationPackageMetadataCapability : IDeprecationCapable
     {
         private readonly IPackageMetadataRetrievalAdapter _packageMetadataRetrievalAdapter;
+        private PackageDeprecationMetadataContextInfo? _deprecationMetadata;
 
         public DeprecationPackageMetadataCapability(IPackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter)
         {
             _packageMetadataRetrievalAdapter = packageMetadataRetrievalAdapter ?? throw new ArgumentNullException(nameof(packageMetadataRetrievalAdapter));
         }
 
-        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; private set; }
+        public AlternatePackageMetadataContextInfo? AlternatePackage => _deprecationMetadata?.AlternatePackage;
 
-        public bool IsDeprecated => DeprecationMetadata != null;
+        public bool IsDeprecated => _deprecationMetadata != null;
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons
         {
             get
             {
-                if (DeprecationMetadata?.Reasons == null || !DeprecationMetadata.Reasons.Any())
+                if (_deprecationMetadata?.Reasons == null || !_deprecationMetadata.Reasons.Any())
                 {
                     return PackageDeprecationReasonEnum.Unknown;
                 }
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.UI
                 bool hasCriticalBugs = false;
                 bool hasLegacy = false;
 
-                foreach (var reason in DeprecationMetadata.Reasons)
+                foreach (var reason in _deprecationMetadata.Reasons)
                 {
                     if (string.Equals(reason, PackageDeprecationReason.CriticalBugs, StringComparison.OrdinalIgnoreCase))
                     {
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            DeprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(cancellationToken);
+            _deprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(cancellationToken);
         }
     }
 }

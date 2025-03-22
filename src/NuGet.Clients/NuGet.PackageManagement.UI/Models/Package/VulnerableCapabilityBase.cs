@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!IsVulnerable || Vulnerabilities is null)
                 {
-                    throw new InvalidOperationException("Vulnerabilities is empty");
+                    return PackageVulnerabilitySeverity.Unknown;
                 }
 
                 // Vulnerabilities are ordered on set so the first element is always the highest severity

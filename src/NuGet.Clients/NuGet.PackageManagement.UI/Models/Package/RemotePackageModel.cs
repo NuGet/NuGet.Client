@@ -61,13 +61,15 @@ namespace NuGet.PackageManagement.UI
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
+        public AlternatePackageMetadataContextInfo? AlternatePackage => _deprecationCapability.AlternatePackage;
+
         public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
 
         public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
-        public async Task PopulateDataAsync(CancellationToken cancellationToken)
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             await _vulnerableCapability.PopulateDataAsync(cancellationToken);
             await _deprecationCapability.PopulateDataAsync(cancellationToken);
