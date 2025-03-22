@@ -135,7 +135,6 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageFileService = packageFileService ?? await GetPackageFileServiceAsync(CancellationToken.None);
-            _packageModelFactory = new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
         }
 
@@ -317,6 +316,7 @@ namespace NuGet.PackageManagement.UI
                         knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
                     }
 
+                    _packageModelFactory ??= new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
                     PackageModel packageModel = _packageModelFactory.Create(metadataContextInfo, _itemFilter);
 
                     var listItem = new PackageItemViewModel(_searchService, packageModel, _packageVulnerabilityService)

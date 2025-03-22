@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -28,6 +30,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             bool requireLicenseAcceptance = false)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance)
         {
+        }
+
+        public override Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
