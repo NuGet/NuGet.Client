@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
-        public async Task PopulateDataAsync(CancellationToken cancellationToken)
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             await _vulnerableCapability.PopulateDataAsync(cancellationToken);
         }

@@ -6,6 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Model;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,6 +15,8 @@ namespace NuGet.PackageManagement.UI
         public bool IsDeprecated { get; }
 
         public PackageDeprecationReasonEnum PackageDeprecationReasons { get; }
+
+        public AlternatePackageMetadataContextInfo? AlternatePackage { get; }
 
         public Task PopulateDataAsync(CancellationToken cancellationToken);
     }

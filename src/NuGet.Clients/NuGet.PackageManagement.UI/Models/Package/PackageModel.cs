@@ -89,6 +89,8 @@ namespace NuGet.PackageManagement.UI
 
         public Uri? ReadmeUri => _embeddedResources.ReadmeUri;
 
+        public abstract Task PopulateDataAsync(CancellationToken cancellationToken);
+
         public ValueTask<Stream?> GetIconAsync(CancellationToken cancellationToken) => _embeddedResources.GetIconAsync(cancellationToken);
 
         public ValueTask<Stream?> GetLicenseAsync(CancellationToken cancellationToken) => _embeddedResources.GetLicenseAsync(cancellationToken);
