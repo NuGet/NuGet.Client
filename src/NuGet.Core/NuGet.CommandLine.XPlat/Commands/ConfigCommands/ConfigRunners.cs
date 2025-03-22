@@ -51,12 +51,6 @@ namespace NuGet.CommandLine.XPlat
         {
             RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
 
-            if (args.AllOrConfigKey == null)
-            {
-                getLogger().LogError(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, "null"));
-                return ExitCodes.Error;
-            }
-
             Settings settings;
             try
             {

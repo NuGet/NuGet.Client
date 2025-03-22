@@ -38,8 +38,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static CliArgument<string> AllOrConfigKeyArgument = new CliArgument<string>(name: "all-or-config-key")
         {
-            Arity = ArgumentArity.ZeroOrOne,
-            HelpName = Strings.ConfigGetAllOrConfigKeyDescription,
+            Arity = ArgumentArity.ExactlyOne,
             Description = Strings.ConfigGetAllOrConfigKeyDescription
         };
 
