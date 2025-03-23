@@ -370,7 +370,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => (_packageModel as IDeprecationCapable)?.IsDeprecated ?? false;
 
-        public bool IsPackageVulnerable => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false;
+        public bool IsPackageVulnerable => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false || VulnerableVersions.Count > 0;
 
         public int VulnerabilityMaxSeverity
         {
@@ -722,56 +722,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task ReloadTopLevelPackageMetadataAsync()
+        private async Task ReloadPackageMetadataAsync()
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
-            try
+            await RunOperationAsync(async (cancellationToken) =>
             {
                 await _packageModel.PopulateDataAsync(cancellationToken);
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                OnPropertyChanged(nameof(IsPackageDeprecated));
-                OnPropertyChanged(nameof(AlternatePackage));
-                OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
-                OnPropertyChanged(nameof(IsPackageVulnerable));
-                OnPropertyChanged(nameof(IsPackageWithWarnings));
+                if (_packageModel is IDeprecationCapable deprecationCapable)
+                {
+                    UpdateDeprecationInfo(deprecationCapable);
+                }
 
-                if (_packageModel is IVulnerableCapable vulnPackage)
+                if (_packageModel is IVulnerableCapable vulnerableCapable)
                 {
-                    SetVulnerabilityMaxSeverity(Version, (int)vulnPackage.VulnerabilityMaxSeverity);
+                    UpdateVulnerabilityInfo(vulnerableCapable);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // UI requested cancellation.
-            }
-            catch (TimeoutException)
-            {
-                // Our code throws a TimeoutException for HTTP timeouts
-                try
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                    IsPackageWithNetworkErrors = true;
-                }
-                catch (OperationCanceledException)
-                {
-                    // if cancellationToken cancelled before the above is scheduled on UI thread, don't log fault telemetry
-                }
-            }
+            });
         }
 
-        private async Task ReloadTransitivePackageMetadataAsync()
+        private async Task RunOperationAsync(Func<CancellationToken, Task> func)
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
-
             try
             {
-                if (_vulnerabilityService != null)
-                {
-                    var identity = new PackageIdentity(Id, Version);
-                    await UpdatePackageMaxVulnerabilityAsync(identity, cancellationToken);
-                }
+                await func(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -794,12 +769,14 @@ namespace NuGet.PackageManagement.UI
 
         private async Task UpdatePackageMaxVulnerabilityAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            await RunOperationAsync(async (cancellationToken) =>
+            {
+                IVulnerableCapable vulnerabilityDatabaseCapability = new VulnerableDatabaseCapability(_vulnerabilityService, packageIdentity);
+                await vulnerabilityDatabaseCapability.PopulateDataAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
-            IVulnerableCapable vulnerabilityDatabaseCapability = new VulnerableDatabaseCapability(_vulnerabilityService, packageIdentity);
-            await vulnerabilityDatabaseCapability.PopulateDataAsync(cancellationToken);
-
-            SetVulnerabilityMaxSeverity(packageIdentity.Version, (int)vulnerabilityDatabaseCapability.VulnerabilityMaxSeverity);
+                UpdateVulnerabilityInfo(vulnerabilityDatabaseCapability);
+            });
         }
 
         private void SetVulnerabilityMaxSeverity(NuGetVersion version, int maxSeverity)
@@ -808,13 +785,37 @@ namespace NuGet.PackageManagement.UI
             {
                 if (VulnerableVersions.TryAdd(version, maxSeverity))
                 {
+                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
                     OnPropertyChanged(nameof(VulnerableVersions));
                     OnPropertyChanged(nameof(VulnerableVersionsString));
-                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
                 }
 
                 OnPropertyChanged(nameof(Status));
             }
+        }
+
+        private void UpdateDeprecationInfo(IDeprecationCapable deprecationCapable)
+        {
+            if (deprecationCapable == null)
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsPackageDeprecated));
+            OnPropertyChanged(nameof(AlternatePackage));
+        }
+
+        private void UpdateVulnerabilityInfo(IVulnerableCapable vulnerableCapable)
+        {
+            if (vulnerableCapable == null)
+            {
+                return;
+            }
+
+            SetVulnerabilityMaxSeverity(Version, (int)vulnerableCapable.VulnerabilityMaxSeverity);
+            OnPropertyChanged(nameof(IsPackageVulnerable));
+            OnPropertyChanged(nameof(IsPackageWithWarnings));
+            OnPropertyChanged(nameof(Vulnerabilities));
         }
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
@@ -828,40 +829,26 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
         {
-            if (PackageLevel == PackageLevel.TopLevel)
+            // Get the maximum version installed in any target project/solution
+            InstalledVersion = installedPackages
+                .GetPackageVersions(Id)
+                .MaxOrDefault();
+
+            if (clearCache && InstalledVersion != null)
             {
-                // Get the maximum version installed in any target project/solution
-                InstalledVersion = installedPackages
-                    .GetPackageVersions(Id)
-                    .MaxOrDefault();
-
-                if (clearCache && InstalledVersion != null)
-                {
-                    _searchService.ClearFromCache(Id, Sources, IncludePrerelease);
-                }
-
-                // Set auto referenced to true any reference for the given id contains the flag.
-                AutoReferenced = installedPackages.IsAutoReferenced(Id);
-
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(ReloadPackageVersionsAsync)
-                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
-
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(ReloadTopLevelPackageMetadataAsync)
-                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadTopLevelPackageMetadataAsync));
+                _searchService.ClearFromCache(Id, Sources, IncludePrerelease);
             }
-            else
-            {
-                InstalledVersion = Version;
 
-                // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
-                LatestVersion = InstalledVersion;
+            // Set auto referenced to true any reference for the given id contains the flag.
+            AutoReferenced = installedPackages.IsAutoReferenced(Id);
 
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(ReloadTransitivePackageMetadataAsync)
-                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadTransitivePackageMetadataAsync));
-            }
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageVersionsAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
+
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageMetadataAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
 
             OnPropertyChanged(nameof(Status));
         }
@@ -874,8 +861,8 @@ namespace NuGet.PackageManagement.UI
             LatestVersion = InstalledVersion;
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadTransitivePackageMetadataAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadTransitivePackageMetadataAsync));
+                .RunAsync(ReloadPackageMetadataAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
 
             OnPropertyChanged(nameof(Status));
         }
