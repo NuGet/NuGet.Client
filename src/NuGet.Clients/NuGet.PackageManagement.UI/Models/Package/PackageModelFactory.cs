@@ -39,41 +39,15 @@ namespace NuGet.PackageManagement.UI
 
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
 
+            PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+            IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
+            IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+
             if (metadata.PackagePath != null)
             {
-                if (metadata.TransitiveOrigins != null)
-                {
-                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
-                    IDeprecationCapable noDeprecationCapable = new NoDeprecationCapability();
-                    return new TransitivelyReferencedPackageModel(
-                        metadata.Identity!,
-                        metadata.PackagePath,
-                        vulnerableDatabaseCapability,
-                        noDeprecationCapable,
-                        embeddedResources,
-                        metadata.TransitiveOrigins,
-                        metadata.Title,
-                        metadata.Description,
-                        metadata.Authors,
-                        metadata.ProjectUrl,
-                        metadata.Tags?.Split(','),
-                        metadata.OwnersList,
-                        metadata.DependencySets,
-                        metadata.Summary,
-                        metadata.Published,
-                        metadata.LicenseMetadata,
-                        metadata.LicenseUrl,
-                        metadata.RequireLicenseAcceptance,
-                        metadata.ReportAbuseUrl?.ToString(),
-                        metadata.IconUrl);
-                }
-
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
-                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
-                IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
-
                 if (!itemFilter.Equals(ContractItemFilter.Installed))
                 {
+                    // Package from the local folder
                     return new LocalPackageModel(
                         metadata.Identity!,
                         metadata.PackagePath,
@@ -94,7 +68,7 @@ namespace NuGet.PackageManagement.UI
                         metadata.IconUrl);
                 }
 
-                // installed and no transitive origins
+                // Installed package with a PackageReference
                 return new ReferencedPackageModel(
                     metadata.Identity!,
                     metadata.PackagePath,
@@ -118,11 +92,32 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
-                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
-                VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+                // Transitive dependencies are only available in the Installed tab
+                if (metadata.TransitiveOrigins != null && itemFilter.Equals(ContractItemFilter.Installed))
+                {
+                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
+                    return new TransitivelyReferencedPackageModel(
+                        metadata.Identity!,
+                        vulnerableDatabaseCapability,
+                        embeddedResources,
+                        metadata.TransitiveOrigins,
+                        metadata.Title,
+                        metadata.Description,
+                        metadata.Authors,
+                        metadata.ProjectUrl,
+                        metadata.Tags?.Split(','),
+                        metadata.OwnersList,
+                        metadata.DependencySets,
+                        metadata.Summary,
+                        metadata.Published,
+                        metadata.LicenseMetadata,
+                        metadata.LicenseUrl,
+                        metadata.RequireLicenseAcceptance,
+                        metadata.ReportAbuseUrl?.ToString(),
+                        metadata.IconUrl);
+                }
 
-                if (metadata.IsRecommended)
+                if (metadata.IsRecommended && itemFilter.Equals(ContractItemFilter.All))
                 {
                     var recommenderVersion = metadata.RecommenderVersion ?? throw new ArgumentNullException(nameof(metadata.RecommenderVersion));
 
