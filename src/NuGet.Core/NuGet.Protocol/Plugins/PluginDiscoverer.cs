@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -244,7 +245,12 @@ namespace NuGet.Protocol.Plugins
         {
             var pluginFiles = new List<PluginFile>();
 
-            if (Directory.Exists(directoryPath))
+            if (!Directory.Exists(directoryPath))
+            {
+                return pluginFiles;
+            }
+
+            try
             {
                 var directoryInfo = new DirectoryInfo(directoryPath);
                 var files = directoryInfo.GetFiles("nuget-plugin-*");
@@ -258,6 +264,10 @@ namespace NuGet.Protocol.Plugins
                     }
                 }
             }
+            catch (UnauthorizedAccessException) { }
+            catch (SecurityException) { }
+            catch (PathTooLongException) { }
+            catch (DirectoryNotFoundException) { }
 
             return pluginFiles;
         }
