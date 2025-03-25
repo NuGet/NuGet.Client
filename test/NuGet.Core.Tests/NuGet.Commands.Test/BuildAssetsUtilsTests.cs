@@ -666,7 +666,8 @@ namespace NuGet.Commands.Test
                             ""dependencies"": {
                                 ""PACKAGEA"" : {
                                     ""version"" : ""1.0.0"",
-                                    ""generatePathProperty"": ""true""
+                                    ""generatePathProperty"": true,
+                                    ""target"": ""package""
                                 }
                             }
                         }
