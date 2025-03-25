@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -62,7 +63,7 @@ namespace NuGet.CommandLine.XPlat.Tests
             return await RestoreRunner.RunAsync(restoreContext);
         }
 
-        public static PackageSpec GetProject(string projectName, string framework)
+        public static PackageSpec GetProject(string projectName, string framework, LibraryDependency dependency)
         {
             var targetFrameworkInfo = new TargetFrameworkInformation()
             {
@@ -79,6 +80,7 @@ namespace NuGet.CommandLine.XPlat.Tests
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
             spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName) { TargetAlias = framework });
+            spec.TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = targetFrameworkInfo.FrameworkName, Dependencies = [dependency] });
 
             return spec;
         }
