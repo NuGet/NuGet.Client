@@ -17,7 +17,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var packagePath = "path/to/package";
             var mockVulnerableCapability = new Mock<IVulnerableCapable>();
             var mockDeprecationCapability = new Mock<IDeprecationCapable>();
             var mockEmbeddedCapability = new Mock<IEmbeddedResources>();
@@ -30,9 +29,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Act
             var model = new TransitivelyReferencedPackageModel(
                 identity,
-                packagePath,
                 mockVulnerableCapability.Object,
-                mockDeprecationCapability.Object,
                 mockEmbeddedCapability.Object,
                 transitiveOrigins);
 

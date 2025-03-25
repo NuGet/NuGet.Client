@@ -5,18 +5,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models
 {
-    internal class TransitivelyReferencedPackageModel : ReferencedPackageModel
+    internal class TransitivelyReferencedPackageModel : PackageModel, IVulnerableCapable
     {
+        private readonly IVulnerableCapable _vulnerableCapability;
+
         public TransitivelyReferencedPackageModel(
             PackageIdentity identity,
-            string packagePath,
             IVulnerableCapable vulnerableCapability,
-            IDeprecationCapable deprecationCapability,
             IEmbeddedResources embeddedResources,
             IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
@@ -34,9 +38,6 @@ namespace NuGet.PackageManagement.UI.Models
             string? reportAbuseUrl = null,
             Uri? iconUrl = null)
             : base(identity,
-                  packagePath,
-                  vulnerableCapability,
-                  deprecationCapability,
                   embeddedResources,
                   title,
                   description,
@@ -50,11 +51,23 @@ namespace NuGet.PackageManagement.UI.Models
                   licenseMetadata,
                   licenseUrl,
                   requireLicenseAcceptance,
-                  reportAbuseUrl,
                   iconUrl)
         {
+            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             TransitiveOrigins = transitiveOrigins;
         }
+
         public IReadOnlyCollection<PackageIdentity> TransitiveOrigins { get; }
+
+        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
+
+        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
+
+        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
+
+        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
+        {
+            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
+        }
     }
 }
