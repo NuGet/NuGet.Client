@@ -208,7 +208,12 @@ namespace NuGet.Protocol.Plugins
                     }
                     else if (Directory.Exists(path))
                     {
-                        pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
+                        List<PluginFile> plugins = GetNetToolsPluginsInDirectory(path);
+
+                        if (plugins != null)
+                        {
+                            pluginFiles.AddRange(plugins);
+                        }
                     }
                 }
                 else
@@ -234,7 +239,12 @@ namespace NuGet.Protocol.Plugins
             {
                 if (PathValidator.IsValidLocalPath(path) || PathValidator.IsValidUncPath(path))
                 {
-                    pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
+                    List<PluginFile> plugins = GetNetToolsPluginsInDirectory(path);
+
+                    if (plugins != null)
+                    {
+                        pluginFiles.AddRange(plugins);
+                    }
                 }
             }
 
@@ -243,7 +253,7 @@ namespace NuGet.Protocol.Plugins
 
         private static List<PluginFile> GetNetToolsPluginsInDirectory(string directoryPath)
         {
-            var pluginFiles = new List<PluginFile>();
+            List<PluginFile> pluginFiles = null;
 
             if (!Directory.Exists(directoryPath))
             {
@@ -260,6 +270,7 @@ namespace NuGet.Protocol.Plugins
                     if (IsValidPluginFile(file))
                     {
                         PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: false);
+                        pluginFiles ??= [];
                         pluginFiles.Add(pluginFile);
                     }
                 }
@@ -268,6 +279,7 @@ namespace NuGet.Protocol.Plugins
             catch (SecurityException) { }
             catch (PathTooLongException) { }
             catch (DirectoryNotFoundException) { }
+            catch (DriveNotFoundException) { }
 
             return pluginFiles;
         }
