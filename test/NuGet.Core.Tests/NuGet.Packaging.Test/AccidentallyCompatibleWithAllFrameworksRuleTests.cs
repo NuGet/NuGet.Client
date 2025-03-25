@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Test
                 new object[] { new string[] {"build/net45/test.props", "lib/net45/test.dll"} },
                 new object[] { new string[] {"ref/net45/test.dll"} },
                 new object[] { new string[] {"lib/net45/test.dll"} },
-                // build/all/* and build/ without TFM are by design compatible with all frameworks
+                // build/any/* and build/ without TFM are by design compatible with all frameworks
                 new object[] { new string[] {"build/any/test.props"} },
                 new object[] { new string[] {"build/test.props"} },
                 // build/??/* where ?? is not a valid TFM is commonly used, so we should not warn
@@ -54,6 +54,7 @@ namespace NuGet.Packaging.Test
                 // buildCrossTargeting/* and buildMultiTargeting/* also force the package to be compatible with all TFMs
                 new object[] { new string[] {"build/net45/test.props", "buildMultiTargeting/test.props"} },
                 new object[] { new string[] {"build/net45/test.props", "buildCrossTargeting/test.props" } },
+                new object[] { new string[] {"buildTransitive/net45/test.targets", "buildMultiTargeting/test.targets"} },
             };
 
             public static readonly List<object[]> WarningRaisedData = new List<object[]>
