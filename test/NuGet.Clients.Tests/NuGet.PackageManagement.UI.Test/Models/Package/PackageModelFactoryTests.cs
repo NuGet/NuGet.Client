@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         }
 
         [Fact]
-        public void Create_TransitivePackage_ReturnsTransitivelyReferencedPackageModel()
+        public void Create_PackageWithTransitiveOrigins_ReturnsTransitivelyReferencedPackageModel()
         {
             // Arrange
             var packageSearchMetadata = new PackageSearchMetadataContextInfo()

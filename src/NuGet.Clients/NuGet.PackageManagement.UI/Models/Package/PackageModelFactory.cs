@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (itemFilter.Equals(ContractItemFilter.All))
                 {
-                    // Package from the local folder
+                    // Package from a local folder
                     return new LocalPackageModel(
                         metadata.Identity!,
                         metadata.PackagePath,
