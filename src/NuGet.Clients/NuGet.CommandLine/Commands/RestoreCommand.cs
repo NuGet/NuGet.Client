@@ -995,6 +995,16 @@ namespace NuGet.CommandLine
 
         private void ProcessSolutionFile(string solutionFileFullPath, PackageRestoreInputs restoreInputs)
         {
+            var msBuildToolset = MsBuildDirectory.Value;
+            if (Path.GetExtension(solutionFileFullPath).Equals(".slnx", StringComparison.OrdinalIgnoreCase)
+                && msBuildToolset.ParsedVersion < new Version(17, 13))
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_UnsupportedMsBuildForSlnx)),
+                    msBuildToolset.Version));
+            }
+
             restoreInputs.DirectoryOfSolutionFile = Path.GetDirectoryName(solutionFileFullPath);
             restoreInputs.NameOfSolutionFile = Path.GetFileNameWithoutExtension(solutionFileFullPath);
 
