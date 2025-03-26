@@ -226,7 +226,7 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                await ShowHttpSourcesError();
+                _success &= await ShowHttpSourcesError();
 
                 _success &= HasValidPlatformVersions();
 
@@ -427,7 +427,7 @@ namespace NuGet.Commands
             return (null, noOpCacheFileEvaluation, cacheFile);
         }
 
-        private async Task ShowHttpSourcesError()
+        private async Task<bool> ShowHttpSourcesError()
         {
             if (_request.DependencyProviders.RemoteProviders != null)
             {
@@ -444,6 +444,7 @@ namespace NuGet.Commands
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
                             string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+                            return false;
                         }
                         else
                         {
@@ -453,6 +454,7 @@ namespace NuGet.Commands
                     }
                 }
             }
+            return true;
         }
 
         private async Task<(bool, bool, string, PackagesLockFile)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, string packagesLockFilePath, PackagesLockFile packagesLockFile, CancellationToken token)
