@@ -19,12 +19,12 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
     public class LocalPackageModelTests
     {
         private Mock<IVulnerableCapable> _vulnerableCapabilityMock;
-        private Mock<IEmbeddedResources> _embeddedResourcesMock;
+        private Mock<IEmbeddedResourcesCapable> _embeddedResourcesMock;
 
         public LocalPackageModelTests()
         {
             _vulnerableCapabilityMock = new Mock<IVulnerableCapable>();
-            _embeddedResourcesMock = new Mock<IEmbeddedResources>();
+            _embeddedResourcesMock = new Mock<IEmbeddedResourcesCapable>();
         }
 
         [Fact]

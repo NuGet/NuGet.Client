@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var mockVulnerableCapability = new Mock<IVulnerableCapable>();
             var mockDeprecationCapability = new Mock<IDeprecationCapable>();
-            var mockEmbeddedCapability = new Mock<IEmbeddedResources>();
+            var mockEmbeddedCapability = new Mock<IEmbeddedResourcesCapable>();
             var transitiveOrigins = new List<PackageIdentity>
             {
                 new PackageIdentity("OriginPackage1", new NuGetVersion("1.0.0")),

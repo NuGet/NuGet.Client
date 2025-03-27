@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI.Models
             string packagePath,
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,

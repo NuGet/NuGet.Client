@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI.Models
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             (string modelVersion, string vsixVersion) recommenderVersion,
             string? title = null,
             string? description = null,
