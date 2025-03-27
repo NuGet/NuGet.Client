@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             // Act
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<INuGetSearchService>();
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             // Act
@@ -187,7 +187,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<INuGetSearchService>();
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 

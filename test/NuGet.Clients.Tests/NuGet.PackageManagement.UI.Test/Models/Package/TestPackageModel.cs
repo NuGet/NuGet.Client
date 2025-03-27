@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
     internal class TestPackageModel : PackageModel
     {
         public TestPackageModel(PackageIdentity identity,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,

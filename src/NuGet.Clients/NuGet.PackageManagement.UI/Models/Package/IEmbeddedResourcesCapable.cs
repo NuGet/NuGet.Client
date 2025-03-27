@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal interface IEmbeddedResources
+    internal interface IEmbeddedResourcesCapable
     {
         Uri? ReadmeUri { get; }
 

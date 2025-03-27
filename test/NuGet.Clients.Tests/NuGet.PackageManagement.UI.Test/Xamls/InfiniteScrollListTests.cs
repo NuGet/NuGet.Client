@@ -279,7 +279,7 @@ namespace NuGet.PackageManagement.UI.Test
             var list = new InfiniteScrollList();
             var searchService = new Mock<INuGetSearchService>();
             var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var embeddedResource = new Mock<IEmbeddedResources>();
+            var embeddedResource = new Mock<IEmbeddedResourcesCapable>();
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var deprecatedCapability = new Mock<IDeprecationCapable>();
             var packageModel = new RemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);

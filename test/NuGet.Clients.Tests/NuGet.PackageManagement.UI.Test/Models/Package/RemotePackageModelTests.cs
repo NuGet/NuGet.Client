@@ -21,13 +21,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
     {
         private readonly Mock<IVulnerableCapable> _vulnerableCapabilityMock;
         private readonly Mock<IDeprecationCapable> _deprecationCapabilityMock;
-        private readonly Mock<IEmbeddedResources> _embeddedResourcesMock;
+        private readonly Mock<IEmbeddedResourcesCapable> _embeddedResourcesMock;
 
         public RemotePackageModelTests()
         {
             _vulnerableCapabilityMock = new Mock<IVulnerableCapable>();
             _deprecationCapabilityMock = new Mock<IDeprecationCapable>();
-            _embeddedResourcesMock = new Mock<IEmbeddedResources>();
+            _embeddedResourcesMock = new Mock<IEmbeddedResourcesCapable>();
         }
 
         [Fact]
