@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public bool IsBusy
         {
-            get => _isBusy || ReadmeViewModel.IsBusy;
+            get => _isBusy || (ReadmeViewModel?.IsBusy).GetValueOrDefault(false);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public bool IsReadmeReady
         {
-            get => !_isBusy && ReadmeViewModel.IsReadmeReady;
+            get => !_isBusy && (ReadmeViewModel?.IsReadmeReady).GetValueOrDefault(false);
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
-                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                if (!string.IsNullOrWhiteSpace(ReadmeViewModel?.ReadmeMarkdown))
                 {
                     CancelAndExchangeToken();
                     UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _markdownRenderingCancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+            if (!string.IsNullOrWhiteSpace(ReadmeViewModel?.ReadmeMarkdown))
             {
                 CancelAndExchangeToken();
                 UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _markdownRenderingCancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
