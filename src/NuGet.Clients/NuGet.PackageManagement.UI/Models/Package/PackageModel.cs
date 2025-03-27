@@ -14,12 +14,12 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    public abstract class PackageModel : IEmbeddedResources
+    public abstract class PackageModel : IEmbeddedResourcesCapable
     {
-        private readonly IEmbeddedResources _embeddedResources;
+        private readonly IEmbeddedResourcesCapable _embeddedResources;
 
         internal PackageModel(PackageIdentity identity,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,

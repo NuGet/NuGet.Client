@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI.Models
         public TransitivelyReferencedPackageModel(
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             IReadOnlyCollection<PackageIdentity> transitiveOrigins,
             string? title = null,
             string? description = null,

@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
             PackageIdentity identity,
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,

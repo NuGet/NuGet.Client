@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,
-            IEmbeddedResources embeddedResources,
+            IEmbeddedResourcesCapable embeddedResources,
             string? title = null,
             string? description = null,
             string? authors = null,

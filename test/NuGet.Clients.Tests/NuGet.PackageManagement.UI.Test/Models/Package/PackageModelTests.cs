@@ -19,11 +19,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class PackageModelTests
     {
-        private readonly Mock<IEmbeddedResources> _embeddedResourcesMock;
+        private readonly Mock<IEmbeddedResourcesCapable> _embeddedResourcesMock;
 
         public PackageModelTests()
         {
-            _embeddedResourcesMock = new Mock<IEmbeddedResources>();
+            _embeddedResourcesMock = new Mock<IEmbeddedResourcesCapable>();
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Arrange
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            IEmbeddedResources? embeddedResources = null;
+            IEmbeddedResourcesCapable? embeddedResources = null;
 
             // Act
             // Assert

@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<INuGetSearchService>();
             var identity = new PackageIdentity("package", testVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -328,7 +328,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -382,7 +382,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -434,7 +434,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -476,7 +476,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("a", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -701,7 +701,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -813,7 +813,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -938,7 +938,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1151,7 +1151,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1257,7 +1257,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1364,7 +1364,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1520,7 +1520,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1576,7 +1576,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1617,7 +1617,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("a", new NuGetVersion(installedVersion));
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
@@ -1813,7 +1813,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
-            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var knownOwnerCapability = new Mock<IKnownOwnersCapable>();
             var deprecationCapability = new Mock<IDeprecationCapable>();
 
