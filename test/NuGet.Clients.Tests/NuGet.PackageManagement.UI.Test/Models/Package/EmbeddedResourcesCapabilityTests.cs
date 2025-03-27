@@ -7,13 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.UI.Models;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test.Models.Package
+namespace NuGet.PackageManagement.UI.Test.Models
 {
     public class EmbeddedResourcesCapabilityTests
     {

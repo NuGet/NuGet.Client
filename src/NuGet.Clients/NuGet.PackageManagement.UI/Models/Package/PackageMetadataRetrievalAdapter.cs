@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models
 {
     internal class PackageMetadataRetrievalAdapter : IPackageMetadataRetrievalAdapter
     {

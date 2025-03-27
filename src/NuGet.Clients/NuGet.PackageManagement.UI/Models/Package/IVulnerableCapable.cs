@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models
 {
     internal interface IVulnerableCapable
     {

@@ -12,7 +12,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models
 {
     internal class LocalPackageModel : PackageModel, IVulnerableCapable
     {

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Moq;
@@ -12,7 +14,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
-namespace NuGet.PackageManagement.UI.Test.Models.Package
+namespace NuGet.PackageManagement.UI.Test.Models
 {
     public class PackageModelFactoryTests
     {

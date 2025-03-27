@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using NuGet.Packaging.Core;
-using NuGet.PackageManagement.UI.Models;
 using Xunit;
 using Moq;
 using NuGet.Versioning;
+using NuGet.PackageManagement.UI.Models;
 
-namespace NuGet.PackageManagement.UI.Test.Models.Package
+namespace NuGet.PackageManagement.UI.Test.Models
 {
     public class TransitivelyReferencedPackageModelTests
     {

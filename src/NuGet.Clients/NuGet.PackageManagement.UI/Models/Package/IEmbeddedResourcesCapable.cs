@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models
 {
     internal interface IEmbeddedResourcesCapable
     {

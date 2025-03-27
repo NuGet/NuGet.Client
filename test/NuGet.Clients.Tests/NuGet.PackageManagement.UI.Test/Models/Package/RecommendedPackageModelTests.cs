@@ -9,7 +9,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test.Models.Package
+namespace NuGet.PackageManagement.UI.Test.Models
 {
     public class RecommendedPackageModelTests
     {

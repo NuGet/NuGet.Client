@@ -14,7 +14,7 @@ using FluentAssertions;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
-using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.UI.Models;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
