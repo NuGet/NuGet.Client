@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using Moq;
+using NuGet.PackageManagement.UI.Models.Package;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {

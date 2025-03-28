@@ -13,7 +13,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class RemotePackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
     {
