@@ -42,6 +42,7 @@
     <PackageVersion Include="FluentAssertions" Version="6.12.0" />
     <PackageVersion Include="ILMerge" Version="3.0.41" />
     <PackageVersion Include="Lucene.Net" Version="3.0.3" />
+    <PackageVersion Include="MessagePack" Version="2.5.192" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Artifacts" Version="4.2.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
@@ -136,11 +137,11 @@
               '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
               '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
               '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
-    <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.5.31" />
+    <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.8.3" />
     <PackageVersion Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.10.191" />
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />
     <!-- Microsoft.VisualStudio.Shell.15.0 has vulnerable dependencies System.Text.Json and Microsoft.IO.Redist. When it's upgraded, try removing the pinned packages -->
-    <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="17.10.40173" />
+    <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="17.13.40008" />
   </ItemGroup>
 
   <ItemGroup>
