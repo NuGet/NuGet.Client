@@ -57,8 +57,8 @@ namespace NuGet.ProjectModel
 #if NET
             _stream.ReadExactly(_buffer, 0, 3);
 #else
-            int count=3;
-            int offset=0;
+            int count = 3;
+            int offset = 0;
             while (count > 0)
             {
                 int read = _stream.Read(_buffer, offset, count);

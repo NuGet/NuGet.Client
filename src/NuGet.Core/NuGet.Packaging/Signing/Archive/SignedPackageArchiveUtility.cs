@@ -107,8 +107,8 @@ namespace NuGet.Packaging.Signing
 #if NET
             reader.BaseStream.ReadExactly(buffer, offset: 0, count: buffer.Length);
 #else
-            int count=buffer.Length;
-            int offset=0;
+            int count = buffer.Length;
+            int offset = 0;
             while (count > 0)
             {
                 int read = reader.BaseStream.Read(buffer, offset, count);
