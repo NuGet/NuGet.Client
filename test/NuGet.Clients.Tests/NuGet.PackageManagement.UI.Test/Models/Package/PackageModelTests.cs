@@ -14,6 +14,7 @@ using Xunit;
 using System.Collections.Generic;
 using NuGet.Packaging;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.UI.Models.Package;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {

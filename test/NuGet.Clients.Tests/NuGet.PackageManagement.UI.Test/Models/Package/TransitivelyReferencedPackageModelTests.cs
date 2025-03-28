@@ -8,9 +8,9 @@ using NuGet.Packaging.Core;
 using Xunit;
 using Moq;
 using NuGet.Versioning;
-using NuGet.PackageManagement.UI.Models;
+using NuGet.PackageManagement.UI.Models.Package;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class TransitivelyReferencedPackageModelTests
     {

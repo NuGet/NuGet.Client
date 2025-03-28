@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class VulnerableDatabaseCapability : VulnerableCapabilityBase
     {

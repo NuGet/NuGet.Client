@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal interface IPackageMetadataRetrievalAdapter
     {

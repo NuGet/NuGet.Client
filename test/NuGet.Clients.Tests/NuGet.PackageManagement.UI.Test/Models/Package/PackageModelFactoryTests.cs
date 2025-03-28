@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Moq;
-using NuGet.PackageManagement.UI.Models;
+using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -14,7 +14,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class PackageModelFactoryTests
     {

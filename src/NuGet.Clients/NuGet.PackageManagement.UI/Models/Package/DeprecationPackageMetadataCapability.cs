@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class DeprecationPackageMetadataCapability : IDeprecationCapable
     {

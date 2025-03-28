@@ -4,12 +4,12 @@
 #nullable enable
 
 using Moq;
-using NuGet.PackageManagement.UI.Models;
+using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class RecommendedPackageModelTests
     {

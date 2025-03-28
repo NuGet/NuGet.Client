@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.Protocol;
-using NuGet.PackageManagement.UI.Models;
+using NuGet.PackageManagement.UI.Models.Package;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class ReferencedPackageModelTests
     {

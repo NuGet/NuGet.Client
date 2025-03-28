@@ -9,7 +9,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class PackageModelFactory
     {

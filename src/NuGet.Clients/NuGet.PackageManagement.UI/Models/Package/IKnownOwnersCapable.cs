@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal interface IKnownOwnersCapable
     {
