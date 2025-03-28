@@ -143,3 +143,7 @@ stages:
           displayName: "SetupFunctionalTests.ps1"
           inputs:
             scriptName: "$(Build.StagingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8f6362aea (Remove manual GitHub status checks functionality from all pipelines (#6357))
