@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public bool IsBusy
         {
-            get => _isBusy || (ReadmeViewModel?.IsBusy).GetValueOrDefault(false);
+            get => _isBusy || ReadmeViewModel?.IsBusy == true;
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public bool IsReadmeReady
         {
-            get => !_isBusy && (ReadmeViewModel?.IsReadmeReady).GetValueOrDefault(false);
+            get => !_isBusy && ReadmeViewModel?.IsReadmeReady == true;
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
