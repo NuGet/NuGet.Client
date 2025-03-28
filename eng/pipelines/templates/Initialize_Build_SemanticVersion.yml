@@ -1,4 +1,8 @@
 steps:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8f6362aea (Remove manual GitHub status checks functionality from all pipelines (#6357))
 - task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"

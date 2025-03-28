@@ -40,13 +40,3 @@ steps:
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "or(failed(), canceled())"
-
-- task: PowerShell@2
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    targetType: "inline"
-    script: |
-      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"
-    failOnStderr: "true"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

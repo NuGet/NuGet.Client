@@ -173,15 +173,6 @@ steps:
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"
   inputs:
