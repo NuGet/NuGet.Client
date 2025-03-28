@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
-namespace NuGet.PackageManagement.UI.Models
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class RecommendedPackageModel : RemotePackageModel
     {

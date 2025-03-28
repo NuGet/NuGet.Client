@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     public abstract class PackageModel : IEmbeddedResourcesCapable
     {

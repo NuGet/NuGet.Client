@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using NuGet.Packaging.Core;
-using NuGet.PackageManagement.UI.Models;
 using Xunit;
 using NuGet.Versioning;
 using Moq;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.Protocol;
+using NuGet.PackageManagement.UI.Models.Package;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {

@@ -7,12 +7,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
-namespace NuGet.PackageManagement.UI.Test
+namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class DeprecationPackageMetadataCapabilityTests
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class VulnerablePackageMetadataCapability : VulnerableCapabilityBase
     {

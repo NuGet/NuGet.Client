@@ -5,13 +5,11 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.PackageManagement.UI.Models;
-using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class PackageModelFactory
     {
@@ -96,7 +94,7 @@ namespace NuGet.PackageManagement.UI
                 // Transitive dependencies are only available in the Installed tab
                 if (metadata.TransitiveOrigins != null)
                 {
-                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity);
+                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity!);
                     return new TransitivelyReferencedPackageModel(
                         metadata.Identity!,
                         vulnerableDatabaseCapability,
