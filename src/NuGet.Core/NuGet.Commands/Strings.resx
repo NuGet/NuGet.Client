@@ -262,9 +262,6 @@
   <data name="Log_PackageCommandAttemptingToBuildSymbolsPackage" xml:space="preserve">
     <value>Attempting to build symbols package for '{0}'.</value>
   </data>
-  <data name="Log_PackageCommandSuccess" xml:space="preserve">
-    <value>Successfully created package '{0}'.</value>
-  </data>
   <data name="Warning_DuplicatePropertyKey" xml:space="preserve">
     <value>'{0}' key already exists in Properties collection. Overriding value.</value>
   </data>

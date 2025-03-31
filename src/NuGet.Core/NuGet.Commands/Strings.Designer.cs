@@ -1403,15 +1403,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully created package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Log_PackageCommandSuccess {
-            get {
-                return ResourceManager.GetString("Log_PackageCommandSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package content hash validation failed for {0}. Expected: {1} Actual: {2}.
         /// </summary>
         internal static string Log_PackageContentHashValidationFailed {

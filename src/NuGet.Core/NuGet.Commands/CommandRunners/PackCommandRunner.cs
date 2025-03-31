@@ -134,11 +134,12 @@ namespace NuGet.Commands
         /// If for any other reason the package creation fails (like for example, a validation rule got bumped from warning to an error, this will return <see langword="null"/>.
         /// </summary>
         /// <param name="builder">The package builder to use.</param>
+        /// <param name="inputName">The name of the input to pack. For project pack, it should be the project name. For nuspec pack, it should be the nuspec filename.</param>
         /// <param name="outputPath">The package output path.</param>
         /// <param name="symbolsPackage">Whether this package is a symbols package. Symbols packages do not undergo validations.</param>
         /// <returns>A <see cref="PackageArchiveReader"/> if everything completed succesfully. Throws if a core package validation fails. Returns <see langword="null"/> if a validation rule got elevated from a warning to an error.</returns>
         /// <exception cref="PackagingException">If a core packaging validation fails.</exception>
-        private bool BuildPackage(PackageBuilder builder, string outputPath = null, bool symbolsPackage = false)
+        private bool BuildPackage(PackageBuilder builder, string inputName, string outputPath = null, bool symbolsPackage = false)
         {
             outputPath = outputPath ?? GetOutputPath(builder, _packArgs, false, builder.Version);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
@@ -200,9 +201,8 @@ namespace NuGet.Commands
 
             _packArgs.Logger.Log(
                 PackagingLogMessage.CreateMessage(
-                    string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath),
+                    string.Format(CultureInfo.CurrentCulture, "{0} -> {1}", inputName, outputPath),
                     LogLevel.Minimal));
-
 
             return true;
         }
@@ -657,6 +657,7 @@ namespace NuGet.Commands
         private bool BuildFromNuspec(string path)
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromNuspec(path);
+            string nuspecFileName = Path.GetFileName(path);
 
             bool successful;
 
@@ -665,7 +666,7 @@ namespace NuGet.Commands
             if (_packArgs.InstallPackageToOutputPath)
             {
                 string outputPath = GetOutputPath(packageBuilder, _packArgs);
-                successful = BuildPackage(packageBuilder, outputPath: outputPath, symbolsPackage: false);
+                successful = BuildPackage(packageBuilder, nuspecFileName, outputPath: outputPath, symbolsPackage: false);
             }
             else
             {
@@ -686,7 +687,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                successful = BuildPackage(packageBuilder, symbolsPackage: false);
+                successful = BuildPackage(packageBuilder, nuspecFileName, symbolsPackage: false);
 
                 if (_packArgs.Symbols)
                 {
@@ -793,14 +794,15 @@ namespace NuGet.Commands
             // Build the main package
             if (GenerateNugetPackage)
             {
+                string projectName = Path.GetFileNameWithoutExtension(path);
                 if (_packArgs.InstallPackageToOutputPath)
                 {
                     string outputPath = GetOutputPath(mainPackageBuilder, _packArgs);
-                    successful = BuildPackage(mainPackageBuilder, outputPath: outputPath, symbolsPackage: false);
+                    successful = BuildPackage(mainPackageBuilder, projectName, outputPath: outputPath, symbolsPackage: false);
                 }
                 else
                 {
-                    successful = BuildPackage(mainPackageBuilder, symbolsPackage: false);
+                    successful = BuildPackage(mainPackageBuilder, projectName, symbolsPackage: false);
                 }
 
                 // If we're excluding symbols then do nothing else
