@@ -376,7 +376,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
-                var path = Path.Combine(workingDirectory, "packageA.2.0.0-preview.nupkg");
+                var path = Path.Combine(workingDirectory, "test.2.0.0-preview.nupkg");
                 var package = new PackageArchiveReader(File.OpenRead(path));
 
                 var files = package.GetNonPackageDefiningFiles();
