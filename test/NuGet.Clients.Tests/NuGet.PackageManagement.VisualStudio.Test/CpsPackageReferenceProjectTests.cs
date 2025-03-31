@@ -201,7 +201,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                var packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, testDirectory);
+                var projectFullPath = packageSpec.FilePath;
 
                 // Project
                 var projectCache = new ProjectSystemCache();
@@ -209,7 +210,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpecNoPackages(projectName, projectFullPath);
 
                 // Restore info
                 var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
@@ -295,7 +295,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                var packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, testDirectory);
+                var projectFullPath = packageSpec.FilePath;
 
                 // Project
                 var projectCache = new ProjectSystemCache();
@@ -303,7 +304,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpecNoPackages(projectName, projectFullPath);
 
                 // Restore info
                 var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
@@ -4704,21 +4704,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     }}
                 }}";
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, packageSpecFullPath).WithTestRestoreMetadata();
-        }
-
-        private static PackageSpec GetPackageSpecNoPackages(string projectName, string testDirectory)
-        {
-            const string referenceSpec = @"
-                {
-                    ""frameworks"": {
-                        ""net5.0"": {
-                            ""dependencies"": {
-                                }
-                            }
-                        }
-                    }
-                }";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
         private static PackageSpec GetPackageSpecMultipleVersions(string projectName, string testDirectory)
