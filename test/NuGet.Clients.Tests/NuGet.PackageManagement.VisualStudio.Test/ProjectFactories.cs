@@ -155,29 +155,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, packageSpecFullPath).WithTestRestoreMetadata();
         }
 
-        internal static PackageSpec GetPackageSpec2(string projectName, string packageSpecFullPath)
-        {
-            //       "centralPackageVersionsManagementEnabled": true,
-
-            string referenceSpec = $@"
-                {{
-                    ""frameworks"":
-                    {{
-                        ""net5.0"":
-                        {{
-                            ""dependencies"":
-                            {{
-                                ""packageA"":
-                                {{
-                                    ""target"": ""Package""
-                                }},
-                            }}
-                        }}
-                    }}
-                }}";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, packageSpecFullPath).WithTestRestoreMetadata();
-        }
-
         internal static async Task CreatePackagesAsync(SimpleTestPathContext rootDir, string packageAVersion = "2.15.3", string packageBVersion = "1.0.0")
         {
             await SimpleTestPackageUtility.CreateFullPackageAsync(rootDir.PackageSource, "PackageB", packageBVersion);

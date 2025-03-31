@@ -4621,57 +4621,90 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledVersion_WithMissingCPMVersion_ReturnsEmptyVersion()
+        public async Task GetInstalledVersion_WithMissingCPMVersion_ReturnsPackageInstalledWithEmptyVersion()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using var testDirectory = TestDirectory.Create();
+            // Setup
+            var projectName = "project1";
+            var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+
+            // Project
+            var projectCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+            var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+
+            var projectNames = GetTestProjectNames(projectFullPath, projectName);
+            var packageSpec = GetCPMPackageSpec(projectName, projectFullPath);
+
+            packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0])
             {
-                // Setup
-                var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
+                Dependencies = [new LibraryDependency(packageSpec.TargetFrameworks[0].Dependencies[0]) {
+                        LibraryRange = new LibraryRange(packageSpec.TargetFrameworks[0].Dependencies[0].LibraryRange){
+                            VersionRange = null
+                        }
+                    }]
+            };
 
-                // Project
-                var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
-                var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+            // Restore info
+            var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
+            projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
 
-                var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+            // Package directories
+            var sources = new List<PackageSource>();
+            var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+            var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+            packagesDir.Create();
+            packageSource.Create();
+            sources.Add(new PackageSource(packageSource.FullName));
 
-                // packageSpec.TargetFrameworks[0].Dependencies[0].LibraryRange.VersionRange = null;
+            var logger = new TestLogger();
+            var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
+            {
+                LockFilePath = Path.Combine(testDirectory, "project.assets.json")
+            };
 
-                // Restore info
-                var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
-                projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+            await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "3.0.0");
 
-                // Package directories
-                var sources = new List<PackageSource>();
-                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
-                packagesDir.Create();
-                packageSource.Create();
-                sources.Add(new PackageSource(packageSource.FullName));
+            // Act
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            var packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(testDirectory, "project.assets.json")
-                };
+            // Asert
+            result.Success.Should().BeFalse();
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1008);
+            packages.Should().HaveCount(1);
+            packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("0.0.0"))));
+        }
 
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "3.0.0");
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
-                var packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-
-                // Asert
-                Assert.True(result.Success);
-                packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("3.0.0"))));
-            }
-
-
+        internal static PackageSpec GetCPMPackageSpec(string projectName, string packageSpecFullPath)
+        {
+            string referenceSpec = $@"
+                {{
+                    ""restore"":
+                    {{
+                      ""centralPackageVersionsManagementEnabled"": true,
+                    }},
+                    ""frameworks"":
+                    {{
+                        ""net5.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                                ""packageA"":
+                                {{
+                                    ""target"": ""Package"",
+                                     ""version"": ""(, )""
+                                }},
+                            }}
+                        }}
+                    }}
+                }}";
+            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, packageSpecFullPath).WithTestRestoreMetadata();
+        }
 
         private static PackageSpec GetPackageSpecNoPackages(string projectName, string testDirectory)
         {
