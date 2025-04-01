@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -503,13 +504,13 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
                     ""frameworks"": {
                         ""dotnet"": {
                             ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
+                            ""warn"": false,
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1""
+                            }
                         }
                     }
                 }");
@@ -559,13 +560,13 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
                     ""frameworks"": {
                         ""netstandard1.2"": {
                             ""imports"": [""dotnet5.3"",""portable-net452+win81""],
-                            ""warn"": false
+                            ""warn"": false,
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1""
+                            }
                         }
                     }
                 }");
@@ -675,13 +676,13 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
                     ""frameworks"": {
                         ""dotnet"": {
                             ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
+                            ""warn"": false,
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1""
+                            }
                         }
                     }
                 }");
@@ -775,13 +776,13 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""WindowsAzure.Storage"": ""4.4.1-preview""
-                    },
                     ""frameworks"": {
                         ""dotnet"": {
                             ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
+                            ""warn"": false,
+                            ""dependencies"": {
+                                ""WindowsAzure.Storage"": ""4.4.1-preview""
+                            }
                         }
                     }
                 }");
@@ -1139,17 +1140,11 @@ namespace NuGet.Commands.FuncTest
 
             var project1Json = @"
             {
-              ""version"": ""1.0.0"",
-              ""description"": """",
-              ""authors"": [ ""author"" ],
-              ""tags"": [ """" ],
-              ""projectUrl"": """",
-              ""licenseUrl"": """",
-              ""dependencies"": {
-                ""packageA"": ""1.0.0""
-              },
               ""frameworks"": {
                 ""net45"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
                 }
               }
             }";
@@ -1893,11 +1888,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1""
+                            }
+                        }
                     }
                 }");
 
@@ -1987,11 +1983,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1-*""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1-*""
+                            }
+                        }
                     }
                 }");
 
@@ -2028,11 +2025,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1-*""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1-*""
+                            }
+                        }
                     }
                 }");
 
@@ -2338,11 +2336,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""XXX"": ""7.0.91""
+                            }
+                        }
                     }
                 }");
 
@@ -2388,11 +2387,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""XXX"": ""7.0.91""
+                            }
+                        }
                     }
                 }");
 
@@ -2438,11 +2438,12 @@ namespace NuGet.Commands.FuncTest
             {
                 var configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""XXX"": ""7.0.91""
-                    },
                      ""frameworks"": {
-                        ""net45"": { }
+                        ""net45"": {
+                            ""dependencies"": {
+                                ""XXX"": ""7.0.91""
+                            }
+                        }
                     }
                 }");
 
@@ -5288,12 +5289,17 @@ namespace NuGet.Commands.FuncTest
                 }
             };
 
-            if (spec.Dependencies == null)
+            for (int i = 0; i < spec.TargetFrameworks.Count; i++)
             {
-                spec.Dependencies = new List<LibraryDependency>();
-            }
+                List<LibraryDependency> dependencies = new List<LibraryDependency>();
+                dependencies.AddRange(spec.TargetFrameworks[i].Dependencies);
+                dependencies.Add(target);
 
-            spec.Dependencies.Add(target);
+                spec.TargetFrameworks[i] = new TargetFrameworkInformation(spec.TargetFrameworks[i])
+                {
+                    Dependencies = dependencies.ToImmutableArray()
+                };
+            }
         }
 
         private static JObject BasicConfig
