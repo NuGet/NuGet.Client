@@ -368,6 +368,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata => (_packageModel as IDeprecationCapable)?.DeprecationMetadata;
         public bool IsPackageDeprecated => (_packageModel as IDeprecationCapable)?.IsDeprecated ?? false;
 
         public bool IsPackageVulnerable => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false || VulnerableVersions.Count > 0;
@@ -803,6 +804,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             OnPropertyChanged(nameof(IsPackageDeprecated));
+            OnPropertyChanged(nameof(DeprecationMetadata));
             OnPropertyChanged(nameof(AlternatePackage));
         }
 

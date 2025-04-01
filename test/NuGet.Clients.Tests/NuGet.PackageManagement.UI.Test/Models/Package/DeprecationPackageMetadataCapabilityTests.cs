@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             // Assert
             Assert.Equal(alternatePackageMetadata, capability.AlternatePackage);
+            Assert.Equal(deprecationMetadata, capability.DeprecationMetadata);
         }
 
         [Fact]
