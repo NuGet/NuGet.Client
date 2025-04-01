@@ -69,6 +69,8 @@ namespace NuGet.PackageManagement.UI.Models.Package
             }
         }
 
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata => _deprecationMetadata;
+
         public async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             _deprecationMetadata = await _packageMetadataRetrievalAdapter.GetPackageDeprecationInfoAsync(cancellationToken);

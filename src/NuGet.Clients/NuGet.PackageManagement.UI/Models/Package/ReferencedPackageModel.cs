@@ -78,6 +78,8 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
 
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata => _deprecationCapability.DeprecationMetadata;
+
         public override async Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             await _vulnerableCapability.PopulateDataAsync(cancellationToken);
