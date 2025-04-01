@@ -54,22 +54,29 @@ namespace NuGet.ProjectModel
             _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
             _stream = stream;
-#if NET
-            _stream.ReadExactly(_buffer, 0, 3);
-#else
-            int count = 3;
-            int offset = 0;
-            while (count > 0)
+            try
             {
-                int read = _stream.Read(_buffer, offset, count);
-                if (read <= 0)
+#if NET
+                _stream.ReadExactly(_buffer, 0, 3);
+#else
+                int count = 3;
+                int offset = 0;
+                while (count > 0)
                 {
-                    throw new EndOfStreamException();
+                    int read = _stream.Read(_buffer, offset, count);
+                    if (read <= 0)
+                    {
+                        throw new EndOfStreamException();
+                    }
+                    offset += read;
+                    count -= read;
                 }
-                offset += read;
-                count -= read;
-            }
 #endif
+            }
+            catch (EndOfStreamException)
+            {
+            }
+            
             if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
             {
                 _bufferUsed = 3;
