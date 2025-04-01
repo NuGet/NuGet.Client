@@ -19,5 +19,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
         public AlternatePackageMetadataContextInfo? AlternatePackage { get; }
 
         public Task PopulateDataAsync(CancellationToken cancellationToken);
+
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadata { get; }
     }
 }
