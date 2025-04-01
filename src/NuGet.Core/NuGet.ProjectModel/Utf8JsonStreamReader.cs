@@ -76,7 +76,7 @@ namespace NuGet.ProjectModel
             catch (EndOfStreamException)
             {
             }
-            
+
             if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
             {
                 _bufferUsed = 3;
