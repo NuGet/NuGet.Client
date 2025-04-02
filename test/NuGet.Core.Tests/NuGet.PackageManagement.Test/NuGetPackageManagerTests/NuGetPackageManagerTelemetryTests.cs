@@ -202,10 +202,12 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var json = new JObject
             {
-                ["dependencies"] = dependenciesJObject,
                 ["frameworks"] = new JObject
                 {
                     ["net46"] = new JObject()
+                    {
+                        ["dependencies"] = dependenciesJObject
+                    }
                 }
             };
 
@@ -230,8 +232,13 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
-            Assert.True((string)telemetryEvents
-                .Last(p => p.Name == "ProjectRestoreInformation")["ErrorCodes"] == NuGetLogCode.NU1102.ToString());
+            Assert.Equal((bool)telemetryEvents
+                .Last(p => p.Name == "ProjectRestoreInformation")["RestoreSuccess"], !errorCodeExistsInJson);
+            if (errorCodeExistsInJson)
+            {
+                Assert.Contains((string)telemetryEvents
+                    .Last(p => p.Name == "ProjectRestoreInformation")["ErrorCodes"], NuGetLogCode.NU1102.ToString());
+            }
 
             var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
             Assert.Equal(2, projectFilePaths.Count());

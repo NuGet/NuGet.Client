@@ -156,16 +156,14 @@ namespace NuGet.Commands.FuncTest
                 Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
                 var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath).WithTestRestoreMetadata();
-                projectSpec.Dependencies = new List<LibraryDependency>
+
+                ProjectTestHelpers.AddDependency(projectSpec, new LibraryDependency()
                 {
-                    new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange(
+                    LibraryRange = new LibraryRange(
                             "REFERENCEDPROJECT",
                             VersionRange.Parse("*"),
                             LibraryDependencyTarget.Project)
-                    }
-                };
+                });
 
                 Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
                 var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
@@ -5289,35 +5287,22 @@ namespace NuGet.Commands.FuncTest
                 }
             };
 
-            for (int i = 0; i < spec.TargetFrameworks.Count; i++)
-            {
-                List<LibraryDependency> dependencies = new List<LibraryDependency>();
-                dependencies.AddRange(spec.TargetFrameworks[i].Dependencies);
-                dependencies.Add(target);
-
-                spec.TargetFrameworks[i] = new TargetFrameworkInformation(spec.TargetFrameworks[i])
-                {
-                    Dependencies = dependencies.ToImmutableArray()
-                };
-            }
+            ProjectTestHelpers.AddDependency(spec, target);
         }
 
         private static JObject BasicConfig
         {
             get
             {
-
-
-                var frameworks = new JObject
-                {
-                    ["netcore50"] = new JObject()
-                };
-
                 var json = new JObject
                 {
-                    ["dependencies"] = new JObject(),
-
-                    ["frameworks"] = frameworks
+                    ["frameworks"] = new JObject
+                    {
+                        ["netcore50"] = new JObject()
+                        {
+                            ["dependencies"] = new JObject()
+                        }
+                    }
                 };
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
@@ -5330,18 +5315,16 @@ namespace NuGet.Commands.FuncTest
         {
             get
             {
-
-
-                var frameworks = new JObject
-                {
-                    ["net46"] = new JObject()
-                };
-
                 var json = new JObject
                 {
-                    ["dependencies"] = new JObject(),
 
-                    ["frameworks"] = frameworks
+                    ["frameworks"] = new JObject
+                    {
+                        ["net46"] = new JObject()
+                        {
+                            ["dependencies"] = new JObject(),
+                        }
+                    }
                 };
 
                 json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
