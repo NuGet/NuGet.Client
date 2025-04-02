@@ -350,6 +350,9 @@ namespace NuGet.ProjectModel
 
             if (packageSpec != null)
             {
+                // Add dependencies section
+                dependencies.AddRange(packageSpec.Dependencies);
+
                 // Add framework specific dependencies
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
