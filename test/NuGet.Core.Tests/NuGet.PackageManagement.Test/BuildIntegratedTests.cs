@@ -11,6 +11,7 @@ using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
+using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -30,7 +31,7 @@ using Xunit;
 
 namespace NuGet.Test
 {
-    public class BuildIntegratedTests
+    public partial class BuildIntegratedTests
     {
         [Fact]
         public void GetAddedPackages_LockFileTargetLibraryProject_OnlyAddsPackage()
@@ -70,139 +71,114 @@ namespace NuGet.Test
         [Fact]
         public async Task ChildProjectUpdated_ParentProjectsRestored()
         {
-            // Arrange
-            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var projectDirectories = new List<TestDirectory>();
-
-            try
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testSolutionManager = new TestSolutionManager(pathContext))
             {
-                using (var settingsDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager())
+                var package = new SimpleTestPackageContext("a", "1.0.7");
+                var packageIdentity = package.Identity;
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, package);
+
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var token = CancellationToken.None;
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var projectTargetFramework = NuGetFramework.Parse("net452");
+
+                var configs = new List<string>();
+                var lockFiles = new List<string>();
+                var buildIntegratedProjects = new List<TestPackageReferenceNuGetProject>();
+
+                // Create projects
+                for (var i = 0; i < 4; i++)
                 {
-                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
-                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                    var nuGetPackageManager = new NuGetPackageManager(
-                        sourceRepositoryProvider,
-                        testSettings,
-                        testSolutionManager,
-                        deleteOnRestartManager);
+                    var projectName = $"testProjectName{i}";
+                    var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, rootPath: pathContext.SolutionRoot);
+                    var directory = Path.GetDirectoryName(packageSpec.FilePath);
+                    var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                        projectTargetFramework,
+                        testNuGetProjectContext,
+                        directory,
+                        projectName);
 
-                    var token = CancellationToken.None;
+                    var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
-                    var testNuGetProjectContext = new TestNuGetProjectContext();
-                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    buildIntegratedProjects.Add(buildIntegratedProject);
 
-                    var configs = new List<string>();
-                    var lockFiles = new List<string>();
-                    var buildIntegratedProjects = new List<TestProjectJsonBuildIntegratedNuGetProject>();
+                    lockFiles.Add(Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName));
 
-                    // Create projects
-                    for (var i = 0; i < 4; i++)
-                    {
-                        var directory = TestDirectory.Create();
-                        projectDirectories.Add(directory);
+                    testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+                }
+                var myProjDirectory = Path.Combine(pathContext.SolutionRoot, "myproj");
 
-                        var config = Path.Combine(directory, "project.json");
+                var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
 
-                        configs.Add(config);
-
-                        GetBasicConfig(config);
-
-                        var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                            projectTargetFramework,
-                            testNuGetProjectContext,
-                            directory,
-                            $"testProjectName{i}");
-
-                        var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
-
-                        buildIntegratedProjects.Add(buildIntegratedProject);
-
-                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
-
-                        testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
-                    }
-
-                    // Link projects
-                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-
-                    using var myProjDirectory = TestDirectory.Create();
-                    projectDirectories.Add(myProjDirectory);
-
-                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
-
-                    var normalProject = new TestNonBuildIntegratedNuGetProject()
-                    {
-                        MSBuildProjectPath = myProjPath,
-                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                var normalProject = new TestNonBuildIntegratedNuGetProject()
+                {
+                    MSBuildProjectPath = myProjPath,
+                    PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
                         {
                             new TargetFrameworkInformation()
                             {
                                 FrameworkName = projectTargetFramework,
                             }
                         })
-                        {
-                            RestoreMetadata = new ProjectRestoreMetadata()
-                            {
-                                ProjectName = myProjPath,
-                                ProjectUniqueName = myProjPath,
-                                ProjectStyle = ProjectStyle.Unknown,
-                                ProjectPath = myProjPath
-                            },
-                            Name = myProjPath,
-                            FilePath = myProjPath
-                        }
-                    };
-
-                    testSolutionManager.NuGetProjects.Add(normalProject);
-
-                    var normalReference = new TestExternalProjectReference(normalProject);
-
-                    buildIntegratedProjects[0].ProjectReferences.Add(reference1);
-                    buildIntegratedProjects[0].ProjectReferences.Add(reference2);
-                    buildIntegratedProjects[0].ProjectReferences.Add(reference3);
-                    buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
-
-                    buildIntegratedProjects[1].ProjectReferences.Add(reference2);
-                    buildIntegratedProjects[1].ProjectReferences.Add(reference3);
-                    buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
-
-                    buildIntegratedProjects[2].ProjectReferences.Add(reference3);
-                    buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
-
-                    var message = string.Empty;
-
-                    var format = new LockFileFormat();
-
-                    // Act
-                    await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
-                            sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-                    var parsedLockFiles = new List<LockFile>();
-
-                    for (var i = 0; i < 3; i++)
                     {
-                        var lockFile = format.Read(lockFiles[i]);
-                        parsedLockFiles.Add(lockFile);
+                        RestoreMetadata = new ProjectRestoreMetadata()
+                        {
+                            ProjectName = myProjPath,
+                            ProjectUniqueName = myProjPath,
+                            ProjectStyle = ProjectStyle.Unknown,
+                            ProjectPath = myProjPath
+                        },
+                        Name = myProjPath,
+                        FilePath = myProjPath
                     }
+                };
 
-                    // Assert
-                    Assert.NotNull(parsedLockFiles[0].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
-                    Assert.NotNull(parsedLockFiles[1].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
-                    Assert.NotNull(parsedLockFiles[2].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
-                    Assert.False(File.Exists(lockFiles[3]));
-                }
-            }
-            finally
-            {
-                foreach (TestDirectory projectDirectory in projectDirectories)
+                testSolutionManager.NuGetProjects.Add(normalProject);
+
+                var normalReference = new TestExternalProjectReference(normalProject);
+
+                // Link projects
+                buildIntegratedProjects[0].AddProjectReference(buildIntegratedProjects[1]);
+                buildIntegratedProjects[0].AddProjectReference(buildIntegratedProjects[2]);
+                buildIntegratedProjects[0].AddProjectReference(buildIntegratedProjects[3]);
+                buildIntegratedProjects[0].AddProjectReference(normalProject.PackageSpec);
+                buildIntegratedProjects[1].AddProjectReference(buildIntegratedProjects[2]);
+                buildIntegratedProjects[1].AddProjectReference(buildIntegratedProjects[3]);
+                buildIntegratedProjects[1].AddProjectReference(normalProject.PackageSpec);
+                buildIntegratedProjects[2].AddProjectReference(buildIntegratedProjects[3]);
+                buildIntegratedProjects[2].AddProjectReference(normalProject.PackageSpec);
+                buildIntegratedProjects[3].AddProjectReference(normalProject.PackageSpec);
+
+                var format = new LockFileFormat();
+
+                // Act
+                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+                var parsedLockFiles = new List<LockFile>();
+
+                for (var i = 0; i < 3; i++)
                 {
-                    projectDirectory.Dispose();
+                    var lockFile = format.Read(lockFiles[i]);
+                    parsedLockFiles.Add(lockFile);
                 }
+
+                // Assert
+                Assert.NotNull(parsedLockFiles[0].GetLibrary(packageIdentity.Id, packageIdentity.Version));
+                Assert.NotNull(parsedLockFiles[1].GetLibrary(packageIdentity.Id, packageIdentity.Version));
+                Assert.NotNull(parsedLockFiles[2].GetLibrary(packageIdentity.Id, packageIdentity.Version));
+                Assert.False(File.Exists(lockFiles[3]));
             }
         }
 
@@ -406,13 +382,15 @@ namespace NuGet.Test
         public async Task InstallPackage()
         {
             // Arrange
-            var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testSolutionManager = new TestSolutionManager(pathContext))
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var package = new SimpleTestPackageContext("a", "1.0.7");
+                var packageIdentity = package.Identity;
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, package);
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+
+                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -423,16 +401,13 @@ namespace NuGet.Test
                 var installationCompatibility = new Mock<IInstallationCompatibility>();
                 nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
 
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                CreateConfigJson(randomConfig);
+                var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, "projectName");
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(packageSpec.TargetFrameworks[0].FrameworkName, testNuGetProjectContext, packageSpec.FilePath);
+                var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
                 var message = string.Empty;
 
@@ -441,7 +416,7 @@ namespace NuGet.Test
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
 
                 // Assert
                 Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
@@ -2085,29 +2060,6 @@ namespace NuGet.Test
             {
                 throw new NotImplementedException();
             }
-        }
-
-        private ExternalProjectReference CreateReference(string name)
-        {
-            return new ExternalProjectReference(name, null, null, Enumerable.Empty<string>());
-        }
-
-        private class TestExternalProjectReference
-        {
-            public IDependencyGraphProject Project { get; set; }
-
-            public IDependencyGraphProject[] Children { get; set; }
-
-            public TestExternalProjectReference(
-                IDependencyGraphProject project,
-                params IDependencyGraphProject[] children)
-            {
-                Project = project;
-                Children = children;
-                MSBuildProjectPath = project.MSBuildProjectPath;
-            }
-
-            public string MSBuildProjectPath { get; set; }
         }
     }
 }
