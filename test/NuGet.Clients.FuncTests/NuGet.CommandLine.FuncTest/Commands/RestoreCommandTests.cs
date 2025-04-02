@@ -996,7 +996,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Theory]
-        [InlineData(true)]
+        [InlineData(true, Skip = "MSBuild >= 17.13 not available")]
         [InlineData(false)]
         public async Task Restore_PackageSourceMapping_Succeed(bool useSlnx)
         {
@@ -1104,7 +1104,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
 
         [Theory]
-        [InlineData(true)]
+        [InlineData(true, Skip = "MSBuild >= 17.13 not available")]
         [InlineData(false)]
         public async Task Restore_PackageSourceMapping_Fails(bool useSlnx)
         {
