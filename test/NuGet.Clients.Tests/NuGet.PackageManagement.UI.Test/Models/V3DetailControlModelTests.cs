@@ -1815,7 +1815,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var identity = new PackageIdentity("package", installedVersion);
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
-            var knownOwnerCapability = new Mock<IKnownOwnersCapable>();
             var deprecationCapability = new Mock<IDeprecationCapable>();
 
             var packageModel = new RemotePackageModel(identity, vulnerableCapability.Object, deprecationCapability.Object, embeddedResourceCapability.Object);
