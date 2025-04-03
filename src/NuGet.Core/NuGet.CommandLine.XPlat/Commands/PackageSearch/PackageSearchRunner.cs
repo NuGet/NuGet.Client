@@ -55,7 +55,12 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.Error;
             }
 
-            WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
+            if (AvoidHTTPSources(listEndpoints, out string error) != ExitCodes.Success)
+            {
+                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, error));
+                packageSearchResultRenderer.Finish();
+                return ExitCodes.Error;
+            }
 
             if (listEndpoints == null || listEndpoints.Count == 0)
             {
@@ -220,13 +225,15 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Warns the user if the provided package sources use insecure HTTP connections.
+        /// Logs an error if the provided package sources use insecure HTTP connections.
         /// </summary>
         /// <param name="packageSources">The list of package sources to check.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
-        private static void WarnForHTTPSources(IList<PackageSource> packageSources, ILogger logger)
+        /// <param name="error">An output parameter to capture any error message.</param>
+        /// <returns>An integer indicating the result of the operation.</returns>
+        private static int AvoidHTTPSources(IList<PackageSource> packageSources, out string error)
         {
             List<PackageSource> httpPackageSources = null;
+            error = null;
 
             foreach (PackageSource packageSource in packageSources)
             {
@@ -244,23 +251,25 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (httpPackageSources.Count == 1)
                 {
-                    logger.LogWarning(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Warning_HttpServerUsage,
-                            "search",
-                            httpPackageSources[0]));
+                    error = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_HttpServerUsage,
+                        "search",
+                        httpPackageSources[0]);
                 }
                 else
                 {
-                    logger.LogWarning(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Warning_HttpServerUsage_MultipleSources,
-                            "search",
-                            Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                    error = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_HttpServerUsage_MultipleSources,
+                        "search",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
                 }
+
+                return ExitCodes.Error;
             }
+
+            return ExitCodes.Success;
         }
     }
 }

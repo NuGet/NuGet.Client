@@ -127,7 +127,10 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    WarnForHttpSources(listPackageArgs, projectModel);
+                    if (AvoidHttpSources(listPackageArgs, projectModel) != 0)
+                    {
+                        return;
+                    }
 
                     if (listPackageArgs.ReportType == ReportType.Vulnerable && listPackageArgs.AuditSources != null && listPackageArgs.AuditSources.Count > 0)
                     {
@@ -325,7 +328,7 @@ namespace NuGet.CommandLine.XPlat
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
         }
 
-        private static void WarnForHttpSources(
+        private static int AvoidHttpSources(
             ListPackageArgs listPackageArgs,
             ListPackageProjectModel projectModel)
         {
@@ -336,14 +339,15 @@ namespace NuGet.CommandLine.XPlat
 
             if (httpPackageSources.Count == 0)
             {
-                return;
+                return 0;
             }
 
-            string warningMessage = httpPackageSources.Count == 1
-                ? string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "list package", httpPackageSources[0])
-                : string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage_MultipleSources, "list package", Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
+            string errorMessage = httpPackageSources.Count == 1
+                ? string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", httpPackageSources[0])
+                : string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage_MultipleSources, "list package", Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
 
-            projectModel.AddProjectInformation(ProblemType.Warning, warningMessage);
+            projectModel.AddProjectInformation(ProblemType.Error, errorMessage);
+            return 1;
         }
 
         private static void AddHttpPackageSources(IEnumerable<PackageSource> packageSources, List<PackageSource> httpPackageSources)
