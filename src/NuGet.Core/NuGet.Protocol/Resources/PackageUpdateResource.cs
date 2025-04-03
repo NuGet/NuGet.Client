@@ -424,7 +424,8 @@ namespace NuGet.Protocol.Core.Types
             bool showPushCommandPackagePushed = true;
             if (warnForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
             {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "push", serviceEndpointUrl));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
+                return false;
             }
 
             if (useTempApiKey)
@@ -726,7 +727,8 @@ namespace NuGet.Protocol.Core.Types
             {
                 if (sourceUri.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
                 {
-                    logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "delete", sourceUri));
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
+                    return;
                 }
                 await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
