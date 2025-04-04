@@ -95,7 +95,8 @@ namespace NuGet.Test
 
         public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
         {
-            throw new NotImplementedException();
+            ExecuteInitScriptAsyncCalls.Add(packageIdentity);
+            return Task.CompletedTask;
         }
 
         public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
