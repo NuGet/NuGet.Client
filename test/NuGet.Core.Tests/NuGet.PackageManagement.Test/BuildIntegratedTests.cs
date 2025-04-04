@@ -1478,27 +1478,32 @@ namespace NuGet.Test
             // Arrange
             var packageIdentityA = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var packageIdentityB = new PackageIdentity("entityframework", NuGetVersion.Parse("6.1.3"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
-            {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
-                var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
 
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var token = CancellationToken.None;
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, "project1", pathContext.SolutionRoot);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                packageSpec.TargetFrameworks[0].FrameworkName,
+                new TestNuGetProjectContext(),
+                Path.GetDirectoryName(packageSpec.FilePath),
+                packageSpec.Name);
 
-                GetBasicConfig(randomConfig);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
-                var projectTargetFramework = NuGetFramework.Parse("net452");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                packageIdentityA,
+                packageIdentityB);
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
                     packageIdentityA,
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
@@ -1506,41 +1511,40 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(),
                     CancellationToken.None);
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
-                    packageIdentityB,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject,
+                packageIdentityB,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
 
-                var lockFileFormat = new LockFileFormat();
-                var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+            var lockFileFormat = new LockFileFormat();
+            var lockFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
 
-                var lockFile = lockFileFormat.Read(lockFilePath);
-                var entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
-                    .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
+            var lockFile = lockFileFormat.Read(lockFilePath);
+            var entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
 
-                // Check that there are no packages returned by PackagesConfigProject
-                var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(2, installedPackages.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-                Assert.True(entityFrameworkTargets.Any());
+            // Check that there are no packages returned by PackagesConfigProject
+            var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+            Assert.Equal(2, installedPackages.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+            Assert.True(entityFrameworkTargets.Any());
 
-                // Act
-                await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, packageIdentityB.Id,
-                    new UninstallationContext(), new TestNuGetProjectContext(), token);
+            // Act
+            await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, packageIdentityB.Id,
+                new UninstallationContext(), new TestNuGetProjectContext(), CancellationToken.None);
 
-                lockFile = lockFileFormat.Read(lockFilePath);
-                entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
-                    .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
+            lockFile = lockFileFormat.Read(lockFilePath);
+            entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => string.Equals(library.Name, packageIdentityB.Id, StringComparison.OrdinalIgnoreCase));
 
-                // Assert
-                installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(1, installedPackages.Count);
-                Assert.Equal(packageIdentityA.Id, "newtonsoft.json", StringComparer.OrdinalIgnoreCase);
-                Assert.Equal(0, entityFrameworkTargets.Count());
-            }
+            // Assert
+            installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+            Assert.Equal(1, installedPackages.Count);
+            Assert.Equal(packageIdentityA.Id, "newtonsoft.json", StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(0, entityFrameworkTargets.Count());
         }
 
         [Fact]
