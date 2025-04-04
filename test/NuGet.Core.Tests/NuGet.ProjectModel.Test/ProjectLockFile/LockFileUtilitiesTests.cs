@@ -1140,24 +1140,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 framework: framework.GetShortFolderName(),
                 dependencyName: "PackageA",
                 dependencyVersion: "1.0.0")
-                    .WithTestRestoreMetadata();
-
-            ImmutableArray<LibraryDependency> deps =
-            [
-                new LibraryDependency(new LibraryRange("PackageA", LibraryDependencyTarget.Package))
-                {
-                    ReferenceType = LibraryDependencyReferenceType.Direct,
-                }
-            ];
-
-            TargetFrameworkInformation tfi = new TargetFrameworkInformation(projectA.TargetFrameworks[0])
-            {
-                Dependencies = deps
-            };
-
-            projectA.TargetFrameworks.Clear();
-
-            projectA.TargetFrameworks.Add(tfi);
+                    .WithTestRestoreMetadata()
+                    .WithDependency(new LibraryDependency(new LibraryRange("PackageA", LibraryDependencyTarget.Package))
+                    {
+                        ReferenceType = LibraryDependencyReferenceType.Direct,
+                    });
 
             // A -> B
             var dgSpec = ProjectTestHelpers.GetDGSpecForFirstProject(projectA);
