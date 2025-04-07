@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
@@ -79,7 +80,7 @@ namespace NuGet.Test
             using (var pathContext = new SimpleTestPathContext())
             using (var solutionManager = new TestSolutionManager(pathContext))
             {
-                SimpleTestSettingsContext.AddSetting(pathContext.Settings.XML, "globalPackagesFolder", "..\\NuGetPackages");
+                SimpleTestSettingsContext.AddSetting(pathContext.Settings.XML, ConfigurationConstants.GlobalPackagesFolder, @"..\NuGetPackages");
                 pathContext.Settings.Save();
 
                 var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
@@ -99,7 +100,7 @@ namespace NuGet.Test
                 var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
 
                 // Act
-                await DependencyGraphRestoreUtility.RestoreAsync(
+                IReadOnlyList<RestoreSummary> results = await DependencyGraphRestoreUtility.RestoreAsync(
                     solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
@@ -114,6 +115,9 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.True(File.Exists(Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)));
+                results.Should().HaveCount(1);
+
+                results[0].Success.Should().BeTrue(testLogger.ShowMessages());
 
                 var packagesFolder = Path.GetFullPath(Path.Combine(pathContext.WorkingDirectory, @"..\NuGetPackages"));
 
