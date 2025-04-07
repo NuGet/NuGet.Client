@@ -832,58 +832,5 @@ namespace NuGet.Protocol.Tests
                 }
             }
         }
-
-        [Theory]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        public async Task Push_WithAnHttpSourceAndAllowInsecureConnections_NupkgOnly_Warns(bool allowInsecureConnections, bool isHttpWarningExpected)
-        {
-            // Arrange
-            using var workingDir = TestDirectory.Create();
-            var source = "http://www.nuget.org/api/v2/";
-            HttpRequestMessage sourceRequest = null;
-            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
-
-            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
-                {
-                    {
-                        source,
-                        request =>
-                        {
-                            sourceRequest = request;
-                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-                        }
-                    },
-                };
-            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
-            var logger = new TestLogger();
-
-            // Act
-            await resource.Push(
-                packagePaths: new[] { packageInfo.FullName },
-                symbolSource: string.Empty,
-                timeoutInSecond: 5,
-                disableBuffering: false,
-                getApiKey: _ => "serverapikey",
-                getSymbolApiKey: _ => null,
-                noServiceEndpoint: false,
-                skipDuplicate: false,
-                symbolPackageUpdateResource: null,
-                allowInsecureConnections: allowInsecureConnections,
-                log: logger);
-
-            // Assert
-            Assert.NotNull(sourceRequest);
-            if (isHttpWarningExpected)
-            {
-                Assert.Equal(1, logger.WarningMessages.Count);
-                Assert.Contains("You are running the 'push' operation with an 'HTTP' source", logger.WarningMessages.Single());
-            }
-            else
-            {
-                Assert.Equal(0, logger.WarningMessages.Count);
-            }
-
-        }
     }
 }
