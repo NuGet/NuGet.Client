@@ -89,7 +89,7 @@ namespace NuGet.Test
                     Repository.Factory.GetVisualStudio(pathContext.PackageSource)
                 };
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("A", "1.0.0"));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("a", "1.0.0"));
 
                 var project = new TestPackageReferenceNuGetProject(packageSpec, new TestMSBuildNuGetProjectSystem(packageSpec.TargetFrameworks[0].FrameworkName,
                     new TestNuGetProjectContext()));
