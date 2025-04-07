@@ -181,11 +181,6 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
-            if (_request.Project.RestoreMetadata?.ProjectStyle == ProjectStyle.ProjectJson)
-            {
-                throw new InvalidOperationException("nuh uh uh");
-            }
-
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Count(e => e.IsHttp);
