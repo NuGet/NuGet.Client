@@ -48,6 +48,7 @@ namespace NuGet.Test
         public override string ProjectName => PackageSpec.Name;
 
         public override string MSBuildProjectPath => PackageSpec.FilePath;
+
         private PackageSpec PackageSpec { get; set; }
 
         public TestPackageReferenceNuGetProject(
