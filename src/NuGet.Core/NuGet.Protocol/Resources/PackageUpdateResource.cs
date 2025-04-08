@@ -257,7 +257,7 @@ namespace NuGet.Protocol.Core.Types
                 bool warnForHttpSources = true;
                 foreach (string packageToPush in symbolsToPush)
                 {
-                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, log, token);
+                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
                     warnForHttpSources = false;
                 }
             }
@@ -301,7 +301,7 @@ namespace NuGet.Protocol.Core.Types
             bool warnForHttpSources = true;
             foreach (string nupkgToPush in nupkgsToPush)
             {
-                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, log, token);
+                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
                 // Push corresponding symbols, if successful.
                 if (packageWasPushed && !string.IsNullOrEmpty(symbolSource))
                 {
@@ -330,7 +330,7 @@ namespace NuGet.Protocol.Core.Types
                     }
 
                     string symbolApiKey = getSymbolApiKey(symbolSource);
-                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, log, token);
+                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
                 }
                 warnForHttpSources = false;
             }
@@ -343,6 +343,7 @@ namespace NuGet.Protocol.Core.Types
             bool skipDuplicate,
             TimeSpan requestTimeout,
             bool warnForHttpSources,
+            bool allowInsecureConnections,
             ILogger log,
             CancellationToken token)
         {
@@ -363,7 +364,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
-                    requestTimeout, warnForHttpSources, log, token);
+                    requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
             }
 
             if (wasPackagePushed)
@@ -413,6 +414,7 @@ namespace NuGet.Protocol.Core.Types
             bool skipDuplicate,
             TimeSpan requestTimeout,
             bool warnForHttpSources,
+            bool allowInsecureConnections,
             ILogger logger,
             CancellationToken token)
         {
@@ -420,6 +422,11 @@ namespace NuGet.Protocol.Core.Types
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
             bool showPushCommandPackagePushed = true;
+            if (warnForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+            {
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
+                return false;
+            }
 
             if (useTempApiKey)
             {
@@ -718,6 +725,11 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
+                if (sourceUri.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+                {
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
+                    return;
+                }
                 await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
         }

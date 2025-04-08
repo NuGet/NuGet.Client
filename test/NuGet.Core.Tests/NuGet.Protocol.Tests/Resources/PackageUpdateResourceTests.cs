@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -515,6 +516,7 @@ namespace NuGet.Protocol.Tests
                     noServiceEndpoint: false,
                     skipDuplicate: false,
                     symbolPackageUpdateResource: null,
+                    allowInsecureConnections: true,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -830,6 +832,235 @@ namespace NuGet.Protocol.Tests
                     symbolRequest[i - 1].Headers.TryGetValues(ApiKeyHeader, out apiValues);
                     Assert.Equal($"tempkey{i}", apiValues.First());
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public async Task Push_WithAnHttpSourceAndAllowInsecureConnections_NupkgOnly_Errors(bool allowInsecureConnections, bool isErrorExpected)
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "http://www.nuget.org/api/v2/";
+            HttpRequestMessage sourceRequest = null;
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: string.Empty,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => "serverapikey",
+                getSymbolApiKey: _ => null,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                allowInsecureConnections: allowInsecureConnections,
+                log: logger);
+
+            // Assert
+            if (isErrorExpected)
+            {
+                Assert.Equal(1, logger.ErrorMessages.Count);
+                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", source));
+            }
+            else
+            {
+                Assert.NotNull(sourceRequest);
+                Assert.Equal(0, logger.WarningMessages.Count);
+            }
+
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public async Task Push_WhenPushingToAnHttpSymbolSourceAndAllowInsecureConnections_logsError(bool allowInsecureConnections, bool isErrorExpected)
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "https://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                allowInsecureConnections: allowInsecureConnections,
+                log: logger);
+
+            // Assert
+            if (isErrorExpected)
+            {
+                Assert.Equal(1, logger.ErrorMessages.Count);
+                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", "http://other.smbsrc.net/api/v2/package/"));
+            }
+            else
+            {
+                Assert.NotNull(sourceRequest);
+                Assert.NotNull(symbolRequest);
+                Assert.Equal(0, logger.WarningMessages.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public async Task Push_WhenPushingToAnHttpSourceAndSymbolSourceWithAllowInsecureConnections_ErrorsForOne(bool allowInsecureConnections, bool isErrorExpected)
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "http://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                allowInsecureConnections: allowInsecureConnections,
+                log: logger);
+
+            // Assert
+            if (isErrorExpected)
+            {
+                Assert.Equal(1, logger.ErrorMessages.Count);
+                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", source));
+            }
+            else
+            {
+                Assert.NotNull(sourceRequest);
+                Assert.NotNull(symbolRequest);
+                Assert.Equal(0, logger.WarningMessages.Count);
+            }
+        }
+
+        [Fact]
+        public async Task Delete_WhenDeletingFromHTTPSource_LogsAnError()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "http://www.nuget.org/api/v2/";
+                HttpRequestMessage actualRequest = null;
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "http://www.nuget.org/api/v2/DeepEqual/1.4.0.1-rc",
+                        request =>
+                        {
+                            actualRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+                var apiKey = string.Empty;
+                var logger = new TestLogger();
+
+                // Act
+                await resource.Delete(
+                    packageId: "DeepEqual",
+                    packageVersion: "1.4.0.1-rc",
+                    getApiKey: _ => apiKey,
+                    confirm: _ => true,
+                    noServiceEndpoint: false,
+                    log: logger);
+
+                // Assert
+                Assert.Equal(1, logger.Errors);
+                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "delete", source));
             }
         }
     }
