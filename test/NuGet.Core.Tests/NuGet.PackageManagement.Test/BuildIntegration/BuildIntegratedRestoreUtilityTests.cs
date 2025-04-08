@@ -121,7 +121,7 @@ namespace NuGet.Test
 
                 var packagesFolder = Path.GetFullPath(Path.Combine(pathContext.WorkingDirectory, @"..\NuGetPackages"));
 
-                Assert.True(Directory.Exists(packagesFolder));
+                Assert.True(Directory.Exists(packagesFolder), testLogger.ShowMessages());
                 Assert.True(File.Exists(Path.Combine(
                     packagesFolder,
                     "a",
