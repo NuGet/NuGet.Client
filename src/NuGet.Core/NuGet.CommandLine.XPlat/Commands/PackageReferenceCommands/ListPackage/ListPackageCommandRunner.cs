@@ -127,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    if (AvoidHttpSources(listPackageArgs, projectModel) != 0)
+                    if (ReportErrorForHttpSources(listPackageArgs, projectModel))
                     {
                         return;
                     }
@@ -328,7 +328,7 @@ namespace NuGet.CommandLine.XPlat
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
         }
 
-        private static int AvoidHttpSources(
+        private static bool ReportErrorForHttpSources(
             ListPackageArgs listPackageArgs,
             ListPackageProjectModel projectModel)
         {
@@ -339,7 +339,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (httpPackageSources.Count == 0)
             {
-                return 0;
+                return false;
             }
 
             string errorMessage = httpPackageSources.Count == 1
@@ -347,7 +347,7 @@ namespace NuGet.CommandLine.XPlat
                 : string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage_MultipleSources, "list package", Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
 
             projectModel.AddProjectInformation(ProblemType.Error, errorMessage);
-            return 1;
+            return true;
         }
 
         private static void AddHttpPackageSources(IEnumerable<PackageSource> packageSources, List<PackageSource> httpPackageSources)

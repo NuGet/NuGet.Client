@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.Error;
             }
 
-            if (AvoidHTTPSources(listEndpoints, out string error) != ExitCodes.Success)
+            if (ReportErrorForHttpSources(listEndpoints, out string error))
             {
                 packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, error));
                 packageSearchResultRenderer.Finish();
@@ -229,8 +229,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packageSources">The list of package sources to check.</param>
         /// <param name="error">An output parameter to capture any error message.</param>
-        /// <returns>An integer indicating the result of the operation.</returns>
-        private static int AvoidHTTPSources(IList<PackageSource> packageSources, out string error)
+        /// <returns>A bool indicating if an error was reported.</returns>
+        private static bool ReportErrorForHttpSources(IList<PackageSource> packageSources, out string error)
         {
             List<PackageSource> httpPackageSources = null;
             error = null;
@@ -266,10 +266,10 @@ namespace NuGet.CommandLine.XPlat
                         Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
                 }
 
-                return ExitCodes.Error;
+                return true;
             }
 
-            return ExitCodes.Success;
+            return false;
         }
     }
 }
