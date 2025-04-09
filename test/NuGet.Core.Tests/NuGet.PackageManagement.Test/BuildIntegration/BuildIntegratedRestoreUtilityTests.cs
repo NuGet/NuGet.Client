@@ -80,7 +80,6 @@ namespace NuGet.Test
             using (var pathContext = new SimpleTestPathContext())
             using (var solutionManager = new TestSolutionManager(pathContext))
             {
-                SimpleTestSettingsContext.RemoveSetting(pathContext.Settings.XML, ConfigurationConstants.GlobalPackagesFolder);
                 SimpleTestSettingsContext.AddSetting(pathContext.Settings.XML, ConfigurationConstants.GlobalPackagesFolder, @"..\NuGetPackages");
                 pathContext.Settings.Save();
 
