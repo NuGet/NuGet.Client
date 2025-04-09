@@ -37,6 +37,7 @@ namespace NuGet.ProjectModel
         private bool _disposed;
         private ArrayPool<byte> _bufferPool;
         private int _bufferUsed = 0;
+        private int _bytesRead = 0;
 
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
@@ -56,28 +57,20 @@ namespace NuGet.ProjectModel
             _stream = stream;
             try
             {
-#if NET
                 _stream.ReadExactly(_buffer, 0, 3);
-#else
-                int count = 3;
-                int offset = 0;
-                while (count > 0)
-                {
-                    int read = _stream.Read(_buffer, offset, count);
-                    if (read <= 0)
-                    {
-                        throw new EndOfStreamException();
-                    }
-                    offset += read;
-                    count -= read;
-                }
-#endif
+                _bytesRead = 3;
             }
             catch (EndOfStreamException)
             {
+                if (_bytesRead < 3)
+                {
+                    _bytesRead = (int)_stream.Length;
+                    _stream.Position = 0;
+                    _stream.ReadExactly(_buffer, 0, _bytesRead);
+                }
             }
 
-            if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
+            if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, _bytesRead)))
             {
                 _bufferUsed = 3;
             }
@@ -367,3 +360,38 @@ namespace NuGet.ProjectModel
         }
     }
 }
+
+#if !NET
+namespace System.IO
+{
+    internal static class StreamExtensions
+    {
+        internal static void ReadExactly(this Stream stream, byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+            if ((uint)count > buffer.Length - offset)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            while (count > 0)
+            {
+                int read = stream.Read(buffer, offset, count);
+                if (read <= 0)
+                {
+                    throw new EndOfStreamException();
+                }
+                offset +=read;
+                count -= read;
+            }
+        }
+    }
+}
+#endif
