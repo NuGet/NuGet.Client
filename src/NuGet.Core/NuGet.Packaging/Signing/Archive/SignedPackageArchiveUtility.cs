@@ -15,7 +15,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.ProjectModel;
 
 namespace NuGet.Packaging.Signing
 {
@@ -105,7 +104,22 @@ namespace NuGet.Packaging.Signing
             var buffer = new byte[localFileHeader.UncompressedSize];
 
             reader.BaseStream.Seek(offsetToData, SeekOrigin.Begin);
+#if NET
             reader.BaseStream.ReadExactly(buffer, offset: 0, count: buffer.Length);
+#else
+            int count = buffer.Length;
+            int offset = 0;
+            while (count > 0)
+            {
+                int read = reader.BaseStream.Read(buffer, offset, count);
+                if (read <= 0)
+                {
+                    throw new EndOfStreamException();
+                }
+                offset += read;
+                count -= read;
+            }
+#endif
 
             return new MemoryStream(buffer, writable: false);
         }
