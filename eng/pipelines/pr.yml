@@ -85,12 +85,12 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnWindows, true) }}:
   - stage:
-    displayName: Unit Tests on Windows (.NET Core 3.1)
+    displayName: Unit Tests on Windows (.NET 7)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on Windows (.NET Core 3.1)
+        displayName: Unit Tests on Windows (.NET 7)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -98,7 +98,7 @@ stages:
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
-        testTargetFramework: netcoreapp3.1
+        testTargetFramework: net7.0
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
@@ -227,16 +227,16 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
   - stage:
-    displayName: Unit Tests on Linux (.NET Core 3.1)
+    displayName: Unit Tests on Linux (.NET 7)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on Linux (.NET Core 3.1)
+        displayName: Unit Tests on Linux (.NET 7)
         osName: Linux
         vmImage: ubuntu-latest
         testType: Unit
-        testTargetFramework: netcoreapp3.1
+        testTargetFramework: net7.0
 
 - ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
   - stage:
@@ -267,16 +267,16 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnMacOS, true) }}:
   - stage:
-    displayName: Unit Tests on MacOS (.NET Core 3.1)
+    displayName: Unit Tests on MacOS (.NET 7)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on MacOS (.NET Core 3.1)
+        displayName: Unit Tests on MacOS (.NET 7)
         osName: MacOS
         vmImage: macos-latest
         testType: Unit
-        testTargetFramework: netcoreapp3.1
+        testTargetFramework: net7.0
 
 - ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:
   - stage:
