@@ -62,9 +62,9 @@ namespace NuGet.ProjectModel
             }
             catch (EndOfStreamException)
             {
-                    _bytesRead = (int)_stream.Length;
-                    _stream.Position = 0;
-                    _stream.ReadExactly(_buffer, 0, _bytesRead);
+                _bytesRead = (int)_stream.Length;
+                _stream.Position = 0;
+                _stream.ReadExactly(_buffer, 0, _bytesRead);
             }
 
             if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, _bytesRead)))
