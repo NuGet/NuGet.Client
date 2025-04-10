@@ -81,7 +81,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} " +
-                    $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)} " +
+                    $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)} " +
                     $"--certificate-store-name {storeCertificate.StoreName} " +
                     $"--certificate-store-location {storeCertificate.StoreLocation}",
                     testOutputHelper: _testOutputHelper);
@@ -471,7 +471,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} " +
-                    $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)}",
+                    $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)}",
                     testOutputHelper: _testOutputHelper);
 
                 // Assert
@@ -505,7 +505,7 @@ namespace Dotnet.Integration.Test
                     CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                         pathContext.PackageSource,
                         $"nuget sign {packageFilePath} " +
-                        $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)}} " +
+                        $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)}} " +
                         $"--timestamper {timestampService.Url}",
                     testOutputHelper: _testOutputHelper);
 
@@ -568,7 +568,7 @@ namespace Dotnet.Integration.Test
         private static string GetDefaultArgs(string packageFilePath, IX509StoreCertificate storeCertificate)
         {
             return $"nuget sign {packageFilePath} " +
-                $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)} " +
+                $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)} " +
                 $"--certificate-store-name {storeCertificate.StoreName} " +
                 $"--certificate-store-location {storeCertificate.StoreLocation}";
         }
