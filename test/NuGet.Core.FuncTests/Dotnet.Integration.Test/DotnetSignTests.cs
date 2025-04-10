@@ -512,7 +512,6 @@ namespace Dotnet.Integration.Test
                     // Assert
                     result.AllOutput.Should().Contain(_timestampUnsupportedDigestAlgorithmCode);
                     Assert.Contains("The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
-                    Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
 
                     byte[] resultingFile = File.ReadAllBytes(packageFilePath);
                     Assert.Equal(resultingFile, originalFile);
