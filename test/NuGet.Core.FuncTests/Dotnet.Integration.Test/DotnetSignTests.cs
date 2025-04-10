@@ -505,7 +505,7 @@ namespace Dotnet.Integration.Test
                     CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                         pathContext.PackageSource,
                         $"nuget sign {packageFilePath} " +
-                        $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)}} " +
+                        $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)} " +
                         $"--timestamper {timestampService.Url}",
                     testOutputHelper: _testOutputHelper);
 
