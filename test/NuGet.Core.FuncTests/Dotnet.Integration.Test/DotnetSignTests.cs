@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -585,7 +586,7 @@ namespace Dotnet.Integration.Test
         private static string GetDefaultArgs(string packageFilePath, IX509StoreCertificate storeCertificate)
         {
             return $"nuget sign {packageFilePath} " +
-                $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)} " +
                 $"--certificate-store-name {storeCertificate.StoreName} " +
                 $"--certificate-store-location {storeCertificate.StoreLocation}";
         }
