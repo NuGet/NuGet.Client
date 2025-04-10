@@ -17,7 +17,7 @@ namespace NuGet.Internal.Tools.ShipPublicApis
 
             var resortOption = new Option<bool>("--resort");
 
-            var rootCommand = new CliRootCommand()
+            var rootCommand = new RootCommand()
             {
                 pathArgument,
                 resortOption
