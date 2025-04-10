@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -117,10 +116,7 @@ namespace NuGet.CommandLine.XPlat
                 catch (Exception ex)
                 {
                     LogException(ex, log);
-                    var tokenList = parseResult.Tokens.TakeWhile(token => token.Type is TokenType.Argument or TokenType.Command or TokenType.Directive).Select(t => t.Value).ToList();
-                    tokenList.Add("-h");
-                    rootCommand.Parse(tokenList).Invoke();
-                    exitCodeValue = 1;
+                    exitCodeValue = ExitCodes.Error;
                 }
 
                 return exitCodeValue;

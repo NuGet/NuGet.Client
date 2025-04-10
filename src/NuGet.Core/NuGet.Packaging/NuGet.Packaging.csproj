@@ -36,6 +36,7 @@
     <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
     <Compile Include="$(SharedDirectory)\SimplePool.cs" />
+    <Compile Include="$(SharedDirectory)\StringBuilderPool.cs" />
     <Compile Include="$(SharedDirectory)\TaskResult.cs" />
     <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
   </ItemGroup>
@@ -66,7 +67,7 @@
       This package is a dependency of System.Security.Cryptography.Pkcs
       When it is upgraded to a newer version, try deleting the below PackageReference
       -->
-    <PackageReference Include="System.Formats.Asn1" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)'" />
+    <PackageReference Include="System.Formats.Asn1" Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)' and '$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 
   <ItemGroup>
