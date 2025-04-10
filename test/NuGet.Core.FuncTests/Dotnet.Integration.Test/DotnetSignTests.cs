@@ -81,7 +81,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} " +
-                    $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                    $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)} " +
                     $"--certificate-store-name {storeCertificate.StoreName} " +
                     $"--certificate-store-location {storeCertificate.StoreLocation}",
                     testOutputHelper: _testOutputHelper);
@@ -471,7 +471,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} " +
-                    $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint}",
+                    $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)}",
                     testOutputHelper: _testOutputHelper);
 
                 // Assert
@@ -505,7 +505,7 @@ namespace Dotnet.Integration.Test
                     CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                         pathContext.PackageSource,
                         $"nuget sign {packageFilePath} " +
-                        $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                        $"--certificate-fingerprint {storeCertificate.Certificate.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256)}} " +
                         $"--timestamper {timestampService.Url}",
                     testOutputHelper: _testOutputHelper);
 
@@ -517,23 +517,6 @@ namespace Dotnet.Integration.Test
                     byte[] resultingFile = File.ReadAllBytes(packageFilePath);
                     Assert.Equal(resultingFile, originalFile);
                 }
-            }
-        }
-
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
-        public async Task DotnetSign_SignPackageWithInsecureCertificateFingerprint_RaisesWarningAsync()
-        {
-            var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1);
-
-            if (typeof(int).Assembly.GetName().Version.Major >= 10)
-            {
-                Assert.False(result.Success, result.AllOutput);
-                Assert.True(result.Errors.Contains(_insecureCertificateFingerprintCode), result.Errors);
-            }
-            else
-            {
-                Assert.True(result.Success, result.AllOutput);
-                Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
             }
         }
 
