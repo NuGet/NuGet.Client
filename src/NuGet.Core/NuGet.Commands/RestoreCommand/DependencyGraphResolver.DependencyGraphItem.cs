@@ -171,7 +171,7 @@ namespace NuGet.Commands
 
                 if (!isPackage)
                 {
-                    if (SdkAnalysisLevelMinimums.IsEnabled(
+                    if (isRootProject && SdkAnalysisLevelMinimums.IsEnabled(
                         projectRestoreMetadata.SdkAnalysisLevel,
                         projectRestoreMetadata.UsingMicrosoftNETSdk,
                         SdkAnalysisLevelMinimums.PruningWarnings))
