@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
@@ -36,7 +35,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                    Directory.GetCurrentDirectory(),
+                    pathContext.WorkingDirectory,
                     configFileName: pathContext.NuGetConfig,
                     machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -84,7 +83,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -133,7 +132,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -182,7 +181,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -225,7 +224,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -268,7 +267,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -308,7 +307,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
 
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -345,34 +344,37 @@ namespace NuGet.CommandLine.Xplat.Tests
         [Fact]
         public async Task RunAsync_WhenSourceIsInvalid_ReturnsErrorExitCode()
         {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-            Directory.GetCurrentDirectory(),
-            configFileName: null,
-            machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            string source = "invalid-source";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSource, source);
-            PackageSearchArgs packageSearchArgs = new()
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
-                Skip = 0,
-                Take = 10,
-                Prerelease = true,
-                ExactMatch = false,
-                Logger = GetLogger(),
-                SearchTerm = "json",
-                Sources = new List<string> { source }
-            };
+                // Arrange
+                ISettings settings = Settings.LoadDefaultSettings(
+                pathContext.WorkingDirectory,
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+                PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+                string source = "invalid-source";
+                string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSource, source);
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = 0,
+                    Take = 10,
+                    Prerelease = true,
+                    ExactMatch = false,
+                    Logger = GetLogger(),
+                    SearchTerm = "json",
+                    Sources = new List<string> { source }
+                };
 
-            // Act
-            int exitCode = await PackageSearchRunner.RunAsync(
-                sourceProvider: sourceProvider,
-                packageSearchArgs,
-                cancellationToken: System.Threading.CancellationToken.None);
+                // Act
+                int exitCode = await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: System.Threading.CancellationToken.None);
 
-            // Assert
-            Assert.Equal(ExitCodes.Error, exitCode);
-            Assert.Contains(expectedError, StoredErrorMessage);
+                // Assert
+                Assert.Equal(ExitCodes.Error, exitCode);
+                Assert.Contains(expectedError, StoredErrorMessage);
+            }
         }
 
         [Fact]
@@ -384,7 +386,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/indexWithNoSearchResource.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+                pathContext.WorkingDirectory,
                 configFileName: pathContext.NuGetConfig,
                 machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -421,7 +423,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 // Arrange
                 ISettings settings = Settings.LoadDefaultSettings(
-                    Directory.GetCurrentDirectory(),
+                    pathContext.WorkingDirectory,
                     configFileName: pathContext.NuGetConfig,
                     machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -462,7 +464,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                    Directory.GetCurrentDirectory(),
+                    pathContext.WorkingDirectory,
                     configFileName: pathContext.NuGetConfig,
                     machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -501,7 +503,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                    Directory.GetCurrentDirectory(),
+                    pathContext.WorkingDirectory,
                     configFileName: pathContext.NuGetConfig,
                     machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
@@ -540,7 +542,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
                 pathContext.Settings.AddSource(source, source, allowInsecureConnectionsValue: "true");
                 ISettings settings = Settings.LoadDefaultSettings(
-                    Directory.GetCurrentDirectory(),
+                    pathContext.WorkingDirectory,
                     configFileName: pathContext.NuGetConfig,
                     machineWideSettings: new XPlatMachineWideSetting());
                 PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
