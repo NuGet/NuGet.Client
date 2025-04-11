@@ -108,7 +108,7 @@ namespace NuGet.Commands
                     nuGettarget.Dependencies.Add(dependency);
                 }
 
-                nuGettarget.Dependencies = nuGettarget.Dependencies.OrderBy(d => d.Type).ToList();
+                nuGettarget.Dependencies = nuGettarget.Dependencies.OrderBy(d => d.Id).ToList();
 
                 lockFile.Targets.Add(nuGettarget);
             }
