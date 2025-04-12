@@ -11,7 +11,7 @@
   </Target>
 
   <!--
-    Determines if a project is a test project by checking the TestProject property and returning an item with the full path to the project file and its test type..
+    Determines if a project is a test project by checking the TestProject property and returning an item with the full path to the project file and its test type.
   -->
   <Target Name="IsTestProject"
           Returns="@(TestProject)"
