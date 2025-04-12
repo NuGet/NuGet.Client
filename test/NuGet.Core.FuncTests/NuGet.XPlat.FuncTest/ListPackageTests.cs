@@ -365,10 +365,56 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var project = SetupTestProject(pathContext);
-            SetupAssetsAndProps(project);
+            SetupAssetsAndProps(Path.GetDirectoryName(project.ProjectPath));
 
             var listPackageArgs = new ListPackageArgs(
                 path: project.ProjectPath,
+                packageSources: new List<PackageSource> { new PackageSource(pathContext.PackageSource) },
+                frameworks: new List<string>(),
+                ReportType.Vulnerable,
+                mockRenderer.Object,
+                includeTransitive: true,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                new List<PackageSource> { auditSource },
+                mockLogger.Object,
+                CancellationToken.None
+            );
+
+            var listPackageCommandRunner = new ListPackageCommandRunner();
+
+
+            // Act
+            var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
+
+            // Assert
+            Assert.Equal(1, result.Item2.Projects.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.Count);
+            Assert.Equal(1, result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().Vulnerabilities.Count);
+            Assert.Equal("0.0.9", result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().RequestedVersion);
+            Assert.Equal("1.0.0", result.Item2.Projects.First().TargetFrameworkPackages.First().TopLevelPackages.First().ResolvedVersion);
+            Assert.Equal(2, result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().Severity);
+            Assert.Equal("https://test/", result.Item2.Projects[0].TargetFrameworkPackages[0].TopLevelPackages.First().Vulnerabilities.First().AdvisoryUrl.ToString());
+        }
+
+        [Fact]
+        public async Task GetReportDataAsync_WhenSolutionFileOutsideCWD_ShouldList()
+        {
+            // Arrange
+            using var mockServer = SetupMockServer();
+            var auditSource = new PackageSource(mockServer.Uri + "v3/index.json") { AllowInsecureConnections = true };
+
+            var mockRenderer = new Mock<IReportRenderer>();
+            var mockLogger = new Mock<ILogger>();
+
+            using var pathContext = new SimpleTestPathContext();
+            var solution = SetupTestSolution(pathContext);
+            SetupAssetsAndProps(Path.Combine(solution.Projects[0].SolutionRoot, solution.Projects[0].ProjectName).ToString());
+
+            var listPackageArgs = new ListPackageArgs(
+                path: solution.SolutionPath,
                 packageSources: new List<PackageSource> { new PackageSource(pathContext.PackageSource) },
                 frameworks: new List<string>(),
                 ReportType.Vulnerable,
@@ -418,7 +464,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var project = SetupTestProject(pathContext);
-            SetupAssetsAndProps(project);
+            SetupAssetsAndProps(Path.GetDirectoryName(project.ProjectPath));
 
             var mockRenderer = new Mock<IReportRenderer>();
             var mockLogger = new Mock<ILogger>();
@@ -500,6 +546,23 @@ namespace NuGet.XPlat.FuncTest
             Assert.True(13 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
 
+        private static SimpleTestSolutionContext SetupTestSolution(SimpleTestPathContext pathContext)
+        {
+            var package = new SimpleTestPackageContext { Id = "task", Version = "0.0.9" };
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateNETCore("ProjectA", pathContext.SolutionRoot, NuGetFramework.Parse("net8.0"));
+            project.Type = ProjectStyle.PackageReference;
+            project.SingleTargetFramework = true;
+            project.AddPackageToAllFrameworks(package);
+            project.ProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, project.ProjectPath);
+
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
+
+            return solution;
+        }
+
         private static SimpleTestProjectContext SetupTestProject(SimpleTestPathContext pathContext)
         {
             var package = new SimpleTestPackageContext { Id = "task", Version = "0.0.9" };
@@ -516,9 +579,9 @@ namespace NuGet.XPlat.FuncTest
             return project;
         }
 
-        private void SetupAssetsAndProps(SimpleTestProjectContext project)
+        private void SetupAssetsAndProps(string projectFolder)
         {
-            string objFolder = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "obj");
+            string objFolder = Path.Combine(projectFolder, "obj");
             Directory.CreateDirectory(objFolder);
 
             string assetsPath = Path.Combine(objFolder, "project.assets.json");
