@@ -4729,11 +4729,8 @@ namespace NuGet.Commands.FuncTest
         // P1 -> A 1.0.0 -> B 1.0.0
         // P1 -> P2 (project) -> P3 (project)
         // Prune B 1.0.0
-        [Theory]
-        [InlineData("10.0.100", true, true)]
-        [InlineData("9.0.100", true, false)]
-        [InlineData("", false, true)]
-        public async Task RestoreCommand_WithTransitiveProjectReferenceSpecifiedForPruning_SkipsPruning_AndVerifiesEquivalency(string sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool shouldWarn)
+        [Fact]
+        public async Task RestoreCommand_WithTransitiveProjectReferenceSpecifiedForPruning_SkipsPruningAndDoesNotWarn_AndVerifiesEquivalency()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -4768,8 +4765,8 @@ namespace NuGet.Commands.FuncTest
 
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
-            projectSpec.RestoreMetadata.SdkAnalysisLevel = !string.IsNullOrEmpty(sdkAnalysisLevel) ? NuGetVersion.Parse(sdkAnalysisLevel) : null;
-            projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNETSdk;
+            projectSpec.RestoreMetadata.SdkAnalysisLevel = NuGetVersion.Parse("10.0.100");
+            projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = true;
             var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework: "net472");
             var projectSpec3 = ProjectTestHelpers.GetPackageSpec("Project3", framework: "net472");
 
@@ -4789,11 +4786,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().BeEmpty();
-            if (shouldWarn)
-            {
-                result.LockFile.LogMessages.Should().HaveCount(1);
-                result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1511);
-            }
+            result.LockFile.LogMessages.Should().BeEmpty();
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(1);
         }
@@ -5209,8 +5202,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().BeEmpty();
 
-            result.LockFile.LogMessages.Should().HaveCount(1);
-            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1511);
+            result.LockFile.LogMessages.Should().BeEmpty();
 
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(1);
