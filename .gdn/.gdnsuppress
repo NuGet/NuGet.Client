@@ -14,7 +14,10 @@
         "memberOf": ["default"],
         "tool": "BinSkim",
         "ruleId": "BA2009",
-        "justification": "This DLL is not shipped and is not built by our team."
+        "justification": "This DLL is not shipped and is not built by our team.",
+        "createdDate": "2025-04-15 17:38:54Z",
+        "expirationDate": null,
+        "type": null
       },
       "dadf10d994d221e4d43842f89921d1eca4a2185ef8afa6c6894e5a8faf96afc6": {
         "signature": "dadf10d994d221e4d43842f89921d1eca4a2185ef8afa6c6894e5a8faf96afc6",
@@ -22,7 +25,10 @@
         "memberOf": ["default"],
         "tool": "BinSkim",
         "ruleId": "BA2016",
-        "justification": "This DLL is not shipped and is not built by our team."
+        "justification": "This DLL is not shipped and is not built by our team.",
+        "createdDate": "2025-04-15 17:38:54Z",
+        "expirationDate": null,
+        "type": null
       }
     }
   }
