@@ -72,7 +72,7 @@ extends:
       credscan:
         enabled: false
       suppression:
-        suppressionFile: $(Build.Repository.LocalPath)\gdn\.gdnsuppress
+        suppressionFile: $(Build.SourcesDirectory)\.gdn\.gdnsuppress
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
