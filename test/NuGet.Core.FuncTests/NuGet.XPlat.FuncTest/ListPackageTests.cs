@@ -430,7 +430,6 @@ namespace NuGet.XPlat.FuncTest
 
             var listPackageCommandRunner = new ListPackageCommandRunner();
 
-
             // Act
             var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
 
