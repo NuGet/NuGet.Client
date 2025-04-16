@@ -179,5 +179,32 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Assert
             Assert.Equal(readmeStream, result);
         }
+
+        private class TestPackageModel : PackageModel
+        {
+            public TestPackageModel(PackageIdentity identity,
+                IEmbeddedResourcesCapable embeddedResources,
+                string? title = null,
+                string? description = null,
+                string? authors = null,
+                Uri? projectUrl = null,
+                string[]? tags = null,
+                IReadOnlyList<string>? ownersList = null,
+                IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
+                string? summary = null,
+                DateTimeOffset? publishedDate = null,
+                LicenseMetadata? licenseMetadata = null,
+                Uri? licenseUrl = null,
+                bool requireLicenseAcceptance = false,
+                Uri? iconUrl = null)
+                : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
+            {
+            }
+
+            public override Task PopulateDataAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

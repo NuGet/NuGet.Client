@@ -10,36 +10,35 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
-using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class ReferencedPackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
+    internal class DirectlyReferencedPackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapability;
 
-        public ReferencedPackageModel(
+        public DirectlyReferencedPackageModel(
             PackageIdentity identity,
             string packagePath,
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
             IEmbeddedResourcesCapable embeddedResources,
-            string? title = null,
-            string? description = null,
-            string? authors = null,
-            Uri? projectUrl = null,
-            string[]? tags = null,
-            IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null,
-            DateTimeOffset? publishedDate = null,
-            LicenseMetadata? licenseMetadata = null,
-            Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            string? reportAbuseUrl = null,
-            Uri? iconUrl = null)
+            string? title,
+            string? description,
+            string? authors,
+            Uri? projectUrl,
+            string[]? tags,
+            IReadOnlyList<string>? ownersList,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups,
+            string? summary,
+            DateTimeOffset? publishedDate,
+            LicenseMetadata? licenseMetadata,
+            Uri? licenseUrl,
+            bool requireLicenseAcceptance,
+            string? reportAbuseUrl,
+            Uri? iconUrl)
             : base(identity,
                   embeddedResources,
                   title,
@@ -68,7 +67,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public bool IsDeprecated => _deprecationCapability.IsDeprecated;
 
-        public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
+        public PackageDeprecationReason PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
         public AlternatePackageMetadataContextInfo? AlternatePackage => _deprecationCapability.AlternatePackage;
 

@@ -7,7 +7,6 @@ using NuGet.Packaging.Core;
 using Xunit;
 using NuGet.Versioning;
 using Moq;
-using NuGet.Protocol.Model;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -18,13 +17,13 @@ using NuGet.PackageManagement.UI.Models.Package;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
-    public class ReferencedPackageModelTests
+    public class DirectlyReferencedPackageModelTests
     {
         private readonly Mock<IVulnerableCapable> _mockVulnerableCapability;
         private readonly Mock<IDeprecationCapable> _mockDeprecationCapable;
         private readonly Mock<IEmbeddedResourcesCapable> _mockEmbeddedResource;
 
-        public ReferencedPackageModelTests()
+        public DirectlyReferencedPackageModelTests()
         {
             _mockVulnerableCapability = new Mock<IVulnerableCapable>();
             _mockDeprecationCapable = new Mock<IDeprecationCapable>();
@@ -41,13 +40,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
                 _mockDeprecationCapable.Object,
                 _mockEmbeddedResource.Object,
-                reportAbuseUrl: reportAbuseUrl);
+                reportAbuseUrl);
 
             // Assert
             Assert.Equal(reportAbuseUrl, model.ReportAbuseUrl);
@@ -62,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
@@ -77,13 +76,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         public void PackageDeprecationReasons_WithDeprecation_ReturnsCorrectValue()
         {
             // Arrange
-            var reasons = PackageDeprecationReasonEnum.CriticalBugs;
+            var reasons = PackageDeprecationReason.CriticalBugs;
             _mockDeprecationCapable.Setup(d => d.PackageDeprecationReasons).Returns(reasons);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
@@ -103,7 +102,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
@@ -130,7 +129,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
@@ -150,7 +149,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,
@@ -171,7 +170,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "path/to/package";
 
             // Act
-            var model = new ReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateDirectlyReferencedPackageModel(
                 identity,
                 packagePath,
                 _mockVulnerableCapability.Object,

@@ -11,7 +11,6 @@ using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
-using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -38,7 +37,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -55,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var downloadCount = 1000;
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, isListed: isListed, packageDetailsUrl: packageDetailsUrl, downloadCount: downloadCount);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object, isListed, packageDetailsUrl, downloadCount);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -74,7 +73,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _vulnerableCapabilityMock.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Act
             // Assert
@@ -88,7 +87,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _deprecationCapabilityMock.Setup(d => d.IsDeprecated).Returns(true);
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.True(package.IsDeprecated);
@@ -98,11 +97,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         public void PackageDeprecationReasons_WithDeprecation_ReturnsCorrectValue()
         {
             // Arrange
-            var reasons = PackageDeprecationReasonEnum.CriticalBugs;
+            var reasons = PackageDeprecationReason.CriticalBugs;
             _deprecationCapabilityMock.Setup(d => d.PackageDeprecationReasons).Returns(reasons);
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(reasons, package.PackageDeprecationReasons);
@@ -115,7 +114,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var cancellationToken = new CancellationToken();
 
             // Act
-            var package = new RemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
             await package.PopulateDataAsync(cancellationToken);
 
             // Assert
@@ -136,7 +135,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(vulnerabilities, package.Vulnerabilities);
@@ -150,7 +149,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.True(package.IsVulnerable);
@@ -165,7 +164,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
 
             // Act
-            var package = new RemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, _vulnerableCapabilityMock.Object, _deprecationCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(severity, package.VulnerabilityMaxSeverity);

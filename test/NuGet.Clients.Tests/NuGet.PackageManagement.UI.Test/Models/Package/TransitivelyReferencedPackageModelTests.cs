@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             };
 
             // Act
-            var model = new TransitivelyReferencedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateTransitivelyReferencedPackageModel(
                 identity,
                 mockVulnerableCapability.Object,
                 mockEmbeddedCapability.Object,

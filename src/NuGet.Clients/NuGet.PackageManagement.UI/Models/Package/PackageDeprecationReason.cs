@@ -3,9 +3,9 @@
 
 #nullable enable
 
-namespace NuGet.Protocol.Model
+namespace NuGet.PackageManagement.UI.Models.Package
 {
-    public enum PackageDeprecationReasonEnum
+    public enum PackageDeprecationReason
     {
         Unknown = -1,
         Legacy = 0,
@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Model
         LegacyAndCriticalBugs = 2
     }
 
-    public static class PackageDeprecationReason
+    public static class PackageDeprecationReasonConstants
     {
         public const string CriticalBugs = nameof(CriticalBugs);
         public const string Legacy = nameof(Legacy);

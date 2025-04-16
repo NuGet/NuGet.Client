@@ -18,6 +18,7 @@ using Moq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.UI.Test.Models.Package;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // pass PackageSearchMetadataContextInfo to a factory to create the PackageItemViewModel
             _testViewModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -332,7 +333,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -386,7 +387,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -438,7 +439,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -480,7 +481,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel);
 
             vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
@@ -705,7 +706,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -817,7 +818,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -942,7 +943,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1155,7 +1156,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -1261,7 +1262,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1368,7 +1369,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -1524,7 +1525,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1580,7 +1581,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
                 InstalledVersion = installedVersion,
@@ -1621,7 +1622,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel);
             vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
             vm.InstalledVersion = installedVersion;
@@ -1817,7 +1818,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var deprecationCapability = new Mock<IDeprecationCapable>();
 
-            var packageModel = new RemotePackageModel(identity, vulnerableCapability.Object, deprecationCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateRemotePackageModel(identity, vulnerableCapability.Object, deprecationCapability.Object, embeddedResourceCapability.Object);
             var packageItemViewModel = new PackageItemViewModel(mockSearchService.Object, packageModel: packageModel)
             {
                 InstalledVersion = installedVersion,

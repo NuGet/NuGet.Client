@@ -1,8 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-#nullable enable
-
+// Updated PackageModelFactory class
 using System;
 using System.Collections.Generic;
 using NuGet.PackageManagement.VisualStudio;
@@ -44,76 +40,19 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
                 if (itemFilter.Equals(ContractItemFilter.All))
                 {
-                    // Package from a local folder
-                    return new LocalPackageModel(
-                        metadata.Identity!,
-                        metadata.PackagePath,
-                        vulnerableCapability,
-                        embeddedResources,
-                        metadata.Title,
-                        metadata.Description,
-                        metadata.Authors,
-                        metadata.ProjectUrl,
-                        metadata.Tags?.Split(','),
-                        metadata.OwnersList,
-                        metadata.DependencySets,
-                        metadata.Summary,
-                        metadata.Published,
-                        metadata.LicenseMetadata,
-                        metadata.LicenseUrl,
-                        metadata.RequireLicenseAcceptance,
-                        metadata.IconUrl);
+                    return CreateLocalPackageModel(metadata, vulnerableCapability, embeddedResources);
                 }
 
                 IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
 
-                // Installed package with a PackageReference
-                return new ReferencedPackageModel(
-                    metadata.Identity!,
-                    metadata.PackagePath,
-                    vulnerableCapability,
-                    deprecationCapable,
-                    embeddedResources,
-                    metadata.Title,
-                    metadata.Description,
-                    metadata.Authors,
-                    metadata.ProjectUrl,
-                    metadata.Tags?.Split(','),
-                    metadata.OwnersList,
-                    metadata.DependencySets,
-                    metadata.Summary,
-                    metadata.Published,
-                    metadata.LicenseMetadata,
-                    metadata.LicenseUrl,
-                    metadata.RequireLicenseAcceptance,
-                    metadata.ReportAbuseUrl?.ToString(),
-                    metadata.IconUrl);
+                return CreateDirectlyReferencedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
             }
             else
             {
-                // Transitive dependencies are only available in the Installed tab
                 if (metadata.TransitiveOrigins != null)
                 {
                     IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity!);
-                    return new TransitivelyReferencedPackageModel(
-                        metadata.Identity!,
-                        vulnerableDatabaseCapability,
-                        embeddedResources,
-                        metadata.TransitiveOrigins,
-                        metadata.Title,
-                        metadata.Description,
-                        metadata.Authors,
-                        metadata.ProjectUrl,
-                        metadata.Tags?.Split(','),
-                        metadata.OwnersList,
-                        metadata.DependencySets,
-                        metadata.Summary,
-                        metadata.Published,
-                        metadata.LicenseMetadata,
-                        metadata.LicenseUrl,
-                        metadata.RequireLicenseAcceptance,
-                        metadata.ReportAbuseUrl?.ToString(),
-                        metadata.IconUrl);
+                    return CreateTransitivelyReferencedPackageModel(metadata, vulnerableDatabaseCapability, embeddedResources);
                 }
 
                 PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
@@ -122,56 +61,135 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
                 if (metadata.IsRecommended)
                 {
-                    var recommenderVersion = metadata.RecommenderVersion ?? throw new ArgumentNullException(nameof(metadata.RecommenderVersion));
-
-                    return new RecommendedPackageModel(
-                        metadata.Identity!,
-                        vulnerableCapability,
-                        deprecationCapable,
-                        embeddedResources,
-                        recommenderVersion,
-                        metadata.Title,
-                        metadata.Description,
-                        metadata.Authors,
-                        metadata.ProjectUrl,
-                        metadata.Tags?.Split(','),
-                        metadata.OwnersList,
-                        metadata.DependencySets,
-                        metadata.Summary,
-                        metadata.Published,
-                        metadata.LicenseMetadata,
-                        metadata.LicenseUrl,
-                        metadata.RequireLicenseAcceptance,
-                        metadata.IsListed,
-                        metadata.PackageDetailsUrl,
-                        metadata.DownloadCount,
-                        metadata.ReadmeUrl,
-                        metadata.IconUrl);
+                    return CreateRecommendedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
                 }
 
-                return new RemotePackageModel(
-                    metadata.Identity!,
-                    vulnerableCapability,
-                    deprecationCapable,
-                    embeddedResources,
-                    metadata.Title,
-                    metadata.Description,
-                    metadata.Authors,
-                    metadata.ProjectUrl,
-                    metadata.Tags?.Split(','),
-                    metadata.OwnersList,
-                    metadata.DependencySets,
-                    metadata.Summary,
-                    metadata.Published,
-                    metadata.LicenseMetadata,
-                    metadata.LicenseUrl,
-                    metadata.RequireLicenseAcceptance,
-                    metadata.IsListed,
-                    metadata.PackageDetailsUrl,
-                    metadata.DownloadCount,
-                    metadata.ReadmeUrl,
-                    metadata.IconUrl);
+                return CreateRemotePackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
             }
+        }
+
+        private static LocalPackageModel CreateLocalPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, EmbeddedResourcesCapability embeddedResources)
+        {
+            return new LocalPackageModel(
+                metadata.Identity!,
+                metadata.PackagePath!,
+                vulnerableCapability,
+                embeddedResources,
+                metadata.Title,
+                metadata.Description,
+                metadata.Authors,
+                metadata.ProjectUrl,
+                metadata.Tags?.Split(','),
+                metadata.OwnersList,
+                metadata.DependencySets,
+                metadata.Summary,
+                metadata.Published,
+                metadata.LicenseMetadata,
+                metadata.LicenseUrl,
+                metadata.RequireLicenseAcceptance,
+                metadata.IconUrl);
+        }
+
+        private static DirectlyReferencedPackageModel CreateDirectlyReferencedPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, IDeprecationCapable deprecationCapable, EmbeddedResourcesCapability embeddedResources)
+        {
+            return new DirectlyReferencedPackageModel(
+                metadata.Identity!,
+                metadata.PackagePath!,
+                vulnerableCapability,
+                deprecationCapable,
+                embeddedResources,
+                metadata.Title,
+                metadata.Description,
+                metadata.Authors,
+                metadata.ProjectUrl,
+                metadata.Tags?.Split(','),
+                metadata.OwnersList,
+                metadata.DependencySets,
+                metadata.Summary,
+                metadata.Published,
+                metadata.LicenseMetadata,
+                metadata.LicenseUrl,
+                metadata.RequireLicenseAcceptance,
+                metadata.ReportAbuseUrl?.ToString(),
+                metadata.IconUrl);
+        }
+
+        private static TransitivelyReferencedPackageModel CreateTransitivelyReferencedPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableDatabaseCapability, EmbeddedResourcesCapability embeddedResources)
+        {
+            return new TransitivelyReferencedPackageModel(
+                metadata.Identity!,
+                vulnerableDatabaseCapability,
+                embeddedResources,
+                metadata.TransitiveOrigins!,
+                metadata.Title,
+                metadata.Description,
+                metadata.Authors,
+                metadata.ProjectUrl,
+                metadata.Tags?.Split(','),
+                metadata.OwnersList,
+                metadata.DependencySets,
+                metadata.Summary,
+                metadata.Published,
+                metadata.LicenseMetadata,
+                metadata.LicenseUrl,
+                metadata.RequireLicenseAcceptance,
+                metadata.ReportAbuseUrl?.ToString(),
+                metadata.IconUrl);
+        }
+
+        private static RecommendedPackageModel CreateRecommendedPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, IDeprecationCapable deprecationCapable, EmbeddedResourcesCapability embeddedResources)
+        {
+            var recommenderVersion = metadata.RecommenderVersion ?? throw new ArgumentNullException(nameof(metadata.RecommenderVersion));
+
+            return new RecommendedPackageModel(
+                metadata.Identity!,
+                vulnerableCapability,
+                deprecationCapable,
+                embeddedResources,
+                recommenderVersion,
+                metadata.Title,
+                metadata.Description,
+                metadata.Authors,
+                metadata.ProjectUrl,
+                metadata.Tags?.Split(','),
+                metadata.OwnersList,
+                metadata.DependencySets,
+                metadata.Summary,
+                metadata.Published,
+                metadata.LicenseMetadata,
+                metadata.LicenseUrl,
+                metadata.RequireLicenseAcceptance,
+                metadata.IsListed,
+                metadata.PackageDetailsUrl,
+                metadata.DownloadCount,
+                metadata.ReadmeUrl,
+                metadata.IconUrl);
+        }
+
+        private static RemotePackageModel CreateRemotePackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, IDeprecationCapable deprecationCapable, EmbeddedResourcesCapability embeddedResources)
+        {
+            return new RemotePackageModel(
+                metadata.Identity!,
+                vulnerableCapability,
+                deprecationCapable,
+                embeddedResources,
+                metadata.Title,
+                metadata.Description,
+                metadata.Authors,
+                metadata.ProjectUrl,
+                metadata.Tags?.Split(','),
+                metadata.OwnersList,
+                metadata.DependencySets,
+                metadata.Summary,
+                metadata.Published,
+                metadata.LicenseMetadata,
+                metadata.LicenseUrl,
+                metadata.RequireLicenseAcceptance,
+                metadata.IsListed,
+                metadata.PackageDetailsUrl,
+                metadata.DownloadCount,
+                metadata.ReadmeUrl,
+                metadata.IconUrl);
         }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.UI.Test.Models.Package;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -283,7 +284,7 @@ namespace NuGet.PackageManagement.UI.Test
             var embeddedResource = new Mock<IEmbeddedResourcesCapable>();
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var deprecatedCapability = new Mock<IDeprecationCapable>();
-            var packageModel = new RemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateRemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);
 
             var currentStatus = LoadingStatus.Loading;
 

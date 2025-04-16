@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
-using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
@@ -25,23 +24,23 @@ namespace NuGet.PackageManagement.UI.Models.Package
             IVulnerableCapable vulnerableCapability,
             IDeprecationCapable deprecationCapability,
             IEmbeddedResourcesCapable embeddedResources,
-            string? title = null,
-            string? description = null,
-            string? authors = null,
-            Uri? projectUrl = null,
-            string[]? tags = null,
-            IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null,
-            DateTimeOffset? publishedDate = null,
-            LicenseMetadata? licenseMetadata = null,
-            Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            bool isListed = false,
-            Uri? packageDetailsUrl = null,
-            long? downloadCount = null,
-            Uri? readmeUrl = null,
-            Uri? iconUrl = null)
+            string? title,
+            string? description,
+            string? authors,
+            Uri? projectUrl,
+            string[]? tags,
+            IReadOnlyList<string>? ownersList,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups,
+            string? summary,
+            DateTimeOffset? publishedDate,
+            LicenseMetadata? licenseMetadata,
+            Uri? licenseUrl,
+            bool requireLicenseAcceptance,
+            bool isListed,
+            Uri? packageDetailsUrl,
+            long? downloadCount,
+            Uri? readmeUrl,
+            Uri? iconUrl)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
             IsListed = isListed;
@@ -59,7 +58,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public bool IsDeprecated => _deprecationCapability.IsDeprecated;
 
-        public PackageDeprecationReasonEnum PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
+        public PackageDeprecationReason PackageDeprecationReasons => _deprecationCapability.PackageDeprecationReasons;
 
         public AlternatePackageMetadataContextInfo? AlternatePackage => _deprecationCapability.AlternatePackage;
 

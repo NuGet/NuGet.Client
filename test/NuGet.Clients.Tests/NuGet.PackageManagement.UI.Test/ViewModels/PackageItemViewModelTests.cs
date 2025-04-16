@@ -15,6 +15,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
+using NuGet.PackageManagement.UI.Test.Models.Package;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -62,7 +63,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var packagePath = _testData.TestData.PackagePath;
             var embeddedCapability = new EmbeddedResourcesCapability(_packageFileService, identity, null);
 
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedCapability);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedCapability);
 
             _testInstance = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
             _output = output;
@@ -496,7 +497,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
             var embeddedCapability = new EmbeddedResourcesCapability(_packageFileService, identity, null);
 
-            return new LocalPackageModel(identity, _testData.TestData.PackagePath, vulnerableCapability.Object, embeddedCapability, authors: authors, ownersList: owners, iconUrl: iconUrl);
+            return PackageModelCreationTestHelper.CreateLocalPackageModel(identity, _testData.TestData.PackagePath, vulnerableCapability.Object, embeddedCapability, authors: authors, ownersList: owners, iconUrl: iconUrl);
         }
 
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)

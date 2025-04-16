@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
-using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -91,11 +90,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         }
 
         [Theory]
-        [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReasonEnum.CriticalBugs)]
-        [InlineData(new[] { "Legacy" }, PackageDeprecationReasonEnum.Legacy)]
-        [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReasonEnum.LegacyAndCriticalBugs)]
-        [InlineData(new[] { "Other" }, PackageDeprecationReasonEnum.Unknown)]
-        public async Task PackageDeprecationReasons_MultipleDeprecationReasons_ReturnsExpected(string[] reasons, PackageDeprecationReasonEnum expectedMessage)
+        [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReason.CriticalBugs)]
+        [InlineData(new[] { "Legacy" }, PackageDeprecationReason.Legacy)]
+        [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReason.LegacyAndCriticalBugs)]
+        [InlineData(new[] { "Other" }, PackageDeprecationReason.Unknown)]
+        public async Task PackageDeprecationReasons_MultipleDeprecationReasons_ReturnsExpected(string[] reasons, PackageDeprecationReason expectedMessage)
         {
             // Arrange
             var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", reasons, null);

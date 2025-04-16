@@ -40,12 +40,34 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
-            _testViewModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
+            _testViewModel = new PackageItemViewModel(searchService.Object, packageModel)
             {
                 InstalledVersion = testVersion,
             };
+        }
+
+        internal LocalPackageModel CreateLocalPackageModel(PackageIdentity packageIdentity, string packagePath, IVulnerableCapable vulnerableCapable, IEmbeddedResourcesCapable embeddedResourceCapable)
+        {
+            return new LocalPackageModel(
+                packageIdentity,
+                packagePath,
+                vulnerableCapable,
+                embeddedResourceCapable,
+                title: null,
+                description: null,
+                projectUrl: null,
+                authors: null,
+                tags: null,
+                ownersList: null,
+                packageDependencyGroups: null,
+                summary: null,
+                publishedDate: null,
+                licenseMetadata: null,
+                licenseUrl: null,
+                requireLicenseAcceptance: false,
+                iconUrl: null);
         }
     }
 
@@ -154,7 +176,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             await model.SetCurrentPackageAsync(
                 new PackageItemViewModel(searchService.Object, packageModel: packageModel)
                 {
@@ -190,7 +212,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
-            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
 
             var packageItemModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {

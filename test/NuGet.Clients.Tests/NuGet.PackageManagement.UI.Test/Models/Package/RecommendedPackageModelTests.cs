@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             (string modelVersion, string vsixVersion) recommenderVersion = ("1.0.0", "1.0.0");
 
             // Act
-            var model = new RecommendedPackageModel(
+            var model = PackageModelCreationTestHelper.CreateRecommendedPackageModel(
                 identity,
                 vulnerabilityCapability.Object,
                 deprecatedCapability.Object,

@@ -21,19 +21,19 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         internal PackageModel(PackageIdentity identity,
             IEmbeddedResourcesCapable embeddedResources,
-            string? title = null,
-            string? description = null,
-            string? authors = null,
-            Uri? projectUrl = null,
-            string[]? tags = null,
-            IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null,
-            DateTimeOffset? publishedDate = null,
-            LicenseMetadata? licenseMetadata = null,
-            Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            Uri? iconUrl = null)
+            string? title,
+            string? description,
+            string? authors,
+            Uri? projectUrl,
+            string[]? tags,
+            IReadOnlyList<string>? ownersList,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups,
+            string? summary,
+            DateTimeOffset? publishedDate,
+            LicenseMetadata? licenseMetadata,
+            Uri? licenseUrl,
+            bool requireLicenseAcceptance,
+            Uri? iconUrl)
         {
             _embeddedResources = embeddedResources ?? throw new ArgumentNullException(nameof(embeddedResources));
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
             if (packageDependencyGroups != null && packageDependencyGroups.Count > 0)
             {
-                DependencySets = packageDependencyGroups.Select(e => new PackageDependencySetMetadata(e)).ToArray();
+                DependencySets = [.. packageDependencyGroups.Select(e => new PackageDependencySetMetadata(e))];
             }
         }
 

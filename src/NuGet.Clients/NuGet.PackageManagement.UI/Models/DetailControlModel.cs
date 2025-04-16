@@ -9,10 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
-using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -475,9 +475,9 @@ namespace NuGet.PackageManagement.UI
             {
                 return Resources.Label_DeprecationReasons_Unknown;
             }
-            else if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
+            else if (reasons.Contains(PackageDeprecationReasonConstants.CriticalBugs, StringComparer.OrdinalIgnoreCase))
             {
-                if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+                if (reasons.Contains(PackageDeprecationReasonConstants.Legacy, StringComparer.OrdinalIgnoreCase))
                 {
                     return Resources.Label_DeprecationReasons_LegacyAndCriticalBugs;
                 }
@@ -486,7 +486,7 @@ namespace NuGet.PackageManagement.UI
                     return Resources.Label_DeprecationReasons_CriticalBugs;
                 }
             }
-            else if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+            else if (reasons.Contains(PackageDeprecationReasonConstants.Legacy, StringComparer.OrdinalIgnoreCase))
             {
                 return Resources.Label_DeprecationReasons_Legacy;
             }

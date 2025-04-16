@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new LocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new LocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(packagePath, package.PackagePath);
@@ -66,11 +66,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _vulnerableCapabilityMock.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "C:\\TestPackage";
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
-            var package = new LocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
-
-            // Act
-            // Assert
+            // Act & Assert
             Assert.Equal(package.IsVulnerable, isPackageVulnerable);
         }
 
@@ -80,14 +78,14 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Arrange
             var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
             {
-                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory1"), 1),
-                new PackageVulnerabilityMetadataContextInfo(new Uri("http://test.com/advisory2"), 2)
+                new PackageVulnerabilityMetadataContextInfo(advisoryUrl: new Uri("http://test.com/advisory1"), severity: 1),
+                new PackageVulnerabilityMetadataContextInfo(advisoryUrl: new Uri("http://test.com/advisory2"), severity: 2)
             };
             _vulnerableCapabilityMock.Setup(v => v.Vulnerabilities).Returns(vulnerabilities);
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new LocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(vulnerabilities, package.Vulnerabilities);
@@ -101,7 +99,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new LocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.True(package.IsVulnerable);
@@ -116,7 +114,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = new LocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(severity, package.VulnerabilityMaxSeverity);
@@ -129,7 +127,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var cancellationToken = new CancellationToken();
             _vulnerableCapabilityMock.Setup(v => v.PopulateDataAsync(cancellationToken)).Returns(Task.CompletedTask);
             var packagePath = "C:\\TestPackage";
-            var package = new LocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
 
             // Act
             await package.PopulateDataAsync(cancellationToken);

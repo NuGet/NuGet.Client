@@ -22,19 +22,19 @@ namespace NuGet.PackageManagement.UI.Models.Package
             string packagePath,
             IVulnerableCapable vulnerableCapability,
             IEmbeddedResourcesCapable embeddedResources,
-            string? title = null,
-            string? description = null,
-            string? authors = null,
-            Uri? projectUrl = null,
-            string[]? tags = null,
-            IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null,
-            DateTimeOffset? publishedDate = null,
-            LicenseMetadata? licenseMetadata = null,
-            Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            Uri? iconUrl = null)
+            string? title,
+            string? description,
+            string? authors,
+            Uri? projectUrl,
+            string[]? tags,
+            IReadOnlyList<string>? ownersList,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups,
+            string? summary,
+            DateTimeOffset? publishedDate,
+            LicenseMetadata? licenseMetadata,
+            Uri? licenseUrl,
+            bool requireLicenseAcceptance,
+            Uri? iconUrl)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
             _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));

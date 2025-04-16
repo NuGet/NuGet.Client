@@ -18,24 +18,24 @@ namespace NuGet.PackageManagement.UI.Models.Package
             IDeprecationCapable deprecationCapability,
             IEmbeddedResourcesCapable embeddedResources,
             (string modelVersion, string vsixVersion) recommenderVersion,
-            string? title = null,
-            string? description = null,
-            string? authors = null,
-            Uri? projectUrl = null,
-            string[]? tags = null,
-            IReadOnlyList<string>? ownersList = null,
-            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups = null,
-            string? summary = null,
-            DateTimeOffset? publishedDate = null,
-            LicenseMetadata? licenseMetadata = null,
-            Uri? licenseUrl = null,
-            bool requireLicenseAcceptance = false,
-            bool isListed = false,
-            Uri? packageDetailsUrl = null,
-            long? downloadCount = null,
-            Uri? readmeUrl = null,
-            Uri? iconUrl = null)
-                : base(identity, vulnerableCapability, deprecationCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl, iconUrl)
+            string? title,
+            string? description,
+            string? authors,
+            Uri? projectUrl,
+            string[]? tags,
+            IReadOnlyList<string>? ownersList,
+            IReadOnlyCollection<PackageDependencyGroup>? packageDependencyGroups,
+            string? summary,
+            DateTimeOffset? publishedDate,
+            LicenseMetadata? licenseMetadata,
+            Uri? licenseUrl,
+            bool requireLicenseAcceptance,
+            bool isListed,
+            Uri? packageDetailsUrl,
+            long? downloadCount,
+            Uri? readmeUrl,
+            Uri? iconUrl)
+            : base(identity, vulnerableCapability, deprecationCapability, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, isListed, packageDetailsUrl, downloadCount, readmeUrl, iconUrl)
         {
             RecommenderVersion = recommenderVersion;
         }

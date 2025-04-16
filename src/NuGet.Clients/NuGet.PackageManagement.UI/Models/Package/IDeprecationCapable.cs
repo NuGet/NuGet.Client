@@ -5,7 +5,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
@@ -14,7 +13,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
     {
         public bool IsDeprecated { get; }
 
-        public PackageDeprecationReasonEnum PackageDeprecationReasons { get; }
+        public PackageDeprecationReason PackageDeprecationReasons { get; }
 
         public AlternatePackageMetadataContextInfo? AlternatePackage { get; }
 

@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var result = _factory.Create(packageSearchMetadata, ContractItemFilter.Installed);
 
             // Assert
-            Assert.IsType<ReferencedPackageModel>(result);
+            Assert.IsType<DirectlyReferencedPackageModel>(result);
         }
 
         [Fact]
