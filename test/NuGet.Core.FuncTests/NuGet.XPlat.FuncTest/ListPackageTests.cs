@@ -411,7 +411,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var solution = SetupTestSolution(pathContext);
-            SetupAssetsAndProps(Path.Combine(solution.Projects[0].SolutionRoot, solution.Projects[0].ProjectName).ToString());
+            SetupAssetsAndProps(Path.Combine(Path.GetDirectoryName(solution.SolutionPath), solution.Projects[0].ProjectName).ToString());
 
             var listPackageArgs = new ListPackageArgs(
                 path: solution.SolutionPath,
@@ -555,7 +555,6 @@ namespace NuGet.XPlat.FuncTest
             project.Type = ProjectStyle.PackageReference;
             project.SingleTargetFramework = true;
             project.AddPackageToAllFrameworks(package);
-            project.ProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, project.ProjectPath);
 
             solution.Projects.Add(project);
             solution.Create(pathContext.SolutionRoot);
