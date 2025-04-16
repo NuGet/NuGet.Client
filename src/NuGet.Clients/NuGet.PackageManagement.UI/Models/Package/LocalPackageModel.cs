@@ -9,18 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
-using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class LocalPackageModel : PackageModel, IVulnerableCapable
+    internal class LocalPackageModel : PackageModel
     {
-        private IVulnerableCapable _vulnerableCapability;
-
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,
-            IVulnerableCapable vulnerableCapability,
             IEmbeddedResourcesCapable embeddedResources,
             string? title,
             string? description,
@@ -37,21 +32,15 @@ namespace NuGet.PackageManagement.UI.Models.Package
             Uri? iconUrl)
             : base(identity, embeddedResources, title, description, authors, projectUrl, tags, ownersList, packageDependencyGroups, summary, publishedDate, licenseMetadata, licenseUrl, requireLicenseAcceptance, iconUrl)
         {
-            _vulnerableCapability = vulnerableCapability ?? throw new ArgumentNullException(nameof(vulnerableCapability));
             PackagePath = packagePath;
         }
 
         public string PackagePath { get; }
 
-        public IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities => _vulnerableCapability.Vulnerabilities;
-
-        public bool IsVulnerable => _vulnerableCapability.IsVulnerable;
-
-        public PackageVulnerabilitySeverity VulnerabilityMaxSeverity => _vulnerableCapability.VulnerabilityMaxSeverity;
-
-        public override async Task PopulateDataAsync(CancellationToken cancellationToken)
+        public override Task PopulateDataAsync(CancellationToken cancellationToken)
         {
-            await _vulnerableCapability.PopulateDataAsync(cancellationToken);
+            // LocalPackageModel does not need to populate any additional data.
+            return Task.CompletedTask;
         }
     }
 }

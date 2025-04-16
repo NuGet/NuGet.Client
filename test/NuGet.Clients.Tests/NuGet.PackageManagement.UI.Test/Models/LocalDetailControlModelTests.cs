@@ -157,7 +157,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Act
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
             await model.SetCurrentPackageAsync(
-                new PackageItemViewModel(searchService.Object, packageModel: packageModel)
+                new PackageItemViewModel(searchService.Object, packageModel)
                 {
                     InstalledVersion = installedVersion,
                 },
