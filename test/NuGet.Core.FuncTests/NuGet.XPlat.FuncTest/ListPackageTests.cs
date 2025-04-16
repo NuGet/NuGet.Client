@@ -365,7 +365,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var project = SetupTestProject(pathContext);
-            SetupAssetsAndProps(Path.GetDirectoryName(project.ProjectPath));
+            SetupAssetsAndProps(project);
 
             var listPackageArgs = new ListPackageArgs(
                 path: project.ProjectPath,
@@ -411,7 +411,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var solution = SetupTestSolution(pathContext);
-            SetupAssetsAndProps(Path.Combine(Path.GetDirectoryName(solution.SolutionPath), solution.Projects[0].ProjectName).ToString());
+            SetupAssetsAndProps(solution.Projects[0]);
 
             var listPackageArgs = new ListPackageArgs(
                 path: solution.SolutionPath,
@@ -464,7 +464,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var project = SetupTestProject(pathContext);
-            SetupAssetsAndProps(Path.GetDirectoryName(project.ProjectPath));
+            SetupAssetsAndProps(project);
 
             var mockRenderer = new Mock<IReportRenderer>();
             var mockLogger = new Mock<ILogger>();
@@ -578,13 +578,12 @@ namespace NuGet.XPlat.FuncTest
             return project;
         }
 
-        private void SetupAssetsAndProps(string projectFolder)
+        private void SetupAssetsAndProps(SimpleTestProjectContext project)
         {
-            string objFolder = Path.Combine(projectFolder, "obj");
-            Directory.CreateDirectory(objFolder);
+            Directory.CreateDirectory(project.ProjectExtensionsPath);
 
-            string assetsPath = Path.Combine(objFolder, "project.assets.json");
-            string propsPath = Path.Combine(objFolder, "ProjectA.csproj.nuget.g.props");
+            string assetsPath = Path.Combine(project.ProjectExtensionsPath, "project.assets.json");
+            string propsPath = Path.Combine(project.ProjectExtensionsPath, "ProjectA.csproj.nuget.g.props");
 
             string assetsContent = ResourceTestUtility.GetResource(
                 "NuGet.XPlat.FuncTest.compiler.resources.Test.OnePackage.project.assets.json",
