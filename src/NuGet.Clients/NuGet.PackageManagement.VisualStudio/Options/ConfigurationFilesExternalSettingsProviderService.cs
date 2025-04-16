@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var configPathsList = settings.GetConfigFilePaths().ToList();
+                var configPathsList = settings.GetConfigFilePaths();
 
                 var configPathsDictionary = new List<Dictionary<string, object>>(capacity: configPathsList.Count);
 
