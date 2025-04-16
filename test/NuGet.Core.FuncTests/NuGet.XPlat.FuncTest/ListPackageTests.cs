@@ -400,7 +400,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task GetReportDataAsync_WhenSolutionFileOutsideCWD_ShouldList()
+        public async Task GetReportDataAsync_WithSolutionFilePassed_ShouldList()
         {
             // Arrange
             using var mockServer = SetupMockServer();
