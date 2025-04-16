@@ -286,8 +286,7 @@ namespace NuGet.Commands
                 telemetry.EndIntervalMeasure(ValidateRestoreGraphsDuration);
 
                 // Generate Targets/Props files
-                (IEnumerable<MSBuildOutputFile>
-                    msbuildOutputFiles,
+                (IEnumerable<MSBuildOutputFile> msbuildOutputFiles,
                     string assetsFilePath,
                     string cacheFilePath,
                     assetsFile,
