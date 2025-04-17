@@ -33,38 +33,39 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, metadata.Identity!, metadata.ReadmeUrl);
 
-            if (metadata.PackagePath != null)
+            if (metadata.TransitiveOrigins != null)
             {
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
-                IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
-
-                if (itemFilter.Equals(ContractItemFilter.All))
-                {
-                    return CreateLocalPackageModel(metadata, vulnerableCapability, embeddedResources);
-                }
-
-                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
-
-                return CreateDirectlyReferencedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
+                IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity!);
+                return CreateTransitivelyReferencedPackageModel(metadata, vulnerableDatabaseCapability, embeddedResources);
             }
             else
             {
-                if (metadata.TransitiveOrigins != null)
+                if (metadata.PackagePath != null)
                 {
-                    IVulnerableCapable vulnerableDatabaseCapability = new VulnerableDatabaseCapability(_packageVulnerabilityService, metadata.Identity!);
-                    return CreateTransitivelyReferencedPackageModel(metadata, vulnerableDatabaseCapability, embeddedResources);
+                    PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+                    IVulnerableCapable vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
+
+                    if (itemFilter.Equals(ContractItemFilter.All))
+                    {
+                        return CreateLocalPackageModel(metadata, vulnerableCapability, embeddedResources);
+                    }
+
+                    IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
+                    return CreateDirectlyReferencedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
                 }
-
-                PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
-                IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
-                VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
-
-                if (metadata.IsRecommended)
+                else
                 {
-                    return CreateRecommendedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
-                }
+                    PackageMetadataRetrievalAdapter packageMetadataRetrievalAdapter = new PackageMetadataRetrievalAdapter(_searchService, metadata.Identity!, _packageSources, _includePrerelease);
+                    IDeprecationCapable deprecationCapable = new DeprecationPackageMetadataCapability(packageMetadataRetrievalAdapter);
+                    VulnerablePackageMetadataCapability vulnerableCapability = new VulnerablePackageMetadataCapability(packageMetadataRetrievalAdapter);
 
-                return CreateRemotePackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
+                    if (metadata.IsRecommended)
+                    {
+                        return CreateRecommendedPackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
+                    }
+
+                    return CreateRemotePackageModel(metadata, vulnerableCapability, deprecationCapable, embeddedResources);
+                }
             }
         }
 
