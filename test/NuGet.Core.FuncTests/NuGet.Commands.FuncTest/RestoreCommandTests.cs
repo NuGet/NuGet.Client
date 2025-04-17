@@ -4353,7 +4353,67 @@ namespace NuGet.Commands.FuncTest
         // P -> C 1.0.0
         // Prune C 1.0.0
         [Fact]
-        public async Task RestoreCommand_WithPrunePackageReferences_DoesNotPruneDirectDependencies_AndVerifiesEquivalency()
+        public async Task RestoreCommand_WithPrunePackageReferences_DoesNotPruneDirectDependenciesAndWarns()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("A", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("B", "1.0.0")]
+            };
+            var packageC = new SimpleTestPackageContext("C", "1.0.0");
+
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageC);
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net10.0"": {
+                ""dependencies"": {
+                        ""A"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                        ""C"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+                ""packagesToPrune"": {
+                    ""C"" : ""(,1.0.0]"" 
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("A");
+            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("B");
+            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(0);
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
+            result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
+            ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
+            installedPackages.Should().HaveCount(3);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPrunePackageReferencesAndOlderFramework_DoesNotPruneDirectDependenciesAndDoesNotWarn()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -4392,7 +4452,6 @@ namespace NuGet.Commands.FuncTest
           }
         }";
 
-
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
 
@@ -4407,8 +4466,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(0);
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
-            result.LockFile.LogMessages.Should().HaveCount(1);
-            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
+            result.LockFile.LogMessages.Should().BeEmpty();
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(3);
         }
