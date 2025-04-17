@@ -73,7 +73,6 @@ namespace NuGet.PackageManagement.UI.Models.Package
             return new LocalPackageModel(
                 metadata.Identity!,
                 metadata.PackagePath!,
-                vulnerableCapability,
                 embeddedResources,
                 metadata.Title,
                 metadata.Description,

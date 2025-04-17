@@ -64,11 +64,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var searchService = new Mock<INuGetSearchService>();
             var identity = new PackageIdentity("package", testVersion);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             // pass PackageSearchMetadataContextInfo to a factory to create the PackageItemViewModel
             _testViewModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -329,11 +328,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
 
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -383,11 +381,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
 
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -435,11 +432,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("package", installedVersion);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -477,11 +473,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("a", installedVersion);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel);
 
             vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
@@ -702,11 +697,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Mock<INuGetSearchService> searchService = new Mock<INuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -814,11 +808,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Mock<INuGetSearchService> searchService = new Mock<INuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -939,11 +932,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1152,11 +1144,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
 
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -1258,11 +1249,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Mock<INuGetSearchService> searchService = new Mock<INuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapability.Object);
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1365,11 +1355,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
 
             var identity = new PackageIdentity("Contoso.A", new NuGetVersion(installedVersion));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             // Act
             PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
@@ -1521,11 +1510,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(testVersions);
 
             var identity = new PackageIdentity("package", installedVersion);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
@@ -1577,11 +1565,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("package", installedVersion);
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
                 InstalledVersion = installedVersion,
@@ -1618,11 +1605,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var identity = new PackageIdentity("a", new NuGetVersion(installedVersion));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel);
             vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
             vm.InstalledVersion = installedVersion;

@@ -36,12 +36,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<INuGetSearchService>();
 
             var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             _testViewModel = new PackageItemViewModel(searchService.Object, packageModel)
             {
@@ -155,7 +154,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             await model.SetCurrentPackageAsync(
                 new PackageItemViewModel(searchService.Object, packageModel)
                 {
@@ -191,7 +190,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
 
             var packageItemModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {

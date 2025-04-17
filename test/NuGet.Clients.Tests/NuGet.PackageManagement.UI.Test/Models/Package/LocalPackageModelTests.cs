@@ -3,28 +3,22 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
 using NuGet.Versioning;
-using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Models.Package
 {
     public class LocalPackageModelTests
     {
-        private Mock<IVulnerableCapable> _vulnerableCapabilityMock;
         private Mock<IEmbeddedResourcesCapable> _embeddedResourcesMock;
 
         public LocalPackageModelTests()
         {
-            _vulnerableCapabilityMock = new Mock<IVulnerableCapable>();
             _embeddedResourcesMock = new Mock<IEmbeddedResourcesCapable>();
         }
 
@@ -36,7 +30,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal("TestPackage", package.Id);
@@ -51,89 +45,26 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var packagePath = "C:\\TestPackage";
 
             // Act
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _embeddedResourcesMock.Object);
 
             // Assert
             Assert.Equal(packagePath, package.PackagePath);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void LocalPackageModel_IsVulnerableProperty_ReturnsExpected(bool isPackageVulnerable)
-        {
-            // Arrange
-            _vulnerableCapabilityMock.SetupGet(x => x.IsVulnerable).Returns(isPackageVulnerable);
-            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
-            var packagePath = "C:\\TestPackage";
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
-
-            // Act & Assert
-            Assert.Equal(package.IsVulnerable, isPackageVulnerable);
-        }
-
         [Fact]
-        public void Vulnerabilities_WithVulnerabilities_ReturnsCorrectValue()
-        {
-            // Arrange
-            var vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>
-            {
-                new PackageVulnerabilityMetadataContextInfo(advisoryUrl: new Uri("http://test.com/advisory1"), severity: 1),
-                new PackageVulnerabilityMetadataContextInfo(advisoryUrl: new Uri("http://test.com/advisory2"), severity: 2)
-            };
-            _vulnerableCapabilityMock.Setup(v => v.Vulnerabilities).Returns(vulnerabilities);
-            var packagePath = "C:\\TestPackage";
-
-            // Act
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
-
-            // Assert
-            Assert.Equal(vulnerabilities, package.Vulnerabilities);
-        }
-
-        [Fact]
-        public void IsVulnerable_WithVulnerabilities_ReturnsTrue()
-        {
-            // Arrange
-            _vulnerableCapabilityMock.Setup(v => v.IsVulnerable).Returns(true);
-            var packagePath = "C:\\TestPackage";
-
-            // Act
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
-
-            // Assert
-            Assert.True(package.IsVulnerable);
-        }
-
-        [Fact]
-        public void VulnerabilityMaxSeverity_WithVulnerabilities_ReturnsCorrectValue()
-        {
-            // Arrange
-            var severity = PackageVulnerabilitySeverity.High;
-            _vulnerableCapabilityMock.Setup(v => v.VulnerabilityMaxSeverity).Returns(severity);
-            var packagePath = "C:\\TestPackage";
-
-            // Act
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
-
-            // Assert
-            Assert.Equal(severity, package.VulnerabilityMaxSeverity);
-        }
-
-        [Fact]
-        public async Task PopulateDataAsync_CalledWithVulnerability_PopulateAsyncCalledOnce()
+        public void PopulateDataAsync_WhenCalled_CompletesSuccessfully()
         {
             // Arrange
             var cancellationToken = new CancellationToken();
-            _vulnerableCapabilityMock.Setup(v => v.PopulateDataAsync(cancellationToken)).Returns(Task.CompletedTask);
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
             var packagePath = "C:\\TestPackage";
-            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(new PackageIdentity("TestPackage", new NuGetVersion("1.0.0")), packagePath, _vulnerableCapabilityMock.Object, _embeddedResourcesMock.Object);
+            var package = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, _embeddedResourcesMock.Object);
 
             // Act
-            await package.PopulateDataAsync(cancellationToken);
+            Task result = package.PopulateDataAsync(cancellationToken);
 
             // Assert
-            _vulnerableCapabilityMock.Verify(v => v.PopulateDataAsync(cancellationToken), Times.Once);
+            Assert.Equal(Task.CompletedTask, result);
         }
     }
 }

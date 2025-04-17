@@ -59,11 +59,10 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             _packageFileService = new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object);
             _testData = testData;
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var packagePath = _testData.TestData.PackagePath;
             var embeddedCapability = new EmbeddedResourcesCapability(_packageFileService, identity, null);
 
-            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedCapability);
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedCapability);
 
             _testInstance = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
             _output = output;
@@ -493,11 +492,10 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
 
         private LocalPackageModel CreateLocalPackageModel(string packagePath = null, string authors = null, IReadOnlyList<string> owners = null, Uri iconUrl = null)
         {
-            var vulnerableCapability = new Mock<IVulnerableCapable>();
             var identity = new PackageIdentity("package", new NuGetVersion("1.0.0"));
             var embeddedCapability = new EmbeddedResourcesCapability(_packageFileService, identity, null);
 
-            return PackageModelCreationTestHelper.CreateLocalPackageModel(identity, _testData.TestData.PackagePath, vulnerableCapability.Object, embeddedCapability, authors: authors, ownersList: owners, iconUrl: iconUrl);
+            return PackageModelCreationTestHelper.CreateLocalPackageModel(identity, _testData.TestData.PackagePath, embeddedCapability, authors: authors, ownersList: owners, iconUrl: iconUrl);
         }
 
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)

@@ -104,15 +104,14 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 iconUrl: null);
         }
 
-        public static LocalPackageModel CreateLocalPackageModel(PackageIdentity packageIdentity, string packagePath, IVulnerableCapable vulnerableCapable, IEmbeddedResourcesCapable embeddedResourceCapable)
+        public static LocalPackageModel CreateLocalPackageModel(PackageIdentity packageIdentity, string packagePath, IEmbeddedResourcesCapable embeddedResourceCapable)
         {
-            return CreateLocalPackageModel(packageIdentity, packagePath, vulnerableCapable, embeddedResourceCapable, authors: null!, ownersList: null!, iconUrl: null!);
+            return CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapable, authors: null!, ownersList: null!, iconUrl: null!);
         }
 
         public static LocalPackageModel CreateLocalPackageModel(
             PackageIdentity packageIdentity,
             string packagePath,
-            IVulnerableCapable vulnerableCapable,
             IEmbeddedResourcesCapable embeddedResourceCapable,
             string authors,
             IReadOnlyList<string> ownersList,
@@ -121,7 +120,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             return new LocalPackageModel(
                 packageIdentity,
                 packagePath,
-                vulnerableCapable,
                 embeddedResourceCapable,
                 title: null,
                 description: null,
