@@ -4412,65 +4412,6 @@ namespace NuGet.Commands.FuncTest
             installedPackages.Should().HaveCount(3);
         }
 
-        [Fact]
-        public async Task RestoreCommand_WithPrunePackageReferencesAndOlderFramework_DoesNotPruneDirectDependenciesAndDoesNotWarn()
-        {
-            using var pathContext = new SimpleTestPathContext();
-
-            // Setup packages
-            var packageA = new SimpleTestPackageContext("A", "1.0.0")
-            {
-                Dependencies = [new SimpleTestPackageContext("B", "1.0.0")]
-            };
-            var packageC = new SimpleTestPackageContext("C", "1.0.0");
-
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                packageA,
-                packageC);
-
-            var rootProject = @"
-        {
-          ""frameworks"": {
-            ""net472"": {
-                ""dependencies"": {
-                        ""A"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                        ""C"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                },
-                ""packagesToPrune"": {
-                    ""C"" : ""(,1.0.0]"" 
-                }
-            }
-          }
-        }";
-
-            // Setup project
-            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
-
-            // Act & Assert
-            var result = await RunRestoreAsync(pathContext, projectSpec);
-
-            result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("A");
-            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("B");
-            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(0);
-            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
-            result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
-            result.LockFile.LogMessages.Should().BeEmpty();
-            ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
-            installedPackages.Should().HaveCount(3);
-        }
-
         // P -> P2 -> B 1.0.0 -> C 1.0.0
         // P -> A 1.0.0
         // Prune B 1.0.0
@@ -4721,10 +4662,12 @@ namespace NuGet.Commands.FuncTest
         // P1 -> P2 (project)
         // Prune B 1.0.0
         [Theory]
-        [InlineData("10.0.100", true, true)]
-        [InlineData("9.0.100", true, false)]
-        [InlineData("", false, true)]
-        public async Task RestoreCommand_WithDirectProjectReferenceSpecifiedForPruning_SkipsPruning(string sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool shouldWarn)
+        [InlineData("net10.0", "10.0.100", true, true)]
+        [InlineData("net10.0", "9.0.100", true, false)]
+        [InlineData("net10.0", "", false, true)]
+        [InlineData("net472", "", false, false)]
+        [InlineData("net472", "10.0.100", false, false)]
+        public async Task RestoreCommand_WithDirectProjectReferenceSpecifiedForPruning_SkipsPruning(string framework, string sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool shouldWarn)
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -4742,7 +4685,7 @@ namespace NuGet.Commands.FuncTest
             var rootProject = @"
         {
           ""frameworks"": {
-            ""net472"": {
+            ""FRAMEWORK"": {
                 ""dependencies"": {
                         ""packageA"": {
                             ""version"": ""[1.0.0,)"",
@@ -4755,13 +4698,13 @@ namespace NuGet.Commands.FuncTest
                 }
             }
           }
-        }";
+        }".Replace("FRAMEWORK", framework);
 
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
             projectSpec.RestoreMetadata.SdkAnalysisLevel = !string.IsNullOrEmpty(sdkAnalysisLevel) ? NuGetVersion.Parse(sdkAnalysisLevel) : null;
             projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNETSdk;
-            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework: "net472");
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework: framework);
 
             projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
 
