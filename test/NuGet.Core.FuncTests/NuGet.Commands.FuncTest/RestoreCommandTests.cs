@@ -4704,7 +4704,7 @@ namespace NuGet.Commands.FuncTest
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
             projectSpec.RestoreMetadata.SdkAnalysisLevel = !string.IsNullOrEmpty(sdkAnalysisLevel) ? NuGetVersion.Parse(sdkAnalysisLevel) : null;
             projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNETSdk;
-            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework: framework);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework);
 
             projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
 
