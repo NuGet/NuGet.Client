@@ -73,6 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Act
             Action act = () => _service.Invoke(dictionaryFilePaths);
 
+            // Assert
             act.Should().Throw<FileNotFoundException>(because: "DocumentOpener was configured to throw 'FileNotFoundException' which should be an uncaught exception.");
         }
     }
