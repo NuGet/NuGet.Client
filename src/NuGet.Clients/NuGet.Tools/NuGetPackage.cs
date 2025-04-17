@@ -86,8 +86,8 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
-    [ProvideService(typeof(GeneralExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
-    [ProvideService(typeof(ConfigurationFilesExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
+    [ProvideService(typeof(GeneralPage), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
+    [ProvideService(typeof(ConfigurationFilesPage), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -200,11 +200,13 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
-            AddService(typeof(GeneralExternalSettingsProviderService),
-                (container, ct, serviceType) => Task.FromResult<object>(new GeneralExternalSettingsProviderService()),
+            VSSettings vsSettings = Settings.Value as VSSettings;
+
+            AddService(typeof(GeneralPage),
+                (container, ct, serviceType) => Task.FromResult<object>(new GeneralPage()),
                 promote: true);
-            AddService(typeof(ConfigurationFilesExternalSettingsProviderService),
-                (container, ct, serviceType) => Task.FromResult<object>(new ConfigurationFilesExternalSettingsProviderService()),
+            AddService(typeof(ConfigurationFilesPage),
+                (container, ct, serviceType) => Task.FromResult<object>(new ConfigurationFilesPage(vsSettings)),
                 promote: true);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);

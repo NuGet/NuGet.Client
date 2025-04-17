@@ -3,100 +3,77 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.Sdk.TestFramework;
+using Moq;
+using NuGet.PackageManagement.VisualStudio.IDE;
 using NuGet.PackageManagement.VisualStudio.Options;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Options
 {
     [Collection(MockedVS.Collection)]
-    public class OpenFileArrayItemCommandTests : MockedVSCollectionTests, IClassFixture<TextFileFixture>
+    public class OpenFileArrayItemCommandTests : MockedVSCollectionTests
     {
+        private readonly Mock<IDocumentOpener> _documentOpener;
         private readonly OpenFileArrayItemCommand _service;
-        private readonly string _validFilePath;
 
-        public OpenFileArrayItemCommandTests(GlobalServiceProvider globalServiceProvider, TextFileFixture textFileFixture)
+        public OpenFileArrayItemCommandTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
             globalServiceProvider.Reset();
-            _service = new OpenFileArrayItemCommand();
-            _validFilePath = textFileFixture.FullPath;
+            _documentOpener = new Mock<IDocumentOpener>();
+            _service = new OpenFileArrayItemCommand(_documentOpener.Object);
         }
 
         [Fact]
-        public async Task IsEnabledAsync_WhenFilePathProvided_ShouldBeTrueAsync()
+        public async Task IsEnabledAsync_IsAlways_TrueAsync()
         {
             // Arrange
-            var dictionaryFilePaths = new Dictionary<string, object>
-            {
-                { OpenFileArrayItemCommand.FILE_PATH, _validFilePath }
-            };
+            var anyFilePathDictionary = ImmutableDictionary<string, object>.Empty;
 
             // Act
-            var result = await _service.IsEnabledAsync(dictionaryFilePaths, CancellationToken.None);
+            var result = await _service.IsEnabledAsync(anyFilePathDictionary, CancellationToken.None);
 
             // Assert
             result.Should().BeTrue();
         }
 
         [Fact]
-        public async Task IsEnabledAsync_WhenMissingFilePathKey_ShouldBeFalseAsync()
+        public void Invoke_WhenDictionaryIsMissingFilePathKey_ShouldThrowKeyNotFoundException()
         {
             // Arrange
             var dictionaryFilePaths = new Dictionary<string, object>
             {
-                { "invalidKey", _validFilePath }
+                { "someKey", "somePath" }
             };
 
             // Act
-            var result = await _service.IsEnabledAsync(dictionaryFilePaths, CancellationToken.None);
+            Action act = () => _service.Invoke(dictionaryFilePaths);
 
             // Assert
-            result.Should().BeFalse();
+            act.Should().Throw<KeyNotFoundException>(because: OpenFileArrayItemCommand.FILE_PATH + " was not found in the provided dictionary");
         }
 
         [Fact]
-        public async Task IsEnabledAsync_WhenFilePathDoesNotExist_ShouldBeFalseAsync()
+        public void Invoke_WhenFilePathDoesNotExist_ShouldThrowFileNotFoundException()
         {
             // Arrange
-            var invalidPath = "pathDoesNotExist/NuGet.Config";
+            _documentOpener.Setup(mock => mock.OpenDocument(It.IsAny<string>())).Throws<FileNotFoundException>();
+            var pathDoesNotExist = "pathDoesNotExist/NuGet.Config";
             var dictionaryFilePaths = new Dictionary<string, object>
             {
-                { OpenFileArrayItemCommand.FILE_PATH, invalidPath }
+                { OpenFileArrayItemCommand.FILE_PATH, pathDoesNotExist }
             };
 
             // Act
-            var result = await _service.IsEnabledAsync(dictionaryFilePaths, CancellationToken.None);
+            Action act = () => _service.Invoke(dictionaryFilePaths);
 
-            // Assert
-            result.Should().BeFalse();
-        }
-    }
-
-    public class TextFileFixture : IDisposable
-    {
-        private TestDirectory _testDirectory;
-
-        public string Directory { get; init; }
-        public string FullPath { get; init; }
-        public string FileContents { get; init; }
-
-        public TextFileFixture()
-        {
-            _testDirectory = TestDirectory.Create();
-            Directory = _testDirectory.Path;
-            FullPath = Path.Combine(Directory, "NuGet.Config");
-            FileContents = "Test contents";
-            File.WriteAllText(FullPath, contents: FileContents);
-        }
-        public void Dispose()
-        {
-            _testDirectory.Dispose(); // Ensure the test directory is cleaned up
+            act.Should().Throw<FileNotFoundException>(because: "DocumentOpener was configured to throw 'FileNotFoundException' which should be an uncaught exception.");
         }
     }
 }

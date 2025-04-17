@@ -16,7 +16,7 @@ using NuGet.VisualStudio;
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("6C09BBE2-4537-48B4-87D8-01BF5EB75901")]
-    public sealed class GeneralExternalSettingsProviderService : IExternalSettingsProvider
+    public sealed class GeneralPage : IExternalSettingsProvider
     {
         private const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         private BindingRedirectBehavior? _bindingRedirectBehavior;
         private PackageManagementFormat? _packageManagementFormat;
 
-        public GeneralExternalSettingsProviderService()
+        public GeneralPage()
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _settings = componentModel.GetService<ISettings>();

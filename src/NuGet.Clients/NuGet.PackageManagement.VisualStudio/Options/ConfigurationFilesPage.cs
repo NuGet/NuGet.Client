@@ -5,36 +5,35 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
-using NuGet.VisualStudio;
-
+using NuGet.PackageManagement.VisualStudio.IDE;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("4F0DC114-28A6-4888-84E7-766D6E7DE456")]
-    public class ConfigurationFilesExternalSettingsProviderService : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
+    public class ConfigurationFilesPage : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
     {
         private const string MonikerConfigurationFiles = "configurationFiles";
 
-        private readonly ISettings? _settings;
-        private readonly VSSettings? _vsSettings;
+        private readonly VSSettings _vsSettings;
+        private readonly OpenFileArrayItemCommand _openFileArrayItemCommand;
 
-        public ConfigurationFilesExternalSettingsProviderService()
+        public ConfigurationFilesPage(VSSettings vsSettings)
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
-            _settings = componentModel.GetService<ISettings>();
-
-            _vsSettings = _settings as VSSettings;
-            if (_vsSettings != null)
+            if (vsSettings is null)
             {
-                _vsSettings.SettingsChanged += VsSettings_SettingsChanged;
+                throw new ArgumentNullException(paramName: nameof(vsSettings));
             }
-            Debug.Assert(_settings != null);
+
+            _vsSettings = vsSettings;
+            _vsSettings.SettingsChanged += VsSettings_SettingsChanged;
+
+            var documentOpener = new VSDocumentOpener();
+            _openFileArrayItemCommand = new OpenFileArrayItemCommand(documentOpener);
         }
 
         private void VsSettings_SettingsChanged(object sender, EventArgs e)
@@ -73,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             switch (moniker)
             {
-                case MonikerConfigurationFiles: return LoadConfigurationFilePathsOrThrow<T>(_settings!);
+                case MonikerConfigurationFiles: return LoadConfigurationFilePathsOrThrow<T>(_vsSettings);
                 default: break;
             }
 
@@ -133,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             if (arraySettingMoniker == MonikerConfigurationFiles)
             {
-                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([new OpenFileArrayItemCommand()]);
+                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([_openFileArrayItemCommand]);
             }
 
             return Task.FromResult<IReadOnlyList<IArrayItemCommand>>(Array.Empty<IArrayItemCommand>());
