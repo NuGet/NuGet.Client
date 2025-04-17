@@ -200,6 +200,14 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
+            await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
+
+            VsShellUtilities.ShutdownToken.Register(InstanceCloseTelemetryEmitter.OnShutdown);
+
+            var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
+            Assumes.Present(componentModel);
+            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+
             VSSettings vsSettings = Settings.Value as VSSettings;
 
             AddService(typeof(GeneralPage),
@@ -208,14 +216,6 @@ namespace NuGetVSExtension
             AddService(typeof(ConfigurationFilesPage),
                 (container, ct, serviceType) => Task.FromResult<object>(new ConfigurationFilesPage(vsSettings)),
                 promote: true);
-
-            await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
-
-            VsShellUtilities.ShutdownToken.Register(InstanceCloseTelemetryEmitter.OnShutdown);
-
-            var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
-            Assumes.Present(componentModel);
-            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
             clearNuGetLocalResourcesCommand.Initialize();

@@ -40,7 +40,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// </summary>
         public Task<bool> IsEnabledAsync(IDictionary<string, object> arrayItemContent, CancellationToken cancellationToken)
         {
-            return Task.FromResult(true);
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+            return TaskResult.True;
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
         }
     }
 }
