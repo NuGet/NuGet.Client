@@ -46,11 +46,11 @@ namespace NuGet.PackageManagement.UI.Models.Package
                     {
                         hasLegacy = true;
                     }
-                }
 
-                if (hasCriticalBugs && hasLegacy)
-                {
-                    return PackageDeprecationReason.LegacyAndCriticalBugs;
+                    if (hasCriticalBugs && hasLegacy)
+                    {
+                        return PackageDeprecationReason.LegacyAndCriticalBugs;
+                    }
                 }
 
                 if (hasCriticalBugs)
