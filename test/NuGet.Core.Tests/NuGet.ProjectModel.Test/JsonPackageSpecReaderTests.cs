@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -25,9 +24,8 @@ namespace NuGet.ProjectModel.Test
     [Obsolete]
     public class JsonPackageSpecReaderTests
     {
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackageMissingVersion(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_PackageMissingVersion()
         {
             // Arrange
             var json = @"{
@@ -46,7 +44,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+                var spec = GetPackageSpec(json, "TestProject", "project.json", null);
             }
             catch (Exception ex)
             {
@@ -57,9 +55,8 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains("specify a version range", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ProjectMissingVersion(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ProjectMissingVersion()
         {
             // Arrange
             var json = @"{
@@ -75,16 +72,15 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var spec = GetPackageSpec(json, "TestProject", "project.json", null);
             var range = spec.Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
             Assert.Equal(VersionRange.All, range);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackageEmptyVersion(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_PackageEmptyVersion()
         {
             // Arrange
             var json = @"{
@@ -103,7 +99,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+                var spec = GetPackageSpec(json, "TestProject", "project.json", null);
             }
             catch (Exception ex)
             {
@@ -114,9 +110,8 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains("specify a version range", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackageWhitespaceVersion(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_PackageWhitespaceVersion()
         {
             // Arrange
             var json = @"{
@@ -135,7 +130,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+                var spec = GetPackageSpec(json, "TestProject", "project.json", null);
             }
             catch (Exception ex)
             {
@@ -146,46 +141,44 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains("not a valid version string", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_FrameworkAssemblyEmptyVersion(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_FrameworkAssemblyEmptyVersion()
         {
             // Arrange
             var json = @"{
-                                    ""frameworks"": {
-                                        ""net46"": {
-                                            ""frameworkAssemblies"": {
-                                               ""packageA"": """"
-                                            }
+                                ""frameworks"": {
+                                    ""net46"": {
+                                        ""frameworkAssemblies"": {
+                                           ""packageA"": """"
                                         }
                                     }
-                                }";
+                                }
+                            }";
 
             // Act
-            var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var spec = GetPackageSpec(json, "TestProject", "project.json", null);
             var range = spec.TargetFrameworks.Single().Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
             Assert.Equal(VersionRange.All, range);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform()
         {
             // Arrange
             var json = @"{
-                                   ""dependencies"": {
-                                     ""redist"": {
-                                       ""version"": ""1.0.0"",
-                                       ""type"": ""platform"",
-                                       ""include"": ""analyzers""
-                                     }
-                                   }
-                                 }";
+                               ""dependencies"": {
+                                 ""redist"": {
+                                   ""version"": ""1.0.0"",
+                                   ""type"": ""platform"",
+                                   ""include"": ""analyzers""
+                                 }
+                               }
+                             }";
 
             // Act
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
@@ -196,30 +189,30 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+        [InlineData("{}")]
+        [InlineData(@"{
                                 ""packOptions"": {}
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""foo"": [1, 2]
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": null
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": []
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+                              }")]
 #pragma warning disable CS0612 // Type or member is obsolete
-        public void PackageSpecReader_PackOptions_Default(IEnvironmentVariableReader environmentVariableReader, string json)
+        public void PackageSpecReader_PackOptions_Default(string json)
         {
             // Arrange & Act
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -229,15 +222,15 @@ namespace NuGet.ProjectModel.Test
 
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"
-                                ""packOptions"": {
-                                  ""packageType"": ""foo""
-                                }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_Malformed_Default(IEnvironmentVariableReader environmentVariableReader, string json)
+        [InlineData(@"
+            ""packOptions"": {
+              ""packageType"": ""foo""
+            }
+          ")]
+        public void PackageSpecReader_Malformed_Default(string json)
         {
             // Arrange & Act
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -246,32 +239,32 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
-                                ""packOptions"": {
-                                  ""packageType"": ""foo""
-                                }
-                              }", new[] { "foo" }, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
-                                ""packOptions"": {
-                                  ""packageType"": ""foo, bar""
-                                }
-                              }", new[] { "foo, bar" }, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
-                                ""packOptions"": {
-                                  ""packageType"": [ ""foo"" ]
-                                }
-                              }", new[] { "foo" }, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
-                                ""packOptions"": {
-                                  ""packageType"": [ ""foo, bar"" ]
-                                }
-                              }", new[] { "foo, bar" }, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
-                                ""packOptions"": {
-                                  ""packageType"": [ ""foo"", ""bar"" ]
-                                }
-                              }", new[] { "foo", "bar" }, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackOptions_ValidPackageType(IEnvironmentVariableReader environmentVariableReader, string json, string[] expectedNames)
+        [InlineData(@"{
+            ""packOptions"": {
+              ""packageType"": ""foo""
+            }
+          }", new[] { "foo" })]
+        [InlineData(@"{
+            ""packOptions"": {
+              ""packageType"": ""foo, bar""
+            }
+          }", new[] { "foo, bar" })]
+        [InlineData(@"{
+            ""packOptions"": {
+              ""packageType"": [ ""foo"" ]
+            }
+          }", new[] { "foo" })]
+        [InlineData(@"{
+            ""packOptions"": {
+              ""packageType"": [ ""foo, bar"" ]
+            }
+          }", new[] { "foo, bar" })]
+        [InlineData(@"{
+            ""packOptions"": {
+              ""packageType"": [ ""foo"", ""bar"" ]
+            }
+          }", new[] { "foo", "bar" })]
+        public void PackageSpecReader_PackOptions_ValidPackageType(string json, string[] expectedNames)
         {
             // Arrange
             var expected = expectedNames
@@ -279,7 +272,7 @@ namespace NuGet.ProjectModel.Test
                 .ToArray();
 
             // Act
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -289,69 +282,69 @@ namespace NuGet.ProjectModel.Test
 
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": 1
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": false
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": 1.0
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": {}
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": {
                                     ""name"": ""foo""
                                   }
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": [
                                     { ""name"": ""foo"" },
                                     { ""name"": ""bar"" }
                                   ]
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": [
                                     ""foo"",
                                     null
                                   ]
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }")]
+        [InlineData(@"{
                                 ""packOptions"": {
                                   ""packageType"": [
                                     ""foo"",
                                     true
                                   ]
                                 }
-                              }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackOptions_InvalidPackageType(IEnvironmentVariableReader environmentVariableReader, string json)
+                              }")]
+        public void PackageSpecReader_PackOptions_InvalidPackageType(string json)
         {
             // Arrange & Act & Assert
             var actual = Assert.Throws<FileFormatException>(
-                () => GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader));
+                () => GetPackageSpec(json, "TestProject", "project.json", null));
 
             Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackOptions_Files1(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_PackOptions_Files1()
         {
             // Arrange & Act
             var json = @"{
@@ -367,7 +360,7 @@ namespace NuGet.ProjectModel.Test
                                   }
                                 }
                               }";
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -389,9 +382,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("./src/path", actual.PackOptions.Mappings.First().Value.Include.First());
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_PackOptions_Files2(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_PackOptions_Files2()
         {
             // Arrange & Act
             var json = @"{
@@ -410,7 +403,7 @@ namespace NuGet.ProjectModel.Test
                                   }
                                 }
                               }";
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -444,30 +437,30 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", null, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+        [InlineData("{}", null, true)]
+        [InlineData(@"{
                                 ""buildOptions"": {}
-                              }", null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }", null, false)]
+        [InlineData(@"{
                                 ""buildOptions"": {
                                   ""outputName"": ""dllName""
                                 }
-                              }", "dllName", false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }", "dllName", false)]
+        [InlineData(@"{
                                 ""buildOptions"": {
                                   ""outputName"": ""dllName2"",
                                   ""emitEntryPoint"": true
                                 }
-                              }", "dllName2", false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), @"{
+                              }", "dllName2", false)]
+        [InlineData(@"{
                                 ""buildOptions"": {
                                   ""outputName"": null
                                 }
-                              }", null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_BuildOptions(IEnvironmentVariableReader environmentVariableReader, string json, string expectedValue, bool nullBuildOptions)
+                              }", null, false)]
+        public void PackageSpecReader_BuildOptions(string json, string expectedValue, bool nullBuildOptions)
         {
             // Arrange & Act
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             if (nullBuildOptions)
@@ -480,26 +473,23 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(expectedValue, actual.BuildOptions.OutputName);
             }
         }
-#pragma warning restore CS0612 // Type or member is obsolete
-
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsWithoutRestoreSettings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ReadsWithoutRestoreSettings()
         {
             // Arrange
             var json = @"{
-                                  ""dependencies"": {
-                                        ""packageA"": {
-                                            ""target"": ""package"",
-                                            ""version"": ""1.0.0""
-                                        }
-                                    },
-                                    ""frameworks"": {
-                                        ""net46"": {}
-                                    },
-                                }";
+                              ""dependencies"": {
+                                    ""packageA"": {
+                                        ""target"": ""package"",
+                                        ""version"": ""1.0.0""
+                                    }
+                                },
+                                ""frameworks"": {
+                                    ""net46"": {}
+                                },
+                            }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.NotNull(actual);
@@ -508,28 +498,27 @@ namespace NuGet.ProjectModel.Test
             Assert.Null(actual.RestoreSettings.SdkVersion);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsDependencyWithMultipleNoWarn(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ReadsDependencyWithMultipleNoWarn()
         {
             // Arrange
             var json = @"{
-                                  ""dependencies"": {
-                                        ""packageA"": {
-                                            ""target"": ""package"",
-                                            ""version"": ""1.0.0"",
-                                            ""noWarn"": [
-                                                ""NU1500"",
-                                                ""NU1107""
-                                              ]
-                                        }
-                                    },
-                                    ""frameworks"": {
-                                        ""net46"": {}
-                                    },
-                                }";
+                              ""dependencies"": {
+                                    ""packageA"": {
+                                        ""target"": ""package"",
+                                        ""version"": ""1.0.0"",
+                                        ""noWarn"": [
+                                            ""NU1500"",
+                                            ""NU1107""
+                                          ]
+                                    }
+                                },
+                                ""frameworks"": {
+                                    ""net46"": {}
+                                },
+                            }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -539,27 +528,26 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains(NuGetLogCode.NU1107, dep.NoWarn);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsDependencyWithSingleNoWarn(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ReadsDependencyWithSingleNoWarn()
         {
             // Arrange
             var json = @"{
-                                  ""dependencies"": {
-                                        ""packageA"": {
-                                            ""target"": ""package"",
-                                            ""version"": ""1.0.0"",
-                                            ""noWarn"": [
-                                                ""NU1500""
-                                              ]
-                                        }
-                                    },
-                                    ""frameworks"": {
-                                        ""net46"": {}
-                                    },
-                                }";
+                              ""dependencies"": {
+                                    ""packageA"": {
+                                        ""target"": ""package"",
+                                        ""version"": ""1.0.0"",
+                                        ""noWarn"": [
+                                            ""NU1500""
+                                          ]
+                                    }
+                                },
+                                ""frameworks"": {
+                                    ""net46"": {}
+                                },
+                            }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -568,9 +556,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains(NuGetLogCode.NU1500, dep.NoWarn);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsDependencyWithSingleEmptyNoWarn(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsDependencyWithSingleEmptyNoWarn()
         {
             // Arrange
             var json = @"{
@@ -587,7 +575,7 @@ namespace NuGet.ProjectModel.Test
                                     },
                                 }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -595,9 +583,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(dep.NoWarn.Length, 0);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithWarningProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningProperties()
         {
             // Arrange
             var json = @"{  
@@ -650,7 +638,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -669,9 +657,9 @@ namespace NuGet.ProjectModel.Test
             Assert.True(warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1802));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_NoWarn(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_NoWarn()
         {
             // Arrange
             var json = @"{  
@@ -717,7 +705,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -732,9 +720,9 @@ namespace NuGet.ProjectModel.Test
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_WarnAsError(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_WarnAsError()
         {
             // Arrange
             var json = @"{  
@@ -779,7 +767,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -793,9 +781,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, warningProperties.WarningsAsErrors.Count);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_AllWarningsAsErrors(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithWarningPropertiesAndNo_AllWarningsAsErrors()
         {
             // Arrange
             var json = @"{  
@@ -843,7 +831,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -859,9 +847,9 @@ namespace NuGet.ProjectModel.Test
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithEmptyWarningPropertiesAnd(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithEmptyWarningPropertiesAnd()
         {
             // Arrange
             var json = @"{  
@@ -902,7 +890,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -915,9 +903,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, warningProperties.WarningsAsErrors.Count);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithNoWarningProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_ReadsRestoreMetadataWithNoWarningProperties()
         {
             // Arrange
             var json = @"{  
@@ -956,7 +944,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -966,9 +954,9 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(warningProperties);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_RuntimeIdentifierPathNullIfEmpty(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_RuntimeIdentifierPathNullIfEmpty()
         {
             // Arrange
             var json = @"{
@@ -988,263 +976,257 @@ namespace NuGet.ProjectModel.Test
                                 }";
 
             // Act
-            var spec = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var spec = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             Assert.Null(spec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
         }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsPropertyIsAbsent_ReturnsEmptyAuthors(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenAuthorsPropertyIsAbsent_ReturnsEmptyAuthors()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
+
+            Assert.Empty(packageSpec.Authors);
+        }
+
+        [Fact]
+
+        public void GetPackageSpec_WhenAuthorsValueIsNull_ReturnsEmptyAuthors()
+        {
+            PackageSpec packageSpec = GetPackageSpec("{\"authors\":null}");
+
+            Assert.Empty(packageSpec.Authors);
+        }
+
+        [Fact]
+
+        public void GetPackageSpec_WhenAuthorsValueIsString_ReturnsEmptyAuthors()
+        {
+            PackageSpec packageSpec = GetPackageSpec("{\"authors\":\"b\"}");
 
             Assert.Empty(packageSpec.Authors);
         }
 
         [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsValueIsNull_ReturnsEmptyAuthors(IEnvironmentVariableReader environmentVariableReader)
+        [InlineData("")]
+        [InlineData("/**/")]
+        public void GetPackageSpec_WhenAuthorsValueIsEmptyArray_ReturnsEmptyAuthors(string value)
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"authors\":null}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"authors\":[{value}]}}");
 
             Assert.Empty(packageSpec.Authors);
         }
 
         [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsValueIsString_ReturnsEmptyAuthors(IEnvironmentVariableReader environmentVariableReader)
-        {
-            PackageSpec packageSpec = GetPackageSpec("{\"authors\":\"b\"}", environmentVariableReader);
-
-            Assert.Empty(packageSpec.Authors);
-        }
-
-        [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "/**/", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsValueIsEmptyArray_ReturnsEmptyAuthors(IEnvironmentVariableReader environmentVariableReader, string value)
-        {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"authors\":[{value}]}}", environmentVariableReader);
-
-            Assert.Empty(packageSpec.Authors);
-        }
-
-        [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[]", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsValueElementIsNotConvertibleToString_Throws(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("{}")]
+        [InlineData("[]")]
+        public void GetPackageSpec_WhenAuthorsValueElementIsNotConvertibleToString_Throws(string value)
         {
             var json = $"{{\"authors\":[{value}]}}";
 
-            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json, environmentVariableReader));
+            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json));
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", "True", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", "-2", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", "3.14", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenAuthorsValueElementIsConvertibleToString_ReturnsAuthor(IEnvironmentVariableReader environmentVariableReader, string value, string expectedValue)
+        [InlineData("\"a\"", "a")]
+        [InlineData("true", "True")]
+        [InlineData("-2", "-2")]
+        [InlineData("3.14", "3.14")]
+        public void GetPackageSpec_WhenAuthorsValueElementIsConvertibleToString_ReturnsAuthor(string value, string expectedValue)
         {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"authors\":[{value}]}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"authors\":[{value}]}}");
 
             Assert.Collection(packageSpec.Authors, author => Assert.Equal(expectedValue, author));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenBuildOptionsPropertyIsAbsent_ReturnsNullBuildOptions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenBuildOptionsPropertyIsAbsent_ReturnsNullBuildOptions()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Null(packageSpec.BuildOptions);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenBuildOptionsValueIsEmptyObject_ReturnsBuildOptions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenBuildOptionsValueIsEmptyObject_ReturnsBuildOptions()
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"buildOptions\":{}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{\"buildOptions\":{}}");
 
             Assert.NotNull(packageSpec.BuildOptions);
             Assert.Null(packageSpec.BuildOptions.OutputName);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsNull_ReturnsNullOutputName(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsNull_ReturnsNullOutputName()
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"buildOptions\":{\"outputName\":null}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{\"buildOptions\":{\"outputName\":null}}");
 
             Assert.Null(packageSpec.BuildOptions.OutputName);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsValid_ReturnsOutputName(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsValid_ReturnsOutputName()
         {
             const string expectedResult = "a";
 
             var json = $"{{\"buildOptions\":{{\"outputName\":\"{expectedResult}\"}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.BuildOptions.OutputName);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", "-2", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", "3.14", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", "True", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsConvertibleToString_ReturnsOutputName(IEnvironmentVariableReader environmentVariableReader, string outputName, string expectedValue)
+        [InlineData("-2", "-2")]
+        [InlineData("3.14", "3.14")]
+        [InlineData("true", "True")]
+        public void GetPackageSpec_WhenBuildOptionsValueOutputNameIsConvertibleToString_ReturnsOutputName(string outputName, string expectedValue)
         {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"buildOptions\":{{\"outputName\":{outputName}}}}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"buildOptions\":{{\"outputName\":{outputName}}}}}");
 
             Assert.Equal(expectedValue, packageSpec.BuildOptions.OutputName);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesPropertyIsAbsent_ReturnsEmptyContentFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenContentFilesPropertyIsAbsent_ReturnsEmptyContentFiles()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
+
+            Assert.Empty(packageSpec.ContentFiles);
+        }
+
+        [Fact]
+
+        public void GetPackageSpec_WhenContentFilesValueIsNull_ReturnsEmptyContentFiles()
+        {
+            PackageSpec packageSpec = GetPackageSpec("{\"contentFiles\":null}");
+
+            Assert.Empty(packageSpec.ContentFiles);
+        }
+
+        [Fact]
+
+        public void GetPackageSpec_WhenContentFilesValueIsString_ReturnsEmptyContentFiles()
+        {
+            PackageSpec packageSpec = GetPackageSpec("{\"contentFiles\":\"a\"}");
 
             Assert.Empty(packageSpec.ContentFiles);
         }
 
         [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesValueIsNull_ReturnsEmptyContentFiles(IEnvironmentVariableReader environmentVariableReader)
+        [InlineData("")]
+        [InlineData("/**/")]
+        public void GetPackageSpec_WhenContentFilesValueIsEmptyArray_ReturnsEmptyContentFiles(string value)
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"contentFiles\":null}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"contentFiles\":[{value}]}}");
 
             Assert.Empty(packageSpec.ContentFiles);
         }
 
         [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesValueIsString_ReturnsEmptyContentFiles(IEnvironmentVariableReader environmentVariableReader)
-        {
-            PackageSpec packageSpec = GetPackageSpec("{\"contentFiles\":\"a\"}", environmentVariableReader);
-
-            Assert.Empty(packageSpec.ContentFiles);
-        }
-
-        [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "/**/", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesValueIsEmptyArray_ReturnsEmptyContentFiles(IEnvironmentVariableReader environmentVariableReader, string value)
-        {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"contentFiles\":[{value}]}}", environmentVariableReader);
-
-            Assert.Empty(packageSpec.ContentFiles);
-        }
-
-        [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[]", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesValueElementIsNotConvertibleToString_Throws(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("{}")]
+        [InlineData("[]")]
+        public void GetPackageSpec_WhenContentFilesValueElementIsNotConvertibleToString_Throws(string value)
         {
             var json = $"{{\"contentFiles\":[{value}]}}";
 
-            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json, environmentVariableReader));
+            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json));
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", "True", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", "-2", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", "3.14", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenContentFilesValueElementIsConvertibleToString_ReturnsContentFile(IEnvironmentVariableReader environmentVariableReader, string value, string expectedValue)
+        [InlineData("\"a\"", "a")]
+        [InlineData("true", "True")]
+        [InlineData("-2", "-2")]
+        [InlineData("3.14", "3.14")]
+        public void GetPackageSpec_WhenContentFilesValueElementIsConvertibleToString_ReturnsContentFile(string value, string expectedValue)
         {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"contentFiles\":[{value}]}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"contentFiles\":[{value}]}}");
 
             Assert.Collection(packageSpec.ContentFiles, contentFile => Assert.Equal(expectedValue, contentFile));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenCopyrightPropertyIsAbsent_ReturnsNullCopyright(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenCopyrightPropertyIsAbsent_ReturnsNullCopyright()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Null(packageSpec.Copyright);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenCopyrightValueIsNull_ReturnsNullCopyright(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenCopyrightValueIsNull_ReturnsNullCopyright()
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"copyright\":null}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{\"copyright\":null}");
 
             Assert.Null(packageSpec.Copyright);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenCopyrightValueIsString_ReturnsCopyright(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenCopyrightValueIsString_ReturnsCopyright()
         {
             const string expectedResult = "a";
 
-            PackageSpec packageSpec = GetPackageSpec($"{{\"copyright\":\"{expectedResult}\"}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"copyright\":\"{expectedResult}\"}}");
 
             Assert.Equal(expectedResult, packageSpec.Copyright);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", "True", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", "-2", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", "3.14", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenCopyrightValueIsConvertibleToString_ReturnsCopyright(IEnvironmentVariableReader environmentVariableReader, string value, string expectedValue)
+        [InlineData("\"a\"", "a")]
+        [InlineData("true", "True")]
+        [InlineData("-2", "-2")]
+        [InlineData("3.14", "3.14")]
+        public void GetPackageSpec_WhenCopyrightValueIsConvertibleToString_ReturnsCopyright(string value, string expectedValue)
         {
-            PackageSpec packageSpec = GetPackageSpec($"{{\"copyright\":{value}}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"copyright\":{value}}}");
 
             Assert.Equal(expectedValue, packageSpec.Copyright);
         }
 #pragma warning restore CS0612 // Type or member is obsolete
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesPropertyIsAbsent_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesPropertyIsAbsent_ReturnsEmptyDependencies()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Empty(packageSpec.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesValueIsNull_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesValueIsNull_ReturnsEmptyDependencies()
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"dependencies\":null}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{\"dependencies\":null}");
 
             Assert.Empty(packageSpec.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyNameIsEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyNameIsEmptyString_Throws()
         {
             const string json = "{\"dependencies\":{\"\":{}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
             Assert.Equal("Unable to resolve dependency ''.", exception.Message);
             Assert.Null(exception.InnerException);
-
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(21, exception.Column);
-            }
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyValueIsVersionString_ReturnsDependencyVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyValueIsVersionString_ReturnsDependencyVersionRange()
         {
             var expectedResult = new LibraryRange(
                 name: "a",
@@ -1252,14 +1234,14 @@ namespace NuGet.ProjectModel.Test
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference);
             var json = $"{{\"dependencies\":{{\"{expectedResult.Name}\":\"{expectedResult.VersionRange.ToShortString()}\"}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedResult, dependency.LibraryRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyValueIsVersionRangeString_ReturnsDependencyVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyValueIsVersionRangeString_ReturnsDependencyVersionRange()
         {
             var expectedResult = new LibraryRange(
                 name: "a",
@@ -1267,238 +1249,210 @@ namespace NuGet.ProjectModel.Test
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference);
             var json = $"{{\"dependencies\":{{\"{expectedResult.Name}\":\"{expectedResult.VersionRange}\"}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedResult, dependency.LibraryRange);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.None, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.Assembly, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.Reference, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.WinMD, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.All, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.PackageProjectExternal, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyTargetIsUnsupported_Throws(IEnvironmentVariableReader environmentVariableReader, LibraryDependencyTarget target)
+        [InlineData(LibraryDependencyTarget.None)]
+        [InlineData(LibraryDependencyTarget.Assembly)]
+        [InlineData(LibraryDependencyTarget.Reference)]
+        [InlineData(LibraryDependencyTarget.WinMD)]
+        [InlineData(LibraryDependencyTarget.All)]
+        [InlineData(LibraryDependencyTarget.PackageProjectExternal)]
+        public void GetPackageSpec_WhenDependenciesDependencyTargetIsUnsupported_Throws(LibraryDependencyTarget target)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"version\":\"1.2.3\",\"target\":\"{target}\"}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal($"Invalid dependency target value '{target}'.", exception.Message);
             Assert.Null(exception.InnerException);
-
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal(1, exception.Line);
-                // The position is after the target name, which is of variable length.
-                Assert.Equal(json.IndexOf(target.ToString()) + target.ToString().Length + 1, exception.Column);
-            }
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyAutoreferencedPropertyIsAbsent_ReturnsFalseAutoreferenced(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyAutoreferencedPropertyIsAbsent_ReturnsFalseAutoreferenced()
         {
-            LibraryDependency dependency = GetDependency($"{{\"dependencies\":{{\"a\":{{\"target\":\"Project\"}}}}}}", environmentVariableReader);
+            LibraryDependency dependency = GetDependency($"{{\"dependencies\":{{\"a\":{{\"target\":\"Project\"}}}}}}");
 
             Assert.False(dependency.AutoReferenced);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyAutoreferencedValueIsBool_ReturnsBoolAutoreferenced(IEnvironmentVariableReader environmentVariableReader, bool expectedValue)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenDependenciesDependencyAutoreferencedValueIsBool_ReturnsBoolAutoreferenced(bool expectedValue)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"autoReferenced\":{expectedValue.ToString().ToLower()},\"target\":\"Project\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedValue, dependency.AutoReferenced);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "exclude", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "include", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "suppressParent", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyValueIsArray_Throws(IEnvironmentVariableReader environmentVariableReader, string propertyName)
+        [InlineData("exclude")]
+        [InlineData("include")]
+        [InlineData("suppressParent")]
+        public void GetPackageSpec_WhenDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"{propertyName}\":[\"b\"]}}}}}}";
 
-            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json, environmentVariableReader));
+            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyIncludeAndExcludePropertiesAreAbsent_ReturnsAllIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyIncludeAndExcludePropertiesAreAbsent_ReturnsAllIncludeType()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.All, dependency.IncludeType);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Native\"", LibraryIncludeFlags.Native, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Analyzers, Native\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Native, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("\"Native\"", LibraryIncludeFlags.Native)]
+        [InlineData("\"Analyzers, Native\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Native)]
         public void GetPackageSpec_WhenDependenciesDependencyExcludeValueIsValid_ReturnsIncludeType(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             LibraryIncludeFlags result)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"exclude\":{value},\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.All & ~result, dependency.IncludeType);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Native\"", LibraryIncludeFlags.Native, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Analyzers, Native\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Native, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("\"Native\"", LibraryIncludeFlags.Native)]
+        [InlineData("\"Analyzers, Native\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Native)]
         public void GetPackageSpec_WhenDependenciesDependencyIncludeValueIsValid_ReturnsIncludeType(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             LibraryIncludeFlags expectedResult)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"include\":{value},\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedResult, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyIncludeValueOverridesTypeValue_ReturnsIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyIncludeValueOverridesTypeValue_ReturnsIncludeType()
         {
             const string json = "{\"dependencies\":{\"a\":{\"include\":\"ContentFiles\",\"type\":\"BecomesNupkgDependency, SharedFramework\",\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.ContentFiles, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencySuppressParentValueOverridesTypeValue_ReturnsSuppressParent(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencySuppressParentValueOverridesTypeValue_ReturnsSuppressParent()
         {
             const string json = "{\"dependencies\":{\"a\":{\"suppressParent\":\"ContentFiles\",\"type\":\"SharedFramework\",\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.ContentFiles, dependency.SuppressParent);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencySuppressParentPropertyIsAbsent_ReturnsSuppressParent(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencySuppressParentPropertyIsAbsent_ReturnsSuppressParent()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependency.SuppressParent);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Compile\"", LibraryIncludeFlags.Compile, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"Analyzers, Compile\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Compile, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("\"Compile\"", LibraryIncludeFlags.Compile)]
+        [InlineData("\"Analyzers, Compile\"", LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Compile)]
         public void GetPackageSpec_WhenDependenciesDependencySuppressParentValueIsValid_ReturnsSuppressParent(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             LibraryIncludeFlags expectedResult
             )
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"suppressParent\":{value},\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedResult, dependency.SuppressParent);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyVersionValueIsInvalid_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyVersionValueIsInvalid_Throws()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"b\"}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 35 : 'b' is not a valid version string.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(35, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : 'b' is not a valid version string.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : 'b' is not a valid version string.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyTargetPropertyIsAbsent_ReturnsTarget(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyTargetPropertyIsAbsent_ReturnsTarget()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference, dependency.LibraryRange.TypeConstraint);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws()
         {
             const string json = "{\"dependencies\":{\"a\":{\"target\":\"Package\"}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
             Assert.IsType<ArgumentException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 22 : Package dependencies must specify a version range.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(22, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Package dependencies must specify a version range.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Package dependencies must specify a version range.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange()
         {
-            LibraryDependency dependency = GetDependency("{\"dependencies\":{\"a\":{\"target\":\"Project\"}}}", environmentVariableReader);
+            LibraryDependency dependency = GetDependency("{\"dependencies\":{\"a\":{\"target\":\"Project\"}}}");
 
             Assert.Equal(VersionRange.All, dependency.LibraryRange.VersionRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyNoWarnPropertyIsAbsent_ReturnsEmptyNoWarns(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyNoWarnPropertyIsAbsent_ReturnsEmptyNoWarns()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Empty(dependency.NoWarn);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyNoWarnValueIsValid_ReturnsNoWarns(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyNoWarnValueIsValid_ReturnsNoWarns()
         {
             NuGetLogCode[] expectedResults = { NuGetLogCode.NU1000, NuGetLogCode.NU3000 };
             var json = $"{{\"dependencies\":{{\"a\":{{\"noWarn\":[\"{expectedResults[0].ToString()}\",\"{expectedResults[1].ToString()}\"],\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Collection(
                 dependency.NoWarn,
@@ -1506,153 +1460,153 @@ namespace NuGet.ProjectModel.Test
                 noWarn => Assert.Equal(expectedResults[1], noWarn));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyGeneratePathPropertyPropertyIsAbsent_ReturnsFalseGeneratePathProperty(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyGeneratePathPropertyPropertyIsAbsent_ReturnsFalseGeneratePathProperty()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.False(dependency.GeneratePathProperty);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyGeneratePathPropertyValueIsValid_ReturnsGeneratePathProperty(IEnvironmentVariableReader environmentVariableReader, bool expectedResult)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenDependenciesDependencyGeneratePathPropertyValueIsValid_ReturnsGeneratePathProperty(bool expectedResult)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"generatePathProperty\":{expectedResult.ToString().ToLowerInvariant()},\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedResult, dependency.GeneratePathProperty);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyTypePropertyIsAbsent_ReturnsDefaultTypeConstraint(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyTypePropertyIsAbsent_ReturnsDefaultTypeConstraint()
         {
             const string json = "{\"dependencies\":{\"a\":{\"version\":\"1.0.0\"}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference,
                 dependency.LibraryRange.TypeConstraint);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyVersionCentrallyManagedPropertyIsAbsent_ReturnsFalseVersionCentrallyManaged(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDependenciesDependencyVersionCentrallyManagedPropertyIsAbsent_ReturnsFalseVersionCentrallyManaged()
         {
-            LibraryDependency dependency = GetDependency($"{{\"dependencies\":{{\"a\":{{\"target\":\"Package\",\"version\":\"1.0.0\"}}}}}}", environmentVariableReader);
+            LibraryDependency dependency = GetDependency($"{{\"dependencies\":{{\"a\":{{\"target\":\"Package\",\"version\":\"1.0.0\"}}}}}}");
 
             Assert.False(dependency.VersionCentrallyManaged);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDependenciesDependencyVersionCentrallyManagedValueIsBool_ReturnsBoolVersionCentrallyManaged(IEnvironmentVariableReader environmentVariableReader, bool expectedValue)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenDependenciesDependencyVersionCentrallyManagedValueIsBool_ReturnsBoolVersionCentrallyManaged(bool expectedValue)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"versionCentrallyManaged\":{expectedValue.ToString().ToLower()},\"target\":\"Package\",\"version\":\"1.0.0\"}}}}}}";
 
-            LibraryDependency dependency = GetDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetDependency(json);
 
             Assert.Equal(expectedValue, dependency.VersionCentrallyManaged);
         }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDescriptionPropertyIsAbsent_ReturnsNullDescription(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenDescriptionPropertyIsAbsent_ReturnsNullDescription()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Null(packageSpec.Description);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenDescriptionValueIsValid_ReturnsDescription(IEnvironmentVariableReader environmentVariableReader, string expectedResult)
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("b")]
+        public void GetPackageSpec_WhenDescriptionValueIsValid_ReturnsDescription(string expectedResult)
         {
             string description = expectedResult == null ? "null" : $"\"{expectedResult}\"";
-            PackageSpec packageSpec = GetPackageSpec($"{{\"description\":{description}}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"description\":{description}}}");
 
             Assert.Equal(expectedResult, packageSpec.Description);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenLanguagePropertyIsAbsent_ReturnsNullLanguage(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenLanguagePropertyIsAbsent_ReturnsNullLanguage()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Null(packageSpec.Language);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenLanguageValueIsValid_ReturnsLanguage(IEnvironmentVariableReader environmentVariableReader, string expectedResult)
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("b")]
+        public void GetPackageSpec_WhenLanguageValueIsValid_ReturnsLanguage(string expectedResult)
         {
             string language = expectedResult == null ? "null" : $"\"{expectedResult}\"";
-            PackageSpec packageSpec = GetPackageSpec($"{{\"language\":{language}}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec($"{{\"language\":{language}}}");
 
             Assert.Equal(expectedResult, packageSpec.Language);
         }
 #pragma warning restore CS0612 // Type or member is obsolete
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPropertyIsAbsent_ReturnsEmptyFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksPropertyIsAbsent_ReturnsEmptyFrameworks()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Empty(packageSpec.TargetFrameworks);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksValueIsEmptyObject_ReturnsEmptyFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksValueIsEmptyObject_ReturnsEmptyFrameworks()
         {
-            PackageSpec packageSpec = GetPackageSpec("{\"frameworks\":{}}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{\"frameworks\":{}}");
 
             Assert.Empty(packageSpec.TargetFrameworks);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksAssetTargetFallbackPropertyIsAbsent_ReturnsFalseAssetTargetFallback(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksAssetTargetFallbackPropertyIsAbsent_ReturnsFalseAssetTargetFallback()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}");
 
             Assert.False(framework.AssetTargetFallback);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksAssetTargetFallbackValueIsValid_ReturnsAssetTargetFallback(IEnvironmentVariableReader environmentVariableReader, bool expectedValue)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenFrameworksAssetTargetFallbackValueIsValid_ReturnsAssetTargetFallback(bool expectedValue)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"assetTargetFallback\":{expectedValue.ToString().ToLowerInvariant()}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedValue, framework.AssetTargetFallback);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithAssetTargetFallbackAndImportsValues_ReturnsValidAssetTargetFallbackFramework(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WithAssetTargetFallbackAndImportsValues_ReturnsValidAssetTargetFallbackFramework()
         {
             var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             framework.AssetTargetFallback.Should().BeTrue();
             var assetTargetFallback = framework.FrameworkName as AssetTargetFallbackFramework;
@@ -1662,81 +1616,63 @@ namespace NuGet.ProjectModel.Test
             assetTargetFallback.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsPropertyIsAbsent_ReturnsEmptyCentralPackageVersions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsPropertyIsAbsent_ReturnsEmptyCentralPackageVersions()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}");
 
             Assert.Empty(framework.CentralPackageVersions);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsValueIsEmptyObject_ReturnsEmptyCentralPackageVersions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsValueIsEmptyObject_ReturnsEmptyCentralPackageVersions()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"centralPackageVersions\":{}}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"centralPackageVersions\":{}}}}");
 
             Assert.Empty(framework.CentralPackageVersions);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsVersionPropertyNameIsEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsVersionPropertyNameIsEmptyString_Throws()
         {
             var json = "{\"frameworks\":{\"a\":{\"centralPackageVersions\":{\"\":\"1.0.0\"}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve central version ''.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Unable to resolve central version ''.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Unable to resolve central version ''.", exception.Message);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsVersionPropertyValueIsNullOrEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("null")]
+        [InlineData("\"\"")]
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsVersionPropertyValueIsNullOrEmptyString_Throws(string value)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"centralPackageVersions\":{{\"b\":{value}}}}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : The version cannot be null or empty.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : The version cannot be null or empty.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsIsValid_ReturnsCentralPackageVersions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsIsValid_ReturnsCentralPackageVersions()
         {
             const string expectedPackageId = "b";
             VersionRange expectedVersionRange = VersionRange.Parse("[1.2.3,4.5.6)");
             var expectedCentralPackageVersion = new CentralPackageVersion(expectedPackageId, expectedVersionRange);
             var json = $"{{\"frameworks\":{{\"a\":{{\"centralPackageVersions\":{{\"{expectedPackageId}\":\"{expectedVersionRange.ToShortString()}\"}}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Collection(
                 framework.CentralPackageVersions,
@@ -1747,9 +1683,9 @@ namespace NuGet.ProjectModel.Test
                 });
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsHasDuplicateKey_LastOneWins(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksCentralPackageVersionsHasDuplicateKey_LastOneWins()
         {
             const string expectedPackageId = "b";
             VersionRange unexpectedVersionRange = VersionRange.Parse("1.2.3");
@@ -1758,7 +1694,7 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"frameworks\":{{\"a\":{{\"centralPackageVersions\":{{\"{expectedPackageId}\":\"{unexpectedVersionRange.ToShortString()}\"," +
                 $"\"{expectedPackageId}\":\"{expectedVersionRange.ToShortString()}\"}}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Collection(
                 framework.CentralPackageVersions,
@@ -1769,49 +1705,40 @@ namespace NuGet.ProjectModel.Test
                 });
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesPropertyIsAbsent_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesPropertyIsAbsent_ReturnsEmptyDependencies()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}");
 
             Assert.Empty(framework.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesValueIsNull_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesValueIsNull_ReturnsEmptyDependencies()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"dependencies\":null}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"dependencies\":null}}}");
 
             Assert.Empty(framework.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNameIsEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNameIsEmptyString_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"\":{}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve dependency ''.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Unable to resolve dependency ''.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Unable to resolve dependency ''.", exception.Message);
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsVersionString_ReturnsDependencyVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsVersionString_ReturnsDependencyVersionRange()
         {
             var expectedResult = new LibraryRange(
                 name: "b",
@@ -1819,14 +1746,14 @@ namespace NuGet.ProjectModel.Test
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference);
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"{expectedResult.Name}\":\"{expectedResult.VersionRange.ToShortString()}\"}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(expectedResult, dependency.LibraryRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsVersionRangeString_ReturnsDependencyVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsVersionRangeString_ReturnsDependencyVersionRange()
         {
             var expectedResult = new LibraryRange(
                 name: "b",
@@ -1834,257 +1761,221 @@ namespace NuGet.ProjectModel.Test
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference);
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"{expectedResult.Name}\":\"{expectedResult.VersionRange}\"}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(expectedResult, dependency.LibraryRange);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.None, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.Assembly, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.Reference, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.WinMD, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.All, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), LibraryDependencyTarget.PackageProjectExternal, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsUnsupported_Throws(IEnvironmentVariableReader environmentVariableReader, LibraryDependencyTarget target)
+        [InlineData(LibraryDependencyTarget.None)]
+        [InlineData(LibraryDependencyTarget.Assembly)]
+        [InlineData(LibraryDependencyTarget.Reference)]
+        [InlineData(LibraryDependencyTarget.WinMD)]
+        [InlineData(LibraryDependencyTarget.All)]
+        [InlineData(LibraryDependencyTarget.PackageProjectExternal)]
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsUnsupported_Throws(LibraryDependencyTarget target)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"version\":\"1.2.3\",\"target\":\"{target}\"}}}}}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal($"Error reading '' at line 1 column 20 : Invalid dependency target value '{target}'.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal($"Error reading '' : Invalid dependency target value '{target}'.", exception.Message);
-            }
+            Assert.Equal($"Error reading '' : Invalid dependency target value '{target}'.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyAutoreferencedPropertyIsAbsent_ReturnsFalseAutoreferenced(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyAutoreferencedPropertyIsAbsent_ReturnsFalseAutoreferenced()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"target\":\"Project\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.False(dependency.AutoReferenced);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyAutoreferencedValueIsBool_ReturnsBoolAutoreferenced(IEnvironmentVariableReader environmentVariableReader, bool expectedValue)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyAutoreferencedValueIsBool_ReturnsBoolAutoreferenced(bool expectedValue)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"autoReferenced\":{expectedValue.ToString().ToLower()},\"target\":\"Project\"}}}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(expectedValue, dependency.AutoReferenced);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "exclude", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "include", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "suppressParent", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsArray_Throws(IEnvironmentVariableReader environmentVariableReader, string propertyName)
+        [InlineData("exclude")]
+        [InlineData("include")]
+        [InlineData("suppressParent")]
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"{propertyName}\":[\"c\"]}}}}}}}}}}";
 
             // The exception messages will not be the same because the innermost exception in the baseline
             // is a Newtonsoft.Json exception, while it's a .NET exception in the improved.
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<InvalidCastException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Specified cast is not valid.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Specified cast is not valid.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Specified cast is not valid.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeAndExcludePropertiesAreAbsent_ReturnsAllIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeAndExcludePropertiesAreAbsent_ReturnsAllIncludeType()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.All, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyExcludeValueIsValid_ReturnsIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyExcludeValueIsValid_ReturnsIncludeType()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"exclude\":\"Native\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.All & ~LibraryIncludeFlags.Native, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeValueIsValid_ReturnsIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeValueIsValid_ReturnsIncludeType()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"include\":\"ContentFiles\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.ContentFiles, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeValueOverridesTypeValue_ReturnsIncludeType(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyIncludeValueOverridesTypeValue_ReturnsIncludeType()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"include\":\"ContentFiles\",\"type\":\"BecomesNupkgDependency, SharedFramework\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.ContentFiles, dependency.IncludeType);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentValueOverridesTypeValue_ReturnsSuppressParent(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentValueOverridesTypeValue_ReturnsSuppressParent()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"suppressParent\":\"ContentFiles\",\"type\":\"SharedFramework\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.ContentFiles, dependency.SuppressParent);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentPropertyIsAbsent_ReturnsSuppressParent(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentPropertyIsAbsent_ReturnsSuppressParent()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependency.SuppressParent);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentValueIsValid_ReturnsSuppressParent(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencySuppressParentValueIsValid_ReturnsSuppressParent()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"suppressParent\":\"Compile\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryIncludeFlags.Compile, dependency.SuppressParent);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionValueIsInvalid_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionValueIsInvalid_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"c\"}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 54 : 'c' is not a valid version string.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Error reading '' : 'c' is not a valid version string.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Error reading '' : 'c' is not a valid version string.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetPropertyIsAbsent_ReturnsTarget(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetPropertyIsAbsent_ReturnsTarget()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference,
                 dependency.LibraryRange.TypeConstraint);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"target\":\"Package\"}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 41 : Package dependencies must specify a version range.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Error reading '' : Package dependencies must specify a version range.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Error reading '' : Package dependencies must specify a version range.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"target\":\"Project\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(VersionRange.All, dependency.LibraryRange.VersionRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNoWarnPropertyIsAbsent_ReturnsEmptyNoWarns(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNoWarnPropertyIsAbsent_ReturnsEmptyNoWarns()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Empty(dependency.NoWarn);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNoWarnValueIsValid_ReturnsNoWarns(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyNoWarnValueIsValid_ReturnsNoWarns()
         {
             NuGetLogCode[] expectedResults = { NuGetLogCode.NU1000, NuGetLogCode.NU3000 };
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"noWarn\":[\"{expectedResults[0].ToString()}\",\"{expectedResults[1].ToString()}\"],\"version\":\"1.0.0\"}}}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Collection(
                 dependency.NoWarn,
@@ -2092,36 +1983,36 @@ namespace NuGet.ProjectModel.Test
                 noWarn => Assert.Equal(expectedResults[1], noWarn));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyGeneratePathPropertyPropertyIsAbsent_ReturnsFalseGeneratePathProperty(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyGeneratePathPropertyPropertyIsAbsent_ReturnsFalseGeneratePathProperty()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.False(dependency.GeneratePathProperty);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyGeneratePathPropertyValueIsValid_ReturnsGeneratePathProperty(IEnvironmentVariableReader environmentVariableReader, bool expectedResult)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyGeneratePathPropertyValueIsValid_ReturnsGeneratePathProperty(bool expectedResult)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"generatePathProperty\":{expectedResult.ToString().ToLowerInvariant()},\"version\":\"1.0.0\"}}}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(expectedResult, dependency.GeneratePathProperty);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTypePropertyIsAbsent_ReturnsDefaultTypeConstraint(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyTypePropertyIsAbsent_ReturnsDefaultTypeConstraint()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(
                 LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference,
@@ -2129,103 +2020,94 @@ namespace NuGet.ProjectModel.Test
         }
 
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionCentrallyManagedPropertyIsAbsent_ReturnsFalseVersionCentrallyManaged(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionCentrallyManagedPropertyIsAbsent_ReturnsFalseVersionCentrallyManaged()
         {
             const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"target\":\"Package\",\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.False(dependency.VersionCentrallyManaged);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionCentrallyManagedValueIsBool_ReturnsBoolVersionCentrallyManaged(IEnvironmentVariableReader environmentVariableReader, bool expectedValue)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenFrameworksDependenciesDependencyVersionCentrallyManagedValueIsBool_ReturnsBoolVersionCentrallyManaged(bool expectedValue)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"versionCentrallyManaged\":{expectedValue.ToString().ToLower()},\"target\":\"Package\",\"version\":\"1.0.0\"}}}}}}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(expectedValue, dependency.VersionCentrallyManaged);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesPropertyIsAbsent_ReturnsEmptyDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesPropertyIsAbsent_ReturnsEmptyDownloadDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.DownloadDependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsNull_ReturnsEmptyDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsNull_ReturnsEmptyDownloadDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{\"downloadDependencies\":null}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.DownloadDependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsNotArray_ReturnsEmptyDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsNotArray_ReturnsEmptyDownloadDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{\"downloadDependencies\":\"b\"}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.DownloadDependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsEmptyArray_ReturnsEmptyDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsEmptyArray_ReturnsEmptyDownloadDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{\"downloadDependencies\":[]}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.DownloadDependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyNameIsAbsent_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyNameIsAbsent_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"downloadDependencies\":[{\"version\":\"1.2.3\"}]}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve downloadDependency ''.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Unable to resolve downloadDependency ''.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Unable to resolve downloadDependency ''.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyNameIsNull_ReturnsDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyNameIsNull_ReturnsDownloadDependencies()
         {
             var expectedResult = new DownloadDependency(name: null, new VersionRange(new NuGetVersion("1.2.3")));
             var json = $"{{\"frameworks\":{{\"a\":{{\"downloadDependencies\":[{{\"name\":null,\"version\":\"{expectedResult.VersionRange.ToShortString()}\"}}]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             DownloadDependency actualResult = framework.DownloadDependencies.Single();
 
@@ -2233,36 +2115,27 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult.VersionRange, actualResult.VersionRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyVersionIsAbsent_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyVersionIsAbsent_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"downloadDependencies\":[{\"name\":\"b\"}]}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : The version cannot be null or empty", exception.Message);
-            }
+            Assert.Equal("Error reading '' : The version cannot be null or empty", exception.Message);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "c", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyVersionIsInvalid_Throws(IEnvironmentVariableReader environmentVariableReader, string version)
+        [InlineData("null")]
+        [InlineData("c")]
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesDependencyVersionIsInvalid_Throws(string version)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"downloadDependencies\":[{{\"name\":\"b\",\"version\":\"{version}\"}}]}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             int expectedColumn = json.IndexOf($"\"{version}\"") + version.Length + 2;
 
@@ -2270,37 +2143,28 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal($"Error reading '' at line 1 column 20 : Error reading '' at line 1 column {expectedColumn} : '{version}' is not a valid version string.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal($"Error reading '' : Error reading '' : '{version}' is not a valid version string.", exception.Message);
-            }
+            Assert.Equal($"Error reading '' : Error reading '' : '{version}' is not a valid version string.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsValid_ReturnsDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsValid_ReturnsDownloadDependencies()
         {
             var expectedResult = new DownloadDependency(name: "b", new VersionRange(new NuGetVersion("1.2.3")));
             var json = $"{{\"frameworks\":{{\"a\":{{\"downloadDependencies\":[{{\"name\":\"{expectedResult.Name}\",\"version\":\"{expectedResult.VersionRange.ToShortString()}\"}}]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedResult, framework.DownloadDependencies.Single());
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsValidWithMultipleVersions_ReturnsDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsValidWithMultipleVersions_ReturnsDownloadDependencies()
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"downloadDependencies\":[{{\"name\":\"b\",\"version\":\"1.2.3;;2.0.0\"}}]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(2, framework.DownloadDependencies.Count());
             Assert.Equal("b", framework.DownloadDependencies[0].Name);
@@ -2310,9 +2174,9 @@ namespace NuGet.ProjectModel.Test
 
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueHasDuplicates_PrefersFirstByName(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueHasDuplicates_PrefersFirstByName()
         {
             var expectedResult = new DownloadDependency(name: "b", new VersionRange(new NuGetVersion("1.2.3")));
             var unexpectedResult = new DownloadDependency(name: "b", new VersionRange(new NuGetVersion("4.5.6")));
@@ -2321,295 +2185,266 @@ namespace NuGet.ProjectModel.Test
                 $"{{\"name\":\"{unexpectedResult.Name}\",\"version\":\"{unexpectedResult.VersionRange.ToShortString()}\"}}" +
                 "]}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedResult, framework.DownloadDependencies.Single());
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesPropertyIsAbsent_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesPropertyIsAbsent_ReturnsEmptyDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesValueIsNull_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesValueIsNull_ReturnsEmptyDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkAssemblies\":null}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesValueIsEmptyObject_ReturnsEmptyDependencies(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesValueIsEmptyObject_ReturnsEmptyDependencies()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkAssemblies\":{}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Dependencies);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetPropertyIsAbsent_ReturnsTarget(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetPropertyIsAbsent_ReturnsTarget()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkAssemblies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(LibraryDependencyTarget.Reference, dependency.LibraryRange.TypeConstraint);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetValueIsPackageAndVersionPropertyIsAbsent_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkAssemblies\":{\"b\":{\"target\":\"Package\"}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 48 : Package dependencies must specify a version range.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Error reading '' : Package dependencies must specify a version range.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Error reading '' : Package dependencies must specify a version range.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkAssembliesDependencyTargetValueIsProjectAndVersionPropertyIsAbsent_ReturnsAllVersionRange()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkAssemblies\":{\"b\":{\"target\":\"Project\"}}}}}";
 
-            LibraryDependency dependency = GetFrameworksDependency(json, environmentVariableReader);
+            LibraryDependency dependency = GetFrameworksDependency(json);
 
             Assert.Equal(VersionRange.All, dependency.LibraryRange.VersionRange);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPropertyIsAbsent_ReturnsEmptyFrameworkReferences(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPropertyIsAbsent_ReturnsEmptyFrameworkReferences()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.FrameworkReferences);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesValueIsNull_ReturnsEmptyFrameworkReferences(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesValueIsNull_ReturnsEmptyFrameworkReferences()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkReferences\":null}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.FrameworkReferences);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesValueIsEmptyObject_ReturnsEmptyFrameworkReferences(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesValueIsEmptyObject_ReturnsEmptyFrameworkReferences()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkReferences\":{}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.FrameworkReferences);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesFrameworkNameIsEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesFrameworkNameIsEmptyString_Throws()
         {
             const string json = "{\"frameworks\":{\"a\":{\"frameworkReferences\":{\"\":{}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve frameworkReference.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Unable to resolve frameworkReference.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Unable to resolve frameworkReference.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsPropertyIsAbsent_ReturnsNonePrivateAssets(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsPropertyIsAbsent_ReturnsNonePrivateAssets()
         {
             var expectedResult = new FrameworkDependency(name: "b", FrameworkDependencyFlags.None);
             var json = $"{{\"frameworks\":{{\"a\":{{\"frameworkReferences\":{{\"{expectedResult.Name}\":{{}}}}}}}}}}";
 
-            FrameworkDependency dependency = GetFrameworksFrameworkReference(json, environmentVariableReader);
+            FrameworkDependency dependency = GetFrameworksFrameworkReference(json);
 
             Assert.Equal(expectedResult, dependency);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"null\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"c\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsInvalidValue_ReturnsNonePrivateAssets(IEnvironmentVariableReader environmentVariableReader, string privateAssets)
+        [InlineData("\"null\"")]
+        [InlineData("\"\"")]
+        [InlineData("\"c\"")]
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsInvalidValue_ReturnsNonePrivateAssets(string privateAssets)
         {
             var expectedResult = new FrameworkDependency(name: "b", FrameworkDependencyFlags.None);
             var json = $"{{\"frameworks\":{{\"a\":{{\"frameworkReferences\":{{\"{expectedResult.Name}\":{{\"privateAssets\":{privateAssets}}}}}}}}}}}";
 
-            FrameworkDependency dependency = GetFrameworksFrameworkReference(json, environmentVariableReader);
+            FrameworkDependency dependency = GetFrameworksFrameworkReference(json);
 
             Assert.Equal(expectedResult, dependency);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsValidString_ReturnsPrivateAssets(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsValidString_ReturnsPrivateAssets()
         {
             var expectedResult = new FrameworkDependency(name: "b", FrameworkDependencyFlags.All);
             var json = $"{{\"frameworks\":{{\"a\":{{\"frameworkReferences\":{{\"{expectedResult.Name}\":{{\"privateAssets\":\"{expectedResult.PrivateAssets.ToString().ToLowerInvariant()}\"}}}}}}}}}}";
 
-            FrameworkDependency dependency = GetFrameworksFrameworkReference(json, environmentVariableReader);
+            FrameworkDependency dependency = GetFrameworksFrameworkReference(json);
 
             Assert.Equal(expectedResult, dependency);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsValidDelimitedString_ReturnsPrivateAssets(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksFrameworkReferencesPrivateAssetsValueIsValidDelimitedString_ReturnsPrivateAssets()
         {
             var expectedResult = new FrameworkDependency(name: "b", FrameworkDependencyFlags.All);
             var json = $"{{\"frameworks\":{{\"a\":{{\"frameworkReferences\":{{\"{expectedResult.Name}\":{{\"privateAssets\":\"none,all\"}}}}}}}}}}";
 
-            FrameworkDependency dependency = GetFrameworksFrameworkReference(json, environmentVariableReader);
+            FrameworkDependency dependency = GetFrameworksFrameworkReference(json);
 
             Assert.Equal(expectedResult, dependency);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsPropertyIsAbsent_ReturnsEmptyImports(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksImportsPropertyIsAbsent_ReturnsEmptyImports()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Imports);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueIsArrayOfNullOrEmptyString_ImportIsSkipped(IEnvironmentVariableReader environmentVariableReader, string import)
+        [InlineData("null")]
+        [InlineData("\"\"")]
+        public void GetPackageSpec_WhenFrameworksImportsValueIsArrayOfNullOrEmptyString_ImportIsSkipped(string import)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"imports\":[{import}]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Imports);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueIsNull_ReturnsEmptyList(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksImportsValueIsNull_ReturnsEmptyList()
         {
             const string json = "{\"frameworks\":{\"a\":{\"imports\":null}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Imports);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueIsInvalidValue_ReturnsEmptyList(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("true")]
+        [InlineData("-2")]
+        [InlineData("3.14")]
+        [InlineData("{}")]
+        public void GetPackageSpec_WhenFrameworksImportsValueIsInvalidValue_ReturnsEmptyList(string value)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"imports\":{value}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Empty(framework.Imports);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueContainsInvalidValue_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksImportsValueContainsInvalidValue_Throws()
         {
             const string expectedImport = "b";
 
             var json = $"{{\"frameworks\":{{\"a\":{{\"imports\":[\"{expectedImport}\"]}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal(
-                    $"Error reading '' at line 1 column 20 : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
-                    exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal(
-                    $"Error reading '' : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
-                    exception.Message);
-            }
+            Assert.Equal(
+                $"Error reading '' : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
+                exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueIsString_ReturnsImport(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksImportsValueIsString_ReturnsImport()
         {
             NuGetFramework expectedResult = NuGetFramework.Parse("net48");
             var json = $"{{\"frameworks\":{{\"a\":{{\"imports\":\"{expectedResult.GetShortFolderName()}\"}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Collection(
                 framework.Imports,
                 actualResult => Assert.Equal(expectedResult, actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksImportsValueIsArrayOfStrings_ReturnsImports(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksImportsValueIsArrayOfStrings_ReturnsImports()
         {
             NuGetFramework[] expectedResults = { NuGetFramework.Parse("net472"), NuGetFramework.Parse("net48") };
             var json = $"{{\"frameworks\":{{\"a\":{{\"imports\":[\"{expectedResults[0].GetShortFolderName()}\",\"{expectedResults[1].GetShortFolderName()}\"]}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Collection(
                 framework.Imports,
@@ -2617,72 +2452,72 @@ namespace NuGet.ProjectModel.Test
                 actualResult => Assert.Equal(expectedResults[1], actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksRuntimeIdentifierGraphPathPropertyIsAbsent_ReturnsRuntimeIdentifierGraphPath(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksRuntimeIdentifierGraphPathPropertyIsAbsent_ReturnsRuntimeIdentifierGraphPath()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Null(framework.RuntimeIdentifierGraphPath);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksRuntimeIdentifierGraphPathValueIsString_ReturnsRuntimeIdentifierGraphPath(IEnvironmentVariableReader environmentVariableReader, string expectedResult)
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("b")]
+        public void GetPackageSpec_WhenFrameworksRuntimeIdentifierGraphPathValueIsString_ReturnsRuntimeIdentifierGraphPath(string expectedResult)
         {
             string runtimeIdentifierGraphPath = expectedResult == null ? "null" : $"\"{expectedResult}\"";
             var json = $"{{\"frameworks\":{{\"a\":{{\"runtimeIdentifierGraphPath\":{runtimeIdentifierGraphPath}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedResult, framework.RuntimeIdentifierGraphPath);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksWarnPropertyIsAbsent_ReturnsWarn(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksWarnPropertyIsAbsent_ReturnsWarn()
         {
             const string json = "{\"frameworks\":{\"a\":{}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.False(framework.Warn);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksWarnValueIsValid_ReturnsWarn(IEnvironmentVariableReader environmentVariableReader, bool expectedResult)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WhenFrameworksWarnValueIsValid_ReturnsWarn(bool expectedResult)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"warn\":{expectedResult.ToString().ToLowerInvariant()}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedResult, framework.Warn);
         }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackIncludePropertyIsAbsent_ReturnsEmptyPackInclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackIncludePropertyIsAbsent_ReturnsEmptyPackInclude()
         {
-            PackageSpec packageSpec = GetPackageSpec("{}", environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec("{}");
 
             Assert.Empty(packageSpec.PackInclude);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackIncludePropertyIsValid_ReturnsPackInclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackIncludePropertyIsValid_ReturnsPackInclude()
         {
             var expectedResults = new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("a", "b"), new KeyValuePair<string, string>("c", "d") };
             var json = $"{{\"packInclude\":{{\"{expectedResults[0].Key}\":\"{expectedResults[0].Value}\",\"{expectedResults[1].Key}\":\"{expectedResults[1].Value}\"}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.PackInclude,
@@ -2691,11 +2526,11 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{\"packOptions\":null}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPropertyIsAbsentOrValueIsNull_ReturnsPackOptions(IEnvironmentVariableReader environmentVariableReader, string json)
+        [InlineData("{}")]
+        [InlineData("{\"packOptions\":null}")]
+        public void GetPackageSpec_WhenPackOptionsPropertyIsAbsentOrValueIsNull_ReturnsPackOptions(string json)
         {
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.NotNull(packageSpec.PackOptions);
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
@@ -2712,25 +2547,25 @@ namespace NuGet.ProjectModel.Test
             Assert.Empty(packageSpec.Tags);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPropertyIsAbsent_OwnersAndTagsAreEmpty(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsPropertyIsAbsent_OwnersAndTagsAreEmpty()
         {
             const string json = "{\"owners\":[\"a\"],\"tags\":[\"b\"]}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.Owners);
             Assert.Empty(packageSpec.Tags);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPropertyIsEmptyObject_ReturnsPackOptions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsPropertyIsEmptyObject_ReturnsPackOptions()
         {
             string json = "{\"packOptions\":{}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.NotNull(packageSpec.PackOptions);
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
@@ -2747,9 +2582,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Empty(packageSpec.Tags);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsValueIsValid_ReturnsPackOptions(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsValueIsValid_ReturnsPackOptions()
         {
             const string iconUrl = "a";
             const string licenseUrl = "b";
@@ -2764,7 +2599,7 @@ namespace NuGet.ProjectModel.Test
                 $"\"projectUrl\":\"{projectUrl}\",\"releaseNotes\":\"{releaseNotes}\",\"requireLicenseAcceptance\":{requireLicenseAcceptance.ToString().ToLowerInvariant()}," +
                 $"\"summary\":\"{summary}\",\"tags\":[{string.Join(",", tags.Select(tag => $"\"{tag}\""))}]}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.NotNull(packageSpec.PackOptions);
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
@@ -2780,274 +2615,268 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(tags, packageSpec.Tags);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPackageTypeValueIsNull_ReturnsEmptyPackageTypes(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsPackageTypeValueIsNull_ReturnsEmptyPackageTypes()
         {
             const string json = "{\"packOptions\":{\"packageType\":null}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.PackOptions.PackageType);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "true", 34, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "-2", 32, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "3.14", 34, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[true]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[-2]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[3.14]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[null]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[{}]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[[]]", 31, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPackageTypeIsInvalid_Throws(IEnvironmentVariableReader environmentVariableReader, string value, int expectedColumn)
+        [InlineData("true")]
+        [InlineData("-2")]
+        [InlineData("3.14")]
+        [InlineData("{}")]
+        [InlineData("[true]")]
+        [InlineData("[-2]")]
+        [InlineData("[3.14]")]
+        [InlineData("[null]")]
+        [InlineData("[{}]")]
+        [InlineData("[[]]")]
+        public void GetPackageSpec_WhenPackOptionsPackageTypeIsInvalid_Throws(string value)
         {
             var json = $"{{\"packOptions\":{{\"packageType\":{value}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Null(exception.InnerException);
             Assert.Equal("The pack options package type must be a string or array of strings in 'project.json'.", exception.Message);
-
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(expectedColumn, exception.Column);
-            }
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a,b\"", "a,b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\"]", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a b\"]", "a b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsPackageTypeValueIsValid_ReturnsPackageTypes(IEnvironmentVariableReader environmentVariableReader, string value, string expectedName)
+        [InlineData("\"a\"", "a")]
+        [InlineData("\"a,b\"", "a,b")]
+        [InlineData("[\"a\"]", "a")]
+        [InlineData("[\"a b\"]", "a b")]
+        public void GetPackageSpec_WhenPackOptionsPackageTypeValueIsValid_ReturnsPackageTypes(string value, string expectedName)
         {
             var expectedResult = new PackageType(expectedName, PackageType.EmptyVersion);
             var json = $"{{\"packOptions\":{{\"packageType\":{value}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.PackOptions.PackageType,
                 actualResult => Assert.Equal(expectedResult, actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesValueIsNull_ReturnsNullInclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesValueIsNull_ReturnsNullInclude()
         {
             const string json = "{\"packOptions\":{\"files\":null}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesValueIsEmptyObject_ReturnsNullInclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesValueIsEmptyObject_ReturnsNullInclude()
         {
             const string json = "{\"packOptions\":{\"files\":{}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsNull_ReturnsNullIncludeExcludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsNull_ReturnsNullIncludeExcludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"include\":null}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsEmptyArray_ReturnsEmptyInclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsEmptyArray_ReturnsEmptyInclude()
         {
             const string json = "{\"packOptions\":{\"files\":{\"include\":[]}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.PackOptions.IncludeExcludeFiles.Include);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a, b\"", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[null]", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"\"]", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\"]", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a, b\"]", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\", \"b\"]", "a", "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsValid_ReturnsInclude(IEnvironmentVariableReader environmentVariableReader, string value, params string[] expectedResults)
+        [InlineData("\"a\"", "a")]
+        [InlineData("\"a, b\"", "a, b")]
+        [InlineData("[null]", null)]
+        [InlineData("[\"\"]", "")]
+        [InlineData("[\"a\"]", "a")]
+        [InlineData("[\"a, b\"]", "a, b")]
+        [InlineData("[\"a\", \"b\"]", "a", "b")]
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeValueIsValid_ReturnsInclude(string value, params string[] expectedResults)
         {
             expectedResults = expectedResults ?? new string[] { null };
 
             var json = $"{{\"packOptions\":{{\"files\":{{\"include\":{value}}}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.IncludeExcludeFiles.Include);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsNull_ReturnsNullIncludeExcludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsNull_ReturnsNullIncludeExcludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"includeFiles\":null}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsEmptyArray_ReturnsEmptyIncludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsEmptyArray_ReturnsEmptyIncludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"includeFiles\":[]}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.PackOptions.IncludeExcludeFiles.IncludeFiles);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a, b\"", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[null]", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"\"]", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\"]", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a, b\"]", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\", \"b\"]", "a", "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsValid_ReturnsIncludeFiles(IEnvironmentVariableReader environmentVariableReader, string value, params string[] expectedResults)
+        [InlineData("\"a\"", "a")]
+        [InlineData("\"a, b\"", "a, b")]
+        [InlineData("[null]", null)]
+        [InlineData("[\"\"]", "")]
+        [InlineData("[\"a\"]", "a")]
+        [InlineData("[\"a, b\"]", "a, b")]
+        [InlineData("[\"a\", \"b\"]", "a", "b")]
+        public void GetPackageSpec_WhenPackOptionsFilesIncludeFilesValueIsValid_ReturnsIncludeFiles(string value, params string[] expectedResults)
         {
             expectedResults = expectedResults ?? new string[] { null };
 
             var json = $"{{\"packOptions\":{{\"files\":{{\"includeFiles\":{value}}}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.IncludeExcludeFiles.IncludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsNull_ReturnsNullIncludeExcludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsNull_ReturnsNullIncludeExcludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"exclude\":null}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsEmptyArray_ReturnsEmptyExclude(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsEmptyArray_ReturnsEmptyExclude()
         {
             const string json = "{\"packOptions\":{\"files\":{\"exclude\":[]}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.PackOptions.IncludeExcludeFiles.Exclude);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a, b\"", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[null]", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"\"]", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\"]", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a, b\"]", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\", \"b\"]", "a", "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsValid_ReturnsExclude(IEnvironmentVariableReader environmentVariableReader, string value, params string[] expectedResults)
+        [InlineData("\"a\"", "a")]
+        [InlineData("\"a, b\"", "a, b")]
+        [InlineData("[null]", null)]
+        [InlineData("[\"\"]", "")]
+        [InlineData("[\"a\"]", "a")]
+        [InlineData("[\"a, b\"]", "a, b")]
+        [InlineData("[\"a\", \"b\"]", "a", "b")]
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeValueIsValid_ReturnsExclude(string value, params string[] expectedResults)
         {
             expectedResults = expectedResults ?? new string[] { null };
 
             var json = $"{{\"packOptions\":{{\"files\":{{\"exclude\":{value}}}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.IncludeExcludeFiles.Exclude);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsNull_ReturnsNullIncludeExcludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsNull_ReturnsNullIncludeExcludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"excludeFiles\":null}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.IncludeExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsEmptyArray_ReturnsEmptyExcludeFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsEmptyArray_ReturnsEmptyExcludeFiles()
         {
             const string json = "{\"packOptions\":{\"files\":{\"excludeFiles\":[]}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.PackOptions.IncludeExcludeFiles.ExcludeFiles);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a, b\"", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[null]", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"\"]", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\"]", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a, b\"]", "a, b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"a\", \"b\"]", "a", "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsValid_ReturnsExcludeFiles(IEnvironmentVariableReader environmentVariableReader, string value, params string[] expectedResults)
+        [InlineData("\"a\"", "a")]
+        [InlineData("\"a, b\"", "a, b")]
+        [InlineData("[null]", null)]
+        [InlineData("[\"\"]", "")]
+        [InlineData("[\"a\"]", "a")]
+        [InlineData("[\"a, b\"]", "a, b")]
+        [InlineData("[\"a\", \"b\"]", "a", "b")]
+        public void GetPackageSpec_WhenPackOptionsFilesExcludeFilesValueIsValid_ReturnsExcludeFiles(string value, params string[] expectedResults)
         {
             expectedResults = expectedResults ?? new string[] { null };
 
             var json = $"{{\"packOptions\":{{\"files\":{{\"excludeFiles\":{value}}}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.IncludeExcludeFiles.ExcludeFiles);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesMappingsPropertyIsAbsent_ReturnsNullMappings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesMappingsPropertyIsAbsent_ReturnsNullMappings()
         {
             const string json = "{\"packOptions\":{\"files\":{}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.Mappings);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueIsNull_ReturnsNullMappings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueIsNull_ReturnsNullMappings()
         {
             const string json = "{\"packOptions\":{\"files\":{\"mappings\":null}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.PackOptions.Mappings);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"b\"", "b", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"b,c\"", "b,c", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "[\"b\", \"c\"]", "b", "c", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueIsValid_ReturnsMappings(IEnvironmentVariableReader environmentVariableReader, string value, params string[] expectedIncludes)
+        [InlineData("\"b\"", "b")]
+        [InlineData("\"b,c\"", "b,c")]
+        [InlineData("[\"b\", \"c\"]", "b", "c")]
+        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueIsValid_ReturnsMappings(string value, params string[] expectedIncludes)
         {
             var expectedResults = new Dictionary<string, IncludeExcludeFiles>()
                     {
@@ -3055,14 +2884,14 @@ namespace NuGet.ProjectModel.Test
                     };
             var json = $"{{\"packOptions\":{{\"files\":{{\"mappings\":{{\"a\":{value}}}}}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.Mappings);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueHasMultipleMappings_ReturnsMappings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueHasMultipleMappings_ReturnsMappings()
         {
             var expectedResults = new Dictionary<string, IncludeExcludeFiles>()
                     {
@@ -3071,14 +2900,14 @@ namespace NuGet.ProjectModel.Test
                     };
             const string json = "{\"packOptions\":{\"files\":{\"mappings\":{\"a\":\"b\",\"c\":[\"d\", \"e\"]}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.Mappings);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueHasFiles_ReturnsMappings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenPackOptionsFilesMappingsValueHasFiles_ReturnsMappings()
         {
             var expectedResults = new Dictionary<string, IncludeExcludeFiles>()
                     {
@@ -3095,256 +2924,245 @@ namespace NuGet.ProjectModel.Test
                     };
             const string json = "{\"packOptions\":{\"files\":{\"mappings\":{\"a\":{\"include\":\"b\",\"includeFiles\":\"c\",\"exclude\":\"d\",\"excludeFiles\":\"e\"}}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.Mappings);
         }
 #pragma warning restore CS0612 // Type or member is obsolete
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestorePropertyIsAbsent_ReturnsNullRestoreMetadata(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestorePropertyIsAbsent_ReturnsNullRestoreMetadata()
         {
             const string json = "{}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Null(packageSpec.RestoreMetadata);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreValueIsEmptyObject_ReturnsRestoreMetadata(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreValueIsEmptyObject_ReturnsRestoreMetadata()
         {
             const string json = "{\"restore\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.NotNull(packageSpec.RestoreMetadata);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreProjectStyleValueIsInvalid_ReturnsProjectStyle(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("null")]
+        [InlineData("\"\"")]
+        [InlineData("\"a\"")]
+        public void GetPackageSpec_WhenRestoreProjectStyleValueIsInvalid_ReturnsProjectStyle(string value)
         {
             var json = $"{{\"restore\":{{\"projectStyle\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(ProjectStyle.Unknown, packageSpec.RestoreMetadata.ProjectStyle);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreProjectStyleValueIsValid_ReturnsProjectStyle(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreProjectStyleValueIsValid_ReturnsProjectStyle()
         {
             const ProjectStyle expectedResult = ProjectStyle.PackageReference;
 
             var json = $"{{\"restore\":{{\"projectStyle\":\"{expectedResult.ToString().ToLowerInvariant()}\"}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreMetadata.ProjectStyle);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestoreProjectUniqueNameValueIsValid_ReturnsProjectUniqueName(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"projectUniqueName\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.ProjectUniqueName);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestoreOutputPathValueIsValid_ReturnsOutputPath(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"outputPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.OutputPath);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestorePackagesPathValueIsValid_ReturnsPackagesPath(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"packagesPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.PackagesPath);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestoreProjectJsonPathValueIsValid_ReturnsProjectJsonPath(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"projectJsonPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.ProjectJsonPath);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestoreProjectNameValueIsValid_ReturnsProjectName(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"projectName\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.ProjectName);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestoreProjectPathValueIsValid_ReturnsProjectPath(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"projectPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.ProjectPath);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void GetPackageSpec_WhenCrossTargetingValueIsValid_ReturnsCrossTargeting(
-            IEnvironmentVariableReader environmentVariableReader,
             bool? value,
             bool expectedValue)
         {
             var json = $"{{\"restore\":{{\"crossTargeting\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CrossTargeting);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void GetPackageSpec_WhenLegacyPackagesDirectoryValueIsValid_ReturnsLegacyPackagesDirectory(
-            IEnvironmentVariableReader environmentVariableReader,
             bool? value,
             bool expectedValue)
         {
             var json = $"{{\"restore\":{{\"legacyPackagesDirectory\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.LegacyPackagesDirectory);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void GetPackageSpec_WhenValidateRuntimeAssetsValueIsValid_ReturnsValidateRuntimeAssets(
-            IEnvironmentVariableReader environmentVariableReader,
             bool? value,
             bool expectedValue)
         {
             var json = $"{{\"restore\":{{\"validateRuntimeAssets\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.ValidateRuntimeAssets);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void GetPackageSpec_WhenSkipContentFileWriteValueIsValid_ReturnsSkipContentFileWrite(
-            IEnvironmentVariableReader environmentVariableReader,
             bool? value,
             bool expectedValue)
         {
             var json = $"{{\"restore\":{{\"skipContentFileWrite\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.SkipContentFileWrite);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), null, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
         public void GetPackageSpec_WhenCentralPackageVersionsManagementEnabledValueIsValid_ReturnsCentralPackageVersionsManagementEnabled(
-            IEnvironmentVariableReader environmentVariableReader,
             bool? value,
             bool expectedValue)
         {
             var json = $"{{\"restore\":{{\"centralPackageVersionsManagementEnabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenSourcesValueIsEmptyObject_ReturnsEmptySources(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenSourcesValueIsEmptyObject_ReturnsEmptySources()
         {
             const string json = "{\"restore\":{\"sources\":{}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.Sources);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenSourcesValueIsValid_ReturnsSources(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenSourcesValueIsValid_ReturnsSources()
         {
             PackageSource[] expectedResults = { new PackageSource(source: "a"), new PackageSource(source: "b") };
             string values = string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult.Name}\":{{}}"));
             var json = $"{{\"restore\":{{\"sources\":{{{values}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.RestoreMetadata.Sources);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFilesValueIsEmptyObject_ReturnsEmptyFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFilesValueIsEmptyObject_ReturnsEmptyFiles()
         {
             const string json = "{\"restore\":{\"files\":{}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.Files);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFilesValueIsValid_ReturnsFiles(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFilesValueIsValid_ReturnsFiles()
         {
             ProjectRestoreMetadataFile[] expectedResults =
             {
@@ -3353,37 +3171,37 @@ namespace NuGet.ProjectModel.Test
                     };
             string values = string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult.PackagePath}\":\"{expectedResult.AbsolutePath}\""));
             var json = $"{{\"restore\":{{\"files\":{{{values}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.RestoreMetadata.Files);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFrameworksValueIsEmptyObject_ReturnsEmptyFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFrameworksValueIsEmptyObject_ReturnsEmptyFrameworks()
         {
             const string json = "{\"restore\":{\"frameworks\":{}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.TargetFrameworks);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFrameworksFrameworkNameValueIsValid_ReturnsFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFrameworksFrameworkNameValueIsValid_ReturnsFrameworks()
         {
             var expectedResult = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.ParseFolder("net472"));
             var json = $"{{\"restore\":{{\"frameworks\":{{\"{expectedResult.FrameworkName.GetShortFolderName()}\":{{}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.RestoreMetadata.TargetFrameworks,
                 actualResult => Assert.Equal(expectedResult, actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFrameworksFrameworkValueHasProjectReferenceWithoutAssets_ReturnsFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFrameworksFrameworkValueHasProjectReferenceWithoutAssets_ReturnsFrameworks()
         {
             var projectReference = new ProjectRestoreReference()
             {
@@ -3396,16 +3214,16 @@ namespace NuGet.ProjectModel.Test
 
             var json = $"{{\"restore\":{{\"frameworks\":{{\"{expectedResult.FrameworkName.GetShortFolderName()}\":{{\"projectReferences\":{{" +
                 $"\"{projectReference.ProjectUniqueName}\":{{\"projectPath\":\"{projectReference.ProjectPath}\"}}}}}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.RestoreMetadata.TargetFrameworks,
                 actualResult => Assert.Equal(expectedResult, actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFrameworksFrameworkValueHasProjectReferenceWithAssets_ReturnsFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFrameworksFrameworkValueHasProjectReferenceWithAssets_ReturnsFrameworks()
         {
             var projectReference = new ProjectRestoreReference()
             {
@@ -3423,93 +3241,93 @@ namespace NuGet.ProjectModel.Test
                 $"\"{projectReference.ProjectUniqueName}\":{{\"projectPath\":\"{projectReference.ProjectPath}\"," +
                 $"\"includeAssets\":\"{projectReference.IncludeAssets}\",\"excludeAssets\":\"{projectReference.ExcludeAssets}\"," +
                 $"\"privateAssets\":\"{projectReference.PrivateAssets}\"}}}}}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.RestoreMetadata.TargetFrameworks,
                 actualResult => Assert.Equal(expectedResult, actualResult));
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreConfigFilePathsValueIsEmptyArray_ReturnsEmptyConfigFilePaths(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreConfigFilePathsValueIsEmptyArray_ReturnsEmptyConfigFilePaths()
         {
             const string json = "{\"restore\":{\"configFilePaths\":[]}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.ConfigFilePaths);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreConfigFilePathsValueIsValid_ReturnsConfigFilePaths(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreConfigFilePathsValueIsValid_ReturnsConfigFilePaths()
         {
             string[] expectedResults = { "a", "b" };
             string values = string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult}\""));
             var json = $"{{\"restore\":{{\"configFilePaths\":[{values}]}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.RestoreMetadata.ConfigFilePaths);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFallbackFoldersValueIsEmptyArray_ReturnsEmptyFallbackFolders(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFallbackFoldersValueIsEmptyArray_ReturnsEmptyFallbackFolders()
         {
             const string json = "{\"restore\":{\"fallbackFolders\":[]}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.FallbackFolders);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFallbackFoldersValueIsValid_ReturnsConfigFilePaths(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreFallbackFoldersValueIsValid_ReturnsConfigFilePaths()
         {
             string[] expectedResults = { "a", "b" };
             string values = string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult}\""));
             var json = $"{{\"restore\":{{\"fallbackFolders\":[{values}]}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.RestoreMetadata.FallbackFolders);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreOriginalTargetFrameworksValueIsEmptyArray_ReturnsEmptyOriginalTargetFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreOriginalTargetFrameworksValueIsEmptyArray_ReturnsEmptyOriginalTargetFrameworks()
         {
             const string json = "{\"restore\":{\"originalTargetFrameworks\":[]}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.RestoreMetadata.OriginalTargetFrameworks);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreOriginalTargetFrameworksValueIsValid_ReturnsOriginalTargetFrameworks(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreOriginalTargetFrameworksValueIsValid_ReturnsOriginalTargetFrameworks()
         {
             string[] expectedResults = { "a", "b" };
             string values = string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult}\""));
             var json = $"{{\"restore\":{{\"originalTargetFrameworks\":[{values}]}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResults, packageSpec.RestoreMetadata.OriginalTargetFrameworks);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreWarningPropertiesValueIsEmptyObject_ReturnsWarningProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreWarningPropertiesValueIsEmptyObject_ReturnsWarningProperties()
         {
             var expectedResult = new WarningProperties();
             const string json = "{\"restore\":{\"warningProperties\":{}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreMetadata.ProjectWideWarningProperties);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreWarningPropertiesValueIsValid_ReturnsWarningProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreWarningPropertiesValueIsValid_ReturnsWarningProperties()
         {
             var expectedResult = new WarningProperties(
                 new HashSet<NuGetLogCode>() { NuGetLogCode.NU3000 },
@@ -3518,25 +3336,25 @@ namespace NuGet.ProjectModel.Test
                 new HashSet<NuGetLogCode>());
             var json = $"{{\"restore\":{{\"warningProperties\":{{\"allWarningsAsErrors\":{expectedResult.AllWarningsAsErrors.ToString().ToLowerInvariant()}," +
                 $"\"warnAsError\":[\"{expectedResult.WarningsAsErrors.Single()}\"],\"noWarn\":[\"{expectedResult.NoWarn.Single()}\"]}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreMetadata.ProjectWideWarningProperties);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreRestoreLockPropertiesValueIsEmptyObject_ReturnsRestoreLockProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreRestoreLockPropertiesValueIsEmptyObject_ReturnsRestoreLockProperties()
         {
             var expectedResult = new RestoreLockProperties();
             const string json = "{\"restore\":{\"restoreLockProperties\":{}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreMetadata.RestoreLockProperties);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreRestoreLockPropertiesValueIsValid_ReturnsRestoreLockProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreRestoreLockPropertiesValueIsValid_ReturnsRestoreLockProperties()
         {
             var expectedResult = new RestoreLockProperties(
                 restorePackagesWithLockFile: "a",
@@ -3545,64 +3363,63 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"restore\":{{\"restoreLockProperties\":{{\"restoreLockedMode\":{expectedResult.RestoreLockedMode.ToString().ToLowerInvariant()}," +
                 $"\"restorePackagesWithLockFile\":\"{expectedResult.RestorePackagesWithLockFile}\"," +
                 $"\"nuGetLockFilePath\":\"{expectedResult.NuGetLockFilePath}\"}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreMetadata.RestoreLockProperties);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestorePackagesConfigPathValueIsValidAndProjectStyleValueIsNotPackagesConfig_DoesNotReturnPackagesConfigPath(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("null")]
+        [InlineData("\"\"")]
+        [InlineData("\"a\"")]
+        public void GetPackageSpec_WhenRestorePackagesConfigPathValueIsValidAndProjectStyleValueIsNotPackagesConfig_DoesNotReturnPackagesConfigPath(string value)
         {
             var json = $"{{\"restore\":{{\"projectStyle\":\"PackageReference\",\"packagesConfigPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.IsNotType<PackagesConfigProjectRestoreMetadata>(packageSpec.RestoreMetadata);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
         public void GetPackageSpec_WhenRestorePackagesConfigPathValueIsValidAndProjectStyleValueIsPackagesConfig_ReturnsPackagesConfigPath(
-            IEnvironmentVariableReader environmentVariableReader,
             string value,
             string expectedValue)
         {
             var json = $"{{\"restore\":{{\"projectStyle\":\"PackagesConfig\",\"packagesConfigPath\":{value}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.IsType<PackagesConfigProjectRestoreMetadata>(packageSpec.RestoreMetadata);
             Assert.Equal(expectedValue, ((PackagesConfigProjectRestoreMetadata)packageSpec.RestoreMetadata).PackagesConfigPath);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreSettingsValueIsEmptyObject_ReturnsRestoreSettings(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRestoreSettingsValueIsEmptyObject_ReturnsRestoreSettings()
         {
             var expectedResult = new ProjectRestoreSettings();
             const string json = "{\"restoreSettings\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RestoreSettings);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRuntimesValueIsEmptyObject_ReturnsRuntimes(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRuntimesValueIsEmptyObject_ReturnsRuntimes()
         {
             var expectedResult = RuntimeGraph.Empty;
             const string json = "{\"runtimes\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRuntimesValueIsValidWithImports_ReturnsRuntimes(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRuntimesValueIsValidWithImports_ReturnsRuntimes()
         {
             var runtimeDescription = new RuntimeDescription(
                 runtimeIdentifier: "a",
@@ -3611,14 +3428,14 @@ namespace NuGet.ProjectModel.Test
             var expectedResult = new RuntimeGraph(new[] { runtimeDescription });
             var json = $"{{\"runtimes\":{{\"{runtimeDescription.RuntimeIdentifier}\":{{\"#import\":[" +
                 $"{string.Join(",", runtimeDescription.InheritedRuntimes.Select(runtime => $"\"{runtime}\""))}]}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRuntimesValueIsValidWithDependencySet_ReturnsRuntimes(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRuntimesValueIsValidWithDependencySet_ReturnsRuntimes()
         {
             var dependencySet = new RuntimeDependencySet(id: "b");
             var runtimeDescription = new RuntimeDescription(
@@ -3627,14 +3444,14 @@ namespace NuGet.ProjectModel.Test
                 runtimeDependencySets: new[] { dependencySet });
             var expectedResult = new RuntimeGraph(new[] { runtimeDescription });
             var json = $"{{\"runtimes\":{{\"{runtimeDescription.RuntimeIdentifier}\":{{\"{dependencySet.Id}\":{{}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRuntimesValueIsValidWithDependencySetWithDependency_ReturnsRuntimes(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenRuntimesValueIsValidWithDependencySetWithDependency_ReturnsRuntimes()
         {
             var dependency = new RuntimePackageDependency("c", VersionRange.Parse("[1.2.3,4.5.6)"));
             var dependencySet = new RuntimeDependencySet(id: "b", new[] { dependency });
@@ -3645,37 +3462,37 @@ namespace NuGet.ProjectModel.Test
             var expectedResult = new RuntimeGraph(new[] { runtimeDescription });
             var json = $"{{\"runtimes\":{{\"{runtimeDescription.RuntimeIdentifier}\":{{\"{dependencySet.Id}\":{{" +
                 $"\"{dependency.Id}\":\"{dependency.VersionRange.ToLegacyString()}\"}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenSupportsValueIsEmptyObject_ReturnsSupports(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenSupportsValueIsEmptyObject_ReturnsSupports()
         {
             var expectedResult = RuntimeGraph.Empty;
             const string json = "{\"supports\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenSupportsValueIsValidWithCompatibilityProfiles_ReturnsSupports(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenSupportsValueIsValidWithCompatibilityProfiles_ReturnsSupports()
         {
             var profile = new CompatibilityProfile(name: "a");
             var expectedResult = new RuntimeGraph(new[] { profile });
             var json = $"{{\"supports\":{{\"{profile.Name}\":{{}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenSupportsValueIsValidWithCompatibilityProfilesAndFrameworkRuntimePairs_ReturnsSupports(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenSupportsValueIsValidWithCompatibilityProfilesAndFrameworkRuntimePairs_ReturnsSupports()
         {
             FrameworkRuntimePair[] restoreContexts = new[]
             {
@@ -3687,43 +3504,37 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"supports\":{{\"{profile.Name}\":{{" +
                 $"\"{restoreContexts[0].Framework.GetShortFolderName()}\":\"{restoreContexts[0].RuntimeIdentifier}\"," +
                 $"\"{restoreContexts[1].Framework.GetShortFolderName()}\":[\"{restoreContexts[1].RuntimeIdentifier}\"]}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenScriptsValueIsEmptyObject_ReturnsScripts(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenScriptsValueIsEmptyObject_ReturnsScripts()
         {
             const string json = "{\"scripts\":{}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Empty(packageSpec.Scripts);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenScriptsValueIsInvalid_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenScriptsValueIsInvalid_Throws()
         {
             var json = "{\"scripts\":{\"a\":0}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal("The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
             Assert.Null(exception.InnerException);
-
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(17, exception.Column);
-            }
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenScriptsValueIsValid_ReturnsScripts(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenScriptsValueIsValid_ReturnsScripts()
         {
             const string name0 = "a";
             const string name1 = "b";
@@ -3732,7 +3543,7 @@ namespace NuGet.ProjectModel.Test
             const string script2 = "e";
 
             var json = $"{{\"scripts\":{{\"{name0}\":\"{script0}\",\"{name1}\":[\"{script1}\",\"{script2}\"]}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Collection(
                 packageSpec.Scripts,
@@ -3755,55 +3566,53 @@ namespace NuGet.ProjectModel.Test
 #pragma warning restore CS0612 // Type or member is obsolete
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", null, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", "", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"a\"", "a", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenTitleValueIsValid_ReturnsTitle(IEnvironmentVariableReader environmentVariableReader, string value, string expectedResult)
+        [InlineData("null", null)]
+        [InlineData("\"\"", "")]
+        [InlineData("\"a\"", "a")]
+        public void GetPackageSpec_WhenTitleValueIsValid_ReturnsTitle(string value, string expectedResult)
         {
             var json = $"{{\"title\":{value}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.Title);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenNameIsNull_RestoreMetadataProvidesFallbackName(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenNameIsNull_RestoreMetadataProvidesFallbackName()
         {
             const string expectedResult = "a";
             var json = $"{{\"restore\":{{\"projectName\":\"{expectedResult}\"}}}}";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.Name);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{\"restore\":{\"projectJsonPath\":\"a\"}}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{\"restore\":{\"projectPath\":\"a\"}}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{\"restore\":{\"projectJsonPath\":\"a\",\"projectPath\":\"b\"}}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFilePathIsNull_RestoreMetadataProvidesFallbackFilePath(IEnvironmentVariableReader environmentVariableReader, string json)
+        [InlineData("{\"restore\":{\"projectJsonPath\":\"a\"}}")]
+        [InlineData("{\"restore\":{\"projectPath\":\"a\"}}")]
+        [InlineData("{\"restore\":{\"projectJsonPath\":\"a\",\"projectPath\":\"b\"}}")]
+        public void GetPackageSpec_WhenFilePathIsNull_RestoreMetadataProvidesFallbackFilePath(string json)
         {
             const string expectedResult = "a";
 
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.FilePath);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetTargetFrameworkInformation_WithAnAlias(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void GetTargetFrameworkInformation_WithAnAlias()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"net46\":{ \"targetAlias\" : \"alias\"}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"net46\":{ \"targetAlias\" : \"alias\"}}}");
 
             Assert.Equal("alias", framework.TargetAlias);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_ReadsRestoreMetadataWithAliases(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithAliases()
         {
             // Arrange
             var json = @"{  
@@ -3827,7 +3636,7 @@ namespace NuGet.ProjectModel.Test
           }
         }";
 
-            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -3837,9 +3646,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("alias", metadata.TargetFrameworks.Single().TargetAlias);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_Read(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void PackageSpecReader_Read()
         {
             // Arrange
             var json = @"{
@@ -3865,50 +3674,27 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var results = new List<CentralTransitiveDependencyGroup>();
-            if (environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
-            {
-                using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-                var reader = new Utf8JsonStreamReader(stream);
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            var reader = new Utf8JsonStreamReader(stream);
 
-                if (reader.TokenType == JsonTokenType.StartObject)
-                {
-                    while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
-                    {
-                        if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
-                        {
-                            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
-                            {
-                                var frameworkPropertyName = reader.GetString();
-                                NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
-
-                                JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                                    jsonReader: ref reader,
-                                    results: out var dependencies,
-                                    packageSpecPath: "SomePath");
-                                results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
-                            }
-                        }
-                    }
-                }
-            }
-            else
+            if (reader.TokenType == JsonTokenType.StartObject)
             {
-                using (var stringReader = new StringReader(json.ToString()))
-                using (var jsonReader = new JsonTextReader(stringReader))
+                while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    jsonReader.ReadObject(ctdPropertyName =>
+                    if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                     {
-                        jsonReader.ReadObject(frameworkPropertyName =>
+                        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                         {
-                            var dependencies = new List<LibraryDependency>();
+                            var frameworkPropertyName = reader.GetString();
                             NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+
                             JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                                jsonReader: jsonReader,
-                                results: dependencies,
+                                jsonReader: ref reader,
+                                results: out var dependencies,
                                 packageSpecPath: "SomePath");
                             results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
-                        });
-                    });
+                        }
+                    }
                 }
             }
 
@@ -3931,9 +3717,8 @@ namespace NuGet.ProjectModel.Test
         }
 
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void PackageSpecReader_Malformed_Exception(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void PackageSpecReader_Malformed_Exception()
         {
             // Arrange
             var json = @"
@@ -3943,67 +3728,43 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var results = new List<CentralTransitiveDependencyGroup>();
-            if (environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+            Assert.ThrowsAny<System.Text.Json.JsonException>(() =>
             {
-                Assert.ThrowsAny<System.Text.Json.JsonException>(() =>
-                {
-                    using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-                    var reader = new Utf8JsonStreamReader(stream);
+                using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                var reader = new Utf8JsonStreamReader(stream);
 
-                    if (reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        reader.Read();
-                        NuGetFramework framework = NuGetFramework.Parse(reader.GetString());
-
-                        JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                            jsonReader: ref reader,
-                            results: out var dependencies,
-                            packageSpecPath: "SomePath");
-                        results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
-                    }
-                });
-            }
-            else
-            {
-                using (var stringReader = new StringReader(json.ToString()))
-                using (var jsonReader = new JsonTextReader(stringReader))
+                if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    jsonReader.Read();
-                    jsonReader.Read();
-                    var dependencies = new List<LibraryDependency>();
-                    NuGetFramework framework = NuGetFramework.Parse((string)jsonReader.Value);
+                    reader.Read();
+                    NuGetFramework framework = NuGetFramework.Parse(reader.GetString());
+
                     JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                        jsonReader: jsonReader,
-                        results: dependencies,
+                        jsonReader: ref reader,
+                        results: out var dependencies,
                         packageSpecPath: "SomePath");
                     results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                 }
-                // Assert
-                Assert.Equal(1, results.Count);
-                var firstGroup = results.ElementAt(0);
-            }
+            });
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
         {
             var json = $"{{\"frameworks\":{{\"net5.0\":{{\"secondaryFramework\": \"native\"}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
             framework.FrameworkName.Should().BeOfType<DualCompatibilityFramework>();
             var dualCompatibilityFramework = framework.FrameworkName as DualCompatibilityFramework;
             dualCompatibilityFramework.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
             dualCompatibilityFramework.SecondaryFramework.Should().Be(FrameworkConstants.CommonFrameworks.Native);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithAssetTargetFallbackAndWithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void GetPackageSpec_WithAssetTargetFallbackAndWithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
         {
             var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"], \"secondaryFramework\": \"native\" }}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
             framework.FrameworkName.Should().BeOfType<AssetTargetFallbackFramework>();
             framework.AssetTargetFallback.Should().BeTrue();
             var assetTargetFallbackFramework = framework.FrameworkName as AssetTargetFallbackFramework;
@@ -4016,15 +3777,14 @@ namespace NuGet.ProjectModel.Test
             assetTargetFallbackFramework.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties()
         {
             // Arrange
             var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}}}";
 
             // Act
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
@@ -4033,15 +3793,15 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeNull();
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties()
         {
             // Arrange
             var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":{{\"d\":null,\"e\":null}}}}}}}}";
 
             // Act
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
@@ -4053,11 +3813,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "9.0.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "10.0.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "8.1.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("9.0.100")]
+        [InlineData("10.0.100")]
+        [InlineData("8.1.100")]
         public void GetPackageSpec_WithSdkAnalysisLevelValue_ReturnsSdkAnalysisLevel(
-            IEnvironmentVariableReader environmentVariableReader,
             string version)
         {
             // Arrange
@@ -4065,40 +3824,37 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"restore\":{{\"SdkAnalysisLevel\":\"{version}\"}}}}";
 
             // Act
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
             Assert.Equal(expectedNugetVersion, packageSpec.RestoreMetadata.SdkAnalysisLevel);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "notGood", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "10invalid", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData("notGood")]
+        [InlineData("10invalid")]
         public void GetPackageSpec_WithAnInvalidSdkAnalysisLevelValue_ThrowsAnException(
-            IEnvironmentVariableReader environmentVariableReader,
             string version)
         {
             // Arrange
             var json = $"{{\"restore\":{{\"SdkAnalysisLevel\":\"{version}\"}}}}";
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => GetPackageSpec(json, environmentVariableReader));
+            var ex = Assert.Throws<ArgumentException>(() => GetPackageSpec(json));
             Assert.Contains("SdkAnalysisLevel", ex.Message);
             Assert.Contains(version, ex.Message);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WithUsingMicrosoftNetSdk_ReturnsUsingMicrosoftNetSdk(
-            IEnvironmentVariableReader environmentVariableReader,
-            bool isSdk)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WithUsingMicrosoftNetSdk_ReturnsUsingMicrosoftNetSdk(bool isSdk)
         {
             // Arrange
             var json = $"{{\"restore\":{{\"UsingMicrosoftNETSdk\":{isSdk.ToString().ToLower()}}}}}";
 
             // Act
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
             Assert.Equal(isSdk, packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
@@ -4235,97 +3991,77 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [InlineData(true)]
+        [InlineData(false)]
         public void GetPackageSpec_WithRestoreUseLegacyDependencyResolver_ReturnsUseLegacyDependencyResolver(
-            IEnvironmentVariableReader environmentVariableReader,
             bool useLegacyDependencyResolver)
         {
             // Arrange
             var json = $"{{\"restore\":{{\"restoreUseLegacyDependencyResolver\":{useLegacyDependencyResolver.ToString().ToLowerInvariant()}}}}}";
 
             // Act
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
             packageSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().Be(useLegacyDependencyResolver);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPackagesToPrunePropertyIsAbsent_ReturnsEmptyPackagesToPrune(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksPackagesToPrunePropertyIsAbsent_ReturnsEmptyPackagesToPrune()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{}}}");
 
             Assert.Empty(framework.PackagesToPrune);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPackagesToPruneValueIsEmptyObject_ReturnsEmptyPackagesToPrune(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksPackagesToPruneValueIsEmptyObject_ReturnsEmptyPackagesToPrune()
         {
-            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"packagesToPrune\":{}}}}", environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"a\":{\"packagesToPrune\":{}}}}");
 
             Assert.Empty(framework.PackagesToPrune);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPackagesToPruneVersionPropertyNameIsEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+
+        public void GetPackageSpec_WhenFrameworksPackagesToPruneVersionPropertyNameIsEmptyString_Throws()
         {
             var json = "{\"frameworks\":{\"a\":{\"packagesToPrune\":{\"\":\"1.0.0\"}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve package to prune version ''.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : Unable to resolve package to prune ''.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : Unable to resolve package to prune ''.", exception.Message);
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader), "null", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "\"\"", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPackagesToPruneVersionPropertyValueIsNullOrEmptyString_Throws(IEnvironmentVariableReader environmentVariableReader, string value)
+        [InlineData("null")]
+        [InlineData("\"\"")]
+        public void GetPackageSpec_WhenFrameworksPackagesToPruneVersionPropertyValueIsNullOrEmptyString_Throws(string value)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"packagesToPrune\":{{\"b\":{value}}}}}}}}}";
 
-            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
+            FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
-            {
-                Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty.", exception.Message);
-                Assert.Equal(1, exception.Line);
-                Assert.Equal(20, exception.Column);
-            }
-            else
-            {
-                Assert.Equal("Error reading '' : The version cannot be null or empty.", exception.Message);
-            }
+            Assert.Equal("Error reading '' : The version cannot be null or empty.", exception.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenFrameworksPackagesToPruneIsValid_ReturnsPackagesToPrune(IEnvironmentVariableReader environmentVariableReader)
+        [Fact]
+        public void GetPackageSpec_WhenFrameworksPackagesToPruneIsValid_ReturnsPackagesToPrune()
         {
             const string expectedPackageId = "b";
             VersionRange expectedVersionRange = VersionRange.Parse("[1.2.3,4.5.6)");
             var expectedPackageToPrune = new PrunePackageReference(expectedPackageId, expectedVersionRange);
             var json = $"{{\"frameworks\":{{\"a\":{{\"packagesToPrune\":{{\"{expectedPackageId}\":\"{expectedVersionRange.ToShortString()}\"}}}}}}}}";
 
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Collection(
                 framework.PackagesToPrune,
@@ -4344,41 +4080,36 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        private static PackageSpec GetPackageSpec(string json, IEnvironmentVariableReader environmentVariableReader)
-        {
-            return GetPackageSpec(json, name: null, packageSpecPath: null, snapshotValue: null, environmentVariableReader: environmentVariableReader);
-        }
-
-        private static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader)
+        private static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue)
         {
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return JsonPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue, environmentVariableReader, true);
+            return JsonPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue, EnvironmentVariableWrapper.Instance);
         }
 
-        private static LibraryDependency GetDependency(string json, IEnvironmentVariableReader environmentVariableReader)
+        private static LibraryDependency GetDependency(string json)
         {
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             return packageSpec.Dependencies.Single();
         }
 
-        private static TargetFrameworkInformation GetFramework(string json, IEnvironmentVariableReader environmentVariableReader)
+        private static TargetFrameworkInformation GetFramework(string json)
         {
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+            PackageSpec packageSpec = GetPackageSpec(json);
 
             return packageSpec.TargetFrameworks.Single();
         }
 
-        private static LibraryDependency GetFrameworksDependency(string json, IEnvironmentVariableReader environmentVariableReader)
+        private static LibraryDependency GetFrameworksDependency(string json)
         {
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             return framework.Dependencies.Single();
         }
 
-        private static FrameworkDependency GetFrameworksFrameworkReference(string json, IEnvironmentVariableReader environmentVariableReader)
+        private static FrameworkDependency GetFrameworksFrameworkReference(string json)
         {
-            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+            TargetFrameworkInformation framework = GetFramework(json);
 
             return framework.FrameworkReferences.Single();
         }

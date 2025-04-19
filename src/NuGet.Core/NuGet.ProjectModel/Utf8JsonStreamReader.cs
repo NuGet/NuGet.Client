@@ -82,6 +82,8 @@ namespace NuGet.ProjectModel
 
         internal int GetInt32() => _reader.GetInt32();
 
+        internal int CurrentDepth => _reader.CurrentDepth;
+
         internal bool Read()
         {
             ThrowExceptionIfDisposed();
