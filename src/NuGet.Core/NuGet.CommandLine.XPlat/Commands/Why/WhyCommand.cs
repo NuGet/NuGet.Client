@@ -90,13 +90,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.OneOrMore
             };
 
-            CliOption<string> outputFormat = new CliOption<string>("--format")
+            Option<string> outputFormat = new Option<string>("--format")
             {
                 Description = Strings.WhyCommand_FrameworksOption_Format,
                 Arity = ArgumentArity.ZeroOrOne
             };
 
-            CliOption<string> outputVersion = new CliOption<string>("--output-version")
+            Option<string> outputVersion = new Option<string>("--output-version")
             {
                 Description = Strings.WhyCommand_FrameworksOption_OutputVersion,
                 Arity = ArgumentArity.ZeroOrOne
