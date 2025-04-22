@@ -2314,6 +2314,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Set the report output format..
+        /// </summary>
+        internal static string WhyCommand_FrameworksOption_Format {
+            get {
+                return ResourceManager.GetString("WhyCommand_FrameworksOption_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The version of report output..
+        /// </summary>
+        internal static string WhyCommand_FrameworksOption_OutputVersion {
+            get {
+                return ResourceManager.GetString("WhyCommand_FrameworksOption_OutputVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following dependency graph(s) for &apos;{1}&apos;:.
         /// </summary>
         internal static string WhyCommand_Message_DependencyGraphsFoundInProject {

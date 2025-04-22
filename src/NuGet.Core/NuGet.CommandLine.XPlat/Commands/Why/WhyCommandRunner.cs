@@ -63,24 +63,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         whyCommandArgs.Package,
                         whyCommandArgs.Frameworks);
 
-                    if (dependencyGraphPerFramework != null)
-                    {
-                        whyCommandArgs.Logger.LogMinimal(
-                            string.Format(CultureInfo.CurrentCulture,
-                                Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
-                                assetsFile.PackageSpec.Name,
-                                targetPackage));
-
-                        DependencyGraphPrinter.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
-                    }
-                    else
-                    {
-                        whyCommandArgs.Logger.LogMinimal(
-                            string.Format(CultureInfo.CurrentCulture,
-                                Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
-                                assetsFile.PackageSpec.Name,
-                                targetPackage));
-                    }
+                    IReportRenderer reportRenderer = whyCommandArgs.ReportRenderer;
+                    WhyReportModel reportModel = new WhyReportModel(
+                        assetsFile.PackageSpec.Name,
+                        targetPackage,
+                        whyCommandArgs,
+                        dependencyGraphPerFramework);
+                    reportRenderer.Render(reportModel);
                 }
                 else
                 {

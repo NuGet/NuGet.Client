@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -14,6 +16,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         public string Path { get; }
         public string Package { get; }
         public List<string> Frameworks { get; }
+        public IReportRenderer ReportRenderer { get; }
+        public string ArgumentText { get; }
         public ILoggerWithColor Logger { get; }
         public CancellationToken CancellationToken { get; }
 
@@ -23,20 +27,36 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// <param name="path">The path to the solution or project file.</param>
         /// <param name="package">The package for which we show the dependency graphs.</param>
         /// <param name="frameworks">The target framework(s) for which we show the dependency graphs.</param>
+        /// <param name="reportRenderer">The report output renderer (e.g. console, json).</param>
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
         public WhyCommandArgs(
             string path,
             string package,
             List<string> frameworks,
+            IReportRenderer reportRenderer,
             ILoggerWithColor logger,
             CancellationToken cancellationToken)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Package = package ?? throw new ArgumentNullException(nameof(package));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
+            ReportRenderer = reportRenderer ?? throw new ArgumentNullException(nameof(reportRenderer));
+            ArgumentText = GetReportParameters();
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
+        }
+
+        private string GetReportParameters()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (Frameworks != null && Frameworks.Any())
+            {
+                sb.Append(" --framework " + string.Join(" ", Frameworks));
+            }
+
+            return sb.ToString().Trim();
         }
     }
 }

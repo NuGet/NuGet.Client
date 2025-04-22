@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -88,6 +90,18 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.OneOrMore
             };
 
+            CliOption<string> outputFormat = new CliOption<string>("--format")
+            {
+                Description = Strings.WhyCommand_FrameworksOption_Format,
+                Arity = ArgumentArity.ZeroOrOne
+            };
+
+            CliOption<string> outputVersion = new CliOption<string>("--output-version")
+            {
+                Description = Strings.WhyCommand_FrameworksOption_OutputVersion,
+                Arity = ArgumentArity.ZeroOrOne
+            };
+
             HelpOption help = new HelpOption()
             {
                 Arity = ArgumentArity.Zero
@@ -96,6 +110,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             whyCommand.Arguments.Add(path);
             whyCommand.Arguments.Add(package);
             whyCommand.Options.Add(frameworks);
+            whyCommand.Options.Add(outputFormat);
+            whyCommand.Options.Add(outputVersion);
             whyCommand.Options.Add(help);
 
             whyCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -104,10 +120,16 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
                 try
                 {
-                    var whyCommandArgs = new WhyCommandArgs(
+                    IReportRenderer reportRenderer = GetOutputType(
+                        parseResult.GetValue(outputFormat),
+                        parseResult.GetValue(outputVersion),
+                        logger);
+
+                    WhyCommandArgs whyCommandArgs = new WhyCommandArgs(
                         parseResult.GetValue(path),
                         parseResult.GetValue(package),
                         parseResult.GetValue(frameworks),
+                        reportRenderer,
                         logger,
                         cancellationToken);
 
@@ -122,6 +144,62 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             });
 
             rootCommand.Subcommands.Add(whyCommand);
+        }
+
+        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption, ILoggerWithColor logger)
+        {
+            ReportOutputFormat outputFormat = ReportOutputFormat.Console;
+            if (!string.IsNullOrEmpty(outputFormatOption) &&
+                !Enum.TryParse(outputFormatOption, ignoreCase: true, out outputFormat))
+            {
+                string currentlySupportedFormat = GetEnumValues<ReportOutputFormat>();
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ListPkg_InvalidOutputFormat,
+                        outputFormatOption,
+                        currentlySupportedFormat));
+            }
+
+            if (outputFormat == ReportOutputFormat.Console)
+            {
+                if (!string.IsNullOrEmpty(outputVersionOption))
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ListPkg_OutputVersionNotApplicable));
+                }
+                return new WhyConsoleRenderer(logger);
+            }
+
+            IReportRenderer jsonReportRenderer;
+
+            var currentlySupportedReportVersions = new List<string> { "1" };
+            // If customer pass unsupported version then error out instead of defaulting to version probably unsupported by customer machine.
+            if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ListPkg_InvalidOutputVersion,
+                        outputVersionOption,
+                        string.Join(" ,", currentlySupportedReportVersions)));
+            }
+            else
+            {
+                jsonReportRenderer = new WhyJsonRenderer(logger);
+            }
+
+            return jsonReportRenderer;
+        }
+
+        private static string GetEnumValues<T>() where T : Enum
+        {
+            var enumValues = ((T[])Enum.GetValues(typeof(T)))
+               .Select(x => x.ToString());
+
+            return string.Join(", ", enumValues).ToLower(CultureInfo.CurrentCulture);
         }
     }
 }

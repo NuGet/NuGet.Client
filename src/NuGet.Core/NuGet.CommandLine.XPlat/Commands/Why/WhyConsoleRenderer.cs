@@ -5,13 +5,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.Shared;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
 {
-    internal static class DependencyGraphPrinter
+    /// <summary>
+    /// Console output renderer for 'why' command
+    /// </summary>
+    internal class WhyConsoleRenderer : IReportRenderer
     {
+        private readonly ILoggerWithColor _logger;
+
         private const ConsoleColor TargetPackageColor = ConsoleColor.Cyan;
 
         // Dependency graph console output symbols
@@ -21,25 +27,42 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         private const string ChildPrefixSymbol = "│  ";
         private const string LastChildPrefixSymbol = "   ";
 
-        /// <summary>
-        /// Prints the dependency graphs for all target frameworks.
-        /// </summary>
-        /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
-        /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        /// <param name="logger"></param>
-        public static void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>?> dependencyGraphPerFramework, string targetPackage, ILoggerWithColor logger)
+        public WhyConsoleRenderer(ILoggerWithColor logger)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public void Render(WhyReportModel reportModel)
+        {
+            if (reportModel.DependencyGraphPerFramework.Count == 0)
+            {
+                _logger.LogMinimal(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
+                        reportModel.ProjectName,
+                        reportModel.TargetPackage));
+                return;
+            }
+
+            _logger.LogMinimal(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
+                    reportModel.ProjectName,
+                    reportModel.TargetPackage));
+
             // print empty line
-            logger.LogMinimal("");
+            _logger.LogMinimal("");
 
             // deduplicate the dependency graphs
-            List<List<string>> deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
+            List<List<string>> deduplicatedFrameworks = GetDeduplicatedFrameworks(reportModel.DependencyGraphPerFramework);
 
             foreach (var frameworks in deduplicatedFrameworks)
             {
                 if (frameworks.Count > 0)
                 {
-                    PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.First()], targetPackage, logger);
+                    PrintDependencyGraphPerFramework(frameworks, reportModel.DependencyGraphPerFramework[frameworks.First()], reportModel.TargetPackage);
                 }
             }
         }
@@ -50,20 +73,19 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        /// <param name="logger"></param>
-        private static void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode>? topLevelNodes, string targetPackage, ILoggerWithColor logger)
+        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode>? topLevelNodes, string targetPackage)
         {
             // print framework header
             foreach (var framework in frameworks)
             {
-                logger.LogMinimal($"  [{framework}]");
+                _logger.LogMinimal($"  [{framework}]");
             }
 
-            logger.LogMinimal($"   {ChildPrefixSymbol}");
+            _logger.LogMinimal($"   {ChildPrefixSymbol}");
 
             if (topLevelNodes == null || topLevelNodes.Count == 0)
             {
-                logger.LogMinimal($"   {LastChildNodeSymbol}{Strings.WhyCommand_Message_NoDependencyGraphsFoundForFramework}\n\n");
+                _logger.LogMinimal($"   {LastChildNodeSymbol}{Strings.WhyCommand_Message_NoDependencyGraphsFoundForFramework}\n\n");
                 return;
             }
 
@@ -96,12 +118,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 // print current node
                 if (current.Node.Id.Equals(targetPackage, StringComparison.OrdinalIgnoreCase))
                 {
-                    logger.LogMinimal($"{currentPrefix}", Console.ForegroundColor);
-                    logger.LogMinimal($"{current.Node.Id} (v{current.Node.Version})\n", TargetPackageColor);
+                    _logger.LogMinimal($"{currentPrefix}", Console.ForegroundColor);
+                    _logger.LogMinimal($"{current.Node.Id} (v{current.Node.Version})\n", TargetPackageColor);
                 }
                 else
                 {
-                    logger.LogMinimal($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
+                    _logger.LogMinimal($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
                 }
 
                 if (current.Node.Children?.Count > 0)
@@ -115,7 +137,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 }
             }
 
-            logger.LogMinimal("");
+            _logger.LogMinimal("");
         }
 
         /// <summary>

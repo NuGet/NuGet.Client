@@ -46,6 +46,7 @@ namespace NuGet.XPlat.FuncTest
                 packageY);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
             var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
             var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
@@ -54,6 +55,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [projectFramework],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -89,6 +91,7 @@ namespace NuGet.XPlat.FuncTest
                 packageZ);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
             var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
             var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
@@ -97,6 +100,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageZ.Id,
                     [projectFramework],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -115,6 +119,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
 
             var pathContext = new SimpleTestPathContext();
             var projectFramework = "net472";
@@ -131,6 +136,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [projectFramework],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -149,11 +155,13 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
 
             var whyCommandArgs = new WhyCommandArgs(
                     "",
                     "PackageX",
                     [],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -172,6 +180,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
 
             var pathContext = new SimpleTestPathContext();
             var projectFramework = "net472";
@@ -181,6 +190,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     "",
                     [],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -199,6 +209,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
 
             string fakeProjectPath = "FakeProjectPath.csproj";
 
@@ -206,6 +217,7 @@ namespace NuGet.XPlat.FuncTest
                     fakeProjectPath,
                     "PackageX",
                     [],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -242,6 +254,7 @@ namespace NuGet.XPlat.FuncTest
                 packageY);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyConsoleRenderer(logger);
             var addPackageCommandArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
             var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageCommandArgs, new MSBuildAPIUtility(logger));
@@ -250,6 +263,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [inputFrameworksOption, projectFramework],
+                    reportRenderer,
                     logger,
                     CancellationToken.None);
 
@@ -262,6 +276,194 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(ExitCodes.Success, result);
             Assert.Contains($"The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", output);
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
+        }
+
+        [Fact]
+        public async Task WhyCommand_JsonRendererFrameworkNotFound_SucceedsAsync()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var projectFrameworkQuery = "net6.0";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyJsonRenderer(logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [projectFrameworkQuery],
+                    reportRenderer,
+                    logger,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            var expectedOutput = $@"{{
+  ""version"": 1,
+  ""parameters"": ""--framework {projectFrameworkQuery}"",
+  ""project"": ""{project.ProjectName}"",
+  ""package"": ""{packageY.Id}"",
+  ""dependencyGraphs"": []
+}}";
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains(expectedOutput, output);
+        }
+
+        [Fact]
+        public async Task WhyCommand_JsonRendererDirectPackageFound_SucceedsAsync()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyJsonRenderer(logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageX.Id,
+                    [projectFramework],
+                    reportRenderer,
+                    logger,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            var expectedOutput = $@"{{
+  ""version"": 1,
+  ""parameters"": ""--framework {projectFramework}"",
+  ""project"": ""{project.ProjectName}"",
+  ""package"": ""{packageX.Id}"",
+  ""dependencyGraphs"": [
+    {{
+      ""framework"": ""{projectFramework}"",
+      ""dependencies"": [
+        {{
+          ""id"": ""{packageX.Id}"",
+          ""version"": ""{packageX.Version}"",
+          ""dependencies"": []
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains(expectedOutput, output);
+        }
+
+        [Fact]
+        public async Task WhyCommand_JsonRendererTransitivePackageFound_SucceedsAsync()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyJsonRenderer(logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [projectFramework],
+                    reportRenderer,
+                    logger,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            var expectedOutput = $@"{{
+  ""version"": 1,
+  ""parameters"": ""--framework {projectFramework}"",
+  ""project"": ""{project.ProjectName}"",
+  ""package"": ""{packageY.Id}"",
+  ""dependencyGraphs"": [
+    {{
+      ""framework"": ""{projectFramework}"",
+      ""dependencies"": [
+        {{
+          ""id"": ""{packageX.Id}"",
+          ""version"": ""{packageX.Version}"",
+          ""dependencies"": [
+            {{
+              ""id"": ""{packageY.Id}"",
+              ""version"": ""{packageY.Version}"",
+              ""dependencies"": []
+            }}
+          ]
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains(expectedOutput, output);
         }
     }
 }
