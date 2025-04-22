@@ -132,7 +132,7 @@ namespace NuGet.CommandLine.XPlat
 
                     if (httpSources.Count > 0)
                     {
-                        LogHttpSourceError(httpSources, out string error);
+                        GetHttpSourceError(httpSources, out string error);
                         projectModel.AddProjectInformation(ProblemType.Error, error);
                         return;
                     }
@@ -349,7 +349,7 @@ namespace NuGet.CommandLine.XPlat
             return httpPackageSources ?? new();
         }
 
-        private static void LogHttpSourceError(List<PackageSource> httpSources, out string error)
+        private static void GetHttpSourceError(List<PackageSource> httpSources, out string error)
         {
             error = null;
 
