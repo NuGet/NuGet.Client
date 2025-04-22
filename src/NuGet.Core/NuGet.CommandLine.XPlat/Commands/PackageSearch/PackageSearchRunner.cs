@@ -55,8 +55,11 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.Error;
             }
 
-            if (ReportErrorForHttpSources(listEndpoints, out string error))
+            List<PackageSource> httpSources = GetInsecureHttpSources(listEndpoints);
+
+            if (httpSources.Count > 0)
             {
+                GetHttpSourceError(httpSources, out string error);
                 packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, error));
                 packageSearchResultRenderer.Finish();
                 return ExitCodes.Error;
@@ -224,52 +227,42 @@ namespace NuGet.CommandLine.XPlat
             return packageSources.ToList();
         }
 
-        /// <summary>
-        /// Logs an error if the provided package sources use insecure HTTP connections.
-        /// </summary>
-        /// <param name="packageSources">The list of package sources to check.</param>
-        /// <param name="error">An output parameter to capture any error message.</param>
-        /// <returns>A bool indicating if an error was reported.</returns>
-        private static bool ReportErrorForHttpSources(IList<PackageSource> packageSources, out string error)
+        private static List<PackageSource> GetInsecureHttpSources(IList<PackageSource> packageSources)
         {
             List<PackageSource> httpPackageSources = null;
-            error = null;
 
             foreach (PackageSource packageSource in packageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new(capacity: packageSources.Count);
-                    }
+                    httpPackageSources ??= new(capacity: packageSources.Count);
                     httpPackageSources.Add(packageSource);
                 }
             }
 
-            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            return httpPackageSources ?? new();
+        }
+
+        private static void GetHttpSourceError(List<PackageSource> httpSources, out string error)
+        {
+            error = null;
+
+            if (httpSources.Count == 1)
             {
-                if (httpPackageSources.Count == 1)
-                {
-                    error = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_HttpServerUsage,
-                        "search",
-                        httpPackageSources[0]);
-                }
-                else
-                {
-                    error = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_HttpServerUsage_MultipleSources,
-                        "search",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
-                }
-
-                return true;
+                error = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Error_HttpServerUsage,
+                    "search",
+                    httpSources[0]);
             }
-
-            return false;
+            else if (httpSources.Count > 1)
+            {
+                error = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Error_HttpServerUsage_MultipleSources,
+                    "search",
+                    Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
+            }
         }
     }
 }

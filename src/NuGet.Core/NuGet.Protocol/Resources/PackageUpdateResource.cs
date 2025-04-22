@@ -64,7 +64,18 @@ namespace NuGet.Protocol.Core.Types
            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
            ILogger log)
         {
-            await Push(packagePaths, symbolSource, timeoutInSecond, disableBuffering, getApiKey, getSymbolApiKey, noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource, allowInsecureConnections: false, log);
+            await Push(
+                packagePaths,
+                symbolSource,
+                timeoutInSecond,
+                disableBuffering,
+                getApiKey,
+                getSymbolApiKey,
+                noServiceEndpoint,
+                skipDuplicate,
+                symbolPackageUpdateResource,
+                allowInsecureConnections: false,
+                log);
         }
 
         public async Task PushAsync(
@@ -126,7 +137,18 @@ namespace NuGet.Protocol.Core.Types
             bool allowInsecureConnections,
             ILogger log)
         {
-            await PushAsync(packagePaths, symbolSource, timeoutInSecond, disableBuffering, getApiKey, getSymbolApiKey, noServiceEndpoint, skipDuplicate, allowSnupkg: symbolPackageUpdateResource is not null, allowInsecureConnections, log);
+            await PushAsync(
+                packagePaths,
+                symbolSource,
+                timeoutInSecond,
+                disableBuffering,
+                getApiKey,
+                getSymbolApiKey,
+                noServiceEndpoint,
+                skipDuplicate,
+                allowSnupkg: symbolPackageUpdateResource is not null,
+                allowInsecureConnections,
+                log);
         }
 
         [Obsolete("Use Push method which takes multiple package paths.")]
@@ -257,7 +279,17 @@ namespace NuGet.Protocol.Core.Types
                 bool logErrorForHttpSources = true;
                 foreach (string packageToPush in symbolsToPush)
                 {
-                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
+                    await PushPackageCore(
+                        symbolSource,
+                        apiKey,
+                        packageToPush,
+                        noServiceEndpoint,
+                        skipDuplicate,
+                        requestTimeout,
+                        logErrorForHttpSources,
+                        allowInsecureConnections,
+                        log,
+                        token);
                     logErrorForHttpSources = false;
                 }
             }
@@ -301,7 +333,17 @@ namespace NuGet.Protocol.Core.Types
             bool logErrorForHttpSources = true;
             foreach (string nupkgToPush in nupkgsToPush)
             {
-                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
+                bool packageWasPushed = await PushPackageCore(
+                    source,
+                    apiKey,
+                    nupkgToPush,
+                    noServiceEndpoint,
+                    skipDuplicate,
+                    requestTimeout,
+                    logErrorForHttpSources,
+                    allowInsecureConnections,
+                    log,
+                    token);
                 // Push corresponding symbols, if successful.
                 if (packageWasPushed && !string.IsNullOrEmpty(symbolSource))
                 {
@@ -330,7 +372,17 @@ namespace NuGet.Protocol.Core.Types
                     }
 
                     string symbolApiKey = getSymbolApiKey(symbolSource);
-                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
+                    await PushPackageCore(
+                        symbolSource,
+                        symbolApiKey,
+                        symbolPackagePath,
+                        noServiceEndpoint,
+                        skipDuplicate,
+                        requestTimeout,
+                        logErrorForHttpSources,
+                        allowInsecureConnections,
+                        log,
+                        token);
                 }
                 logErrorForHttpSources = false;
             }

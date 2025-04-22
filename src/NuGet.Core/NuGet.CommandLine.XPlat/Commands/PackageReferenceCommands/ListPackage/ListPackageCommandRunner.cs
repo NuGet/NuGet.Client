@@ -127,8 +127,13 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    if (ReportErrorForHttpSources(listPackageArgs, projectModel))
+                    List<PackageSource> httpSources = GetInsecureHttpSources(listPackageArgs.PackageSources);
+                    httpSources.AddRange(GetInsecureHttpSources(listPackageArgs.AuditSources));
+
+                    if (httpSources.Count > 0)
                     {
+                        LogHttpSourceError(httpSources, out string error);
+                        projectModel.AddProjectInformation(ProblemType.Error, error);
                         return;
                     }
 
@@ -328,41 +333,41 @@ namespace NuGet.CommandLine.XPlat
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
         }
 
-        private static bool ReportErrorForHttpSources(
-            ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel)
+        private static List<PackageSource> GetInsecureHttpSources(IReadOnlyList<PackageSource> packageSources)
         {
-            var httpPackageSources = new List<PackageSource>();
+            List<PackageSource> httpPackageSources = null;
 
-            AddHttpPackageSources(listPackageArgs.PackageSources, httpPackageSources);
-            AddHttpPackageSources(listPackageArgs.AuditSources, httpPackageSources);
-
-            if (httpPackageSources.Count == 0)
-            {
-                return false;
-            }
-
-            string errorMessage = httpPackageSources.Count == 1
-                ? string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", httpPackageSources[0])
-                : string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage_MultipleSources, "list package", Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
-
-            projectModel.AddProjectInformation(ProblemType.Error, errorMessage);
-            return true;
-        }
-
-        private static void AddHttpPackageSources(IEnumerable<PackageSource> packageSources, List<PackageSource> httpPackageSources)
-        {
-            if (packageSources == null)
-            {
-                return;
-            }
-
-            foreach (var packageSource in packageSources)
+            foreach (PackageSource packageSource in packageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
+                    httpPackageSources ??= new(capacity: packageSources.Count);
                     httpPackageSources.Add(packageSource);
                 }
+            }
+
+            return httpPackageSources ?? new();
+        }
+
+        private static void LogHttpSourceError(List<PackageSource> httpSources, out string error)
+        {
+            error = null;
+
+            if (httpSources.Count == 1)
+            {
+                error = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Error_HttpServerUsage,
+                    "list package",
+                    httpSources[0]);
+            }
+            else if (httpSources.Count > 1)
+            {
+                error = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Error_HttpServerUsage_MultipleSources,
+                    "list package",
+                    Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
             }
         }
 
