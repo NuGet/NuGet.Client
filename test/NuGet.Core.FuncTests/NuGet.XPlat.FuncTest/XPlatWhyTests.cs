@@ -333,6 +333,60 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public async Task WhyCommand_JsonRendererPackageNotFound_SucceedsAsync()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.2");
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyJsonRenderer(logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageZ.Id,
+                    [projectFramework],
+                    reportRenderer,
+                    logger,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            var expectedOutput = $@"{{
+  ""version"": 1,
+  ""parameters"": ""--framework {projectFramework}"",
+  ""project"": ""{project.ProjectName}"",
+  ""package"": ""{packageZ.Id}"",
+  ""dependencyGraphs"": []
+}}";
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains(expectedOutput, output);
+        }
+
+        [Fact]
         public async Task WhyCommand_JsonRendererDirectPackageFound_SucceedsAsync()
         {
             // Arrange
