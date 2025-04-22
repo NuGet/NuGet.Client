@@ -723,7 +723,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_logsAnError(string allowInsecureConnections, bool isHttpErrorExpected)
+        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_LogsAnError(string allowInsecureConnections, bool isHttpErrorExpected)
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -762,7 +762,6 @@ namespace Dotnet.Integration.Test
                 Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
                 Assert.DoesNotContain(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource), listResult.AllOutput);
             }
-            mockServer.Stop();
         }
 
         private static string CollapseSpaces(string input)

@@ -254,11 +254,11 @@ namespace NuGet.Protocol.Core.Types
                         Path.GetFileName(symbolPackagePath),
                         Strings.DefaultSymbolServer));
                 }
-                bool warnForHttpSources = true;
+                bool logErrorForHttpSources = true;
                 foreach (string packageToPush in symbolsToPush)
                 {
-                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
-                    warnForHttpSources = false;
+                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
+                    logErrorForHttpSources = false;
                 }
             }
         }
@@ -298,10 +298,10 @@ namespace NuGet.Protocol.Core.Types
                     Strings.NoApiKeyFound,
                     GetSourceDisplayName(source)));
             }
-            bool warnForHttpSources = true;
+            bool logErrorForHttpSources = true;
             foreach (string nupkgToPush in nupkgsToPush)
             {
-                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
+                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
                 // Push corresponding symbols, if successful.
                 if (packageWasPushed && !string.IsNullOrEmpty(symbolSource))
                 {
@@ -330,9 +330,9 @@ namespace NuGet.Protocol.Core.Types
                     }
 
                     string symbolApiKey = getSymbolApiKey(symbolSource);
-                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
+                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
                 }
-                warnForHttpSources = false;
+                logErrorForHttpSources = false;
             }
         }
 
@@ -342,7 +342,7 @@ namespace NuGet.Protocol.Core.Types
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
-            bool warnForHttpSources,
+            bool logErrorForHttpSources,
             bool allowInsecureConnections,
             ILogger log,
             CancellationToken token)
@@ -364,7 +364,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
-                    requestTimeout, warnForHttpSources, allowInsecureConnections, log, token);
+                    requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
             }
 
             if (wasPackagePushed)
@@ -413,7 +413,7 @@ namespace NuGet.Protocol.Core.Types
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
-            bool warnForHttpSources,
+            bool logErrorForHttpSources,
             bool allowInsecureConnections,
             ILogger logger,
             CancellationToken token)
@@ -422,7 +422,7 @@ namespace NuGet.Protocol.Core.Types
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
             bool showPushCommandPackagePushed = true;
-            if (warnForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+            if (logErrorForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
             {
                 logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
                 return false;
