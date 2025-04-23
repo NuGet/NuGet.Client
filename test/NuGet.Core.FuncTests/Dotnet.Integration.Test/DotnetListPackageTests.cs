@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -720,48 +721,58 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_LogsAnError(string allowInsecureConnections, bool isHttpErrorExpected)
+        [PlatformFact(Platform.Windows)]
+        public async Task RunDotnetListPackage_WithHttpSourceAndAllowInsecureConnections_Succeeds()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var emptyHttpCache = new Dictionary<string, string>
-                {
-                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder },
-                };
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
 
             var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
             var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
-
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                    pathContext.PackageSource,
-                    packageA100,
-                    packageA200);
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
-            PackageSource packageSource = new PackageSource(mockServer.ServiceIndexUri, "http-source");
-            pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnections);
 
-            // Act & Assert
-            if (isHttpErrorExpected)
-            {
-                CommandRunnerResult listResult = _fixture.RunDotnetExpectFailure(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated --no-restore", testOutputHelper: _testOutputHelper);
-                Assert.Contains(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource), listResult.AllOutput);
-            }
-            else
-            {
-                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated", testOutputHelper: _testOutputHelper);
-                var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
-                Assert.DoesNotContain(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource), listResult.AllOutput);
-            }
+            var packageSource = new PackageSource(mockServer.ServiceIndexUri, "http-source");
+            pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "true");
+
+            // Act
+            var result = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated", testOutputHelper: _testOutputHelper);
+
+            // Assert
+            var lines = result.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            lines.Should().Contain(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0"));
+            result.AllOutput.Should().NotContain(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource));
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task RunDotnetListPackage_WithHttpSourceWithoutAllowInsecureConnections_LogsAnError()
+        {
+            // Arrange
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            mockServer.Start();
+
+            _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
+
+            var packageSource = new PackageSource(mockServer.ServiceIndexUri, "http-source");
+            pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "false");
+
+            // Act
+            var result = _fixture.RunDotnetExpectFailure(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert
+            result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource));
         }
 
         private static string CollapseSpaces(string input)

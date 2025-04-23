@@ -127,12 +127,12 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    List<PackageSource> httpSources = GetInsecureHttpSources(listPackageArgs.PackageSources);
-                    httpSources.AddRange(GetInsecureHttpSources(listPackageArgs.AuditSources));
+                    List<PackageSource> httpSources = HttpSourcesUtility.GetInsecureHttpSources(listPackageArgs.PackageSources);
+                    httpSources.AddRange(HttpSourcesUtility.GetInsecureHttpSources(listPackageArgs.AuditSources));
 
                     if (httpSources.Count > 0)
                     {
-                        projectModel.AddProjectInformation(ProblemType.Error, GetHttpSourceError(httpSources));
+                        projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.GetHttpSourceError(httpSources, "list package"));
                         return;
                     }
 
@@ -330,51 +330,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return Enumerable.Empty<PackageVulnerabilityMetadata>();
-        }
-
-        private static List<PackageSource> GetInsecureHttpSources(IReadOnlyList<PackageSource> packageSources)
-        {
-            if (packageSources == null || packageSources.Count == 0)
-            {
-                return new();
-            }
-
-            List<PackageSource> httpPackageSources = null;
-
-            foreach (PackageSource packageSource in packageSources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
-                {
-                    httpPackageSources ??= new(capacity: packageSources.Count);
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            return httpPackageSources ?? new();
-        }
-
-        private static string GetHttpSourceError(List<PackageSource> httpSources)
-        {
-            string error = null;
-
-            if (httpSources.Count == 1)
-            {
-                error = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Error_HttpServerUsage,
-                    "list package",
-                    httpSources[0]);
-            }
-            else if (httpSources.Count > 1)
-            {
-                error = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Error_HttpServerUsage_MultipleSources,
-                    "list package",
-                    Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
-            }
-
-            return error;
         }
 
         public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)

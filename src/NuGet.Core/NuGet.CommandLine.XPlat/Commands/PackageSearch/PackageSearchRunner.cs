@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -55,11 +55,11 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.Error;
             }
 
-            List<PackageSource> httpSources = GetInsecureHttpSources(listEndpoints);
+            List<PackageSource> httpSources = HttpSourcesUtility.GetInsecureHttpSources(listEndpoints.ToList());
 
             if (httpSources.Count > 0)
             {
-                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, GetHttpSourceError(httpSources)));
+                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, HttpSourcesUtility.GetHttpSourceError(httpSources, "search")));
                 packageSearchResultRenderer.Finish();
                 return ExitCodes.Error;
             }
@@ -224,51 +224,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return packageSources.ToList();
-        }
-
-        private static List<PackageSource> GetInsecureHttpSources(IList<PackageSource> packageSources)
-        {
-            if (packageSources == null || packageSources.Count == 0)
-            {
-                return new();
-            }
-
-            List<PackageSource> httpPackageSources = null;
-
-            foreach (PackageSource packageSource in packageSources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
-                {
-                    httpPackageSources ??= new(capacity: packageSources.Count);
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            return httpPackageSources ?? new();
-        }
-
-        private static string GetHttpSourceError(List<PackageSource> httpSources)
-        {
-            string error = null;
-
-            if (httpSources.Count == 1)
-            {
-                error = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Error_HttpServerUsage,
-                    "search",
-                    httpSources[0]);
-            }
-            else if (httpSources.Count > 1)
-            {
-                error = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Error_HttpServerUsage_MultipleSources,
-                    "search",
-                    Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
-            }
-
-            return error;
         }
     }
 }
