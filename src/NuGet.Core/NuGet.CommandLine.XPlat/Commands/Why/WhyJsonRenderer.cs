@@ -85,12 +85,16 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             [JsonPropertyName("version")]
             public required int Version { get; set; }
+
             [JsonPropertyName("parameters")]
             public required string Parameters { get; set; }
+
             [JsonPropertyName("project")]
             public required string Project { get; set; }
+
             [JsonPropertyName("package")]
             public required string Package { get; set; }
+
             [JsonPropertyName("dependencyGraphs")]
             public required List<DependencyGraphContract> DependencyGraphs { get; set; }
         }
@@ -99,6 +103,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             [JsonPropertyName("framework")]
             public required string Framework { get; set; }
+
             [JsonPropertyName("dependencies")]
             public required List<DependencyNodeContract> Dependencies { get; set; }
         }
@@ -107,8 +112,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             [JsonPropertyName("id")]
             public required string Id { get; set; }
+
             [JsonPropertyName("version")]
             public required string Version { get; set; }
+
             [JsonPropertyName("dependencies")]
             public required List<DependencyNodeContract> Dependencies { get; set; }
         }
