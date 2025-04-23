@@ -120,7 +120,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
                 try
                 {
-                    IReportRenderer reportRenderer = GetOutputType(
+                    IReportRenderer reportRenderer = GetRenderer(
                         parseResult.GetValue(outputFormat),
                         parseResult.GetValue(outputVersion),
                         logger);
@@ -146,7 +146,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             rootCommand.Subcommands.Add(whyCommand);
         }
 
-        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption, ILoggerWithColor logger)
+        private static IReportRenderer GetRenderer(string outputFormatOption, string outputVersionOption, ILoggerWithColor logger)
         {
             ReportOutputFormat outputFormat = ReportOutputFormat.Console;
             if (!string.IsNullOrEmpty(outputFormatOption) &&
