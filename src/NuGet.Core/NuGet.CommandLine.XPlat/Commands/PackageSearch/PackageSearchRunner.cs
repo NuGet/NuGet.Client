@@ -59,8 +59,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (httpSources.Count > 0)
             {
-                GetHttpSourceError(httpSources, out string error);
-                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, error));
+                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, GetHttpSourceError(httpSources)));
                 packageSearchResultRenderer.Finish();
                 return ExitCodes.Error;
             }
@@ -229,6 +228,11 @@ namespace NuGet.CommandLine.XPlat
 
         private static List<PackageSource> GetInsecureHttpSources(IList<PackageSource> packageSources)
         {
+            if (packageSources == null || packageSources.Count == 0)
+            {
+                return new();
+            }
+
             List<PackageSource> httpPackageSources = null;
 
             foreach (PackageSource packageSource in packageSources)
@@ -243,9 +247,9 @@ namespace NuGet.CommandLine.XPlat
             return httpPackageSources ?? new();
         }
 
-        private static void GetHttpSourceError(List<PackageSource> httpSources, out string error)
+        private static string GetHttpSourceError(List<PackageSource> httpSources)
         {
-            error = null;
+            string error = null;
 
             if (httpSources.Count == 1)
             {
@@ -263,6 +267,8 @@ namespace NuGet.CommandLine.XPlat
                     "search",
                     Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
             }
+
+            return error;
         }
     }
 }

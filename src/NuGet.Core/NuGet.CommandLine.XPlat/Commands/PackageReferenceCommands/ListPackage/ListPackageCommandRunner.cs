@@ -132,8 +132,7 @@ namespace NuGet.CommandLine.XPlat
 
                     if (httpSources.Count > 0)
                     {
-                        GetHttpSourceError(httpSources, out string error);
-                        projectModel.AddProjectInformation(ProblemType.Error, error);
+                        projectModel.AddProjectInformation(ProblemType.Error, GetHttpSourceError(httpSources));
                         return;
                     }
 
@@ -335,6 +334,11 @@ namespace NuGet.CommandLine.XPlat
 
         private static List<PackageSource> GetInsecureHttpSources(IReadOnlyList<PackageSource> packageSources)
         {
+            if (packageSources == null || packageSources.Count == 0)
+            {
+                return new();
+            }
+
             List<PackageSource> httpPackageSources = null;
 
             foreach (PackageSource packageSource in packageSources)
@@ -349,9 +353,9 @@ namespace NuGet.CommandLine.XPlat
             return httpPackageSources ?? new();
         }
 
-        private static void GetHttpSourceError(List<PackageSource> httpSources, out string error)
+        private static string GetHttpSourceError(List<PackageSource> httpSources)
         {
-            error = null;
+            string error = null;
 
             if (httpSources.Count == 1)
             {
@@ -369,6 +373,8 @@ namespace NuGet.CommandLine.XPlat
                     "list package",
                     Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(e => e.Name)));
             }
+
+            return error;
         }
 
         public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
