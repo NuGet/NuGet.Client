@@ -519,5 +519,138 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(ExitCodes.Success, result);
             Assert.Contains(expectedOutput, output);
         }
+
+        [Fact]
+        public async Task WhyCommand_JsonRendererMultiplePackagesFound_SucceedsAsync()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework1 = "net472";
+            var projectFramework2 = "netstandard2.0";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, $"{projectFramework1};{projectFramework2}");
+
+            var packageA = XPlatTestUtils.CreatePackage("PackageA", "1.0.0");
+            var packageB = XPlatTestUtils.CreatePackage("PackageB", "1.0.1");
+            var packageC = XPlatTestUtils.CreatePackage("PackageC", "1.0.2");
+            var packageTarget = XPlatTestUtils.CreatePackage("PackageTarget", "1.0.3");
+
+            packageA.Dependencies.Add(packageTarget);
+            packageB.Dependencies.Add(packageC);
+            packageC.Dependencies.Add(packageTarget);
+
+            project.AddPackageToFramework(projectFramework1, packageA);
+            project.AddPackageToFramework(projectFramework1, packageB);
+            project.AddPackageToFramework(projectFramework2, packageA);
+            project.AddPackageToFramework(projectFramework2, packageB);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB,
+                packageC,
+                packageTarget);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var reportRenderer = new WhyJsonRenderer(logger);
+
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageAArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageA.Id, packageA.Version, project);
+            await addPackageCommandRunner.ExecuteCommand(addPackageAArgs, new MSBuildAPIUtility(logger));
+            var addPackageBArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageB.Id, packageB.Version, project);
+            await addPackageCommandRunner.ExecuteCommand(addPackageBArgs, new MSBuildAPIUtility(logger));
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageTarget.Id,
+                    [projectFramework1, projectFramework2],
+                    reportRenderer,
+                    logger,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            var expectedOutput = $@"{{
+  ""version"": 1,
+  ""parameters"": ""--framework {projectFramework1} {projectFramework2}"",
+  ""project"": ""{project.ProjectName}"",
+  ""package"": ""{packageTarget.Id}"",
+  ""dependencyGraphs"": [
+    {{
+      ""framework"": ""{projectFramework1}"",
+      ""dependencies"": [
+        {{
+          ""id"": ""{packageA.Id}"",
+          ""version"": ""{packageA.Version}"",
+          ""dependencies"": [
+            {{
+              ""id"": ""{packageTarget.Id}"",
+              ""version"": ""{packageTarget.Version}"",
+              ""dependencies"": []
+            }}
+          ]
+        }},
+        {{
+          ""id"": ""{packageB.Id}"",
+          ""version"": ""{packageB.Version}"",
+          ""dependencies"": [
+            {{
+              ""id"": ""{packageC.Id}"",
+              ""version"": ""{packageC.Version}"",
+              ""dependencies"": [
+                {{
+                  ""id"": ""{packageTarget.Id}"",
+                  ""version"": ""{packageTarget.Version}"",
+                  ""dependencies"": []
+                }}
+              ]
+            }}
+          ]
+        }}
+      ]
+    }},
+    {{
+      ""framework"": ""{projectFramework2}"",
+      ""dependencies"": [
+        {{
+          ""id"": ""{packageA.Id}"",
+          ""version"": ""{packageA.Version}"",
+          ""dependencies"": [
+            {{
+              ""id"": ""{packageTarget.Id}"",
+              ""version"": ""{packageTarget.Version}"",
+              ""dependencies"": []
+            }}
+          ]
+        }},
+        {{
+          ""id"": ""{packageB.Id}"",
+          ""version"": ""{packageB.Version}"",
+          ""dependencies"": [
+            {{
+              ""id"": ""{packageC.Id}"",
+              ""version"": ""{packageC.Version}"",
+              ""dependencies"": [
+                {{
+                  ""id"": ""{packageTarget.Id}"",
+                  ""version"": ""{packageTarget.Version}"",
+                  ""dependencies"": []
+                }}
+              ]
+            }}
+          ]
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains(expectedOutput, output);
+        }
     }
 }
