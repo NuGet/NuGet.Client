@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
@@ -53,29 +54,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task EmitIfNeeded_MultipleThreads_EmitsOnceAsync()
+        public void EmitIfNeeded_MultipleThreads_EmitsOnce()
         {
             // Arrange
             TelemetryOnceEmitter logger = new("TestEvent");
-            Task[] tasks = new[]
-            {
-                new Task(() => logger.EmitIfNeeded()),
-                new Task(() => logger.EmitIfNeeded()),
-                new Task(() => logger.EmitIfNeeded()),
-                new Task(() => logger.EmitIfNeeded()),
-                new Task(() => logger.EmitIfNeeded())
-            };
 
             // Act
-            Parallel.ForEach(tasks, t =>
+            Parallel.ForEach(Enumerable.Range(1, 5), t =>
             {
-                if (t.Status == TaskStatus.Created)
-                {
-                    _output.WriteLine($"{t.Id} {t.Status}");
-                    t.Start();
-                }
+                logger.EmitIfNeeded();
             });
-            await Task.WhenAll(tasks);
 
             // Assert
             Assert.Equal(1, _telemetryEvents.Count);
