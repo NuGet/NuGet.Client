@@ -223,7 +223,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageVersion items &apos;{0}&apos; cannot specify a floating version. For more information on how to enable this functionality for projects using Central Package Management, visit https://aka.ms/nu1011.
+        ///   Looks up a localized string similar to The following PackageVersion items cannot specify a floating version: {0}. For more information on how to enable this functionality for projects using Central Package Management, visit https://aka.ms/nu1011.
         /// </summary>
         internal static string Error_CentralPackageManagement_FloatingVersionsNotAllowed {
             get {
@@ -232,7 +232,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageReference items &apos;{0}&apos; are implicitly defined and cannot define a PackageVersion item.  Projects using Central Package Management require that implicit package versions be specified by the PackageReference item. For more information, visit https://aka.ms/sdkimplicitrefs.
+        ///   Looks up a localized string similar to The following PackageReference items are implicitly defined and cannot define a PackageVersion item: {0}. Projects using Central Package Management require that implicit package versions be specified by the PackageReference item. For more information, visit https://aka.ms/sdkimplicitrefs.
         /// </summary>
         internal static string Error_CentralPackageManagement_ImplicitPackageReferenceWithVersionNotAllowed {
             get {
@@ -241,7 +241,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageReference items &apos;{0}&apos; do not define a corresponding PackageVersion item. Projects using Central Package Management must declare PackageReference and PackageVersion items with matching names. For more information, visit https://aka.ms/nuget/cpm/gettingstarted.
+        ///   Looks up a localized string similar to The following PackageReference items do not define a corresponding PackageVersion item: {0}. Projects using Central Package Management must declare PackageReference and PackageVersion items with matching names. For more information, visit https://aka.ms/nuget/cpm/gettingstarted.
         /// </summary>
         internal static string Error_CentralPackageManagement_MissingPackageVersion {
             get {
@@ -250,7 +250,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageReference items &apos;{0}&apos; cannot define a value for Version.  Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted.
+        ///   Looks up a localized string similar to The following PackageReference items cannot define a value for Version: {0}. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted.
         /// </summary>
         internal static string Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed {
             get {
@@ -259,7 +259,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The PackageReference items &apos;{0}&apos; cannot specify a value for VersionOverride.  Projects using Central Package Management are currently configured to disable this functionality. For more information, visit https://aka.ms/nuget/cpm/versionoverride.
+        ///   Looks up a localized string similar to The following PackageReference items cannot specify a value for VersionOverride: {0}.  Projects using Central Package Management are currently configured to disable this functionality. For more information, visit https://aka.ms/nuget/cpm/versionoverride.
         /// </summary>
         internal static string Error_CentralPackageManagement_VersionOverrideNotAllowed {
             get {
