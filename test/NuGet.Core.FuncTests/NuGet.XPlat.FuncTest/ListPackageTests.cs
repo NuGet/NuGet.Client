@@ -322,10 +322,6 @@ namespace NuGet.XPlat.FuncTest
             solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
-            mockServer.Start();
-            pathContext.Settings.AddSource(sourceName: "private-source", sourceUri: mockServer.ServiceIndexUri, allowInsecureConnectionsValue: bool.TrueString);
-
             // List package command requires restore to be run before it can list packages.
             await RestoreProjectsAsync(pathContext, projectA, projectB, _testOutputHelper);
 
@@ -337,9 +333,9 @@ namespace NuGet.XPlat.FuncTest
             ListPackageCommandRunner listPackageCommandRunner = new();
             var packageRefArgs = new ListPackageArgs(
                                         path: solution.SolutionPath,
-                                        packageSources: [new(mockServer.ServiceIndexUri)],
+                                        packageSources: [new PackageSource(pathContext.PackageSource)],
                                         frameworks: ["net6.0"],
-                                        reportType: ReportType.Vulnerable,
+                                        reportType: ReportType.Outdated,
                                         renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
                                         includeTransitive: false,
                                         prerelease: false,
