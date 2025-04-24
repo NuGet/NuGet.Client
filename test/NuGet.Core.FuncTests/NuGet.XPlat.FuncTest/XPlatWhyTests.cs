@@ -437,7 +437,7 @@ namespace NuGet.XPlat.FuncTest
       ""framework"": ""{projectFramework}"",
       ""dependencies"": [
         {{
-          ""id"": ""{packageX.Id}"",
+          ""package"": ""{packageX.Id}"",
           ""version"": ""{packageX.Version}"",
           ""dependencies"": []
         }}
@@ -501,11 +501,11 @@ namespace NuGet.XPlat.FuncTest
       ""framework"": ""{projectFramework}"",
       ""dependencies"": [
         {{
-          ""id"": ""{packageX.Id}"",
+          ""package"": ""{packageX.Id}"",
           ""version"": ""{packageX.Version}"",
           ""dependencies"": [
             {{
-              ""id"": ""{packageY.Id}"",
+              ""package"": ""{packageY.Id}"",
               ""version"": ""{packageY.Version}"",
               ""dependencies"": []
             }}
@@ -584,26 +584,26 @@ namespace NuGet.XPlat.FuncTest
       ""framework"": ""{projectFramework1}"",
       ""dependencies"": [
         {{
-          ""id"": ""{packageA.Id}"",
+          ""package"": ""{packageA.Id}"",
           ""version"": ""{packageA.Version}"",
           ""dependencies"": [
             {{
-              ""id"": ""{packageTarget.Id}"",
+              ""package"": ""{packageTarget.Id}"",
               ""version"": ""{packageTarget.Version}"",
               ""dependencies"": []
             }}
           ]
         }},
         {{
-          ""id"": ""{packageB.Id}"",
+          ""package"": ""{packageB.Id}"",
           ""version"": ""{packageB.Version}"",
           ""dependencies"": [
             {{
-              ""id"": ""{packageC.Id}"",
+              ""package"": ""{packageC.Id}"",
               ""version"": ""{packageC.Version}"",
               ""dependencies"": [
                 {{
-                  ""id"": ""{packageTarget.Id}"",
+                  ""package"": ""{packageTarget.Id}"",
                   ""version"": ""{packageTarget.Version}"",
                   ""dependencies"": []
                 }}
@@ -617,26 +617,26 @@ namespace NuGet.XPlat.FuncTest
       ""framework"": ""{projectFramework2}"",
       ""dependencies"": [
         {{
-          ""id"": ""{packageA.Id}"",
+          ""package"": ""{packageA.Id}"",
           ""version"": ""{packageA.Version}"",
           ""dependencies"": [
             {{
-              ""id"": ""{packageTarget.Id}"",
+              ""package"": ""{packageTarget.Id}"",
               ""version"": ""{packageTarget.Version}"",
               ""dependencies"": []
             }}
           ]
         }},
         {{
-          ""id"": ""{packageB.Id}"",
+          ""package"": ""{packageB.Id}"",
           ""version"": ""{packageB.Version}"",
           ""dependencies"": [
             {{
-              ""id"": ""{packageC.Id}"",
+              ""package"": ""{packageC.Id}"",
               ""version"": ""{packageC.Version}"",
               ""dependencies"": [
                 {{
-                  ""id"": ""{packageTarget.Id}"",
+                  ""package"": ""{packageTarget.Id}"",
                   ""version"": ""{packageTarget.Version}"",
                   ""dependencies"": []
                 }}

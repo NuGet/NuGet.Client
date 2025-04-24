@@ -57,28 +57,28 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     var dependencyGraph = new DependencyGraphContract
                     {
                         Framework = framework,
-                        Dependencies = ProcessDependencyNodeContracts(dependencies)
+                        Dependencies = ProcessDependencyNodes([.. dependencies])
                     };
                     dependencyGraphs.Add(dependencyGraph);
                 }
             }
+
             return dependencyGraphs;
         }
 
-        private static List<DependencyNodeContract> ProcessDependencyNodeContracts(List<DependencyNode> dependencies)
+        private static HashSet<DependencyNode> ProcessDependencyNodes(HashSet<DependencyNode> dependencies)
         {
-            List<DependencyNodeContract> dependencyNodeContracts = [];
+            HashSet<DependencyNode> dependencyNodes = [];
             foreach (var dependency in dependencies)
             {
-                var dependencyNodeContract = new DependencyNodeContract
+                var dependencyNode = new DependencyNode(dependency.Id, dependency.Version)
                 {
-                    Id = dependency.Id,
-                    Version = dependency.Version,
-                    Dependencies = ProcessDependencyNodeContracts([.. dependency.Children])
+                    Children = ProcessDependencyNodes(dependency.Children)
                 };
-                dependencyNodeContracts.Add(dependencyNodeContract);
+                dependencyNodes.Add(dependencyNode);
             }
-            return dependencyNodeContracts;
+
+            return dependencyNodes;
         }
 
         public class WhyJsonReportContract
@@ -105,19 +105,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             public required string Framework { get; set; }
 
             [JsonPropertyName("dependencies")]
-            public required List<DependencyNodeContract> Dependencies { get; set; }
-        }
-
-        public class DependencyNodeContract
-        {
-            [JsonPropertyName("id")]
-            public required string Id { get; set; }
-
-            [JsonPropertyName("version")]
-            public required string Version { get; set; }
-
-            [JsonPropertyName("dependencies")]
-            public required List<DependencyNodeContract> Dependencies { get; set; }
+            public required HashSet<DependencyNode> Dependencies { get; set; }
         }
     }
 }

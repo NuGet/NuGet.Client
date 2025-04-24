@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using NuGet.Shared;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -14,8 +15,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
     /// </summary>
     internal class DependencyNode
     {
+        [JsonPropertyName("package")]
         public string Id { get; set; }
+
+        [JsonPropertyName("version")]
         public string Version { get; set; }
+
+        [JsonPropertyName("dependencies")]
         public HashSet<DependencyNode> Children { get; set; }
 
         public DependencyNode(string id, string version)
