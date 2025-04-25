@@ -57,28 +57,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     var dependencyGraph = new DependencyGraphContract
                     {
                         Framework = framework,
-                        Dependencies = ProcessDependencyNodes([.. dependencies])
+                        Dependencies = [.. dependencies]
                     };
                     dependencyGraphs.Add(dependencyGraph);
                 }
             }
 
             return dependencyGraphs;
-        }
-
-        private static HashSet<DependencyNode> ProcessDependencyNodes(HashSet<DependencyNode> dependencies)
-        {
-            HashSet<DependencyNode> dependencyNodes = [];
-            foreach (var dependency in dependencies)
-            {
-                var dependencyNode = new DependencyNode(dependency.Id, dependency.Version)
-                {
-                    Children = ProcessDependencyNodes(dependency.Children)
-                };
-                dependencyNodes.Add(dependencyNode);
-            }
-
-            return dependencyNodes;
         }
 
         public class WhyJsonReportContract
