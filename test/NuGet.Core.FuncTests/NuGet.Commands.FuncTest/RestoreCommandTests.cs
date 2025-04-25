@@ -4353,7 +4353,7 @@ namespace NuGet.Commands.FuncTest
         // P -> C 1.0.0
         // Prune C 1.0.0
         [Fact]
-        public async Task RestoreCommand_WithPrunePackageReferences_DoesNotPruneDirectDependencies_AndVerifiesEquivalency()
+        public async Task RestoreCommand_WithPrunePackageReferences_DoesNotPruneDirectDependenciesAndWarns()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -4374,7 +4374,7 @@ namespace NuGet.Commands.FuncTest
             var rootProject = @"
         {
           ""frameworks"": {
-            ""net472"": {
+            ""net10.0"": {
                 ""dependencies"": {
                         ""A"": {
                             ""version"": ""[1.0.0,)"",
@@ -4391,7 +4391,6 @@ namespace NuGet.Commands.FuncTest
             }
           }
         }";
-
 
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
@@ -4663,10 +4662,12 @@ namespace NuGet.Commands.FuncTest
         // P1 -> P2 (project)
         // Prune B 1.0.0
         [Theory]
-        [InlineData("10.0.100", true, true)]
-        [InlineData("9.0.100", true, false)]
-        [InlineData("", false, true)]
-        public async Task RestoreCommand_WithDirectProjectReferenceSpecifiedForPruning_SkipsPruning(string sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool shouldWarn)
+        [InlineData("net10.0", "10.0.100", true, true)]
+        [InlineData("net10.0", "9.0.100", true, false)]
+        [InlineData("net10.0", "", false, true)]
+        [InlineData("net472", "", false, false)]
+        [InlineData("net472", "10.0.100", false, false)]
+        public async Task RestoreCommand_WithDirectProjectReferenceSpecifiedForPruning_SkipsPruning(string framework, string sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool shouldWarn)
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -4684,7 +4685,7 @@ namespace NuGet.Commands.FuncTest
             var rootProject = @"
         {
           ""frameworks"": {
-            ""net472"": {
+            ""FRAMEWORK"": {
                 ""dependencies"": {
                         ""packageA"": {
                             ""version"": ""[1.0.0,)"",
@@ -4697,13 +4698,13 @@ namespace NuGet.Commands.FuncTest
                 }
             }
           }
-        }";
+        }".Replace("FRAMEWORK", framework);
 
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
             projectSpec.RestoreMetadata.SdkAnalysisLevel = !string.IsNullOrEmpty(sdkAnalysisLevel) ? NuGetVersion.Parse(sdkAnalysisLevel) : null;
             projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNETSdk;
-            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework: "net472");
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", framework);
 
             projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
 
