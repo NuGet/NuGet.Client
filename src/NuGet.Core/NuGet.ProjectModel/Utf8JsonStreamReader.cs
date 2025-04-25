@@ -37,7 +37,6 @@ namespace NuGet.ProjectModel
         private bool _disposed;
         private ArrayPool<byte> _bufferPool;
         private int _bufferUsed = 0;
-        private int _bytesRead = 0;
 
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
