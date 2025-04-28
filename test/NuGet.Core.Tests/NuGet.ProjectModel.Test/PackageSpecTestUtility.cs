@@ -19,7 +19,11 @@ namespace NuGet.ProjectModel.Test
         public static PackageSpec GetPackageSpec(string json, IEnvironmentVariableReader environmentReader)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return JsonPackageSpecReader.GetPackageSpec(ms, "project", "project.json", null, environmentReader);
+            var streamReader = new StreamReader(ms);
+            var jsonReader = new JsonTextReader(streamReader);
+#pragma warning disable CS0612 // Type or member is obsolete
+            return JsonPackageSpecReader.GetPackageSpec(jsonReader, "project", "project.json", environmentReader);
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         public static PackageSpec RoundTripJson(string json, IEnvironmentVariableReader environmentReader)
@@ -47,20 +51,18 @@ namespace NuGet.ProjectModel.Test
 
         public static PackageSpec RoundTrip(this PackageSpec spec)
         {
-            using (var memoryStream = new MemoryStream())
+            using (var jsonWriter = new JTokenWriter())
+            using (var writer = new JsonObjectWriter(jsonWriter))
             {
-                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, 1024, leaveOpen: true))
-                using (var jsonWriter = new JsonTextWriter(streamWriter))
-                using (var writer = new JsonObjectWriter(jsonWriter))
-                {
-                    writer.WriteObjectStart();
-                    PackageSpecWriter.Write(spec, writer);
-                    writer.WriteObjectEnd();
-                }
+                writer.WriteObjectStart();
 
-                memoryStream.Position = 0;
+                PackageSpecWriter.Write(spec, writer);
 
-                return JsonPackageSpecReader.GetPackageSpec(memoryStream, null, null, null);
+                writer.WriteObjectEnd();
+
+#pragma warning disable CS0618
+                return JsonPackageSpecReader.GetPackageSpec((JObject)jsonWriter.Token);
+#pragma warning restore CS0618
             }
         }
 

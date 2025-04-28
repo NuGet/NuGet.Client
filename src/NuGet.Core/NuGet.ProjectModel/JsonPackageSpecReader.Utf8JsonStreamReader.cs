@@ -1725,6 +1725,7 @@ namespace NuGet.ProjectModel
                 targetFlagsValue = LibraryDependencyTargetUtils.Parse(targetString);
 
                 // Verify that the value specified is package, project, or external project
+#pragma warning disable CS0612 // Type or member is obsolete
                 if (!ValidateDependencyTarget(targetFlagsValue))
                 {
                     string message = string.Format(
@@ -1735,6 +1736,7 @@ namespace NuGet.ProjectModel
                       message,
                       packageSpecPath);
                 }
+#pragma warning restore CS0612 // Type or member is obsolete
             }
 
             return targetFlagsValue;

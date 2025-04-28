@@ -20,7 +20,9 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecWriterTests
     {
-        private static readonly PackageSpec EmptyPackageSpec = JsonPackageSpecReader.GetPackageSpec("{}", null, null);
+#pragma warning disable CS0618
+        private static readonly PackageSpec EmptyPackageSpec = JsonPackageSpecReader.GetPackageSpec(new JObject());
+#pragma warning restore CS0618
 
         [Fact]
         public void RoundTripAutoReferencedProperty()

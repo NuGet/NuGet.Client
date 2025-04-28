@@ -847,12 +847,13 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(lockFile_1_2.GetHashCode(), lockFile_11_22.GetHashCode());
         }
 
-        [Fact]
-        public void LockFile_GetTarget_WithNuGetFramework_ReturnsCorrectLockFileTarget()
+        [Theory]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void LockFile_GetTarget_WithNuGetFramework_ReturnsCorrectLockFileTarget(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
-            var lockFile = Parse(expectedJson, Path.GetTempPath());
+            var lockFile = Parse(expectedJson, Path.GetTempPath(), environmentVariableReader);
             NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
 
             // Act
@@ -862,12 +863,13 @@ namespace NuGet.ProjectModel.Test
             target.TargetFramework.Should().Be(nuGetFramework);
         }
 
-        [Fact]
-        public void LockFile_GetTarget_WithAlias_ReturnsCorrectLockFileTarget()
+        [Theory]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void LockFile_GetTarget_WithAlias_ReturnsCorrectLockFileTarget(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
-            var lockFile = Parse(expectedJson, Path.GetTempPath());
+            var lockFile = Parse(expectedJson, Path.GetTempPath(), environmentVariableReader);
             NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
 
             // Act
@@ -877,13 +879,13 @@ namespace NuGet.ProjectModel.Test
             target.TargetFramework.Should().Be(nuGetFramework);
         }
 
-        private LockFile Parse(string lockFileContent, string path)
+        private LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader)
         {
             var reader = new LockFileFormat();
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
             using (var stream = new MemoryStream(byteArray))
             {
-                return reader.Read(stream, NullLogger.Instance, path);
+                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader, true);
             }
         }
     }
