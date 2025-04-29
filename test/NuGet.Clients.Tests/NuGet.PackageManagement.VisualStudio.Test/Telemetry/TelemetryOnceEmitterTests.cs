@@ -9,24 +9,22 @@ using Moq;
 using NuGet.Common;
 using NuGet.VisualStudio;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class TelemetryOnceEmitterTests
     {
-        private readonly ITestOutputHelper _output;
         private readonly ConcurrentQueue<TelemetryEvent> _telemetryEvents;
+        private readonly NuGetVSTelemetryService _telemetryService;
 
-        public TelemetryOnceEmitterTests(ITestOutputHelper output)
+        public TelemetryOnceEmitterTests()
         {
-            _output = output;
             var telemetrySession = new Mock<ITelemetrySession>();
             _telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => _telemetryEvents.Enqueue(x));
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            _telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
         }
 
         [Theory]
@@ -34,14 +32,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("")]
         public void TelemetryOnceEmitter_NullOrEmptyEventName_Throws(string eventName)
         {
-            Assert.Throws<ArgumentException>(() => new TelemetryOnceEmitter(eventName));
+            Assert.Throws<ArgumentException>(() => new TelemetryOnceEmitter(eventName, _telemetryService));
         }
 
         [Fact]
         public void EmitIfNeeded_TwoCalls_EmitsTelemetryOnce()
         {
             // Arrange
-            TelemetryOnceEmitter logger = new("TestEvent");
+            TelemetryOnceEmitter logger = new("TestEvent", _telemetryService);
 
             // Act and Assert I 
             logger.EmitIfNeeded();
@@ -57,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void EmitIfNeeded_MultipleThreads_EmitsOnce()
         {
             // Arrange
-            TelemetryOnceEmitter logger = new("TestEvent");
+            TelemetryOnceEmitter logger = new("TestEvent", _telemetryService);
 
             // Act
             Parallel.ForEach(Enumerable.Range(1, 5), t =>
@@ -74,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Reset_WithAlreadyEmitted_Restarts()
         {
             // Arrange
-            TelemetryOnceEmitter logger = new("TestEvent");
+            TelemetryOnceEmitter logger = new("TestEvent", _telemetryService);
             logger.EmitIfNeeded();
 
             // Act
