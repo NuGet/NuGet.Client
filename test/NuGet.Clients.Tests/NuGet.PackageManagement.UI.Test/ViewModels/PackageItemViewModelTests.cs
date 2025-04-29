@@ -305,9 +305,9 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public void UpdateTransitivePackageStatus_WhenGivenInstalledVersion_SetsLatestVersionEqualToInstalledVersion()
+        public async Task UpdateTransitivePackageStatus_WhenGivenInstalledVersion_SetsLatestVersionEqualToInstalledVersionAsync()
         {
-            _testInstance.UpdateTransitivePackageStatus();
+            await _testInstance.UpdateTransitivePackageStatusAsync();
             Assert.Equal(_testInstance.LatestVersion, _testInstance.InstalledVersion);
         }
 

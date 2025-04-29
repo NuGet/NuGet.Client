@@ -1321,7 +1321,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.Projects,
                     CancellationToken.None);
-                _packageList.UpdatePackageStatus(installedPackages.ToArray(), clearCache);
+                await _packageList.UpdatePackageStatusAsync(installedPackages.ToArray(), clearCache);
 
                 await RefreshInstalledAndUpdatesTabsAsync();
             }

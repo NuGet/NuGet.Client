@@ -830,7 +830,7 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
-        public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
+        public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
         {
             // Get the maximum version installed in any target project/solution
             InstalledVersion = installedPackages
@@ -842,27 +842,20 @@ namespace NuGet.PackageManagement.UI
                 _searchService.ClearFromCache(Id, Sources, IncludePrerelease);
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVersionsAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
-
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageMetadataAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+            await ReloadPackageVersionsAsync();
+            await ReloadPackageMetadataAsync();
 
             OnPropertyChanged(nameof(Status));
         }
 
-        public void UpdateTransitivePackageStatus()
+        public async Task UpdateTransitivePackageStatusAsync()
         {
             InstalledVersion = Version;
 
             // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
             LatestVersion = InstalledVersion;
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageMetadataAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+            await ReloadPackageMetadataAsync();
 
             OnPropertyChanged(nameof(Status));
         }
