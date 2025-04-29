@@ -2030,7 +2030,7 @@ namespace NuGet.ProjectModel.Test
             if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(
-                    $"Error reading '' at line 1 column 20 : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
+                    $"Error reading '' at line 1 column 20 : Imports contains an invalid framework: '{expectedImport}' in ''.",
                     exception.Message);
                 Assert.Equal(1, exception.Line);
                 Assert.Equal(20, exception.Column);
