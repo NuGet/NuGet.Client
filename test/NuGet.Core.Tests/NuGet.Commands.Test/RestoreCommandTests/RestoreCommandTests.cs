@@ -1466,7 +1466,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task RestoreCommand_CentralPackageManagement_ErrorWhenDependenciesHaveVersion()
+        public async Task ExecuteAsync_CentralPackageManagementEnabled_WhenPackageReferencesHaveVersion_LogsAnError()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
