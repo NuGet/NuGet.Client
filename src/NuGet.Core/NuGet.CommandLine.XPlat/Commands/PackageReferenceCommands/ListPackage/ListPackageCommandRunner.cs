@@ -127,12 +127,12 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    List<PackageSource> httpSources = HttpSourcesUtility.GetInsecureHttpSources(listPackageArgs.PackageSources);
-                    httpSources.AddRange(HttpSourcesUtility.GetInsecureHttpSources(listPackageArgs.AuditSources));
+                    List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
+                    httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
 
                     if (httpSources.Count > 0)
                     {
-                        projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.GetHttpSourceError(httpSources, "list package"));
+                        projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "list package"));
                         return;
                     }
 

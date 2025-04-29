@@ -11,7 +11,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     internal static class HttpSourcesUtility
     {
-        public static List<PackageSource> GetInsecureHttpSources(IReadOnlyList<PackageSource> packageSources)
+        public static List<PackageSource> GetDisallowedInsecureHttpSources(IReadOnlyList<PackageSource> packageSources)
         {
             if (packageSources == null || packageSources.Count == 0)
             {
@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return httpPackageSources ?? new();
         }
 
-        public static string GetHttpSourceError(List<PackageSource> httpSources, string commandName)
+        public static string BuildHttpSourceErrorMessage(List<PackageSource> httpSources, string commandName)
         {
             string error = null;
 

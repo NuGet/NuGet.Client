@@ -55,11 +55,11 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.Error;
             }
 
-            List<PackageSource> httpSources = HttpSourcesUtility.GetInsecureHttpSources(listEndpoints.ToList());
+            List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listEndpoints.ToList());
 
             if (httpSources.Count > 0)
             {
-                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, HttpSourcesUtility.GetHttpSourceError(httpSources, "search")));
+                packageSearchResultRenderer.Add(new PackageSearchProblem(PackageSearchProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "search")));
                 packageSearchResultRenderer.Finish();
                 return ExitCodes.Error;
             }

@@ -775,6 +775,47 @@ namespace Dotnet.Integration.Test
             result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "list package", packageSource));
         }
 
+        [PlatformFact(Platform.Windows)]
+        public async Task RunDotnetListPackage_WithMultipleHttpSourcesWithoutAllowInsecureConnections_LogsAnError()
+        {
+            // Arrange
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var project = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            mockServer.Start();
+
+            var projectDirectory = Directory.GetParent(project.ProjectPath)!.FullName;
+            _fixture.RunDotnetExpectSuccess(projectDirectory, "add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
+
+            var httpSources = new[]
+            {
+                new PackageSource(mockServer.ServiceIndexUri, "http-source1"),
+                new PackageSource(mockServer.ServiceIndexUri, "http-source2")
+            };
+
+            foreach (var source in httpSources)
+            {
+                pathContext.Settings.AddSource(source.Name, source.Source, allowInsecureConnectionsValue: "false");
+            }
+
+            // Act
+            var result = _fixture.RunDotnetExpectFailure(projectDirectory, "list package --outdated --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert
+            var expectedError = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Error_HttpServerUsage,
+                "list package",
+                Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(s => s.Name)));
+
+            result.AllOutput.Should().Contain(expectedError);
+        }
+
         private static string CollapseSpaces(string input)
         {
             return Regex.Replace(input, " +", " ");
