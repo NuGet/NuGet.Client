@@ -809,7 +809,7 @@ namespace Dotnet.Integration.Test
             // Assert
             var expectedError = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings.Error_HttpServerUsage,
+                Strings.Error_HttpServerUsage_MultipleSources,
                 "list package",
                 Environment.NewLine + string.Join(Environment.NewLine, httpSources.Select(s => s.Name)));
 
