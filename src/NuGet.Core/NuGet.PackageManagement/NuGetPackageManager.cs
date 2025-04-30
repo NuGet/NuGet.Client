@@ -1179,7 +1179,7 @@ namespace NuGet.PackageManagement
                     TelemetryConstants.GatherDependencyStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
-                NuGetTelemetryService.EmitTelemetryEvent(gatherTelemetryEvent);
+                NuGetTelemetryService?.EmitTelemetryEvent(gatherTelemetryEvent);
                 stopWatch.Restart();
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
@@ -1272,7 +1272,7 @@ namespace NuGet.PackageManagement
                     TelemetryConstants.ResolveDependencyStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
-                NuGetTelemetryService.EmitTelemetryEvent(resolveTelemetryEvent);
+                NuGetTelemetryService?.EmitTelemetryEvent(resolveTelemetryEvent);
                 stopWatch.Restart();
 
                 if (newListOfInstalledPackages == null)
@@ -1311,7 +1311,7 @@ namespace NuGet.PackageManagement
                     TelemetryConstants.ResolvedActionsStepName,
                     stopWatch.Elapsed.TotalSeconds);
 
-                NuGetTelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+                NuGetTelemetryService?.EmitTelemetryEvent(actionTelemetryEvent);
 
                 if (nuGetProjectActions.Count == 0)
                 {
@@ -1878,7 +1878,7 @@ namespace NuGet.PackageManagement
                         TelemetryConstants.GatherDependencyStepName,
                         stopWatch.Elapsed.TotalSeconds);
 
-                    NuGetTelemetryService.EmitTelemetryEvent(gatherTelemetryEvent);
+                    NuGetTelemetryService?.EmitTelemetryEvent(gatherTelemetryEvent);
 
                     stopWatch.Restart();
 
@@ -1947,7 +1947,7 @@ namespace NuGet.PackageManagement
                         TelemetryConstants.ResolveDependencyStepName,
                         stopWatch.Elapsed.TotalSeconds);
 
-                    NuGetTelemetryService.EmitTelemetryEvent(resolveTelemetryEvent);
+                    NuGetTelemetryService?.EmitTelemetryEvent(resolveTelemetryEvent);
 
                     stopWatch.Restart();
 
@@ -2041,7 +2041,7 @@ namespace NuGet.PackageManagement
                 TelemetryConstants.ResolvedActionsStepName,
                 stopWatch.Elapsed.TotalSeconds);
 
-            NuGetTelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+            NuGetTelemetryService?.EmitTelemetryEvent(actionTelemetryEvent);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
             return nuGetProjectActions;
@@ -2822,7 +2822,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.OperationId.ToString(),
                 TelemetryConstants.ExecuteActionStepName, stopWatch.Elapsed.TotalSeconds);
 
-            NuGetTelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+            NuGetTelemetryService?.EmitTelemetryEvent(actionTelemetryEvent);
 
             if (exceptionInfo != null)
             {
@@ -3196,7 +3196,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.OperationId.ToString(),
                 TelemetryConstants.PreviewBuildIntegratedStepName, stopWatch.Elapsed.TotalSeconds);
 
-            NuGetTelemetryService.EmitTelemetryEvent(actionTelemetryEvent);
+            NuGetTelemetryService?.EmitTelemetryEvent(actionTelemetryEvent);
 
             return result;
         }
