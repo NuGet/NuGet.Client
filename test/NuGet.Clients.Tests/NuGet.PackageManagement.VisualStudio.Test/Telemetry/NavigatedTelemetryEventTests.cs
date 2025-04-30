@@ -9,6 +9,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
