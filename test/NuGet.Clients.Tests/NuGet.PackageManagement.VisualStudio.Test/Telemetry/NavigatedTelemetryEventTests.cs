@@ -252,6 +252,8 @@ namespace NuGet.PackageManagement.Test.Telemetry
             TelemetryActivity.NuGetTelemetryService = telemetryService;
             return telemetrySession;
         }
+
+        // TODO NK - This is dumb.
     }
 }
 

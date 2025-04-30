@@ -45,7 +45,6 @@ namespace NuGet.VisualStudio.Telemetry
             });
         }
 
-        // TODO NK - Remove this?
         public void EmitEvent(TelemetryEvent telemetryEvent)
         {
             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);

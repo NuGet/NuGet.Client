@@ -69,7 +69,11 @@ namespace NuGet.PackageManagement
         /// </summary>
         public event EventHandler<PackageProjectEventArgs> BatchEnd;
 
+        /// <summary>
+        /// The telemetry service to use for telemetry events. The setter is exposed for test purposes.
+        /// </summary>
         internal INuGetTelemetryService NuGetTelemetryService { get; set; }
+
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>

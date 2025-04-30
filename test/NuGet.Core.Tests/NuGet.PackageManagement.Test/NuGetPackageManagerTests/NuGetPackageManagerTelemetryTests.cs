@@ -73,7 +73,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
@@ -82,7 +81,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     NullSettings.Instance,
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var nugetProject = solutionManager.AddNewMSBuildProject();
 
@@ -121,8 +123,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
-
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
             {
@@ -130,7 +130,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     NullSettings.Instance,
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var buildIntegratedProject = solutionManager.AddBuildIntegratedProject();
 
@@ -177,7 +180,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using var solutionManager = new TestSolutionManager();
@@ -185,7 +187,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 sourceRepositoryProvider,
                 Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                 solutionManager,
-                new TestDeleteOnRestartManager());
+                new TestDeleteOnRestartManager())
+            {
+                NuGetTelemetryService = telemetryService
+            };
 
             JObject dependenciesJObject = null;
             if (errorCodeExistsInJson)
@@ -255,7 +260,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new TestNuGetVSTelemetryService(telemetrySession.Object, _logger);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
@@ -264,7 +268,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var json = new JObject
                 {
@@ -339,7 +346,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new TestNuGetVSTelemetryService(telemetrySession.Object, _logger);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
@@ -348,7 +354,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var json = new JObject
                 {
@@ -430,7 +439,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
@@ -439,7 +447,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 // Main Act
                 var target = new PackageIdentity("a", new NuGetVersion(2, 0, 0));
@@ -475,7 +486,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
             using (var solutionManager = new TestSolutionManager())
@@ -484,7 +494,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config"),
                     solutionManager,
-                    new TestDeleteOnRestartManager());
+                    new TestDeleteOnRestartManager())
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var nugetProject = solutionManager.AddNewMSBuildProject();
                 var target = _packageWithDependents[0];
@@ -529,7 +542,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             var nugetProjectContext = new TestNuGetProjectContext();
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             using (var settingsdir = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
@@ -546,7 +558,10 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     sourceRepositoryProvider,
                     settings,
                     testSolutionManager,
-                    deleteOnRestartManager);
+                    deleteOnRestartManager)
+                {
+                    NuGetTelemetryService = telemetryService
+                };
 
                 var installationCompatibility = new Mock<IInstallationCompatibility>();
                 nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
