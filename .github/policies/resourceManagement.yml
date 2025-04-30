@@ -200,6 +200,8 @@ configuration:
           user: 'jgonz120'
           issueAuthor: true
       then:
+        - addReply:
+            reply: 'hello jgonz120'
         - requestReview:
             reviewer: 'nkolev92'
         - requestReview:
