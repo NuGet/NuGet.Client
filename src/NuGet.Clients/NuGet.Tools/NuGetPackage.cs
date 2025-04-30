@@ -166,7 +166,7 @@ namespace NuGetVSExtension
         {
             NuGetVSTelemetryService.Initialize();
 
-            _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
+            _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector(NuGet.Common.TelemetryActivity.NuGetTelemetryService);
 
             await base.InitializeAsync(cancellationToken, progress);
             // Add our command handlers for menu (commands must exist in the .vsct file)
