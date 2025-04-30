@@ -198,7 +198,6 @@ configuration:
           action: Opened
       - isActivitySender:
           user: jgonz120
-          issueAuthor: false
       then:
         - addReply:
             reply: 'hello jgonz120'
