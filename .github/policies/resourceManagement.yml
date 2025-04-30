@@ -192,5 +192,21 @@ configuration:
 
             You can refer to the [.NET SDK breaking change guidelines](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/breaking-change-guidelines.md)
       description: Add breaking change instructions to PR.
+    - if:
+        - payloadType: Pull_Request
+    - then:
+        - if:
+            - isActivitySender:
+                user: jgonz120
+                issueAuthor: true
+        - then:
+            - requestReview:
+                reviwer: nkolev92
+            - requestReview:
+                reviewer: martinrrm
+            - assignTo:
+                users:
+                    - nkolev92
+                    - martinrrm    
 onFailure:
 onSuccess:
