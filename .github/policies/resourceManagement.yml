@@ -194,18 +194,18 @@ configuration:
       description: Add breaking change instructions to PR.
     - if:
       - payloadType: Pull_Request
+      - isActivitySender:
+          user: jgonz120
+          issueAuthor: true
       then:
-        - if:
-          - isActivitySender:
-              user: jgonz120
-          then:
-            - requestReview:
-                reviewer: nkolev92
-            - requestReview:
-                reviewer: martinrrm
-            - assignTo:
-                users:
-                  - nkolev92
-                  - martinrrm
+        - requestReview:
+            reviewer: nkolev92
+        - requestReview:
+            reviewer: martinrrm
+        - assignTo:
+            user: nkolev92
+        - assignTo:
+            user: martinrrm
+      description: Automatically Assign pr Buddies.
 onFailure:
 onSuccess:
