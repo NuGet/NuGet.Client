@@ -76,6 +76,14 @@ configuration:
             user: jebriede
         - assignTo:
             user: dtivel
+      - if: 
+        - isActivitySender:
+            user: dtivel
+        then: 
+        - assignTo:
+            user: jebriede
+        - assignTo:
+            user: Nigusu-Allehu
       description: Automatically Assign pr Buddies.
 onFailure: 
 onSuccess: 
