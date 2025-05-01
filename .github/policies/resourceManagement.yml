@@ -1,10 +1,10 @@
-id:
+id: 
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
-owner:
+owner: 
 resource: repository
 disabled: false
-where:
+where: 
 configuration:
   resourceManagementConfiguration:
     scheduledSearches:
@@ -192,79 +192,5 @@ configuration:
 
             You can refer to the [.NET SDK breaking change guidelines](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/breaking-change-guidelines.md)
       description: Add breaking change instructions to PR.
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      then:
-      - if: 
-        - isActivitySender:
-            user: jgonz120
-        then: 
-        - assignTo:
-            user: nkolev92
-        - assignTo:
-            user: martinrrm
-      - if: 
-        - isActivitySender:
-            user: nkolev92
-        then: 
-        - assignTo:
-            user: jgonz120
-        - assignTo:
-            user: martinrrm
-      - if: 
-        - isActivitySender:
-            user: martinrrm
-        then: 
-        - assignTo:
-            user: jgonz120
-        - assignTo:
-            user: nkolev92
-      - if: 
-        - isActivitySender:
-            user: zivkan
-        then: 
-        - assignTo:
-            user: donnie-msft
-        - assignTo:
-            user: jeffkl
-      - if: 
-        - isActivitySender:
-            user: donnie-msft
-        then: 
-        - assignTo:
-            user: zivkan
-        - assignTo:
-            user: jeffkl
-      - if: 
-        - isActivitySender:
-            user: jebriede
-        then: 
-        - assignTo:
-            user: Nigusu-Allehu
-        - assignTo:
-            user: jeffkl
-      - if: 
-        - isActivitySender:
-            user: Nigusu-Allehu
-        then: 
-        - assignTo:
-            user: jebriede
-        - assignTo:
-            user: jeffkl
-      - if: 
-        - isActivitySender:
-            user: jeffkl
-        then: 
-        - assignTo:
-            user: zivkan
-        - assignTo:
-            user: donnie-msft
-        - assignTo:
-            user: jebriede
-        - assignTo:
-            user: Nigusu-Allehu
-      description: Automatically Assign pr Buddies.
-onFailure:
-onSuccess:
+onFailure: 
+onSuccess: 
