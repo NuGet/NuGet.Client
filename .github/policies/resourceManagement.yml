@@ -264,7 +264,7 @@ configuration:
         - assignTo:
             user: jebriede
         - assignTo:
-            user: jeffkl
+            user: Nigusu-Allehu
       description: Automatically Assign pr Buddies.
 onFailure:
 onSuccess:
