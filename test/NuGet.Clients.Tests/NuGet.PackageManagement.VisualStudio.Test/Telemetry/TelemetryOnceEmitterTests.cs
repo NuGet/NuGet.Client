@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 using Xunit.Abstractions;
 
