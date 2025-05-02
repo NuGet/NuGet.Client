@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         }
 
         [Fact]
-        public void Log_InvokesNuGetProjectContextLog_Once()
+        public void Log_InvokesNuGetProjectContextLog_Always()
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
@@ -58,6 +58,107 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
             // Assert
             mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Once());
+        }
+
+        [Fact]
+        public void LogError_InvokesNuGetProjectContextLog_Always()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var message = Mock.Of<ILogMessage>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogError(data: "Message should be logged");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Once());
+        }
+
+        [Fact]
+        public void LogWarning_InvokesNuGetProjectContextLog_Always()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var message = Mock.Of<ILogMessage>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogWarning(data: "Message should be logged");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Once());
+        }
+
+        [Fact]
+        public void LogInformation_InvokesNuGetProjectContextLog_Never()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogInformation(data: "Message which should be ignored");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Never());
+        }
+
+        [Fact]
+        public void LogInformationSummary_InvokesNuGetProjectContextLog_Never()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogInformationSummary(data: "Message which should be ignored");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Never());
+        }
+
+        [Fact]
+        public void LogDebug_InvokesNuGetProjectContextLog_Never()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogDebug(data: "Message which should be ignored");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Never());
+        }
+
+
+        [Fact]
+        public void LogMinimal_InvokesNuGetProjectContextLog_Never()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogMinimal(data: "Message which should be ignored");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Never());
+        }
+
+        [Fact]
+        public void LogVerbose_InvokesNuGetProjectContextLog_Never()
+        {
+            // Arrange
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+
+            // Act
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
+            restoreBarLogger.LogVerbose(data: "Message which should be ignored");
+
+            // Assert
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Never());
         }
     }
 }
