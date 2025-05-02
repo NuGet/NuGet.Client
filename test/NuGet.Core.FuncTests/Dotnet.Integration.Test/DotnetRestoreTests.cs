@@ -3092,6 +3092,7 @@ EndGlobal";
         [InlineData("all", "all")]
         public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string expectedAuditMode)
         {
+            // Arrange
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "AuditProject";
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
@@ -3102,7 +3103,6 @@ EndGlobal";
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
                 var xml = XDocument.Load(stream);
-                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", Constants.DefaultTargetFramework.GetShortFolderName());
 
                 if (!string.IsNullOrEmpty(userAuditMode))
                 {
@@ -3112,10 +3112,13 @@ EndGlobal";
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
+            // Act
             _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
 
             var assetsFilePath = Path.Combine(workingDirectory, "obj", "project.assets.json");
             LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+
+            // Assert
             assetsFile.PackageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be(expectedAuditMode);
         }
 
