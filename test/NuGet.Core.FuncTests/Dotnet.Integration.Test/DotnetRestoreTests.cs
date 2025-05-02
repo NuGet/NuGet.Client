@@ -3086,6 +3086,39 @@ EndGlobal";
             assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("Y"));
         }
 
+        [Theory]
+        [InlineData(null, "net10.0", "all")]
+        [InlineData("direct", "net10.0", "direct")]
+        [InlineData("all", "net10.0", "all")]
+        public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string targetFrameworkVersion, string expectedAuditMode)
+        {
+            using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+            var projectName = "AuditProject";
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib", testOutputHelper: _testOutputHelper);
+
+            using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", targetFrameworkVersion);
+
+                if (!string.IsNullOrEmpty(userAuditMode))
+                {
+                    ProjectFileUtils.AddProperty(xml, "NuGetAuditMode", userAuditMode);
+                }
+
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+
+            var assetsFilePath = Path.Combine(workingDirectory, "obj", "project.assets.json");
+            LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+            assetsFile.PackageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be(expectedAuditMode);
+        }
+
         private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)
         {
             var item = items.Single(i => i.Path.Equals(path));
