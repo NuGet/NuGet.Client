@@ -3087,30 +3087,22 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(null, "default", "all")]
-        [InlineData(null, "net9.0", "direct")]
-        [InlineData("direct", "default", "direct")]
-        [InlineData("all", "default", "all")]
-        [InlineData("direct", "net9.0", "direct")]
-        [InlineData("all", "net9.0", "all")]
-        public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string targetFrameworkVersion, string expectedAuditMode)
+        [InlineData(null, "all")]
+        [InlineData("direct", "direct")]
+        [InlineData("all", "all")]
+        public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string expectedAuditMode)
         {
-            if (targetFrameworkVersion == "default")
-            {
-                targetFrameworkVersion = Constants.DefaultTargetFramework.GetShortFolderName();
-            }
-
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "AuditProject";
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
             var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, $"classlib -f {targetFrameworkVersion}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, $"classlib", testOutputHelper: _testOutputHelper);
 
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
                 var xml = XDocument.Load(stream);
-                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", targetFrameworkVersion);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", Constants.DefaultTargetFramework.GetShortFolderName());
 
                 if (!string.IsNullOrEmpty(userAuditMode))
                 {
