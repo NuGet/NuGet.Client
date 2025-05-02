@@ -3087,17 +3087,25 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(null, "net10.0", "all")]
-        [InlineData("direct", "net10.0", "direct")]
-        [InlineData("all", "net10.0", "all")]
+        [InlineData(null, "default", "all")]
+        [InlineData(null, "net9.0", "direct")]
+        [InlineData("direct", "default", "direct")]
+        [InlineData("all", "default", "all")]
+        [InlineData("direct", "net9.0", "direct")]
+        [InlineData("all", "net9.0", "all")]
         public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string targetFrameworkVersion, string expectedAuditMode)
         {
+            if (targetFrameworkVersion == "default")
+            {
+                targetFrameworkVersion = Constants.DefaultTargetFramework.GetShortFolderName();
+            }
+
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "AuditProject";
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
             var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, $"classlib -f {targetFrameworkVersion}", testOutputHelper: _testOutputHelper);
 
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
