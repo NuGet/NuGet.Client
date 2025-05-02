@@ -9,8 +9,11 @@ Cleans NuGet packages cache before build
 .PARAMETER Force
 Switch to force installation of required tools.
 
-.PARAMETER Test
+.PARAMETER RunTest
 Indicates the Tests need to be run. Downloads the Test cli when tests are needed to run.
+
+.PARAMETER SkipStrongName
+Don't disable strong name verification. Disabling is needed when working on NuGet's Visual Studio integration, but generally not needed for command line work.
 
 .EXAMPLE
 .\configure.ps1 -cc -v
@@ -28,7 +31,8 @@ Param (
     [switch]$Force,
     [switch]$RunTest,
     [switch]$SkipDotnetInfo,
-    [switch]$ProcDump
+    [switch]$ProcDump,
+    [switch]$SkipStrongName
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,7 +46,7 @@ $BuildErrors = @()
 if ($ProcDump -eq $true -Or $env:CI -eq "true")
 {
     Invoke-BuildStep 'Configuring Process Dump Collection' {
-    
+
         Install-ProcDump
     } -ev +BuildErrors
 }
@@ -62,6 +66,10 @@ Invoke-BuildStep 'Installing .NET SDKs for functional tests' {
 Invoke-BuildStep 'Cleaning package cache' {
     Clear-PackageCache
 } -skip:(-not $CleanCache) -ev +BuildErrors
+
+Invoke-BuildStep 'Disabling strong name verification' {
+    & "$PSScriptRoot\scripts\utils\DisableStrongNameVerification.ps1" -skipNoOpMessage
+} -skip:($SkipStrongName -Or $env:CI -eq "true") -ev +BuildErrors
 
 if ($BuildErrors) {
     $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
