@@ -32,7 +32,8 @@ namespace NuGet.PackageManagement.UI.Utility
 
         public override Task LogAsync(ILogMessage message)
         {
-            throw new NotImplementedException();
+            Log(message);
+            return Task.CompletedTask;
         }
     }
 }

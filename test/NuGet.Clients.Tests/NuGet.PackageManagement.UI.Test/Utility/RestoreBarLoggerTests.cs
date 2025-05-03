@@ -31,18 +31,18 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         }
 
         [Fact]
-        public async Task LogAsync_ShouldThrowNotImplementedException_ThrowsAsync()
+        public async Task LogAsync_InvokesNuGetProjectContextLog_Always()
         {
             // Arrange
-            var nuGetProjectContext = Mock.Of<INuGetProjectContext>();
+            var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
             var message = Mock.Of<ILogMessage>();
-            var restoreBarLogger = new RestoreBarLogger(nuGetProjectContext);
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var act = async () => await restoreBarLogger.LogAsync(message);
+            await restoreBarLogger.LogAsync(message);
 
             // Assert
-            await act.Should().ThrowAsync<NotImplementedException>();
+            mockNuGetProjectContext.Verify(nuGetProjectContext => nuGetProjectContext.Log(It.IsAny<ILogMessage>()), Times.Once());
         }
 
         [Fact]
@@ -51,9 +51,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
             var message = Mock.Of<ILogMessage>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.Log(message);
 
             // Assert
@@ -66,9 +66,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
             var message = Mock.Of<ILogMessage>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogError(data: "Message should be logged");
 
             // Assert
@@ -81,9 +81,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
             var message = Mock.Of<ILogMessage>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogWarning(data: "Message should be logged");
 
             // Assert
@@ -95,9 +95,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogInformation(data: "Message which should be ignored");
 
             // Assert
@@ -109,9 +109,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogInformationSummary(data: "Message which should be ignored");
 
             // Assert
@@ -123,9 +123,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogDebug(data: "Message which should be ignored");
 
             // Assert
@@ -138,9 +138,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogMinimal(data: "Message which should be ignored");
 
             // Assert
@@ -152,9 +152,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         {
             // Arrange
             var mockNuGetProjectContext = new Mock<INuGetProjectContext>();
+            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
 
             // Act
-            var restoreBarLogger = new RestoreBarLogger(mockNuGetProjectContext.Object);
             restoreBarLogger.LogVerbose(data: "Message which should be ignored");
 
             // Assert
