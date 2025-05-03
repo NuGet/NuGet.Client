@@ -18,8 +18,7 @@ namespace NuGet.PackageManagement.UI.Utility
         /// Creates a <see cref="LoggerBase"/> with verbosity level <see cref="Common.LogLevel.Warning"/>
         /// so that only critical log messages are shown in the <see cref="PackageRestoreBar"/>.
         /// </summary>
-        /// <param name="nuGetProjectContext"></param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <param name="nuGetProjectContext">Underlying <see cref="ILogger"/> implementation to invoke.</param>
         public RestoreBarLogger(INuGetProjectContext nuGetProjectContext)
             : base(verbosityLevel: LogLevel.Warning)
         {
