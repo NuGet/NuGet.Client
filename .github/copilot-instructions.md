@@ -1,1 +1,1 @@
-For both new and existing code, help me enforce a maximum line length of 140 characters.
+For both new and existing code, help enforce a maximum line length of 120 characters.
