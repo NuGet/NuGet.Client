@@ -968,8 +968,7 @@ namespace NuGet.Commands
 
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
-
-                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, _logger);
+                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, FrameworkRuntimePair.GetTargetGraphName(pair.Framework, pair.RuntimeIdentifier), _logger);
 
                 LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
                 if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
@@ -1411,11 +1410,12 @@ namespace NuGet.Commands
 
         private static bool IsNewerThanNET10(NuGetFramework frameworkName)
         {
-            if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
-            {
-                return frameworkName.Version.Major >= 10;
-            }
-            return false;
+            return true;
+            //if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
+            //{
+            //    return frameworkName.Version.Major >= 10;
+            //}
+            //return false;
         }
 
         /// <summary>

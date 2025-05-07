@@ -156,7 +156,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 int j = 0;
                 foreach (IAssetsLogMessage logMessage in lockFile.LogMessages)
                 {
-                    if (!logMessage.TargetGraphs.Contains(target))
+                    if (logMessage.TargetGraphs.Count > 0 && !logMessage.TargetGraphs.Contains(target))
                     {
                         continue;
                     }
