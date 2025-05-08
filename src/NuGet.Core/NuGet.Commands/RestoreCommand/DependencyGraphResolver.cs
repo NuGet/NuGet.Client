@@ -935,6 +935,8 @@ namespace NuGet.Commands
             // Keeps track of the total number of items that have been queued for processing
             int totalQueuedItemCount = 0;
 
+            string targetGraphName = FrameworkRuntimePair.GetTargetGraphName(pair.Framework, pair.RuntimeIdentifier);
+
         // Used to start over when a dependency has multiple descendants of an item to be evicted.
         //
         // Project
@@ -968,7 +970,7 @@ namespace NuGet.Commands
 
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
-                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, FrameworkRuntimePair.GetTargetGraphName(pair.Framework, pair.RuntimeIdentifier), _logger);
+                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, targetGraphName, _logger);
 
                 LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
                 if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
