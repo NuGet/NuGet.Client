@@ -3895,7 +3895,8 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeFalse(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(0);
             result.LockFile.LogMessages.Should().HaveCount(1);
-            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1301);
+            result.LockFile.LogMessages[0].LibraryId.Should().BeNull();
             result.LockFile.Targets.Should().HaveCount(1);
         }
 
@@ -4408,6 +4409,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
+            result.LockFile.LogMessages[0].LibraryId.Should().Be("C");
+            result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be("net10.0");
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(3);
         }
@@ -4722,6 +4726,9 @@ namespace NuGet.Commands.FuncTest
             {
                 result.LockFile.LogMessages.Should().HaveCount(1);
                 result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1511);
+                result.LockFile.LogMessages[0].LibraryId.Should().Be("Project2");
+                result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
+                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be(framework);
             }
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(1);
