@@ -166,7 +166,7 @@ namespace NuGet.Build.Tasks
                         currentProjectTargetFramework.DotNetFrameworkName,
                         projectNuGetFramework.DotNetFrameworkName);
 
-                    var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1702, message, referencedProjectFile, currentProjectTargetFramework.DotNetFrameworkName);
+                    var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1702, message);
                     warning.LibraryId = referencedProjectFile;
                     warning.ProjectPath = CurrentProjectName;
 
