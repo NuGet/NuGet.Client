@@ -4420,7 +4420,7 @@ namespace NuGet.Commands.FuncTest
                 result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
                 result.LockFile.LogMessages[0].LibraryId.Should().Be("C");
                 result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
-                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be("net10.0");
+                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be(framework);
             }
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(3);
