@@ -935,6 +935,7 @@ namespace NuGet.Commands
             // Keeps track of the total number of items that have been queued for processing
             int totalQueuedItemCount = 0;
 
+            // Used when logging package id specific messages, we need to know the target graph name
             string targetGraphName = FrameworkRuntimePair.GetTargetGraphName(pair.Framework, pair.RuntimeIdentifier);
 
         // Used to start over when a dependency has multiple descendants of an item to be evicted.
@@ -970,6 +971,7 @@ namespace NuGet.Commands
 
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
+
                 GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, targetGraphName, _logger);
 
                 LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
