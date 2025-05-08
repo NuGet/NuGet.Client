@@ -194,17 +194,12 @@ namespace NuGet.Commands
                         projectRestoreMetadata.UsingMicrosoftNETSdk,
                         SdkAnalysisLevelMinimums.PruningWarnings))
                     {
-                        logger.Log(
-                            RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510,
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Error_RestorePruningDirectPackageReference,
-                                dependency.Name),
-                            dependency.Name,
-                            targetGraphName));
+                        logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, dependency.Name),
+                                   dependency.Name,
+                                   targetGraphName));
                     }
 
-                    return true;
+                    return false;
                 }
 
                 logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.RestoreDebugPruningPackageReference, $"{dependency.Name} {dependency.LibraryRange!.VersionRange.OriginalString}", parentLibrary, packageToPrune.VersionRange.MaxVersion));

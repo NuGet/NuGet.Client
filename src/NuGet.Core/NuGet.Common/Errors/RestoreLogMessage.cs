@@ -79,7 +79,7 @@ namespace NuGet.Common
             };
         }
 
-#if RELEASE
+#if DEBUG
         [Obsolete("An argument for 'targetGraphs' must be provided. " +
                 "If the argument is not provided, the solution explorer will not add the surface the warning on the package node.", error: true)]
 
