@@ -25,7 +25,7 @@
     <IsEscrowMode>false</IsEscrowMode>
 
     <!-- Visual Studio Insertion Logic -->
-    <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
+    <VsTargetMajorVersion>$([MSBuild]::Add(12, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <VsTargetBranch>main</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <VsTargetChannelForTests>int.$(VsTargetBranch)</VsTargetChannelForTests>
