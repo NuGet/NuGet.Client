@@ -3928,8 +3928,8 @@ namespace NuGet.Commands.FuncTest
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(1);
-            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
-
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1801);
+            result.LockFile.LogMessages[0].LibraryId.Should().BeNull();
             static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
             {
                 return new TestRestoreRequest(spec, sources, userPackagesFolder, new TestSourceCacheContext { IgnoreFailedSources = true }, logger)
