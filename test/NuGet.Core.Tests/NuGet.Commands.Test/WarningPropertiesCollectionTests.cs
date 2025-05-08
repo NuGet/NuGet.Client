@@ -495,8 +495,7 @@ namespace NuGet.Commands.Test
 
             var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
             nonSuppressedMessage.LibraryId = libraryId;
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
-            suppressedMessage.LibraryId = libraryId;
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, firstFrameworkString);
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
