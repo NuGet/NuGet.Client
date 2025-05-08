@@ -449,9 +449,12 @@ namespace NuGet.Commands.Test
                 packageSpecificWarningProperties,
                 new List<NuGetFramework> { targetFramework });
 
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString);
-            var suppressedMessage2 = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, frameworkString);
-            var unaffectedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning", libraryId, frameworkString);
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
+            suppressedMessage.LibraryId = libraryId;
+            var suppressedMessage2 = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
+            suppressedMessage2.LibraryId = libraryId;
+            var unaffectedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, "Warning");
+            unaffectedMessage.LibraryId = libraryId;
 
             // Act && Assert
             Assert.True(warningPropertiesCollection.ApplyWarningProperties(suppressedMessage));
@@ -490,8 +493,10 @@ namespace NuGet.Commands.Test
                 packageSpecificWarningProperties,
                 new List<NuGetFramework> { firstTargetFramework, secondTargetFramework });
 
-            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, secondFrameworkString);
-            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning", libraryId, firstFrameworkString);
+            var nonSuppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
+            nonSuppressedMessage.LibraryId = libraryId;
+            var suppressedMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1500, "Warning");
+            suppressedMessage.LibraryId = libraryId;
 
             // Act && Assert
             Assert.False(warningPropertiesCollection.ApplyWarningProperties(nonSuppressedMessage));
