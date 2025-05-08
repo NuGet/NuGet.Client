@@ -1414,12 +1414,11 @@ namespace NuGet.Commands
 
         private static bool IsNewerThanNET10(NuGetFramework frameworkName)
         {
-            return true;
-            //if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
-            //{
-            //    return frameworkName.Version.Major >= 10;
-            //}
-            //return false;
+            if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
+            {
+                return frameworkName.Version.Major >= 10;
+            }
+            return false;
         }
 
         /// <summary>
