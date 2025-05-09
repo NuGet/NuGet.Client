@@ -18,12 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         protected NuGetExternalSettingsProvider(VSSettings vsSettings)
         {
-            if (vsSettings is null)
-            {
-                throw new ArgumentNullException(paramName: nameof(vsSettings));
-            }
-
-            _vsSettings = vsSettings;
+            _vsSettings = vsSettings ?? throw new ArgumentNullException(paramName: nameof(vsSettings));
             _vsSettings.SettingsChanged += VsSettings_SettingsChanged;
         }
 
