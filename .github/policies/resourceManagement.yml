@@ -181,7 +181,7 @@ configuration:
       - addReply:
           reply: 'Since this PR is changing CI as it modifies YML files, please verify that you''ve addressed how this change should apply to release branches. Either: 
           
-          - [ ] Link to equivalent PRs for each currently [supported branch](https://github.com/NuGet/Client.Engineering/blob/main/docs/HotSeat/NuGet.Client-Branches.md#supported-branches). 
+          - [ ] Link to equivalent PRs or Issues for each currently [supported branch](https://github.com/NuGet/Client.Engineering/blob/main/docs/HotSeat/NuGet.Client-Branches.md#supported-branches). 
           
           **or**
           
