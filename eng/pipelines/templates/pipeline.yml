@@ -136,7 +136,7 @@ stages:
       MSBUILDDISABLENODEREUSE: 1
     condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-22.04
     steps:
     - template: Tests_On_Linux.yml
 
