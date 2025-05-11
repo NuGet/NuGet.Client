@@ -244,7 +244,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 if (includeTopLevelPositives)
                 {
                     topLevelPackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(isDeprecated: true));
-                };
+                }
                 if (includeTransitivePositives)
                 {
                     transitivePackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(isDeprecated: true));
@@ -318,7 +318,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 if (includeTopLevelPositives)
                 {
                     topLevelPackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(vulnerabilityCount: 1));
-                };
+                }
                 if (includeTransitivePositives)
                 {
                     transitivePackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(vulnerabilityCount: 1));
