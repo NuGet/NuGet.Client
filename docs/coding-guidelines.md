@@ -557,7 +557,8 @@ Assert.Equal(
 
 #### Test assertions
 
-Both [xunit.net](https://xunit.net/#documentation) and [AwesomeAssertions](https://awesomeassertions.org/) are allowed. AwesomeAssertions do not truncate the equality messages, thus sometimes making it easier to diagnose the failure.
+Both [xunit.net](https://xunit.net/#documentation) and [AwesomeAssertions](https://awesomeassertions.org/) are allowed.
+AwesomeAssertions do not truncate the equality messages, thus sometimes making it easier to diagnose the failure.
 Both of these will make the tests a lot more readable and also allow the test runner report the best possible errors. For example, these are bad:
 
 ```cs
