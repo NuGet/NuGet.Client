@@ -123,7 +123,7 @@ namespace NuGet.Commands.Restore.Utility
                 restoreMetadata = new ProjectRestoreMetadata
                 {
                     // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference) && (
                         project.TargetFrameworks.Count > 1 || !string.IsNullOrWhiteSpace(project.OuterBuild.GetProperty("TargetFrameworks"))),
                     FallbackFolders = GetFallbackFolders(
                         outerBuild.GetProperty("MSBuildStartupDirectory"),
@@ -337,7 +337,7 @@ namespace NuGet.Commands.Restore.Utility
                 projectStyle = ProjectStyle.Unknown;
             }
 
-            bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
+            bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference; // TODO NK - Cleanup
 
             return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigFilePath);
         }

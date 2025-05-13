@@ -79,6 +79,7 @@ namespace NuGet.Commands
                 availableFrameworkRuntimePairs: Enumerable.Empty<FrameworkRuntimePair>());
         }
 
+        [Obsolete]
         public static CompatibilityIssue ToolsPackageWithExtraPackageTypes(PackageIdentity referenceAssemblyPackage)
         {
             return new CompatibilityIssue(
@@ -244,14 +245,6 @@ namespace NuGet.Commands
 
                         return FormatMessage(message, string.Empty, string.Empty);
                     }
-                case CompatibilityIssueType.ToolsPackageWithExtraPackageTypes:
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture,
-                               Strings.Error_ToolsPackageWithExtraPackageTypes,
-                               Package.Id,
-                               Package.Version.ToNormalizedString());
-                        return FormatMessage(message, string.Empty, string.Empty);
-                    }
                 case CompatibilityIssueType.PackageTypeIncompatible:
                     {
                         var message = string.Format(CultureInfo.CurrentCulture,
@@ -371,6 +364,7 @@ namespace NuGet.Commands
         PackageToolsAssetsIncompatible,
         ProjectWithIncorrectDependencyCount,
         IncompatiblePackageWithDotnetTool,
+        [Obsolete("No longer used.")]
         ToolsPackageWithExtraPackageTypes,
         PackageTypeIncompatible
     }

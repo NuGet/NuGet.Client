@@ -362,7 +362,7 @@ namespace NuGet.Build.Tasks
                 projectStyle = ProjectStyle.Unknown;
             }
 
-            bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
+            bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference;
 
             return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigFilePath);
         }

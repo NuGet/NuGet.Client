@@ -1361,39 +1361,31 @@ namespace NuGet.Commands
                 var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
-                    // Don't do compat checks for the ridless graph of DotnetTooReference restore. Everything relevant will be caught in the graph with the rid
-                    if (!(ProjectStyle.DotnetToolReference == project.RestoreMetadata?.ProjectStyle && string.IsNullOrEmpty(graph.RuntimeIdentifier)))
+                    var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
+
+                    var res = await checker.CheckAsync(graph, includeFlags, project);
+
+                    checkResults.Add(res);
+                    if (res.Success)
                     {
-                        var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
-
-                        var res = await checker.CheckAsync(graph, includeFlags, project);
-
-                        checkResults.Add(res);
-                        if (res.Success)
-                        {
-                            await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
-                        }
-                        else
-                        {
-                            // Get error counts on a project vs package basis
-                            var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
-                            var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
-
-                            // Log a summary with compatibility error counts
-                            if (projectCount > 0)
-                            {
-                                await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
-                            }
-
-                            if (packageCount > 0)
-                            {
-                                await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
-                            }
-                        }
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
                     }
                     else
                     {
-                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject, graph.Name));
+                        // Get error counts on a project vs package basis
+                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
+                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
+
+                        // Log a summary with compatibility error counts
+                        if (projectCount > 0)
+                        {
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
+                        }
+
+                        if (packageCount > 0)
+                        {
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
+                        }
                     }
                 }
             }

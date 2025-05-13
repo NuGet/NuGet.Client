@@ -205,7 +205,6 @@ namespace NuGet.Commands
                 if (restoreType == ProjectStyle.PackageReference
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.ProjectJson
-                    || restoreType == ProjectStyle.DotnetToolReference
                     || restoreType == ProjectStyle.PackagesConfig)
                 {
 

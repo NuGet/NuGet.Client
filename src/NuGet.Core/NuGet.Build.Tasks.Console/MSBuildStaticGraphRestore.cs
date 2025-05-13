@@ -1014,7 +1014,7 @@ namespace NuGet.Build.Tasks.Console
                 restoreMetadata = new ProjectRestoreMetadata
                 {
                     // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference) && (
                         projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
                         project.GetProperty("MSBuildStartupDirectory"),

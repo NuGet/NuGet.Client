@@ -41,6 +41,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// DotnetToolReference project
         /// </summary>
+        [Obsolete("No longer used.")]
         DotnetToolReference = 6
     }
 }

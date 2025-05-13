@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
@@ -300,9 +299,7 @@ namespace NuGet.Commands
                     result is NoOpRestoreResult ? LogLevel.Information : LogLevel.Minimal,
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
-                            Strings.Log_RestoreCompleteDotnetTool :
-                            Strings.Log_RestoreComplete,
+                        Strings.Log_RestoreComplete,
                         summaryRequest.InputPath,
                         DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
@@ -310,8 +307,6 @@ namespace NuGet.Commands
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
-                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
-                    Strings.Log_RestoreFailedDotnetTool :
                     Strings.Log_RestoreFailed,
                     summaryRequest.InputPath,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
