@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
@@ -865,6 +866,54 @@ namespace Dotnet.Integration.Test
             packageA100.Dependencies.Add(packageB100);
 
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100);
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            var packageSource = new PackageSource(mockServer.ServiceIndexUri, "source");
+            pathContext.Settings.RemoveSource(packageSource.Name);
+            pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "true");
+            mockServer.Start();
+
+            mockServer.DeprecatedPackages.Add(packageB100.Identity);
+
+            _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
+
+            // Act
+            var result = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --deprecated {additionalOptions}", testOutputHelper: _testOutputHelper);
+
+            // Assert
+            string[] lines = result.AllOutput.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+            lines.Should().NotContain(DirectHeading);
+
+            if (shouldReportTransitivePackages)
+            {
+                lines.Should().Contain(TransitiveHeading);
+                var index = Array.IndexOf(lines, TransitiveHeading) + 1;
+                lines[index].Should().StartWith("   > B                     1.0.0      CriticalBugs");
+                lines[index + 1].Should().NotStartWith("   >");
+            }
+            else
+            {
+                lines.Should().NotContain(TransitiveHeading);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(" --include-transitive", true)]
+        [InlineData(" --include-transitive --framework net10.0", false)]
+        [InlineData(" --include-transitive --framework net472", true)]
+        [InlineData("", false)]
+        public async Task DeprecatedOption_WithMultiTargetedProjectsAndDeprecatedPackages_Succeeds(string additionalOptions, bool shouldReportTransitivePackages)
+        {
+            // Arrange
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472;net10.0");
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageB100 = new SimpleTestPackageContext("B", "1.0.0");
+            packageA100.PerFrameworkDependencies.Add(FrameworkConstants.CommonFrameworks.Net472, [packageB100]);
+            packageA100.PerFrameworkDependencies.Add(FrameworkConstants.CommonFrameworks.Net10_0, []);
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageB100);
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             var packageSource = new PackageSource(mockServer.ServiceIndexUri, "source");
