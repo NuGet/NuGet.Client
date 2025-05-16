@@ -848,7 +848,10 @@ namespace Dotnet.Integration.Test
             lines.Should().Contain(DirectHeading);
             var index = Array.IndexOf(lines, DirectHeading) + 1;
             lines[index].Should().StartWith("   > A                    1.0.0       1.0.0      CriticalBugs");
-            lines[index + 1].Should().NotStartWith("   >");
+            if (lines.Length > index + 1)
+            {
+                lines[index + 1].Should().NotStartWith("   >");
+            }
             lines.Should().NotContain(TransitiveHeading);
         }
 
@@ -889,7 +892,10 @@ namespace Dotnet.Integration.Test
                 lines.Should().Contain(TransitiveHeading);
                 var index = Array.IndexOf(lines, TransitiveHeading) + 1;
                 lines[index].Should().StartWith("   > B                     1.0.0      CriticalBugs");
-                lines[index + 1].Should().NotStartWith("   >");
+                if (lines.Length > index + 1)
+                {
+                    lines[index + 1].Should().NotStartWith("   >");
+                }
             }
             else
             {
@@ -937,7 +943,10 @@ namespace Dotnet.Integration.Test
                 lines.Should().Contain(TransitiveHeading);
                 var index = Array.IndexOf(lines, TransitiveHeading) + 1;
                 lines[index].Should().StartWith("   > B                     1.0.0      CriticalBugs");
-                lines[index + 1].Should().NotStartWith("   >");
+                if (lines.Length > index + 1)
+                {
+                    lines[index + 1].Should().NotStartWith("   >");
+                }
             }
             else
             {
