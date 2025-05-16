@@ -11,5 +11,11 @@ namespace NuGet.CommandLine.XPlat
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.Error_NoVersionsAvailable, packageId);
         }
+
+        internal static string Error_CouldNotFindPackageVersionForCpmPackage(string packageId)
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotFindPackageVersionForCpmPackage, packageId);
+        }
+
     }
 }

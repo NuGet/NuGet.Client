@@ -53,13 +53,13 @@ namespace NuGet.XPlat.FuncTest
             var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
             var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
 
-            SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2 };
+            SimpleTestPackageContext[] packages = [a1, a2];
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
 
             var csprojContents = """
                 <Project Sdk="Microsoft.NET.Sdk">
                     <PropertyGroup>
-                        <TargetFramework>net48</TargetFramework>
+                        <TargetFramework>net9.0</TargetFramework>
                     </PropertyGroup>
                     <ItemGroup>
                         <PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />
@@ -94,13 +94,13 @@ namespace NuGet.XPlat.FuncTest
             var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
             var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
 
-            SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2 };
+            SimpleTestPackageContext[] packages = [a1, a2];
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
 
             var csprojContents = """
                 <Project Sdk="Microsoft.NET.Sdk">
                     <PropertyGroup>
-                        <TargetFrameworks>net48;net481</TargetFrameworks>
+                        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
                     </PropertyGroup>
                     <ItemGroup>
                         <PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />
@@ -135,16 +135,16 @@ namespace NuGet.XPlat.FuncTest
             var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
             var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
 
-            SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2 };
+            SimpleTestPackageContext[] packages = [a1, a2];
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
 
             var csprojContents = """
                 <Project Sdk="Microsoft.NET.Sdk">
                     <PropertyGroup>
-                        <TargetFrameworks>net48;net481</TargetFrameworks>
+                        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
                     </PropertyGroup>
                     <ItemGroup>
-                        <PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" Condition=" '$(TargetFramework)' == 'net48' " />
+                        <PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" Condition=" '$(TargetFramework)' == 'net8.0' " />
                     </ItemGroup>
                 </Project>
                 """;
@@ -164,7 +164,7 @@ namespace NuGet.XPlat.FuncTest
             var packageReferenceA = csproj.XPathSelectElements("//PackageReference[@Include='NuGet.Internal.Test.a']").ToList();
             packageReferenceA.Count.Should().Be(1);
             packageReferenceA[0].Attribute("Version").Value.Should().Be("2.0.0");
-            packageReferenceA[0].Attribute("Condition").Value.Should().Be(" '$(TargetFramework)' == 'net48' ");
+            packageReferenceA[0].Attribute("Condition").Value.Should().Be(" '$(TargetFramework)' == 'net8.0' ");
         }
 
         [Fact]
@@ -177,13 +177,13 @@ namespace NuGet.XPlat.FuncTest
             var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
             var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
 
-            SimpleTestPackageContext[] packages = new SimpleTestPackageContext[] { a1, a2 };
+            SimpleTestPackageContext[] packages = [a1, a2];
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
 
             var csprojContents = """
                 <Project Sdk="Microsoft.NET.Sdk">
                     <PropertyGroup>
-                        <TargetFramework>net48</TargetFramework>
+                        <TargetFramework>net8.0</TargetFramework>
                     </PropertyGroup>
                     <ItemGroup>
                         <PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
         internal static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageUpdateArgs, ILoggerWithColor, IDGSpecFactory, MSBuildAPIUtility, CancellationToken, Task<int>> action)
         {
-            var command = new DocumentedCommand("update", "updates packages in projects", "https://aka.ms/dotnet/package/update");
+            var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
             var packagesArguments = new Argument<List<string>>("packages")
             {
@@ -28,19 +29,20 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             };
             command.Arguments.Add(packagesArguments);
 
-            var projectOption = new Option<string>("--project");
+            var projectOption = new Option<FileSystemInfo>("--project").AcceptExistingOnly();
+            projectOption.Description = Strings.PackageUpdateCommand_ProjectOptionDescription;
             command.Options.Add(projectOption);
 
             rootCommand.Subcommands.Add(command);
             command.SetAction(async (args, cancellationToken) =>
             {
                 var logger = getLogger();
-                var project = args.GetValue(projectOption) ?? Environment.CurrentDirectory;
+                var project = args.GetValue(projectOption);
                 var packages = args.GetValue(packagesArguments);
 
                 var commandArgs = new PackageUpdateArgs
                 {
-                    Project = project,
+                    Project = project?.FullName ?? Environment.CurrentDirectory,
                     Packages = packages,
                 };
 

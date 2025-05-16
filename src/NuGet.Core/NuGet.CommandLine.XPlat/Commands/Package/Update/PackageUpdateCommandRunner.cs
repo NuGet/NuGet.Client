@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -32,17 +33,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             // 4. Update MSBuild files
             // 5. Commit restore if everything successful
 
-            await Task.Delay(1, cancellationToken);
-
             // 1. Get DGSpec for project/solution
             string settingsRoot = Directory.Exists(args.Project) ? args.Project : Path.GetDirectoryName(args.Project)!;
             ISettings settings = Settings.LoadDefaultSettings(settingsRoot);
 
             var dgSpec = dGSpecFactory.GetDependencyGraphSpec(args.Project);
 
+            if (dgSpec is null || dgSpec.Restore is null || dgSpec.Restore.Count == 0)
+            {
+                logger.LogMinimal(
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, args.Project),
+                    ConsoleColor.Red);
+                return ExitCodes.Error;
+            }
+
             if (dgSpec.Restore.Count > 1)
             {
-                logger.LogMinimal("Unsupported: Updating more than one project is not yet supported", ConsoleColor.Red);
+                logger.LogMinimal(Strings.Unsupported_UpdatingMoreThanOneProject, ConsoleColor.Red);
                 return ExitCodes.Error;
             }
 
@@ -69,11 +76,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
             var restorePreviewResult = await PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
 
-            logger.LogDebug("Restore Review completed");
+            logger.LogDebug("Restore preview completed");
 
             if (!restorePreviewResult.Result.Success)
             {
-                logger.LogMinimal("Restore with updated packages was not successful. Force mode not yet implemented", ConsoleColor.Red);
+                logger.LogMinimal(Strings.PackageUpdate_PreviewRestoreFailed, ConsoleColor.Red);
                 return ExitCodes.Error;
             }
 
@@ -162,14 +169,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
             if (packages.Count > 1)
             {
-                logger.LogMinimal("Unsupported: Updating more than one package is not yet supported", ConsoleColor.Red);
+                logger.LogMinimal(Strings.Unsupported_MoreThanOnePackage, ConsoleColor.Red);
                 return (null, null);
             }
 
             var sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
             if (sourceMapping.IsEnabled)
             {
-                logger.LogMinimal("Projects using Package Source Mapping is not yet supported.", ConsoleColor.Red);
+                logger.LogMinimal(Strings.Unsupported_PackageSourceMapping, ConsoleColor.Red);
                 return (null, null);
             }
 
@@ -197,7 +204,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
                                 out CentralPackageVersion? centralVersion))
                             {
                                 logger.LogMinimal(
-                                    $"CPM configuration error: could not find PackageVersion for {packageId}",
+                                    Messages.Error_CouldNotFindPackageVersionForCpmPackage(packageId),
                                     ConsoleColor.Red);
                                 return (null, null);
                             }
