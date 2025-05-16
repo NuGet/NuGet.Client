@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Credentials;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -27,6 +28,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
     {
         internal static async Task<int> Run(PackageUpdateArgs args, ILoggerWithColor logger, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
         {
+            XPlatUtility.ConfigureProtocol();
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, nonInteractive: false);
+
             // 1. Get DGSpec for project/solution
             // 2. Find suitable version of package(s) to update
             // 3. Preview restore to validate changes
@@ -119,9 +123,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            // Set user agent and connection settings.
-            XPlatUtility.ConfigureProtocol();
-
             var providerCache = new RestoreCommandProvidersCache();
 
             // Pre-loaded request provider containing the graph file

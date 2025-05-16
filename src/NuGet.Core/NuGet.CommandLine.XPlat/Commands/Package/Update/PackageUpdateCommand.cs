@@ -14,12 +14,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 {
     internal static class PackageUpdateCommand
     {
-        internal static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger)
+        internal static void Register(Command packageCommand)
         {
-            Register(rootCommand, getLogger, PackageUpdateCommandRunner.Run);
+            Func<ILoggerWithColor> getLogger = () =>
+            {
+                var logger = new CommandOutputLogger(Common.LogLevel.Minimal);
+                logger.HidePrefixForInfoAndMinimal = true;
+                return logger;
+            };
+            Register(packageCommand, getLogger);
         }
 
-        internal static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageUpdateArgs, ILoggerWithColor, IDGSpecFactory, MSBuildAPIUtility, CancellationToken, Task<int>> action)
+        internal static void Register(Command packageCommand, Func<ILoggerWithColor> getLogger)
+        {
+            Register(packageCommand, getLogger, PackageUpdateCommandRunner.Run);
+        }
+
+        internal static void Register(Command packageCommand, Func<ILoggerWithColor> getLogger, Func<PackageUpdateArgs, ILoggerWithColor, IDGSpecFactory, MSBuildAPIUtility, CancellationToken, Task<int>> action)
         {
             var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
@@ -33,7 +44,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             projectOption.Description = Strings.PackageUpdateCommand_ProjectOptionDescription;
             command.Options.Add(projectOption);
 
-            rootCommand.Subcommands.Add(command);
+            packageCommand.Subcommands.Add(command);
             command.SetAction(async (args, cancellationToken) =>
             {
                 var logger = getLogger();
