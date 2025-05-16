@@ -89,17 +89,24 @@ namespace NuGet.CommandLine.XPlat
 
                 RootCommand rootCommand = new RootCommand();
 
-                var packageCommand = new Command("package");
-                rootCommand.Subcommands.Add(packageCommand);
+                if (args[0] == "package")
+                {
+                    var packageCommand = new Command("package");
+                    rootCommand.Subcommands.Add(packageCommand);
 
-                PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
-                PackageUpdateCommand.Register(packageCommand, getHidePrefixLogger);
+                    PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
+                    PackageUpdateCommand.Register(packageCommand, getHidePrefixLogger);
+                }
+                else
+                {
+                    var nugetCommand = new Command("nuget");
+                    rootCommand.Subcommands.Add(nugetCommand);
 
-                var nugetCommand = new Command("nuget");
-                rootCommand.Subcommands.Add(nugetCommand);
-
-                ConfigCommand.Register(nugetCommand, getHidePrefixLogger);
-                Commands.Why.WhyCommand.Register(nugetCommand, getHidePrefixLogger);
+                    ConfigCommand.Register(nugetCommand, getHidePrefixLogger);
+                    ConfigCommand.Register(rootCommand, getHidePrefixLogger);
+                    Commands.Why.WhyCommand.Register(nugetCommand, getHidePrefixLogger);
+                    Commands.Why.WhyCommand.Register(rootCommand, getHidePrefixLogger);
+                }
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
