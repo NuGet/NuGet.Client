@@ -159,12 +159,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Equal(1, targets.Count);
                 Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
                 Assert.Equal(3, targets[0].Dependencies.Count);
-                Assert.Equal("b", targets[0].Dependencies[2].Id);
-                Assert.Equal(PackageDependencyType.Project, targets[0].Dependencies[2].Type);
-                Assert.Equal("x", targets[0].Dependencies[0].Id);
-                Assert.Equal(PackageDependencyType.Direct, targets[0].Dependencies[0].Type);
-                Assert.Equal("y", targets[0].Dependencies[1].Id);
-                Assert.Equal(PackageDependencyType.Transitive, targets[0].Dependencies[1].Type);
+                Assert.Equal("b", targets[0].Dependencies[0].Id);
+                Assert.Equal(PackageDependencyType.Project, targets[0].Dependencies[0].Type);
+                Assert.Equal("x", targets[0].Dependencies[1].Id);
+                Assert.Equal(PackageDependencyType.Direct, targets[0].Dependencies[1].Type);
+                Assert.Equal("y", targets[0].Dependencies[2].Id);
+                Assert.Equal(PackageDependencyType.Transitive, targets[0].Dependencies[2].Type);
             }
         }
 
