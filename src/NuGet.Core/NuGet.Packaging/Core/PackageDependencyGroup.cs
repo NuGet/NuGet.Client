@@ -20,7 +20,7 @@ namespace NuGet.Packaging
         private readonly IEnumerable<PackageDependency> _packages;
 
         [JsonConstructor]
-        internal PackageDependencyGroup(NuGetFramework targetFramework)
+        private PackageDependencyGroup(NuGetFramework targetFramework)
         {
             if (targetFramework == null)
             {
