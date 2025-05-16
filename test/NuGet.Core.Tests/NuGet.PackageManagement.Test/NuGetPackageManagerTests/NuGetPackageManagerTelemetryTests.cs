@@ -604,36 +604,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
         }
 
-        private class ActionComparer : IEqualityComparer<Tuple<PackageIdentity, NuGetProjectActionType>>
-        {
-            public bool Equals(Tuple<PackageIdentity, NuGetProjectActionType> x, Tuple<PackageIdentity, NuGetProjectActionType> y)
-            {
-                var f1 = x.Item1.Equals(y.Item1);
-                var f2 = x.Item2 == y.Item2;
-                return f1 && f2;
-            }
-
-            public int GetHashCode(Tuple<PackageIdentity, NuGetProjectActionType> obj)
-            {
-                return obj.GetHashCode();
-            }
-        }
-
-        private class PreviewResultComparer : IEqualityComparer<Tuple<TestNuGetProject, PackageIdentity>>
-        {
-            public bool Equals(Tuple<TestNuGetProject, PackageIdentity> x, Tuple<TestNuGetProject, PackageIdentity> y)
-            {
-                var f1 = x.Item1.Metadata[NuGetProjectMetadataKeys.Name].ToString().Equals(
-                    y.Item1.Metadata[NuGetProjectMetadataKeys.Name].ToString());
-                var f2 = x.Item2.Equals(y.Item2);
-                return f1 && f2;
-            }
-
-            public int GetHashCode(Tuple<TestNuGetProject, PackageIdentity> obj)
-            {
-                return obj.GetHashCode();
-            }
-        }
         private class TestNuGetVSTelemetryService : NuGetVSTelemetryService
         {
             private ITelemetrySession _telemetrySession;
