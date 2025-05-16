@@ -7,20 +7,21 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using FluentAssertions;
-using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using NuGet.CommandLine.Xplat.Tests;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NuGet.XPlat.FuncTest
+namespace Dotnet.Integration.Test
 {
-    public class PackageUpdateTests
+    [Collection(DotnetIntegrationCollection.Name)]
+    public class DotnetPackageUpdateTests : IClassFixture<PackageSearchRunnerFixture>
     {
-        private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
-        private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
+        private readonly DotnetIntegrationTestFixture _testFixture;
         private readonly ITestOutputHelper _testOutputHelper;
+        private readonly string _xplatCli;
 
         // The .NET SDK downloads reference assembly packages for target frameworks it can't find ref assemblies for
         // locally. Ideally this should be solved, so it's not necessary to download the packages every time the test
@@ -38,9 +39,12 @@ namespace NuGet.XPlat.FuncTest
             </configuration>
             """;
 
-        public PackageUpdateTests(ITestOutputHelper testOutputHelper)
+        public DotnetPackageUpdateTests(DotnetIntegrationTestFixture testFixture, ITestOutputHelper testOutputHelper)
         {
+            _testFixture = testFixture;
             _testOutputHelper = testOutputHelper;
+
+            _xplatCli = Path.Combine(_testFixture.SdkDirectory.FullName, "NuGet.CommandLine.XPlat.dll");
         }
 
         [Fact]
@@ -69,10 +73,9 @@ namespace NuGet.XPlat.FuncTest
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
-            var result = CommandRunner.Run(
-                DotnetCli,
-                testContext.SolutionRoot,
-                $"{XplatDll} package update NuGet.Internal.Test.a",
+            var result = _testFixture.RunDotnetExpectSuccess(
+                workingDirectory: testContext.SolutionRoot,
+                args: $"{_xplatCli} package update NuGet.Internal.Test.a",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -110,10 +113,9 @@ namespace NuGet.XPlat.FuncTest
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
-            var result = CommandRunner.Run(
-                DotnetCli,
-                testContext.SolutionRoot,
-                $"{XplatDll} package update NuGet.Internal.Test.a",
+            var result = _testFixture.RunDotnetExpectSuccess(
+                workingDirectory: testContext.SolutionRoot,
+                args: $"{_xplatCli} package update NuGet.Internal.Test.a",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -151,10 +153,9 @@ namespace NuGet.XPlat.FuncTest
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
-            var result = CommandRunner.Run(
-                DotnetCli,
-                testContext.SolutionRoot,
-                $"{XplatDll} package update NuGet.Internal.Test.a",
+            var result = _testFixture.RunDotnetExpectSuccess(
+                workingDirectory: testContext.SolutionRoot,
+                args: $"{_xplatCli} package update NuGet.Internal.Test.a",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -193,10 +194,9 @@ namespace NuGet.XPlat.FuncTest
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
-            var result = CommandRunner.Run(
-                DotnetCli,
-                testContext.SolutionRoot,
-                $"{XplatDll} package update NuGet.Internal.Test.a",
+            var result = _testFixture.RunDotnetExpectSuccess(
+                workingDirectory: testContext.SolutionRoot,
+                args: $"{_xplatCli} package update NuGet.Internal.Test.a",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -207,5 +207,6 @@ namespace NuGet.XPlat.FuncTest
             assetsFile.Libraries[0].Name.Should().Be("NuGet.Internal.Test.a");
             assetsFile.Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
         }
+
     }
 }
