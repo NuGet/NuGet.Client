@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Non-MSBuild project with no project dependencies.
         /// </summary>
-        [Obsolete("No longer supported.")]
+        [Obsolete("This project style is unsupported. Do not call restore with this project style.")]
         Standalone = 4,
 
         /// <summary>
