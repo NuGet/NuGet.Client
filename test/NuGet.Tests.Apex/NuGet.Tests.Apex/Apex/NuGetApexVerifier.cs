@@ -7,9 +7,5 @@ namespace NuGet.Tests.Apex
 {
     public class NuGetApexVerifier : VisualStudioMarshallableProxyVerifier
     {
-        /// <summary>
-        /// Gets the Nuget Package Manager test service
-        /// </summary>
-        private NuGetApexTestService NugetPackageManager => (NuGetApexTestService)Owner;
     }
 }
