@@ -188,15 +188,16 @@ namespace Test.Utility
 
             static JProperty GetDeprecatedEntry()
             {
-                return new JProperty("deprecation",
-                                    new JObject
-                                    {
-                        new JProperty("reasons", new JArray
+                return new JProperty(
+                        "deprecation",
+                        new JObject
                         {
-                            "CriticalBugs"
-                        }),
-                        new JProperty("message", "This package is unstable and broken!")
-                                    });
+                            new JProperty("reasons", new JArray
+                            {
+                                "CriticalBugs"
+                            }),
+                            new JProperty("message", "This package is unstable and broken!")
+                        });
             }
         }
 
