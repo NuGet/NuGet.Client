@@ -42,7 +42,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             // When being run from the dotnet CLI, use the same dotnet executable, just in case the dotnet on the PATH is different
             // But when NuGet.CommandLine.XPlat is being called directly, call dotnet on the path, so this code is debuggable.
             string dotnetPath = _environmentVariableReader.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-            System.Console.WriteLine("Using dotnet: " + dotnetPath);
 
             // don't redirect stdout or stderr, so errors are output. But use quiet verbosity, so that success has no output.
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
@@ -53,12 +52,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
                 $"-target:GenerateRestoreGraphFile " +
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +
                 $"-property:RestoreRecursive=false " +
-                //$"-nologo " +
-                $"-verbosity:detailed " +
+                $"-nologo " +
+                $"-verbosity:quiet " +
                 $"-tl:false " +
                 $"-noautoresponse",
-                //CreateNoWindow = true,
-                //UseShellExecute = false,
+                UseShellExecute = false,
             };
 
             using var process = Process.Start(processStartInfo);

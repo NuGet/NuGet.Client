@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace Dotnet.Integration.Test
         private readonly DotnetIntegrationTestFixture _testFixture;
         private readonly ITestOutputHelper _testOutputHelper;
         private readonly string _xplatCli;
+        private readonly IReadOnlyDictionary<string, string> _envVars;
 
         // The .NET SDK downloads reference assembly packages for target frameworks it can't find ref assemblies for
         // locally. Ideally this should be solved, so it's not necessary to download the packages every time the test
@@ -45,6 +47,10 @@ namespace Dotnet.Integration.Test
             _testOutputHelper = testOutputHelper;
 
             _xplatCli = Path.Combine(_testFixture.SdkDirectory.FullName, "NuGet.CommandLine.XPlat.dll");
+            _envVars = new Dictionary<string, string>()
+            {
+                ["DOTNET_HOST_PATH"] = _testFixture.TestDotnetCli
+            };
         }
 
         [Fact]
@@ -72,12 +78,12 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
-            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper);
+                testOutputHelper: _testOutputHelper,
+                environmentVariables: _envVars);
 
             // Assert
             result.ExitCode.Should().Be(0);
@@ -113,12 +119,12 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
-            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper);
+                testOutputHelper: _testOutputHelper,
+                environmentVariables: _envVars);
 
             // Assert
             result.ExitCode.Should().Be(0);
@@ -154,12 +160,12 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
-            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper);
+                testOutputHelper: _testOutputHelper,
+                environmentVariables: _envVars);
 
             // Assert
             result.ExitCode.Should().Be(0);
@@ -196,12 +202,12 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
-            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper);
+                testOutputHelper: _testOutputHelper,
+                environmentVariables: _envVars);
 
             // Assert
             result.ExitCode.Should().Be(0);
@@ -212,5 +218,24 @@ namespace Dotnet.Integration.Test
             assetsFile.Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
         }
 
+        [Fact]
+        public void InvalidProjectFile_OutputsMeaningfulError()
+        {
+            // Arrange & Act
+            using var testContext = new SimpleTestPathContext();
+
+            var csprojContents = "<Invalid Xml";
+            var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
+            File.WriteAllText(csprojPath, csprojContents);
+
+            var result = _testFixture.RunDotnetExpectFailure(
+                workingDirectory: testContext.SolutionRoot,
+                args: $"{_xplatCli} package update NuGet.Internal.Test.a",
+                testOutputHelper: _testOutputHelper,
+                environmentVariables: _envVars);
+
+            // Assert
+            result.Output.Should().Contain("MSB4025").And.Contain(csprojPath);
+        }
     }
 }
