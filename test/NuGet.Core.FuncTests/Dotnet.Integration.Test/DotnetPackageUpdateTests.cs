@@ -72,6 +72,7 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
+            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
@@ -112,6 +113,7 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
+            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
@@ -152,6 +154,7 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
+            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
@@ -193,6 +196,7 @@ namespace Dotnet.Integration.Test
                 """;
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
+            _testOutputHelper.WriteLine($"Wrote csproj: {csprojPath}");
 
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
