@@ -143,6 +143,7 @@ namespace NuGet.Commands
                     issues.Add(issue);
                     await _log.LogAsync(GetErrorMessage(NuGetLogCode.NU1213, issue, graph));
                 }
+
                 await VerifyDotnetToolCompatibilityChecks(compatibilityData, node, graph, issues);
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
