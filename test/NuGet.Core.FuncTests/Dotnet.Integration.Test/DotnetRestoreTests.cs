@@ -1449,6 +1449,56 @@ EndGlobal";
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AuditPropertiesAreSet(bool useStaticGraphRestore)
+        {
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var projectName1 = "ClassLibrary";
+                var projectName2 = "ConsoleApp";
+                var projectName3 = "WebApplication";
+
+                string directoryBuildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
+                string directoryBuildPropsContent = """
+                    <Project>
+                        <PropertyGroup>
+                            <NuGetAudit>one</NuGetAudit>
+                            <NuGetAuditMode>two</NuGetAuditMode>
+                            <NuGetAuditLevel>three</NuGetAuditLevel>
+                        </PropertyGroup>
+                        <ItemGroup>
+                            <NuGetAuditSuppress Include="four" />
+                        </ItemGroup>
+                    </Project>
+                    """;
+                File.WriteAllText(directoryBuildPropsPath, directoryBuildPropsContent);
+
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName2, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName3, " webapp", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "new sln --name test", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName1}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName2}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName3}", testOutputHelper: _testOutputHelper);
+                var targetPath = Path.Combine(testDirectory, "test.sln");
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
+                var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation={useStaticGraphRestore} {targetPath}", testOutputHelper: _testOutputHelper);
+
+                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(staticGraphDgSpecFile);
+                for (int i = 0; i < dgSpec.Projects.Count; i++)
+                {
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("one");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("two");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("three");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeEquivalentTo(["four"]);
+                }
+            }
+        }
+
+        [Theory]
         [InlineData("netcoreapp3.0;net7.0;net472", true)]
         [InlineData("netcoreapp2.1;netcoreapp3.0;netcoreapp3.1", true)]
         [InlineData("netcoreapp3.0;net7.0;net472", false)]

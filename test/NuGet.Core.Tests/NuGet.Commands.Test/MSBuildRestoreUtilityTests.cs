@@ -5124,7 +5124,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var actual = MSBuildRestoreUtility.GetRestoreAuditProperties(project, tfms);
+            var actual = MSBuildRestoreUtility.GetRestoreAuditProperties(project, tfms, null);
 
             // Assert
             actual.Should().NotBeNull();
@@ -5153,7 +5153,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var actual = MSBuildRestoreUtility.GetRestoreAuditProperties(project, tfms);
+            var actual = MSBuildRestoreUtility.GetRestoreAuditProperties(project, tfms, null);
 
             // Assert
             actual.Should().NotBeNull();
