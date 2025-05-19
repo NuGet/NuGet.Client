@@ -992,7 +992,7 @@ namespace NuGet.Build.Tasks.Console
 
             (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyle);
 
-            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, projectsByTargetFramework.Values);
+            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, projectsByTargetFramework.Values, GetAuditSuppressions(project));
 
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
 
@@ -1071,6 +1071,14 @@ namespace NuGet.Build.Tasks.Console
 
                 return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
             }
+        }
+
+        private static HashSet<string> GetAuditSuppressions(IMSBuildProject project)
+        {
+            IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
+                                                    .Select(i => i.Identity);
+
+            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
         }
 
         /// <summary>
