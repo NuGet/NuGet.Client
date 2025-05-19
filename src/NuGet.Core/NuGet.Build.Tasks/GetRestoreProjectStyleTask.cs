@@ -53,7 +53,7 @@ namespace NuGet.Build.Tasks
 
             var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
 
-            IsPackageReferenceCompatibleProjectStyle = ProjectStyle == ProjectStyle.PackageReference;
+            IsPackageReferenceCompatibleProjectStyle = result.ProjectStyle == ProjectStyle.PackageReference;
             ProjectStyle = result.ProjectStyle;
 
             return !Log.HasLoggedErrors;
