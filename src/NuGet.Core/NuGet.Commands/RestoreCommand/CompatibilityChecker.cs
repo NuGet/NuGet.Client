@@ -335,34 +335,6 @@ namespace NuGet.Commands
             return !compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetPlatform);
         }
 
-        private static HashSet<FrameworkRuntimePair> GetAvailableFrameworkRuntimePairs(CompatibilityData compatibilityData, RestoreTargetGraph graph)
-        {
-            var available = new HashSet<FrameworkRuntimePair>();
-
-            var contentItems = new ContentItemCollection();
-            contentItems.Load(compatibilityData.Files);
-
-            List<ContentItemGroup> itemGroups = new List<ContentItemGroup>();
-            if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
-            {
-                contentItems.PopulateItemGroups(graph.Conventions.Patterns.ToolsAssemblies, itemGroups);
-                foreach (var group in itemGroups)
-                {
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
-                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
-
-                    var tfm = tfmObj as NuGetFramework;
-                    var rid = ridObj as string;
-                    if (tfm?.IsSpecificFramework == true)
-                    {
-                        available.Add(new FrameworkRuntimePair(tfm, rid));
-                    }
-                }
-            }
-
-            return available;
-        }
-
         private async Task VerifyDotnetToolCompatibilityChecks(CompatibilityData compatibilityData, GraphItem<RemoteResolveResult> node, RestoreTargetGraph graph, List<CompatibilityIssue> issues)
         {
             if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
