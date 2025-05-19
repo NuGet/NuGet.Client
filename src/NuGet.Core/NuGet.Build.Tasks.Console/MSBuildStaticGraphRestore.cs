@@ -1061,7 +1061,7 @@ namespace NuGet.Build.Tasks.Console
             {
                 ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
                 bool hasPackageReferenceItems = tfms.Values.Any(p => p.GetItems("PackageReference").Any());
-                (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+                (ProjectStyle ProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
                     restoreProjectStyle: projectStyleOrNull,
                     hasPackageReferenceItems: hasPackageReferenceItems,
                     projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
