@@ -164,7 +164,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         {
             if (packages is null || packages.Count == 0)
             {
-                logger.LogMinimal("Unsupported: Must provide a package to update", ConsoleColor.Red);
+                logger.LogMinimal(Strings.Unsupported_UpgradeAllPackages, ConsoleColor.Red);
                 return (null, null);
             }
 
@@ -225,8 +225,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
                             if (tfmVersionRange != existingVersion)
                             {
                                 logger.LogMinimal(
-                                    $"The package {packageId} references different versions in different " +
-                                    $"TargetFrameworks. This is not supported. Please edit the project manually.",
+                                    Messages.Unsupported_UpdatePackageWithDifferentPerTfmVersions(packageId, project.FilePath),
                                     ConsoleColor.Red);
                                 return (null, null);
                             }
@@ -237,7 +236,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
             if (existingVersion is null)
             {
-                logger.LogMinimal($"The project does not reference the package {packageId}", ConsoleColor.Red);
+                logger.LogMinimal(Messages.Error_PackageNotReferenced(packageId, project.FilePath), ConsoleColor.Red);
                 return (null, null);
             }
 
@@ -257,7 +256,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
             if (existingVersion.MinVersion == highestVersion)
             {
-                logger.LogMinimal($"The package {packageId} is alread referencing the highest version {highestVersion}", ConsoleColor.Red);
+                logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(packageId, highestVersion.OriginalVersion, project.FilePath), ConsoleColor.Red);
                 return (null, null);
             }
 

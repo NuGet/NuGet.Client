@@ -66,7 +66,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         {
             var packageMetadataResource = await source.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
-            var packageDetails = await packageMetadataResource.GetMetadataAsync(packageId, false, false, sourceCacheContext, logger, cancellationToken);
+            var packageDetails = await packageMetadataResource.GetMetadataAsync(
+                packageId,
+                includePrerelease: false,
+                includeUnlisted: false,
+                sourceCacheContext,
+                logger,
+                cancellationToken);
 
             if (packageDetails is null || !packageDetails.Any())
             {

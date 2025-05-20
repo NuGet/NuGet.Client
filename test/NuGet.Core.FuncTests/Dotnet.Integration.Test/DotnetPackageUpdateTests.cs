@@ -56,7 +56,7 @@ namespace Dotnet.Integration.Test
         [Fact]
         public async Task SingleTfmProject_PackageVersionUpdated()
         {
-            // Arrange & Act
+            // Arrange
             using var testContext = new SimpleTestPathContext();
             File.WriteAllText(testContext.NuGetConfig, string.Format(NugetConfigFormat, testContext.PackageSource));
 
@@ -79,6 +79,7 @@ namespace Dotnet.Integration.Test
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
+            // Act
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
@@ -97,7 +98,7 @@ namespace Dotnet.Integration.Test
         [Fact]
         public async Task MultiTfmProject_PackageVersionUpdated()
         {
-            // Arrange & Act
+            // Arrange
             using var testContext = new SimpleTestPathContext();
             File.WriteAllText(testContext.NuGetConfig, string.Format(NugetConfigFormat, testContext.PackageSource));
 
@@ -120,6 +121,7 @@ namespace Dotnet.Integration.Test
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
+            // Act
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
@@ -138,7 +140,7 @@ namespace Dotnet.Integration.Test
         [Fact]
         public async Task MultiTfmProjectWithConditionalPackageRef_PackageVersionUpdated()
         {
-            // Arrange & Act
+            // Arrange
             using var testContext = new SimpleTestPathContext();
             File.WriteAllText(testContext.NuGetConfig, string.Format(NugetConfigFormat, testContext.PackageSource));
 
@@ -161,6 +163,7 @@ namespace Dotnet.Integration.Test
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
+            // Act
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
@@ -180,7 +183,7 @@ namespace Dotnet.Integration.Test
         [Fact]
         public async Task SingleTfmProject_CommitsRestore()
         {
-            // Arrange & Act
+            // Arrange
             using var testContext = new SimpleTestPathContext();
             File.WriteAllText(testContext.NuGetConfig, string.Format(NugetConfigFormat, testContext.PackageSource));
 
@@ -203,6 +206,7 @@ namespace Dotnet.Integration.Test
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
+            // Act
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
@@ -221,13 +225,14 @@ namespace Dotnet.Integration.Test
         [Fact]
         public void InvalidProjectFile_OutputsMeaningfulError()
         {
-            // Arrange & Act
+            // Arrange
             using var testContext = new SimpleTestPathContext();
 
             var csprojContents = "<Invalid Xml";
             var csprojPath = Path.Combine(testContext.SolutionRoot, "my.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
+            // Act
             var result = _testFixture.RunDotnetExpectFailure(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"{_xplatCli} package update NuGet.Internal.Test.a",
