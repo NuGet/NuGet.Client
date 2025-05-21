@@ -10,7 +10,7 @@
     <XPLATProject>true</XPLATProject>
     <NoWarn>$(NoWarn);RS0041</NoWarn>
     <nullable>enable</nullable>
-    <WarningsAsErrors>$(WarningsAsErrors);CA1062;CA1822;CA1012</WarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);CA1062;CA1822;CA1012;CA1305</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
