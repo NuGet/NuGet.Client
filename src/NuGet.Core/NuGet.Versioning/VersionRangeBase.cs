@@ -132,6 +132,11 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(version));
             }
 
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             // Determine if version is in the given range using the comparer.
             var condition = true;
             if (HasLowerBound)
@@ -260,15 +265,9 @@ namespace NuGet.Versioning
             }
 #pragma warning restore CS8604 // Possible null reference argument.
 
-            if (target == null)
-            {
-                target = VersionRange.All;
-            }
+            target ??= VersionRange.All;
 
-            if (possibleSubSet == null)
-            {
-                possibleSubSet = VersionRange.All;
-            }
+            possibleSubSet ??= VersionRange.All;
 
             var result = true;
 

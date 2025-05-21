@@ -393,6 +393,10 @@ namespace NuGet.Versioning
         /// </summary>
         public void ToString(StringBuilder sb)
         {
+            if (sb == null)
+            {
+                throw new ArgumentNullException(nameof(sb));
+            }
             switch (_floatBehavior)
             {
                 case NuGetVersionFloatBehavior.None:
