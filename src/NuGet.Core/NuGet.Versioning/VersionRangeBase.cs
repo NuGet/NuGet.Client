@@ -23,7 +23,7 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        private protected VersionRangeBase(
+        protected VersionRangeBase(
             NuGetVersion? minVersion = null,
             bool includeMinVersion = true,
             NuGetVersion? maxVersion = null,
