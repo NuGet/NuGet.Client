@@ -774,65 +774,11 @@ namespace NuGet.Commands
                 return;
             }
 
-            Dictionary<string, List<string>> prunedDirectPackages = null;
-
-            // Calculate direct packages that are in the pruning range.
-            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
-            {
-                if (framework.PackagesToPrune != null && framework.PackagesToPrune.Count > 0)
-                {
-                    foreach (var dependency in framework.Dependencies)
-                    {
-                        if (framework.PackagesToPrune.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune)
-                            && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion!))
-                        {
-                            prunedDirectPackages ??= new(StringComparer.OrdinalIgnoreCase);
-                            if (!prunedDirectPackages.ContainsKey(dependency.Name))
-                            {
-                                prunedDirectPackages.Add(dependency.Name, [framework.TargetAlias]);
-                            }
-                            else
-                            {
-                                prunedDirectPackages[dependency.Name].Add(framework.TargetAlias);
-                            }
-                        }
-                    }
-                }
-            }
+            Dictionary<string, List<string>> prunedDirectPackages = GetPrunableDirectPackages(project);
 
             if (prunedDirectPackages != null)
             {
-                Dictionary<string, string> aliasToTargetGraphName = null;
-                foreach (var prunedPackage in prunedDirectPackages)
-                {
-                    // Do not warn if the package exists in any framework.
-                    if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
-                    {
-                        bool doesPackageRemain = false;
-                        foreach (var framework in project.TargetFrameworks)
-                        {
-                            if (!prunedPackage.Value.Contains(framework.TargetAlias))
-                            {
-                                if (ContainsPackage(prunedPackage, framework))
-                                {
-                                    doesPackageRemain = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (doesPackageRemain)
-                        {
-                            continue;
-                        }
-                    }
-
-                    aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
-                    logger.Log(RestoreLogMessage.CreateWarning(
-                        NuGetLogCode.NU1510,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
-                        prunedPackage.Key,
-                        prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
-                }
+                RaiseNU1510WarningsIfNeeded(project, logger, prunedDirectPackages);
             }
 
             static bool HasFrameworkNewerThanNET10(PackageSpec project)
@@ -877,6 +823,72 @@ namespace NuGet.Commands
                     return frameworkName.Version.Major >= 10;
                 }
                 return false;
+            }
+
+            static Dictionary<string, List<string>> GetPrunableDirectPackages(PackageSpec project)
+            {
+                Dictionary<string, List<string>> prunedDirectPackages = null;
+
+                // Calculate direct packages that are in the pruning range.
+                foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+                {
+                    if (framework.PackagesToPrune != null && framework.PackagesToPrune.Count > 0)
+                    {
+                        foreach (var dependency in framework.Dependencies)
+                        {
+                            if (framework.PackagesToPrune.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune)
+                                && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion!))
+                            {
+                                prunedDirectPackages ??= new(StringComparer.OrdinalIgnoreCase);
+                                if (!prunedDirectPackages.ContainsKey(dependency.Name))
+                                {
+                                    prunedDirectPackages.Add(dependency.Name, [framework.TargetAlias]);
+                                }
+                                else
+                                {
+                                    prunedDirectPackages[dependency.Name].Add(framework.TargetAlias);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return prunedDirectPackages;
+            }
+
+            static void RaiseNU1510WarningsIfNeeded(PackageSpec project, ILogger logger, Dictionary<string, List<string>> prunedDirectPackages)
+            {
+                Dictionary<string, string> aliasToTargetGraphName = null;
+                foreach (var prunedPackage in prunedDirectPackages)
+                {
+                    // Do not warn if the package exists in any framework.
+                    if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
+                    {
+                        bool doesPackageRemain = false;
+                        foreach (var framework in project.TargetFrameworks)
+                        {
+                            if (!prunedPackage.Value.Contains(framework.TargetAlias))
+                            {
+                                if (ContainsPackage(prunedPackage, framework))
+                                {
+                                    doesPackageRemain = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (doesPackageRemain)
+                        {
+                            continue;
+                        }
+                    }
+
+                    aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
+                    logger.Log(RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1510,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
+                        prunedPackage.Key,
+                        prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
+                }
             }
         }
 
