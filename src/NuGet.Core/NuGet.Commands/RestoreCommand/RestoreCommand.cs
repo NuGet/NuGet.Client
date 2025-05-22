@@ -781,50 +781,6 @@ namespace NuGet.Commands
                 RaiseNU1510WarningsIfNeeded(project, logger, prunedDirectPackages);
             }
 
-            static bool HasFrameworkNewerThanNET10(PackageSpec project)
-            {
-                foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
-                {
-                    if (IsNewerThanNET10(framework.FrameworkName))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            static Dictionary<string, string> InitializeAliasToTargetGraphName(PackageSpec project)
-            {
-                var aliasToTargetGraphName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var framework in project.TargetFrameworks)
-                {
-                    aliasToTargetGraphName.Add(framework.TargetAlias, FrameworkRuntimePair.GetTargetGraphName(framework.FrameworkName, runtimeIdentifier: null));
-                }
-
-                return aliasToTargetGraphName;
-            }
-
-            static bool ContainsPackage(KeyValuePair<string, List<string>> prunedPackage, TargetFrameworkInformation framework)
-            {
-                foreach (var dependency in framework.Dependencies.NoAllocEnumerate())
-                {
-                    if (dependency.Name.Equals(prunedPackage.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            static bool IsNewerThanNET10(NuGetFramework frameworkName)
-            {
-                if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
-                {
-                    return frameworkName.Version.Major >= 10;
-                }
-                return false;
-            }
-
             static Dictionary<string, List<string>> GetPrunableDirectPackages(PackageSpec project)
             {
                 Dictionary<string, List<string>> prunedDirectPackages = null;
@@ -889,6 +845,41 @@ namespace NuGet.Commands
                         prunedPackage.Key,
                         prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
                 }
+            }
+            static bool HasFrameworkNewerThanNET10(PackageSpec project)
+            {
+                foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
+                {
+                    if (framework.FrameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp &&
+                        framework.FrameworkName.Version.Major >= 10)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            static Dictionary<string, string> InitializeAliasToTargetGraphName(PackageSpec project)
+            {
+                var aliasToTargetGraphName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var framework in project.TargetFrameworks)
+                {
+                    aliasToTargetGraphName.Add(framework.TargetAlias, FrameworkRuntimePair.GetTargetGraphName(framework.FrameworkName, runtimeIdentifier: null));
+                }
+
+                return aliasToTargetGraphName;
+            }
+
+            static bool ContainsPackage(KeyValuePair<string, List<string>> prunedPackage, TargetFrameworkInformation framework)
+            {
+                foreach (var dependency in framework.Dependencies.NoAllocEnumerate())
+                {
+                    if (dependency.Name.Equals(prunedPackage.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
