@@ -846,6 +846,7 @@ namespace NuGet.Commands
                         prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
                 }
             }
+
             static bool HasFrameworkNewerThanNET10(PackageSpec project)
             {
                 foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
