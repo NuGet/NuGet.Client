@@ -239,6 +239,8 @@ namespace NuGet.Commands
                     packagesLockFile,
                     token);
 
+                AnalyzePruningResults(_request.Project, _logger);
+
                 var graphs = await GenerateRestoreGraphsAsync(telemetry, contextForProject, token);
 
                 bool auditRan = false;
@@ -755,6 +757,126 @@ namespace NuGet.Commands
             else
             {
                 return true;
+            }
+        }
+
+        internal static void AnalyzePruningResults(PackageSpec project, ILogger logger)
+        {
+            bool enablePruningWarnings =
+                SdkAnalysisLevelMinimums.IsEnabled(
+                    project.RestoreMetadata.SdkAnalysisLevel,
+                    project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.PruningWarnings) &&
+                HasFrameworkNewerThanNET10(project);
+
+            if (!enablePruningWarnings)
+            {
+                return;
+            }
+
+            Dictionary<string, List<string>> prunedDirectPackages = null;
+
+            // Calculate direct packages that are in the pruning range.
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+            {
+                if (framework.PackagesToPrune != null && framework.PackagesToPrune.Count > 0)
+                {
+                    foreach (var dependency in framework.Dependencies)
+                    {
+                        if (framework.PackagesToPrune.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune)
+                            && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion!))
+                        {
+                            prunedDirectPackages ??= new(StringComparer.OrdinalIgnoreCase);
+                            if (!prunedDirectPackages.ContainsKey(dependency.Name))
+                            {
+                                prunedDirectPackages.Add(dependency.Name, [framework.TargetAlias]);
+                            }
+                            else
+                            {
+                                prunedDirectPackages[dependency.Name].Add(framework.TargetAlias);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (prunedDirectPackages != null)
+            {
+                Dictionary<string, string> aliasToTargetGraphName = null;
+                foreach (var prunedPackage in prunedDirectPackages)
+                {
+                    // Do not warn if the package exists in any framework.
+                    if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
+                    {
+                        bool doesPackageRemain = false;
+                        foreach (var framework in project.TargetFrameworks)
+                        {
+                            if (!prunedPackage.Value.Contains(framework.TargetAlias))
+                            {
+                                if (ContainsPackage(prunedPackage, framework))
+                                {
+                                    doesPackageRemain = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (doesPackageRemain)
+                        {
+                            continue;
+                        }
+                    }
+
+                    aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
+                    logger.Log(RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1510,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
+                        prunedPackage.Key,
+                        prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
+                }
+            }
+
+            static bool HasFrameworkNewerThanNET10(PackageSpec project)
+            {
+                foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
+                {
+                    if (IsNewerThanNET10(framework.FrameworkName))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            static Dictionary<string, string> InitializeAliasToTargetGraphName(PackageSpec project)
+            {
+                var aliasToTargetGraphName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var framework in project.TargetFrameworks)
+                {
+                    aliasToTargetGraphName.Add(framework.TargetAlias, FrameworkRuntimePair.GetTargetGraphName(framework.FrameworkName, runtimeIdentifier: null));
+                }
+
+                return aliasToTargetGraphName;
+            }
+
+            static bool ContainsPackage(KeyValuePair<string, List<string>> prunedPackage, TargetFrameworkInformation framework)
+            {
+                foreach (var dependency in framework.Dependencies.NoAllocEnumerate())
+                {
+                    if (dependency.Name.Equals(prunedPackage.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            static bool IsNewerThanNET10(NuGetFramework frameworkName)
+            {
+                if (frameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
+                {
+                    return frameworkName.Version.Major >= 10;
+                }
+                return false;
             }
         }
 
