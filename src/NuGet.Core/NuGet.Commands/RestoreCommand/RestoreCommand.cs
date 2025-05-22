@@ -851,7 +851,7 @@ namespace NuGet.Commands
             {
                 foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
                 {
-                    if (framework.FrameworkName.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp &&
+                    if (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp) &&
                         framework.FrameworkName.Version.Major >= 10)
                     {
                         return true;
