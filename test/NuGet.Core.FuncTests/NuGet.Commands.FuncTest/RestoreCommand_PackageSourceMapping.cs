@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -237,6 +238,10 @@ namespace NuGet.Commands.FuncTest
                 packageB100);
 
             pathContext.Settings.AddSource(packageSourcesKey, packageSource2Path);
+            pathContext.Settings.AddPackageSourceMapping(packageSourceMappingKey, packageA);
+            pathContext.Settings.AddPackageSourceMapping(pathContext.PackageSource, packageB);
+
+            pathContext.Settings.Save();
 
             var rootProject = @"
         {
@@ -256,31 +261,12 @@ namespace NuGet.Commands.FuncTest
           }
         }";
 
-            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Library1", pathContext.SolutionRoot, rootProject);
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Library1", pathContext.SolutionRoot, rootProject)
+                .WithSettingsBasedRestoreMetadata(Settings.LoadDefaultSettings(pathContext.SolutionRoot));
 
-            var sources = new[] { new PackageSource(pathContext.PackageSource),
-                                                   new PackageSource(source: packageSource2Path, name: packageSourcesKey) };
-            var log = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, projectSpec);
 
-            //package source mapping configuration
-            Dictionary<string, IReadOnlyList<string>> patterns = new()
-            {
-                { packageSourceMappingKey, new List<string>() { packageA } },
-                { pathContext.PackageSource, new List<string>() { packageB } }
-            };
-            PackageSourceMapping sourceMappingConfiguration = new(patterns);
-
-            var request = new TestRestoreRequest(projectSpec,
-                sources,
-                pathContext.UserPackagesFolder,
-                new TestSourceCacheContext(),
-                sourceMappingConfiguration,
-                log);
-
-            var command = new RestoreCommand(request);
-            var result = await command.ExecuteAsync();
-
-            result.Success.Should().BeTrue(because: log.ShowErrors());
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages));
 
             var restoreGraph = result.RestoreGraphs.ElementAt(0);
             restoreGraph.Unresolved.Should().BeEmpty();
@@ -291,13 +277,18 @@ namespace NuGet.Commands.FuncTest
             {
                 if (match.Library.Name == packageA)
                 {
-                    match.Provider.Source.Source.Should().Be(packageSource2Path);
+                    match.Provider.Source.Name.Should().Be(packageSourcesKey);
                 }
                 else if (match.Library.Name == packageB)
                 {
-                    match.Provider.Source.Name.Should().Be(pathContext.PackageSource);
+                    match.Provider.Source.Name.Should().Be("source");
                 }
             }
+        }
+
+        internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
+        {
+            return new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), projects)).ExecuteAsync();
         }
     }
 }
