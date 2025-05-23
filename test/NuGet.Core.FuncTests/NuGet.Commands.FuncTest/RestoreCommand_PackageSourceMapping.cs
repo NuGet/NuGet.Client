@@ -239,7 +239,7 @@ namespace NuGet.Commands.FuncTest
 
             pathContext.Settings.AddSource(packageSourcesKey, packageSource2Path);
             pathContext.Settings.AddPackageSourceMapping(packageSourceMappingKey, packageA);
-            pathContext.Settings.AddPackageSourceMapping(pathContext.PackageSource, packageB);
+            pathContext.Settings.AddPackageSourceMapping(SimpleTestSettingsContext.DefaultPackageSourceName, packageB);
 
             pathContext.Settings.Save();
 
@@ -266,7 +266,7 @@ namespace NuGet.Commands.FuncTest
 
             var result = await RunRestoreAsync(pathContext, projectSpec);
 
-            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages));
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages.Select(e => e.ToString())));
 
             var restoreGraph = result.RestoreGraphs.ElementAt(0);
             restoreGraph.Unresolved.Should().BeEmpty();
@@ -281,7 +281,7 @@ namespace NuGet.Commands.FuncTest
                 }
                 else if (match.Library.Name == packageB)
                 {
-                    match.Provider.Source.Name.Should().Be("source");
+                    match.Provider.Source.Name.Should().Be(SimpleTestSettingsContext.DefaultPackageSourceName);
                 }
             }
         }

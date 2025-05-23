@@ -1167,7 +1167,7 @@ namespace NuGet.PackageManagement.UI
                         return Task.FromResult<IPackageSearchMetadata?>(null);
                     }
 
-                    var enabledAndMappedSources = enabledSources.Where(_ => mappedSources.Contains(_.PackageSource.Name));
+                    var enabledAndMappedSources = enabledSources.Where(_ => mappedSources.Contains(_.PackageSource.Name, StringComparer.OrdinalIgnoreCase));
 
                     return GetPackageMetadataAsync(enabledAndMappedSources, sourceCacheContext, p, t);
                 },
