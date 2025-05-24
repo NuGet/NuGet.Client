@@ -945,7 +945,7 @@ namespace NuGet.Commands
                 var diagnostic = RestoreLogMessage.CreateError(NuGetLogCode.NU1015, string.Format(CultureInfo.InvariantCulture, Strings.Error_PackageReference_NoVersion, string.Join(", ", packagesList)));
                 _logger.Log(diagnostic);
 
-            return false;
+                return false;
             }
         }
 
