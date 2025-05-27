@@ -214,8 +214,6 @@ namespace NuGet.Protocol.Tests
 
             Func<HttpRequestMessage, Task<HttpResponseMessage>> handler = async requestMessage =>
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
-
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
 

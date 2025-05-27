@@ -17,11 +17,6 @@ namespace Test.Utility
             _handler = (request, token) => Task.FromResult(handler(request));
         }
 
-        public HttpRetryTestHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
-        {
-            _handler = (request, token) => handler(request);
-        }
-
         public HttpRetryTestHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
         {
             _handler = handler;
