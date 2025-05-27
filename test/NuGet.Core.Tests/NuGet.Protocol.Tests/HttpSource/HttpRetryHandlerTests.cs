@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -208,9 +209,9 @@ namespace NuGet.Protocol.Tests
         public async Task HttpRetryHandler_MultipleTriesTimed()
         {
             // Arrange
-            TimeSpan retryDelay = SmallTimeout;
+            TimeSpan retryDelay = TimeSpan.FromMilliseconds(1000);
+            int maxTries = 3;
 
-            TestEnvironmentVariableReader testEnvironmentVariableReader = GetEnhancedHttpRetryEnvironmentVariables();
             Func<HttpRequestMessage, Task<HttpResponseMessage>> handler = async requestMessage =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(10));
@@ -218,14 +219,19 @@ namespace NuGet.Protocol.Tests
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
 
-            var minTime = GetRetryMinTime(MaxTries, SmallTimeout);
+            int retryCount = 0;
+            for (int i = 1; i < maxTries; i++)
+            {
+                retryCount = (int)(retryCount + Math.Pow(2, i));
+            }
+            var minTime = TimeSpan.FromTicks(retryCount * retryDelay.Ticks);
 
-            var retryHandler = new HttpRetryHandler(testEnvironmentVariableReader);
+            var retryHandler = new HttpRetryHandler(new EnvironmentVariableWrapper());
             var testHandler = new HttpRetryTestHandler(handler);
             var httpClient = new HttpClient(testHandler);
             var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
             {
-                MaxTries = MaxTries,
+                MaxTries = maxTries,
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = retryDelay
             };
@@ -533,11 +539,6 @@ namespace NuGet.Protocol.Tests
 
             string expectedMessagePrefix = "  " + tooManyRequestsStatusCode.ToString() + " " + TestUrl;
             logger.Messages.Count(m => m.StartsWith(expectedMessagePrefix, StringComparison.Ordinal)).Should().Be(retry429 ? 2 : 1);
-        }
-
-        private static TimeSpan GetRetryMinTime(int tries, TimeSpan retryDelay)
-        {
-            return TimeSpan.FromTicks((tries - 1) * retryDelay.Ticks);
         }
 
         private static TestEnvironmentVariableReader GetEnhancedHttpRetryEnvironmentVariables(bool? isEnabled = true, int? retryCount = MaxTries, int? delayMilliseconds = 0, bool? retry429 = true)
