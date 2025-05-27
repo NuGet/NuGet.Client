@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Test.Utility
 {
@@ -77,7 +77,7 @@ namespace NuGet.Test.Utility
                 foreach (var project in Projects)
                 {
                     sb.AppendLine("Project(\"{" + "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC" + "}"
-                        + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
+                        + $"\") = \"{project.ProjectName}\", " + "\"" + PathUtility.GetRelativePath(SolutionPath, project.ProjectPath) + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
                     sb.AppendLine("EndProject");
                 }
 
@@ -113,7 +113,7 @@ namespace NuGet.Test.Utility
                 sb.AppendLine("<Solution>");
                 foreach (var project in Projects)
                 {
-                    sb.AppendLine($"<Project Path=\"{project.ProjectPath}\" />");
+                    sb.AppendLine($"<Project Path=\"{PathUtility.GetRelativePath(SolutionPath, project.ProjectPath)}\" />");
                 }
                 sb.AppendLine("</Solution>");
 
@@ -124,7 +124,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Create an entire solution and projects, this will adjust the paths as needed
         /// </summary>
-        public void Create(string solutionFolder)
+        public void Create(string solutionFolder = null)
         {
             Save();
 
@@ -162,30 +162,6 @@ namespace NuGet.Test.Utility
             }
 
             return projects;
-        }
-
-        /// <summary>
-        /// All packages used in the solution
-        /// </summary>
-        public HashSet<SimpleTestPackageContext> GetAllPackages()
-        {
-            var packages = new HashSet<SimpleTestPackageContext>();
-            var toWalk = new Stack<SimpleTestPackageContext>(GetAllProjects().SelectMany(p => p.AllPackageDependencies));
-
-            while (toWalk.Count > 0)
-            {
-                var package = toWalk.Pop();
-
-                if (packages.Add(package))
-                {
-                    foreach (var dep in package.Dependencies)
-                    {
-                        toWalk.Push(dep);
-                    }
-                }
-            }
-
-            return packages;
         }
 
         public CentralPackageVersionsManagementFile CentralPackageVersionsManagementFile { get; set; }

@@ -68,13 +68,17 @@ extends:
         enabled: true
         scanOutputDirectoryOnly: true
       sbom:
-        enabled: false
+        enabled: true
       credscan:
         enabled: false
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\.gdn\.gdnsuppress
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
       os: windows
+    featureFlags:
+      enablePrepareFilesForSbom: true
     customBuildTags:
     - ES365AIMigrationTooling
     stages:

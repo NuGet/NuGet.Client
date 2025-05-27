@@ -468,7 +468,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 var net461 = NuGetFramework.Parse("net461");
 
-                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                var projectA = SimpleTestProjectContext.CreatePackagesConfigProject(
                     "a",
                     pathContext.SolutionRoot,
                     net461);
@@ -532,7 +532,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 var net461 = NuGetFramework.Parse("net461");
 
-                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                var projectA = SimpleTestProjectContext.CreatePackagesConfigProject(
                     "a",
                     pathContext.SolutionRoot,
                     net461);
@@ -780,7 +780,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     "a",
                     pathContext.SolutionRoot,
                     net461);
-                projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
 
                 var projectB = SimpleTestProjectContext.CreateLegacyPackageReference(
                     "b",
@@ -840,7 +839,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     "a",
                     pathContext.SolutionRoot,
                     net461);
-                projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
 
                 var projectB = SimpleTestProjectContext.CreateLegacyPackageReference(
                     "b",
@@ -995,18 +993,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
             return r;
         }
 
-        [Fact]
-        public async Task Restore_PackageSourceMapping_Succeed()
+        [Theory]
+        [InlineData(true, Skip = "MSBuild >= 17.13 not available")]
+        [InlineData(false)]
+        public async Task Restore_PackageSourceMapping_Succeed(bool useSlnx)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, useSlnx);
 
                 var net461 = NuGetFramework.Parse("net461");
 
-                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                var projectA = SimpleTestProjectContext.CreatePackagesConfigProject(
                     "a",
                     pathContext.SolutionRoot,
                     net461);
@@ -1101,18 +1101,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
 
-        [Fact]
-        public async Task Restore_PackageSourceMapping_Fails()
+        [Theory]
+        [InlineData(true, Skip = "MSBuild >= 17.13 not available")]
+        [InlineData(false)]
+        public async Task Restore_PackageSourceMapping_Fails(bool useSlnx)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, useSlnx);
 
                 var net461 = NuGetFramework.Parse("net461");
 
-                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                var projectA = SimpleTestProjectContext.CreatePackagesConfigProject(
                     "a",
                     pathContext.SolutionRoot,
                     net461);

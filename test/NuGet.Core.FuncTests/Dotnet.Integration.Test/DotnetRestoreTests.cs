@@ -737,9 +737,10 @@ EndGlobal";
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task DotnetRestore_OneLinePerRestore(bool useStaticGraphRestore)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task DotnetRestore_OneLinePerRestore(bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
             {
@@ -799,9 +800,14 @@ EndGlobal";
                 var slnPath = Path.Combine(pathContext.SolutionRoot, "proj.sln");
                 File.WriteAllText(slnPath, slnContents);
 
+                Dictionary<string, string> environmentVariables = new Dictionary<string, string>
+                {
+                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                };
+
                 // Act
                 var arguments = $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}" + (useStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty);
-                var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, arguments, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, arguments, environmentVariables, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
@@ -1370,8 +1376,10 @@ EndGlobal";
             }
         }
 
-        [Fact]
-        public async Task DotnetRestore_WithTargetFrameworksProperty_StaticGraphAndRegularRestore_AreEquivalent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithTargetFrameworksProperty_StaticGraphAndRegularRestore_AreEquivalent(bool usePackageSpecFactory)
         {
             using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
             {
@@ -1400,9 +1408,14 @@ EndGlobal";
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
+                var environmentVariables = new Dictionary<string, string>
+                {
+                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                };
+
                 // Preconditions
                 var command = $"restore {projectFile1} {$"--source \"{pathContext.PackageSource}\" /p:AutomaticallyUseReferenceAssemblyPackages=false"}";
-                var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, command, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, command, environmentVariables, testOutputHelper: _testOutputHelper);
 
                 var assetsFilePath = Path.Combine(workingDirectory1, "obj", "project.assets.json");
                 File.Exists(assetsFilePath).Should().BeTrue(because: "The assets file needs to exist");
@@ -1418,8 +1431,10 @@ EndGlobal";
             }
         }
 
-        [Fact]
-        public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AreEquivalent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AreEquivalent(bool usePackageSpecFactory)
         {
             using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
             {
@@ -1427,6 +1442,11 @@ EndGlobal";
                 var projectName1 = "ClassLibrary";
                 var projectName2 = "ConsoleApp";
                 var projectName3 = "WebApplication";
+
+                var environmentVariables = new Dictionary<string, string>
+                {
+                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                };
 
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName2, " console", testOutputHelper: _testOutputHelper);
@@ -1438,13 +1458,69 @@ EndGlobal";
                 var targetPath = Path.Combine(testDirectory, "test.sln");
                 var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
                 var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
 
                 var regularDgSpec = File.ReadAllText(standardDgSpecFile);
                 var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
 
                 regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AuditPropertiesAreSet(bool useStaticGraphRestore, bool usePackageSpecFactory)
+        {
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var projectName1 = "ClassLibrary";
+                var projectName2 = "ConsoleApp";
+                var projectName3 = "WebApplication";
+
+                var environmentVariables = new Dictionary<string, string>
+                {
+                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                };
+
+                string directoryBuildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
+                string directoryBuildPropsContent = """
+                    <Project>
+                        <PropertyGroup>
+                            <NuGetAudit>one</NuGetAudit>
+                            <NuGetAuditMode>two</NuGetAuditMode>
+                            <NuGetAuditLevel>three</NuGetAuditLevel>
+                        </PropertyGroup>
+                        <ItemGroup>
+                            <NuGetAuditSuppress Include="four" />
+                        </ItemGroup>
+                    </Project>
+                    """;
+                File.WriteAllText(directoryBuildPropsPath, directoryBuildPropsContent);
+
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName2, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName3, " webapp", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "new sln --name test", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName1}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName2}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName3}", testOutputHelper: _testOutputHelper);
+                var targetPath = Path.Combine(testDirectory, "test.sln");
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
+                var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation={useStaticGraphRestore} {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
+
+                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(staticGraphDgSpecFile);
+                for (int i = 0; i < dgSpec.Projects.Count; i++)
+                {
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("one");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("two");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("three");
+                    dgSpec.Projects[i].RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeEquivalentTo(["four"]);
+                }
             }
         }
 
@@ -2863,9 +2939,10 @@ EndGlobal";
         /// ClassLibrary1 -> X 1.0.0 -> Y 1.0.0
         /// Prune Y 2.0.0
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task DotnetRestore_WithConditionalPrunedPackageReference_Succeeds(bool isStaticGraphRestore)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task DotnetRestore_WithConditionalPrunedPackageReference_Succeeds(bool isStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "ClassLibrary1";
@@ -2903,7 +2980,12 @@ EndGlobal";
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}" + (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty), testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>()
+            {
+                { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+            };
+
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}" + (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty), environmentVariables, testOutputHelper: _testOutputHelper);
             result.AllOutput.Should().NotContain("Warning");
             string assetsFilePath = Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName);
             LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -3058,6 +3140,42 @@ EndGlobal";
             assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().BeEmpty();
             assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("X"));
             assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("Y"));
+        }
+
+        [Theory]
+        [InlineData(null, "all")]
+        [InlineData("direct", "direct")]
+        [InlineData("all", "all")]
+        public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string expectedAuditMode)
+        {
+            // Arrange
+            using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+            var projectName = "AuditProject";
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, $"classlib", testOutputHelper: _testOutputHelper);
+
+            using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+
+                if (!string.IsNullOrEmpty(userAuditMode))
+                {
+                    ProjectFileUtils.AddProperty(xml, "NuGetAuditMode", userAuditMode);
+                }
+
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+
+            var assetsFilePath = Path.Combine(workingDirectory, "obj", "project.assets.json");
+            LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+
+            // Assert
+            assetsFile.PackageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be(expectedAuditMode);
         }
 
         private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)

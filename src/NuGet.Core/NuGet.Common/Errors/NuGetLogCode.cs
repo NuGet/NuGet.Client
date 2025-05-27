@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace NuGet.Common
 {
     /// <summary>
@@ -200,11 +202,13 @@ namespace NuGet.Common
         /// <summary>
         /// Invalid package types
         /// </summary>
+        [Obsolete]
         NU1204 = 1204,
 
         /// <summary>
         /// Project has an invalid dependency count
         /// </summary>
+        [Obsolete]
         NU1211 = 1211,
 
         /// <summary>
@@ -700,6 +704,7 @@ namespace NuGet.Common
         /// <summary>
         /// Error_MultipleTargetFrameworks
         /// </summary>
+        [Obsolete]
         NU5015 = 5015,
 
         /// <summary>
@@ -998,7 +1003,7 @@ namespace NuGet.Common
         NU5126 = 5126,
 
         /// <summary>
-        /// No ref or lib folder in the package
+        /// TFM specific build files, but no ref or lib folder in the package
         /// </summary>
         NU5127 = 5127,
 

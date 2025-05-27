@@ -226,7 +226,7 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                await ShowHttpSourcesError();
+                _success &= await EvaluateHttpSourceUsageAsync();
 
                 _success &= HasValidPlatformVersions();
 
@@ -239,6 +239,8 @@ namespace NuGet.Commands
                     packagesLockFile,
                     token);
 
+                AnalyzePruningResults(_request.Project, _logger);
+
                 var graphs = await GenerateRestoreGraphsAsync(telemetry, contextForProject, token);
 
                 bool auditRan = false;
@@ -249,15 +251,19 @@ namespace NuGet.Commands
                 }
 
                 telemetry.StartIntervalMeasure();
+
                 // Create assets file
                 if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
+
                 LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
                     _request.Project,
                     graphs,
                     localRepositories,
                     contextForProject);
+
                 if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
+
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
                 telemetry.StartIntervalMeasure();
@@ -290,17 +296,17 @@ namespace NuGet.Commands
                     packagesLockFile,
                     packagesLockFilePath,
                     cacheFile) = await ProcessRestoreResultAsync(
-                    telemetry,
-                    localRepositories,
-                    contextForProject,
-                    isLockFileValid,
-                    regenerateLockFile,
-                    assetsFile,
-                    graphs,
-                    packagesLockFile,
-                    packagesLockFilePath,
-                    cacheFile,
-                    token);
+                        telemetry,
+                        localRepositories,
+                        contextForProject,
+                        isLockFileValid,
+                        regenerateLockFile,
+                        assetsFile,
+                        graphs,
+                        packagesLockFile,
+                        packagesLockFilePath,
+                        cacheFile,
+                        token);
 
                 restoreTime.Stop();
 
@@ -427,8 +433,10 @@ namespace NuGet.Commands
             return (null, noOpCacheFileEvaluation, cacheFile);
         }
 
-        private async Task ShowHttpSourcesError()
+        private async Task<bool> EvaluateHttpSourceUsageAsync()
         {
+            bool error = false;
+
             if (_request.DependencyProviders.RemoteProviders != null)
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
@@ -436,23 +444,32 @@ namespace NuGet.Commands
                     var source = remoteProvider.Source;
                     if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                     {
-                        var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(_request.Project.RestoreMetadata.SdkAnalysisLevel,
+                        var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
+                            _request.Project.RestoreMetadata.SdkAnalysisLevel,
                             _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
                             SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
 
                         if (isErrorEnabled)
                         {
-                            await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
-                            string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+                            await _logger.LogAsync(
+                                RestoreLogMessage.CreateError(
+                                    NuGetLogCode.NU1302,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+
+                            error = true;
                         }
                         else
                         {
-                            await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
-                            string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                            await _logger.LogAsync(
+                                RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1803,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
                         }
                     }
                 }
             }
+
+            return !error;
         }
 
         private async Task<(bool, bool, string, PackagesLockFile)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, string packagesLockFilePath, PackagesLockFile packagesLockFile, CancellationToken token)
@@ -743,6 +760,130 @@ namespace NuGet.Commands
             }
         }
 
+        internal static void AnalyzePruningResults(PackageSpec project, ILogger logger)
+        {
+            bool enablePruningWarnings =
+                SdkAnalysisLevelMinimums.IsEnabled(
+                    project.RestoreMetadata.SdkAnalysisLevel,
+                    project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.PruningWarnings) &&
+                HasFrameworkNewerThanNET10(project);
+
+            if (!enablePruningWarnings)
+            {
+                return;
+            }
+
+            Dictionary<string, List<string>> prunedDirectPackages = GetPrunableDirectPackages(project);
+
+            if (prunedDirectPackages != null)
+            {
+                RaiseNU1510WarningsIfNeeded(project, logger, prunedDirectPackages);
+            }
+
+            static Dictionary<string, List<string>> GetPrunableDirectPackages(PackageSpec project)
+            {
+                Dictionary<string, List<string>> prunedDirectPackages = null;
+
+                // Calculate direct packages that are in the pruning range.
+                foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+                {
+                    if (framework.PackagesToPrune != null && framework.PackagesToPrune.Count > 0)
+                    {
+                        foreach (var dependency in framework.Dependencies)
+                        {
+                            if (framework.PackagesToPrune.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune)
+                                && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion!))
+                            {
+                                prunedDirectPackages ??= new(StringComparer.OrdinalIgnoreCase);
+                                if (!prunedDirectPackages.ContainsKey(dependency.Name))
+                                {
+                                    prunedDirectPackages.Add(dependency.Name, [framework.TargetAlias]);
+                                }
+                                else
+                                {
+                                    prunedDirectPackages[dependency.Name].Add(framework.TargetAlias);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return prunedDirectPackages;
+            }
+
+            static void RaiseNU1510WarningsIfNeeded(PackageSpec project, ILogger logger, Dictionary<string, List<string>> prunedDirectPackages)
+            {
+                Dictionary<string, string> aliasToTargetGraphName = null;
+                foreach (var prunedPackage in prunedDirectPackages)
+                {
+                    // Do not warn if the package exists in any framework.
+                    if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
+                    {
+                        bool doesPackageRemain = false;
+                        foreach (var framework in project.TargetFrameworks)
+                        {
+                            if (!prunedPackage.Value.Contains(framework.TargetAlias))
+                            {
+                                if (ContainsPackage(prunedPackage, framework))
+                                {
+                                    doesPackageRemain = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (doesPackageRemain)
+                        {
+                            continue;
+                        }
+                    }
+
+                    aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
+                    logger.Log(RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1510,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
+                        prunedPackage.Key,
+                        prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
+                }
+            }
+
+            static bool HasFrameworkNewerThanNET10(PackageSpec project)
+            {
+                foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp) &&
+                        framework.FrameworkName.Version.Major >= 10)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            static Dictionary<string, string> InitializeAliasToTargetGraphName(PackageSpec project)
+            {
+                var aliasToTargetGraphName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var framework in project.TargetFrameworks)
+                {
+                    aliasToTargetGraphName.Add(framework.TargetAlias, FrameworkRuntimePair.GetTargetGraphName(framework.FrameworkName, runtimeIdentifier: null));
+                }
+
+                return aliasToTargetGraphName;
+            }
+
+            static bool ContainsPackage(KeyValuePair<string, List<string>> prunedPackage, TargetFrameworkInformation framework)
+            {
+                foreach (var dependency in framework.Dependencies.NoAllocEnumerate())
+                {
+                    if (dependency.Name.Equals(prunedPackage.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(RestoreRequest restoreRequest, int httpSourcesCount)
         {
             if (restoreRequest?.Project?.RestoreMetadata == null || !restoreRequest.Project.RestoreMetadata.CentralPackageVersionsEnabled)
@@ -750,62 +891,153 @@ namespace NuGet.Commands
                 return true;
             }
 
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = restoreRequest.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
-
-            if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled)
-            {
-                // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
-                bool hasVersionOverrides = false;
-                foreach (var item in dependenciesWithVersionOverride)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1013, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, item.Name)));
-                    hasVersionOverrides = true;
-                }
-
-                if (hasVersionOverrides)
-                {
-                    return false;
-                }
-            }
+            bool result = true;
 
             if (!restoreRequest.PackageSourceMapping.IsEnabled && httpSourcesCount > 1)
             {
-                // Log a warning if there are more than one configured source and package source mapping is not enabled
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, httpSourcesCount, string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
+                // Log a warning if there are more than one configured HTTP source and package source mapping is not enabled
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1507,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_CentralPackageManagement_MultipleSourcesWithoutPackageSourceMapping,
+                            httpSourcesCount,
+                            string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
             }
 
-            // The dependencies should not have versions explicitly defined if cpvm is enabled.
-            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced && d.VersionOverride == null));
-            if (dependenciesWithDefinedVersion.Any())
-            {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
-                return false;
-            }
-            IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
-            if (autoReferencedAndDefinedInCentralFile.Any())
-            {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+            List<CentralPackageVersion> packageVersionItemsWithFloatingVersion = null;
+            List<LibraryDependency> implicitPackageReferenceItemsWithPackageVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithNoPackageVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithVersion = null;
+            List<LibraryDependency> packageReferenceItemsWithVersionOverride = null;
 
-                return false;
-            }
-            IEnumerable<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null));
-            if (packageReferencedDependenciesWithoutCentralVersionDefined.Any())
+            foreach (TargetFrameworkInformation targetFrameworkInformation in _request.Project.TargetFrameworks)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
-                return false;
-            }
-
-            if (!restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
-            {
-                var floatingVersionDependencies = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.CentralPackageVersions.Values).Where(cpv => cpv.VersionRange.IsFloating);
-                if (floatingVersionDependencies.Any())
+                foreach (LibraryDependency libraryDependency in targetFrameworkInformation.Dependencies)
                 {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1011, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
-                    return false;
+                    if (libraryDependency.AutoReferenced)
+                    {
+                        // Implicitly defined packages that the user specified a version for
+                        if (targetFrameworkInformation.CentralPackageVersions.ContainsKey(libraryDependency.Name))
+                        {
+                            implicitPackageReferenceItemsWithPackageVersion ??= new();
+
+                            implicitPackageReferenceItemsWithPackageVersion.Add(libraryDependency);
+                        }
+                    }
+                    else
+                    {
+                        // VersionOverride is specified but that functionality is disabled
+                        if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled && libraryDependency.VersionOverride != null)
+                        {
+                            packageReferenceItemsWithVersionOverride ??= new();
+
+                            packageReferenceItemsWithVersionOverride.Add(libraryDependency);
+                        }
+
+                        // Dependencies that have a version specified
+                        if (!libraryDependency.VersionCentrallyManaged && libraryDependency.LibraryRange.VersionRange != null && libraryDependency.VersionOverride == null)
+                        {
+                            packageReferenceItemsWithVersion ??= new();
+
+                            packageReferenceItemsWithVersion.Add(libraryDependency);
+                        }
+
+                        // Dependencies that have no version specified
+                        if (libraryDependency.LibraryRange?.VersionRange == null)
+                        {
+                            packageReferenceItemsWithNoPackageVersion ??= new();
+
+                            packageReferenceItemsWithNoPackageVersion.Add(libraryDependency);
+                        }
+                    }
+                }
+
+                if (!restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
+                {
+                    foreach (KeyValuePair<string, CentralPackageVersion> centralPackageVersion in targetFrameworkInformation.CentralPackageVersions.NoAllocEnumerate())
+                    {
+                        // Floating version dependencies
+                        if (centralPackageVersion.Value.VersionRange.IsFloating)
+                        {
+                            packageVersionItemsWithFloatingVersion ??= new();
+
+                            packageVersionItemsWithFloatingVersion.Add(centralPackageVersion.Value);
+                        }
+                    }
                 }
             }
 
-            return true;
+            if (packageReferenceItemsWithVersion != null && packageReferenceItemsWithVersion.Count > 0)
+            {
+                result = false;
+
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1008,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed,
+                            string.Join(", ", packageReferenceItemsWithVersion.Select(d => d.Name)))));
+            }
+
+            if (implicitPackageReferenceItemsWithPackageVersion != null && implicitPackageReferenceItemsWithPackageVersion.Count > 0)
+            {
+                result = false;
+
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1009,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageManagement_ImplicitPackageReferenceWithVersionNotAllowed,
+                            string.Join(", ", implicitPackageReferenceItemsWithPackageVersion.Select(d => d.Name)))));
+            }
+
+            if (packageReferenceItemsWithNoPackageVersion != null && packageReferenceItemsWithNoPackageVersion.Count > 0)
+            {
+                result = false;
+
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1010,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageManagement_MissingPackageVersion,
+                            string.Join(", ", packageReferenceItemsWithNoPackageVersion.Select(d => d.Name)))));
+            }
+
+            if (packageVersionItemsWithFloatingVersion != null && packageVersionItemsWithFloatingVersion.Count > 0)
+            {
+                result = false;
+
+                await _logger.LogAsync(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1011,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_CentralPackageManagement_FloatingVersionsNotAllowed,
+                            string.Join(", ", packageVersionItemsWithFloatingVersion.Select(i => i.Name)))));
+            }
+
+            if (packageReferenceItemsWithVersionOverride != null && packageReferenceItemsWithVersionOverride.Count > 0)
+            {
+                result = false;
+
+                foreach (var item in packageReferenceItemsWithVersionOverride)
+                {
+                    await _logger.LogAsync(
+                        RestoreLogMessage.CreateError(
+                            NuGetLogCode.NU1013,
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Error_CentralPackageManagement_VersionOverrideNotAllowed,
+                                item.Name)));
+                }
+            }
+
+            return result;
         }
 
         private string ConcatAsString<T>(IEnumerable<T> enumerable)
@@ -1032,9 +1264,7 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(projectLockFilePath))
             {
-                if (_request.ProjectStyle == ProjectStyle.PackageReference
-                    || _request.ProjectStyle == ProjectStyle.DotnetToolReference
-                    || _request.ProjectStyle == ProjectStyle.Standalone)
+                if (_request.ProjectStyle == ProjectStyle.PackageReference)
                 {
                     projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
                 }
@@ -1256,39 +1486,31 @@ namespace NuGet.Commands
                 var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
-                    // Don't do compat checks for the ridless graph of DotnetTooReference restore. Everything relevant will be caught in the graph with the rid
-                    if (!(ProjectStyle.DotnetToolReference == project.RestoreMetadata?.ProjectStyle && string.IsNullOrEmpty(graph.RuntimeIdentifier)))
+                    var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
+
+                    var res = await checker.CheckAsync(graph, includeFlags, project);
+
+                    checkResults.Add(res);
+                    if (res.Success)
                     {
-                        var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
-
-                        var res = await checker.CheckAsync(graph, includeFlags, project);
-
-                        checkResults.Add(res);
-                        if (res.Success)
-                        {
-                            await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
-                        }
-                        else
-                        {
-                            // Get error counts on a project vs package basis
-                            var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
-                            var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
-
-                            // Log a summary with compatibility error counts
-                            if (projectCount > 0)
-                            {
-                                await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
-                            }
-
-                            if (packageCount > 0)
-                            {
-                                await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
-                            }
-                        }
+                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
                     }
                     else
                     {
-                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_SkippingCompatibiilityCheckOnRidlessGraphForDotnetToolReferenceProject, graph.Name));
+                        // Get error counts on a project vs package basis
+                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
+                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
+
+                        // Log a summary with compatibility error counts
+                        if (projectCount > 0)
+                        {
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible projects: {projectCount}");
+                        }
+
+                        if (packageCount > 0)
+                        {
+                            await logger.LogAsync(LogLevel.Debug, $"Incompatible packages: {packageCount}");
+                        }
                     }
                 }
             }
