@@ -211,9 +211,9 @@ namespace NuGet.Protocol.Tests
             TimeSpan retryDelay = SmallTimeout;
 
             TestEnvironmentVariableReader testEnvironmentVariableReader = GetEnhancedHttpRetryEnvironmentVariables();
-            Func<HttpRequestMessage, HttpResponseMessage> handler = requestMessage =>
+            Func<HttpRequestMessage, Task<HttpResponseMessage>> handler = async requestMessage =>
             {
-                Thread.Sleep(TimeSpan.FromMilliseconds(10));
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
 
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
