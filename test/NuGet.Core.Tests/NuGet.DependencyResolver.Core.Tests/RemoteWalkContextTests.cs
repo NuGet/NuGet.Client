@@ -51,7 +51,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         [InlineData("source1", "Source1")]
         [InlineData("SOURCE1", "Source1")]
         [InlineData("Source1", "SOURCE1")]
-        public void FilterDependencyProvidersForLibrary_WithDifferentCasing_WhenPackageSourceMappingIsEnabledReturnsOnlyApplicableProviders_Success(string packageSourceMappingName, string providerName)
+        public void FilterDependencyProvidersForLibrary_WithVariousSourceCasing_ReturnsOnlyApplicableProviders(string packageSourceMappingName, string dependencyProviderName)
         {
             //package source mapping configuration
             Dictionary<string, IReadOnlyList<string>> patterns = new()
@@ -64,11 +64,11 @@ namespace NuGet.DependencyResolver.Core.Tests
             var context = new TestRemoteWalkContext(sourceMappingConfiguration, NullLogger.Instance);
 
             // Source1
-            var remoteProvider1 = CreateRemoteDependencyProvider(providerName);
+            Mock<IRemoteDependencyProvider> remoteProvider1 = CreateRemoteDependencyProvider(dependencyProviderName);
             context.RemoteLibraryProviders.Add(remoteProvider1.Object);
 
             // Source2
-            var remoteProvider2 = CreateRemoteDependencyProvider("Source2");
+            Mock<IRemoteDependencyProvider> remoteProvider2 = CreateRemoteDependencyProvider("Source2");
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("x", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
@@ -76,7 +76,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             IList<IRemoteDependencyProvider> providers = context.FilterDependencyProvidersForLibrary(libraryRange);
 
             Assert.Equal(1, providers.Count);
-            Assert.Equal(providerName, providers[0].Source.Name);
+            Assert.Equal(dependencyProviderName, providers[0].Source.Name);
         }
 
         [Fact]

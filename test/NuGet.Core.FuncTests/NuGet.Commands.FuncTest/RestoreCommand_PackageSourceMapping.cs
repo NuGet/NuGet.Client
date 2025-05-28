@@ -81,9 +81,9 @@ namespace NuGet.Commands.FuncTest
                 packageA100,
                 packageB100);
 
-            var sources = new[] { new PackageSource(pathContext.PackageSource),
-                                                   new PackageSource(packageSource2) };
             var log = new TestLogger();
+
+            PackageSource[] sources = [new PackageSource(pathContext.PackageSource), new PackageSource(packageSource2)];
 
             //package source mapping configuration
             Dictionary<string, IReadOnlyList<string>> patterns = new();
