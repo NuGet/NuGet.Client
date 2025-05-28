@@ -2,8 +2,4 @@
 <Project>
   <!-- File needed by the Maestro dependency flow service -->
   <PropertyGroup />
-  <!--Package versions-->
-  <PropertyGroup>
-    <MicrosoftWebXdtPackageVersion>10.0.0-preview.25277.113</MicrosoftWebXdtPackageVersion>
-  </PropertyGroup>
 </Project>
