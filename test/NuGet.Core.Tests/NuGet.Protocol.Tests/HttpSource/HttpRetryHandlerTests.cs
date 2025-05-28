@@ -209,10 +209,10 @@ namespace NuGet.Protocol.Tests
         public async Task HttpRetryHandler_MultipleTriesTimed()
         {
             // Arrange
-            TimeSpan retryDelay = TimeSpan.FromMilliseconds(1000);
+            TimeSpan retryDelay = TimeSpan.FromMilliseconds(1500);
             int maxTries = 3;
 
-            Func<HttpRequestMessage, Task<HttpResponseMessage>> handler = async requestMessage =>
+            Func<HttpRequestMessage, HttpResponseMessage> handler = requestMessage =>
             {
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };

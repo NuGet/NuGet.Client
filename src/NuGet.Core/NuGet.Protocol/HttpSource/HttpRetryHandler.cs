@@ -68,7 +68,7 @@ namespace NuGet.Protocol
             }
 
             // If specified via environment, override the default retry delay with the values provided
-            if (_enhancedHttpRetryHelper.IsEnabled)
+            if (_enhancedHttpRetryHelper.IsEnabledViaEnvironmentVariable)
             {
                 request.RetryDelay = TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds);
             }
@@ -93,10 +93,6 @@ namespace NuGet.Protocol
                     // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
                     if (_enhancedHttpRetryHelper.IsEnabled)
                     {
-                        if (tries >= 3 || (tries == 0 && request.IsRetry))
-                        {
-                            log.LogVerbose("Enhanced retry: HttpRetryHandler is in a state that retry would have been abandoned or not waited if it were not enabled.");
-                        }
                         await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)), cancellationToken);
                     }
                     // Old behavior; always delay a constant amount
