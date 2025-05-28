@@ -26,9 +26,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>8470979eb44c2218025515234d3e01138bd74afb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.25277.113">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>92f4458541726b45ef7c494dd6294c54dbc06a2d</Sha>
+    <Dependency Name="Microsoft.Web.Xdt" Version="3.0.0">
+      <Uri>https://github.com/aspnet/xdt</Uri>
+      <Sha>d4d088b6a9c793525b1a27a119cb66ba4587bb39</Sha>
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta5.25208.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
