@@ -548,7 +548,6 @@ namespace NuGet.Protocol.Tests
         => new TestEnvironmentVariableReader(
             new Dictionary<string, string>()
             {
-                [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = isEnabled?.ToString(),
                 [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = retryCount?.ToString(),
                 [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = delayMilliseconds?.ToString(),
                 [EnhancedHttpRetryHelper.Retry429EnvironmentVariableName] = retry429?.ToString(),

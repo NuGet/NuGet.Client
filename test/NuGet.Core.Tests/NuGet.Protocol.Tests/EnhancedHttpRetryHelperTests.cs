@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using Test.Utility;
 using Xunit;
@@ -12,7 +13,7 @@ namespace NuGet.Protocol.Tests
     public class EnhancedHttpRetryHelperTests
     {
         [Fact]
-        public void NoEnvionrmentVaraiblesSet_UsesDefaultValues()
+        public void NoEnvironmentVariablesSet_UsesDefaultValues()
         {
             // Arrange
             TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(new Dictionary<string, string>());
@@ -21,49 +22,12 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(testEnvironmentVariableReader);
 
             // Assert
-            Assert.Equal(helper.IsEnabled, EnhancedHttpRetryHelper.DefaultEnabled);
-            Assert.Equal(helper.RetryCount, EnhancedHttpRetryHelper.DefaultRetryCount);
-            Assert.Equal(helper.DelayInMilliseconds, EnhancedHttpRetryHelper.DefaultDelayMilliseconds);
-            Assert.Equal(helper.Retry429, EnhancedHttpRetryHelper.DefaultRetry429);
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("5")]
-        [InlineData("something")]
-        public void InvalidBoolValue_UsesDefault(string value)
-        {
-            // Arrange
-            var dict = new Dictionary<string, string>()
-            {
-                [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = value
-            };
-            var environmentReader = new TestEnvironmentVariableReader(dict);
-
-            // Act
-            EnhancedHttpRetryHelper helper = new(environmentReader);
-
-            // Assert
-            Assert.Equal(helper.IsEnabled, EnhancedHttpRetryHelper.DefaultEnabled);
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void ValidBoolValue_UsesValue(bool value)
-        {
-            // Arrange
-            var dict = new Dictionary<string, string>()
-            {
-                [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = value.ToString().ToLowerInvariant()
-            };
-            var environmentReader = new TestEnvironmentVariableReader(dict);
-
-            // Act
-            EnhancedHttpRetryHelper helper = new(environmentReader);
-
-            // Assert
-            Assert.Equal(helper.IsEnabled, value);
+            Assert.Equal(helper.RetryCountOrDefault, EnhancedHttpRetryHelper.DefaultRetryCount);
+            Assert.Equal(helper.DelayInMillisecondsOrDefault, EnhancedHttpRetryHelper.DefaultDelayMilliseconds);
+            Assert.Equal(helper.Retry429OrDefault, EnhancedHttpRetryHelper.DefaultRetry429);
+            Assert.Equal(helper.ObserveRetryAfterOrDefault, EnhancedHttpRetryHelper.DefaultObserveRetryAfter);
+            Assert.Equal(helper.MaxRetryAfterDelayOrDefault, TimeSpan.FromSeconds(EnhancedHttpRetryHelper.DefaultMaximumRetryAfterDelayInSeconds));
+            Assert.Equal(helper.DelayInMilliseconds, null);
         }
 
         [Theory]
@@ -84,7 +48,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.RetryCount, EnhancedHttpRetryHelper.DefaultRetryCount);
+            Assert.Equal(helper.RetryCountOrDefault, EnhancedHttpRetryHelper.DefaultRetryCount);
         }
 
         [Theory]
@@ -104,8 +68,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.RetryCount, value);
+            Assert.Equal(helper.RetryCountOrDefault, value);
         }
-
     }
 }
