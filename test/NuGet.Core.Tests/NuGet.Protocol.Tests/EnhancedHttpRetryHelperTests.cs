@@ -184,5 +184,44 @@ namespace NuGet.Protocol.Tests
             // Assert
             helper.ObserveRetryAfterOrDefault.Should().Be(value);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("true")]
+        [InlineData("something")]
+        [InlineData("-5")]
+        public void MaxRetryAfterDelay_InvalidIntValue_UsesDefault(string value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.MaximumRetryAfterDurationEnvironmentVariableName] = value
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.MaxRetryAfterDelayOrDefault.Should().Be(TimeSpan.FromSeconds(EnhancedHttpRetryHelper.DefaultMaximumRetryAfterDelayInSeconds));
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(10)]
+        [InlineData(100)]
+        public void MaxRetryAfterDelay_ValidIntValue_UsesValue(int value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.MaximumRetryAfterDurationEnvironmentVariableName] = value.ToString().ToLowerInvariant()
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.MaxRetryAfterDelayOrDefault.Should().Be(TimeSpan.FromSeconds(value));
+        }
     }
 }
