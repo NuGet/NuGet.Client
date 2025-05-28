@@ -22,12 +22,12 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(testEnvironmentVariableReader);
 
             // Assert
-            Assert.Equal(helper.RetryCountOrDefault, EnhancedHttpRetryHelper.DefaultRetryCount);
-            Assert.Equal(helper.DelayInMillisecondsOrDefault, EnhancedHttpRetryHelper.DefaultDelayMilliseconds);
-            Assert.Equal(helper.Retry429OrDefault, EnhancedHttpRetryHelper.DefaultRetry429);
-            Assert.Equal(helper.ObserveRetryAfterOrDefault, EnhancedHttpRetryHelper.DefaultObserveRetryAfter);
-            Assert.Equal(helper.MaxRetryAfterDelayOrDefault, TimeSpan.FromSeconds(EnhancedHttpRetryHelper.DefaultMaximumRetryAfterDelayInSeconds));
-            Assert.Equal(helper.DelayInMilliseconds, null);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultRetryCount, helper.RetryCountOrDefault);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultDelayMilliseconds, helper.DelayInMillisecondsOrDefault);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultRetry429, helper.Retry429OrDefault);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultObserveRetryAfter, helper.ObserveRetryAfterOrDefault);
+            Assert.Equal(TimeSpan.FromSeconds(EnhancedHttpRetryHelper.DefaultMaximumRetryAfterDelayInSeconds), helper.MaxRetryAfterDelayOrDefault);
+            Assert.Null(helper.DelayInMilliseconds);
         }
 
         [Theory]
@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.RetryCountOrDefault, EnhancedHttpRetryHelper.DefaultRetryCount);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultRetryCount, helper.RetryCountOrDefault);
         }
 
         [Theory]
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.RetryCountOrDefault, value);
+            Assert.Equal(value, helper.RetryCountOrDefault);
         }
 
         [Theory]
@@ -86,7 +86,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.DelayInMillisecondsOrDefault, EnhancedHttpRetryHelper.DefaultDelayMilliseconds);
+            Assert.Equal(EnhancedHttpRetryHelper.DefaultDelayMilliseconds, helper.DelayInMillisecondsOrDefault);
         }
 
         [Theory]
@@ -105,7 +105,7 @@ namespace NuGet.Protocol.Tests
             EnhancedHttpRetryHelper helper = new(environmentReader);
 
             // Assert
-            Assert.Equal(helper.DelayInMillisecondsOrDefault, value);
+            Assert.Equal(value, helper.DelayInMillisecondsOrDefault);
         }
     }
 }
