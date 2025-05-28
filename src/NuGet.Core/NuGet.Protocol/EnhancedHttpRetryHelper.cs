@@ -90,7 +90,7 @@ namespace NuGet.Protocol
         public EnhancedHttpRetryHelper(IEnvironmentVariableReader environmentVariableReader)
         {
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
-            _isEnabled = new Lazy<(bool, bool)>(() => GetBoolFromEnvironmentVariable(IsEnabledEnvironmentVariableName, defaultValue: DefaultEnabled, _environmentVariableReader));
+            _isEnabled = new Lazy<(bool, bool)>(() => GetBoolAndDefaultFromEnvironmentVariable(IsEnabledEnvironmentVariableName, defaultValue: DefaultEnabled, _environmentVariableReader));
             _retryCount = new Lazy<int>(() => GetIntFromEnvironmentVariable(RetryCountEnvironmentVariableName, defaultValue: DefaultRetryCount, _environmentVariableReader));
             _delayInMilliseconds = new Lazy<int>(() => GetIntFromEnvironmentVariable(DelayInMillisecondsEnvironmentVariableName, defaultValue: DefaultDelayMilliseconds, _environmentVariableReader));
             _retry429 = new Lazy<bool>(() => GetBoolFromEnvironmentVariable(Retry429EnvironmentVariableName, defaultValue: true, _environmentVariableReader).Item1);
@@ -141,7 +141,7 @@ namespace NuGet.Protocol
         /// <param name="defaultValue">The default value to return if the environment variable is not defined or is not a valid <see cref="bool" />.</param>
         /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading the environment variable.</param>
         /// <returns>The first boolean is the value of the specified as a <see cref="bool" /> if the specified environment variable is defined and is a valid value for <see cref="bool" />. The second value is whether this was default or read from an environment variable.</returns>
-        private static (bool, bool) GetBoolFromEnvironmentVariable(string variableName, bool defaultValue, IEnvironmentVariableReader environmentVariableReader)
+        private static (bool, bool) GetBoolAndDefaultFromEnvironmentVariable(string variableName, bool defaultValue, IEnvironmentVariableReader environmentVariableReader)
         {
             try
             {
@@ -153,6 +153,27 @@ namespace NuGet.Protocol
             catch (Exception) { }
 
             return (defaultValue, false);
+        }
+
+        /// <summary>
+        /// Gets a <see cref="bool" /> value from the specified environment variable.
+        /// </summary>
+        /// <param name="variableName">The name of the environment variable to get the value.</param>
+        /// <param name="defaultValue">The default value to return if the environment variable is not defined or is not a valid <see cref="bool" />.</param>
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading the environment variable.</param>
+        /// <returns>The value of the specified as a <see cref="bool" /> if the specified environment variable is defined and is a valid value for <see cref="bool" />.</returns>
+        private static bool GetBoolFromEnvironmentVariable(string variableName, bool defaultValue, IEnvironmentVariableReader environmentVariableReader)
+        {
+            try
+            {
+                if (bool.TryParse(environmentVariableReader.GetEnvironmentVariable(variableName), out bool parsedValue))
+                {
+                    return parsedValue;
+                }
+            }
+            catch (Exception) { }
+
+            return defaultValue;
         }
 
         /// <summary>
