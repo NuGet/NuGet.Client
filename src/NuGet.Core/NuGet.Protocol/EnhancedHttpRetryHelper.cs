@@ -147,12 +147,12 @@ namespace NuGet.Protocol
             {
                 if (bool.TryParse(environmentVariableReader.GetEnvironmentVariable(variableName), out bool parsedValue))
                 {
-                    return (parsedValue, false);
+                    return (parsedValue, true);
                 }
             }
             catch (Exception) { }
 
-            return (defaultValue, true);
+            return (defaultValue, false);
         }
 
         /// <summary>
