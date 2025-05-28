@@ -108,5 +108,81 @@ namespace NuGet.Protocol.Tests
             // Assert
             helper.DelayInMillisecondsOrDefault.Should().Be(value);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("TRUEEEE")]
+        [InlineData("something")]
+        [InlineData("-5")]
+        public void Retry429_InvalidBoolValue_UsesDefault(string value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.Retry429EnvironmentVariableName] = value
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.Retry429OrDefault.Should().Be(EnhancedHttpRetryHelper.DefaultRetry429);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Retry429_ValidBoolValue_UsesValue(bool value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.Retry429EnvironmentVariableName] = value.ToString().ToLowerInvariant()
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.Retry429OrDefault.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("TRUEEEE")]
+        [InlineData("something")]
+        [InlineData("-5")]
+        public void ObserveRetryAfter_InvalidBoolValue_UsesDefault(string value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.ObserveRetryAfterEnvironmentVariableName] = value
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.ObserveRetryAfterOrDefault.Should().Be(EnhancedHttpRetryHelper.DefaultRetry429);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ObserveRetryAfter_ValidBoolValue_UsesValue(bool value)
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.ObserveRetryAfterEnvironmentVariableName] = value.ToString().ToLowerInvariant()
+            });
+
+            // Act
+            EnhancedHttpRetryHelper helper = new(environmentReader);
+
+            // Assert
+            helper.ObserveRetryAfterOrDefault.Should().Be(value);
+        }
     }
 }
