@@ -420,6 +420,59 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
+        [InlineData("--framework net46", "packageX", "packageY", "packageZ")]
+        [InlineData("--framework net48", "packageX", "packageZ", "packageY")]
+        public async Task DotnetListPackage_MultiTargetFramework_Success(string args, string shouldInclude1, string shouldInclude2, string shouldntInclude)
+        {
+            // Arrange
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46;net48");
+
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", frameworkString: "net46;net48");
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", frameworkString: "net46");
+                var packageZ = XPlatTestUtils.CreatePackage(packageId: "packageZ", frameworkString: "net48");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX, packageY, packageZ);
+
+                string projectContent =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+<PropertyGroup>
+	<TargetFrameworks>net46;net48</TargetFrameworks>
+	</PropertyGroup>
+	 <ItemGroup>
+		 <PackageReference Include=""PackageX"" Version=""1.0.0""/>   
+     </ItemGroup>
+     <ItemGroup Condition = ""'$(TargetFramework)' == 'net46'"">
+         <PackageReference Include=""PackageY"" Version=""1.0.0""/>
+     </ItemGroup>
+     <ItemGroup Condition = ""'$(TargetFramework)' == 'net48'"">
+         <PackageReference Include=""PackageZ"" Version=""1.0.0""/>
+     </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, ProjectName, string.Concat(ProjectName, ".csproj")), projectContent);
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj",
+                    testOutputHelper: _testOutputHelper);
+
+                // Act
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"package list --project {projectA.ProjectPath} {args}",
+                    testOutputHelper: _testOutputHelper);
+
+                // Assert
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, shouldInclude1.Replace(" ", "")));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, shouldInclude2.Replace(" ", "")));
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, shouldntInclude.Replace(" ", "")));
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
         [InlineData("", "net48", null)]
         [InlineData("", "net46", null)]
         [InlineData("--framework net46 --framework net48", "net48", null)]
