@@ -411,7 +411,7 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package --outdated --include-transitive {args}", testOutputHelper: _testOutputHelper);
+                    $"package list --project {projectA.ProjectPath} --outdated --include-transitive {args}", testOutputHelper: _testOutputHelper);
 
                 // Assert
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}"));
