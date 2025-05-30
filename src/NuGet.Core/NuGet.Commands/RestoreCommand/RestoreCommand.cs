@@ -342,7 +342,7 @@ namespace NuGet.Commands
             success &= AreCentralVersionRequirementsSatisfied(_request, httpSourcesCount);
             success &= EvaluateHttpSourceUsage();
             success &= HasValidPlatformVersions();
-            success &= PackageReferencesShouldHaveVersions();
+            success &= PackageReferencesHaveVersions();
 
             return success;
         }
@@ -892,10 +892,10 @@ namespace NuGet.Commands
             }
         }
 
-        private bool PackageReferencesShouldHaveVersions()
+        private bool PackageReferencesHaveVersions()
         {
-            var project = _request?.Project;
-            if (project?.RestoreMetadata == null || project.RestoreMetadata.CentralPackageVersionsEnabled)
+            var project = _request.Project;
+            if (project.RestoreMetadata == null || project.RestoreMetadata.CentralPackageVersionsEnabled)
             {
                 // When CPM is used, by design, the version must not be defined.
                 return true;
@@ -917,11 +917,7 @@ namespace NuGet.Commands
                 {
                     if (dependency?.LibraryRange.VersionRange == VersionRange.All)
                     {
-                        if (packagesWithoutVersions is null)
-                        {
-                            packagesWithoutVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        }
-
+                        packagesWithoutVersions ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         packagesWithoutVersions.Add(dependency.Name);
                     }
                 }
@@ -929,9 +925,9 @@ namespace NuGet.Commands
 
             // ilmerge crashes on NuGet.MSSigning.Extensions.csproj if this logging is not in a separate method.
             // But it only crashes when ilmerging Release mode, in case you want to try to reproduce it.
-            return LogError(packagesWithoutVersions);
+            return EnsureNoPackageReferencesWithoutVersions(packagesWithoutVersions);
 
-            bool LogError(HashSet<string> packagesWithoutVersions)
+            bool EnsureNoPackageReferencesWithoutVersions(HashSet<string> packagesWithoutVersions)
             {
                 if (packagesWithoutVersions is null)
                 {
