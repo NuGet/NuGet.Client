@@ -45,9 +45,6 @@
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
-    <NuGetAuditSuppress
-      Include="https://github.com/advisories/GHSA-h4j7-5rxr-p4wc"
-      Justification="The package is used at compile time only. At runtime, the version shipped in VS or the .NET SDK is used." />
   </ItemGroup>
 
   <ItemGroup Label="transitive package pinning">
