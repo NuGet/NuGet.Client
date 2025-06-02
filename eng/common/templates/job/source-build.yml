@@ -1,5 +1,5 @@
-steps:
-- template: /eng/common/core-templates/steps/generate-sbom.yml
+jobs:
+- template: /eng/common/core-templates/job/source-build.yml
   parameters:
     is1ESPipeline: false
 
