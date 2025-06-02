@@ -120,7 +120,7 @@ namespace NuGet.Protocol
 
         /// <summary>
         /// Gets a value indicating whether or not to observe the Retry-After header on HTTP responses.
-        /// Default is 
+        /// Default is <see langword="true" />, <see cref="DefaultObserveRetryAfter"/>.
         /// </summary>
         internal bool ObserveRetryAfterOrDefault => _observeRetryAfter.Value;
 
