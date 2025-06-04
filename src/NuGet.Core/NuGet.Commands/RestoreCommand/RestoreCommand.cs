@@ -168,14 +168,14 @@ namespace NuGet.Commands
             _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && ShouldUseNewResolverWithLockFile(_isLockFileEnabled, _request.Project) && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
-        // Use the new resolver if lock files are not enabled, or if lock files are enabled and .NET 10 SDK is used.
+        // Use the new resolver if lock files are not enabled, or if lock files are enabled and legacy projects or .NET 10 SDK is used.
         private static bool ShouldUseNewResolverWithLockFile(bool isLockFileEnabled, PackageSpec project)
         {
             return !isLockFileEnabled ||
-                (project.RestoreMetadata.UsingMicrosoftNETSdk && SdkAnalysisLevelMinimums.IsEnabled(
+                SdkAnalysisLevelMinimums.IsEnabled(
                     project.RestoreMetadata.SdkAnalysisLevel,
                     project.RestoreMetadata.UsingMicrosoftNETSdk,
-                    SdkAnalysisLevelMinimums.V10_0_100));
+                    SdkAnalysisLevelMinimums.V10_0_100);
         }
 
         public Task<RestoreResult> ExecuteAsync()

@@ -4051,8 +4051,8 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Theory]
-        [InlineData(false, null, false)]
-        [InlineData(false, "10.0.100", false)]
+        [InlineData(false, null, true)]
+        [InlineData(false, "10.0.100", true)]
         [InlineData(true, "10.0.100", true)]
         [InlineData(true, "9.0.100", false)]
         public async Task Restore_WithLockFilesAndSdkAnalysisLevel_UsesCorrectResolver(bool useSDK, string SDKAnalysisLevel, bool useNewResolver)
