@@ -60,12 +60,6 @@ namespace NuGet.ProjectModel
             return Path.Combine(baseDirectory, PackagesLockFileFormat.LockFileName);
         }
 
-        [Obsolete("This method is obsolete. Call IsLockFileValid instead.")]
-        public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
-        {
-            return IsLockFileValid(dgSpec, nuGetLockFile).IsValid;
-        }
-
         /// <summary>
         /// The lock file will get invalidated if one or more of the below are true
         ///     1. The target frameworks list of the current project was updated.
@@ -183,6 +177,8 @@ namespace NuGet.ProjectModel
                     var target = nuGetLockFile.Targets.FirstOrDefault(
                         t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, restoreMetadataFramework.FrameworkName));
 
+                    var targetFrameworkInformation = project.TargetFrameworks.FirstOrDefault(e => e.TargetAlias == restoreMetadataFramework.TargetAlias);
+
                     if (target == null)
                         continue;
 
@@ -244,7 +240,7 @@ namespace NuGet.ProjectModel
 
                                         if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
                                         {
-                                            (var hasChanged, var message) = HasP2PDependencyChanged(p2pSpecTargetFrameworkInformation.Dependencies, p2pSpecProjectRestoreMetadataFrameworkInfo.ProjectReferences, projectDependency, dgSpec);
+                                            (var hasChanged, var message) = HasP2PDependencyChanged(p2pSpecTargetFrameworkInformation.Dependencies, p2pSpecProjectRestoreMetadataFrameworkInfo.ProjectReferences, targetFrameworkInformation.PackagesToPrune, projectDependency, dgSpec);
 
                                             if (hasChanged)
                                             {
@@ -447,12 +443,14 @@ namespace NuGet.ProjectModel
             return (false, string.Empty);
         }
 
-        private static (bool, string) HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, LockFileDependency projectDependency, DependencyGraphSpec dgSpec)
+        private static (bool, string) HasP2PDependencyChanged(IEnumerable<LibraryDependency> newDependencies, IEnumerable<ProjectRestoreReference> projectRestoreReferences, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune, LockFileDependency projectDependency, DependencyGraphSpec dgSpec)
         {
             // If the count is not the same, something has changed.
             // Otherwise we N^2 walk below determines whether anything has changed.
             var transitivelyFlowingDependencies = newDependencies.Where(
-                dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && dep.SuppressParent != LibraryIncludeFlags.All);
+                dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package
+                    && dep.SuppressParent != LibraryIncludeFlags.All
+                    && !IsDependencyPruned(dep, packagesToPrune));
 
             var transitivelyFlowingProjectReferences = projectRestoreReferences.Where(e => e.PrivateAssets != LibraryIncludeFlags.All);
 
@@ -508,6 +506,15 @@ namespace NuGet.ProjectModel
 
             // no dependency changed. Lock file is still valid.
             return (false, string.Empty);
+            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
+            {
+                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         /// <summary>

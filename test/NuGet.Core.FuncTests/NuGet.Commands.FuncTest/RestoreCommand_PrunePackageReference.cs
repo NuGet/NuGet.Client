@@ -1499,7 +1499,9 @@ namespace NuGet.Commands.FuncTest
             projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
 
             // Act & Assert
-            var result = await RunRestoreAsync(pathContext, projectSpec);
+            var testLogger = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
+            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
@@ -1564,7 +1566,8 @@ namespace NuGet.Commands.FuncTest
             projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
 
             // Run again
-            var result = await RunRestoreAsync(pathContext, projectSpec);
+            var testLogger = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
@@ -1730,8 +1733,9 @@ namespace NuGet.Commands.FuncTest
             projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
 
             // Run again
-            var result = await RunRestoreAsync(pathContext, projectSpec);
-            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages));
+            var testLogger = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
+            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
@@ -1826,14 +1830,17 @@ namespace NuGet.Commands.FuncTest
             projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
 
             // Run again
-            var result = await RunRestoreAsync(pathContext, prePruningProjectSpec, projectSpec2);
-            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages.Select(e => e.Message))); // todo nk - maybe pass the logger.
+            var testLogger = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, testLogger, prePruningProjectSpec, projectSpec2);
+            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
             result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(2);
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
