@@ -1597,6 +1597,10 @@ namespace NuGet.Commands.FuncTest
                             ""version"": ""[1.0.0,)"",
                             ""target"": ""Package"",
                         },
+                        ""packageB"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
                 },
             }
           }
@@ -1622,6 +1626,12 @@ namespace NuGet.Commands.FuncTest
             var setupResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
             setupResult.Success.Should().BeTrue();
             await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+            setupResult.LockFile.Targets.Should().HaveCount(1);
+            setupResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            setupResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            setupResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            setupResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            setupResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
             File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
 
             // Set-up again with LockedMode
@@ -1629,13 +1639,13 @@ namespace NuGet.Commands.FuncTest
 
             // Run again
             var result = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages.Select(e => e.Message))); // todo nk - maybe pass the logger.
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
             result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
-            result.Success.Should().BeTrue();
         }
 
         // P -> A 1.0.0 -> B 1.0.0
@@ -1720,14 +1730,14 @@ namespace NuGet.Commands.FuncTest
 
             // Run again
             var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages));
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            result.Success.Should().BeTrue();
         }
 
-        // TODO NK - Add 2 tests like the 2 above, but with ProjectReferences instead. Namely a project reference's dependency should prune.
+        // TODO NK - Should we add a post-pruning case with a project reference too?
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
