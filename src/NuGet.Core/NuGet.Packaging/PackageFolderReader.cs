@@ -93,15 +93,15 @@ namespace NuGet.Packaging
 
         private FileInfo GetFile(string path)
         {
-            var file = new FileInfo(Path.Combine(_root.FullName, path));
+            var fullPath = Path.GetFullPath(Path.Combine(_root.FullName, path));
 
-            if (!file.FullName.StartsWith(_root.FullName, StringComparison.OrdinalIgnoreCase))
+            if (!fullPath.StartsWith(_root.FullName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 // the given path does not appear under the folder root
-                throw new FileNotFoundException(path);
+                throw new FileNotFoundException($"Path is outside the root directory: {path}");
             }
 
-            return file;
+            return new FileInfo(fullPath);
         }
 
         public override IEnumerable<string> GetFiles()

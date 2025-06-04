@@ -28,9 +28,18 @@ namespace NuGet.Packaging
             return entry;
         }
 
-        public static IEnumerable<string> GetFiles(this ZipArchive zipArchive)
+        public static IEnumerable<string> GetFiles(this ZipArchive zipArchive, string destinationDirectory)
         {
-            return zipArchive.Entries.Select(e => UnescapePath(e.FullName));
+            string fullDestDirPath = Path.GetFullPath(destinationDirectory + Path.DirectorySeparatorChar);
+            return zipArchive.Entries.Select(e =>
+            {
+                string fullPath = Path.GetFullPath(Path.Combine(destinationDirectory, UnescapePath(e.FullName)));
+                if (!fullPath.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"Entry is outside the target directory: {e.FullName}");
+                }
+                return fullPath;
+            });
         }
 
         private static string UnescapePath(string path)

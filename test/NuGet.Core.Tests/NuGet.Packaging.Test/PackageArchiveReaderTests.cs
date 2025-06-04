@@ -2131,6 +2131,11 @@ namespace NuGet.Packaging.Test
 
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
+            if (!targetPath.StartsWith(Path.GetFullPath(Path.GetDirectoryName(sourcePath) + Path.DirectorySeparatorChar), StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"Target path is outside the source directory: {targetPath}");
+            }
+
             using (var targetStream = File.OpenWrite(targetPath))
             {
                 sourceStream.CopyTo(targetStream);
