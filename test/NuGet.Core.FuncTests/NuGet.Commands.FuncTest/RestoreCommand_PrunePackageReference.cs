@@ -1518,7 +1518,7 @@ namespace NuGet.Commands.FuncTest
         // P -> A 1.0.0 -> B 1.0.0
         // Prune B 1.0.0
         [Fact]
-        public async Task RestoreCommand_WithLockFileAndPrunedPackages_WithLockedMode()
+        public async Task RestoreCommand_WithLockFileAndPrunedPackages_WithLockedMode_Succeeds()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1569,6 +1569,72 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            result.Success.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithLockFileAndPrunedPackagesFromProjectReference_WithLockedMode_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var leafProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+            }
+          }
+        }";
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""packagesToPrune"": {
+                    ""packageB"" : ""(,1.0.0]"" 
+                }
+            }
+          }
+        }";
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, leafProject);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Pre-Conditions
+            var setupResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
+            setupResult.Success.Should().BeTrue();
+            await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+            File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
+
+            // Set-up again with LockedMode
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
+
+            // Run again
+            var result = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
             result.Success.Should().BeTrue();
         }
 
@@ -1660,6 +1726,8 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
             result.Success.Should().BeTrue();
         }
+
+        // TODO NK - Add 2 tests like the 2 above, but with ProjectReferences instead. Namely a project reference's dependency should prune.
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
