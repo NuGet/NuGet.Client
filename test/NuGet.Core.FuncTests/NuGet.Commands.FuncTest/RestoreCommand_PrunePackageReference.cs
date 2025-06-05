@@ -1697,7 +1697,6 @@ namespace NuGet.Commands.FuncTest
             setupResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
             setupResult.LockFile.Targets[0].Libraries[0].Dependencies[0].Id.Should().Be("packageB");
             setupResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
-            setupResult.Success.Should().BeTrue();
 
             File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
 
@@ -1735,6 +1734,8 @@ namespace NuGet.Commands.FuncTest
             var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
             result.Success.Should().BeTrue(because: testLogger.ShowMessages());
             result.LockFile.Targets.Should().HaveCount(1);
+            // packageB is part of the pre-pruning lock file, but after pruning is enabled, it gets pruned.
+            // Note that the lock file up to date check does not care that this package that gets pruned.
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
@@ -1832,9 +1833,10 @@ namespace NuGet.Commands.FuncTest
 
             // Run again
             var testLogger = new TestLogger();
-            var result = await RunRestoreAsync(pathContext, testLogger, prePruningProjectSpec, projectSpec2);
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec, projectSpec2);
             result.Success.Should().BeTrue(because: testLogger.ShowMessages());
             result.LockFile.Targets.Should().HaveCount(1);
+            // packageB is part of the pre-pruning lock file, but after pruning is enabled, it does not get pruned from the project.
             result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
