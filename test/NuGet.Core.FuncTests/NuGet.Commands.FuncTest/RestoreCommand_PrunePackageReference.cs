@@ -1742,6 +1742,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            result._newPackagesLockFile.Should().BeNull();
         }
 
         [Theory]
@@ -1845,6 +1846,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Dependencies.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(2);
+            result._newPackagesLockFile.Should().BeNull();
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
