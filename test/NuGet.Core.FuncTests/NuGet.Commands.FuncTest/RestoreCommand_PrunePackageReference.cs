@@ -1629,12 +1629,7 @@ namespace NuGet.Commands.FuncTest
             var setupResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
             setupResult.Success.Should().BeTrue();
             await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
-            setupResult.LockFile.Targets.Should().HaveCount(1);
-            setupResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            setupResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            setupResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            setupResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            setupResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
+            ValidateTestResult(setupResult);
             File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
 
             // Set-up again with LockedMode
@@ -1644,12 +1639,17 @@ namespace NuGet.Commands.FuncTest
             var testLogger = new TestLogger();
             var result = await RunRestoreAsync(pathContext, testLogger, projectSpec, projectSpec2);
             result.Success.Should().BeTrue(because: testLogger.ShowMessages());
-            result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
+            ValidateTestResult(result);
+
+            static void ValidateTestResult(RestoreResult restoreResult)
+            {
+                restoreResult.LockFile.Targets.Should().HaveCount(1);
+                restoreResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+                restoreResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+                restoreResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+                restoreResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+                restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
+            }
         }
 
         // P -> A 1.0.0 -> B 1.0.0
