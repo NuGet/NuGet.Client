@@ -2034,7 +2034,85 @@ namespace NuGet.Commands.FuncTest
             result._newPackagesLockFile.Targets[0].Dependencies[1].Dependencies.Should().HaveCount(1);
         }
 
-        // TODO NK - Add a test where a package id prunable, but the version is not prunable.
+        [Fact]
+        public async Task RestoreCommand_WithLockFileAndPrunableIdPackageFromProjectReference_WithLockedMode_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var leafProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                        ""packageB"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+            }
+          }
+        }";
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""packagesToPrune"": {
+                    ""packageB"" : ""(,0.1.0]"" 
+                }
+            }
+          }
+        }";
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, leafProject);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Pre-Conditions
+            var setupResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
+            setupResult.Success.Should().BeTrue();
+            await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+            ValidateAssetsFile(setupResult);
+            File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
+
+            // Set-up again with LockedMode
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
+
+            // Run again
+            var testLogger = new TestLogger();
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec, projectSpec2);
+            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
+            ValidateAssetsFile(result);
+
+            static void ValidateAssetsFile(RestoreResult restoreResult)
+            {
+                restoreResult.LockFile.Targets.Should().HaveCount(1);
+                restoreResult.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+                restoreResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+                restoreResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
+                restoreResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+                restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().BeEmpty();
+                restoreResult.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+                restoreResult.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(2);
+            }
+        }
+
         // TODO NK - Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
