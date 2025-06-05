@@ -449,14 +449,15 @@ namespace NuGet.ProjectModel
             // Otherwise we N^2 walk below determines whether anything has changed.
             var transitivelyFlowingDependencies = newDependencies.Where(
                 dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package
-                    && dep.SuppressParent != LibraryIncludeFlags.All
-                    && !IsDependencyPruned(dep, packagesToPrune));
+                    && dep.SuppressParent != LibraryIncludeFlags.All);
 
             var transitivelyFlowingProjectReferences = projectRestoreReferences.Where(e => e.PrivateAssets != LibraryIncludeFlags.All);
 
             var transitiveDependencies = transitivelyFlowingDependencies.Count() + transitivelyFlowingProjectReferences.Count();
 
-            if (transitiveDependencies != projectDependency.Dependencies.Count)
+            // If count is not the same, then something has changed.
+            // However, if there is pruning involved, we want to handle a pre-pruning lock file and post-pruning restore.
+            if (transitiveDependencies != projectDependency.Dependencies.Count && packagesToPrune?.Count == 0)
             {
                 return (true,
                         string.Format(
@@ -472,6 +473,13 @@ namespace NuGet.ProjectModel
             foreach (var dependency in transitivelyFlowingDependencies)
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
+
+                if (matchedP2PLibrary == null && packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                {
+                    // This dependency is pruned and a pre-pruning lock file containing the dependency is still valid.
+                    continue;
+                }
 
                 if (matchedP2PLibrary == null || !EqualityUtility.EqualsWithNullCheck(matchedP2PLibrary.VersionRange, dependency.LibraryRange.VersionRange))
                 {
@@ -506,15 +514,16 @@ namespace NuGet.ProjectModel
 
             // no dependency changed. Lock file is still valid.
             return (false, string.Empty);
-            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
-            {
-                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
-                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
-                {
-                    return true;
-                }
-                return false;
-            }
+
+            //static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
+            //{
+            //    if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+            //        && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+            //    {
+            //        return true;
+            //    }
+            //    return false;
+            //}
         }
 
         /// <summary>
