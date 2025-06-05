@@ -1459,8 +1459,6 @@ namespace NuGet.Commands.FuncTest
                 packageC);
         }
 
-        // P -> A 1.0.0 -> B 1.0.0
-        // Prune B 1.0.0
         [Fact]
         public async Task RestoreCommand_WithLockFileAndPrunedPackages_GeneratesCompleteLockFile()
         {
@@ -1517,10 +1515,8 @@ namespace NuGet.Commands.FuncTest
             result._newPackagesLockFile.Targets[0].Dependencies[0].Dependencies.Should().BeEmpty();
         }
 
-        // P -> A 1.0.0 -> B 1.0.0
-        // Prune B 1.0.0
         [Fact]
-        public async Task RestoreCommand_WithLockFileAndPrunedPackages_WithLockedMode_Succeeds()
+        public async Task RestoreCommand_WithLockFileAndPrunedPackagesFromPackageReference_WithLockedMode_Succeeds()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1560,6 +1556,7 @@ namespace NuGet.Commands.FuncTest
             var setupResult = await RunRestoreAsync(pathContext, projectSpec);
             setupResult.Success.Should().BeTrue();
             await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+            setupResult._newPackagesLockFile.Should().NotBeNull();
             File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
 
             // Set-up again with LockedMode
@@ -1572,7 +1569,8 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
+            result._newPackagesLockFile.Should().BeNull();
         }
 
         [Fact]
@@ -1629,7 +1627,7 @@ namespace NuGet.Commands.FuncTest
             var setupResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
             setupResult.Success.Should().BeTrue();
             await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
-            ValidateTestResult(setupResult);
+            ValidateAssetsFile(setupResult);
             File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
 
             // Set-up again with LockedMode
@@ -1639,9 +1637,9 @@ namespace NuGet.Commands.FuncTest
             var testLogger = new TestLogger();
             var result = await RunRestoreAsync(pathContext, testLogger, projectSpec, projectSpec2);
             result.Success.Should().BeTrue(because: testLogger.ShowMessages());
-            ValidateTestResult(result);
+            ValidateAssetsFile(result);
 
-            static void ValidateTestResult(RestoreResult restoreResult)
+            static void ValidateAssetsFile(RestoreResult restoreResult)
             {
                 restoreResult.LockFile.Targets.Should().HaveCount(1);
                 restoreResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
@@ -1652,12 +1650,10 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        // P -> A 1.0.0 -> B 1.0.0
-        // Prune B 1.0.0
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_Works(bool lockedMode)
+        public async Task RestoreCommand_WithPrePruningLockFile_AndPrunedPackageFromPackageReference_WithLockedMode_Succeeds(bool lockedMode)
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1748,7 +1744,7 @@ namespace NuGet.Commands.FuncTest
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_AndPrunedPackagesFromProjectReference_WithLockedMode_Succeeds(bool lockedMode)
+        public async Task RestoreCommand_WithPrePruningLockFile_AndPrunedPackageFromProjectReference_WithLockedMode_Succeeds(bool lockedMode)
         {
             using var pathContext = new SimpleTestPathContext();
 
