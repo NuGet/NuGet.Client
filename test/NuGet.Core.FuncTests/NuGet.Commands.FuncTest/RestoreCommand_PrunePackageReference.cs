@@ -1654,8 +1654,10 @@ namespace NuGet.Commands.FuncTest
 
         // P -> A 1.0.0 -> B 1.0.0
         // Prune B 1.0.0
-        [Fact]
-        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_Works()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_Works(bool lockedMode)
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1730,7 +1732,7 @@ namespace NuGet.Commands.FuncTest
           }
         }";
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
-            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, lockedMode);
 
             // Run again
             var testLogger = new TestLogger();
@@ -1742,8 +1744,10 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
         }
 
-        [Fact]
-        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_AndPrunedPackagesFromProjectReference_WithLockedMode_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_WithPrePruningLockFile_AndPostPruningLockedMode_AndPrunedPackagesFromProjectReference_WithLockedMode_Succeeds(bool lockedMode)
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1785,7 +1789,7 @@ namespace NuGet.Commands.FuncTest
         }";
             // Setup project
             var prePruningProjectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, prePruningRootProject);
-            prePruningProjectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
+            prePruningProjectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, lockedMode);
             var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, leafProject);
             prePruningProjectSpec = prePruningProjectSpec.WithTestProjectReference(projectSpec2);
 
