@@ -456,7 +456,7 @@ namespace NuGet.ProjectModel
             var transitiveDependencies = transitivelyFlowingDependencies.Count() + transitivelyFlowingProjectReferences.Count();
 
             // If count is not the same, then something has changed.
-            // However, if there is pruning involved, we want to handle a pre-pruning lock file and post-pruning restore.
+            // When pruning, the lock file may have more dependencies than what gets resolved for the project.
             if (transitiveDependencies != projectDependency.Dependencies.Count && packagesToPrune?.Count == 0)
             {
                 return (true,
