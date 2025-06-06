@@ -474,8 +474,7 @@ namespace NuGet.ProjectModel
             {
                 var matchedP2PLibrary = projectDependency.Dependencies.FirstOrDefault(dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Id, dependency.Name));
 
-                if (matchedP2PLibrary == null && packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
-                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                if (matchedP2PLibrary == null && IsDependencyPruned(dependency, packagesToPrune))
                 {
                     // This dependency is pruned and a pre-pruning lock file containing the dependency is still valid.
                     continue;
@@ -515,15 +514,15 @@ namespace NuGet.ProjectModel
             // no dependency changed. Lock file is still valid.
             return (false, string.Empty);
 
-            //static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
-            //{
-            //    if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
-            //        && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
-            //    {
-            //        return true;
-            //    }
-            //    return false;
-            //}
+            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
+            {
+                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         /// <summary>
