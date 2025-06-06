@@ -319,7 +319,12 @@ namespace NuGet.Packaging
                 destination = NormalizeDirectoryPath(destination);
                 ValidatePackageEntry(destination, normalizedPath, packageIdentity);
 
-                var targetFilePath = Path.Combine(destination, normalizedPath);
+                var targetFilePath = Path.GetFullPath(Path.Combine(destination, normalizedPath));
+                var fullDestDirPath = Path.GetFullPath(destination + Path.DirectorySeparatorChar);
+                if (!targetFilePath.StartsWith(fullDestDirPath, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"Entry is outside the target directory: {targetFilePath}");
+                }
 
                 using (var stream = entry.Open())
                 using (var sizedStream = new SizedArchiveEntryStream(stream, entry.Length))
