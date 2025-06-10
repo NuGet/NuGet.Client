@@ -50,7 +50,10 @@ namespace NuGet.Common
         [Theory]
         [InlineData(@"C")]
         [InlineData(@"C:")]
+        // .NET 9.0 and later support wildcards in UNC paths, so this test is only valid for earlier versions.
+#if !NET9_0_OR_GREATER
         [InlineData(@"\\server\invalid\*\")]
+#endif
         [InlineData(@"https://test")]
         [InlineData(@"..\packages")]
         public void PathValidatorTest_InvalidUncSharePath(string path)
