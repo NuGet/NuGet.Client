@@ -34,9 +34,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         {
             var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
-            var packagesArguments = new Argument<List<string>>("packages")
+            var packagesArguments = new Argument<List<Package>>("packages")
             {
                 Arity = ArgumentArity.ZeroOrMore,
+                CustomParser = Package.Parse
             };
             command.Arguments.Add(packagesArguments);
 
@@ -49,7 +50,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             {
                 var logger = getLogger();
                 var project = args.GetValue(projectOption);
-                var packages = args.GetValue(packagesArguments);
+                var packages = args.GetValue(packagesArguments) ?? [];
 
                 var commandArgs = new PackageUpdateArgs
                 {
