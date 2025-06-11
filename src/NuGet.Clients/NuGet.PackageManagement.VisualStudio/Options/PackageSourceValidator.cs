@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// <summary>
         /// Validates the Uri of a remote or local package source.
         /// The regex used here will eventually be supported in the Unified Settings registration.json file
-        /// for the package sources page.
+        /// for the package sources page. See https://github.com/NuGet/Home/issues/14358.
         /// </summary>
         /// <param name="packageSource"></param>
         /// <exception cref="ArgumentNullException"></exception>

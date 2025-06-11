@@ -177,8 +177,7 @@
           // The actual items that appear by default; in most cases, you'd leave this array empty.
           "default": [],
           "allowItemEditing": true,
-          "allowAdditionsAndRemovals": true,
-          "messages": []
+          "allowAdditionsAndRemovals": true
         },
         "machineWidePackageSources": {
           "type": "array",
@@ -213,8 +212,7 @@
           // The actual items that appear by default; in most cases, you'd leave this array empty.
           "default": [],
           "allowItemEditing": false,
-          "allowAdditionsAndRemovals": false,
-          "messages": []
+          "allowAdditionsAndRemovals": false
         }
       }
     }

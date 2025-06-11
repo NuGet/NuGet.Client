@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            var packageSourcesList = value as IList<IDictionary<string, object>>;
+            var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
             if (packageSourcesList is null)
             {
                 throw new InvalidOperationException();
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(
-            IList<IDictionary<string, object>> packageSourcesList,
+            IReadOnlyList<IDictionary<string, object>> packageSourcesList,
             CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private ExternalSettingOperationResult SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList, CancellationToken cancellationToken)
+        private ExternalSettingOperationResult SavePackageSources<T>(IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList, CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
 
