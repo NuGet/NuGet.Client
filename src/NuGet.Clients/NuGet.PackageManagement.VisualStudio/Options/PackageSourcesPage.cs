@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                result = CreateSettingErrorResult(ex.Message + " ('" + MonikerMachineWideSources + "')");
+                result = CreateSettingErrorResult(ex.Message + " ('" + MonikerMachineWideSources + "')", isTransient: true);
             }
 
             return result;
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                result = CreateSettingErrorResult(ex.Message);
+                result = CreateSettingErrorResult(ex.Message, isTransient: true);
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
 

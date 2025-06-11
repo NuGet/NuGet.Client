@@ -191,15 +191,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             [
                 new PackageSource(sourceUrl1, sourceName1, isSource1Enabled)
                 {
-                    IsMachineWide=true
+                    IsMachineWide = true
                 },
                 new PackageSource(sourceUrl2, sourceName2, isSource2Enabled)
                 {
-                    IsMachineWide=true
+                    IsMachineWide = true
                 },
                 new PackageSource(sourceUrl3, sourceName3, isSource3Enabled)
                 {
-                    IsMachineWide=true
+                    IsMachineWide = true
                 }
             ];
 

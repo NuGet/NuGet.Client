@@ -92,12 +92,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return failure;
         }
 
-        public static ExternalSettingOperationResult CreateSettingErrorResult(string errorMessage)
+        public static ExternalSettingOperationResult CreateSettingErrorResult(string errorMessage, bool isTransient)
         {
             var failure = new ExternalSettingOperationResult.Failure(
                 errorMessage,
                 scope: ExternalSettingsErrorScope.SingleSettingOnly,
-                isTransient: true);
+                isTransient);
 
             return failure;
         }
