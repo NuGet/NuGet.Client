@@ -426,7 +426,7 @@ namespace NuGet.Packaging
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
-                HashSet<string> filesWithoutExtensions = new HashSet<string>();
+                SortedSet<string> filesWithoutExtensions = new();
                 var extensions = WriteFiles(package, filesWithoutExtensions);
 
                 extensions.Add("nuspec");
@@ -1045,9 +1045,9 @@ namespace NuGet.Packaging
             }
         }
 
-        private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
+        private SortedSet<string> WriteFiles(ZipArchive package, SortedSet<string> filesWithoutExtensions)
         {
-            var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var extensions = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
@@ -1295,7 +1295,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions, HashSet<string> filesWithoutExtensions)
+        private void WriteOpcContentTypes(ZipArchive package, SortedSet<string> extensions, SortedSet<string> filesWithoutExtensions)
         {
             // OPC backwards compatibility
             ZipArchiveEntry relsEntry = CreateEntry(package, "[Content_Types].xml", CompressionLevel.Optimal);
