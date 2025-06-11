@@ -140,12 +140,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 result = ExternalSettingOperationResult.Success.Instance;
             }
-            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
-            {
-                throw ex;
-            }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 result = CreateSettingErrorResult(ex.Message + " ('" + MonikerMachineWideSources + "')");
@@ -187,12 +183,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 _packageSourceProvider.SavePackageSources(packageSources);
                 result = ExternalSettingOperationResult.Success.Instance;
             }
-            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
-            {
-                throw ex;
-            }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 result = CreateSettingErrorResult(ex.Message);
