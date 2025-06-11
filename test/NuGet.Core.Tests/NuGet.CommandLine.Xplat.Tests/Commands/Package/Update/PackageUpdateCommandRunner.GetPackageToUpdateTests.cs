@@ -40,7 +40,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
                 VersionRange = new VersionRange(new NuGetVersion("1.2.3"))
             };
 
-            PackageSpec packageSpec = new TestPackageSpecFactory("c:\\src\\my.csproj", builder =>
+            PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
                 {
                     builder.WithProperty("TargetFramework", "net9.0")
                            .WithItem("PackageReference", "Contoso.Utils", [new("Version", "1.0.0")]);
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
                 VersionRange = null
             };
 
-            PackageSpec packageSpec = new TestPackageSpecFactory("c:\\src\\my.csproj", builder =>
+            PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
             {
                 builder.WithProperty("TargetFramework", "net9.0")
                        .WithItem("PackageReference", "Contoso.Utils", [new("Version", "1.0.0")]);
@@ -117,7 +117,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
                 VersionRange = VersionRange.Parse("[1.2.3,2.0.0)")
             };
 
-            PackageSpec packageSpec = new TestPackageSpecFactory("c:\\src\\my.csproj", builder =>
+            PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
             {
                 builder.WithProperty("TargetFramework", "net9.0")
                        .WithItem("PackageReference", "Contoso.Utils", [new("Version", "1.0.0")]);
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
                 VersionRange = null
             };
 
-            PackageSpec packageSpec = new TestPackageSpecFactory("c:\\src\\my.csproj", builder =>
+            PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
             {
                 builder.WithProperty("TargetFramework", "net9.0")
                        .WithItem("PackageReference", "Contoso.Utils", [new("Version", "1.0.0")]);
