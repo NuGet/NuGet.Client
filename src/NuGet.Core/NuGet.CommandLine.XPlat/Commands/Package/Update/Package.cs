@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         public required string Id { get; init; }
         public required VersionRange? VersionRange { get; init; }
 
-        internal static List<Package> Parse(ArgumentResult result)
+        internal static IReadOnlyList<Package> Parse(ArgumentResult result)
         {
             if (result.Tokens.Count == 0)
             {
@@ -39,12 +39,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
                     string versionString = token.Value.Substring(separatorIndex + 1);
                     if (string.IsNullOrEmpty(versionString))
                     {
-                        result.AddError("todo");
+                        result.AddError(Messages.Error_MissingVersion(token.Value));
                         return [];
                     }
                     if (!VersionRange.TryParse(versionString, out newVersion))
                     {
-                        result.AddError("todo");
+                        result.AddError(Messages.Error_InvalidVersionRange(versionString));
                         return [];
                     }
                 }

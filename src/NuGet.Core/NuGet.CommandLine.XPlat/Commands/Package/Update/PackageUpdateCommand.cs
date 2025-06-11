@@ -34,8 +34,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         {
             var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
-            var packagesArguments = new Argument<List<Package>>("packages")
+            var packagesArguments = new Argument<IReadOnlyList<Package>>("packages")
             {
+                Description = Strings.PackageUpdate_PackageArgumentDescription,
                 Arity = ArgumentArity.ZeroOrMore,
                 CustomParser = Package.Parse
             };

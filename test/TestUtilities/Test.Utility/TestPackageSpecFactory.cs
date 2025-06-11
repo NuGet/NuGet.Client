@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Commands.Restore;
 using NuGet.Commands.Restore.Utility;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -21,6 +22,13 @@ public class TestPackageSpecFactory
     private TestTargetFramework _outerBuild;
     private Dictionary<string, ITargetFramework>? _targetFrameworks;
 
+    public static string SampleFullPath { get; } = RuntimeEnvironmentHelper.IsWindows ? "c:\\src\\my.csproj" : "/home/me/src/my.csproj";
+
+    public TestPackageSpecFactory(Action<TargetFrameworkBuilder> builder)
+        : this(SampleFullPath, builder)
+    {
+    }
+
     public TestPackageSpecFactory(string fullPath, Action<TargetFrameworkBuilder> builder)
         : this(fullPath, System.IO.Path.GetDirectoryName(fullPath) ?? throw new ArgumentException(message: "Could not get directory from path", paramName: nameof(fullPath)), builder)
     {
@@ -28,8 +36,8 @@ public class TestPackageSpecFactory
 
     public TestPackageSpecFactory(string fullPath, string directory, Action<TargetFrameworkBuilder> builder)
     {
-        _fullPath = string.IsNullOrWhiteSpace(fullPath) ? throw new ArgumentNullException(nameof(fullPath)) : fullPath;
-        _directory = string.IsNullOrWhiteSpace(directory) ? throw new ArgumentNullException(nameof(directory)) : directory;
+        _fullPath = string.IsNullOrWhiteSpace(fullPath) ? throw new ArgumentException("Must not be null or whitespace", nameof(fullPath)) : fullPath;
+        _directory = string.IsNullOrWhiteSpace(directory) ? throw new ArgumentNullException("Must not be null or whitespace", nameof(directory)) : directory;
 
         var tfBuilder = new TargetFrameworkBuilder();
         builder(tfBuilder);

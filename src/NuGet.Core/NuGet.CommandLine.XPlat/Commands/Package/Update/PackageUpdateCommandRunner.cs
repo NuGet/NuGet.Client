@@ -267,7 +267,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
                 newVersion = package.VersionRange;
                 if (newVersion == existingVersion)
                 {
-                    logger.LogMinimal("todo", ConsoleColor.Red);
+                    logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, newVersion.OriginalString), ConsoleColor.Red);
                     return (null, null);
                 }
             }

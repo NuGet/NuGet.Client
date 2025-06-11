@@ -14,13 +14,13 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
     public class PackageTests
     {
         private RootCommand _command;
-        private Argument<List<Pkg>> _packagesArgument;
+        private Argument<IReadOnlyList<Pkg>> _packagesArgument;
 
         public PackageTests()
         {
             _command = new RootCommand();
 
-            _packagesArgument = new Argument<List<Pkg>>("packages")
+            _packagesArgument = new Argument<IReadOnlyList<Pkg>>("packages")
             {
                 Arity = ArgumentArity.ZeroOrMore,
                 CustomParser = Pkg.Parse
@@ -51,8 +51,10 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         {
             // Arrange
             var result = _command.Parse("packageId1 packageId2");
+
             // Act
             var packages = result.GetValue(_packagesArgument);
+
             // Assert
             IReadOnlyList<Pkg> expects = [
                 new Pkg() { Id = "packageId1", VersionRange = null },
@@ -66,8 +68,10 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         {
             // Arrange
             var result = _command.Parse("packageId@1.2.3");
+
             // Act
             var packages = result.GetValue(_packagesArgument);
+
             // Assert
             IReadOnlyList<Pkg> expects = [new Pkg()
             {
@@ -82,8 +86,10 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         {
             // Arrange
             var result = _command.Parse("packageId@[1.2.3,2.0.0)");
+
             // Act
             var packages = result.GetValue(_packagesArgument);
+
             // Assert
             IReadOnlyList<Pkg> expects = [new Pkg()
             {
