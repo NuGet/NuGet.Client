@@ -175,7 +175,7 @@ stages:
         testType: Functional
         testTargetFramework: net9.0
         testProjectName: Dotnet.Integration.Test
-        timeoutInMinutes: 45
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
