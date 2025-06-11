@@ -133,9 +133,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             _packageSourceProvider.DisablePackageSource(originalPackageSourceName);
                         }
                     }
-
-                    // Only one value can be set at a time from Unified Settings, so we're done once a change is made.
-                    break;
                 }
 
                 result = ExternalSettingOperationResult.Success.Instance;
