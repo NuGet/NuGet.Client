@@ -19,7 +19,16 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             List<PackageSource> packageSources)
         {
             string trimmedSource = source?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(trimmedSource))
+            {
+                throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(source));
+            }
+
             string trimmedName = name?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(trimmedName))
+            {
+                throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(name));
+            }
 
             PackageSource? foundByName = FindByName(trimmedName, packageSources);
             PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);

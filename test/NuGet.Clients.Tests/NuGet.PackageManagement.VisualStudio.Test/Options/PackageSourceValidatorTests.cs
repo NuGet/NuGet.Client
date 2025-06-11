@@ -323,6 +323,48 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.IsEnabled.Should().Be(isEnabled, because: "Only the name should have changed.");
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string invalidName)
+        {
+            // Arrange
+            string source = "http://testsource1.com";
+            bool isEnabled = true;
+
+            List<PackageSource> packageSources = new List<PackageSource>();
+
+            // Act
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(source, invalidName, isEnabled, packageSources);
+
+            // Assert
+            ArgumentException exception = Assert.Throws<ArgumentException>(act);
+            exception.Message.Should().Contain(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            exception.ParamName.Should().Be("name");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void FindExistingOrCreate_NullOrEmptySource_ThrowsArgumentException(string invalidSource)
+        {
+            // Arrange
+            string name = "TestSource1";
+            bool isEnabled = true;
+
+            List<PackageSource> packageSources = new List<PackageSource>();
+
+            // Act
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(invalidSource, name, isEnabled, packageSources);
+
+            // Assert
+            ArgumentException exception = Assert.Throws<ArgumentException>(act);
+            exception.Message.Should().Contain(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            exception.ParamName.Should().Be("source");
+        }
+
         [Fact]
         public void FindExistingOrCreate_FoundExistingByName_UpdatesSource()
         {
