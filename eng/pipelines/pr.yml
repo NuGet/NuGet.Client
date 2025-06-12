@@ -83,6 +83,7 @@ stages:
         testType: Unit
         testTargetFramework: net8.0
 
+<<<<<<< HEAD
 - ${{ if eq(parameters.RunUnitTestsOnWindows, true) }}:
   - stage:
     displayName: Unit Tests on Windows (.NET Core 3.1)
@@ -100,6 +101,8 @@ stages:
         testType: Unit
         testTargetFramework: netcoreapp3.1
 
+=======
+>>>>>>> b0972c13f (Stop testing against netcoreapp3.1, which is long deprecated (#6498))
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
     displayName: Functional Tests on Windows (.NET Framework 4.7.2)
@@ -151,8 +154,65 @@ stages:
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
-        testTargetFramework: netcoreapp3.1
+        testTargetFramework: net472
+        testProjectName: NuGet.CommandLine.Test
+        testVerbosity: normal
+        timeoutInMinutes: 45
+
+- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
+  - stage:
+    displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
+        osName: Windows
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
+        testType: Functional
+        testTargetFramework: net472
+        testProjectName: NuGet.Packaging.FuncTest
+
+- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
+  - stage:
+    displayName: Dotnet.Integration.Test on Windows (.NET 9.0)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: Dotnet.Integration.Test on Windows (.NET 9.0)
+        osName: Windows
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
+        testType: Functional
+        testTargetFramework: net9.0
+        testProjectName: Dotnet.Integration.Test
         timeoutInMinutes: 60
+
+- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
+  - stage:
+    displayName: NuGet.Packaging.FuncTest on Windows (.NET 9.0)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: NuGet.Packaging.FuncTest on Windows (.NET 9.0)
+        osName: Windows
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
+        testType: Functional
+        testTargetFramework: net9.0
+        testProjectName: NuGet.Packaging.FuncTest
 
 - ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
   - stage:
@@ -166,19 +226,6 @@ stages:
         vmImage: ubuntu-latest
         testType: Unit
         testTargetFramework: net8.0
-
-- ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
-  - stage:
-    displayName: Unit Tests on Linux (.NET Core 3.1)
-    dependsOn: []
-    jobs:
-    - template: pr.job.yml
-      parameters:
-        displayName: Unit Tests on Linux (.NET Core 3.1)
-        osName: Linux
-        vmImage: ubuntu-22.04
-        testType: Unit
-        testTargetFramework: netcoreapp3.1
 
 - ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
   - stage:
@@ -219,19 +266,6 @@ stages:
         vmImage: macos-latest
         testType: Unit
         testTargetFramework: net8.0
-
-- ${{ if eq(parameters.RunUnitTestsOnMacOS, true) }}:
-  - stage:
-    displayName: Unit Tests on MacOS (.NET Core 3.1)
-    dependsOn: []
-    jobs:
-    - template: pr.job.yml
-      parameters:
-        displayName: Unit Tests on MacOS (.NET Core 3.1)
-        osName: MacOS
-        vmImage: macos-latest
-        testType: Unit
-        testTargetFramework: netcoreapp3.1
 
 - ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:
   - stage:
