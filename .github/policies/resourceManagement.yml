@@ -58,8 +58,8 @@ configuration:
       - addLabel:
           label: Status:No recent activity
       - addReply:
-          reply: This PR has been automatically marked as stale because it has no activity for **7 days**. It will be closed if no further activity occurs **within another 90 days** of this comment. If it is closed, you may reopen it anytime when you're ready again, as long as you don't delete the branch.
-    - description: '[stale community PR] [5-5] Close PRs with no activity over 90 days after warn.'
+          reply: This PR has been automatically marked as stale because it has no activity for **7 days**. It will be closed if no further activity occurs **within another 30 days** of this comment. If it is closed, you may reopen it anytime when you're ready again, as long as you don't delete the branch.
+    - description: '[stale community PR] [5-5] Close PRs with no activity over 30 days after warn.'
       frequencies:
       - hourly:
           hour: 3
@@ -71,7 +71,7 @@ configuration:
       - hasLabel:
           label: Community
       - noActivitySince:
-          days: 90
+          days: 30
       actions:
       - closeIssue
     eventResponderTasks:
