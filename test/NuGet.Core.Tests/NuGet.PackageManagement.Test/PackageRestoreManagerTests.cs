@@ -449,7 +449,8 @@ namespace NuGet.Test
             // Create an empty solution with no packages
             testSolutionManager.AddNewMSBuildProject(); // Add a project with no packages
 
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(simpleTestPathContext.PackageSource));
             var testSettings = Configuration.NullSettings.Instance;
             var packageRestoreManager = new PackageRestoreManager(
                 sourceRepositoryProvider,

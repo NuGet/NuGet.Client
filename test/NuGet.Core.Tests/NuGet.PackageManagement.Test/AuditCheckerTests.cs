@@ -933,13 +933,36 @@ namespace NuGet.PackageManagement.Test
         public async Task CheckPackageVulnerabilitiesAsync_WithEmptyPackages_ReturnsNoopAuditResult(string enableAudit)
         {
             // Arrange
-            var packageSources = new List<SourceRepository>
+            string packageId = "A";
+
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>()
             {
-                new SourceRepository(new PackageSource("https://api.nuget.org/v3/index.json"), Repository.Provider.GetCoreV3())
+                new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>
+                {
+                    {
+                        packageId,
+                        new PackageVulnerabilityInfo[] {
+                            new PackageVulnerabilityInfo(new Uri("https://vulnerability1"), PackageVulnerabilitySeverity.Moderate, VersionRange.Parse("[1.0.0,2.0.0)"))
+                        }
+                    }
+                }
             };
+
+            string sourceWithVulnerabilityData = "https://contoso.com/vulnerability/v3/index.json";
+            Dictionary<string, GetVulnerabilityInfoResult> vulnerabilityResults = new()
+            {
+                { sourceWithVulnerabilityData, new GetVulnerabilityInfoResult(knownVulnerabilities, exceptions: null) }
+            };
+
+            var providers = new List<INuGetResourceProvider> { new VulnerabilityInfoResourceProvider(vulnerabilityResults) };
+            var sourceRepositories = new List<SourceRepository>
+            {
+                new SourceRepository(new PackageSource("https://contoso.com/v3/index.json"), providers)
+            };
+
             var sourceCacheContext = new SourceCacheContext();
             var logger = new TestLogger();
-            var auditChecker = new AuditChecker(packageSources, sourceCacheContext, logger);
+            var auditChecker = new AuditChecker(sourceRepositories, sourceCacheContext, logger);
 
             var packages = Enumerable.Empty<PackageRestoreData>();
             var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>
@@ -964,13 +987,36 @@ namespace NuGet.PackageManagement.Test
         public async Task CheckPackageVulnerabilitiesAsync_WithNullPackages_ThrowsArgumentNullException(string enableAudit)
         {
             // Arrange
-            var packageSources = new List<SourceRepository>
+            string packageId = "A";
+
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>()
             {
-                new SourceRepository(new PackageSource("https://api.nuget.org/v3/index.json"), Repository.Provider.GetCoreV3())
+                new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>
+                {
+                    {
+                        packageId,
+                        new PackageVulnerabilityInfo[] {
+                            new PackageVulnerabilityInfo(new Uri("https://vulnerability1"), PackageVulnerabilitySeverity.Moderate, VersionRange.Parse("[1.0.0,2.0.0)"))
+                        }
+                    }
+                }
             };
+
+            string sourceWithVulnerabilityData = "https://contoso.com/vulnerability/v3/index.json";
+            Dictionary<string, GetVulnerabilityInfoResult> vulnerabilityResults = new()
+            {
+                { sourceWithVulnerabilityData, new GetVulnerabilityInfoResult(knownVulnerabilities, exceptions: null) }
+            };
+
+            var providers = new List<INuGetResourceProvider> { new VulnerabilityInfoResourceProvider(vulnerabilityResults) };
+            var sourceRepositories = new List<SourceRepository>
+            {
+                new SourceRepository(new PackageSource("https://contoso.com/v3/index.json"), providers)
+            };
+
             var sourceCacheContext = new SourceCacheContext();
             var logger = new TestLogger();
-            var auditChecker = new AuditChecker(packageSources, sourceCacheContext, logger);
+            var auditChecker = new AuditChecker(sourceRepositories, sourceCacheContext, logger);
 
             IEnumerable<PackageRestoreData>? packages = null;
             var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>
