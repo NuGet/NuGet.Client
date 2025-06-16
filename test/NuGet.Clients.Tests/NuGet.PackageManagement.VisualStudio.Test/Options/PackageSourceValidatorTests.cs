@@ -371,13 +371,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Arrange
             string originalName = "TestSource1";
             string originalSource = "http://testsource1.com";
-
-            string name = originalName;
-            string source = "https://testsource2.com";
-            bool isEnabled = true;
-
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
+
+            string name = originalName;
+            string source = "http://testsource2.com";
+            bool isEnabled = true;
+
             PackageSourceCredential originalCredential = GetTestPackageSourceCredential(name);
 
             var packageSources = new List<PackageSource>
@@ -400,6 +400,51 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Verify unchanged properties.
             result.Name.Should().Be(originalName, because: "Only the source should have changed.");
             result.AllowInsecureConnections.Should().Be(originalAllowInsecureConnections, because: "Only the source should have changed.");
+            result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only the source should have changed.");
+            result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only the source should have changed.");
+            result.IsEnabled.Should().Be(isEnabled, because: "Only the source should have changed.");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FindExistingOrCreate_SwitchHTTPandHTTPS_UpdatesAllowInsecureConnections(bool isOriginallyHttps)
+        {
+            // Arrange
+            string originalSourceProtocol = isOriginallyHttps ? "https://" : "http://";
+            string originalName = "TestSource1";
+            string originalSource = $"{originalSourceProtocol}testsource1.com";
+            bool originalAllowInsecureConnections = !isOriginallyHttps;
+            bool originalDisableTLSCertificateValidation = true;
+
+            string name = originalName;
+            string expectedSourceProtocol = !isOriginallyHttps ? "https://" : "http://";
+            bool expectedAllowInsecureConnections = isOriginallyHttps;
+            string source = $"{expectedSourceProtocol}testsource1.com";
+            bool isEnabled = true;
+
+            PackageSourceCredential originalCredential = GetTestPackageSourceCredential(name);
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source: originalSource, name: originalName, isEnabled)
+                {
+                    AllowInsecureConnections = originalAllowInsecureConnections,
+                    DisableTLSCertificateValidation = originalDisableTLSCertificateValidation,
+                    Credentials = originalCredential
+                }
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Source.Should().Be(source, because: "A source change was expected.");
+
+            // Verify unchanged properties.
+            result.Name.Should().Be(originalName, because: "Only the source should have changed.");
+            result.AllowInsecureConnections.Should().Be(expectedAllowInsecureConnections, because: "Updating the source to HTTP or HTTPS should add or remove AllowInsecureConnections.");
             result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only the source should have changed.");
             result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only the source should have changed.");
             result.IsEnabled.Should().Be(isEnabled, because: "Only the source should have changed.");

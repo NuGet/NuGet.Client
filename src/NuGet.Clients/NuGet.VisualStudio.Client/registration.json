@@ -166,8 +166,13 @@
                 "messages": [
                   {
                     "text": "@Text_HttpSource_Warning;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                    "visibleWhen": "${config:sourceUrl} ~= '(?i)^http\\\\:'",
+                    "visibleWhen": "(${config:allowInsecureConnections} == '' || ${config:allowInsecureConnections} == 'true') && ${config:sourceUrl} ~= '(?i)^http\\\\:'",
                     "severity": "warning"
+                  },
+                  {
+                    "text": "@Text_HttpSource_Error;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                    "visibleWhen": "${config:allowInsecureConnections} == 'false' && ${config:sourceUrl} ~= '(?i)^http\\\\:'",
+                    "severity": "error"
                   }
                 ]
               }
