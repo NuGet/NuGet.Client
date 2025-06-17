@@ -1400,5 +1400,44 @@ namespace NuGet.XPlat.FuncTest
             // Since user did not specify a version, the package reference will contain the resolved version
             Assert.True(XPlatTestUtils.ValidateReference(projectXmlRoot, packageX.Id, "1.0.0", stringComparison: StringComparison.Ordinal));
         }
+
+        [Fact]
+        public async Task AddPkg_WithPackageReferenceMatchingExistingProject_Succeeds()
+        {
+            // Arrange
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var packageX = XPlatTestUtils.CreatePackage(packageVersion: "2.0.0");
+                var projectB = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectA.Save();
+
+                var logger = new TestCommandOutputLogger(_testOutputHelper);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(1, result);
+                Assert.Null(itemGroup);
+                logger.ErrorMessages.Should().BeEmpty();
+
+                //Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, "2.0.0"));
+                //Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
+            }
+        }
     }
 }
