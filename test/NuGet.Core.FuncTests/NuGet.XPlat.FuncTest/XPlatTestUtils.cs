@@ -346,7 +346,7 @@ namespace NuGet.XPlat.FuncTest
             }
 
             return itemGroups
-                .First(i => i.Descendants(referenceType).Any() &&
+                .FirstOrDefault(i => i.Descendants(referenceType).Any() &&
                             i.FirstAttribute == null);
         }
 
@@ -364,12 +364,16 @@ namespace NuGet.XPlat.FuncTest
                 Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Any();
         }
 
-        public static string CreateDGFileForProject(SimpleTestProjectContext project)
+        public static string CreateDGFileForProject(SimpleTestProjectContext project, params SimpleTestProjectContext[] projectRefs)
         {
             var dgSpec = new DependencyGraphSpec();
             var dgFilePath = Path.Combine(Directory.GetParent(project.ProjectPath).FullName, "temp.dg");
             dgSpec.AddRestore(project.ProjectName);
             dgSpec.AddProject(project.PackageSpec);
+            foreach (var projectRef in projectRefs)
+            {
+                dgSpec.AddProject(projectRef.PackageSpec);
+            }
             dgSpec.Save(dgFilePath);
             return dgFilePath;
         }
