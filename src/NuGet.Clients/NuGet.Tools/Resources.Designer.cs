@@ -340,7 +340,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file..
+        ///   Looks up a localized string similar to NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Refer to [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) for more information..
         /// </summary>
         internal static string Text_HttpSource_Error {
             get {
