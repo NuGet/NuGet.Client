@@ -215,12 +215,12 @@ namespace NuGet.XPlat.FuncTest
             };
         }
 
-        internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, string packageVersion, SimpleTestProjectContext project, string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, string packageVersion, SimpleTestProjectContext project, string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false, params SimpleTestProjectContext[] projects)
         {
             var dgFilePath = string.Empty;
             if (!noRestore)
             {
-                dgFilePath = CreateDGFileForProject(project);
+                dgFilePath = CreateDGFileForProject(project, projects);
             }
             return new PackageReferenceArgs(project.ProjectPath, logger)
             {

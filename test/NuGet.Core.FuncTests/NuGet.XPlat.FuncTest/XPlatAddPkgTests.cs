@@ -1422,7 +1422,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA);
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectB);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -1434,9 +1434,6 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(1, result);
                 Assert.Null(itemGroup);
                 logger.ErrorMessages.Should().BeEmpty();
-
-                //Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, "2.0.0"));
-                //Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
             }
         }
     }
