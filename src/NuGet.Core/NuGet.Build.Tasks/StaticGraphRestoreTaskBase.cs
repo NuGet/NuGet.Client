@@ -256,7 +256,7 @@ namespace NuGet.Build.Tasks
                 yield return Path.Combine(MSBuildBinPath, "MSBuild.exe");
 
 #endif
-                // Full path to the entry project.  If its a solution file, it will be the full path to solution, otherwise SolutionPath is either empty
+                // Full path to the entry project.  If it's a solution file, it will be the full path to solution, otherwise SolutionPath is either empty
                 // or is the value "*Undefined*" and ProjectFullPath is set instead.
                 yield return IsSolutionPathDefined
                         ? SolutionPath
@@ -268,6 +268,10 @@ namespace NuGet.Build.Tasks
                     // Semicolon delimited list of MSBuild global properties
                     yield return string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}"));
                 }
+
+                // Force UTF8 output in child process too
+                if (Console.OutputEncoding?.CodePage == 65001)
+                    yield return "--utf8";
             }
         }
 

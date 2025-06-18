@@ -21,6 +21,8 @@ namespace NuGet.Build.Tasks.Console
     /// </summary>
     internal static class Program
     {
+        private const string Utf8Option = "-utf8";
+
         /// <summary>
         /// A <see cref="T:char[]" /> containing the equals sign '=' to be used to split key/value pairs that are separated by it.
         /// </summary>
@@ -49,6 +51,15 @@ namespace NuGet.Build.Tasks.Console
         /// <returns><c>0</c> if the application ran successfully with no errors, otherwise <c>1</c>.</returns>
         internal static async Task<int> MainInternal(string[] args, IEnvironmentVariableReader environmentVariableReader)
         {
+            // set output encoding to UTF8 if -utf8 is specified
+            var oldOutputEncoding = System.Console.OutputEncoding;
+            if (args.Any(arg => string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)))
+            {
+                args = args.Where(arg => !string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+                SetConsoleOutputEncoding(Encoding.UTF8);
+            }
+
             try
             {
                 if (string.Equals(environmentVariableReader.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
@@ -120,6 +131,21 @@ namespace NuGet.Build.Tasks.Console
                 System.Console.Out.WriteLine(consoleOutLogMessage.ToJson());
 
                 return -1;
+            }
+            finally
+            {
+                SetConsoleOutputEncoding(oldOutputEncoding);
+            }
+        }
+
+        private static void SetConsoleOutputEncoding(Encoding encoding)
+        {
+            try
+            {
+                System.Console.OutputEncoding = encoding;
+            }
+            catch (IOException)
+            {
             }
         }
 
