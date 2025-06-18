@@ -1404,37 +1404,27 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task AddPkg_WithPackageReferenceMatchingExistingProject_Succeeds()
         {
-            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+            var packageX = XPlatTestUtils.CreatePackage(packageVersion: "2.0.0");
+            var projectB = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
+            projectA.AddProjectToAllFrameworks(projectB);
+            projectA.Save();
 
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
-                var packageX = XPlatTestUtils.CreatePackage(packageVersion: "2.0.0");
-                var projectB = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
-                projectA.AddProjectToAllFrameworks(projectB);
-                projectA.Save();
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-                var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectB);
+            var commandRunner = new AddPackageReferenceCommandRunner();
 
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
+            // Act
+            var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+            var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+            var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectB);
-                var commandRunner = new AddPackageReferenceCommandRunner();
-
-                // Act
-                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
-                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
-                var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
-
-                // Assert
-                Assert.Equal(1, result);
-                Assert.Null(itemGroup);
-                logger.ErrorMessages.Should().BeEmpty();
-            }
+            // Assert
+            Assert.Equal(1, result);
+            Assert.Null(itemGroup);
+            logger.ErrorMessages.Should().BeEmpty();
         }
     }
 }
