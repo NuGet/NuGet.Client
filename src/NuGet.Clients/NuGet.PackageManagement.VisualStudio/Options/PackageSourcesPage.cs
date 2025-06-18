@@ -20,6 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     {
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
+        internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
         internal const string MonikerSourceUrl = "sourceUrl";
         internal const string MonikerIsEnabled = "isEnabled";
@@ -74,6 +75,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 throw new InvalidOperationException();
             }
 
+            bool hasAnyHiddenPropertyChanged = false;
+
             try
             {
                 // Stop listening to setting changes while saving.
@@ -83,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     case MonikerPackageSources:
                         return await Task.Run(
-                            () => SavePackageSources<T>(packageSourcesList, cancellationToken),
+                            () => SavePackageSources<T>(packageSourcesList, cancellationToken, out hasAnyHiddenPropertyChanged),
                             cancellationToken);
 
                     case MonikerMachineWideSources:
@@ -99,6 +102,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 // Resume listening to setting changes after saving.
                 _suppressSettingValuesChanged = false;
+
+                if (hasAnyHiddenPropertyChanged)
+                {
+                    VsSettings_SettingsChanged(this, EventArgs.Empty);
+                }
             }
         }
 
@@ -149,25 +157,49 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private ExternalSettingOperationResult SavePackageSources<T>(IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList, CancellationToken cancellationToken)
+        private ExternalSettingOperationResult SavePackageSources<T>(
+            IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
+            CancellationToken cancellationToken,
+            out bool hasAnyHiddenPropertyChanged)
         {
+            hasAnyHiddenPropertyChanged = false;
             ExternalSettingOperationResult result;
 
             try
             {
                 List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
                 List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
+                bool hasAnyPackageSourceIdChanged = false;
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string name = packageSourceDictionary[MonikerSourceName].ToString();
+                    string packageSourceId;
+
+                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageIdObj))
+                    {
+                        packageSourceId = packageIdObj.ToString();
+
+                        if (!string.Equals(packageSourceId, name, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
+                            hasAnyPackageSourceIdChanged = true;
+                        }
+                    }
+                    else // Newly added Package Sources will not have a Package ID yet.
+                    {
+                        packageSourceId = name;
+                    }
+
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
 
                     PackageSource packageSource =
                         PackageSourceValidator.FindExistingOrCreate(
+                            packageSourceId,
                             source,
                             name,
                             isEnabled,
@@ -180,6 +212,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
+
+                hasAnyHiddenPropertyChanged = hasAnyPackageSourceIdChanged;
+
                 result = ExternalSettingOperationResult.Success.Instance;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -204,8 +239,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
                 foreach (PackageSource packageSource in packageSources)
                 {
-                    var dict = new Dictionary<string, object>(capacity: 3)
+                    var dict = new Dictionary<string, object>(capacity: 5)
                     {
+                        { MonikerPackageSourceId, packageSource.Name }, // Use the package source name as a unique identifier
                         { MonikerSourceName, packageSource.Name },
                         { MonikerSourceUrl, packageSource.SourceUri }, // Throws if Source is an invalid URI
                         { MonikerIsEnabled, packageSource.IsEnabled },

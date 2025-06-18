@@ -13,11 +13,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     internal static class PackageSourceValidator
     {
         internal static PackageSource FindExistingOrCreate(
+            string packageSourceId,
             string source,
             string name,
             bool isEnabled,
             List<PackageSource> packageSources)
         {
+            string trimmedSourceId = packageSourceId?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(trimmedSourceId))
+            {
+                throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(packageSourceId));
+            }
+
             string trimmedSource = source?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(trimmedSource))
             {
@@ -30,68 +37,47 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(name));
             }
 
-            PackageSource? foundByName = FindByName(trimmedName, packageSources);
-            PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);
-
+            PackageSource? foundById = FindById(trimmedSourceId, packageSources);
             PackageSource packageSource;
 
-            // Create and validate a new Package Source since none was found by name or source.
-            if (foundByName is null && foundBySource is null)
+            // Create and validate a new Package Source since an existing one was not found.
+            if (foundById is null)
             {
                 packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
                 SetAllowInsecureConnectionsProperty(packageSource);
                 EnsureValidSources(packageSource);
             }
-            // If both name and source match, use the existing PackageSource.
-            else if (foundByName is not null && foundBySource is not null)
+            else // Found an existing source to update.
             {
-                // Only the IsEnabled property could be changing.
-                foundByName.IsEnabled = isEnabled;
-                packageSource = foundByName;
-            }
-            // The source is changing on an existing PackageSource.
-            else if (foundByName is not null)
-            {
+                bool isHttpSourceChanged =
+                    foundById.IsHttp
+                    && !string.Equals(
+                        trimmedSource,
+                        foundById.Source,
+                        StringComparison.OrdinalIgnoreCase);
+
                 // Preserve existing properties by cloning the package source.
                 packageSource = new PackageSource(
                     trimmedSource,
-                    foundByName.Name,
-                    isEnabled,
-                    foundByName.IsOfficial,
-                    foundByName.IsPersistable)
-                {
-                    IsMachineWide = foundByName.IsMachineWide,
-                    Credentials = foundByName.Credentials,
-                    ClientCertificates = foundByName.ClientCertificates,
-                    Description = foundByName.Description,
-                    ProtocolVersion = foundByName.ProtocolVersion,
-                    AllowInsecureConnections = foundByName.AllowInsecureConnections,
-                    DisableTLSCertificateValidation = foundByName.DisableTLSCertificateValidation,
-                    MaxHttpRequestsPerSource = foundByName.MaxHttpRequestsPerSource,
-                };
-
-                SetAllowInsecureConnectionsProperty(packageSource);
-            }
-            // The name is changing on an existing PackageSource.
-            else
-            {
-                // Preserve existing properties by cloning the package source.
-                packageSource = new PackageSource(
-                    foundBySource!.Source,
                     trimmedName,
                     isEnabled,
-                    foundBySource.IsOfficial,
-                    foundBySource.IsPersistable)
+                    foundById.IsOfficial,
+                    foundById.IsPersistable)
                 {
-                    IsMachineWide = foundBySource.IsMachineWide,
-                    Credentials = foundBySource.Credentials,
-                    ClientCertificates = foundBySource.ClientCertificates,
-                    Description = foundBySource.Description,
-                    ProtocolVersion = foundBySource.ProtocolVersion,
-                    AllowInsecureConnections = foundBySource.AllowInsecureConnections,
-                    DisableTLSCertificateValidation = foundBySource.DisableTLSCertificateValidation,
-                    MaxHttpRequestsPerSource = foundBySource.MaxHttpRequestsPerSource,
+                    IsMachineWide = foundById.IsMachineWide,
+                    Credentials = foundById.Credentials,
+                    ClientCertificates = foundById.ClientCertificates,
+                    Description = foundById.Description,
+                    ProtocolVersion = foundById.ProtocolVersion,
+                    AllowInsecureConnections = foundById.AllowInsecureConnections,
+                    DisableTLSCertificateValidation = foundById.DisableTLSCertificateValidation,
+                    MaxHttpRequestsPerSource = foundById.MaxHttpRequestsPerSource,
                 };
+
+                if (isHttpSourceChanged)
+                {
+                    SetAllowInsecureConnectionsProperty(packageSource);
+                }
             }
 
             return packageSource;
@@ -189,61 +175,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        private static PackageSource? FindByName(string name, List<PackageSource> packageSources)
+        private static PackageSource? FindById(string packageSourceId, List<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
-            if (name is null)
-            {
-                return null;
-            }
-
-            string trimmedName = name?.Trim() ?? string.Empty;
-
             List<PackageSource> existingPackageSource = packageSources
                 .Where(packageSource =>
-                    string.Equals(packageSource.Name, trimmedName, StringComparison.CurrentCultureIgnoreCase))
+                    string.Equals(packageSource.Name, packageSourceId, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
 
             if (existingPackageSource.Count > 1)
             {
                 throw new InvalidOperationException(message: Strings.Error_PackageSource_UniqueName);
-            }
-
-            return existingPackageSource.SingleOrDefault();
-        }
-
-        private static PackageSource? FindBySource(string source, List<PackageSource> packageSources)
-        {
-            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
-
-            if (source is null)
-            {
-                return null;
-            }
-
-            string trimmedSource = source?.Trim() ?? string.Empty;
-
-            List<PackageSource> existingPackageSource = packageSources
-                .Where(packageSource =>
-                {
-                    string trimmedTargetSource = packageSource.Source?.Trim() ?? string.Empty;
-                    bool areTrimmedStringsEqual =
-                        string.Equals(
-                            trimmedTargetSource,
-                            trimmedSource,
-                            StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(
-                            PathValidator.GetCanonicalPath(trimmedTargetSource),
-                            PathValidator.GetCanonicalPath(trimmedSource),
-                            StringComparison.OrdinalIgnoreCase);
-                    return areTrimmedStringsEqual;
-                })
-                .ToList();
-
-            if (existingPackageSource.Count > 1)
-            {
-                throw new InvalidOperationException(message: Strings.Error_PackageSource_UniqueSource);
             }
 
             return existingPackageSource.SingleOrDefault();
