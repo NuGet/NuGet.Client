@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     case MonikerPackageSources:
                         return await Task.Run(
-                            () => SavePackageSources<T>(packageSourcesList, cancellationToken, out hasAnyHiddenPropertyChanged),
+                            () => SavePackageSources(packageSourcesList, cancellationToken, out hasAnyHiddenPropertyChanged),
                             cancellationToken);
 
                     case MonikerMachineWideSources:
@@ -157,7 +157,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private ExternalSettingOperationResult SavePackageSources<T>(
+        private ExternalSettingOperationResult SavePackageSources(
             IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
             CancellationToken cancellationToken,
             out bool hasAnyHiddenPropertyChanged)
