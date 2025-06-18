@@ -179,9 +179,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string packageSourceId;
 
                     // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
-                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageIdObj))
+                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
                     {
-                        packageSourceId = packageIdObj.ToString();
+                        packageSourceId = packageSourceIdObj.ToString();
 
                         if (!string.Equals(packageSourceId, name, StringComparison.CurrentCultureIgnoreCase))
                         {

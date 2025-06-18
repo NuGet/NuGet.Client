@@ -355,14 +355,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string invalidName)
         {
             // Arrange
-            string packageId = "TestSource1";
+            string packageSourceId = "TestSource1";
             string source = "http://testsource1.com";
             bool isEnabled = true;
 
             List<PackageSource> packageSources = new List<PackageSource>();
 
             // Act
-            Action act = () => PackageSourceValidator.FindExistingOrCreate(packageId, source, invalidName, isEnabled, packageSources);
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(packageSourceId, source, invalidName, isEnabled, packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -378,13 +378,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource1";
-            string packageId = name;
+            string packageSourceId = name;
             bool isEnabled = true;
 
             List<PackageSource> packageSources = new List<PackageSource>();
 
             // Act
-            Action act = () => PackageSourceValidator.FindExistingOrCreate(packageId, invalidSource, name, isEnabled, packageSources);
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(packageSourceId, invalidSource, name, isEnabled, packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -397,7 +397,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string originalName = "TestSource1";
-            string packageId = originalName;
+            string packageSourceId = originalName;
             string originalSource = "http://testsource1.com";
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
@@ -419,7 +419,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageId, source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageSourceId, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -527,7 +527,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             bool originalDisableTLSCertificateValidation = true;
 
             string name = originalName;
-            string packageId = name;
+            string packageSourceId = name;
             string expectedSourceProtocol = !isOriginallyHttps ? "https://" : "http://";
             bool expectedAllowInsecureConnections = isOriginallyHttps;
             string source = $"{expectedSourceProtocol}testsource1.com";
@@ -546,7 +546,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageId, source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageSourceId, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -567,7 +567,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource1";
-            string packageId = name;
+            string packageSourceId = name;
             string source = "http://testsource1.com";
             bool isEnabled = !originalIsEnabled; // Toggle the enabled state
 
@@ -586,7 +586,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageId, source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(packageSourceId, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
