@@ -132,6 +132,9 @@ namespace NuGet.Build.Tasks
                         WorkingDirectory = Environment.CurrentDirectory,
                     };
 
+                    if (IsConsoleOutputUTF8())
+                        process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+
                     // Place the output in the queue which handles logging messages coming through on StdOut
                     process.OutputDataReceived += (sender, args) => loggingQueue.Enqueue(args?.Data);
 
@@ -270,9 +273,14 @@ namespace NuGet.Build.Tasks
                 }
 
                 // Force UTF8 output in child process too
-                if (Console.OutputEncoding?.CodePage == 65001)
+                if (IsConsoleOutputUTF8())
                     yield return "--utf8";
             }
+        }
+
+        private static bool IsConsoleOutputUTF8()
+        {
+            return Console.OutputEncoding?.CodePage == 65001;
         }
 
         /// <summary>
