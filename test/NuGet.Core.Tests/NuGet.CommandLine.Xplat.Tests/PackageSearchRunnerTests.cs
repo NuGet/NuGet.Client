@@ -591,7 +591,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Prerelease = true,
                 ExactMatch = false,
                 Logger = GetLogger(),
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source },
                 Format = PackageSearchFormat.Json
             };
 
