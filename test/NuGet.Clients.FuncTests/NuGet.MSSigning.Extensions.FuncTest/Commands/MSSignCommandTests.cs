@@ -201,7 +201,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -223,7 +223,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
             }
         }
@@ -244,7 +244,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -252,7 +252,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.Errors.Should().Contain("NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.");
             }
@@ -275,7 +275,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -283,7 +283,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     commandWithOverwrite);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -293,7 +293,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         {
             var result = await ExecuteMSSignCommandAsync(Common.HashAlgorithmName.SHA1);
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(because: result.AllOutput);
             result.AllOutput.Should().Contain(_invalidCertificateFingerprintCode);
         }
 
@@ -305,7 +305,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         {
             var result = await ExecuteMSSignCommandAsync(hashAlgorithmName);
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(because: result.AllOutput);
             result.AllOutput.Should().NotContain(_invalidCertificateFingerprintCode);
         }
 
