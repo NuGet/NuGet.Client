@@ -12,7 +12,7 @@
 
     <Reference Include="System.IO.Compression" />
 
-    <PackageReference Include="Microsoft.Build.Framework" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.Build.Framework" />
   </ItemGroup>
 
   <Target Name="CopyFinalNuGetExeToOutputPath"
