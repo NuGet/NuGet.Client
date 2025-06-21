@@ -17,6 +17,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Test;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -1682,7 +1683,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager())
+                using (var testSolutionManager = new TestVSSolutionManager())
                 using (var randomProjectFolderPath = TestDirectory.Create())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
