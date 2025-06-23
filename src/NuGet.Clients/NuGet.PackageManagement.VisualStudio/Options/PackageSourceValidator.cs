@@ -12,17 +12,23 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 {
     internal static class PackageSourceValidator
     {
+        /// <summary>
+        /// Finds an existing package source by its unique original package source name (identifier). If none are found, create a new package source.
+        /// </summary>
+        /// <param name="lookupName">This is the package source Name which is unique and serves as the identifier.</param>
+        /// <param name="name">The new value for the name.</param>
+        /// <exception cref="ArgumentException"></exception>
         internal static PackageSource FindExistingOrCreate(
-            string packageSourceId,
+            string lookupName,
             string source,
             string name,
             bool isEnabled,
             List<PackageSource> packageSources)
         {
-            string trimmedSourceId = packageSourceId?.Trim() ?? string.Empty;
-            if (string.IsNullOrEmpty(trimmedSourceId))
+            string trimmedLookupName = lookupName?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(trimmedLookupName))
             {
-                throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(packageSourceId));
+                throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(lookupName));
             }
 
             string trimmedSource = source?.Trim() ?? string.Empty;
@@ -37,11 +43,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 throw new ArgumentException(message: Strings.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(name));
             }
 
-            PackageSource? foundById = FindById(trimmedSourceId, packageSources);
+            PackageSource? foundByName = FindByName(trimmedLookupName, packageSources);
             PackageSource packageSource;
 
             // Create and validate a new Package Source since an existing one was not found.
-            if (foundById is null)
+            if (foundByName is null)
             {
                 packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
                 SetAllowInsecureConnectionsProperty(packageSource);
@@ -50,10 +56,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             else // Found an existing source to update.
             {
                 bool isHttpSourceChanged =
-                    foundById.IsHttp
+                    foundByName.IsHttp
                     && !string.Equals(
                         trimmedSource,
-                        foundById.Source,
+                        foundByName.Source,
                         StringComparison.OrdinalIgnoreCase);
 
                 // Preserve existing properties by cloning the package source.
@@ -61,17 +67,17 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     trimmedSource,
                     trimmedName,
                     isEnabled,
-                    foundById.IsOfficial,
-                    foundById.IsPersistable)
+                    foundByName.IsOfficial,
+                    foundByName.IsPersistable)
                 {
-                    IsMachineWide = foundById.IsMachineWide,
-                    Credentials = foundById.Credentials,
-                    ClientCertificates = foundById.ClientCertificates,
-                    Description = foundById.Description,
-                    ProtocolVersion = foundById.ProtocolVersion,
-                    AllowInsecureConnections = foundById.AllowInsecureConnections,
-                    DisableTLSCertificateValidation = foundById.DisableTLSCertificateValidation,
-                    MaxHttpRequestsPerSource = foundById.MaxHttpRequestsPerSource,
+                    IsMachineWide = foundByName.IsMachineWide,
+                    Credentials = foundByName.Credentials,
+                    ClientCertificates = foundByName.ClientCertificates,
+                    Description = foundByName.Description,
+                    ProtocolVersion = foundByName.ProtocolVersion,
+                    AllowInsecureConnections = foundByName.AllowInsecureConnections,
+                    DisableTLSCertificateValidation = foundByName.DisableTLSCertificateValidation,
+                    MaxHttpRequestsPerSource = foundByName.MaxHttpRequestsPerSource,
                 };
 
                 if (isHttpSourceChanged)
@@ -175,13 +181,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        private static PackageSource? FindById(string packageSourceId, List<PackageSource> packageSources)
+        private static PackageSource? FindByName(string packageSourceName, List<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
             List<PackageSource> existingPackageSource = packageSources
                 .Where(packageSource =>
-                    string.Equals(packageSource.Name, packageSourceId, StringComparison.CurrentCultureIgnoreCase))
+                    string.Equals(packageSource.Name, packageSourceName, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
 
             if (existingPackageSource.Count > 1)

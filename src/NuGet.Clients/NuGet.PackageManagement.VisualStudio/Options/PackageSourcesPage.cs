@@ -173,29 +173,29 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
                 List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
-                bool hasAnyPackageSourceIdChanged = false;
+                bool hasAnyPackageSourceNameChanged = false;
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string name = packageSourceDictionary[MonikerSourceName].ToString();
-                    string packageSourceId;
+                    string lookupName;
 
                     // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
                     if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
                     {
-                        packageSourceId = packageSourceIdObj.ToString();
+                        lookupName = packageSourceIdObj.ToString();
 
-                        if (!string.Equals(packageSourceId, name, StringComparison.CurrentCultureIgnoreCase))
+                        if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
                         {
                             // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
-                            hasAnyPackageSourceIdChanged = true;
+                            hasAnyPackageSourceNameChanged = true;
                         }
                     }
                     else // Newly added Package Sources will not have a Package ID yet.
                     {
-                        packageSourceId = name;
+                        lookupName = name;
                     }
 
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                     PackageSource packageSource =
                         PackageSourceValidator.FindExistingOrCreate(
-                            packageSourceId,
+                            lookupName,
                             source,
                             name,
                             isEnabled,
@@ -217,7 +217,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 _packageSourceProvider.SavePackageSources(packageSources);
 
-                hasAnyHiddenPropertyChanged = hasAnyPackageSourceIdChanged;
+                hasAnyHiddenPropertyChanged = hasAnyPackageSourceNameChanged;
 
                 result = ExternalSettingOperationResult.Success.Instance;
             }
