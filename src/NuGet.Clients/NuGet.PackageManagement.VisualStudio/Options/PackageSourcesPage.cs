@@ -86,7 +86,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     case MonikerPackageSources:
                         return await Task.Run(
-                            () => SavePackageSources(packageSourcesList, cancellationToken, out hasAnyHiddenPropertyChanged),
+                            () =>
+                            {
+                                (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) savePackageSourcesResult = SavePackageSources(packageSourcesList, cancellationToken);
+                                hasAnyHiddenPropertyChanged = savePackageSourcesResult.hasAnyHiddenPropertyChanged;
+                                return savePackageSourcesResult.result;
+                            },
                             cancellationToken);
 
                     case MonikerMachineWideSources:
@@ -157,12 +162,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private ExternalSettingOperationResult SavePackageSources(
+        private (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) SavePackageSources(
             IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
-            CancellationToken cancellationToken,
-            out bool hasAnyHiddenPropertyChanged)
+            CancellationToken cancellationToken)
         {
-            hasAnyHiddenPropertyChanged = false;
+            bool hasAnyHiddenPropertyChanged = false;
             ExternalSettingOperationResult result;
 
             try
@@ -225,7 +229,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
 
-            return result;
+            return (result, hasAnyHiddenPropertyChanged);
         }
 
         private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
