@@ -340,7 +340,16 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are attempting to add an HTTP source, which is insecure..
+        ///   Looks up a localized string similar to NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Refer to [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) for more information..
+        /// </summary>
+        internal static string Text_HttpSource_Error {
+            get {
+                return ResourceManager.GetString("Text_HttpSource_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP sources are insecure. Consider using HTTPS instead. &apos;AllowInsecureConnections&apos; is enabled, permitting HTTP access. For more secure options, see [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere)..
         /// </summary>
         internal static string Text_HttpSource_Warning {
             get {

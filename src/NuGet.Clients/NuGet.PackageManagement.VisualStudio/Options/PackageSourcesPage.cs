@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerSourceName = "sourceName";
         internal const string MonikerSourceUrl = "sourceUrl";
         internal const string MonikerIsEnabled = "isEnabled";
+        internal const string MonikerAllowInsecureConnections = "allowInsecureConnections";
+
         private IPackageSourceProvider _packageSourceProvider;
 
         public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
@@ -207,6 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         { MonikerSourceName, packageSource.Name },
                         { MonikerSourceUrl, packageSource.SourceUri }, // Throws if Source is an invalid URI
                         { MonikerIsEnabled, packageSource.IsEnabled },
+                        { MonikerAllowInsecureConnections, packageSource.AllowInsecureConnections }
                     };
 
                     packageSourcesList.Add(dict);
