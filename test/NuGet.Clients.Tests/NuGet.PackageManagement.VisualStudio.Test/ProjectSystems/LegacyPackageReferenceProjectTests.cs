@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;

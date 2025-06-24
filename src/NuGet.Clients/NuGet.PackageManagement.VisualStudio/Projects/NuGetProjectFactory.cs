@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
