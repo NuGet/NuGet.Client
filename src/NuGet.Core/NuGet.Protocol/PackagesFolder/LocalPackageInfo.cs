@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using NuGet.Packaging;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -16,7 +16,7 @@ namespace NuGet.Repositories
     public class LocalPackageInfo
     {
         private readonly Lazy<NuspecReader> _nuspec;
-        private readonly Lazy<IReadOnlyList<string>> _files;
+        private readonly Lazy<ImmutableArray<string>> _files;
         private readonly Lazy<string> _sha512;
         private readonly Lazy<RuntimeGraph> _runtimeGraph;
 
@@ -28,7 +28,7 @@ namespace NuGet.Repositories
             string zipPath,
             string sha512Path,
             Lazy<NuspecReader> nuspec,
-            Lazy<IReadOnlyList<string>> files,
+            Lazy<ImmutableArray<string>> files,
             Lazy<string> sha512,
             Lazy<RuntimeGraph> runtimeGraph)
         {
@@ -66,7 +66,7 @@ namespace NuGet.Repositories
         /// Package files with OPC files filtered out.
         /// Cached to avoid reading the same files multiple times.
         /// </summary>
-        public IReadOnlyList<string> Files => _files.Value;
+        public ImmutableArray<string> Files => _files.Value;
 
         /// <summary>
         /// SHA512 of the package.

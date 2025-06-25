@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -386,7 +387,7 @@ namespace NuGet.Commands
                 }
             }
 
-            IEnumerable<string> files = null;
+            ImmutableArray<string> files = default;
             for (var i = 0; i < _lockFile.Libraries.Count; i++)
             {
                 LockFileLibrary library = _lockFile.Libraries[i];
@@ -397,7 +398,7 @@ namespace NuGet.Commands
                 }
             }
 
-            if (files == null || targetLibrary == null)
+            if (files.IsDefault || targetLibrary == null)
             {
                 // We need to generate some of the data. We'll need the local package info to do that
                 var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(
@@ -411,7 +412,7 @@ namespace NuGet.Commands
                 }
 
                 // Collect the file list if necessary
-                if (files == null)
+                if (files.IsDefault)
                 {
                     files = packageInfo.Package.Files;
                 }
@@ -432,12 +433,12 @@ namespace NuGet.Commands
 
         private class CompatibilityData
         {
-            public IEnumerable<string> Files { get; }
+            public ImmutableArray<string> Files { get; }
             public LockFileTargetLibrary TargetLibrary { get; }
 
             public PackageSpec PackageSpec { get; }
 
-            public CompatibilityData(IEnumerable<string> files, LockFileTargetLibrary targetLibrary, PackageSpec packageSpec)
+            public CompatibilityData(ImmutableArray<string> files, LockFileTargetLibrary targetLibrary, PackageSpec packageSpec)
             {
                 Files = files;
                 TargetLibrary = targetLibrary;

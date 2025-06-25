@@ -206,27 +206,15 @@ NuGet.ProjectModel.LockFileItem
 ~NuGet.ProjectModel.LockFileItem.Properties.get -> System.Collections.Generic.IDictionary<string, string>
 ~NuGet.ProjectModel.LockFileItem.SetProperty(string name, string value) -> void
 NuGet.ProjectModel.LockFileLibrary
-~NuGet.ProjectModel.LockFileLibrary.Clone() -> NuGet.ProjectModel.LockFileLibrary
 ~NuGet.ProjectModel.LockFileLibrary.Equals(NuGet.ProjectModel.LockFileLibrary other) -> bool
-~NuGet.ProjectModel.LockFileLibrary.Files.get -> System.Collections.Generic.IList<string>
-~NuGet.ProjectModel.LockFileLibrary.Files.set -> void
 NuGet.ProjectModel.LockFileLibrary.HasTools.get -> bool
-NuGet.ProjectModel.LockFileLibrary.HasTools.set -> void
 NuGet.ProjectModel.LockFileLibrary.IsServiceable.get -> bool
-NuGet.ProjectModel.LockFileLibrary.IsServiceable.set -> void
-NuGet.ProjectModel.LockFileLibrary.LockFileLibrary() -> void
 ~NuGet.ProjectModel.LockFileLibrary.MSBuildProject.get -> string
-~NuGet.ProjectModel.LockFileLibrary.MSBuildProject.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Name.get -> string
-~NuGet.ProjectModel.LockFileLibrary.Name.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Path.get -> string
-~NuGet.ProjectModel.LockFileLibrary.Path.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Sha512.get -> string
-~NuGet.ProjectModel.LockFileLibrary.Sha512.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Type.get -> string
-~NuGet.ProjectModel.LockFileLibrary.Type.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Version.get -> NuGet.Versioning.NuGetVersion
-~NuGet.ProjectModel.LockFileLibrary.Version.set -> void
 NuGet.ProjectModel.LockFileReadFlags
 NuGet.ProjectModel.LockFileReadFlags.All = NuGet.ProjectModel.LockFileReadFlags.Libraries | NuGet.ProjectModel.LockFileReadFlags.Targets | NuGet.ProjectModel.LockFileReadFlags.ProjectFileDependencyGroups | NuGet.ProjectModel.LockFileReadFlags.PackageFolders | NuGet.ProjectModel.LockFileReadFlags.PackageSpec | NuGet.ProjectModel.LockFileReadFlags.CentralTransitiveDependencyGroups | NuGet.ProjectModel.LockFileReadFlags.LogMessages -> NuGet.ProjectModel.LockFileReadFlags
 NuGet.ProjectModel.LockFileReadFlags.CentralTransitiveDependencyGroups = 32 -> NuGet.ProjectModel.LockFileReadFlags
@@ -568,7 +556,6 @@ override NuGet.ProjectModel.LockFileDependency.GetHashCode() -> int
 ~override NuGet.ProjectModel.LockFileItem.Equals(object obj) -> bool
 override NuGet.ProjectModel.LockFileItem.GetHashCode() -> int
 ~override NuGet.ProjectModel.LockFileItem.ToString() -> string
-~override NuGet.ProjectModel.LockFileLibrary.Equals(object obj) -> bool
 override NuGet.ProjectModel.LockFileLibrary.GetHashCode() -> int
 ~override NuGet.ProjectModel.LockFileTarget.Equals(object obj) -> bool
 override NuGet.ProjectModel.LockFileTarget.GetHashCode() -> int

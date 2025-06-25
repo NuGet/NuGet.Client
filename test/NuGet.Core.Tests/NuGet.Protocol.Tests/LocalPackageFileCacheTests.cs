@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging;
@@ -34,7 +35,7 @@ namespace NuGet.Protocol.Tests
                 var filesB = cache.GetOrAddFiles(path);
 
                 // Verify both file lists are the exact same instance
-                Assert.Same(filesA.Value, filesB.Value);
+                Assert.Same(ImmutableCollectionsMarshal.AsArray(filesA.Value), ImmutableCollectionsMarshal.AsArray(filesB.Value));
                 filesA.Value.Should().NotBeEmpty();
             }
         }

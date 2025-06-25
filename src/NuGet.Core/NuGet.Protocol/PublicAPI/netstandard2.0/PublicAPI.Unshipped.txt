@@ -1,1 +1,4 @@
 #nullable enable
+~NuGet.Repositories.LocalPackageInfo.Files.get -> System.Collections.Immutable.ImmutableArray<string>
+~NuGet.Repositories.LocalPackageInfo.LocalPackageInfo(string packageId, NuGet.Versioning.NuGetVersion version, string path, string manifestPath, string zipPath, string sha512Path, System.Lazy<NuGet.Packaging.NuspecReader> nuspec, System.Lazy<System.Collections.Immutable.ImmutableArray<string>> files, System.Lazy<string> sha512, System.Lazy<NuGet.RuntimeModel.RuntimeGraph> runtimeGraph) -> void
+~virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Immutable.ImmutableArray<string>>

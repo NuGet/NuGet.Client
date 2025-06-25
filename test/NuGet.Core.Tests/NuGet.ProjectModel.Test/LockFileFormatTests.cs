@@ -237,7 +237,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(NuGetVersion.Parse("4.0.20-beta-22927"), runtimeLibrary.Version);
             Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
             Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
-            Assert.Equal(10, runtimeLibrary.Files.Count);
+            Assert.Equal(10, runtimeLibrary.Files.Length);
 
             var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
             Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));
@@ -345,12 +345,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -845,12 +845,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -956,12 +956,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1072,12 +1073,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1192,12 +1193,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1305,12 +1306,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -2232,7 +2234,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeLibrary.Version);
             Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
             Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
-            Assert.Equal(5, runtimeLibrary.Files.Count);
+            Assert.Equal(5, runtimeLibrary.Files.Length);
 
             var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
             Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));
@@ -2359,14 +2361,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                // the order is important, the test assures that they are sorted.
+                Files = ["lib/netcoreapp3.0/a.dll", "My.Nice.Package.With.WPF.Reference.nuspec"],
                 Name = "My.Nice.Package.With.WPF.Reference",
                 Version = NuGetVersion.Parse("2.0.0"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            // the order is important, the test assures that they are sorted.
-            lib.Files.Add("lib/netcoreapp3.0/a.dll");
-            lib.Files.Add("My.Nice.Package.With.WPF.Reference.nuspec");
             lockFile.Libraries.Add(lib);
 
             // Act
@@ -2448,12 +2449,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ["System.Runtime.nuspec"],
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups

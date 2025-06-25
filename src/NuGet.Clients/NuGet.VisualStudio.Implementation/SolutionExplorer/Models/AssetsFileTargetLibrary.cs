@@ -100,7 +100,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
             DocumentationFiles = library?.Files
                 .Where(IsDocumentationFile)
-                .ToImmutableArray() ?? ImmutableArray<string>.Empty;
+                .ToImmutableArray() ?? [];
 
             return;
 

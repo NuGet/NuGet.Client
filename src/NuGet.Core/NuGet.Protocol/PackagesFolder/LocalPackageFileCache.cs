@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -24,8 +24,8 @@ namespace NuGet.Protocol
             = new ConcurrentDictionary<string, Lazy<NuspecReader>>(PathUtility.GetStringComparerBasedOnOS());
 
         // Expanded path -> Package file list
-        private readonly ConcurrentDictionary<string, Lazy<IReadOnlyList<string>>> _filesCache
-            = new ConcurrentDictionary<string, Lazy<IReadOnlyList<string>>>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly ConcurrentDictionary<string, Lazy<ImmutableArray<string>>> _filesCache
+            = new ConcurrentDictionary<string, Lazy<ImmutableArray<string>>>(PathUtility.GetStringComparerBasedOnOS());
 
         // SHA512 path -> SHA512
         private readonly ConcurrentDictionary<string, Lazy<string>> _sha512Cache
@@ -59,10 +59,10 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read a the package files from disk.
         /// </summary>
-        public virtual Lazy<IReadOnlyList<string>> GetOrAddFiles(string expandedPath)
+        public virtual Lazy<ImmutableArray<string>> GetOrAddFiles(string expandedPath)
         {
             return _filesCache.GetOrAdd(expandedPath,
-                e => new Lazy<IReadOnlyList<string>>(() => GetFiles(e)));
+                e => new Lazy<ImmutableArray<string>>(() => GetFiles(e)));
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read files from a package folder.
         /// </summary>
-        private static IReadOnlyList<string> GetFiles(string expandedPath)
+        private static ImmutableArray<string> GetFiles(string expandedPath)
         {
             using (var packageReader = new PackageFolderReader(expandedPath))
             {
@@ -142,8 +142,7 @@ namespace NuGet.Protocol
                 // This is sorted before it is written out
                 return packageReader.GetFiles()
                     .Where(file => IsAllowedLibraryFile(file))
-                    .ToList()
-                    .AsReadOnly();
+                    .ToImmutableArray();
             }
         }
 
