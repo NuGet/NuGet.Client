@@ -387,18 +387,18 @@ namespace NuGet.Commands
                 }
             }
 
-            ImmutableArray<string> files = default;
+            IEnumerable<string> files = null;
             for (var i = 0; i < _lockFile.Libraries.Count; i++)
             {
                 LockFileLibrary library = _lockFile.Libraries[i];
                 if (library.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && library.Version.Equals(libraryId.Version))
                 {
-                    files = library.Files.ToImmutableArray();
+                    files = library.Files;
                     break;
                 }
             }
 
-            if (files.IsDefault || targetLibrary == null)
+            if (files == null || targetLibrary == null)
             {
                 // We need to generate some of the data. We'll need the local package info to do that
                 var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(
@@ -412,9 +412,9 @@ namespace NuGet.Commands
                 }
 
                 // Collect the file list if necessary
-                if (files.IsDefault)
+                if (files == null)
                 {
-                    files = packageInfo.Package.Files.ToImmutableArray();
+                    files = packageInfo.Package.Files;
                 }
 
                 // Generate the target library if necessary
@@ -428,7 +428,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return new CompatibilityData(files, targetLibrary, packageSpec);
+            return new CompatibilityData(files.ToImmutableArray(), targetLibrary, packageSpec);
         }
 
         private class CompatibilityData
