@@ -426,7 +426,7 @@ namespace NuGet.Commands
             {
                 var contractPath = "lib/contract/" + package.Id + ".dll";
 
-                if (package.Files.Contains(contractPath))
+                if (package.Files.Any(path => path == contractPath))
                 {
                     lockFileLib.CompileTimeAssemblies.Clear();
                     lockFileLib.CompileTimeAssemblies.Add(new LockFileItem(contractPath));

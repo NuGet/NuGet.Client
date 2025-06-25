@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -10,6 +11,8 @@ namespace NuGet.ProjectModel
 {
     public sealed record class LockFileLibrary : IEquatable<LockFileLibrary>
     {
+        private static IList<string> EmptyFiles = ImmutableArray<string>.Empty;
+
         public string Name { get; init; }
 
         public string Type { get; init; }
@@ -20,7 +23,7 @@ namespace NuGet.ProjectModel
 
         public string Sha512 { get; init; }
 
-        public ImmutableArray<string> Files { get; init; } = [];
+        public IList<string> Files { get; init; } = EmptyFiles;
 
         /// <summary>
         /// Relative path to the project.json file for projects

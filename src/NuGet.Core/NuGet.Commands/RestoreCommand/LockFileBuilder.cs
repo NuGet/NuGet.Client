@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -617,10 +618,15 @@ namespace NuGet.Commands
 
         internal static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path)
         {
+            var hasTools = package.Files.Any(static file => HasTools(file));
+
+            // This should avoid allocating a new array as package.Files should be a boxed ImmutableArray<string>
+            var files = package.Files as IList<string> ?? package.Files.ToImmutableArray();
+
             var lockFileLib = new LockFileLibrary
             {
-                Files = package.Files,
-                HasTools = package.Files.Any(static file => HasTools(file)),
+                Files = files,
+                HasTools = hasTools,
                 Name = package.Id,
                 Version = package.Version,
                 Type = LibraryType.Package,

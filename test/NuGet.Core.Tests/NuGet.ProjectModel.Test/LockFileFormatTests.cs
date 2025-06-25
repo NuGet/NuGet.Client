@@ -237,7 +237,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(NuGetVersion.Parse("4.0.20-beta-22927"), runtimeLibrary.Version);
             Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
             Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
-            Assert.Equal(10, runtimeLibrary.Files.Length);
+            Assert.Equal(10, runtimeLibrary.Files.Count);
 
             var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
             Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));
@@ -2234,7 +2234,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeLibrary.Version);
             Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
             Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
-            Assert.Equal(5, runtimeLibrary.Files.Length);
+            Assert.Equal(5, runtimeLibrary.Files.Count);
 
             var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
             Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));

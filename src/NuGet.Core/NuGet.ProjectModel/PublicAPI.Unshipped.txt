@@ -1,7 +1,6 @@
 #nullable enable
 NuGet.ProjectModel.LockFileLibrary.HasTools.init -> void
 NuGet.ProjectModel.LockFileLibrary.IsServiceable.init -> void
-~NuGet.ProjectModel.LockFileLibrary.Files.get -> System.Collections.Immutable.ImmutableArray<string>
 ~NuGet.ProjectModel.LockFileLibrary.Files.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.MSBuildProject.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.Name.init -> void

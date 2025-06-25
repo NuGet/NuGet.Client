@@ -393,7 +393,7 @@ namespace NuGet.Commands
                 LockFileLibrary library = _lockFile.Libraries[i];
                 if (library.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && library.Version.Equals(libraryId.Version))
                 {
-                    files = library.Files;
+                    files = library.Files.ToImmutableArray();
                     break;
                 }
             }
@@ -414,7 +414,7 @@ namespace NuGet.Commands
                 // Collect the file list if necessary
                 if (files.IsDefault)
                 {
-                    files = packageInfo.Package.Files;
+                    files = packageInfo.Package.Files.ToImmutableArray();
                 }
 
                 // Generate the target library if necessary

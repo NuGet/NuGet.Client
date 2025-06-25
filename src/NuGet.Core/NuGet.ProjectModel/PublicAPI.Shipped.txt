@@ -207,6 +207,7 @@ NuGet.ProjectModel.LockFileItem
 ~NuGet.ProjectModel.LockFileItem.SetProperty(string name, string value) -> void
 NuGet.ProjectModel.LockFileLibrary
 ~NuGet.ProjectModel.LockFileLibrary.Equals(NuGet.ProjectModel.LockFileLibrary other) -> bool
+~NuGet.ProjectModel.LockFileLibrary.Files.get -> System.Collections.Generic.IList<string>
 NuGet.ProjectModel.LockFileLibrary.HasTools.get -> bool
 NuGet.ProjectModel.LockFileLibrary.IsServiceable.get -> bool
 ~NuGet.ProjectModel.LockFileLibrary.MSBuildProject.get -> string
