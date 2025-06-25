@@ -29,6 +29,7 @@
     <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">9.0.6</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyProtectedDataVersion Condition="'$(SystemSecurityCryptographyProtectedDataVersion)' == ''">9.0.6</SystemSecurityCryptographyProtectedDataVersion>
     <MicrosoftVisualStudioSolutionPersistenceVersion Condition="'$(MicrosoftVisualStudioSolutionPersistenceVersion)' == ''">1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
+    <MicrosoftVisualStudioSdkForApex>18.0.1799-preview.1</MicrosoftVisualStudioSdkForApex>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,7 +60,7 @@
     <PackageVersion Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
     <!-- Microsoft.TeamFoundationServer.ExtendedClient has vulnerable dependencies Microsoft.IdentityModel.JsonWebTokens and System.IdentityModel.Tokens.Jwt . When it's upgraded, try removing the pinned packages -->
     <PackageVersion Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.153.0" />
-    <PackageVersion Include="Microsoft.Test.Apex.VisualStudio" Version="17.14.35906.295" />
+    <PackageVersion Include="Microsoft.Test.Apex.VisualStudio" Version="18.0.0-preview-1-10723-180" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.1.0" />
     <PackageVersion Include="Microsoft.VisualStudio.LanguageServices" Version="4.3.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Markdown.Platform" Version="17.14.76-preview" />

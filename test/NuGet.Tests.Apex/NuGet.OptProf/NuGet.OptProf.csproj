@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex.VisualStudio" ExcludeAssets="Compile" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" VersionOverride="$(MicrosoftVisualStudioSdkForApex)" />
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
