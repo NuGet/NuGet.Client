@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -345,7 +346,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -845,7 +846,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -956,7 +957,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -1073,7 +1074,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -1193,7 +1194,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -1306,7 +1307,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
@@ -2362,7 +2363,7 @@ namespace NuGet.ProjectModel.Test
             var lib = new LockFileLibrary()
             {
                 // the order is important, the test assures that they are sorted.
-                Files = ["lib/netcoreapp3.0/a.dll", "My.Nice.Package.With.WPF.Reference.nuspec"],
+                Files = ImmutableArray.Create<string>("lib/netcoreapp3.0/a.dll", "My.Nice.Package.With.WPF.Reference.nuspec"),
                 Name = "My.Nice.Package.With.WPF.Reference",
                 Version = NuGetVersion.Parse("2.0.0"),
                 Type = LibraryType.Package,
@@ -2449,7 +2450,7 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
-                Files = ["System.Runtime.nuspec"],
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,

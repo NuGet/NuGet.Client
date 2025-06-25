@@ -87,13 +87,13 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             var libraryA = new LockFileLibrary
             {
-                Files = ["path/a.txt", "path/b.txt"]
+                Files = ImmutableArray.Create<string>("path/a.txt", "path/b.txt")
             };
 
             // different case
             var libraryB = new LockFileLibrary
             {
-                Files = ["path/a.txt", "PATH/b.txt"]
+                Files = ImmutableArray.Create<string>("path/a.txt", "PATH/b.txt")
             };
 
             // Act & Assert
@@ -113,7 +113,7 @@ namespace NuGet.ProjectModel.Test
                 MSBuildProject = "MSBuildProject",
                 Sha512 = "FAKE-HASH",
                 Type = LibraryType.Package,
-                Files = ["file/a.txt", "file/b.txt"]
+                Files = ImmutableArray.Create<string>("file/a.txt", "file/b.txt")
             };
 
             // Use Newtonsoft.Json to enumerate all properties.
@@ -140,7 +140,7 @@ namespace NuGet.ProjectModel.Test
                 MSBuildProject = "MSBuildProject",
                 Sha512 = "FAKE-HASH",
                 Type = LibraryType.Package,
-                Files = ["file/a.txt", "file/b.txt"]
+                Files = ImmutableArray.Create<string>("file/a.txt", "file/b.txt")
             };
 
             // Act
@@ -163,7 +163,7 @@ namespace NuGet.ProjectModel.Test
                 MSBuildProject = "MSBuildProject",
                 Sha512 = "FAKE-HASH",
                 Type = LibraryType.Package,
-                Files = ["file/a.txt", "file/b.txt"]
+                Files = ImmutableArray.Create<string>("file/a.txt", "file/b.txt")
             };
 
             // Use Newtonsoft.Json to take a snapshot of all properties.
