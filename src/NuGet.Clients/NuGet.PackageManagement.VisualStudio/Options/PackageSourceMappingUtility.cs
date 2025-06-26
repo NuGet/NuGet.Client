@@ -39,8 +39,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             IReadOnlyList<PackageSource> existingPackageSources,
             IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings)
         {
-            IEnumerable<string> originalMappingSourceNames = originalPackageSourceMappings.Select(mapping => mapping.Key);
-
             List<string> configuredPackageSourceNames = existingPackageSources
                 .Select(packageSource => packageSource.Name)
                 .ToList();
@@ -80,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return packageSourceMappingsSourceItems;
         }
 
-        internal static void AddOrUpdateSourceWithPackagePatterns(
+        private static void AddOrUpdateSourceWithPackagePatterns(
            Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
            IList<PackagePatternItem> packageIdOrPatterns,
            string source)
