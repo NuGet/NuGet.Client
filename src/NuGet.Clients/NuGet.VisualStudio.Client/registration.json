@@ -240,7 +240,6 @@
         "packageSourceMapping": {
           "type": "array",
           "title": "Package Source Mapping",
-          "uniqueItems": true,
 
           // Metadata about items in this array
           "items": {
