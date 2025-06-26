@@ -39,9 +39,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             IReadOnlyList<PackageSource> existingPackageSources,
             IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings)
         {
-            List<string> configuredPackageSourceNames = existingPackageSources
+            HashSet<string> configuredPackageSourceNames = existingPackageSources
                 .Select(packageSource => packageSource.Name)
-                .ToList();
+                .ToHashSet<string>();
 
             foreach (PackageSourceMappingSourceItem originalMapping in originalPackageSourceMappings)
             {
