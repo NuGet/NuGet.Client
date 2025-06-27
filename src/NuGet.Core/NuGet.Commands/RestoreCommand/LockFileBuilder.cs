@@ -618,7 +618,17 @@ namespace NuGet.Commands
 
         internal static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path)
         {
-            var hasTools = package.Files.Any(static file => HasTools(file));
+            var hasTools = false;
+
+            // Use for loop to avoid boxing enumerator
+            for (var i = 0; i < package.Files.Count; i++)
+            {
+                if (HasTools(package.Files[i]))
+                {
+                    hasTools = true;
+                    break;
+                }
+            }
 
             // This should avoid allocating a new array as package.Files should be a boxed ImmutableArray<string>
             var files = package.Files as IList<string> ?? package.Files.ToImmutableArray();
