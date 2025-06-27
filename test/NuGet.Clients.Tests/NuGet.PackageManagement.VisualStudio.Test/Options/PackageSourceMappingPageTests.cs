@@ -44,6 +44,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             return new PackageSourceMappingPage(vsSettings, mockedPackageSourceProvider.Object, sourceMappingProvider);
         }
 
+        protected override string GetSolutionDirectory()
+        {
+            if (_pathContext is not null)
+            {
+                return _pathContext.SolutionRoot;
+            }
+
+            return base.GetSolutionDirectory();
+        }
+
+        public void Dispose()
+        {
+            if (_pathContext is not null)
+            {
+                _pathContext.Dispose();
+            }
+        }
+
         [Fact]
         public void VsSettings_SettingsChanged_RaisesEnumSettingChoicesChanged()
         {
@@ -62,15 +80,107 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             wasEnumSettingChoicesChangedRaised.Should().BeTrue();
         }
 
-        protected override string GetSolutionDirectory()
+        [Fact]
+        public async Task SetValueAsync_NewPackageSourceMapping_ReturnedByGetValueAsync()
         {
-            if (_pathContext is not null)
-            {
-                return _pathContext.SolutionRoot;
-            }
+            // Arrange
+            _pathContext = new SimpleTestPathContext();
 
-            return base.GetSolutionDirectory();
+            string addNewPackageSourceName = "unitTestingSourceName1";
+            string packageIdPattern = "Contoso.*";
+            PackageSourceMappingPage instance = CreateInstance(_vsSettings);
+
+            Dictionary<string, object> sourceMappingDictionary1 = new Dictionary<string, object>();
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { addNewPackageSourceName };
+
+            IList<IDictionary<string, object>> sourceMappingDictionaryList =
+                new List<IDictionary<string, object>>(capacity: 1)
+                {
+                    sourceMappingDictionary1, // Adding a new package source mapping
+                };
+
+            // Act
+            ExternalSettingOperationResult resultSetValue = await instance.SetValueAsync(
+                PackageSourceMappingPage.MonikerPackageSourceMapping,
+                sourceMappingDictionaryList,
+                CancellationToken.None);
+
+            ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>> resultGetValue =
+                await instance.GetValueAsync<IReadOnlyList<IDictionary<string, object>>>(
+                    moniker: PackageSourceMappingPage.MonikerPackageSourceMapping,
+                    cancellationToken: CancellationToken.None);
+
+            // Assert
+            resultSetValue.Should().NotBeNull();
+            resultSetValue.Should().BeOfType<ExternalSettingOperationResult.Success>();
+
+            resultGetValue.Should().NotBeNull();
+            resultGetValue.Should().BeOfType<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>();
+            IReadOnlyList<IDictionary<string, object>> successResult = resultGetValue
+                .As<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>()
+                .Value;
+            successResult.Count.Should().Be(1);
+            successResult.Should().ContainEquivalentOf(sourceMappingDictionary1);
         }
+
+        [Fact]
+        public async Task SetValueAsync_EditPackageSourceMapping_ReturnedByGetValueAsync()
+        {
+            // Arrange
+            _pathContext = new SimpleTestPathContext();
+
+            string editedPackageSourceName = "unitTestingSourceName1";
+            string packageIdPattern = "Contoso.*";
+            PackageSourceMappingPage instance = CreateInstance(_vsSettings);
+
+            Dictionary<string, object> sourceMappingDictionary1 = new Dictionary<string, object>();
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { editedPackageSourceName };
+
+            IList<IDictionary<string, object>> sourceMappingDictionaryList =
+                new List<IDictionary<string, object>>(capacity: 1)
+                {
+                    sourceMappingDictionary1, // Adding a new package source mapping
+                };
+
+            // Act
+            ExternalSettingOperationResult resultSetValue = await instance.SetValueAsync(
+                PackageSourceMappingPage.MonikerPackageSourceMapping,
+                sourceMappingDictionaryList,
+                CancellationToken.None);
+
+            ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>> resultGetValue =
+                await instance.GetValueAsync<IReadOnlyList<IDictionary<string, object>>>(
+                    moniker: PackageSourceMappingPage.MonikerPackageSourceMapping,
+                    cancellationToken: CancellationToken.None);
+
+            // Assert
+            resultSetValue.Should().NotBeNull();
+            resultSetValue.Should().BeOfType<ExternalSettingOperationResult.Success>();
+
+            resultGetValue.Should().NotBeNull();
+            resultGetValue.Should().BeOfType<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>();
+            IReadOnlyList<IDictionary<string, object>> successResult = resultGetValue
+                .As<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>()
+                .Value;
+            successResult.Count.Should().Be(1);
+        }
+
+        //// Edit Remove 1 source from existing
+        //[Fact]
+        //public async Task SetValueAsync_ggggg_zzzzAsync()
+        //{
+
+        //}
+
+        //// Remove 1 psm
+        //[Fact]
+        //public async Task SetValueAsync_ggggg_zzzzAsync()
+        //{
+
+        //}
+
 
         [Fact]
         public async Task SetValueAsync_PreviousMappingsToNonexistantSources_AddNewMapping_ExistingMappingsAreUnchangedAsync()
@@ -109,29 +219,29 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Configure Unified Settings input to modify an existing package source mapping.
 
             // Unchanged package source mapping.
-            Dictionary<string, object> packageSourceDictionary1 = new Dictionary<string, object>();
-            packageSourceDictionary1[PackageSourceMappingPage.MonikerPackageId] = unitTestingSourceMapping1.Patterns.Single().Pattern;
-            packageSourceDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { unitTestingSourceMapping1.Key };
+            Dictionary<string, object> sourceMappingDictionary1 = new Dictionary<string, object>();
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerPackageId] = unitTestingSourceMapping1.Patterns.Single().Pattern;
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { unitTestingSourceMapping1.Key };
 
             // nonExistantSourceName is not known to Unified Settings, so it is not part of the request to SetValue.
 
             // Unchanged package source mapping.
-            Dictionary<string, object> packageSourceDictionary3 = new Dictionary<string, object>();
-            packageSourceDictionary3[PackageSourceMappingPage.MonikerPackageId] = unitTestingSourceMapping3.Patterns.Single().Pattern;
-            packageSourceDictionary3[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { unitTestingSourceMapping3.Key };
+            Dictionary<string, object> sourceMappingDictionary3 = new Dictionary<string, object>();
+            sourceMappingDictionary3[PackageSourceMappingPage.MonikerPackageId] = unitTestingSourceMapping3.Patterns.Single().Pattern;
+            sourceMappingDictionary3[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { unitTestingSourceMapping3.Key };
 
             // Add a new package source mapping for another existing source.
-            Dictionary<string, object> packageSourceDictionary4 = new Dictionary<string, object>();
-            packageSourceDictionary4[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
-            packageSourceDictionary4[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { addNewPackageSourceName4 };
+            Dictionary<string, object> sourceMappingDictionary4 = new Dictionary<string, object>();
+            sourceMappingDictionary4[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
+            sourceMappingDictionary4[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { addNewPackageSourceName4 };
 
             IList<IDictionary<string, object>> sourceMappingDictionaryList =
                 new List<IDictionary<string, object>>(capacity: 3)
                 {
-                    packageSourceDictionary1, // Pre-existing and unchanged.
+                    sourceMappingDictionary1, // Pre-existing and unchanged.
                     // No source mapping is sent by Unified Settings for nonExistantSourceName2.
-                    packageSourceDictionary3, // Pre-existing and unchanged.
-                    packageSourceDictionary4 // A newly added source mapping.
+                    sourceMappingDictionary3, // Pre-existing and unchanged.
+                    sourceMappingDictionary4 // A newly added source mapping.
                 };
 
             // Act
@@ -146,7 +256,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = instance._packageSourceMappingProvider.GetPackageSourceMappingItems();
 
-            // If the machine-wide config contains package source mappings, this count could be greater than 4.
             packageSourceMappingItems.Should().HaveCount(4);
 
             packageSourceMappingItems.Should().Contain(unitTestingSourceMapping1);
@@ -156,14 +265,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             var foundResult = packageSourceMappingItems.Should().Contain(item => item.Key.Equals(addNewPackageSourceName4), because: "The package source was added in a new source mapping.");
             PackageSourceMappingSourceItem foundNewPackageSourceMapping = foundResult.Subject;
             foundNewPackageSourceMapping.Patterns.Should().ContainSingle(packagePatternItem => packagePatternItem.Pattern == packageIdPattern, because: "One pattern was added to the new source mapping.");
-        }
-
-        public void Dispose()
-        {
-            if (_pathContext is not null)
-            {
-                _pathContext.Dispose();
-            }
         }
     }
 }
