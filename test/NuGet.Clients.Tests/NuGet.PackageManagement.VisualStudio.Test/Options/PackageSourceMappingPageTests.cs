@@ -125,29 +125,29 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public async Task SetValueAsync_EditPackageSourceMapping_ReturnedByGetValueAsync()
+        public async Task SetValueAsync_RemovePackageSourceMapping_NotReturnedByGetValueAsync()
         {
             // Arrange
             _pathContext = new SimpleTestPathContext();
-
-            string editedPackageSourceName = "unitTestingSourceName1";
+            string unitTestingSourceName1 = "unitTestingSourceName1";
             string packageIdPattern = "Contoso.*";
+
+            _packageSources =
+            [
+                new PackageSource(source: $"https://{unitTestingSourceName1}", unitTestingSourceName1),
+            ];
+
+            var unitTestingSourceMapping1 = new PackageSourceMappingSourceItem(unitTestingSourceName1, [new PackagePatternItem(packageIdPattern)]);
+            _vsSettings.AddOrUpdate(ConfigurationConstants.PackageSourceMapping, unitTestingSourceMapping1);
+
+            var emptySourceMappingDictionaryEnumerable = Enumerable.Empty<IDictionary<string, object>>();
+
             PackageSourceMappingPage instance = CreateInstance(_vsSettings);
-
-            Dictionary<string, object> sourceMappingDictionary1 = new Dictionary<string, object>();
-            sourceMappingDictionary1[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
-            sourceMappingDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { editedPackageSourceName };
-
-            IList<IDictionary<string, object>> sourceMappingDictionaryList =
-                new List<IDictionary<string, object>>(capacity: 1)
-                {
-                    sourceMappingDictionary1, // Adding a new package source mapping
-                };
 
             // Act
             ExternalSettingOperationResult resultSetValue = await instance.SetValueAsync(
                 PackageSourceMappingPage.MonikerPackageSourceMapping,
-                sourceMappingDictionaryList,
+                emptySourceMappingDictionaryEnumerable,
                 CancellationToken.None);
 
             ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>> resultGetValue =
@@ -164,23 +164,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             IReadOnlyList<IDictionary<string, object>> successResult = resultGetValue
                 .As<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>()
                 .Value;
-            successResult.Count.Should().Be(1);
+            successResult.Count.Should().Be(0);
         }
-
-        //// Edit Remove 1 source from existing
-        //[Fact]
-        //public async Task SetValueAsync_ggggg_zzzzAsync()
-        //{
-
-        //}
-
-        //// Remove 1 psm
-        //[Fact]
-        //public async Task SetValueAsync_ggggg_zzzzAsync()
-        //{
-
-        //}
-
 
         [Fact]
         public async Task SetValueAsync_PreviousMappingsToNonexistantSources_AddNewMapping_ExistingMappingsAreUnchangedAsync()
