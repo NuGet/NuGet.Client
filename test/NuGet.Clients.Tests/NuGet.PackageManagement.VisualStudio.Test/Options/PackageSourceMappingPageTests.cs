@@ -168,6 +168,70 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
+        public async Task SetValueAsync_EditSourceNames_ReturnedByGetValueAsync()
+        {
+            // Arrange
+            _pathContext = new SimpleTestPathContext();
+            string unitTestingSourceName1 = "unitTestingSourceName1";
+            string addedUnitTestingSourceName2 = "addedUnitTestingSourceName2";
+            string packageIdPattern = "Contoso.*";
+
+            _packageSources =
+            [
+                new PackageSource(source: $"https://{unitTestingSourceName1}", unitTestingSourceName1),
+            ];
+
+            var unitTestingSourceMapping1 = new PackageSourceMappingSourceItem(unitTestingSourceName1, [new PackagePatternItem(packageIdPattern)]);
+            _vsSettings.AddOrUpdate(ConfigurationConstants.PackageSourceMapping, unitTestingSourceMapping1);
+
+            Dictionary<string, object> sourceMappingDictionary1 = new Dictionary<string, object>();
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerPackageId] = packageIdPattern;
+            sourceMappingDictionary1[PackageSourceMappingPage.MonikerSourceNames] = new List<string>() { unitTestingSourceName1, addedUnitTestingSourceName2 };
+
+            IList<IDictionary<string, object>> sourceMappingDictionaryList =
+                new List<IDictionary<string, object>>(capacity: 1)
+                {
+                    sourceMappingDictionary1, // Adding a new source name to existing package source mapping
+                };
+
+            PackageSourceMappingPage instance = CreateInstance(_vsSettings);
+
+            // Act
+            ExternalSettingOperationResult resultSetValue = await instance.SetValueAsync(
+                PackageSourceMappingPage.MonikerPackageSourceMapping,
+                sourceMappingDictionaryList,
+                CancellationToken.None);
+
+            ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>> resultGetValue =
+                await instance.GetValueAsync<IReadOnlyList<IDictionary<string, object>>>(
+                    moniker: PackageSourceMappingPage.MonikerPackageSourceMapping,
+                    cancellationToken: CancellationToken.None);
+
+            // Assert
+            resultSetValue.Should().NotBeNull();
+            resultSetValue.Should().BeOfType<ExternalSettingOperationResult.Success>();
+
+            resultGetValue.Should().NotBeNull();
+            resultGetValue.Should().BeOfType<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>();
+            IReadOnlyList<IDictionary<string, object>> successResult = resultGetValue
+                .As<ExternalSettingOperationResult<IReadOnlyList<IDictionary<string, object>>>.Success>()
+                .Value;
+
+            // One package pattern.
+            successResult.Count.Should().Be(1);
+            IDictionary<string, object> packagePatternToSources = successResult[0];
+            object? foundPackageIdPattern = packagePatternToSources[PackageSourceMappingPage.MonikerPackageId];
+            foundPackageIdPattern.Should().NotBeNull();
+            foundPackageIdPattern.ToString().Should().Be(packageIdPattern);
+
+            // Two mapped sources, the original and the added source.
+            object? sources = packagePatternToSources[PackageSourceMappingPage.MonikerSourceNames];
+            sources.Should().NotBeNull();
+            var listSources = ((IEnumerable<string>)sources).ToList();
+            listSources.Should().ContainInOrder(unitTestingSourceName1, addedUnitTestingSourceName2);
+        }
+
+        [Fact]
         public async Task SetValueAsync_PreviousMappingsToNonexistantSources_AddNewMapping_ExistingMappingsAreUnchangedAsync()
         {
             // Arrange
