@@ -282,93 +282,93 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MicroBuildBuildVSBootstrapper@3
-  displayName: 'Build a Visual Studio bootstrapper for tests'
-  inputs:
-    channelName: "$(VsTargetChannelForTests)"
-    vsMajorVersion: "$(VsTargetMajorVersion)"
-    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
-    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: MicroBuildBuildVSBootstrapper@3
+#   displayName: 'Build a Visual Studio bootstrapper for tests'
+#   inputs:
+#     channelName: "$(VsTargetChannelForTests)"
+#     vsMajorVersion: "$(VsTargetMajorVersion)"
+#     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+#     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: "Set Bootstrapper URL variable for tests"
-  name: "vsbootstrapper"
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
-        $bootstrapperUrl = $json[0].bootstrapperUrl;
-        Write-Host "Bootstrapper URL: $bootstrapperUrl"
-        Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
-        exit 1
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: PowerShell@1
+#   displayName: "Set Bootstrapper URL variable for tests"
+#   name: "vsbootstrapper"
+#   inputs:
+#     scriptType: "inlineScript"
+#     # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
+#     inlineScript: |
+#       try {
+#         $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+#         $bootstrapperUrl = $json[0].bootstrapperUrl;
+#         Write-Host "Bootstrapper URL: $bootstrapperUrl"
+#         Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
+#       } catch {
+#         Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
+#         exit 1
+#       }
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: "Set CloudBuild Session ID variable for tests"
-  name: "setcloudbuildsessionid"
-  continueOnError: true
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
-        $qBuildSessionId = $json[0].QBuildSessionId;
-        Write-Host "CloudBuild Session ID: $qBuildSessionId"
-        Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: PowerShell@1
+#   displayName: "Set CloudBuild Session ID variable for tests"
+#   name: "setcloudbuildsessionid"
+#   continueOnError: true
+#   inputs:
+#     scriptType: "inlineScript"
+#     # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
+#     inlineScript: |
+#       try {
+#         $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+#         $qBuildSessionId = $json[0].QBuildSessionId;
+#         Write-Host "CloudBuild Session ID: $qBuildSessionId"
+#         Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
+#       } catch {
+#         Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
+#       }
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: "Set Base Build Drop variable for tests"
-  name: "setbasebuilddrop"
-  continueOnError: true
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
-        $buildDrop = $json[0].BuildDrop;
-        Write-Host "Base Build Drop: $buildDrop"
-        Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: PowerShell@1
+#   displayName: "Set Base Build Drop variable for tests"
+#   name: "setbasebuilddrop"
+#   continueOnError: true
+#   inputs:
+#     scriptType: "inlineScript"
+#     # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
+#     inlineScript: |
+#       try {
+#         $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+#         $buildDrop = $json[0].BuildDrop;
+#         Write-Host "Base Build Drop: $buildDrop"
+#         Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+#       } catch {
+#         Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
+#       }
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: 'Generate .runsettings files'
-  inputs:
-    solution: 'build\runsettings.proj'
-    msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: MSBuild@1
+#   displayName: 'Generate .runsettings files'
+#   inputs:
+#     solution: 'build\runsettings.proj'
+#     msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: 'Copy VS integration test binaries'
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        Write-Output "Copying NuGet.OptProf binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex.Daily binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex.Daily\ -Recurse -ErrorAction Stop
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$_"
-        exit 1
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: PowerShell@1
+#   displayName: 'Copy VS integration test binaries'
+#   inputs:
+#     scriptType: "inlineScript"
+#     inlineScript: |
+#       try {
+#         Write-Output "Copying NuGet.OptProf binaries"
+#         Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
+#         Write-Output "Copying NuGet.Tests.Apex binaries"
+#         Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
+#         Write-Output "Copying NuGet.Tests.Apex.Daily binaries"
+#         Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex.Daily\ -Recurse -ErrorAction Stop
+#       } catch {
+#         Write-Host "##vso[task.LogIssue type=error;]$_"
+#         exit 1
+#       }
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Collect Build Symbols"

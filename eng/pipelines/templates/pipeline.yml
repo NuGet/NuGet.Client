@@ -116,11 +116,12 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: ${{ variables['isOfficialBuild'] }}
-          OptimizationInputsLookupMethod: DropPrefix
-          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: $(ShouldSkipOptimize)
-          AccessToken: $(System.AccessToken)
+          enabled: false
+          # enabled: ${{ variables['isOfficialBuild'] }}
+          # OptimizationInputsLookupMethod: DropPrefix
+          # DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+          # ShouldSkipOptimize: $(ShouldSkipOptimize)
+          # AccessToken: $(System.AccessToken)
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
@@ -143,34 +144,34 @@ stages:
         artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
-      - output: pipelineArtifact
-        displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: "succeeded()"
-        targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
-        artifactName: MicroBuildOutputs
-        # need to make daily Apex test pipeline build its own bootstrapper, and remove this from official pipeline
-        codeSignValidationEnabled: false
-        sbomEnabled: false
+      # - output: pipelineArtifact
+      #   displayName: 'Publish BootstrapperInfo.json as a build artifact'
+      #   condition: "succeeded()"
+      #   targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
+      #   artifactName: MicroBuildOutputs
+      #   # need to make daily Apex test pipeline build its own bootstrapper, and remove this from official pipeline
+      #   codeSignValidationEnabled: false
+      #   sbomEnabled: false
 
-      - output: artifactsDrop
-        displayName: 'Publish the .runsettings files to artifact services'
-        condition: "succeeded()"
-        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-        sourcePath: 'artifacts\RunSettings'
-        toLowerCase: false
-        usePat: true
-        dropMetadataContainerName: 'DropMetadata-RunSettings'
+      # - output: artifactsDrop
+      #   displayName: 'Publish the .runsettings files to artifact services'
+      #   condition: "succeeded()"
+      #   dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+      #   buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+      #   sourcePath: 'artifacts\RunSettings'
+      #   toLowerCase: false
+      #   usePat: true
+      #   dropMetadataContainerName: 'DropMetadata-RunSettings'
 
-      - output: artifactsDrop
-        displayName: 'OptProfV2:  publish profiling inputs to artifact services'
-        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
-        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-        sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
-        toLowerCase: false
-        usePat: true
-        dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
+      # - output: artifactsDrop
+      #   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
+      #   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+      #   dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+      #   buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+      #   sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
+      #   toLowerCase: false
+      #   usePat: true
+      #   dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
 
       - output: pipelineArtifact
         displayName: 'Publish NuGet.exe VSIX and EndToEnd.zip as artifact'
