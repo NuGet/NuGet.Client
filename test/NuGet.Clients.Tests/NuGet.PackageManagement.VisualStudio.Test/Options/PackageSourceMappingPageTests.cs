@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,15 +15,17 @@ using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Options;
+using NuGet.Test.Utility;
 using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Options
 {
     [Collection(MockedVS.Collection)]
-    public class PackageSourceMappingPageTests : NuGetExternalSettingsProviderTests<PackageSourceMappingPage>
+    public class PackageSourceMappingPageTests : NuGetExternalSettingsProviderTests<PackageSourceMappingPage>, IDisposable
     {
         private IEnumerable<PackageSource> _packageSources;
+        private SimpleTestPathContext? _pathContext;
 
         public PackageSourceMappingPageTests(GlobalServiceProvider sp)
         {
@@ -58,10 +62,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             wasEnumSettingChoicesChangedRaised.Should().BeTrue();
         }
 
+        protected override string GetSolutionDirectory()
+        {
+            if (_pathContext is not null)
+            {
+                return _pathContext.SolutionRoot;
+            }
+
+            return base.GetSolutionDirectory();
+        }
+
         [Fact]
         public async Task SetValueAsync_PreviousMappingsToNonexistantSources_AddNewMapping_ExistingMappingsAreUnchangedAsync()
         {
             // Arrange
+            _pathContext = new SimpleTestPathContext();
+
             string addNewPackageSourceName4 = "unitTestingSourceName4";
             string packageIdPattern = "Contoso.*";
 
@@ -131,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = instance._packageSourceMappingProvider.GetPackageSourceMappingItems();
 
             // If the machine-wide config contains package source mappings, this count could be greater than 4.
-            packageSourceMappingItems.Should().HaveCountGreaterThanOrEqualTo(4);
+            packageSourceMappingItems.Should().HaveCount(4);
 
             packageSourceMappingItems.Should().Contain(unitTestingSourceMapping1);
             packageSourceMappingItems.Should().Contain(nonExistantSourceInSourceMapping2);
@@ -140,6 +156,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             var foundResult = packageSourceMappingItems.Should().Contain(item => item.Key.Equals(addNewPackageSourceName4), because: "The package source was added in a new source mapping.");
             PackageSourceMappingSourceItem foundNewPackageSourceMapping = foundResult.Subject;
             foundNewPackageSourceMapping.Patterns.Should().ContainSingle(packagePatternItem => packagePatternItem.Pattern == packageIdPattern, because: "One pattern was added to the new source mapping.");
+        }
+
+        public void Dispose()
+        {
+            if (_pathContext is not null)
+            {
+                _pathContext.Dispose();
+            }
         }
     }
 }
