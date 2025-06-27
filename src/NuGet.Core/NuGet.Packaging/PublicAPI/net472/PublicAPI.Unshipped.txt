@@ -1,2 +1,1 @@
 #nullable enable
-NuGet.ContentModel.ContentItemCollection.Load(System.Collections.Immutable.ImmutableArray<string!> paths) -> void

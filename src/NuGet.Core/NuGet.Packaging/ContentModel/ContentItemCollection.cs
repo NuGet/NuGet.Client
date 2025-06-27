@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using NuGet.Client;
 using NuGet.Shared;
@@ -29,30 +28,6 @@ namespace NuGet.ContentModel
         /// </summary>
         public bool HasContract { get; private set; }
 
-        public void Load(ImmutableArray<string> paths)
-        {
-            if (paths.IsDefault)
-            {
-                throw new ArgumentNullException(nameof(paths));
-            }
-
-            // Cache for assembly and it's related file extensions.
-            _assemblyRelatedExtensions = new();
-
-            // Read already loaded assets
-            _assets = new List<Asset>();
-
-            foreach (var path in paths)
-            {
-                LoadPathIntoAssets(path, _assets, out var hasContract);
-
-                if (hasContract)
-                {
-                    HasContract = hasContract;
-                }
-            }
-        }
-
         public void Load(IEnumerable<string> paths)
         {
             if (paths == null)
@@ -67,35 +42,23 @@ namespace NuGet.ContentModel
 
             foreach (var path in paths.NoAllocEnumerate())
             {
-                LoadPathIntoAssets(path, _assets, out var hasContract);
-
-                if (hasContract)
+                // Skip files in the root of the directory
+                if (IsValidAsset(path))
                 {
-                    HasContract = hasContract;
-                }
-            }
-        }
-
-        private static void LoadPathIntoAssets(string path, List<Asset> assets, out bool hasContract)
-        {
-            hasContract = false;
-
-            // Skip files in the root of the directory
-            if (IsValidAsset(path))
-            {
-                assets.Add(new Asset()
-                {
-                    Path = path
-                });
-
-                if (path.StartsWith("lib/contract", StringComparison.Ordinal))
-                {
-                    hasContract = true;
-
-                    assets.Add(new Asset
+                    _assets.Add(new Asset()
                     {
-                        Path = "ref/any" + path.Substring("lib/contract".Length)
+                        Path = path
                     });
+
+                    if (path.StartsWith("lib/contract", StringComparison.Ordinal))
+                    {
+                        HasContract = true;
+
+                        _assets.Add(new Asset
+                        {
+                            Path = "ref/any" + path.Substring("lib/contract".Length)
+                        });
+                    }
                 }
             }
         }
