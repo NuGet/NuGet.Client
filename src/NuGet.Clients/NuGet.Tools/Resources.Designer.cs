@@ -367,6 +367,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package pattern.
+        /// </summary>
+        internal static string Text_PackageSourceMappingPattern_Header {
+            get {
+                return ResourceManager.GetString("Text_PackageSourceMappingPattern_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         internal static string Text_PackageSourceName_Header {
@@ -399,6 +408,15 @@ namespace NuGetVSExtension {
         internal static string Text_PackageSourceUrl_Header {
             get {
                 return ResourceManager.GetString("Text_PackageSourceUrl_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contoso.Contracts or System.*.
+        /// </summary>
+        internal static string Text_Watermark_ExamplePackageIdPattern {
+            get {
+                return ResourceManager.GetString("Text_Watermark_ExamplePackageIdPattern", resourceCulture);
             }
         }
     }

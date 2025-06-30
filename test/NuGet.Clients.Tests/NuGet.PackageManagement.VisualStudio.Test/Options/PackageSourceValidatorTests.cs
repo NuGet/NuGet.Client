@@ -237,6 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource3";
+            string lookupName = name;
             string source = "https://testsource3.com";
             bool isEnabled = true;
 
@@ -247,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -261,6 +262,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource3";
+            string lookupName = name;
             string source = "http://testsource3.com";
             bool isEnabled = true;
 
@@ -271,7 +273,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -284,10 +286,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public void FindExistingOrCreate_FoundExistingBySource_UpdatesName()
+        public void FindExistingOrCreate_FoundExistingById_UpdatesName()
         {
             // Arrange
             string originalName = "TestSource1";
+            string lookupName = originalName;
             string originalSource = "http://testsource1.com";
 
             string name = "TestSource2";
@@ -309,7 +312,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -327,16 +330,39 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string invalidName)
+        public void FindExistingOrCreate_NullOrEmptyId_ThrowsArgumentException(string invalidId)
         {
             // Arrange
+            string name = "TestSource1";
             string source = "http://testsource1.com";
             bool isEnabled = true;
 
             List<PackageSource> packageSources = new List<PackageSource>();
 
             // Act
-            Action act = () => PackageSourceValidator.FindExistingOrCreate(source, invalidName, isEnabled, packageSources);
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(invalidId, source, name, isEnabled, packageSources);
+
+            // Assert
+            ArgumentException exception = Assert.Throws<ArgumentException>(act);
+            exception.Message.Should().Contain(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            exception.ParamName.Should().Be("lookupName");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string invalidName)
+        {
+            // Arrange
+            string lookupName = "TestSource1";
+            string source = "http://testsource1.com";
+            bool isEnabled = true;
+
+            List<PackageSource> packageSources = new List<PackageSource>();
+
+            // Act
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(lookupName, source, invalidName, isEnabled, packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -352,12 +378,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource1";
+            string lookupName = name;
             bool isEnabled = true;
 
             List<PackageSource> packageSources = new List<PackageSource>();
 
             // Act
-            Action act = () => PackageSourceValidator.FindExistingOrCreate(invalidSource, name, isEnabled, packageSources);
+            Action act = () => PackageSourceValidator.FindExistingOrCreate(lookupName, invalidSource, name, isEnabled, packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -366,10 +393,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public void FindExistingOrCreate_FoundExistingByName_UpdatesSource()
+        public void FindExistingOrCreate_FoundExistingById_UpdatesSource()
         {
             // Arrange
             string originalName = "TestSource1";
+            string lookupName = originalName;
             string originalSource = "http://testsource1.com";
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
@@ -391,7 +419,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -403,6 +431,87 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only the source should have changed.");
             result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only the source should have changed.");
             result.IsEnabled.Should().Be(isEnabled, because: "Only the source should have changed.");
+        }
+
+        [Fact]
+        public void FindExistingOrCreate_UpdateHttptoHttpsSource_RemovesAllowInsecureConnectionsFromTargetOnly()
+        {
+            // Arrange
+            string sourceName1 = "unitTestingSourceName1";
+            string sourceUrl1 = "https://testsource1.com";
+            // AllowInsecureConnections is not needed but was already configured.
+            bool source1AllowInsecureConnections = true;
+
+            string sourceName2 = "unitTestingSourceName2";
+            string sourceUrl2 = "http://testsource2.com";
+
+            // AllowInsecureConnections is needed but was missing.
+            bool source2AllowInsecureConnections = false;
+
+            string sourceName3 = "unitTestingSourceName3";
+            string sourceUrl3 = "http://testsource3.com";
+            bool source3AllowInsecureConnections = true;
+
+            string targetUrl = "https://testsource3.com";
+            bool expectedAllowInsecureConnections = false;
+
+            // Configure 3 existing package sources
+            List<PackageSource> packageSources =
+            [
+                new PackageSource(sourceUrl1, sourceName1, isEnabled: true)
+                {
+                    AllowInsecureConnections = source1AllowInsecureConnections
+                },
+                new PackageSource(sourceUrl2, sourceName2, isEnabled: true)
+                {
+                    AllowInsecureConnections = source2AllowInsecureConnections
+                },
+                new PackageSource(sourceUrl3, sourceName3, isEnabled: true)
+                {
+                    AllowInsecureConnections = source3AllowInsecureConnections
+                }
+            ];
+
+            // Act
+            PackageSource result1 = PackageSourceValidator.FindExistingOrCreate(
+                lookupName: sourceName1,
+                sourceUrl1,
+                sourceName1,
+                isEnabled: true,
+                packageSources);
+
+            PackageSource result2 = PackageSourceValidator.FindExistingOrCreate(
+                lookupName: sourceName2,
+                sourceUrl2,
+                sourceName2,
+                isEnabled: true,
+                packageSources);
+
+            PackageSource result3 = PackageSourceValidator.FindExistingOrCreate(
+                lookupName: sourceName3,
+                targetUrl,
+                sourceName3,
+                isEnabled: true,
+                packageSources);
+
+            // Assert
+            result1.Should().NotBeNull();
+            result1.Source.Should().Be(sourceUrl1, because: "No changes were made to the package source.");
+            result1.Name.Should().Be(sourceName1, because: "No changes were made to the package source.");
+            result1.AllowInsecureConnections.Should().Be(source1AllowInsecureConnections, because: "No changes were made to the package source.");
+            result1.IsEnabled.Should().Be(true, because: "No changes were made to the package source.");
+
+            result2.Should().NotBeNull();
+            result2.Source.Should().Be(sourceUrl2, because: "No changes were made to the package source.");
+            result2.Name.Should().Be(sourceName2, because: "No changes were made to the package source.");
+            result2.AllowInsecureConnections.Should().Be(source2AllowInsecureConnections, because: "No changes were made to the package source.");
+            result2.IsEnabled.Should().Be(true, because: "No changes were made to the package source.");
+
+            result3.Should().NotBeNull();
+            result3.Source.Should().Be(targetUrl, because: "A source change was expected.");
+            result3.Name.Should().Be(sourceName3, because: "Only the source should have changed.");
+            result3.AllowInsecureConnections.Should().Be(expectedAllowInsecureConnections, because: "Changing from HTTP to HTTPS source no longer needs AllowInsecureConnections.");
+            result3.IsEnabled.Should().Be(true, because: "Only the source should have changed.");
         }
 
         [Theory]
@@ -418,6 +527,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             bool originalDisableTLSCertificateValidation = true;
 
             string name = originalName;
+            string lookupName = name;
             string expectedSourceProtocol = !isOriginallyHttps ? "https://" : "http://";
             bool expectedAllowInsecureConnections = isOriginallyHttps;
             string source = $"{expectedSourceProtocol}testsource1.com";
@@ -436,7 +546,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();
@@ -457,6 +567,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         {
             // Arrange
             string name = "TestSource1";
+            string lookupName = name;
             string source = "http://testsource1.com";
             bool isEnabled = !originalIsEnabled; // Toggle the enabled state
 
@@ -475,7 +586,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(lookupName, source, name, isEnabled, packageSources);
 
             // Assert
             result.Should().NotBeNull();

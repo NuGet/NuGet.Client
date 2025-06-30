@@ -220,6 +220,58 @@
           "allowAdditionsAndRemovals": false
         }
       }
+    },
+    "nuGetPackageManager.packageSourceMapping.externalSettings": {
+      "type": "external",
+      "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+
+      "callback": {
+        "packageId": "5fcc8577-4feb-4d04-ad72-d6c629b083cc",
+        "serviceId": "ACE317DA-8399-4DA4-9828-107E02244D45"
+      },
+
+      "realtimeNotifications": true,
+
+      // Settings within this external settings region.  Unlike "normal" settings, these have no registered default values.
+      // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
+      // IExternalSettingsProvider.SetValueAsync.
+      "properties": {
+        "packageSourceMapping": {
+          "type": "array",
+          "title": "Package Source Mapping",
+
+          // Metadata about items in this array
+          "items": {
+            "type": "object",
+
+            // The properties of items in this array
+            "properties": {
+              "packageId": {
+                "type": "string",
+                "title": "@Text_PackageSourceMappingPattern_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "example": "@Text_Watermark_ExamplePackageIdPattern;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+              },
+              "sourceName": {
+                "type": "array",
+                "uniqueItems": true,
+                "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "items": {
+                  "type": "string",
+                  "enum": [], // These are set by PackageSourceMappingPage external settings provider.
+                  "enumItemLabels": [] // These are set by PackageSourceMappingPage external settings provider.
+                },
+                "default": []
+              }
+            }
+          },
+
+          // The actual items that appear by default; in most cases, you'd leave this array empty.
+          "default": [],
+          "allowItemEditing": true,
+          "allowAdditionsAndRemovals": true
+        }
+      }
     }
   },
   "categories": {
@@ -249,6 +301,12 @@
       "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C",
       "order": 2
+    },
+    "nuGetPackageManager.packageSourceMapping": {
+      "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "legacyOptionPageId": "F175964E-89F5-4521-8FE2-C10C07BB968C",
+      "order": 3,
+      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-source-mapping"
     }
   }
 }

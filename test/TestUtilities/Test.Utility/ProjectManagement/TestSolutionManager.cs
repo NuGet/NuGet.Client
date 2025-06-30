@@ -13,10 +13,7 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Test.Utility;
-#if NETFRAMEWORK
 using NuGet.ProjectModel;
-using NuGet.VisualStudio;
-#endif
 
 namespace Test.Utility
 {
@@ -130,18 +127,6 @@ namespace Test.Utility
 
             return nuGetProject;
         }
-#if IS_DESKTOP
-        public NuGetProject AddCPSPackageReferenceBasedProject(IProjectSystemCache projectSystemCache, PackageSpec packageSpec)
-        {
-            if (packageSpec == null) throw new ArgumentNullException(nameof(packageSpec));
-
-            var cpsPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(
-            packageSpec.Name, packageSpec.FilePath, projectSystemCache, assetsFilePath: packageSpec.RestoreMetadata.OutputPath, packageSpec: packageSpec);
-            Directory.CreateDirectory(packageSpec.FilePath);
-            NuGetProjects.Add(cpsPackageReferenceProject);
-            return cpsPackageReferenceProject;
-        }
-#endif
 
         private static void CreateConfigJson(string path, string config)
         {

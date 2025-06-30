@@ -212,7 +212,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -234,7 +234,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
             }
         }
@@ -255,7 +255,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -263,7 +263,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     command);
 
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.Errors.Should().Contain("NU3033: A repository primary signature must not have a repository countersignature.");
             }
@@ -286,7 +286,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     authorSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -294,7 +294,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     repoSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -317,7 +317,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     authorSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -325,7 +325,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     repoSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
             }
         }
@@ -347,7 +347,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     authorSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -355,7 +355,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     repoSignCommand);
 
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
 
                 result = CommandRunner.Run(
@@ -363,7 +363,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     test.Directory,
                     repoSignCommand);
 
-                result.Success.Should().BeFalse();
+                result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.Errors.Should().Contain("NU3032: The package already contains a repository countersignature. Please remove the existing signature before adding a new repository countersignature.");
             }
@@ -374,7 +374,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         {
             var result = await ExecuteRepoSignCommandAsync(Common.HashAlgorithmName.SHA1);
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(because: result.AllOutput);
             result.AllOutput.Should().Contain(_invalidCertificateFingerprintCode);
         }
 
@@ -386,7 +386,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         {
             var result = await ExecuteRepoSignCommandAsync(hashAlgorithmName);
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(because: result.AllOutput);
             result.AllOutput.Should().NotContain(_invalidCertificateFingerprintCode);
         }
 
