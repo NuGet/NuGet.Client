@@ -27,9 +27,6 @@ namespace Test.Utility
                 .ReturnsAsync(() => new LibraryDependency[] { });
         }
 
-        [Obsolete]
-        public IProjectBuildProperties BuildProperties { get; } = Mock.Of<IProjectBuildProperties>();
-
         public IProjectSystemCapabilities Capabilities { get; } = Mock.Of<IProjectSystemCapabilities>();
 
         public IProjectSystemReferencesReader ReferencesReader { get; } = Mock.Of<IProjectSystemReferencesReader>();

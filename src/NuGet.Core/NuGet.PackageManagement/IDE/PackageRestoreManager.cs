@@ -240,45 +240,6 @@ namespace NuGet.PackageManagement
         /// Restores missing packages for the entire solution
         /// </summary>
         /// <returns></returns>
-        [Obsolete("This method is deprecated to reduce complexity, please use one of the other RestoreMissingPackagesAsync methods.")]
-        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(
-            string solutionDirectory,
-            INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
-        {
-            var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
-
-            // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
-            var packages = packageReferencesDictionary.Select(p =>
-            {
-                Debug.Assert(p.Value != null);
-                return new PackageRestoreData(p.Key, p.Value, isMissing: true);
-            });
-
-            using (var cacheContext = new SourceCacheContext())
-            {
-                var logger = new LoggerAdapter(nuGetProjectContext);
-
-                var downloadContext = new PackageDownloadContext(cacheContext)
-                {
-                    ParentId = nuGetProjectContext.OperationId,
-                    ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
-                };
-
-                return await RestoreMissingPackagesAsync(
-                    solutionDirectory,
-                    packages,
-                    nuGetProjectContext,
-                    downloadContext,
-                    NullLogger.Instance,
-                    token);
-            }
-        }
-
-        /// <summary>
-        /// Restores missing packages for the entire solution
-        /// </summary>
-        /// <returns></returns>
         public virtual async Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
@@ -319,43 +280,6 @@ namespace NuGet.PackageManagement
                     token);
             }
         }
-
-        [Obsolete("This method is deprecated to reduce complexity, please use one of the other RestoreMissingPackagesAsync methods.")]
-        public virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            IEnumerable<PackageRestoreData> packages,
-            INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext,
-            CancellationToken token)
-        {
-            if (packages == null) throw new ArgumentNullException(nameof(packages));
-            if (nuGetProjectContext == null) throw new ArgumentNullException(nameof(nuGetProjectContext));
-
-            var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-
-            var packageRestoreContext = new PackageRestoreContext(
-                nuGetPackageManager,
-                packages,
-                token,
-                PackageRestoredEvent,
-                PackageRestoreFailedEvent,
-                sourceRepositories: SourceRepositoryProvider.GetRepositories(),
-                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
-                enableNuGetAudit: true,
-                restoreAuditProperties: new Dictionary<string, RestoreAuditProperties>(),
-                logger: NullLogger.Instance);
-
-            if (nuGetProjectContext.PackageExtractionContext == null)
-            {
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings, packageRestoreContext.Logger),
-                    packageRestoreContext.Logger);
-            }
-
-            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
-        }
-
         public async virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
