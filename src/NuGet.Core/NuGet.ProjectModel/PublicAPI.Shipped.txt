@@ -36,8 +36,6 @@ NuGet.ProjectModel.CacheFile
 ~NuGet.ProjectModel.CacheFile.Equals(NuGet.ProjectModel.CacheFile other) -> bool
 ~NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.get -> System.Collections.Generic.IList<string>
 ~NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.set -> void
-NuGet.ProjectModel.CacheFile.HasAnyMissingPackageFiles.get -> bool
-NuGet.ProjectModel.CacheFile.HasAnyMissingPackageFiles.set -> void
 NuGet.ProjectModel.CacheFile.IsValid.get -> bool
 ~NuGet.ProjectModel.CacheFile.LogMessages.get -> System.Collections.Generic.IList<NuGet.ProjectModel.IAssetsLogMessage>
 ~NuGet.ProjectModel.CacheFile.LogMessages.set -> void
@@ -179,10 +177,6 @@ NuGet.ProjectModel.LockFileDependencyIdVersionComparer
 ~NuGet.ProjectModel.LockFileDependencyIdVersionComparer.Equals(NuGet.ProjectModel.LockFileDependency x, NuGet.ProjectModel.LockFileDependency y) -> bool
 ~NuGet.ProjectModel.LockFileDependencyIdVersionComparer.GetHashCode(NuGet.ProjectModel.LockFileDependency obj) -> int
 NuGet.ProjectModel.LockFileDependencyIdVersionComparer.LockFileDependencyIdVersionComparer() -> void
-NuGet.ProjectModel.LockFileDependencyProvider
-~NuGet.ProjectModel.LockFileDependencyProvider.GetLibrary(NuGet.LibraryModel.LibraryRange libraryRange, NuGet.Frameworks.NuGetFramework targetFramework) -> NuGet.LibraryModel.Library
-~NuGet.ProjectModel.LockFileDependencyProvider.LockFileDependencyProvider(NuGet.ProjectModel.LockFile lockFile) -> void
-NuGet.ProjectModel.LockFileDependencyProvider.SupportsType(NuGet.LibraryModel.LibraryDependencyTarget libraryType) -> bool
 NuGet.ProjectModel.LockFileExtensions
 NuGet.ProjectModel.LockFileFormat
 NuGet.ProjectModel.LockFileFormat.LockFileFormat() -> void
@@ -545,7 +539,6 @@ NuGet.ProjectModel.WarningProperties.AllWarningsAsErrors.set -> void
 ~NuGet.ProjectModel.WarningProperties.Equals(NuGet.ProjectModel.WarningProperties other) -> bool
 ~NuGet.ProjectModel.WarningProperties.NoWarn.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
 NuGet.ProjectModel.WarningProperties.WarningProperties() -> void
-~NuGet.ProjectModel.WarningProperties.WarningProperties(System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> noWarn, bool allWarningsAsErrors) -> void
 ~NuGet.ProjectModel.WarningProperties.WarningProperties(System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> noWarn, bool allWarningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsNotAsErrors) -> void
 ~NuGet.ProjectModel.WarningProperties.WarningsAsErrors.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
 ~NuGet.ProjectModel.WarningProperties.WarningsNotAsErrors.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
@@ -665,9 +658,7 @@ static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction
 ~static NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.Default.get -> NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash
 static NuGet.ProjectModel.RestoreAuditProperties.operator !=(NuGet.ProjectModel.RestoreAuditProperties? x, NuGet.ProjectModel.RestoreAuditProperties? y) -> bool
 static NuGet.ProjectModel.RestoreAuditProperties.operator ==(NuGet.ProjectModel.RestoreAuditProperties? x, NuGet.ProjectModel.RestoreAuditProperties? y) -> bool
-~static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> noWarn) -> NuGet.ProjectModel.WarningProperties
 ~static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> noWarn, System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode> warningsNotAsErrors) -> NuGet.ProjectModel.WarningProperties
-~static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn) -> NuGet.ProjectModel.WarningProperties
 ~static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn, string warningsNotAsErrors) -> NuGet.ProjectModel.WarningProperties
 static readonly NuGet.ProjectModel.BuildAction.AndroidAsset -> NuGet.ProjectModel.BuildAction
 static readonly NuGet.ProjectModel.BuildAction.AndroidResource -> NuGet.ProjectModel.BuildAction
