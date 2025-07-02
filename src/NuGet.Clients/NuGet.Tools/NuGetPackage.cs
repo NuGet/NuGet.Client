@@ -1306,21 +1306,24 @@ namespace NuGetVSExtension
 
         private void ShowPackageSourcesOptionPage(object sender, EventArgs args)
         {
-            ShowOptionPageSafe(typeof(PackageSourcesPage));
+            ShowOptionPageSafe(OptionsPage.PackageSources);
         }
 
         private void ShowGeneralSettingsOptionPage(object sender, EventArgs args)
         {
-            ShowOptionPageSafe(typeof(GeneralPage));
+            ShowOptionPageSafe(OptionsPage.General);
         }
 
-        private void ShowOptionPageSafe(Type optionPageType)
+        private static void ShowOptionPageSafe(OptionsPage optionsPage)
         {
             try
             {
-                ShowOptionPage(optionPageType);
+                var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
+                optionsPageActivator.ActivatePage(optionsPage, closeCallback: null);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 MessageHelper.ShowErrorMessage(exception, Resources.ErrorDialogBoxTitle);
                 ExceptionHelper.WriteErrorToActivityLog(exception);

@@ -18,28 +18,29 @@ namespace NuGet.PackageManagement.VisualStudio
     public class OptionsPageActivator : IOptionsPageActivator
     {
         /// <summary>
-        /// GUID of the Package Sources page, defined in the `legacyOptionPageId` in registration.json
-        /// with the Unified Settings service implemented by the `serviceId` defined in <see cref="PackageSourcesPage"/>.
-        /// </summary>
-        private const string PackageSourcesGUID = "2819C3B6-FC75-4CD5-8C77-877903DE864C";
-
-        /// <summary>
-        /// GUID of the General page, defined in the `legacyOptionPageId` in registration.json
-        /// with the Unified Settings service implemented by the `serviceId` defined in <see cref="GeneralPage"/>.
+        /// GUID of the General page, declared by the `legacyOptionPageId` in registration.json
+        /// with the Unified Settings `serviceId` implemented by <see cref="GeneralPage"/>.
         /// </summary>
         private const string GeneralGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
         /// <summary>
-        /// GUID of the Package Source Mapping page, defined in the `legacyOptionPageId` in registration.json
-        /// with the Unified Settings service implemented by the `serviceId` defined in <see cref="PackageSourceMappingPage"/>.
+        /// GUID of the Configuration Files page, declared by the `legacyOptionPageId` in registration.json
+        /// with the Unified Settings `serviceId` implemented by <see cref="ConfigurationFilesPage"/>.
+        /// </summary>
+        private const string ConfigurationFilesGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
+
+        /// <summary>
+        /// GUID of the Package Sources page, declared by the `legacyOptionPageId` in registration.json
+        /// with the Unified Settings `serviceId` implemented by <see cref="PackageSourcesPage"/>.
+        /// </summary>
+        private const string PackageSourcesGUID = "2819C3B6-FC75-4CD5-8C77-877903DE864C";
+
+        /// <summary>
+        /// GUID of the Package Source Mapping page, declared by the `legacyOptionPageId` in registration.json
+        /// with the Unified Settings `serviceId` implemented by <see cref="PackageSourceMappingPage"/>.
         /// </summary>
         private const string PackageSourceMappingGUID = "F175964E-89F5-4521-8FE2-C10C07BB968C";
 
-        /// <summary>
-        /// GUID of the Configuration Files page, defined in the `legacyOptionPageId` in registration.json
-        /// with the Unified Settings service implemented by the `serviceId` defined in <see cref="ConfigurationFilesPage"/>.
-        /// </summary>
-        private const string ConfigurationFilesGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
 
         private Action _closeCallback;
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
