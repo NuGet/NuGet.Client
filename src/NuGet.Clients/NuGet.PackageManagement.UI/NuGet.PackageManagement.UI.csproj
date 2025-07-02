@@ -7,7 +7,6 @@
     <Description>Package Management UI elements for Visual Studio, Package Manager UI, Migrator, Options dialog.</Description>
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
     <UseWpf>true</UseWpf>
-    <UseWinForms>true</UseWinForms>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
