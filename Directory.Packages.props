@@ -29,7 +29,6 @@
     <SystemMemoryPackageVersion Condition="'$(SystemMemoryPackageVersion)' == ''">4.6.3</SystemMemoryPackageVersion>
     <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">9.0.6</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyProtectedDataVersion Condition="'$(SystemSecurityCryptographyProtectedDataVersion)' == ''">9.0.6</SystemSecurityCryptographyProtectedDataVersion>
-    <MicrosoftVisualStudioSolutionPersistenceVersion Condition="'$(MicrosoftVisualStudioSolutionPersistenceVersion)' == ''">1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
     <MicrosoftVisualStudioSdkForApex>18.0.1799-preview.1</MicrosoftVisualStudioSdkForApex>
   </PropertyGroup>
 
@@ -68,7 +67,6 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.VS" Version="17.4.221-pre" />
-    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="$(MicrosoftVisualStudioSolutionPersistenceVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" />
     <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.11.8" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.4.2244" />
@@ -176,7 +174,6 @@
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.CommandLineUtils.Sources" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileProviders.Abstractions" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
-      <_allowBuildFromSourcePackage Include="Microsoft.VisualStudio.SolutionPersistence" />
       <_allowBuildFromSourcePackage Include="Microsoft.Web.Xdt" />
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
       <_allowBuildFromSourcePackage Include="System.Collections.Immutable" />
