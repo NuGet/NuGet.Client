@@ -184,8 +184,6 @@ NuGet.ProjectModel.LockFileFormat.LockFileFormat() -> void
 ~NuGet.ProjectModel.LockFileFormat.Parse(string lockFileContent, string path) -> NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFileFormat.Read(System.IO.Stream stream, string path) -> NuGet.ProjectModel.LockFile
-~NuGet.ProjectModel.LockFileFormat.Read(System.IO.TextReader reader, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.LockFile
-~NuGet.ProjectModel.LockFileFormat.Read(System.IO.TextReader reader, string path) -> NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFileFormat.Read(string filePath) -> NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFileFormat.Read(string filePath, NuGet.Common.ILogger log) -> NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFileFormat.Render(NuGet.ProjectModel.LockFile lockFile) -> string
@@ -604,8 +602,6 @@ static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction
 ~static NuGet.ProjectModel.JTokenExtensions.GetValue<T>(this Newtonsoft.Json.Linq.JToken token, string name) -> T
 ~static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken jToken) -> T[]
 ~static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken jToken, string name) -> T[]
-~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(Newtonsoft.Json.Linq.JObject json) -> NuGet.ProjectModel.PackageSpec
-~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(Newtonsoft.Json.Linq.JObject rawPackageSpec, string name, string packageSpecPath, string snapshotValue) -> NuGet.ProjectModel.PackageSpec
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(System.IO.Stream stream, string name, string packageSpecPath, string snapshotValue) -> NuGet.ProjectModel.PackageSpec
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(string json, string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec
