@@ -1851,7 +1851,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Null(exception.InnerException.InnerException);
 
             Assert.Equal(
-                $"Error reading '' : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
+                $"Error reading '' : Imports contains an invalid framework: '{expectedImport}' in ''.",
                 exception.Message);
         }
 
