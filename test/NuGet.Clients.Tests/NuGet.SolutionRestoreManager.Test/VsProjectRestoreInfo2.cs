@@ -10,6 +10,7 @@ namespace NuGet.SolutionRestoreManager.Test
     /// Implementation of <see cref="IVsProjectRestoreInfo"/> for internal consumption.
     /// Used solely by <see cref="ProjectRestoreInfoBuilder"/>.
     /// </summary>
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsProjectRestoreInfo2 : IVsProjectRestoreInfo2
     {
         public string BaseIntermediatePath { get; }

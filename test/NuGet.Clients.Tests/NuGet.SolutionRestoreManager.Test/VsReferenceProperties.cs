@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsReferenceProperties : VsItemList<IVsReferenceProperty>, IVsReferenceProperties
     {
         public VsReferenceProperties() : base() { }

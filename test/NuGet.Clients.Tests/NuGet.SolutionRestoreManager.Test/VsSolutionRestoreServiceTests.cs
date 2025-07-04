@@ -55,6 +55,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public void NominateProjectAsync_Always_SchedulesAutoRestore(bool isV2Nomination)
         {
             var cps = NewCpsProject();
@@ -75,6 +76,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_ConsoleAppTemplate(bool isV2Nomination)
         {
             var consoleAppProjectJson = @"{
@@ -131,6 +133,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_ConsoleAppTemplateWithPlatform(bool isV2Nomination)
         {
             var consoleAppProjectJson = @"{
@@ -187,6 +190,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithCliTool(bool isV2Nomination)
         {
             const string toolProjectJson = @"{
@@ -243,6 +247,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("netcoreapp2.0", @"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2")]
         [InlineData("netcoreapp2.0", null, null, null)]
         [InlineData("netcoreapp1.0", null, null, null)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithCliTool_RestoreSettings(
             string toolFramework, string restorePackagesPath, string restoreSources, string fallbackFolders, bool isV2Nominate = true)
         {
@@ -369,6 +374,7 @@ namespace NuGet.SolutionRestoreManager.Test
         ""net46"": { }
     }
 }", "\r\n    netstandard1.4;\r\n    net46\r\n    ", "netstandard1.4;net46", false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_CrossTargeting(
             string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks, bool isV2Nominate = true)
         {
@@ -412,6 +418,8 @@ namespace NuGet.SolutionRestoreManager.Test
         }
     }
 }", "", "net5.0-windows")]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
+
         public async Task NominateProjectAsync_WithoutOriginalTargetFrameworks_SetOriginalTargetFrameworksToAlias(
             string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks)
         {
@@ -445,6 +453,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_Imports(bool isV2Nomination)
         {
             const string projectJson = @"{
@@ -475,6 +484,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithValidPackageVersion(bool isV2Nomination)
         {
             const string projectJson = @"{
@@ -503,6 +513,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.2.3", "1.2.3")]
         [InlineData("1.2.0-beta1", "1.2.0-beta1")]
         [InlineData("1.0.0", "1.0.0.0")]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithIdenticalPackageVersions(string version1, string version2)
         {
             var cps = NewCpsProject("{ }");
@@ -537,6 +548,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.2.3", "1.2.3")]
         [InlineData("1.2.0-beta1", "1.2.0-beta1")]
         [InlineData("1.0.0", "1.0.0.0")]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PRI2_WithIdenticalPackageVersions(string version1, string version2)
         {
             var cps = NewCpsProject("{ }");
@@ -580,6 +592,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;..\fallback2", true)]
         [InlineData(@"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2", true)]
         [InlineData(null, null, null, true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_RestoreSettings(string restorePackagesPath, string restoreSources, string fallbackFolders, bool isV2Nominate)
         {
             var cps = NewCpsProject("{ }");
@@ -633,6 +646,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(@"C:\packagesPath", @"Clear;..\source1;..\source2", @"C:\fallback1;C:\fallback2", false)]
         [InlineData(@"..\packages", @"..\source1;..\source2", @"..\fallback1;Clear;..\fallback2", true)]
         [InlineData(@"C:\packagesPath", @"Clear;..\source1;..\source2", @"C:\fallback1;C:\fallback2", true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_RestoreSettingsClear(string restorePackagesPath, string restoreSources, string fallbackFolders, bool isV2Nominate)
         {
             var vstfm = isV2Nominate ?
@@ -683,6 +697,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_CacheFilePathInPackageSpec_Succeeds(bool isV2Nominate)
         {
 
@@ -724,11 +739,12 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.0.0", "")]
         [InlineData("1.0.0", "   ")]
         [InlineData("1.0.0", null)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithDifferentPackageVersions_Fails(string version1, string version2)
         {
             var cps = NewCpsProject("{ }");
             var projectFullPath = cps.ProjectFullPath;
-            var pri = cps.Builder
+            var pri = ProjectRestoreInfo3Adapter.Create(cps.Builder
                 .WithTargetFrameworkInfo(
                     new VsTargetFrameworkInfo(
                         "netcoreapp1.0",
@@ -741,7 +757,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .ProjectRestoreInfo;
+                .ProjectRestoreInfo);
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -753,7 +769,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NullLogger.Instance, asyncLazySolution2, telemetryProvider);
 
             // Act
-            var result = await ((IVsSolutionRestoreService)service).NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
+            var result = await ((IVsSolutionRestoreService5)service).NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
 
             Assert.False(result, "Project restore nomination must fail.");
         }
@@ -763,11 +779,12 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.0.0", "")]
         [InlineData("1.0.0", "   ")]
         [InlineData("1.0.0", null)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PRI2_WithDifferentPackageVersions_Fails(string version1, string version2)
         {
             var cps = NewCpsProject("{ }");
             var projectFullPath = cps.ProjectFullPath;
-            var pri = cps.Builder
+            var pri = ProjectRestoreInfo3Adapter.Create(cps.Builder
                 .WithTargetFrameworkInfo(
                     new VsTargetFrameworkInfo2(
                         "netcoreapp1.0",
@@ -784,7 +801,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] { new VsProjectProperty("PackageVersion", version2) }))
-                .ProjectRestoreInfo2;
+                .ProjectRestoreInfo2);
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -796,7 +813,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NullLogger.Instance, asyncLazySolution2, telemetryProvider);
 
             // Act
-            var result = await ((IVsSolutionRestoreService3)service).NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
+            var result = await ((IVsSolutionRestoreService5)service).NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
 
             Assert.False(result, "Project restore nomination must fail.");
         }
@@ -804,6 +821,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PackageId(bool isV2Nominate)
         {
             var vstfm = isV2Nominate ?
@@ -839,6 +857,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task DifferingPackageIdsFailsWithUsableErrorMessage()
         {
             var cps = NewCpsProject("{ }");
@@ -883,6 +902,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_VerifySourcesAreCombinedAcrossFrameworks()
         {
             var cps = NewCpsProject(@"{ }");
@@ -927,6 +947,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PRI2_VerifySourcesAreCombinedAcrossFrameworks()
         {
             var cps = NewCpsProject(@"{ }");
@@ -977,6 +998,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_VerifyExcludedFallbackFoldersAreRemoved()
         {
             var cps = NewCpsProject(@"{ }");
@@ -1011,6 +1033,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PRI2_VerifyExcludedFallbackFoldersAreRemoved()
         {
             var cps = NewCpsProject(@"{ }");
@@ -1049,6 +1072,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_VerifyToolRestoresUseAdditionalSourcesAndFallbackFolders()
         {
             var cps = NewCpsProject(@"{ }");
@@ -1086,6 +1110,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PRI2_VerifyToolRestoresUseAdditionalSourcesAndFallbackFolders()
         {
             var cps = NewCpsProject(@"{ }");
@@ -1137,6 +1162,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(null, @"..\additionalsource", null, @"..\additionalFallback1", true)]
         [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\fallback1;Clear", @"C:\additionalFallback1", true)]
         [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1", true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithRestoreAdditionalSourcesAndFallbackFolders(string restoreSources, string restoreAdditionalProjectSources, string restoreFallbackFolders, string restoreAdditionalFallbackFolders, bool isV2Nominate)
         {
             var vstfms = isV2Nominate ?
@@ -1221,6 +1247,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(null, @"C:\additionalsource", @"C:\additionalsource", null, @"C:\additionalFallback1", @"C:\additionalFallback1", true)]
         [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\additionalsource", @"C:\fallback1;Clear", @"C:\additionalFallback1", @"C:\additionalFallback1", true)]
         [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1", @"C:\additionalFallback1", true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task VSSolutionRestoreService_VSRestoreSettingsUtilities_Integration(string restoreSources, string restoreAdditionalProjectSources, string expectedRestoreSources, string restoreFallbackFolders, string restoreAdditionalFallbackFolders, string expectedFallbackFolders, bool isV2Nominate)
         {
 
@@ -1286,6 +1313,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(null, "packages.A.lock.json", null, true)]
         [InlineData("true", null, "true", true)]
         [InlineData("false", null, "false", true)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_LockFileSettings(
             string restorePackagesWithLockFile,
             string lockFilePath,
@@ -1335,6 +1363,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_RuntimeGraph(bool isV2Nominate)
         {
             var vstfms = isV2Nominate ?
@@ -1375,6 +1404,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_BasicPackageDownload()
         {
             var consoleAppProjectJson = @"{
@@ -1432,6 +1462,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PackageDownload_IgnoreDuplicateIds()
         {
             var consoleAppProjectJson = @"{
@@ -1487,6 +1518,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData("[1.0.0];[2.0.0]")]
         [InlineData(";[1.0.0];;[2.0.0];")]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PackageDownload_AllowsVersionList(string versionString)
         {
             var consoleAppProjectJson = @"{
@@ -1540,6 +1572,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PackageDownload_InexactVersionsNotAllowed()
         {
             var consoleAppProjectJson = @"{
@@ -1569,12 +1602,13 @@ namespace NuGet.SolutionRestoreManager.Test
             var service = new VsSolutionRestoreService(
                 cache, restoreWorker, NullLogger.Instance, asyncLazySolution2, telemetryProvider);
 
-            var result = await ((IVsSolutionRestoreService3)service).NominateProjectAsync(projectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None);
+            var result = await ((IVsSolutionRestoreService5)service).NominateProjectAsync(projectFullPath, ProjectRestoreInfo3Adapter.Create(cps.ProjectRestoreInfo2), CancellationToken.None);
 
             Assert.False(result, "Project restore nomination must fail.");
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_BasicFrameworkReferences()
         {
             var consoleAppProjectJson = @"{
@@ -1631,6 +1665,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_FrameworkReferencesAreCaseInsensitive()
         {
             var consoleAppProjectJson = @"{
@@ -1686,6 +1721,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_FrameworkReferencesMultiTargeting()
         {
             var consoleAppProjectJson = @"{
@@ -1754,6 +1790,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WarningProperties(bool isV2Nominate)
         {
             var packageReference = new VsReferenceItem("NuGet.Protocol", new VsReferenceProperties() { new VsReferenceProperty("NoWarn", "NU1605") });
@@ -1809,6 +1846,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_RuntimeIdentifierGraphPath(bool isV2Nominate)
         {
             var runtimeGraphPath = @"C:\Program Files\dotnet\sdk\3.0.100\runtime.json";
@@ -1874,12 +1912,11 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NullLogger.Instance, asyncLazySolution2, telemetryProvider);
 
             // Act
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await ((IVsSolutionRestoreService)service).NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
-
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await ((IVsSolutionRestoreService3)service).NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo2)null, CancellationToken.None));
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await ((IVsSolutionRestoreService5)service).NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo3)null, CancellationToken.None));
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_InvalidTargetFrameworkMoniker_Succeeds()
         {
             // Arrange
@@ -1909,6 +1946,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_InvalidDependencyVersion_Succeeds()
         {
             // Arrange
@@ -1945,6 +1983,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_CancelledToken_ThrowsOperationCanceledException()
         {
             // Arrange
@@ -1976,7 +2015,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties["ManagePackageVersionsCentrally"] = "true";
 
@@ -2059,7 +2097,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var packageReferenceProperties = packRefVersion == null ?
                 EmptyProperties :
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["Version"] = packRefVersion };
@@ -2168,7 +2205,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
 
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties[ProjectBuildProperties.ManagePackageVersionsCentrally] = "true";
@@ -2216,7 +2252,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties[ProjectBuildProperties.ManagePackageVersionsCentrally] = "true";
             projectProperties[ProjectBuildProperties.CentralPackageFloatingVersionsEnabled] = centralPackageFloatingVersionsEnabled;
@@ -2254,6 +2289,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_PackageReferenceWithAliases(bool isV2Nominate)
         {
             var properties = new VsReferenceProperties();
@@ -2303,7 +2339,6 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
             IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> emptyItems = new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>();
-            var packageReferenceProperties = new VsReferenceProperties();
 
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
@@ -2376,7 +2411,6 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.vcxproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
             IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> emptyItems = new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>();
-            var packageReferenceProperties = new VsReferenceProperties();
             var managedFramework = NuGetFramework.Parse("net5.0-windows10.0");
             var nativeFramework = CommonFrameworks.Native;
             var targetFrameworks = new VsTargetFrameworkInfo4[]
@@ -2465,7 +2499,6 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             string packageName = "package";
             ProjectNames projectName = new ProjectNames(@"n:\path\to\current\project.csproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
                 new VsTargetFrameworkInfo4(
@@ -2568,6 +2601,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_WithProjectRestoreMetadataProperties(bool isV2Nominate)
         {
             IVsTargetFrameworkInfo vstfms = FrameworkWithProperty(isV2Nominate, ProjectBuildProperties.RestoreUseLegacyDependencyResolver, "true");
@@ -2595,7 +2629,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties["ManagePackageVersionsCentrally"] = "true";
 
@@ -2645,7 +2678,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties[ProjectBuildProperties.ManagePackageVersionsCentrally] = "true";
             projectProperties[ProjectBuildProperties.CentralPackageVersionOverrideEnabled] = "true";
@@ -2697,7 +2729,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
-            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
             projectProperties[ProjectBuildProperties.ManagePackageVersionsCentrally] = "true";
             projectProperties[ProjectBuildProperties.CentralPackageVersionOverrideEnabled] = "true";
@@ -2815,6 +2846,7 @@ namespace NuGet.SolutionRestoreManager.Test
             result.Message.Should().Contain("PrunePackageReference");
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static IVsTargetFrameworkInfo FrameworkWithProperty(bool isV2Nominate, string propertyName, string propertyValue)
         {
             return isV2Nominate ?
@@ -2838,6 +2870,7 @@ namespace NuGet.SolutionRestoreManager.Test
                                          });
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath,
             IVsProjectRestoreInfo pri,
@@ -2867,6 +2900,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return capturedRestoreSpec;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private async Task<IReadOnlyList<IAssetsLogMessage>> CaptureAdditionalMessagesAsync(
             string projectFullPath,
             IVsProjectRestoreInfo2 pri,
@@ -2896,6 +2930,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return additionalMessages;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath,
             IVsProjectRestoreInfo2 pri,
@@ -2924,6 +2959,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return capturedRestoreSpec;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private Task<bool> NominateProjectAsync(
             string projectFullPath,
             IVsProjectRestoreInfo pri,
@@ -2932,32 +2968,36 @@ namespace NuGet.SolutionRestoreManager.Test
             Mock<ISolutionRestoreWorker> restoreWorker = null,
             Mock<ILogger> logger = null)
         {
-            if (cache == null)
-            {
-                cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
-            }
+            return NominateProjectAsync(
+                projectFullPath,
+                ProjectRestoreInfo3Adapter.Create(pri),
+                cancellationToken,
+                cache,
+                restoreWorker,
+                logger);
+        }
 
-            if (restoreWorker == null)
-            {
-                restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
-            }
-
-            if (logger == null)
-            {
-                logger = new Mock<ILogger>();
-            }
-            var vsSolution2 = Mock.Of<IVsSolution2>();
-            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
-            var telemetryProvider = Mock.Of<INuGetTelemetryProvider>();
-
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2, telemetryProvider);
-
-            return ((IVsSolutionRestoreService)service).NominateProjectAsync(projectFullPath, pri, cancellationToken);
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
+        private Task<bool> NominateProjectAsync(
+            string projectFullPath,
+            IVsProjectRestoreInfo2 pri,
+            CancellationToken cancellationToken,
+            Mock<IProjectSystemCache> cache = null,
+            Mock<ISolutionRestoreWorker> restoreWorker = null,
+            Mock<ILogger> logger = null)
+        {
+            return NominateProjectAsync(
+                projectFullPath,
+                ProjectRestoreInfo3Adapter.Create(pri),
+                cancellationToken,
+                cache,
+                restoreWorker,
+                logger);
         }
 
         private Task<bool> NominateProjectAsync(
             string projectFullPath,
-            IVsProjectRestoreInfo2 pri,
+            IVsProjectRestoreInfo3 pri,
             CancellationToken cancellationToken,
             Mock<IProjectSystemCache> cache = null,
             Mock<ISolutionRestoreWorker> restoreWorker = null,
@@ -2983,7 +3023,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2, telemetryProvider);
 
-            return ((IVsSolutionRestoreService3)service).NominateProjectAsync(projectFullPath, pri, cancellationToken);
+            return ((IVsSolutionRestoreService5)service).NominateProjectAsync(projectFullPath, pri, cancellationToken);
         }
 
         private Mock<IProjectSystemCache> CreateDefaultIProjectSystemCacheMock(string projectFullPath)
@@ -3025,6 +3065,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return restoreWorker;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private TestContext NewCpsProject(
             string projectJson = null,
             string projectName = null,
@@ -3093,8 +3134,10 @@ namespace NuGet.SolutionRestoreManager.Test
             public string ProjectFullPath { get; set; }
             public ProjectRestoreInfoBuilder Builder { get; set; }
 
+            [Obsolete("Need to update to IVsProjectRestoreInfo3")]
             public VsProjectRestoreInfo ProjectRestoreInfo => Builder.ProjectRestoreInfo;
 
+            [Obsolete("Need to update to IVsProjectRestoreInfo3")]
             public VsProjectRestoreInfo2 ProjectRestoreInfo2 => Builder.ProjectRestoreInfo2;
 
         }

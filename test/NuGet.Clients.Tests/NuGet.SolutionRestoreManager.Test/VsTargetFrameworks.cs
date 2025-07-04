@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsTargetFrameworks : VsItemList<IVsTargetFrameworkInfo>, IVsTargetFrameworks
     {
         public VsTargetFrameworks() : base() { }

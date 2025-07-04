@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsReferenceProperty : IVsReferenceProperty
     {
         public string Name { get; }

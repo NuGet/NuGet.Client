@@ -19,9 +19,12 @@ namespace NuGet.SolutionRestoreManager.Test
     /// </summary>
     internal class ProjectRestoreInfoBuilder
     {
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private readonly VsProjectRestoreInfo _projectRestoreInfo;
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private readonly VsProjectRestoreInfo2 _projectRestoreInfo2;
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private ProjectRestoreInfoBuilder(VsProjectRestoreInfo pri, VsProjectRestoreInfo2 pri2)
         {
             _projectRestoreInfo = pri;
@@ -33,6 +36,7 @@ namespace NuGet.SolutionRestoreManager.Test
         /// </summary>
         /// <param name="packageSpec">Source project restore object</param>
         /// <returns>Desired project restore object</returns>
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public static ProjectRestoreInfoBuilder FromPackageSpec(
             PackageSpec packageSpec,
             string baseIntermediatePath,
@@ -87,6 +91,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return new ProjectRestoreInfoBuilder(pri, pri2);
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public ProjectRestoreInfoBuilder WithTool(string name, string version)
         {
             var properties = new VsReferenceProperties
@@ -107,6 +112,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return this;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public ProjectRestoreInfoBuilder WithTargetFrameworkInfo(
             IVsTargetFrameworkInfo tfi)
         {
@@ -123,10 +129,13 @@ namespace NuGet.SolutionRestoreManager.Test
             return this;
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public VsProjectRestoreInfo ProjectRestoreInfo => _projectRestoreInfo;
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
 
         public VsProjectRestoreInfo2 ProjectRestoreInfo2 => _projectRestoreInfo2;
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static VsTargetFrameworkInfo ToTargetFrameworkInfo(
             TargetFrameworkInformation tfm,
             IEnumerable<IVsProjectProperty> globalProperties)
@@ -157,6 +166,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 originalTargetFramework: tfm.TargetAlias);
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static VsTargetFrameworkInfo2 ToTargetFrameworkInfo2(
             TargetFrameworkInformation tfm,
             IEnumerable<IVsProjectProperty> globalProperties)
@@ -293,6 +303,7 @@ namespace NuGet.SolutionRestoreManager.Test
             }
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)
         {
             var properties = new VsReferenceProperties(
@@ -301,6 +312,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return new VsReferenceItem(frameworkDependency.Name, properties);
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static IVsReferenceItem ToPackageReference(LibraryDependency library)
         {
             var properties = new VsReferenceProperties(
@@ -309,6 +321,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return new VsReferenceItem(library.Name, properties);
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static IVsReferenceItem ToProjectReference(LibraryDependency library)
         {
             var properties = new VsReferenceProperties(
@@ -317,6 +330,7 @@ namespace NuGet.SolutionRestoreManager.Test
             return new VsReferenceItem(library.Name, properties);
         }
 
+        [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private static IVsReferenceItem ToPackageDownload(IGrouping<string, DownloadDependency> library)
         {
             string versionProperty = string.Join(";", library.Select(e => e.VersionRange.OriginalString));
