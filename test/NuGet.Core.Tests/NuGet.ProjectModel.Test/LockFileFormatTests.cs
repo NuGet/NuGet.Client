@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -345,12 +346,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -845,12 +846,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -956,12 +957,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1072,12 +1074,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1192,12 +1194,12 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -1305,12 +1307,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups.Add(
@@ -2359,14 +2362,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                // the order is important, the test assures that they are sorted.
+                Files = ImmutableArray.Create<string>("lib/netcoreapp3.0/a.dll", "My.Nice.Package.With.WPF.Reference.nuspec"),
                 Name = "My.Nice.Package.With.WPF.Reference",
                 Version = NuGetVersion.Parse("2.0.0"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            // the order is important, the test assures that they are sorted.
-            lib.Files.Add("lib/netcoreapp3.0/a.dll");
-            lib.Files.Add("My.Nice.Package.With.WPF.Reference.nuspec");
             lockFile.Libraries.Add(lib);
 
             // Act
@@ -2448,12 +2450,13 @@ namespace NuGet.ProjectModel.Test
 
             var lib = new LockFileLibrary()
             {
+                Files = ImmutableArray.Create<string>("System.Runtime.nuspec"),
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
                 Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
-            lib.Files.Add("System.Runtime.nuspec");
+
             lockFile.Libraries.Add(lib);
 
             lockFile.ProjectFileDependencyGroups

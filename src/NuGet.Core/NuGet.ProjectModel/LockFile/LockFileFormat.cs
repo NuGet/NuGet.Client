@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -321,26 +323,36 @@ namespace NuGet.ProjectModel
 
         private static LockFileLibrary ReadLibrary(string property, JToken json)
         {
-            var library = new LockFileLibrary();
             var parts = property.Split(new[] { '/' }, 2);
-            library.Name = parts[0];
-            if (parts.Length == 2)
-            {
-                library.Version = NuGetVersion.Parse(parts[1]);
-            }
+            var name = parts[0];
+            var version = parts.Length == 2 ? NuGetVersion.Parse(parts[1]) : null;
 
-            library.Type = ReadString(json[TypeProperty]);
+            var type = ReadString(json[TypeProperty]);
 
             var jObject = json as JObject;
 
-            library.Path = JsonUtility.ReadProperty<string>(jObject, PathProperty);
-            library.MSBuildProject = JsonUtility.ReadProperty<string>(jObject, MSBuildProjectProperty);
-            library.Sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
+            var path = JsonUtility.ReadProperty<string>(jObject, PathProperty);
+            var msBuildProject = JsonUtility.ReadProperty<string>(jObject, MSBuildProjectProperty);
+            var sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
 
-            library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
-            library.Files = ReadPathArray(json[FilesProperty] as JArray);
+            var isServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
+            var files = ReadPathArray(json[FilesProperty] as JArray);
 
-            library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
+            var hasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
+
+            var library = new LockFileLibrary()
+            {
+                Files = files,
+                HasTools = hasTools,
+                IsServiceable = isServiceable,
+                Name = name,
+                MSBuildProject = msBuildProject,
+                Path = path,
+                Sha512 = sha512,
+                Type = type,
+                Version = version,
+            };
+
             return library;
         }
 
@@ -905,6 +917,32 @@ namespace NuGet.ProjectModel
             return items;
         }
 
+        private static ImmutableArray<TItem> ReadImmutableArray<TItem>(JArray json, Func<JToken, TItem> readItem)
+        {
+            if (json == null)
+            {
+                return [];
+            }
+
+            var items = new TItem[json.Count];
+            var index = 0;
+            foreach (var child in json)
+            {
+                var item = readItem(child);
+                if (item != null)
+                {
+                    items[index++] = item;
+                }
+            }
+
+            if (index == json.Count)
+            {
+                return ImmutableCollectionsMarshal.AsImmutableArray(items);
+            }
+
+            return items.AsSpan(0, index).ToImmutableArray();
+        }
+
         internal static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
         {
             if (json == null)
@@ -924,9 +962,9 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static IList<string> ReadPathArray(JArray json)
+        private static ImmutableArray<string> ReadPathArray(JArray json)
         {
-            return ReadArray(json, f => GetPathWithForwardSlashes(ReadString(f)));
+            return ReadImmutableArray(json, f => GetPathWithForwardSlashes(ReadString(f)));
         }
 
         private static void WritePathArray(JsonWriter writer, string property, IEnumerable<string> items)
