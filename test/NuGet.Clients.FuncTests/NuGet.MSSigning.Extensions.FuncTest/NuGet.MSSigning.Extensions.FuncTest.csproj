@@ -13,6 +13,7 @@
     <Reference Include="System.IO.Compression" />
 
     <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="System.Buffers" />
   </ItemGroup>
 
   <Target Name="CopyFinalNuGetExeToOutputPath"
