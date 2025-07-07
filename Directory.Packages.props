@@ -87,7 +87,7 @@
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1PackageVersion)" />
-    <!-- <PackageVersion Include="System.Memory" Version="4.6.0" /> -->
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="$(SystemSecurityCryptographyProtectedDataVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />

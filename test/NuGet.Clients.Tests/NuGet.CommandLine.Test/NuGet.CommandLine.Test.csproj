@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Description>An end-to-end test suite for NuGet.CommandLine. Contains tests for every nuget.exe CLI command. Overlaps in tests with NuGet.CommandLine.FuncTest.</Description>
@@ -20,10 +20,11 @@
                       OutputItemType="TestableCredentialProviderOutputGroup" />
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" IncludeAssets="None" />
+    <PackageReference Include="System.Memory" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,13 +64,13 @@
                              Condition="'$(SkipILMergeOfNuGetExe)' != 'true'" />
       <ProjectReferenceFiles Include="%(TestableCredentialProviderOutputGroup.RootDir)\%(TestableCredentialProviderOutputGroup.Directory)**"
                              DestinationSubDirectory="TestableCredentialProvider\" />
-      
+
       <Content Include="@(ProjectReferenceFiles)"
                TargetPath="%(DestinationSubDirectory)%(RecursiveDir)%(Filename)%(Extension)"
                CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="CopyFinalNuGetExeToOutputPath"
           AfterTargets="PrepareForRun"
           Inputs="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
