@@ -6341,7 +6341,7 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetPack_WithMultiTargetedProject_WhenDirectPackageIsPartiallyPrunable_DoesNotIncludeAsADependecy()
+        public async Task DotnetPack_WithMultiTargetedProject_WhenDirectPackageIsPartiallyPrunable_DoesNotIncludeAsADependency()
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var tfm = "net472;netstandard2.1";
