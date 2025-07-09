@@ -14,6 +14,8 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -6177,6 +6179,88 @@ namespace ClassLibrary
             Assert.True(File.Exists(Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec")), "The intermediate nuspec file is not in the expected place");
             var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);
             result.AllOutput.Should().Contain(expectedWarning);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetPack_WhenDirectPackageIsPrunable_DoesNotIncludeAsADependecy()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+            var tfm = "net472";
+            var projectName = "ClassLibrary1";
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
+                new SimpleTestPackageContext("X", "1.0.0")
+                {
+                    Files =
+                    [
+                        new("lib/netstandard2.0/X.dll", [0])
+                    ],
+                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0") {  Files =
+                    [
+                        new("lib/netstandard2.0/Y.dll", [0])
+                    ]}]
+                },
+                new SimpleTestPackageContext("Z", "2.0.0")
+                {
+                    Files =
+                    [
+                        new("lib/netstandard2.0/Z.dll", [0])
+                    ],
+                }
+                );
+
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
+
+            using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", tfm);
+                ProjectFileUtils.AddProperty(xml, "RestoreEnablePackagePruning", "true");
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PackageReference",
+                    "X",
+                    string.Empty,
+                    [],
+                    new Dictionary<string, string>() { { "Version", "1.0.0" } });
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PackageReference",
+                    "Z",
+                    string.Empty,
+                    [],
+                    new Dictionary<string, string>() { { "Version", "2.0.0" } });
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PrunePackageReference",
+                    "X",
+                    string.Empty,
+                    [],
+                    new Dictionary<string, string>() { { "Version", "2.0.0" } });
+
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            result.AllOutput.Should().NotContain("Warning");
+            LockFile assetsFile = new LockFileFormat().Read(Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName));
+            assetsFile.Targets.Should().HaveCount(1);
+            assetsFile.Targets[0].Libraries.Should().HaveCount(3);
+
+            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+            var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                List<PackageDependencyGroup> dependencyGroups = nupkgReader.NuspecReader.GetDependencyGroups().ToList();
+                dependencyGroups.Should().HaveCount(1);
+                dependencyGroups[0].Packages.Should().HaveCount(1);
+                dependencyGroups[0].Packages.Single().Id.Should().Be("Z");
+            }
         }
     }
 }
