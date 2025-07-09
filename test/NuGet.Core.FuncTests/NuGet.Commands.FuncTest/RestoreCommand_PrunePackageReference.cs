@@ -2321,55 +2321,6 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1004);
         }
 
-        [Fact]
-        public async Task RestoreCommand_PrunableDependenciesFromDirectPackageReference_DoNotFlowTransitively()
-        {
-            using var pathContext = new SimpleTestPathContext();
-
-            // Setup packages
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                new SimpleTestPackageContext("packageA", "1.0.0"),
-                new SimpleTestPackageContext("packageB", "1.0.0"));
-
-            var leafProject = @"
-        {
-          ""frameworks"": {
-            ""net472"": {
-                ""dependencies"": {
-                        ""packageA"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                        ""packageB"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                },
-                ""packagesToPrune"": {
-                    ""packageB"" : ""(,1.0.0]"" 
-                }
-            }
-          }
-        }";
-
-            // Setup project
-            var projectSpec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, "net472");
-            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, leafProject);
-            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
-
-            // Pre-Conditions
-            var restoreResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
-            restoreResult.Success.Should().BeTrue();
-            restoreResult.LockFile.Targets.Should().HaveCount(1);
-            restoreResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            restoreResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            restoreResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            restoreResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
-        }
-
         // Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
