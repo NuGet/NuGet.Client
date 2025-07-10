@@ -1,1 +1,2 @@
 #nullable enable
+~static readonly NuGet.Packaging.Core.PackageType.DotnetToolRidPackage -> NuGet.Packaging.Core.PackageType

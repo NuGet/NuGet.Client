@@ -152,7 +152,7 @@ namespace NuGet.Commands
                 if (_validateRuntimeAssets && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
                     // Skip runtime checks for packages that have runtime references excluded,
-                    // this allows compile only packages that do not have runtimes for the 
+                    // this allows compile only packages that do not have runtimes for the
                     // graph RID to be used.
                     if ((packageIncludeFlags & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.Runtime)
                     {
@@ -336,9 +336,27 @@ namespace NuGet.Commands
             return !compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetPlatform);
         }
 
+        /// <summary>
+        /// A tool package is compatible for installation if it is <em>not only</em> a <see cref="PackageType.DotnetTool"/>,
+        /// <see cref="PackageType.DotnetCliTool"/>, or <see cref="PackageType.DotnetToolRidPackage"/> package.
+        /// Specifically if it says it is a <see cref="PackageType.Dependency"/> or if it contains reference-able assets.
+        /// </summary>
+        /// <remarks>
+        /// Note that by default tool packages do not declare the <see cref="PackageType.Dependency"/> package type, so for someone to add that type and
+        /// explicitly signal referencing support they would have to add a <c>packageType</c> element to the
+        /// package via extraordinary means (e.g. a custom .nuspec file or explicit .NET SDK support for 'combined' packages).
+        /// </remarks>
         private async Task VerifyDotnetToolCompatibilityChecks(CompatibilityData compatibilityData, GraphItem<RemoteResolveResult> node, RestoreTargetGraph graph, List<CompatibilityIssue> issues)
         {
-            if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
+            if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.Dependency))
+            {
+                return; // package is a dependency, so it is compatible by definition
+            }
+            if ((compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool)
+                || compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetCliTool)
+                || compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetToolRidPackage))
+                && !HasCompatibleAssets(compatibilityData.TargetLibrary) // if a tool has dependency-like assets, it _could_ be compatible
+            )
             {
                 var issue = CompatibilityIssue.IncompatiblePackageWithDotnetTool(new PackageIdentity(node.Key.Name, node.Key.Version));
                 issues.Add(issue);
