@@ -6181,8 +6181,10 @@ namespace ClassLibrary
             result.AllOutput.Should().Contain(expectedWarning);
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetPack_WhenDirectPackageIsPrunable_DoesNotIncludeAsADependecy()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("2.0.0", true)]
+        [InlineData("0.9.0", false)]
+        public async Task DotnetPack_WithDirectPackageIdMarkedForPruning_PruningResultAffectsPackedDepedencies(string version, bool excluded)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "ClassLibrary1";
@@ -6191,23 +6193,9 @@ namespace ClassLibrary
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
                 new SimpleTestPackageContext("X", "1.0.0")
                 {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/X.dll", [0])
-                    ],
-                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0") {  Files =
-                    [
-                        new("lib/netstandard2.0/Y.dll", [0])
-                    ]}]
+                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0")]
                 },
-                new SimpleTestPackageContext("Z", "2.0.0")
-                {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/Z.dll", [0])
-                    ],
-                }
-                );
+                new SimpleTestPackageContext("Z", "2.0.0"));
 
             _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
 
@@ -6238,7 +6226,7 @@ namespace ClassLibrary
                     "X",
                     string.Empty,
                     [],
-                    new Dictionary<string, string>() { { "Version", "2.0.0" } });
+                    new Dictionary<string, string>() { { "Version", version } });
 
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
@@ -6254,8 +6242,18 @@ namespace ClassLibrary
             using var nupkgReader = new PackageArchiveReader(nupkgPath);
             List<PackageDependencyGroup> dependencyGroups = nupkgReader.NuspecReader.GetDependencyGroups().ToList();
             dependencyGroups.Should().HaveCount(1);
-            dependencyGroups[0].Packages.Should().HaveCount(1);
-            dependencyGroups[0].Packages.Single().Id.Should().Be("Z");
+
+            if (excluded)
+            {
+                dependencyGroups[0].Packages.Should().HaveCount(1);
+                dependencyGroups[0].Packages.Single().Id.Should().Be("Z");
+            }
+            else
+            {
+                dependencyGroups[0].Packages.Should().HaveCount(2);
+                dependencyGroups[0].Packages.First().Id.Should().Be("X");
+                dependencyGroups[0].Packages.Last().Id.Should().Be("Z");
+            }
         }
 
         [PlatformFact(Platform.Windows)]
@@ -6337,23 +6335,9 @@ namespace ClassLibrary
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
                 new SimpleTestPackageContext("X", "1.0.0")
                 {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/X.dll", [0])
-                    ],
-                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0") {  Files =
-                    [
-                        new("lib/netstandard2.0/Y.dll", [0])
-                    ]}]
+                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0")]
                 },
-                new SimpleTestPackageContext("Z", "2.0.0")
-                {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/Z.dll", [0])
-                    ],
-                }
-                );
+                new SimpleTestPackageContext("Z", "2.0.0"));
 
             _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
 
