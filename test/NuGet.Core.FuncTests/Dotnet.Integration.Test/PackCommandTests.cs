@@ -6269,23 +6269,9 @@ namespace ClassLibrary
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource,
                 new SimpleTestPackageContext("X", "1.0.0")
                 {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/X.dll", [0])
-                    ],
-                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0") {  Files =
-                    [
-                        new("lib/netstandard2.0/Y.dll", [0])
-                    ]}]
+                    Dependencies = [new SimpleTestPackageContext("Y", "1.0.0")]
                 },
-                new SimpleTestPackageContext("Z", "2.0.0")
-                {
-                    Files =
-                    [
-                        new("lib/netstandard2.0/Z.dll", [0])
-                    ],
-                }
-                );
+                new SimpleTestPackageContext("Z", "2.0.0"));
 
             _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
 
