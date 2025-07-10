@@ -385,7 +385,6 @@ namespace NuGet.ProjectModel
 
                 for (var i = 0; i < dependencies.Count; i++)
                 {
-                    bool isPruned = IsDependencyPruned(dependencies[i], targetFrameworkInfo.PackagesToPrune);
                     // Do not push the dependency changes here upwards, as the original package
                     // spec should not be modified.
 
@@ -394,26 +393,11 @@ namespace NuGet.ProjectModel
                     // must be external projects.
                     var dependency = dependencies[i];
                     var libraryRange = new LibraryRange(dependency.LibraryRange) { TypeConstraint = dependency.LibraryRange.TypeConstraint & ~LibraryDependencyTarget.Project };
-                    dependencies[i] = new LibraryDependency(dependency)
-                    {
-                        LibraryRange = libraryRange,
-                        SuppressParent = isPruned ? LibraryIncludeFlags.All : dependency.SuppressParent,
-                        IncludeType = isPruned ? LibraryIncludeFlags.None : dependency.IncludeType,
-                    };
+                    dependencies[i] = new LibraryDependency(dependency) { LibraryRange = libraryRange };
                 }
             }
 
             return dependencies;
-
-            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
-            {
-                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
-                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
-                {
-                    return true;
-                }
-                return false;
-            }
         }
 
         private bool IsProject(LibraryDependency dependency)
