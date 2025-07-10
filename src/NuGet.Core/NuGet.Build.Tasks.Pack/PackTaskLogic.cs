@@ -1007,7 +1007,6 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             return ImmutableCollectionsMarshal.AsImmutableArray(updatedDependencies);
-
         }
 
         private static LibraryDependency GetUpdatedPackageDependency(

@@ -6369,7 +6369,7 @@ namespace ClassLibrary
                     "X",
                     string.Empty,
                     [],
-                    new Dictionary<string, string>() { { "Version", "2.0.0" } });
+                    new Dictionary<string, string>() { { "Version", "1.0.0" } });
 
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
