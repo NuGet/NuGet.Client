@@ -49,17 +49,17 @@ namespace NuGet.Commands
 
             // Override the flags for direct dependencies. This lets the
             // user take control when needed.
-            foreach (var dependency in directDependencies)
-            {
-                if (result.ContainsKey(dependency.Name))
-                {
-                    result[dependency.Name] = dependency.IncludeType;
-                }
-                else
-                {
-                    result.Add(dependency.Name, dependency.IncludeType);
-                }
-            }
+            //foreach (var dependency in directDependencies)
+            //{
+            //    if (result.ContainsKey(dependency.Name))
+            //    {
+            //        result[dependency.Name] = dependency.IncludeType;
+            //    }
+            //    else
+            //    {
+            //        result.Add(dependency.Name, dependency.IncludeType);
+            //    }
+            //}
 
             return result;
         }

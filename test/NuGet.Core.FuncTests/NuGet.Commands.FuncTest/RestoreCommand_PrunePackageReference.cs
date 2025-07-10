@@ -189,6 +189,19 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(0);
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
+            result.LockFile.Targets[0].Libraries[2].CompileTimeAssemblies.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[2].CompileTimeAssemblies[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].RuntimeAssemblies.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[2].RuntimeAssemblies[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].FrameworkAssemblies.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[2].FrameworkReferences.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[2].NativeLibraries.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[2].ResourceAssemblies.Should().BeEmpty();
+            result.LockFile.Targets[0].Libraries[2].RuntimeTargets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[2].RuntimeTargets[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].ContentFiles.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[2].ContentFiles[0].Path.Should().EndWith("_._");
+
             if (shouldWarn)
             {
                 result.LockFile.LogMessages.Should().HaveCount(1);
@@ -2319,6 +2332,55 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeFalse(because: testLogger.ShowMessages());
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1004);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PrunableDependenciesFromDirectPackageReference_DoNotFlowTransitively()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("packageA", "1.0.0"),
+                new SimpleTestPackageContext("packageB", "1.0.0"));
+
+            var leafProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                        ""packageB"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+                ""packagesToPrune"": {
+                    ""packageB"" : ""(,1.0.0]"" 
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, "net472");
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, leafProject);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Act & Assert
+            var restoreResult = await RunRestoreAsync(pathContext, projectSpec, projectSpec2);
+            restoreResult.Success.Should().BeTrue();
+            restoreResult.LockFile.Targets.Should().HaveCount(1);
+            restoreResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            restoreResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            restoreResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            restoreResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
         }
 
         // Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.
