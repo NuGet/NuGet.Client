@@ -519,6 +519,15 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
+        public async Task DotnetSign_SignPackageWithInsecureCertificateFingerprint_ThrowsExceptionAsync()
+        {
+            var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1);
+
+            Assert.False(result.Success, result.AllOutput);
+            Assert.True(result.Errors.Contains(_insecureCertificateFingerprintCode), result.Errors);
+        }
+
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
         [InlineData(HashAlgorithmName.SHA256)]
         [InlineData(HashAlgorithmName.SHA384)]
