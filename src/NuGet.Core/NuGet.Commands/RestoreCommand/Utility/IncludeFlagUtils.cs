@@ -49,19 +49,43 @@ namespace NuGet.Commands
 
             // Override the flags for direct dependencies. This lets the
             // user take control when needed.
-            //foreach (var dependency in directDependencies)
-            //{
-            //    if (result.ContainsKey(dependency.Name))
-            //    {
-            //        result[dependency.Name] = dependency.IncludeType;
-            //    }
-            //    else
-            //    {
-            //        result.Add(dependency.Name, dependency.IncludeType);
-            //    }
-            //}
+            foreach (var dependency in directDependencies)
+            {
+                if (result.ContainsKey(dependency.Name))
+                {
+                    if (IsDependencyPruned(dependency, specFramework?.PackagesToPrune))
+                    {
+                        result[dependency.Name] = LibraryIncludeFlags.None;
+                    }
+                    else
+                    {
+                        result[dependency.Name] = dependency.IncludeType;
+                    }
+                }
+                else
+                {
+                    if (IsDependencyPruned(dependency, specFramework?.PackagesToPrune))
+                    {
+                        result[dependency.Name] = LibraryIncludeFlags.None;
+                    }
+                    else
+                    {
+                        result.Add(dependency.Name, dependency.IncludeType);
+                    }
+                }
+            }
 
             return result;
+
+            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
+            {
+                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         private static void FlattenDependencyTypesUnified(
