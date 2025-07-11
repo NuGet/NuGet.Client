@@ -27,6 +27,13 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: false
+- name: SigningType
+  displayName: Type of signing to use
+  type: string
+  default: Real
+  values:
+  - Real
+  - Test
 
 resources:
   repositories:
@@ -81,3 +88,4 @@ extends:
         RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
         RunTestsOnMac: ${{parameters.RunTestsOnMac}}
         RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+        SigningType: ${{ parameters.SigningType }}
