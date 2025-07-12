@@ -525,7 +525,7 @@ namespace Dotnet.Integration.Test
             var result = await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1);
 
             Assert.False(result.Success, result.AllOutput);
-            Assert.True(result.Errors.Contains(_insecureCertificateFingerprintCode), result.Errors);
+            Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
         }
 
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
@@ -558,15 +558,17 @@ namespace Dotnet.Integration.Test
             IX509StoreCertificate storeCertificate = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
             string certFingerprint = hashAlgorithmName == HashAlgorithmName.SHA1 ? storeCertificate.Certificate.Thumbprint :
                 SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, hashAlgorithmName);
+            bool expectSuccess = hashAlgorithmName != HashAlgorithmName.SHA1;
 
             using (testServer.RegisterResponder(timestampService))
             {
                 // Act
-                CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
+                CommandRunnerResult result = _dotnetFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} " +
                     $"--certificate-fingerprint {certFingerprint} " +
                     $"--timestamper {timestampService.Url}",
+                    expectSuccess: expectSuccess,
                     testOutputHelper: _testOutputHelper);
 
                 return result;
