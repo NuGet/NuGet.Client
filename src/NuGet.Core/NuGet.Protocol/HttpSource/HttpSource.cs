@@ -70,10 +70,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            if (request.Uri.Contains("https://api.nuget.org/v3/vulnerabilities/index.json"))
-            {
-                throw new HttpSourceException(string.Format(CultureInfo.CurrentCulture, "From source {0}: the resource {1} is not a secure request.", _sourceUri, request.Uri));
-            }
+            ThrowIfInsecureUri(request.Uri);
 
             var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
                 HttpCacheDirectory,
@@ -511,6 +508,23 @@ namespace NuGet.Protocol
                 finally
                 {
                     Interlocked.Exchange(ref _throttle, null)?.Release();
+                }
+            }
+        }
+
+        private void ThrowIfInsecureUri(string uri)
+        {
+            var parsedUri = new Uri(uri);
+
+            if (string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_packageSource == null || !_packageSource.AllowInsecureConnections)
+                {
+                    throw new HttpSourceException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_Insecure_HTTP,
+                            _sourceUri.AbsoluteUri ?? "<unknown>", uri));
                 }
             }
         }
