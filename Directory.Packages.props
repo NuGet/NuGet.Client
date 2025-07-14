@@ -8,7 +8,7 @@
 
     <!-- Read docs/updating-packages.md before updating System.Text.Json's version -->
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
-    <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta5.25208.1</SystemCommandLineVersion>
+    <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta7.25363.101</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
   </PropertyGroup>
 
