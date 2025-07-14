@@ -19,7 +19,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -174,6 +174,15 @@ namespace NuGet.Protocol {
         internal static string Error_HttpServerUsage {
             get {
                 return ResourceManager.GetString("Error_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are using a NuGet source &apos;{0}&apos; that contains an &apos;HTTP&apos; service index resource endpoint: &apos;{1}&apos;. This is insecure and not recommended. To allow HTTP resources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. For more information, please visit https://aka.ms/nuget-https-everywhere..
+        /// </summary>
+        internal static string Error_Insecure_HTTP {
+            get {
+                return ResourceManager.GetString("Error_Insecure_HTTP", resourceCulture);
             }
         }
         

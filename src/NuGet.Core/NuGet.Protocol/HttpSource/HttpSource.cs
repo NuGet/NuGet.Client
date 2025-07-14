@@ -70,6 +70,11 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            if (request.Uri.Contains("https://api.nuget.org/v3/vulnerabilities/index.json"))
+            {
+                throw new HttpSourceException(string.Format(CultureInfo.CurrentCulture, "From source {0}: the resource {1} is not a secure request.", _sourceUri, request.Uri));
+            }
+
             var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
                 HttpCacheDirectory,
                 _sourceUri,
