@@ -195,6 +195,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
 #endif
             CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
             CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
+            CopyNuGetSdkResolverArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
         }
 
         private static void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
@@ -255,6 +256,23 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                     jObject.WriteTo(writer);
                 }
             }
+        }
+
+        private static void CopyNuGetSdkResolverArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
+        {
+            var projectName = "Microsoft.Build.NuGetSdkResolver";
+            var projectArtifactsBinFolder = Path.Combine(artifactsDirectory, projectName, "bin", configuration);
+
+            var tfmToCopy = GetTfmToCopy(projectArtifactsBinFolder);
+            var frameworkArtifactsFolder = new DirectoryInfo(Path.Combine(projectArtifactsBinFolder, tfmToCopy));
+
+            // Copy the resolver assembly
+            var resolverAssemblySourcePath = Path.Combine(frameworkArtifactsFolder.FullName, projectName + ".dll");
+            var resolverAssemblyDestinationPath = Path.Combine(pathToSdkInCli, projectName + ".dll");
+            File.Copy(
+                sourceFileName: resolverAssemblySourcePath,
+                destFileName: resolverAssemblyDestinationPath,
+                overwrite: true);
         }
 
         private static string GetTfmToCopy(string projectArtifactsBinFolder)
