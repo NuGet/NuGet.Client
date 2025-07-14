@@ -280,7 +280,7 @@
     },
     "nuGetPackageManager.general": {
       "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E",
+      "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E", // Corresponds to the GUID defined in OptionsPageActivator.cs for GeneralPage
       "order": 0,
       "commands": [
         {
@@ -294,17 +294,17 @@
     },
     "nuGetPackageManager.configurationFiles": {
       "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "C17B308A-00BB-446E-9212-2D14E1005985",
+      "legacyOptionPageId": "C17B308A-00BB-446E-9212-2D14E1005985", // Corresponds to the GUID defined in OptionsPageActivator.cs for ConfigurationFilesPage
       "order": 1
     },
     "nuGetPackageManager.packageSources": {
       "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C",
+      "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C", // Corresponds to the GUID defined in OptionsPageActivator.cs for PackageSourcesPage
       "order": 2
     },
     "nuGetPackageManager.packageSourceMapping": {
       "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "F175964E-89F5-4521-8FE2-C10C07BB968C",
+      "legacyOptionPageId": "F175964E-89F5-4521-8FE2-C10C07BB968C", // Corresponds to the GUID defined in OptionsPageActivator.cs for PackageSourceMappingPage
       "order": 3,
       "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-source-mapping"
     }

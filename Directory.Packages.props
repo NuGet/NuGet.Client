@@ -26,6 +26,7 @@
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
     <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
+    <SystemMemoryPackageVersion Condition="'$(SystemMemoryPackageVersion)' == ''">4.6.3</SystemMemoryPackageVersion>
     <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">9.0.6</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyProtectedDataVersion Condition="'$(SystemSecurityCryptographyProtectedDataVersion)' == ''">9.0.6</SystemSecurityCryptographyProtectedDataVersion>
     <MicrosoftVisualStudioSolutionPersistenceVersion Condition="'$(MicrosoftVisualStudioSolutionPersistenceVersion)' == ''">1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
@@ -87,7 +88,7 @@
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1PackageVersion)" />
-    <!-- <PackageVersion Include="System.Memory" Version="4.6.0" /> -->
+    <PackageVersion Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="$(SystemSecurityCryptographyProtectedDataVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
