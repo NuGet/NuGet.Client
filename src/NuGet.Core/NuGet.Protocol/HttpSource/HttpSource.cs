@@ -518,7 +518,7 @@ namespace NuGet.Protocol
 
             if (string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
             {
-                if (_packageSource == null || !_packageSource.AllowInsecureConnections)
+                if (_packageSource == null || (_packageSource.IsHttps && !_packageSource.AllowInsecureConnections))
                 {
                     throw new HttpSourceException(
                         string.Format(
