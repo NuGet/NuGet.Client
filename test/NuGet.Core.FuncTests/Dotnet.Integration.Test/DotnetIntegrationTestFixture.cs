@@ -394,7 +394,7 @@ namespace Dotnet.Integration.Test
         public void Dispose()
         {
             KillDotnetExe(TestDotnetCli, _cliDirectory.Path, _templateDirectory.WorkingDirectory);
-            // _cliDirectory.Dispose();
+            _cliDirectory.Dispose();
             _templateDirectory.Dispose();
         }
 

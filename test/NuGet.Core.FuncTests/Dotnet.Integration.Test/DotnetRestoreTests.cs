@@ -1436,34 +1436,36 @@ EndGlobal";
         [InlineData(false)]
         public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AreEquivalent(bool usePackageSpecFactory)
         {
-            SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            var testDirectory = pathContext.SolutionRoot;
-            var projectName1 = "ClassLibrary";
-            var projectName2 = "ConsoleApp";
-            var projectName3 = "WebApplication";
-
-            var environmentVariables = new Dictionary<string, string>
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
             {
-                { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
-            };
+                var testDirectory = pathContext.SolutionRoot;
+                var projectName1 = "ClassLibrary";
+                var projectName2 = "ConsoleApp";
+                var projectName3 = "WebApplication";
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName2, " console", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName3, " webapp", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "new sln --name test", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName1}", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName2}", testOutputHelper: _testOutputHelper);
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName3}", testOutputHelper: _testOutputHelper);
-            var targetPath = Path.Combine(testDirectory, "test.sln");
-            var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
-            var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
-            _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
+                var environmentVariables = new Dictionary<string, string>
+                {
+                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                };
 
-            var regularDgSpec = File.ReadAllText(standardDgSpecFile);
-            var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName2, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName3, " webapp", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "new sln --name test", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName1}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName2}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"sln add {projectName3}", testOutputHelper: _testOutputHelper);
+                var targetPath = Path.Combine(testDirectory, "test.sln");
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
+                var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /bl:first.binlog /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"msbuild /bl:second.binlog /nologo /t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {targetPath}", environmentVariables, testOutputHelper: _testOutputHelper);
 
-            regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);
+                var regularDgSpec = File.ReadAllText(standardDgSpecFile);
+                var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
+
+                regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);
+            }
         }
 
         [Theory]
