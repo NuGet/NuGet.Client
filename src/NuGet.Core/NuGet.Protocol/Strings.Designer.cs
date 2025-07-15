@@ -178,7 +178,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are using a NuGet source &apos;{0}&apos; that contains an &apos;HTTP&apos; service index resource endpoint: &apos;{1}&apos;. This is insecure and not recommended. To allow HTTP resources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. For more information, please visit https://aka.ms/nuget-https-everywhere..
+        ///   Looks up a localized string similar to You are using a NuGet source &apos;{0}&apos; that contains an &apos;HTTP&apos; service index resource endpoint: &apos;{1}&apos;. This is insecure and not recommended. To allow HTTP resources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. For more information, visit https://aka.ms/nuget-https-everywhere..
         /// </summary>
         internal static string Error_Insecure_HTTP {
             get {
