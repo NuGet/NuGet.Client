@@ -134,7 +134,7 @@ namespace NuGet.Common
         NU1015 = 1015,
 
         /// <summary>
-        /// Project.Json project type is not supported.
+        /// The project.json project type is not supported.
         /// </summary>
         NU1016 = 1016,
 
