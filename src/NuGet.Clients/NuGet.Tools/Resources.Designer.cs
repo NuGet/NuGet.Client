@@ -106,7 +106,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A package ID or pattern must be provided..
+        ///   Looks up a localized string similar to A package pattern must be provided..
         /// </summary>
         internal static string Error_PackageSourceMappingPattern_Missing {
             get {
