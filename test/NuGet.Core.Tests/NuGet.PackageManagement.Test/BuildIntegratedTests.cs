@@ -184,7 +184,7 @@ namespace NuGet.Test
         }
 
         // Verify that parent projects are restored when a child project is updated
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task InstallPackageTransitive_VerifyCacheInvalidated()
         {
             // Arrange
@@ -332,7 +332,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task InstallPackageWithReadMeFile()
         {
             // Arrange
@@ -555,7 +555,7 @@ namespace NuGet.Test
             messages[0].Message.Should().Contain("Unable to find package nuget.core with version (>= 91.0.0)");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdateAndRollbackPackage()
         {
             // Arrange
@@ -681,7 +681,7 @@ namespace NuGet.Test
             Assert.True(File.Exists(lockFile));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task InstallUpdatedPackage()
         {
             // Arrange
@@ -730,7 +730,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdatePackageToHighest()
         {
             // Arrange
@@ -794,7 +794,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdateMultipleAndRollback()
         {
             // Arrange
@@ -879,7 +879,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdatePackageAll()
         {
             // Arrange
@@ -976,7 +976,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdatePackageAllNoop()
         {
             // Arrange
@@ -1548,7 +1548,7 @@ namespace NuGet.Test
             Assert.Equal(0, entityFrameworkTargets.Count());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task InstallPackageWithInitPS1()
         {
             // Arrange
@@ -1588,7 +1588,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UninstallPackageDoesNotCallInitPs1()
         {
             // Arrange
@@ -1628,7 +1628,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task UpdatePackageCallsInitPs1OnNewPackages()
         {
             // Arrange
@@ -1671,7 +1671,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task PreviewUpdatesAsync_NoUpdatesAvailable()
         {
             using (var packageSource = TestDirectory.Create())
