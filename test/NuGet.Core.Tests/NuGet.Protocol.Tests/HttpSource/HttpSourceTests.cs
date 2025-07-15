@@ -484,7 +484,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task GetAsync_HttpUriAndFalseAllowInsecureConnections_ThrowsAnEception()
+        public async Task GetAsync_HttpUriAndFalseAllowInsecureConnections_ThrowsAnException()
         {
             // Arrange
             using (var td = TestDirectory.Create())

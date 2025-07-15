@@ -524,7 +524,8 @@ namespace NuGet.Protocol
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_Insecure_HTTP,
-                            _sourceUri.AbsoluteUri ?? "<unknown>", uri));
+                            _sourceUri.AbsoluteUri ?? "<unknown>",
+                            uri));
                 }
             }
         }
