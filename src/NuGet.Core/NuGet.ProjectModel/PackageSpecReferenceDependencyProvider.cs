@@ -385,7 +385,6 @@ namespace NuGet.ProjectModel
 
                 for (var i = 0; i < dependencies.Count; i++)
                 {
-                    bool isPruned = IsDependencyPruned(dependencies[i], targetFrameworkInfo.PackagesToPrune);
                     // Do not push the dependency changes here upwards, as the original package
                     // spec should not be modified.
 
@@ -393,6 +392,7 @@ namespace NuGet.ProjectModel
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.
                     var dependency = dependencies[i];
+                    bool isPruned = IsDependencyPruned(dependency, targetFrameworkInfo.PackagesToPrune);
                     var libraryRange = new LibraryRange(dependency.LibraryRange) { TypeConstraint = dependency.LibraryRange.TypeConstraint & ~LibraryDependencyTarget.Project };
                     dependencies[i] = new LibraryDependency(dependency)
                     {
