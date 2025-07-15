@@ -754,6 +754,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project.json project type is deprecated. Migrate to PackageReference..
+        /// </summary>
+        internal static string Error_ProjectJson_Deprecated {
+            get {
+                return ResourceManager.GetString("Error_ProjectJson_Deprecated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The runtime.json specified in the project &apos;{0}&apos; could not be parsed. {1}.
         /// </summary>
         internal static string Error_ProjectRuntimeJsonIsUnreadable {

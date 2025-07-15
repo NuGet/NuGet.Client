@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredMissingPackage()
         {
             // Arrange
