@@ -164,7 +164,7 @@ namespace Dotnet.Integration.Test
         internal CommandRunnerResult RunDotnetExpectFailure(string workingDirectory, string args = "", IReadOnlyDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null)
             => RunDotnet(workingDirectory, args, expectSuccess: false, environmentVariables, testOutputHelper);
 
-        private CommandRunnerResult RunDotnet(string workingDirectory, string args = "", bool expectSuccess = true, IReadOnlyDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null)
+        internal CommandRunnerResult RunDotnet(string workingDirectory, string args = "", bool expectSuccess = true, IReadOnlyDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null)
         {
             bool enableDiagnostics = CIDebug && !string.IsNullOrWhiteSpace(BinLogDirectory);
 

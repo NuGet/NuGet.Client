@@ -339,6 +339,7 @@ namespace NuGet.Commands
         {
             var success = true;
 
+            success &= EnsureNotDeprecatedProjectJsonProjectType();
             success &= AreCentralVersionRequirementsSatisfied(_request, httpSourcesCount);
             success &= EvaluateHttpSourceUsage();
             success &= HasValidPlatformVersions();
@@ -1101,6 +1102,20 @@ namespace NuGet.Commands
             return result;
         }
 
+        private bool EnsureNotDeprecatedProjectJsonProjectType()
+        {
+            if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
+            {
+                _logger.Log(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1016,
+                        Strings.Error_ProjectJson_Deprecated));
+
+                return false;
+            }
+
+            return true;
+        }
         private string ConcatAsString<T>(IEnumerable<T> enumerable)
         {
             string result = null;

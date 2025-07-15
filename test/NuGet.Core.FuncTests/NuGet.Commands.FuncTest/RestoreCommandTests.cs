@@ -4081,6 +4081,62 @@ namespace NuGet.Commands.FuncTest
             command._enableNewDependencyResolver.Should().Be(useNewResolver);
         }
 
+        [Fact]
+        public async Task RestoreCommand_WithCustomIncludeAssets_WhenDirectPackageAppearsInTransitiveGraph_DirectIncludeAssetsTakePrecedence()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("packageA", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")],
+                },
+                new SimpleTestPackageContext("packageB", "1.0.0"));
+
+            var leafProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                        ""packageB"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                            ""include"": ""Runtime, Compile"",
+                        },
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, leafProject);
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[0].CompileTimeAssemblies.Should().BeEquivalentTo([new LockFileItem("lib/net45/a.dll")]);
+            result.LockFile.Targets[0].Libraries[0].RuntimeAssemblies.Should().BeEquivalentTo([new LockFileItem("lib/net45/a.dll")]);
+            result.LockFile.Targets[0].Libraries[0].ContentFiles.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].RuntimeTargets.Should().ContainSingle(e => e.Path == "runtimes/any/native/a.dll");
+            result.LockFile.Targets[0].Libraries[0].Build.Should().BeEquivalentTo([new LockFileItem("build/net45/packageA.targets")]);
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].CompileTimeAssemblies.Should().BeEquivalentTo([new LockFileItem("lib/net45/a.dll")]);
+            result.LockFile.Targets[0].Libraries[1].RuntimeAssemblies.Should().BeEquivalentTo([new LockFileItem("lib/net45/a.dll")]);
+            result.LockFile.Targets[0].Libraries[1].ContentFiles.Should().ContainSingle(e => e.Path == "contentFiles/any/any/_._");
+            result.LockFile.Targets[0].Libraries[1].RuntimeTargets.Should().ContainSingle(e => e.Path == "runtimes/any/native/_._");
+            result.LockFile.Targets[0].Libraries[1].Build.Should().BeEquivalentTo([new LockFileItem("build/net45/_._")]);
+        }
+
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));
