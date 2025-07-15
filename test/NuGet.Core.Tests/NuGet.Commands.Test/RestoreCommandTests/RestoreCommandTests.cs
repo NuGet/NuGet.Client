@@ -2965,6 +2965,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["UpdatedAssetsFile"] = value => value.Should().Be(true),
                 ["UpdatedMSBuildFiles"] = value => value.Should().Be(true),
                 ["NETSdkVersion"] = value => value.Should().Be(null),
+                ["Pruning.FrameworksEnabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksDisabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
             };
 
             HashSet<string> actualProperties = new();
@@ -3077,7 +3082,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(35);
+            projectInformationEvent.Count.Should().Be(38);
+
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -3113,6 +3119,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["UpdatedAssetsFile"].Should().Be(false);
             projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(false);
             projectInformationEvent["NETSdkVersion"].Should().Be(NuGetVersion.Parse("10.0.100"));
+            projectInformationEvent["Pruning.FrameworksEnabled.Count"].Should().Be(0);
+            projectInformationEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
+            projectInformationEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
         }
 
         [Fact]
@@ -3170,7 +3179,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(41);
+            projectInformationEvent.Count.Should().Be(46);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
