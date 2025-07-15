@@ -155,15 +155,29 @@
               "sourceName": {
                 "type": "string",
                 "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                "default": "Package source"
+                "uniqueness": "caseInsensitive",
+                "default": "Package source",
+                "messages": [
+                  {
+                    "text": "@Error_PackageSourceName_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                    "visibleWhen": "${config:sourceName} ~= '^\\\\s*$'",
+                    "severity": "error"
+                  }
+                ]
               },
               "sourceUrl": {
                 "type": "string",
                 "format": "path",
                 "pathKind": "folderOrUri",
                 "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "uniqueness": "caseInsensitive",
                 "default": "https://packagesource",
                 "messages": [
+                  {
+                    "text": "@Error_PackageSourceUri_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                    "visibleWhen": "${config:sourceUrl} ~= '^\\\\s*$'",
+                    "severity": "error"
+                  },
                   {
                     "text": "@Text_HttpSource_Warning;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "(${config:allowInsecureConnections} == '' || ${config:allowInsecureConnections} == 'true') && ${config:sourceUrl} ~= '(?i)^http\\\\:'",
@@ -187,7 +201,6 @@
         "machineWidePackageSources": {
           "type": "array",
           "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "uniqueItems": true,
           // Don't show Machine-wide Package Sources section when empty.
           "visibleWhen": "${config:machineWidePackageSources} != '[]'",
 
