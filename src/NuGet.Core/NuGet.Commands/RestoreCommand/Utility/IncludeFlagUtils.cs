@@ -51,27 +51,17 @@ namespace NuGet.Commands
             // user take control when needed.
             foreach (var dependency in directDependencies)
             {
+                LibraryIncludeFlags includeType = IsDependencyPruned(dependency, specFramework?.PackagesToPrune) ?
+                    LibraryIncludeFlags.None :
+                    dependency.IncludeType;
+
                 if (result.ContainsKey(dependency.Name))
                 {
-                    if (IsDependencyPruned(dependency, specFramework?.PackagesToPrune))
-                    {
-                        result[dependency.Name] = LibraryIncludeFlags.None;
-                    }
-                    else
-                    {
-                        result[dependency.Name] = dependency.IncludeType;
-                    }
+                    result[dependency.Name] = includeType;
                 }
                 else
                 {
-                    if (IsDependencyPruned(dependency, specFramework?.PackagesToPrune))
-                    {
-                        result[dependency.Name] = LibraryIncludeFlags.None;
-                    }
-                    else
-                    {
-                        result.Add(dependency.Name, dependency.IncludeType);
-                    }
+                    result.Add(dependency.Name, includeType);
                 }
             }
 
