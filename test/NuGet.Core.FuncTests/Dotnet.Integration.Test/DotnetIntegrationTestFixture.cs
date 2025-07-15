@@ -175,6 +175,10 @@ namespace Dotnet.Integration.Test
                 ["MSBuildSDKsPath"] = MsBuildSdksPath,
                 ["DOTNET_MULTILEVEL_LOOKUP"] = "0",
                 ["DOTNET_ROOT"] = _cliDirectory,
+                // need to force-override this because otherwise the MSBuildExtensionsPath
+                // set from the _outer_ dotnet cli call (which could be any version) will override
+                // the one set by the _inner_ (test environment-specific) dotnet cli call we're about to make
+                ["MSBuildExtensionsPath"] = SdkDirectory.FullName
             };
 
             if (enableDiagnostics)
