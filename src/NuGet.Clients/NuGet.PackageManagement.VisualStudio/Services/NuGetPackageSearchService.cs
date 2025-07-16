@@ -77,29 +77,35 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectContextInfos);
             Assumes.NotNullOrEmpty(packageSources);
             Assumes.NotNull(searchFilter);
+            try
+            {
+                bool recommendPackages = false;
+                IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
+                IPackageFeed? packageFeed = await CreatePackageFeedAsync(
+                    projectContextInfos,
+                    targetFrameworks,
+                    itemFilter,
+                    isSolution,
+                    recommendPackages,
+                    sourceRepositories,
+                    cancellationToken);
+                Assumes.NotNull(packageFeed);
 
-            bool recommendPackages = false;
-            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            IPackageFeed? packageFeed = await CreatePackageFeedAsync(
-                projectContextInfos,
-                targetFrameworks,
-                itemFilter,
-                isSolution,
-                recommendPackages,
-                sourceRepositories,
-                cancellationToken);
-            Assumes.NotNull(packageFeed);
+                SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+                IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
+                var metadataProvider = new MultiSourcePackageMetadataProvider(
+                    sourceRepositories,
+                    packagesFolderSourceRepository,
+                    globalPackageFolderRepositories,
+                    new VisualStudioActivityLogger());
 
-            SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
-            var metadataProvider = new MultiSourcePackageMetadataProvider(
-                sourceRepositories,
-                packagesFolderSourceRepository,
-                globalPackageFolderRepositories,
-                new VisualStudioActivityLogger());
-
-            var searchObject = new SearchObject(packageFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
-            return await searchObject.GetAllPackagesAsync(searchFilter, cancellationToken);
+                var searchObject = new SearchObject(packageFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
+                return await searchObject.GetAllPackagesAsync(searchFilter, cancellationToken);
+            }
+            catch (FatalProtocolException ex)
+            {
+                throw new FatalProtocolException(ExceptionUtilities.DisplayMessage(ex));
+            }
         }
 
         public async ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> GetPackageMetadataAsync(
