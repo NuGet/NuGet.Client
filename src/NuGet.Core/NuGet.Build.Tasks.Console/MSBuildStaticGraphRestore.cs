@@ -702,7 +702,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled, Common.ILogger MSBuildLogger)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
@@ -750,6 +750,16 @@ namespace NuGet.Build.Tasks.Console
                     TargetAlias = targetAlias,
                     Warn = warn
                 };
+
+                try
+                {
+                    targetFrameworkInformation.FrameworkName.GetShortFolderName();
+                }
+                catch (FrameworkException)
+                {
+                    MSBuildLogger.Log(LogMessage.Create(LogLevel.Warning, $"Target Framework {targetFrameworkInformation.FrameworkName} resolved from '{projectInnerNode.Value.FullPath}' is invalid"));
+                    throw;
+                }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
             }
@@ -925,7 +935,7 @@ namespace NuGet.Build.Tasks.Console
 
             RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, projectsByTargetFramework.Values);
 
-            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
+            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled, MSBuildLogger);
 
             List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
 
