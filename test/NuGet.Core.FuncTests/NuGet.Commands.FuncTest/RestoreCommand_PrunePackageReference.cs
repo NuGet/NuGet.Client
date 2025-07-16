@@ -1293,15 +1293,13 @@ namespace NuGet.Commands.FuncTest
                 var restoreLogMessage = (RestoreLogMessage)testLogger.LogMessages.Single();
                 restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
                 restoreLogMessage.LibraryId.Should().Be("A");
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
             }
             else
             {
                 testLogger.WarningMessages.Should().BeEmpty();
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
             }
+            testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
+            testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
         }
 
         [Theory]
@@ -1340,15 +1338,13 @@ namespace NuGet.Commands.FuncTest
                 var restoreLogMessage = (RestoreLogMessage)testLogger.LogMessages.Single();
                 restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
                 restoreLogMessage.LibraryId.Should().Be("A");
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
             }
             else
             {
                 testLogger.WarningMessages.Should().BeEmpty();
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
             }
+            testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
+            testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
         }
 
         [Theory]
@@ -1406,16 +1402,14 @@ namespace NuGet.Commands.FuncTest
                 var restoreLogMessage = (RestoreLogMessage)testLogger.LogMessages.Single();
                 restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
                 restoreLogMessage.LibraryId.Should().Be("a");
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(2);
             }
             else
             {
                 testLogger.WarningMessages.Should().BeEmpty();
                 testEvent.Count.Should().Be(2);
-                testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
-                testEvent["Pruning.Pruned.Direct.Count"].Should().Be(2);
             }
+            testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
+            testEvent["Pruning.Pruned.Direct.Count"].Should().Be(2);
         }
 
         [Fact]
