@@ -458,41 +458,27 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         public async Task RestoreCommand_ProjectJsonProjectType_LogsNU1016ErrorAsync()
         {
             // Arrange
+
+            // An empty JSON object is used because only the file existing matters, not the JSON content.
             var project1Json = @"
             {
-              ""version"": ""1.0.0"",
-              ""description"": """",
-              ""authors"": [ ""author"" ],
-              ""tags"": [ """" ],
-              ""projectUrl"": """",
-              ""licenseUrl"": """",
-              ""frameworks"": {
-                ""netstandard1.3"": {
-                    ""dependencies"": {
-                    }
-                }
-              }
             }";
 
-            using var workingDir = TestDirectory.Create();
+            using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+            string projectName = "project1";
 
-            var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
-            var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
-            var projectDir = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
-            packagesDir.Create();
-            sourceDir.Create();
-            projectDir.Create();
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            Directory.CreateDirectory(projectPath);
+            var projectJsonPath = Path.Combine(projectPath, "project.json");
+            File.WriteAllText(projectJsonPath, project1Json);
 
-            File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), project1Json);
-
-            var specPath1 = Path.Combine(projectDir.FullName, "project.json");
-            var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).WithTestRestoreMetadata();
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, projectJsonPath).WithTestRestoreMetadata();
             spec1.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
 
             var logger = new TestLogger();
-            var request = new TestRestoreRequest(spec1, sources: Enumerable.Empty<PackageSource>(), packagesDirectory: packagesDir.FullName, logger)
+            var request = new TestRestoreRequest(spec1, sources: Enumerable.Empty<PackageSource>(), packagesDirectory: projectPath, logger)
             {
-                LockFilePath = Path.Combine(projectDir.FullName, "project.lock.json")
+                LockFilePath = Path.Combine(projectPath, "project.lock.json")
             };
 
             // Act
