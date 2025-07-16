@@ -25,6 +25,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.FuncTest
@@ -4135,6 +4136,35 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].ContentFiles.Should().ContainSingle(e => e.Path == "contentFiles/any/any/_._");
             result.LockFile.Targets[0].Libraries[1].RuntimeTargets.Should().ContainSingle(e => e.Path == "runtimes/any/native/_._");
             result.LockFile.Targets[0].Libraries[1].Build.Should().BeEquivalentTo([new LockFileItem("build/net45/_._")]);
+        }
+
+        [Fact]
+        public async Task Restore_WithHttpsSourceIndexJsonReturningHttpResources_LogsNU1303()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Start HTTPS mock server with index.json returning HTTP resources
+            using var server = new SelfSignedHttpsServerWithHttpResources();
+            var serverTask = server.StartServerAsync();
+
+            var httpsSource = server.URI + "v3/index.json";
+            var logger = new TestLogger();
+            pathContext.Settings.AddSource("https-feed", httpsSource, "disableTLSCertificateValidation", "true");
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            AddDependency(project1Spec, "SomePackage", "1.0.0");
+
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            server.StopServer();
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1303 && m.Message.Contains("http://"));
         }
 
         private static void CreateFakeProjectFile(PackageSpec project2spec)

@@ -45,7 +45,7 @@ namespace NuGet.Protocol
         {
             var repositorySignaturesResourceUri = serviceEntry.Uri;
 
-            if (repositorySignaturesResourceUri == null || !string.Equals(repositorySignaturesResourceUri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+            if (repositorySignaturesResourceUri == null)
             {
                 throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.RepositorySignaturesResourceMustBeHttps, source.PackageSource.Source));
             }
