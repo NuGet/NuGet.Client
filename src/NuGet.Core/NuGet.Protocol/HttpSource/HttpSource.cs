@@ -70,7 +70,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            ThrowIfInsecureUri(request.Uri);
+            ThrowIfHttpUriAndInsecureConnectionsNotAllowed(request.Uri);
 
             var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
                 HttpCacheDirectory,
@@ -512,13 +512,13 @@ namespace NuGet.Protocol
             }
         }
 
-        private void ThrowIfInsecureUri(string uri)
+        private void ThrowIfHttpUriAndInsecureConnectionsNotAllowed(string uri)
         {
             var parsedUri = new Uri(uri);
 
             if (string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
             {
-                if (_packageSource == null || (_packageSource.IsHttps && !_packageSource.AllowInsecureConnections))
+                if (_packageSource.IsHttps && !_packageSource.AllowInsecureConnections)
                 {
                     throw new HttpSourceException(
                         string.Format(

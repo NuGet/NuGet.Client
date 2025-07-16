@@ -681,10 +681,10 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    if (ContatinsHttpEndpointException(e, out HttpSourceException httpSourceException))
+                    if (ContatinsHttpSourceException(e, out HttpSourceException httpSourceException))
                     {
                         // Log the HTTP endpoint error.
-                        await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1303, ExceptionUtilities.DisplayMessage(httpSourceException)));
+                        await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302, ExceptionUtilities.DisplayMessage(httpSourceException)));
                     }
                     else
                     {
@@ -706,20 +706,20 @@ namespace NuGet.Commands
                 return logMessageException?.AsLogMessage();
             }
 
-            static bool ContatinsHttpEndpointException(Exception e, out HttpSourceException httpSourcException)
+            static bool ContatinsHttpSourceException(Exception e, out HttpSourceException httpSourceException)
             {
                 while (e != null)
                 {
                     if (e is HttpSourceException)
                     {
-                        httpSourcException = (HttpSourceException)e;
+                        httpSourceException = (HttpSourceException)e;
                         return true;
                     }
 
                     e = e.InnerException;
                 }
 
-                httpSourcException = null;
+                httpSourceException = null;
                 return false;
             }
         }

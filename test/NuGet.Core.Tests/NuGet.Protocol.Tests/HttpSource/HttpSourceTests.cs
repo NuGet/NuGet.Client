@@ -487,40 +487,36 @@ namespace NuGet.Protocol.Tests
         public async Task GetAsync_HttpUriAndFalseAllowInsecureConnections_ThrowsAnException()
         {
             // Arrange
-            using (var td = TestDirectory.Create())
-            {
-                string uri = "http://test/index.json";
-                var tc = new TestContext(td, throttle: null, uri, allowInsecureConnections: false);
+            using var td = TestDirectory.Create();
+            string uri = "http://test/index.json";
+            var tc = new TestContext(td, throttle: null, uri, allowInsecureConnections: false);
 
-                // Act & Assert
-                var exception = await Assert.ThrowsAsync<HttpSourceException>(() => tc.HttpSource.GetAsync(
-                    new HttpSourceCachedRequest(tc.Url, tc.CacheKey, tc.CacheContext),
-                    result => Task.FromResult(tc.ReadStream(result.Stream)),
-                    tc.Logger,
-                    token: CancellationToken.None));
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<HttpSourceException>(() => tc.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(tc.Url, tc.CacheKey, tc.CacheContext),
+                result => Task.FromResult(tc.ReadStream(result.Stream)),
+                tc.Logger,
+                token: CancellationToken.None));
 
-                exception.Message.Should().Contain(string.Format(Strings.Error_Insecure_HTTP, FakeSource, uri));
-            }
+            exception.Message.Should().Contain(string.Format(Strings.Error_Insecure_HTTP, FakeSource, uri));
         }
 
         [Fact]
-        public async Task GetAsync_HttpUriAndTrueAllowInsecureConnections_DoesNotThrowAnEception()
+        public async Task GetAsync_HttpUriAndTrueAllowInsecureConnections_DoesNotThrowAnException()
         {
             // Arrange
-            using (var td = TestDirectory.Create())
-            {
-                string uri = "http://test/index.json";
-                var tc = new TestContext(td, throttle: null, uri, allowInsecureConnections: true);
+            using var td = TestDirectory.Create();
+            string uri = "http://test/index.json";
+            var tc = new TestContext(td, throttle: null, uri, allowInsecureConnections: true);
 
-                // Act & Assert
-                var actual = await tc.HttpSource.GetAsync(
-                    new HttpSourceCachedRequest(tc.Url, tc.CacheKey, tc.CacheContext),
-                    result => Task.FromResult(tc.ReadStream(result.Stream)),
-                    tc.Logger,
-                    token: CancellationToken.None);
+            // Act & Assert
+            var actual = await tc.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(tc.Url, tc.CacheKey, tc.CacheContext),
+                result => Task.FromResult(tc.ReadStream(result.Stream)),
+                tc.Logger,
+                token: CancellationToken.None);
 
-                Assert.True(true, "No exception was thrown.");
-            }
+            Assert.True(true, "No exception was thrown.");
         }
 
         private class TestContext

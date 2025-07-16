@@ -4164,7 +4164,7 @@ namespace NuGet.Commands.FuncTest
             // Assert
             server.StopServer();
             result.Success.Should().BeFalse(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1303 && m.Message.Contains("http://"));
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains("http://"));
         }
 
         private static void CreateFakeProjectFile(PackageSpec project2spec)

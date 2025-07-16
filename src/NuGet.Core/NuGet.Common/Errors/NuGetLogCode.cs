@@ -242,11 +242,6 @@ namespace NuGet.Common
         NU1302 = 1302,
 
         /// <summary>
-        /// Insecure endpoint specified.
-        /// </summary>
-        NU1303 = 1303,
-
-        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,
