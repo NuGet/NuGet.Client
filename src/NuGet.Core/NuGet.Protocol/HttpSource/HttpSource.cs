@@ -217,10 +217,13 @@ namespace NuGet.Protocol
 
         internal async Task<T> ProcessHttpStreamAsync<T>(
             HttpSourceRequest request,
+            string requestUri,
             Func<HttpResponseMessage, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
+            ThrowIfHttpUriAndInsecureConnectionsNotAllowed(requestUri);
+
             return await ProcessResponseAsync(
                 request,
                 async response =>
