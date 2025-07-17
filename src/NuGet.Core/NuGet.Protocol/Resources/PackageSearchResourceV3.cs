@@ -225,7 +225,6 @@ namespace NuGet.Protocol
             return await Search(
                 (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
                     new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                    uri.AbsoluteUri,
                     s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
                     Common.NullLogger.Instance,
                     cancellationToken),
