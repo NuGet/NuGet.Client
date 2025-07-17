@@ -514,7 +514,7 @@ namespace NuGet.Protocol
 
         private void ThrowIfHttpUriAndInsecureConnectionsNotAllowed(string uri)
         {
-            /*var parsedUri = new Uri(uri);
+            var parsedUri = new Uri(uri);
 
             if (string.Equals(parsedUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
             {
@@ -527,16 +527,6 @@ namespace NuGet.Protocol
                             _sourceUri.AbsoluteUri ?? "<unknown>",
                             uri));
                 }
-            }*/
-
-            if (!uri.Contains("https://api.nuget.org/v3/index.json"))
-            {
-                throw new HttpSourceException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_Insecure_HTTP,
-                            _sourceUri.AbsoluteUri ?? "<unknown>",
-                            uri));
             }
         }
     }
