@@ -30,6 +30,12 @@ namespace NuGet.CommandLine.XPlat
             return logger;
         }
 
+        public LogLevel LogLevel
+        {
+            get => VerbosityLevel;
+            set => VerbosityLevel = value;
+        }
+
         public override void LogDebug(string data)
         {
             LogInternal(LogLevel.Debug, data);
@@ -143,7 +149,7 @@ namespace NuGet.CommandLine.XPlat
         {
             var currentColor = Console.ForegroundColor;
             Console.ForegroundColor = color;
-            Console.Write(data);
+            LogInternal(LogLevel.Minimal, data);
             Console.ForegroundColor = currentColor;
         }
     }
