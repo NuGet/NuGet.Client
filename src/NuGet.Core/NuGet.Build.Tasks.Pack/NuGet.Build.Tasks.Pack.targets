@@ -114,7 +114,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         PackageVersion="$(PackageVersion)"
         IncludeSymbols="$(IncludeSymbols)"
         IncludeSource="$(IncludeSource)"
-        SymbolPackageFormat="$(SymbolPackageFormat)">
+        SymbolPackageFormat="$(SymbolPackageFormat)"
+        OutputFileNamesWithoutVersion="$(OutputFileNamesWithoutVersion)">
 
       <Output
         TaskParameter="OutputPackItems"

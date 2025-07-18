@@ -31,6 +31,8 @@ namespace NuGet.Build.Tasks.Pack
 
         public bool IncludeSource { get; set; }
 
+        public bool OutputFileNamesWithoutVersion { get; set; }
+
         public string SymbolPackageFormat { get; set; }
 
         /// <summary>
@@ -50,9 +52,11 @@ namespace NuGet.Build.Tasks.Pack
                     PackageVersion));
             }
 
+            bool excludeVersion = OutputFileNamesWithoutVersion;
+
             var symbolPackageFormat = PackArgs.GetSymbolPackageFormat(MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat));
-            var nupkgFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat);
-            var nuspecFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat);
+            var nupkgFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: true, symbols: false, symbolPackageFormat, excludeVersion);
+            var nuspecFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: false, symbols: false, symbolPackageFormat, excludeVersion);
 
             var outputs = new List<ITaskItem>();
             outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
@@ -60,8 +64,8 @@ namespace NuGet.Build.Tasks.Pack
 
             if (IncludeSource || IncludeSymbols)
             {
-                var nupkgSymbolsFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: true, symbols: true, symbolPackageFormat: symbolPackageFormat);
-                var nuspecSymbolsFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: false, symbols: true, symbolPackageFormat: symbolPackageFormat);
+                var nupkgSymbolsFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: true, symbols: true, symbolPackageFormat, excludeVersion);
+                var nuspecSymbolsFileName = PackCommandRunner.GetOutputFileName(PackageId, version, isNupkg: false, symbols: true, symbolPackageFormat, excludeVersion);
 
                 outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgSymbolsFileName)));
                 outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecSymbolsFileName)));
