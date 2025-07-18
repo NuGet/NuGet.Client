@@ -246,7 +246,8 @@ namespace NuGet.Commands
 
                 // if success == false, it generates an empty restore graph suitable to create an assets file with errors.
                 // Since the graph is empty, any code that analyzes the graph (like audit) will have nothing to do.
-                var graphs = await GenerateRestoreGraphsAsync(telemetry, contextForProject, success, token);
+                (successfulResult, var graphs) = await GenerateRestoreGraphsAsync(telemetry, contextForProject, success, token);
+                success &= successfulResult;
 
                 bool auditRan = false;
 
@@ -557,7 +558,7 @@ namespace NuGet.Commands
             return (success, isLockFileValid, regenerateLockFile, packagesLockFilePath, packagesLockFile);
         }
 
-        private async Task<IEnumerable<RestoreTargetGraph>> GenerateRestoreGraphsAsync(TelemetryActivity telemetry, RemoteWalkContext contextForProject, bool success, CancellationToken token)
+        private async Task<(bool, IEnumerable<RestoreTargetGraph>)> GenerateRestoreGraphsAsync(TelemetryActivity telemetry, RemoteWalkContext contextForProject, bool success, CancellationToken token)
         {
             IEnumerable<RestoreTargetGraph> graphs = null;
             if (success)
@@ -577,6 +578,7 @@ namespace NuGet.Commands
                         // Restore using the legacy code path if the optimized dependency resolution is disabled.
                         (resultSuccessful, graphs) = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
                     }
+                    success &= resultSuccessful;
 
                     if (NuGetEventSource.IsEnabled)
                         TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
@@ -600,7 +602,7 @@ namespace NuGet.Commands
                 });
             }
 
-            return graphs;
+            return (success, graphs);
         }
 
         private async Task<(bool, IEnumerable<MSBuildOutputFile>, string, string, LockFile, IEnumerable<RestoreTargetGraph>, PackagesLockFile, string, CacheFile)> ProcessRestoreResultAsync(TelemetryActivity telemetry,
