@@ -189,6 +189,12 @@
                     "severity": "error"
                   }
                 ]
+              },
+              "allowInsecureConnections": {
+                "type": "boolean",
+                "title": "@Text_AllowInsecureConnections_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "default": false,
+                "helpUri": "https://aka.ms/nuget-https-everywhere"
               }
             }
           },

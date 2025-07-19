@@ -331,6 +331,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow Insecure Connections.
+        /// </summary>
+        internal static string Text_AllowInsecureConnections_Header {
+            get {
+                return ResourceManager.GetString("Text_AllowInsecureConnections_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/).
         /// </summary>
         internal static string Text_ConfigurationFiles_CommonLink {
