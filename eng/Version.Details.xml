@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <Source Uri="https://github.com/dotnet/dotnet" Mapping="nuget-client" Sha="924987cbe3d35c1dcf6d1de2d50c7f87ef627a78" BarId="275056" />
+  <Source Uri="https://github.com/dotnet/dotnet" Mapping="nuget-client" Sha="1c92f346e02a8363def6f7bdbcc526d3c579dd74" BarId="275898" />
   <!--
     Currently this file is required to publish builds to .NET build asset registry.
     See https://github.com/dotnet/arcade/issues/2396 for details.
@@ -52,9 +52,9 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25363.103">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25368.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>924987cbe3d35c1dcf6d1de2d50c7f87ef627a78</Sha>
+      <Sha>1c92f346e02a8363def6f7bdbcc526d3c579dd74</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
