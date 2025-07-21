@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -102,7 +103,9 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            var virtualProjectTextFile = GetVirtualProjectTextFileFunction(entryProjectFilePath, options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance, virtualProjectTextFile);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -188,7 +191,9 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            var virtualProjectTextFile = GetVirtualProjectTextFileFunction(entryProjectFilePath, options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance, virtualProjectTextFile);
 
             try
             {
@@ -213,6 +218,19 @@ namespace NuGet.Build.Tasks.Console
                 LogErrorFromException(e);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Creates a function mapping from a project path to a file path containing the virtual project's XML text (or <see langword="null"/> if the project is not virtual). See <see cref="StaticGraphRestoreTaskBase.ProjectTextFile"/>.
+        /// </summary>
+        private static Func<string, string> GetVirtualProjectTextFileFunction(string entryProjectFilePath, IReadOnlyDictionary<string, string> options)
+        {
+            if (options.TryGetValue(nameof(StaticGraphRestoreTaskBase.ProjectTextFile), out string textFile))
+            {
+                return (path) => path == entryProjectFilePath ? textFile : null;
+            }
+
+            return _ => null;
         }
 
         /// <summary>
@@ -764,8 +782,15 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="entryProjectPath">The full path to a project or Visual Studio Solution File.</param>
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
+        /// <param name="virtualProjectTextFile">See <see cref="GetVirtualProjectTextFileFunction"/>.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
+        private DependencyGraphSpec GetDependencyGraphSpec(
+            string entryProjectPath,
+            IDictionary<string, string> globalProperties,
+            bool interactive,
+            string binaryLoggerParameters,
+            IEnvironmentVariableReader environmentVariableReader,
+            Func<string, string> virtualProjectTextFile)
         {
             string envVar = environmentVariableReader.GetEnvironmentVariable("NUGET_USE_NEW_PACKAGESPEC_FACTORY");
             if (!string.Equals(envVar, bool.FalseString, StringComparison.OrdinalIgnoreCase))
@@ -798,7 +823,8 @@ namespace NuGet.Build.Tasks.Console
 
                         var packageSpec = PackageSpecFactory.GetPackageSpec(project, settings);
                         return packageSpec;
-                    });
+                    },
+                    virtualProjectTextFile);
             }
             else
             {
@@ -817,7 +843,8 @@ namespace NuGet.Build.Tasks.Console
                     {
                         var packageSpec = GetPackageSpec(project.OuterProject, project);
                         return packageSpec;
-                    });
+                    },
+                    virtualProjectTextFile);
             }
         }
 
@@ -829,7 +856,8 @@ namespace NuGet.Build.Tasks.Console
             Func<string, (ProjectInstance, string), TProject> createProjectFactory,
             Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
             Action<TProject> projectFinalizeDelegate,
-            Func<TProject, PackageSpec> getPackageSpec)
+            Func<TProject, PackageSpec> getPackageSpec,
+            Func<string, string> virtualProjectTextFile)
         {
             try
             {
@@ -838,7 +866,7 @@ namespace NuGet.Build.Tasks.Console
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
-                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters, createProjectFactory, updateProjectFactory, projectFinalizeDelegate);
+                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters, createProjectFactory, updateProjectFactory, projectFinalizeDelegate, virtualProjectTextFile);
 
                 // If no projects were loaded, return an empty DependencyGraphSpec
                 if (projects == null || projects.Count == 0)
@@ -1090,6 +1118,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="createProjectFactory">A factory method that creates a project adapter from an MSBuild ProjectInstance.</param>
         /// <param name="updateProjectFactory">A factory method that updates a project adapter with a target framework and MSBuild ProjectInstance.</param>
         /// <param name="projectFinalizeDelegate">An option delegate to finalize a project adapter once all projects have been evaluated.</param>
+        /// <param name="virtualProjectTextFile">See <see cref="GetVirtualProjectTextFileFunction"/>.</param>
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
         private ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
             IEnumerable<ProjectGraphEntryPoint> entryProjects,
@@ -1097,7 +1126,8 @@ namespace NuGet.Build.Tasks.Console
             string binaryLoggerParameters,
             Func<string, (ProjectInstance, string), TProject> createProjectFactory,
             Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
-            Action<TProject> projectFinalizeDelegate)
+            Action<TProject> projectFinalizeDelegate,
+            Func<string, string> virtualProjectTextFile)
         {
             try
             {
@@ -1151,6 +1181,15 @@ namespace NuGet.Build.Tasks.Console
                         LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
                         ProjectCollection = collection
                     };
+
+                    if (virtualProjectTextFile(path) is { } textFile)
+                    {
+                        using var textReader = File.OpenText(textFile);
+                        using var xmlReader = XmlReader.Create(textReader);
+                        var root = ProjectRootElement.Create(xmlReader, collection);
+                        root.FullPath = path;
+                        return ProjectInstance.FromProjectRootElement(root, projectOptions);
+                    }
 
                     return ProjectInstance.FromFile(path, projectOptions);
                 });

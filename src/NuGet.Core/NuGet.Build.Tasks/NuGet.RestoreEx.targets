@@ -28,6 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         NoCache="$(RestoreNoCache)"
         NoHttpCache="$(RestoreNoHttpCache)"
         ProjectFullPath="$(MSBuildProjectFullPath)"
+        ProjectTextFile="$(ProjectTextFile)"
         Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"
         RestorePackagesConfig="$(RestorePackagesConfig)"
         SolutionPath="$(SolutionPath)"

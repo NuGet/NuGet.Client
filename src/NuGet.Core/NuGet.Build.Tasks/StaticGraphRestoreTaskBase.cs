@@ -66,6 +66,12 @@ namespace NuGet.Build.Tasks
         public string ProjectFullPath { get; set; }
 
         /// <summary>
+        /// Path to a file containing XML text content of the project file. If set, the project won't be read from <see cref="ProjectFullPath"/>,
+        /// but instead created only in memory from this text (but with its full path still set to <see cref="ProjectFullPath"/>).
+        /// </summary>
+        public string ProjectTextFile { get; set; }
+
+        /// <summary>
         /// Get or sets a value indicating whether or not the restore should restore all projects or just the entry project.
         /// </summary>
         public bool Recursive { get; set; }
@@ -365,10 +371,17 @@ namespace NuGet.Build.Tasks
 
         protected virtual Dictionary<string, string> GetOptions()
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 [nameof(Recursive)] = Recursive.ToString()
             };
+
+            if (!string.IsNullOrEmpty(ProjectTextFile))
+            {
+                options[nameof(ProjectTextFile)] = ProjectTextFile;
+            }
+
+            return options;
         }
 
         /// <summary>
