@@ -139,6 +139,7 @@ namespace NuGet.Commands
         // PackagePruning names
         private const string PackagePruningFrameworksEnabledCount = "Pruning.FrameworksEnabled.Count";
         private const string PackagePruningFrameworksDisabledCount = "Pruning.FrameworksDisabled.Count";
+        private const string PackagePruningFrameworksDefaultDisabledCount = "Pruning.FrameworksDefaultDisabled.Count";
         private const string PackagePruningFrameworksUnsupportedCount = "Pruning.FrameworksUnsupported.Count";
         private const string PackagePruningRemovablePackagesCount = "Pruning.RemovablePackages.Count";
         private const string PackagePruningDirectCount = "Pruning.Pruned.Direct.Count";
@@ -394,14 +395,16 @@ namespace NuGet.Commands
         {
             int pruningEnabledCount = 0;
             int pruningDisabledCount = 0;
+            int pruningDefaultDisabledCount = 0;
             int pruningNotApplicableCount = 0;
 
             foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
             {
                 bool isPruningEnabled = framework.PackagesToPrune.Count > 0;
-                bool isFrameworkPruningEnabledByDefault =
-                    StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp) ||
-                    (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) && framework.FrameworkName.Version.Major >= 2);
+                bool isPruningCompatibleNSFramework = StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) && framework.FrameworkName.Version.Major >= 2;
+                bool isNetCoreAppFramework = StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                bool isNetCoreAppFrameworkWithPruningByDefault = isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 8;
+                bool isFrameworkPruningEnabledByDefault = isNetCoreAppFrameworkWithPruningByDefault || isPruningCompatibleNSFramework;
 
                 if (isPruningEnabled)
                 {
@@ -413,6 +416,10 @@ namespace NuGet.Commands
                     {
                         pruningDisabledCount++;
                     }
+                    else if (isNetCoreAppFramework && !isNetCoreAppFrameworkWithPruningByDefault)
+                    {
+                        pruningDefaultDisabledCount++;
+                    }
                     else
                     {
                         pruningNotApplicableCount++;
@@ -421,6 +428,7 @@ namespace NuGet.Commands
             }
             telemetryEvent[PackagePruningFrameworksEnabledCount] = pruningEnabledCount;
             telemetryEvent[PackagePruningFrameworksDisabledCount] = pruningDisabledCount;
+            telemetryEvent[PackagePruningFrameworksDefaultDisabledCount] = pruningDefaultDisabledCount;
             telemetryEvent[PackagePruningFrameworksUnsupportedCount] = pruningNotApplicableCount;
         }
 
