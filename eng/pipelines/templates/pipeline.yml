@@ -188,7 +188,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
-        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true')))"
+        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeeded(), eq(variables['IsOfficialBuild'], 'true')))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
@@ -336,7 +336,7 @@ stages:
         displayName: 'Upload source-build log'
         condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         targetPath: "artifacts/sb/log/source-inner-build.binlog"
-        artifactName: "Source-build log"
+        artifactName: "Source-build log - Attempt $(System.JobAttempt)"
         sbomEnabled: false
     steps:
     - template: /eng/pipelines/templates/Source_Build.yml@self
@@ -368,7 +368,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -408,7 +408,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -447,7 +447,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -476,7 +476,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -513,7 +513,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
