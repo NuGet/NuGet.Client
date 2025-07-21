@@ -26,7 +26,6 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
     {
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
         private readonly string _invalidCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
-        private const string Sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
         private const string Sha256Hash = "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b55b046cbb7f506fb";
 
         private readonly TrustedTestCert<TestCertificate> _trustedTestCertWithPrivateKey;
@@ -60,7 +59,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = Path.Combine(dir, "non-existant-cert.pfx"),
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                 };
                 signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
@@ -87,7 +86,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = "random nonexistant csp name",
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                 };
                 signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
@@ -114,7 +113,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = "invalid-key-container",
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                 };
                 signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
@@ -124,10 +123,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
-        [InlineData(Sha1Hash)]
-        [InlineData(Sha256Hash)]
-        public void GetAuthorSignRequest_InvalidFingerprint(string certificateFingerPrint)
+        [CIOnlyFact]
+        public void GetAuthorSignRequest_InvalidFingerprint()
         {
             var mockConsole = new Mock<IConsole>();
             var timestampUri = "http://timestamp.test/url";
@@ -143,7 +140,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = certificateFingerPrint,
+                    CertificateFingerprint = Sha256Hash,
                 };
                 signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
@@ -163,6 +160,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var dir = TestDirectory.Create())
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
+                var actualCertFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+
                 var signCommand = new MSSignCommand
                 {
                     Console = mockConsole.Object,
@@ -170,7 +169,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = actualCertFingerprint,
                 };
                 signCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
 
@@ -180,7 +179,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                 // Assert
                 Assert.Equal(SignatureType.Author, signRequest.SignatureType);
                 Assert.NotNull(signRequest.Certificate);
-                Assert.Equal(signRequest.Certificate.Thumbprint, test.Cert.Thumbprint, StringComparer.Ordinal);
+                string expectedCertFingerprint = SignatureTestUtility.GetFingerprint(signRequest.Certificate, Common.HashAlgorithmName.SHA256);
+                Assert.Equal(expectedCertFingerprint, actualCertFingerprint, StringComparer.Ordinal);
                 Assert.NotNull(signRequest.PrivateKey);
             }
         }
@@ -193,8 +193,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             // Arrange
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
+                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -215,8 +216,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             // Arrange
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"mssign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
+                var command = $"mssign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -236,8 +238,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             // Arrange
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
+                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -266,9 +269,10 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             // Arrange
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
-                var commandWithOverwrite = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -Overwrite";
+                var command = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
+                var commandWithOverwrite = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -Overwrite";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -289,12 +293,12 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task MSSignCommand_SignPackageWithSHA1CertificateFingerprint_Raises_WarningAsync()
+        public async Task MSSignCommand_SignPackageWithSHA1CertificateFingerprint_RaisesExceptionAsync()
         {
             var result = await ExecuteMSSignCommandAsync(Common.HashAlgorithmName.SHA1);
 
-            result.Success.Should().BeTrue(because: result.AllOutput);
-            result.AllOutput.Should().Contain(_invalidCertificateFingerprintCode);
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            result.Errors.Should().Contain(_invalidCertificateFingerprintCode);
         }
 
         [CIOnlyTheory]

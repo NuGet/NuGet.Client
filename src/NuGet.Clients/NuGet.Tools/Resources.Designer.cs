@@ -106,6 +106,24 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A package pattern must be provided..
+        /// </summary>
+        internal static string Error_PackageSourceMappingPattern_Missing {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceMappingPattern_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At least one source must be selected..
+        /// </summary>
+        internal static string Error_PackageSourceMappingSource_Missing {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceMappingSource_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A name must be provided..
         /// </summary>
         internal static string Error_PackageSourceName_Missing {

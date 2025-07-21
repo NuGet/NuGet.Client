@@ -136,6 +136,13 @@ namespace NuGet.Commands
         private const string AuditSuppressedAdvisoriesTotalPackageDownloadWarningsSuppressedCount = "Audit.Vulnerability.PackageDownloads.TotalWarningsSuppressed.Count";
         private const string AuditSuppressedAdvisoriesDistinctPackageDownloadAdvisoriesSuppressedCount = "Audit.Vulnerability.PackageDownload.DistinctAdvisoriesSuppressed.Count";
 
+        // PackagePruning names
+        private const string PackagePruningFrameworksEnabledCount = "Pruning.FrameworksEnabled.Count";
+        private const string PackagePruningFrameworksDisabledCount = "Pruning.FrameworksDisabled.Count";
+        private const string PackagePruningFrameworksUnsupportedCount = "Pruning.FrameworksUnsupported.Count";
+        private const string PackagePruningRemovablePackagesCount = "Pruning.RemovablePackages.Count";
+        private const string PackagePruningDirectCount = "Pruning.Pruned.Direct.Count";
+
         internal readonly bool _enableNewDependencyResolver;
         private readonly bool _isLockFileEnabled;
 
@@ -235,7 +242,7 @@ namespace NuGet.Commands
                     packagesLockFile,
                     token);
 
-                AnalyzePruningResults(_request.Project, _logger);
+                AnalyzePruningResults(_request.Project, telemetry.TelemetryEvent, _logger);
 
                 var graphs = await GenerateRestoreGraphsAsync(telemetry, contextForProject, token);
 
@@ -339,6 +346,7 @@ namespace NuGet.Commands
         {
             var success = true;
 
+            success &= EnsureNotDeprecatedProjectJsonProjectType();
             success &= AreCentralVersionRequirementsSatisfied(_request, httpSourcesCount);
             success &= EvaluateHttpSourceUsage();
             success &= HasValidPlatformVersions();
@@ -378,6 +386,42 @@ namespace NuGet.Commands
             }
 
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+
+            PopulatePruningEnabledTelemetry(_request.Project, telemetry.TelemetryEvent);
+        }
+
+        internal static void PopulatePruningEnabledTelemetry(PackageSpec project, TelemetryEvent telemetryEvent)
+        {
+            int pruningEnabledCount = 0;
+            int pruningDisabledCount = 0;
+            int pruningNotApplicableCount = 0;
+
+            foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
+            {
+                bool isPruningEnabled = framework.PackagesToPrune.Count > 0;
+                bool isFrameworkPruningEnabledByDefault =
+                    StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp) ||
+                    (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) && framework.FrameworkName.Version.Major >= 2);
+
+                if (isPruningEnabled)
+                {
+                    pruningEnabledCount++;
+                }
+                else
+                {
+                    if (isFrameworkPruningEnabledByDefault)
+                    {
+                        pruningDisabledCount++;
+                    }
+                    else
+                    {
+                        pruningNotApplicableCount++;
+                    }
+                }
+            }
+            telemetryEvent[PackagePruningFrameworksEnabledCount] = pruningEnabledCount;
+            telemetryEvent[PackagePruningFrameworksDisabledCount] = pruningDisabledCount;
+            telemetryEvent[PackagePruningFrameworksUnsupportedCount] = pruningNotApplicableCount;
         }
 
         private async Task<(RestoreResult, bool, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)
@@ -768,7 +812,7 @@ namespace NuGet.Commands
             }
         }
 
-        internal static void AnalyzePruningResults(PackageSpec project, ILogger logger)
+        internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)
         {
             bool enablePruningWarnings =
                 SdkAnalysisLevelMinimums.IsEnabled(
@@ -777,17 +821,11 @@ namespace NuGet.Commands
                     SdkAnalysisLevelMinimums.V10_0_100) &&
                 HasFrameworkNewerThanNET10(project);
 
-            if (!enablePruningWarnings)
-            {
-                return;
-            }
-
             Dictionary<string, List<string>> prunedDirectPackages = GetPrunableDirectPackages(project);
 
-            if (prunedDirectPackages != null)
-            {
-                RaiseNU1510WarningsIfNeeded(project, logger, prunedDirectPackages);
-            }
+            telemetryEvent[PackagePruningDirectCount] = prunedDirectPackages?.Count ?? 0;
+
+            RaiseNU1510WarningsIfNeeded(project, logger, enablePruningWarnings, prunedDirectPackages, telemetryEvent);
 
             static Dictionary<string, List<string>> GetPrunableDirectPackages(PackageSpec project)
             {
@@ -820,39 +858,48 @@ namespace NuGet.Commands
                 return prunedDirectPackages;
             }
 
-            static void RaiseNU1510WarningsIfNeeded(PackageSpec project, ILogger logger, Dictionary<string, List<string>> prunedDirectPackages)
+            static void RaiseNU1510WarningsIfNeeded(PackageSpec project, ILogger logger, bool enablePruningWarnings, Dictionary<string, List<string>> prunedDirectPackages, TelemetryEvent telemetry)
             {
                 Dictionary<string, string> aliasToTargetGraphName = null;
-                foreach (var prunedPackage in prunedDirectPackages)
+                int removablePackagesCount = 0;
+                if (prunedDirectPackages != null)
                 {
-                    // Do not warn if the package exists in any framework.
-                    if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
+                    foreach (var prunedPackage in prunedDirectPackages)
                     {
-                        bool doesPackageRemain = false;
-                        foreach (var framework in project.TargetFrameworks)
+                        // Do not warn if the package exists in any framework.
+                        if (prunedPackage.Value.Count != project.TargetFrameworks.Count)
                         {
-                            if (!prunedPackage.Value.Contains(framework.TargetAlias))
+                            bool doesPackageRemain = false;
+                            foreach (var framework in project.TargetFrameworks)
                             {
-                                if (ContainsPackage(prunedPackage, framework))
+                                if (!prunedPackage.Value.Contains(framework.TargetAlias))
                                 {
-                                    doesPackageRemain = true;
-                                    break;
+                                    if (ContainsPackage(prunedPackage, framework))
+                                    {
+                                        doesPackageRemain = true;
+                                        break;
+                                    }
                                 }
                             }
+                            if (doesPackageRemain)
+                            {
+                                continue;
+                            }
                         }
-                        if (doesPackageRemain)
+
+                        removablePackagesCount++;
+                        if (enablePruningWarnings)
                         {
-                            continue;
+                            aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
+                            logger.Log(RestoreLogMessage.CreateWarning(
+                                NuGetLogCode.NU1510,
+                                string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
+                                prunedPackage.Key,
+                                prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
                         }
                     }
-
-                    aliasToTargetGraphName ??= InitializeAliasToTargetGraphName(project);
-                    logger.Log(RestoreLogMessage.CreateWarning(
-                        NuGetLogCode.NU1510,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, prunedPackage.Key),
-                        prunedPackage.Key,
-                        prunedPackage.Value.Select(e => aliasToTargetGraphName[e]).ToArray()));
                 }
+                telemetry[PackagePruningRemovablePackagesCount] = removablePackagesCount;
             }
 
             static bool HasFrameworkNewerThanNET10(PackageSpec project)
@@ -1101,6 +1148,20 @@ namespace NuGet.Commands
             return result;
         }
 
+        private bool EnsureNotDeprecatedProjectJsonProjectType()
+        {
+            if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
+            {
+                _logger.Log(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1016,
+                        Strings.Error_ProjectJson_Deprecated));
+
+                return false;
+            }
+
+            return true;
+        }
         private string ConcatAsString<T>(IEnumerable<T> enumerable)
         {
             string result = null;

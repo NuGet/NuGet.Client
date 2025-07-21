@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using NuGet.ProjectManagement;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete]
     internal static class ProjectRestoreInfo3Adapter
     {
         public static IVsProjectRestoreInfo3 Create(IVsProjectRestoreInfo projectRestoreInfo)
@@ -50,7 +51,9 @@ namespace NuGet.SolutionRestoreManager
             };
         }
 
+#pragma warning disable CS0436 // Type conflicts with imported type
         [return: NotNullIfNotNull(nameof(references))]
+#pragma warning restore CS0436 // Type conflicts with imported type
         private static IReadOnlyList<IVsReferenceItem2>? ToReferenceItemList(IVsReferenceItems? references)
         {
             if (references is null) { return null; }

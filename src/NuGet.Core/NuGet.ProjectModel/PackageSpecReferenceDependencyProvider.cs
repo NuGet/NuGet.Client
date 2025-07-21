@@ -392,12 +392,28 @@ namespace NuGet.ProjectModel
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.
                     var dependency = dependencies[i];
+                    bool isPruned = IsDependencyPruned(dependency, targetFrameworkInfo.PackagesToPrune);
                     var libraryRange = new LibraryRange(dependency.LibraryRange) { TypeConstraint = dependency.LibraryRange.TypeConstraint & ~LibraryDependencyTarget.Project };
-                    dependencies[i] = new LibraryDependency(dependency) { LibraryRange = libraryRange };
+                    dependencies[i] = new LibraryDependency(dependency)
+                    {
+                        LibraryRange = libraryRange,
+                        SuppressParent = isPruned ? LibraryIncludeFlags.All : dependency.SuppressParent,
+                        IncludeType = isPruned ? LibraryIncludeFlags.None : dependency.IncludeType,
+                    };
                 }
             }
 
             return dependencies;
+
+            static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
+            {
+                if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
+                    && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         private bool IsProject(LibraryDependency dependency)

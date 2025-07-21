@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsTargetFrameworks2 : VsItemList<IVsTargetFrameworkInfo2>, IVsTargetFrameworks2
     {
         public VsTargetFrameworks2() : base() { }

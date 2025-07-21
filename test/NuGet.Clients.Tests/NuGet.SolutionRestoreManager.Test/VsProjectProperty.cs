@@ -7,6 +7,7 @@ using System.Diagnostics;
 namespace NuGet.SolutionRestoreManager.Test
 {
     [DebuggerDisplay("{Name} = {Value}")]
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsProjectProperty : IVsProjectProperty
     {
         public string Name { get; }

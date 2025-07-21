@@ -14,4 +14,8 @@
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
     <PackageReference Include="Microsoft.Build.Framework" NoWarn="NU1605" />
   </ItemGroup>
+
+  <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
+  </ItemGroup>
 </Project>

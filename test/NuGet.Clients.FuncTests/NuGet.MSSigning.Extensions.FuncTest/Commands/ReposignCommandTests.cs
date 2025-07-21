@@ -26,7 +26,6 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
     {
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
         private readonly string _invalidCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
-        private const string Sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
         private const string Sha256Hash = "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b55b046cbb7f506fb";
 
         private readonly TrustedTestCert<TestCertificate> _trustedTestCertWithPrivateKey;
@@ -61,7 +60,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = Path.Combine(dir, "non-existant-cert.pfx"),
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
                 reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
@@ -90,7 +89,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = "random nonexistant csp name",
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
                 reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
@@ -119,7 +118,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = "invalid-key-container",
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
                 reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
@@ -131,7 +130,6 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         }
 
         [CIOnlyTheory]
-        [InlineData(Sha1Hash)]
         [InlineData(Sha256Hash)]
         public void GetRepositorySignRequest_InvalidFingerprint(string certificateFingerPrint)
         {
@@ -179,7 +177,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = test.Cert.Thumbprint,
+                    CertificateFingerprint = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256),
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
                 reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
@@ -205,7 +203,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var command = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -227,7 +226,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"reposign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var command = $"reposign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -248,7 +248,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var command = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var command = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -278,8 +279,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var authorSignCommand = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
-                var repoSignCommand = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var authorSignCommand = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
+                var repoSignCommand = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -309,8 +311,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var authorSignCommand = $"mssign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
-                var repoSignCommand = $"reposign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var authorSignCommand = $"mssign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
+                var repoSignCommand = $"reposign {unsignedPackageFile} -Timestamper {timestampService.Url} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -339,8 +342,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             using (var test = new MSSignCommandTestContext(_trustedTestCertWithPrivateKey.TrustedCert))
             {
                 var unsignedPackageFile = await package.CreateAsFileAsync(test.Directory, Guid.NewGuid().ToString());
-                var authorSignCommand = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint}";
-                var repoSignCommand = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {test.Cert.Thumbprint} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
+                string certSha256Hash = SignatureTestUtility.GetFingerprint(test.Cert, Common.HashAlgorithmName.SHA256);
+                var authorSignCommand = $"mssign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash}";
+                var repoSignCommand = $"reposign {unsignedPackageFile} -CertificateFile {test.CertificatePath} -CSPName \"{test.CertificateCSPName}\" -KeyContainer \"{test.CertificateKeyContainer}\" -CertificateFingerprint {certSha256Hash} -V3ServiceIndexUrl https://v3serviceIndex.test/api/index.json";
 
                 var result = CommandRunner.Run(
                     _nugetExePath,
@@ -370,12 +374,12 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task RepoSignCommand_SignPackageWithSHA1CertificateFingerprint_Raises_WarningAsync()
+        public async Task RepoSignCommand_SignPackageWithSHA1CertificateFingerprint_RaisesExceptionAsync()
         {
             var result = await ExecuteRepoSignCommandAsync(Common.HashAlgorithmName.SHA1);
 
-            result.Success.Should().BeTrue(because: result.AllOutput);
-            result.AllOutput.Should().Contain(_invalidCertificateFingerprintCode);
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            result.Errors.Should().Contain(_invalidCertificateFingerprintCode);
         }
 
         [CIOnlyTheory]

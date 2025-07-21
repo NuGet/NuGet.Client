@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Obsolete("Need to update to IVsProjectRestoreInfo3")]
     internal class VsTargetFrameworkInfo2 : IVsTargetFrameworkInfo2
     {
         public IVsReferenceItems PackageReferences { get; }
