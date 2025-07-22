@@ -1194,7 +1194,6 @@ namespace NuGet.PackageManagement
                     // BUG #1181 VS2015 : Updating from one feed fails for packages from different feed.
 
                     var packagesFolderResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>(token);
-                    var packages = new List<SourcePackageDependencyInfo>();
                     foreach (var installedPackage in projectInstalledPackageReferences)
                     {
                         var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, resolutionContext.SourceCacheContext, log, token);
@@ -3077,12 +3076,6 @@ namespace NuGet.PackageManagement
                 var originalLockFile = lockFileLookup[buildIntegratedProject.MSBuildProjectPath];
                 var sources = nuGetProjectSourceLookup[buildIntegratedProject.MSBuildProjectPath];
 
-                var allFrameworks = updatedPackageSpec
-                    .TargetFrameworks
-                    .Select(t => t.FrameworkName)
-                    .Distinct()
-                    .ToList();
-
                 var restoreResult = restoreResults.Single(r =>
                     string.Equals(
                         r.SummaryRequest.Request.Project.RestoreMetadata.ProjectPath,
@@ -3828,8 +3821,6 @@ namespace NuGet.PackageManagement
             Common.ILogger log,
             CancellationToken token)
         {
-            var tasks = new List<Task<NuGetVersion>>();
-
             NuGetFramework framework;
             if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
             {
