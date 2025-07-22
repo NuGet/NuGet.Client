@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -419,7 +420,6 @@ namespace NuGet.SolutionRestoreManager.Test
     }
 }", "", "net5.0-windows")]
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
-
         public async Task NominateProjectAsync_WithoutOriginalTargetFrameworks_SetOriginalTargetFrameworksToAlias(
             string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks)
         {
@@ -593,7 +593,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(@"C:\packagesPath", @"..\source1;..\source2", @"C:\fallback1;C:\fallback2", true)]
         [InlineData(null, null, null, true)]
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
-        public async Task NominateProjectAsync_RestoreSettings(string restorePackagesPath, string restoreSources, string fallbackFolders, bool isV2Nominate)
+        public async Task NominateProjectAsync_RestoreSettings(string? restorePackagesPath, string? restoreSources, string? fallbackFolders, bool isV2Nominate)
         {
             var cps = NewCpsProject("{ }");
             var projectFullPath = cps.ProjectFullPath;
@@ -632,7 +632,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.NotNull(actualProjectSpec);
             Assert.Equal(restorePackagesPath, actualProjectSpec.RestoreMetadata.PackagesPath);
 
-            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var specSources = actualProjectSpec.RestoreMetadata.Sources!.Select(e => e.Source);
             var expectedSources = MSBuildStringUtility.Split(restoreSources);
             Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
 
@@ -685,7 +685,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.NotNull(actualProjectSpec);
             Assert.Equal(restorePackagesPath, actualProjectSpec.RestoreMetadata.PackagesPath);
 
-            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var specSources = actualProjectSpec.RestoreMetadata.Sources!.Select(e => e.Source);
             var expectedSources = MSBuildStringUtility.Split(restoreSources).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ? new string[] { "Clear" } : MSBuildStringUtility.Split(restoreSources);
             Assert.True(Enumerable.SequenceEqual(expectedSources.OrderBy(t => t), specSources.OrderBy(t => t)));
 
@@ -1163,7 +1163,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\fallback1;Clear", @"C:\additionalFallback1", true)]
         [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1", true)]
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
-        public async Task NominateProjectAsync_WithRestoreAdditionalSourcesAndFallbackFolders(string restoreSources, string restoreAdditionalProjectSources, string restoreFallbackFolders, string restoreAdditionalFallbackFolders, bool isV2Nominate)
+        public async Task NominateProjectAsync_WithRestoreAdditionalSourcesAndFallbackFolders(string? restoreSources, string? restoreAdditionalProjectSources, string? restoreFallbackFolders, string? restoreAdditionalFallbackFolders, bool isV2Nominate)
         {
             var vstfms = isV2Nominate ?
                 (IVsTargetFrameworkInfo)
@@ -1204,7 +1204,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
 
-            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var specSources = actualProjectSpec.RestoreMetadata.Sources.Select(e => e.Source);
 
             var expectedSources =
                 (MSBuildStringUtility.Split(restoreSources).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ?
@@ -1315,9 +1315,9 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("false", null, "false", true)]
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         public async Task NominateProjectAsync_LockFileSettings(
-            string restorePackagesWithLockFile,
-            string lockFilePath,
-            string restoreLockedMode,
+            string? restorePackagesWithLockFile,
+            string? lockFilePath,
+            string? restoreLockedMode,
             bool isV2Nominate)
         {
             var vstfms = isV2Nominate ?
@@ -2093,7 +2093,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.0.0", "false")]
         [InlineData(null, null)]
         [InlineData("1.0.0", "")]
-        public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string packRefVersion, string managePackageVersionsCentrally)
+        public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string? packRefVersion, string? managePackageVersionsCentrally)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
@@ -2130,7 +2130,9 @@ namespace NuGet.SolutionRestoreManager.Test
             var expectedPackageReferenceVersion = packRefVersion == null ? "(, )" : "[1.0.0, )";
             Assert.Equal(0, tfm.CentralPackageVersions.Count);
             Assert.Equal(1, tfm.Dependencies.Length);
-            Assert.Equal(expectedPackageReferenceVersion, tfm.Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            VersionRange? libraryRangeVersionRange = tfm.Dependencies.First().LibraryRange.VersionRange;
+            Assert.NotNull(libraryRangeVersionRange);
+            Assert.Equal(expectedPackageReferenceVersion, libraryRangeVersionRange.ToNormalizedString());
             Assert.False(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
@@ -2142,7 +2144,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("invalid", true)]
         [InlineData("false", false)]
         [InlineData("           false    ", false)]
-        public void ToPackageSpec_CentralVersionOverride_CanBeDisabled(string isCentralPackageVersionOverrideEnabled, bool expected)
+        public void ToPackageSpec_CentralVersionOverride_CanBeDisabled(string? isCentralPackageVersionOverrideEnabled, bool expected)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
@@ -2181,7 +2183,9 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("foo", packageVersion.Key);
             Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
             LibraryDependency packageReference = Assert.Single(tfm.Dependencies);
-            Assert.Equal("[2.0.0, )", packageReference.LibraryRange.VersionRange.ToNormalizedString());
+            VersionRange? versionRange = packageReference.LibraryRange.VersionRange;
+            Assert.NotNull(versionRange);
+            Assert.Equal("[2.0.0, )", versionRange.ToNormalizedString());
 
             if (expected)
             {
@@ -2201,7 +2205,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("false", false)]
         [InlineData("true", true)]
         [InlineData("           true    ", true)]
-        public void ToPackageSpec_TransitiveDependencyPinning_CanBeEnabled(string CentralPackageTransitivePinningEnabled, bool expected)
+        public void ToPackageSpec_TransitiveDependencyPinning_CanBeEnabled(string? CentralPackageTransitivePinningEnabled, bool expected)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
@@ -2248,7 +2252,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("false", false)]
         [InlineData("true", true)]
         [InlineData("           true    ", true)]
-        public void ToPackageSpec_CentralPackageFloatingVersions_CanBeEnabled(string centralPackageFloatingVersionsEnabled, bool expected)
+        public void ToPackageSpec_CentralPackageFloatingVersions_CanBeEnabled(string? centralPackageFloatingVersionsEnabled, bool expected)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
@@ -2440,7 +2444,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 var comparer = NuGetFrameworkFullComparer.Instance;
                 comparer.Equals(targetFrameworkInfo.FrameworkName, managedFramework).Should().BeTrue();
                 targetFrameworkInfo.FrameworkName.Should().BeOfType<DualCompatibilityFramework>();
-                var dualCompatibilityFramework = targetFrameworkInfo.FrameworkName as DualCompatibilityFramework;
+                var dualCompatibilityFramework = (DualCompatibilityFramework)targetFrameworkInfo.FrameworkName;
                 dualCompatibilityFramework.RootFramework.Should().Be(managedFramework);
                 dualCompatibilityFramework.SecondaryFramework.Should().Be(CommonFrameworks.Native);
             }
@@ -2552,6 +2556,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Assert
             RestoreAuditProperties auditProperties = actual.RestoreMetadata.RestoreAuditProperties;
+            Assert.NotNull(auditProperties.SuppressedAdvisories);
             string actualUrl = Assert.Single(auditProperties.SuppressedAdvisories);
             actualUrl.Should().Be(cveUrl);
         }
@@ -2826,7 +2831,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new VsTargetFrameworkInfo4(
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
-                    [ProjectItems.PrunePackageReference] = [ new VsReferenceItem2("PackageA", new Dictionary<string, string> { {"Version", null}}) ]
+                    [ProjectItems.PrunePackageReference] = [ new VsReferenceItem2("PackageA", new Dictionary<string, string?> { {"Version", null}}) ]
                 },
                 properties: new Dictionary<string, string>()
                 {
@@ -2874,9 +2879,9 @@ namespace NuGet.SolutionRestoreManager.Test
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath,
             IVsProjectRestoreInfo pri,
-            Mock<IProjectSystemCache> cache = null)
+            Mock<IProjectSystemCache>? cache = null)
         {
-            DependencyGraphSpec capturedRestoreSpec = null;
+            DependencyGraphSpec? capturedRestoreSpec = null;
 
             if (cache == null)
             {
@@ -2896,6 +2901,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var result = await NominateProjectAsync(projectFullPath, pri, CancellationToken.None, cache: cache);
 
             Assert.True(result, "Project restore nomination should succeed.");
+            Assert.NotNull(capturedRestoreSpec);
 
             return capturedRestoreSpec;
         }
@@ -2904,9 +2910,9 @@ namespace NuGet.SolutionRestoreManager.Test
         private async Task<IReadOnlyList<IAssetsLogMessage>> CaptureAdditionalMessagesAsync(
             string projectFullPath,
             IVsProjectRestoreInfo2 pri,
-            Mock<ISolutionRestoreWorker> restoreWorker = null)
+            Mock<ISolutionRestoreWorker>? restoreWorker = null)
         {
-            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
+            IReadOnlyList<IAssetsLogMessage>? additionalMessages = null;
 
             var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
 
@@ -2982,9 +2988,9 @@ namespace NuGet.SolutionRestoreManager.Test
             string projectFullPath,
             IVsProjectRestoreInfo2 pri,
             CancellationToken cancellationToken,
-            Mock<IProjectSystemCache> cache = null,
-            Mock<ISolutionRestoreWorker> restoreWorker = null,
-            Mock<ILogger> logger = null)
+            Mock<IProjectSystemCache>? cache = null,
+            Mock<ISolutionRestoreWorker>? restoreWorker = null,
+            Mock<ILogger>? logger = null)
         {
             return NominateProjectAsync(
                 projectFullPath,
@@ -2999,9 +3005,9 @@ namespace NuGet.SolutionRestoreManager.Test
             string projectFullPath,
             IVsProjectRestoreInfo3 pri,
             CancellationToken cancellationToken,
-            Mock<IProjectSystemCache> cache = null,
-            Mock<ISolutionRestoreWorker> restoreWorker = null,
-            Mock<ILogger> logger = null)
+            Mock<IProjectSystemCache>? cache = null,
+            Mock<ISolutionRestoreWorker>? restoreWorker = null,
+            Mock<ILogger>? logger = null)
         {
             if (cache == null)
             {
@@ -3067,8 +3073,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private TestContext NewCpsProject(
-            string projectJson = null,
-            string projectName = null,
+            string? projectJson = null,
+            string? projectName = null,
             bool crossTargeting = false)
         {
             const string DefaultProjectJson = @"{
@@ -3106,7 +3112,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualPackages = actualTfi
                 .Dependencies
                 .Where(ld => ld.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(ld => $"{ld.Name}:{ld.LibraryRange.VersionRange.OriginalString}");
+                .Select(ld => $"{ld.Name}:{ld.LibraryRange.VersionRange!.OriginalString}");
 
             Assert.Equal(expectedPackages, actualPackages);
         }
