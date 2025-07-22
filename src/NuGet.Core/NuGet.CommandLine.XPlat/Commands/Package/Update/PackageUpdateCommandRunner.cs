@@ -27,13 +27,22 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 
 internal static class PackageUpdateCommandRunner
 {
-    internal static async Task<int> Run(PackageUpdateArgs args, ILoggerWithColor logger, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
+    // This overload sets static state, so should not be used in tests.
+    internal static Task<int> Run(PackageUpdateArgs args, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
     {
-        logger.LogLevel = args.LogLevel;
+        ILoggerWithColor logger = new CommandOutputLogger(args.LogLevel)
+        {
+            HidePrefixForInfoAndMinimal = true
+        };
 
         XPlatUtility.ConfigureProtocol();
         DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, nonInteractive: !args.Interactive);
 
+        return Run(args, logger, dGSpecFactory, msbuild, cancellationToken);
+    }
+
+    internal static async Task<int> Run(PackageUpdateArgs args, ILoggerWithColor logger, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
+    {
         // 1. Get DGSpec for project/solution
         // 2. Find suitable version of package(s) to update
         // 3. Preview restore to validate changes

@@ -6,7 +6,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
-    internal class RemappedLevelLogger : ILogger
+    internal class RemappedLevelLogger : LoggerBase
     {
         private readonly ILogger _logger;
         private readonly Mapping _mapping;
@@ -31,64 +31,16 @@ namespace NuGet.CommandLine.XPlat.Utility
             };
         }
 
-        public void Log(LogLevel level, string data)
+        public override void Log(ILogMessage message)
         {
-            var mappedLevel = GetMappedLevel(level);
-            _logger.Log(mappedLevel, data);
+            message.Level = GetMappedLevel(message.Level);
+            _logger.Log(message);
         }
 
-        public void Log(ILogMessage message)
+        public override Task LogAsync(ILogMessage message)
         {
-            var mappedLevel = GetMappedLevel(message.Level);
-            _logger.Log(mappedLevel, message.Message);
-        }
-
-        public Task LogAsync(LogLevel level, string data)
-        {
-            var mappedLevel = GetMappedLevel(level);
-            return _logger.LogAsync(mappedLevel, data);
-        }
-
-
-        public Task LogAsync(ILogMessage message)
-        {
-            var mappedLevel = GetMappedLevel(message.Level);
-            return _logger.LogAsync(mappedLevel, message.Message);
-        }
-
-        public void LogDebug(string data)
-        {
-            _logger.Log(_mapping.Debug, data);
-        }
-
-        public void LogError(string data)
-        {
-            _logger.Log(_mapping.Error, data);
-        }
-
-        public void LogInformation(string data)
-        {
-            _logger.Log(_mapping.Information, data);
-        }
-
-        public void LogInformationSummary(string data)
-        {
-            _logger.Log(_mapping.Information, data);
-        }
-
-        public void LogMinimal(string data)
-        {
-            _logger.Log(_mapping.Minimal, data);
-        }
-
-        public void LogVerbose(string data)
-        {
-            _logger.Log(_mapping.Verbose, data);
-        }
-
-        public void LogWarning(string data)
-        {
-            _logger.Log(_mapping.Warning, data);
+            message.Level = GetMappedLevel(message.Level);
+            return _logger.LogAsync(message);
         }
 
         internal record Mapping

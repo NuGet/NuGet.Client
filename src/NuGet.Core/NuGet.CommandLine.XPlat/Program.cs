@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.XPlat
                     rootCommand.Subcommands.Add(packageCommand);
 
                     PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
-                    PackageUpdateCommand.Register(packageCommand, interactiveOption, getHidePrefixLogger);
+                    PackageUpdateCommand.Register(packageCommand, interactiveOption);
                 }
                 else
                 {

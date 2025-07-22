@@ -30,12 +30,6 @@ namespace NuGet.CommandLine.XPlat
             return logger;
         }
 
-        public LogLevel LogLevel
-        {
-            get => VerbosityLevel;
-            set => VerbosityLevel = value;
-        }
-
         public override void LogDebug(string data)
         {
             LogInternal(LogLevel.Debug, data);

@@ -1041,7 +1041,7 @@ Do not translate "PackageVersion"</comment>
     <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
   </data>
   <data name="PackageUpdate_UpdatingOutdatedPackages" xml:space="preserve">
-    <value>Updating outdated packages in {0}</value>
+    <value>Updating outdated packages in {0}.</value>
     <comment>{0}: the project or solution that is being updated</comment>
   </data>
   <data name="PackageUpdate_LoadingDGSpec" xml:space="preserve">
@@ -1054,7 +1054,7 @@ Do not translate "PackageVersion"</comment>
     <value>Running preview restore to check package compatibility.</value>
   </data>
   <data name="PackageUpdate_UpdatedMessage" xml:space="preserve">
-    <value>Updated {0} {1} to {2}</value>
+    <value>Updated {0} {1} to {2}.</value>
     <comment>{0}: package id
 {1}: existing version
 {2}: new version</comment>

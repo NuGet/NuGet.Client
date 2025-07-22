@@ -15,7 +15,5 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="data">The message text to be logged.</param>
         /// <param name="color">The ConsoleColor value to set the text color.</param>
         void LogMinimal(string data, ConsoleColor color);
-
-        LogLevel LogLevel { get; set; }
     }
 }
