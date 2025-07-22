@@ -60,7 +60,6 @@ namespace NuGet.Commands
             var restoreSpecs = new HashSet<string>(uniqueNameComparer);
             var validForRestore = new HashSet<string>(uniqueNameComparer);
             var projectPathLookup = new Dictionary<string, string>(uniqueNameComparer);
-            var toolItems = new List<IMSBuildItem>();
 
             // Sort items and add restore specs
             foreach (var item in items)
