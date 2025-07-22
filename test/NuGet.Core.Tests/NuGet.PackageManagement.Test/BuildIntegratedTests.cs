@@ -304,13 +304,9 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 // Assert
-                string projectOutputPath0 = buildIntegratedProjects[0].PackageSpec.RestoreMetadata.OutputPath;
-                string projectOutputPath1 = buildIntegratedProjects[1].PackageSpec.RestoreMetadata.OutputPath;
-                string projectOutputPath2 = buildIntegratedProjects[2].PackageSpec.RestoreMetadata.OutputPath;
-
-                var assetsFilePath1 = Path.Combine(projectOutputPath0, LockFileFormat.AssetsFileName);
-                var assetsFilePath2 = Path.Combine(projectOutputPath1, LockFileFormat.AssetsFileName);
-                var assetsFilePath3 = Path.Combine(projectOutputPath2, LockFileFormat.AssetsFileName);
+                string assetsFilePath1 = await buildIntegratedProjects[0].GetAssetsFilePathAsync();
+                string assetsFilePath2 = await buildIntegratedProjects[1].GetAssetsFilePathAsync();
+                string assetsFilePath3 = await buildIntegratedProjects[2].GetAssetsFilePathAsync();
 
                 File.Exists(assetsFilePath1).Should().BeTrue();
                 File.Exists(assetsFilePath2).Should().BeTrue();
