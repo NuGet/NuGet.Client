@@ -774,15 +774,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void AddMigratorBar()
-        {
-            _migratorBar = new PRMigratorBar(Model);
-
-            DockPanel.SetDock(_migratorBar, Dock.Top);
-
-            _root.Children.Insert(0, _migratorBar);
-        }
-
         private void PackageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
             // TODO: PackageRestoreManager fires this event even when solution is closed.
