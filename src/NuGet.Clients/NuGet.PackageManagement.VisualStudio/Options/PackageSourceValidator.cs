@@ -19,9 +19,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// <param name="name">The new value for the name.</param>
         /// <exception cref="ArgumentException"></exception>
         internal static PackageSource FindExistingOrCreate(
-            string lookupName,
-            string source,
-            string name,
+            string? lookupName,
+            string? source,
+            string? name,
             bool isEnabled,
             bool allowInsecureConnections,
             List<PackageSource> packageSources)
