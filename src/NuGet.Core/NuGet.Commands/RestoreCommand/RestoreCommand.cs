@@ -536,7 +536,9 @@ namespace NuGet.Commands
             return !error;
         }
 
-        private async Task<(bool, bool, bool, string, PackagesLockFile)>
+        private record struct EvaluateLockFileResult(bool Success, bool IsLockFileValid, bool RegenerateLockFile, string PackagesLockFilePath, PackagesLockFile PackagesLockFile);
+
+        private async Task<EvaluateLockFileResult>
             EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, string packagesLockFilePath, PackagesLockFile packagesLockFile, bool success, CancellationToken token)
         {
             // evaluate packages.lock.json file
@@ -555,7 +557,7 @@ namespace NuGet.Commands
                 success &= result;
             }
 
-            return (success, isLockFileValid, regenerateLockFile, packagesLockFilePath, packagesLockFile);
+            return new EvaluateLockFileResult(success, isLockFileValid, regenerateLockFile, packagesLockFilePath, packagesLockFile);
         }
 
         private async Task<(bool, IEnumerable<RestoreTargetGraph>)> GenerateRestoreGraphsAsync(TelemetryActivity telemetry, RemoteWalkContext contextForProject, bool success, CancellationToken token)
