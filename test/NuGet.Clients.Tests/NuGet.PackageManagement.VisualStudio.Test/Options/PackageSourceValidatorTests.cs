@@ -349,7 +349,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void FindExistingOrCreate_NullOrEmptyId_ThrowsArgumentException(string invalidId)
+        public void FindExistingOrCreate_NullOrEmptyId_ThrowsArgumentException(string? invalidId)
         {
             // Arrange
             string name = "TestSource1";
@@ -378,7 +378,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string invalidName)
+        public void FindExistingOrCreate_NullOrEmptyName_ThrowsArgumentException(string? invalidName)
         {
             // Arrange
             string lookupName = "TestSource1";
@@ -407,7 +407,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void FindExistingOrCreate_NullOrEmptySource_ThrowsArgumentException(string invalidSource)
+        public void FindExistingOrCreate_NullOrEmptySource_ThrowsArgumentException(string? invalidSource)
         {
             // Arrange
             string name = "TestSource1";
