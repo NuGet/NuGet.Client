@@ -828,7 +828,6 @@ namespace NuGet.Packaging
                 patterns.EmbedAssemblies,
                 patterns.MSBuildTransitiveFiles
             };
-            var warnPaths = new HashSet<string>();
 
             var itemsWithFrameworkMissingPlatformVersion = new HashSet<string>();
             List<ContentItemGroup> targetedItemGroups = new();
@@ -1345,9 +1344,7 @@ namespace NuGet.Packaging
             var dcText = "http://purl.org/dc/elements/1.1/";
             XNamespace dc = dcText;
             var dctermsText = "http://purl.org/dc/terms/";
-            XNamespace dcterms = dctermsText;
             var xsiText = "http://www.w3.org/2001/XMLSchema-instance";
-            XNamespace xsi = xsiText;
             XNamespace core = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
 
             XDocument document = new XDocument(
