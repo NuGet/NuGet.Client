@@ -921,8 +921,6 @@ namespace NuGet.PackageManagement.UI
         internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var sw = Stopwatch.StartNew();
-            ItemFilter filterToRender = _topPanel.Filter;
 
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
@@ -1143,7 +1141,6 @@ namespace NuGet.PackageManagement.UI
         internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
             PackageItemViewModel selectedItem = _packageList.SelectedItem;
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
             int selectedIndex = _packageList.SelectedIndex;
             int recommendedCount = _packageList.PackageItems.Count(item => item.Recommended == true);
 
