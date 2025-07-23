@@ -76,7 +76,7 @@ namespace Test.Utility
         private Action<HttpListenerResponse> ServerHandlerV3(HttpListenerRequest request)
         {
             var path = GetRequestUrlAbsolutePath(request);
-            var parts = request.Url.AbsolutePath.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            var parts = request.Url.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (path.StartsWith("/flat/") && path.EndsWith("/index.json"))
             {
