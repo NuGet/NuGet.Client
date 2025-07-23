@@ -75,24 +75,17 @@ namespace NuGet.Packaging
                     var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                     var packageDirectory = packageDirectoryInfo.FullName;
 
-                    try
-                    {
-                        telemetry.StartIntervalMeasure();
+                    telemetry.StartIntervalMeasure();
 
-                        await VerifyPackageSignatureAsync(
-                         source,
-                         telemetry.OperationId,
-                         packageIdentityFromNuspec,
-                         packageExtractionContext,
-                         packageReader,
-                         token);
+                    await VerifyPackageSignatureAsync(
+                        source,
+                        telemetry.OperationId,
+                        packageIdentityFromNuspec,
+                        packageExtractionContext,
+                        packageReader,
+                        token);
 
-                        telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
-                    }
-                    catch (SignatureException)
-                    {
-                        throw;
-                    }
+                    telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
 
                     var packageFiles = await packageReader.GetPackageFilesAsync(packageSaveMode, token);
 
@@ -204,24 +197,17 @@ namespace NuGet.Packaging
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
                 packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
-                try
-                {
-                    telemetry.StartIntervalMeasure();
+                telemetry.StartIntervalMeasure();
 
-                    await VerifyPackageSignatureAsync(
-                         source,
-                         telemetry.OperationId,
-                         packageIdentityFromNuspec,
-                         packageExtractionContext,
-                         packageReader,
-                         token);
+                await VerifyPackageSignatureAsync(
+                    source,
+                    telemetry.OperationId,
+                    packageIdentityFromNuspec,
+                    packageExtractionContext,
+                    packageReader,
+                    token);
 
-                    telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
-                }
-                catch (SignatureException)
-                {
-                    throw;
-                }
+                telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
 
                 var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
                 var packageDirectory = packageDirectoryInfo.FullName;
@@ -318,24 +304,17 @@ namespace NuGet.Packaging
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
                 packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
-                try
-                {
-                    telemetry.StartIntervalMeasure();
+                telemetry.StartIntervalMeasure();
 
-                    await VerifyPackageSignatureAsync(
-                        source,
-                        telemetry.OperationId,
-                        packageIdentityFromNuspec,
-                        packageExtractionContext,
-                        packageReader,
-                        token);
+                await VerifyPackageSignatureAsync(
+                    source,
+                    telemetry.OperationId,
+                    packageIdentityFromNuspec,
+                    packageExtractionContext,
+                    packageReader,
+                    token);
 
-                    telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
-                }
-                catch (SignatureException)
-                {
-                    throw;
-                }
+                telemetry.EndIntervalMeasure(PackagingConstants.PackageVerifyDurationName);
 
                 var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
                 var packageDirectory = packageDirectoryInfo.FullName;
