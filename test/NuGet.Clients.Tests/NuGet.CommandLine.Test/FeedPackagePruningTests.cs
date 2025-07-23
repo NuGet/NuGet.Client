@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.Test
             string repositoryPath)
         {
             var path = server.GetRequestUrlAbsolutePath(request);
-            var parts = request.Url.AbsolutePath.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            var parts = request.Url.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (path == "/index.json")
             {
