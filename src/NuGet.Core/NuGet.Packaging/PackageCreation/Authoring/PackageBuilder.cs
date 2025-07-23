@@ -1071,7 +1071,7 @@ namespace NuGet.Packaging
                     else
                     {
 #if NETCOREAPP
-                            filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/", StringComparison.Ordinal)}");
+                        filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/", StringComparison.Ordinal)}");
 #else
                         filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/")}");
 #endif
