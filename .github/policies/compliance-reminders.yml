@@ -21,4 +21,4 @@ configuration:
         
         - [ ] Complete [accessibility testing](https://github.com/NuGet/NuGet.Client/blob/dev/docs/ui-guidelines.md#accessibility-testing). 
         
-        - [ ] Complete [localizability testing](https://github.com/NuGet/NuGet.Client/blob/dev/docs/ui-guidelines.md#localizability-testing).
+        - [ ] Complete [localizability testing](https://github.com/NuGet/NuGet.Client/blob/dev/docs/ui-guidelines.md#localizability-testing).'
