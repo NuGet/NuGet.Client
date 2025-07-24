@@ -848,7 +848,7 @@ namespace NuGet.Test
             // This package is compatible.
             var originalPackage = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
 
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, originalPackage, packageNotCompatible);
 
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
