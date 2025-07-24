@@ -33,14 +33,13 @@ namespace NuGet.PackageManagement.Test
             using var solutionManager = new TestSolutionManager(pathContext);
 
             var projectName = "testproj";
-
-            var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
-            projectFolder.Create();
-            var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
             var versioning107 = new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7"));
 
             var sources = new List<SourceRepository> { };
             var testLogger = new TestLogger();
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var packageContext = new SimpleTestPackageContext(packageIdentity);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext);
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
             var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
