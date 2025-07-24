@@ -579,6 +579,8 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var projectName = "TestProjectName";
 
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageIdentity2);
+
             var lockFiles = new List<string>();
 
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
@@ -705,6 +707,8 @@ namespace NuGet.Test
             var versioning107 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
 
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, versioning105, versioning107);
+
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -765,6 +769,8 @@ namespace NuGet.Test
             var projectName = "TestProjectName";
             var nugetVersioningId = "Nuget.Versioning";
             var originalInstalledPackage = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
+            var latestPackage = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("10.5.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalInstalledPackage, latestPackage);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
