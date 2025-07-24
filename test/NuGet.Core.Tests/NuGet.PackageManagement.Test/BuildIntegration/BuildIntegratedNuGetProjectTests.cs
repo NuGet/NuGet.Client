@@ -25,97 +25,88 @@ namespace NuGet.PackageManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10212")]
+        [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredChangedSha512()
         {
             // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var solutionManager = new TestSolutionManager(pathContext);
+
             var projectName = "testproj";
 
-            using (var solutionManager = new TestSolutionManager())
+            var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
+            projectFolder.Create();
+            var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
+            var versioning107 = new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7"));
+
+            var sources = new List<SourceRepository> { };
+            var testLogger = new TestLogger();
+            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
+            var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
+
+            solutionManager.NuGetProjects.Add(project);
+
+            var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
+            var providersCache = new RestoreCommandProvidersCache();
+            var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
+
+            await DependencyGraphRestoreUtility.RestoreAsync(
+                solutionManager,
+                dgSpec1,
+                restoreContext,
+                providersCache,
+                (c) => { },
+                sources,
+                Guid.Empty,
+                false,
+                true,
+                testLogger,
+                CancellationToken.None);
+
+            var dgSpec2 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
+            var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                solutionManager,
+                dgSpec2,
+                restoreContext,
+                providersCache,
+                (c) => { },
+                sources,
+                Guid.Empty,
+                false,
+                true,
+                testLogger,
+                CancellationToken.None);
+
+            foreach (var restoreSummary in noOpRestoreSummaries)
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
+                Assert.True(restoreSummary.NoOpRestore);
+            }
 
-                BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+            var resolver = new VersionFolderPathResolver(solutionManager.GlobalPackagesFolder);
+            var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var nupkgMetadataPath = resolver.GetNupkgMetadataPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
-                JsonConfigUtility.AddDependency(json, new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+            File.Delete(hashPath);
+            File.Delete(nupkgMetadataPath);
 
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
+            var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                solutionManager,
+                await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                restoreContext,
+                new RestoreCommandProvidersCache(),
+                (c) => { },
+                sources,
+                Guid.Empty,
+                false,
+                true,
+                testLogger,
+                CancellationToken.None);
 
-                var sources = new List<SourceRepository> { };
-                var testLogger = new TestLogger();
-                var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
-                var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
-
-                solutionManager.NuGetProjects.Add(project);
-
-                var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
-                var providersCache = new RestoreCommandProvidersCache();
-                var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
-
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    dgSpec1,
-                    restoreContext,
-                    providersCache,
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    testLogger,
-                    CancellationToken.None);
-
-                var dgSpec2 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
-                var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    dgSpec2,
-                    restoreContext,
-                    providersCache,
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    testLogger,
-                    CancellationToken.None);
-
-                foreach (var restoreSummary in noOpRestoreSummaries)
-                {
-                    Assert.True(restoreSummary.NoOpRestore);
-                }
-
-                var resolver = new VersionFolderPathResolver(solutionManager.GlobalPackagesFolder);
-                var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-                var nupkgMetadataPath = resolver.GetNupkgMetadataPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-
-                File.Delete(hashPath);
-                File.Delete(nupkgMetadataPath);
-
-                var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    testLogger,
-                    CancellationToken.None);
-
-                foreach (var restoreSummary in restoreSummaries)
-                {
-                    Assert.True(restoreSummary.Success);
-                    Assert.False(restoreSummary.NoOpRestore);
-                }
+            foreach (var restoreSummary in restoreSummaries)
+            {
+                Assert.True(restoreSummary.Success);
+                Assert.False(restoreSummary.NoOpRestore);
             }
         }
 
