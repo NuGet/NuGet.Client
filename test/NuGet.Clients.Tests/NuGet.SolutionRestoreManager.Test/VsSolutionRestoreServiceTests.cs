@@ -236,6 +236,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Dependencies
                 .Single();
             Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
+            Assert.NotNull(actualToolLibrary.LibraryRange.VersionRange);
             Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
         }
 
@@ -313,6 +314,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Dependencies
                 .Single();
             Assert.Equal("Foo.Test.Tools", actualToolLibrary.Name);
+            Assert.NotNull(actualToolLibrary.LibraryRange.VersionRange);
             Assert.Equal("2.0.0", actualToolLibrary.LibraryRange.VersionRange.OriginalString);
 
             Assert.Equal(restorePackagesPath, actualToolSpec.RestoreMetadata.PackagesPath);
@@ -1912,7 +1914,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 cache, restoreWorker, NullLogger.Instance, asyncLazySolution2, telemetryProvider);
 
             // Act
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await ((IVsSolutionRestoreService5)service).NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo3)null, CancellationToken.None));
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(async () => await ((IVsSolutionRestoreService5)service).NominateProjectAsync(@"F:\project\project.csproj", null!, CancellationToken.None));
         }
 
         [Fact]
@@ -2049,6 +2051,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("foo", packageVersion.Key);
             Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
             var packageReference = Assert.Single(tfm.Dependencies);
+            Assert.NotNull(packageReference.LibraryRange.VersionRange);
             Assert.Equal("[2.0.0, )", packageReference.LibraryRange.VersionRange.ToNormalizedString());
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
@@ -2508,7 +2511,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new VsTargetFrameworkInfo4(
                     items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                     {
-                        [ProjectItems.PackageDownload] = [ new VsReferenceItem2(packageName, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["Version"] = null }) ]
+                        [ProjectItems.PackageDownload] = [ new VsReferenceItem2(packageName, new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase) { ["Version"] = null }) ]
                     },
                     properties: new Dictionary<string, string>())
             };
@@ -2933,16 +2936,16 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(result, "Project restore nomination should succeed.");
             logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
 
-            return additionalMessages;
+            return additionalMessages!;
         }
 
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath,
             IVsProjectRestoreInfo2 pri,
-            Mock<IProjectSystemCache> cache = null)
+            Mock<IProjectSystemCache>? cache = null)
         {
-            DependencyGraphSpec capturedRestoreSpec = null;
+            DependencyGraphSpec? capturedRestoreSpec = null;
 
             if (cache == null)
             {
@@ -2962,7 +2965,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Assert.True(result, "Project restore nomination should succeed.");
 
-            return capturedRestoreSpec;
+            return capturedRestoreSpec!;
         }
 
         [Obsolete("Need to update to IVsProjectRestoreInfo3")]
@@ -2970,9 +2973,9 @@ namespace NuGet.SolutionRestoreManager.Test
             string projectFullPath,
             IVsProjectRestoreInfo pri,
             CancellationToken cancellationToken,
-            Mock<IProjectSystemCache> cache = null,
-            Mock<ISolutionRestoreWorker> restoreWorker = null,
-            Mock<ILogger> logger = null)
+            Mock<IProjectSystemCache>? cache = null,
+            Mock<ISolutionRestoreWorker>? restoreWorker = null,
+            Mock<ILogger>? logger = null)
         {
             return NominateProjectAsync(
                 projectFullPath,
@@ -3137,8 +3140,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
         private class TestContext
         {
-            public string ProjectFullPath { get; set; }
-            public ProjectRestoreInfoBuilder Builder { get; set; }
+            public required string ProjectFullPath { get; init; }
+            public required ProjectRestoreInfoBuilder Builder { get; init; }
 
             [Obsolete("Need to update to IVsProjectRestoreInfo3")]
             public VsProjectRestoreInfo ProjectRestoreInfo => Builder.ProjectRestoreInfo;
@@ -3154,9 +3157,9 @@ namespace NuGet.SolutionRestoreManager.Test
 
             public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 
-            public IReadOnlyList<IVsReferenceItem2> ToolReferences { get; init; }
+            public required IReadOnlyList<IVsReferenceItem2> ToolReferences { get; init; }
 
-            public string OriginalTargetFrameworks { get; init; }
+            public required string OriginalTargetFrameworks { get; init; }
         }
     }
 }
