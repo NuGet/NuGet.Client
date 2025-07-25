@@ -842,15 +842,25 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
 
-            // This package is not compatible with netcore50 and will cause the rollback.
-            var packageNotCompatible = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5"));
+            // This latest version of this package is not compatible and will cause the rollback.
+            var packageWithIncompatibleLatest = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5"));
+            var incompatibleLatestPackage = new SimpleTestPackageContext("NuGet.Versioning", "1.0.7");
+            incompatibleLatestPackage.AddFile("lib/net9.0/NuGet.Versioning.dll");
+            incompatibleLatestPackage.UseDefaultRuntimeAssemblies = false;
 
-            // This package is compatible.
-            var originalPackage = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            // This package and its latest version are compatible.
+            var packageWithCompatibleLatest = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+            var compatiblePackageLatest = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("7.0.8"));
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                packageWithCompatibleLatest,
+                compatiblePackageLatest,
+                packageWithIncompatibleLatest);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                incompatibleLatestPackage);
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, originalPackage, packageNotCompatible);
-
             var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
             var nuGetPackageManager = new NuGetPackageManager(
@@ -883,7 +893,7 @@ namespace NuGet.Test
 
             await nuGetPackageManager.InstallPackageAsync(
                 buildIntegratedProject,
-                packageNotCompatible,
+                packageWithIncompatibleLatest,
                 new ResolutionContext(),
                 new TestNuGetProjectContext(),
                 primarySources: sourceRepositories,
@@ -892,7 +902,7 @@ namespace NuGet.Test
 
             await nuGetPackageManager.InstallPackageAsync(
                 buildIntegratedProject,
-                originalPackage,
+                packageWithCompatibleLatest,
                 new ResolutionContext(),
                 new TestNuGetProjectContext(),
                 primarySources: sourceRepositories,
@@ -934,11 +944,11 @@ namespace NuGet.Test
 
             var rollbackPackage = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "NuGet.Versioning");
             rollbackPackage.Should().NotBeNull();
-            rollbackPackage.PackageIdentity.Should().Be(packageNotCompatible);
+            rollbackPackage.PackageIdentity.Should().Be(packageWithIncompatibleLatest);
 
             var installedOriginalPackage = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
             installedOriginalPackage.Should().NotBeNull();
-            installedOriginalPackage.PackageIdentity.Should().Be(originalPackage);
+            installedOriginalPackage.PackageIdentity.Should().Be(packageWithCompatibleLatest);
         }
 
         [Fact]
