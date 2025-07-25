@@ -9,6 +9,7 @@ using FluentAssertions;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -62,7 +63,8 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             // Assert
             packageToUpdate.Should().NotBeNull();
             packageToUpdate.Id.Should().Be("Contoso.Utils");
-            packageToUpdate.VersionRange.ToString().Should().Be("[1.2.3, )");
+            packageToUpdate.CurrentVersion.ToString().Should().Be("[1.0.0, )");
+            packageToUpdate.NewVersion.ToString().Should().Be("[1.2.3, )");
             logger.Invocations.Count.Should().Be(0);
         }
 
@@ -85,7 +87,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
 
             var versionChooser = new Mock<IVersionChooser>(MockBehavior.Strict);
             versionChooser
-                .Setup(v => v.GetLatestVersionAsync("Contoso.Utils", It.IsAny<ILoggerWithColor>(), It.IsAny<CancellationToken>()))
+                .Setup(v => v.GetLatestVersionAsync("Contoso.Utils", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new NuGetVersion("3.4.5"));
 
             var sourceCacheContext = new SourceCacheContext();
@@ -103,7 +105,8 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             // Assert
             packageToUpdate.Should().NotBeNull();
             packageToUpdate.Id.Should().Be("Contoso.Utils");
-            packageToUpdate.VersionRange.ToString().Should().Be("[3.4.5, )");
+            packageToUpdate.CurrentVersion.ToString().Should().Be("[1.0.0, )");
+            packageToUpdate.NewVersion.ToString().Should().Be("[3.4.5, )");
             logger.Invocations.Count.Should().Be(0);
         }
 
@@ -139,7 +142,8 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             // Assert
             packageToUpdate.Should().NotBeNull();
             packageToUpdate.Id.Should().Be("Contoso.Utils");
-            packageToUpdate.VersionRange.ToString().Should().Be("[1.2.3, 2.0.0)");
+            packageToUpdate.CurrentVersion.ToString().Should().Be("[1.0.0, )");
+            packageToUpdate.NewVersion.ToString().Should().Be("[1.2.3, 2.0.0)");
             logger.Invocations.Count.Should().Be(0);
         }
 
@@ -162,7 +166,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
 
             var versionChooser = new Mock<IVersionChooser>(MockBehavior.Strict);
             versionChooser
-                .Setup(v => v.GetLatestVersionAsync("Contoso.Utils", It.IsAny<ILoggerWithColor>(), It.IsAny<CancellationToken>()))
+                .Setup(v => v.GetLatestVersionAsync("Contoso.Utils", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((NuGetVersion?)null);
             var logger = new Mock<ILoggerWithColor>();
 

@@ -9,28 +9,18 @@ using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 {
     internal static class PackageUpdateCommand
     {
-        internal static void Register(Command packageCommand)
+        internal static void Register(Command packageCommand, Option<bool> interactiveOption)
         {
-            Func<ILoggerWithColor> getLogger = () =>
-            {
-                var logger = new CommandOutputLogger(Common.LogLevel.Minimal);
-                logger.HidePrefixForInfoAndMinimal = true;
-                return logger;
-            };
-            Register(packageCommand, getLogger);
+            Register(packageCommand, interactiveOption, PackageUpdateCommandRunner.Run);
         }
 
-        internal static void Register(Command packageCommand, Func<ILoggerWithColor> getLogger)
-        {
-            Register(packageCommand, getLogger, PackageUpdateCommandRunner.Run);
-        }
-
-        internal static void Register(Command packageCommand, Func<ILoggerWithColor> getLogger, Func<PackageUpdateArgs, ILoggerWithColor, IDGSpecFactory, MSBuildAPIUtility, CancellationToken, Task<int>> action)
+        internal static void Register(Command packageCommand, Option<bool> interactiveOption, Func<PackageUpdateArgs, IDGSpecFactory, MSBuildAPIUtility, CancellationToken, Task<int>> action)
         {
             var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
@@ -46,23 +36,35 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
             projectOption.Description = Strings.PackageUpdateCommand_ProjectOptionDescription;
             command.Options.Add(projectOption);
 
+            command.Options.Add(interactiveOption);
+
+            var verbosityOption = CommonOptions.GetVerbosityOption();
+            command.Options.Add(verbosityOption);
+
             packageCommand.Subcommands.Add(command);
             command.SetAction(async (args, cancellationToken) =>
             {
-                var logger = getLogger();
-                var project = args.GetValue(projectOption);
-                var packages = args.GetValue(packagesArguments) ?? [];
+                FileSystemInfo? project = args.GetValue(projectOption);
+                IReadOnlyList<Package> packages = args.GetValue(packagesArguments) ?? [];
+                bool interactive = args.GetValue(interactiveOption);
+                VerbosityEnum verbosity = args.GetValue(verbosityOption) ?? VerbosityEnum.normal;
+                LogLevel logLevel = verbosity.ToLogLevel();
 
                 var commandArgs = new PackageUpdateArgs
                 {
                     Project = project?.FullName ?? Environment.CurrentDirectory,
                     Packages = packages,
+                    Interactive = interactive,
+                    LogLevel = logLevel,
                 };
 
                 IDGSpecFactory dGSpecFactory = new DGSpecFactory();
-                MSBuildAPIUtility mSBuild = new(logger);
+                // MSBuildAPIUtility's output is different to what we want for package update.
+                // While it would probably be a good idea to align the output of all commands using MSBuildAPIUtility,
+                // in order to meet deadlines, we'll suppress its output, and leave improvements for later.
+                MSBuildAPIUtility mSBuild = new(NullLogger.Instance);
 
-                return await action(commandArgs, logger, dGSpecFactory, mSBuild, cancellationToken);
+                return await action(commandArgs, dGSpecFactory, mSBuild, cancellationToken);
             });
         }
     }
