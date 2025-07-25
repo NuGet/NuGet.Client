@@ -3,8 +3,10 @@
 
 #nullable enable
 
+using System;
 using System.CommandLine;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
@@ -26,11 +28,10 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().BeEmpty();
-        result.CommandArgs.Interactive.Should().BeFalse();
-        result.CommandArgs.LogLevel.Should().Be(LogLevel.Information);
+        result.Should().NotBeNull();
+        result.Packages.Should().BeEmpty();
+        result.Interactive.Should().BeFalse();
+        result.LogLevel.Should().Be(LogLevel.Information);
     }
 
     [Fact]
@@ -43,11 +44,10 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(1);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().BeNull();
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(1);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().BeNull();
     }
 
     [Fact]
@@ -60,13 +60,12 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(2);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().BeNull();
-        result.CommandArgs.Packages[1].Id.Should().Be("Contoso.Framework");
-        result.CommandArgs.Packages[1].VersionRange.Should().BeNull();
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(2);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().BeNull();
+        result.Packages[1].Id.Should().Be("Contoso.Framework");
+        result.Packages[1].VersionRange.Should().BeNull();
     }
 
     [Fact]
@@ -79,12 +78,11 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(1);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().NotBeNull();
-        result.CommandArgs.Packages[0].VersionRange!.ToString().Should().Be("[2.1.0, )");
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(1);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Packages[0].VersionRange!.ToString().Should().Be("[2.1.0, )");
     }
 
     [Fact]
@@ -97,12 +95,11 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(1);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().NotBeNull();
-        result.CommandArgs.Packages[0].VersionRange!.ToString().Should().Be("[2.0.0, 3.0.0)");
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(1);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Packages[0].VersionRange!.ToString().Should().Be("[2.0.0, 3.0.0)");
     }
 
     [Fact]
@@ -115,13 +112,12 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(2);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().NotBeNull();
-        result.CommandArgs.Packages[1].Id.Should().Be("Contoso.Framework");
-        result.CommandArgs.Packages[1].VersionRange.Should().BeNull();
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(2);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Packages[1].Id.Should().Be("Contoso.Framework");
+        result.Packages[1].VersionRange.Should().BeNull();
     }
 
     [Fact]
@@ -138,13 +134,12 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Project.Should().Be(projectPath);
+        result.Should().NotBeNull();
+        result.Project.Should().Be(projectPath);
     }
 
     [Fact]
-    public async Task WithProjectThatDoesNotExist_ShouldHaveError()
+    public void WithProjectThatDoesNotExist_ShouldHaveError()
     {
         // Arrange
         using var pathContext = new SimpleTestPathContext();
@@ -153,25 +148,26 @@ public class CliParserTests
         string args = $"package update --project \"{projectPath}\"";
 
         // Act
-        var result = await RunAsync(args);
+        var result = Parse(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().BeGreaterThan(0);
+        result.Errors.Count.Should().BeGreaterThan(0);
     }
 
-    [Fact]
-    public async Task WithInteractiveOption_ShouldSetInteractiveToTrue()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WithInteractiveOption_ShouldSetCorrectInteractiveValue(bool value)
     {
         // Arrange
-        string args = "package update --interactive";
+        string args = $"package update --interactive:{value}";
 
         // Act
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Interactive.Should().BeTrue();
+        result.Should().NotBeNull();
+        result.Interactive.Should().Be(value);
     }
 
     [Theory]
@@ -199,9 +195,8 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.LogLevel.Should().Be(expectedLogLevel);
+        result.Should().NotBeNull();
+        result.LogLevel.Should().Be(expectedLogLevel);
     }
 
     [Fact]
@@ -218,77 +213,99 @@ public class CliParserTests
         var result = await RunAsync(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().Be(0);
-        result.CommandArgs.Should().NotBeNull();
-        result.CommandArgs!.Packages.Should().HaveCount(1);
-        result.CommandArgs.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.CommandArgs.Packages[0].VersionRange.Should().NotBeNull();
-        result.CommandArgs.Project.Should().Be(projectPath);
-        result.CommandArgs.Interactive.Should().BeTrue();
-        result.CommandArgs.LogLevel.Should().Be(LogLevel.Verbose);
+        result.Should().NotBeNull();
+        result.Packages.Should().HaveCount(1);
+        result.Packages[0].Id.Should().Be("Contoso.Utils");
+        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Project.Should().Be(projectPath);
+        result.Interactive.Should().BeTrue();
+        result.LogLevel.Should().Be(LogLevel.Verbose);
     }
 
     [Fact]
-    public async Task WithInvalidVersionRange_ShouldHaveParseErrors()
+    public void WithInvalidVersionRange_ShouldHaveParseErrors()
     {
         // Arrange
         string args = "package update Contoso.Utils@invalid-version";
 
         // Act
-        var result = await RunAsync(args);
+        var result = Parse(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().BeGreaterThan(0);
+        result.Errors.Count.Should().BeGreaterThan(0);
     }
 
     [Fact]
-    public async Task WithEmptyVersionAfterAt_ShouldHaveParseErrors()
+    public void WithEmptyVersionAfterAt_ShouldHaveParseErrors()
     {
         // Arrange
         string args = "package update Contoso.Utils@";
 
         // Act
-        var result = await RunAsync(args);
+        var result = Parse(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().BeGreaterThan(0);
+        result.Errors.Count.Should().BeGreaterThan(0);
     }
 
     [Fact]
-    public async Task WithNonExistentProject_ShouldHaveParseErrors()
+    public void WithNonExistentProject_ShouldHaveParseErrors()
     {
         // Arrange
         string args = "package update --project non-existent-file.csproj";
 
         // Act
-        var result = await RunAsync(args);
+        var result = Parse(args);
 
         // Assert
-        result.ParseResult.Errors.Count.Should().BeGreaterThan(0);
+        result.Errors.Count.Should().BeGreaterThan(0);
     }
 
-    private async Task<(ParseResult ParseResult, PackageUpdateArgs? CommandArgs)> RunAsync(string commandLine)
+    private ParseResult Parse(string commandLine, Func<PackageUpdateArgs, CancellationToken, Task<int>>? action = null)
     {
         RootCommand rootCommand = new RootCommand();
 
         var packageCommand = new Command("package");
         rootCommand.Subcommands.Add(packageCommand);
 
+        // The product code gets the interactive option from the .NET SDK, so we simulate it here.
         var interactiveOption = new Option<bool>("--interactive");
 
+        if (action == null)
+        {
+            action = (_, _) => throw new NotImplementedException("No action provided for command execution.");
+        }
+
+        PackageUpdateCommand.Register(packageCommand, interactiveOption, action);
+
+        var parser = rootCommand.Parse(commandLine);
+        return parser;
+    }
+
+    private async Task<PackageUpdateArgs> RunAsync(string commandLine)
+    {
         PackageUpdateArgs? commandArgs = null;
 
-        PackageUpdateCommand.Register(packageCommand, interactiveOption, (packageUpdateArgs, _) =>
+        var parseResult = Parse(commandLine, (args, cancellationToken) =>
         {
-            commandArgs = packageUpdateArgs;
+            commandArgs = args;
             return Task.FromResult(0);
         });
 
-        var parser = rootCommand.Parse(commandLine);
-        if (parser.Errors.Count == 0)
+        TextWriter output = new StringWriter();
+        var commandLineConfiguration = new InvocationConfiguration
         {
-            await parser.InvokeAsync();
+            Output = output,
+            Error = output,
+        };
+
+        await parseResult.InvokeAsync(commandLineConfiguration);
+
+        if (commandArgs is null)
+        {
+            throw new InvalidOperationException("Command arguments were not set during command execution.");
         }
-        return (parser, commandArgs);
+
+        return commandArgs;
     }
 }

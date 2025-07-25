@@ -68,7 +68,7 @@ internal interface IPackageUpdateIO
     /// <summary>
     /// An opaque type, to aid in testing, representing the result of a restore operation.
     /// </summary>
-    public abstract class RestoreResult
+    internal abstract class RestoreResult
     {
         /// <summary>
         /// Was the preview restore operation successful
