@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Utility;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -28,7 +27,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 internal static class PackageUpdateCommandRunner
 {
     // This overload sets static state, so should not be used in tests.
-    internal static Task<int> Run(PackageUpdateArgs args, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
+    internal static Task<int> Run(PackageUpdateArgs args, CancellationToken cancellationToken)
     {
         ILoggerWithColor logger = new CommandOutputLogger(args.LogLevel)
         {
@@ -38,10 +37,17 @@ internal static class PackageUpdateCommandRunner
         XPlatUtility.ConfigureProtocol();
         DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, nonInteractive: !args.Interactive);
 
-        return Run(args, logger, dGSpecFactory, msbuild, cancellationToken);
+        // MSBuildAPIUtility's output is different to what we want for package update.
+        // While it would probably be a good idea to align the output of all commands using MSBuildAPIUtility,
+        // in order to meet deadlines, we'll suppress its output, and leave improvements for later.
+        MSBuildAPIUtility msBuild = new(NullLogger.Instance);
+
+        var restoreHelper = new PackageUpdateIO(msBuild, EnvironmentVariableWrapper.Instance);
+
+        return Run(args, logger, restoreHelper, cancellationToken);
     }
 
-    internal static async Task<int> Run(PackageUpdateArgs args, ILoggerWithColor logger, IDGSpecFactory dGSpecFactory, MSBuildAPIUtility msbuild, CancellationToken cancellationToken)
+    internal static async Task<int> Run(PackageUpdateArgs args, ILoggerWithColor logger, IPackageUpdateIO packageUpdateIO, CancellationToken cancellationToken)
     {
         // 1. Get DGSpec for project/solution
         // 2. Find suitable version of package(s) to update
@@ -50,11 +56,8 @@ internal static class PackageUpdateCommandRunner
         // 5. Commit restore if everything successful
 
         // 1. Get DGSpec for project/solution
-        string settingsRoot = Directory.Exists(args.Project) ? args.Project : Path.GetDirectoryName(args.Project)!;
-        ISettings settings = Settings.LoadDefaultSettings(settingsRoot);
-
         logger.LogVerbose(Strings.PackageUpdate_LoadingDGSpec);
-        var dgSpec = dGSpecFactory.GetDependencyGraphSpec(args.Project);
+        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project);
 
         if (dgSpec is null || dgSpec.Restore is null || dgSpec.Restore.Count == 0)
         {
@@ -76,6 +79,9 @@ internal static class PackageUpdateCommandRunner
         // Source provider will be needed to find the package version and to restore, so create it here.
         logger.LogVerbose(Strings.PackageUpdate_FindingUpdateVersions);
 
+        string settingsRoot = Directory.Exists(args.Project) ? args.Project : Path.GetDirectoryName(args.Project)!;
+        ISettings settings = packageUpdateIO.LoadSettings(settingsRoot);
+
         CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
         using SourceCacheContext sourceCacheContext = new();
         var versionChooser = new VersionChooser(sourceProvider, settings, sourceCacheContext);
@@ -88,29 +94,15 @@ internal static class PackageUpdateCommandRunner
         }
 
         // 3. Preview restore to validate changes
-        var updatedPackageSpec = dgSpec.Projects[0].Clone();
-        PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
-        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency);
-
-        var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
-        updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
-
         logger.LogDebug(Strings.PackageUpdate_PreviewRestore);
+        var updatedDgSpec = GetUpdatedDependencyGraphSpec(dgSpec, packageToUpdate);
+        var restorePreviewResult = await packageUpdateIO.PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
 
-        var restorePreviewResult = await PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
-
-        if (!restorePreviewResult.Result.Success)
+        if (!restorePreviewResult.Success)
         {
             logger.LogMinimal(Strings.PackageUpdate_PreviewRestoreFailed, ConsoleColor.Red);
             return ExitCodes.Error;
         }
-
-        var libraryDependency = AddPackageReferenceCommandRunner.GenerateLibraryDependency(
-            updatedPackageSpec,
-            customPackagesPath: null,
-            restorePreviewResult,
-            packageTfms,
-            packageDependency);
 
         // 4. Update MSBuild files
         var projectName = Path.GetFileNameWithoutExtension(dgSpec.Projects[0].FilePath);
@@ -118,74 +110,17 @@ internal static class PackageUpdateCommandRunner
         logger.LogInformation($"    " + Format.PackageUpdate_UpdatedMessage(packageToUpdate.Id, packageToUpdate.CurrentVersion.ToShortString(), packageToUpdate.NewVersion.ToShortString()));
         logger.LogInformation("");
 
-        if (packageTfms!.Count == dgSpec.Projects[0].TargetFrameworks.Count)
-        {
-            // package is used by all project TFMs (no condition)
-
-            msbuild.AddPackageReference(dgSpec.Projects[0].FilePath, libraryDependency, noVersion: true);
-        }
-        else
-        {
-            var frameworkAliases = packageTfms
-                .Select(e => AddPackageReferenceCommandRunner.GetAliasForFramework(dgSpec.Projects[0], e))
-                .Where(originalFramework => originalFramework != null);
-
-            msbuild.AddPackageReferencePerTFM(dgSpec.Projects[0].FilePath, libraryDependency, frameworkAliases, noVersion: true);
-        }
+        var updatedPackageSpec = updatedDgSpec.Projects[0];
+        packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageTfms!, packageToUpdate);
 
         // 5. Commit restore if everything successful
-        await RestoreRunner.CommitAsync(restorePreviewResult, CancellationToken.None);
+        await packageUpdateIO.CommitAsync(restorePreviewResult, CancellationToken.None);
 
         int updatedCount = 1;
         int scannedCount = 1;
         logger.LogMinimal(Format.PackageUpdate_FinalSummary(updatedCount, scannedCount), ConsoleColor.Green);
 
         return ExitCodes.Success;
-    }
-
-    private static async Task<RestoreResultPair> PreviewUpdatePackageReferenceAsync(
-        DependencyGraphSpec dgSpec,
-        SourceCacheContext cacheContext,
-        ILogger logger,
-        CancellationToken cancellationToken)
-    {
-        var providerCache = new RestoreCommandProvidersCache();
-
-        // Restore outputs a lot of messages at normal verbosity, which update doesn't want.
-        var restoreLogger = new RemappedLevelLogger(
-            logger,
-            new RemappedLevelLogger.Mapping
-            {
-                Information = LogLevel.Verbose,
-                Minimal = LogLevel.Verbose,
-            });
-
-        // Pre-loaded request provider containing the graph file
-        var providers = new List<IPreLoadedRestoreRequestProvider>
-            {
-                new DependencyGraphSpecRequestProvider(providerCache, dgSpec)
-            };
-
-        var globalPackagesFolder = dgSpec.GetProjectSpec(dgSpec.Restore.Single()).RestoreMetadata.PackagesPath;
-
-        var restoreContext = new RestoreArgs()
-        {
-            CacheContext = cacheContext,
-            LockFileVersion = LockFileFormat.Version,
-            Log = restoreLogger,
-            MachineWideSettings = new XPlatMachineWideSetting(),
-            GlobalPackagesFolder = globalPackagesFolder,
-            PreLoadedRequestProviders = providers
-            // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
-        };
-
-        // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
-        var restoreRequests = await RestoreRunner.GetRequests(restoreContext);
-
-        // Run restore without commit. This will always return 1 Result pair since we are restoring for 1 request.
-        var restoreResult = await RestoreRunner.RunWithoutCommitAsync(restoreRequests, restoreContext, cancellationToken);
-
-        return restoreResult.Single();
     }
 
     internal static async Task<(PackageToUpdate?, List<NuGetFramework>?)> GetPackageToUpdateAsync(
@@ -322,6 +257,18 @@ internal static class PackageUpdateCommandRunner
         };
 
         return (packageToUpdate, frameworks);
+    }
+
+    private static DependencyGraphSpec GetUpdatedDependencyGraphSpec(DependencyGraphSpec currentDgSpec, PackageToUpdate packageToUpdate)
+    {
+        var updatedPackageSpec = currentDgSpec.Projects[0].Clone();
+        PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
+        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency);
+
+        var updatedDgSpec = currentDgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
+        updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
+
+        return updatedDgSpec;
     }
 
     internal record PackageToUpdate
