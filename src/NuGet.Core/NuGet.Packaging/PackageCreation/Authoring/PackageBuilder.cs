@@ -1051,7 +1051,7 @@ namespace NuGet.Packaging
             var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
-            foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
+            foreach (IPackageFile file in new SortedSet<IPackageFile>(Files, Comparer<IPackageFile>.Create((a, b) => String.CompareOrdinal(a.Path, b.Path))))
             {
                 using (Stream stream = file.GetStream())
                 {
