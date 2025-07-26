@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
+using NuGet.Commands.Test;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -16,6 +18,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
+using NuGet.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
@@ -25,6 +28,16 @@ namespace NuGet.PackageManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
+        private static SourceRepository CreateGPFSourceRepository(string gpfPath)
+        {
+            PackageSource gpfPackageSource = new(gpfPath);
+
+            var mockSourceRepository = new Mock<SourceRepository>(gpfPackageSource, new List<INuGetResourceProvider>());
+            mockSourceRepository.SetupGet(m => m.PackageSource).Returns(gpfPackageSource);
+
+            return mockSourceRepository.Object;
+        }
+
         [Fact]
         public async Task BuildIntegratedNuGetProject_IsRestoreRequiredChangedSha512()
         {
@@ -32,21 +45,40 @@ namespace NuGet.PackageManagement.Test
             using var pathContext = new SimpleTestPathContext();
             using var solutionManager = new TestSolutionManager(pathContext);
 
-            var projectName = "testproj";
-            var versioning107 = new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7"));
-
-            var sources = new List<SourceRepository> { };
             var testLogger = new TestLogger();
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var packageContext = new SimpleTestPackageContext(packageIdentity);
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext);
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
-            var settings = Settings.LoadSpecificSettings(solutionManager.SolutionDirectory, "NuGet.Config");
-            var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
+            var projectName = "testproj";
 
-            solutionManager.NuGetProjects.Add(project);
+            var nuGetVersioningPackageContext = new SimpleTestPackageContext("NuGet.Versioning", "1.0.7");
+            nuGetVersioningPackageContext.AddFile("lib/net452/NuGet.Versioning.dll");
 
-            var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, nuGetVersioningPackageContext);
+            var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
+            var sources = sourceRepositoryProvider.GetRepositories();
+
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+
+            // Create a PackageSpec for the PackageReference project.
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(
+                testSettings,
+                projectName,
+                pathContext.SolutionRoot,
+                framework: "net452");
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(nuGetVersioningPackageContext.Identity);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                projectFullPath: Path.GetDirectoryName(packageSpec.FilePath),
+                projectName);
+
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+
+            solutionManager.NuGetProjects.Add(buildIntegratedProject);
+
+            var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
             var providersCache = new RestoreCommandProvidersCache();
             var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
@@ -82,7 +114,7 @@ namespace NuGet.PackageManagement.Test
                 Assert.True(restoreSummary.NoOpRestore);
             }
 
-            var resolver = new VersionFolderPathResolver(solutionManager.GlobalPackagesFolder);
+            var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
             var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var nupkgMetadataPath = resolver.GetNupkgMetadataPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 

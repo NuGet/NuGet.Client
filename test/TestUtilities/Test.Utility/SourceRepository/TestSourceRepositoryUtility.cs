@@ -79,6 +79,18 @@ namespace Test.Utility
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
             return sourceRepositoryProvider;
         }
+
+        public static ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
+        {
+            var settings = new Settings(settingsDirectory);
+
+            foreach (var source in sourceRepositoryProvider.GetRepositories())
+            {
+                settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
+            }
+
+            return settings;
+        }
     }
 
     /// <summary>

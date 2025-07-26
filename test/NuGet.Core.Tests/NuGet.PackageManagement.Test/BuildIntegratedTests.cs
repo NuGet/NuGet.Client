@@ -79,7 +79,7 @@ namespace NuGet.Test
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, package);
 
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
@@ -200,7 +200,7 @@ namespace NuGet.Test
 
             try
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -343,7 +343,7 @@ namespace NuGet.Test
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext);
             string projectName = "project1";
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -404,7 +404,7 @@ namespace NuGet.Test
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, package);
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
 
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -459,7 +459,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -521,7 +521,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -583,7 +583,7 @@ namespace NuGet.Test
 
             var lockFiles = new List<string>();
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
@@ -656,7 +656,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -710,7 +710,7 @@ namespace NuGet.Test
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, versioning105, versioning107);
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -772,7 +772,7 @@ namespace NuGet.Test
             var latestPackage = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("10.5.0"));
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalInstalledPackage, latestPackage);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -861,7 +861,7 @@ namespace NuGet.Test
                 incompatibleLatestPackage);
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -965,7 +965,7 @@ namespace NuGet.Test
             var originalPackage2 = new PackageIdentity(packageId2, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1066,7 +1066,7 @@ namespace NuGet.Test
             var originalPackage = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1149,18 +1149,6 @@ namespace NuGet.Test
             actionsSecondUpdate.Count().Should().Be(0);
         }
 
-        private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
-        {
-            var settings = new Settings(settingsDirectory);
-
-            foreach (var source in sourceRepositoryProvider.GetRepositories())
-            {
-                settings.AddOrUpdate(ConfigurationConstants.PackageSources, source.PackageSource.AsSourceItem());
-            }
-
-            return settings;
-        }
-
         [Fact]
         public async Task UpdatePackageToExactVersion()
         {
@@ -1171,7 +1159,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1236,7 +1224,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1344,7 +1332,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1405,7 +1393,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1454,7 +1442,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1510,7 +1498,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1569,7 +1557,7 @@ namespace NuGet.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1650,7 +1638,7 @@ namespace NuGet.Test
             packageContext.Dependencies.Add(dependencyPackageContext);
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext, dependencyPackageContext);
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, deleteOnRestartManager);
 
@@ -1703,7 +1691,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var testDeleteManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, testDeleteManager);
 
@@ -1754,7 +1742,7 @@ namespace NuGet.Test
             var updateIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.5"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var deleteOnRestartManager = new TestDeleteOnRestartManager();
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -1813,7 +1801,7 @@ namespace NuGet.Test
                     new PackageSource(pathContext.PackageSource)
                 });
 
-            var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
             var token = CancellationToken.None;
             var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
             var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1885,7 +1873,7 @@ namespace NuGet.Test
             using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
-                var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
                 var token = CancellationToken.None;
                 var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
                 var testNuGetProjectContext = new TestNuGetProjectContext();
