@@ -3157,7 +3157,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 
-            public required IReadOnlyList<IVsReferenceItem2> ToolReferences { get; init; }
+            public IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; init; }
 
             public required string OriginalTargetFrameworks { get; init; }
         }
