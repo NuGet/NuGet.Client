@@ -361,7 +361,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             // Act
             Action act = () => PackageSourceValidator.FindExistingOrCreate(
-                invalidId,
+                invalidId!,
                 source,
                 name,
                 isEnabled,
@@ -392,7 +392,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             Action act = () => PackageSourceValidator.FindExistingOrCreate(
                 lookupName,
                 source,
-                invalidName,
+                invalidName!,
                 isEnabled,
                 allowInsecureConnections,
                 packageSources);
@@ -420,7 +420,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Act
             Action act = () => PackageSourceValidator.FindExistingOrCreate(
                 lookupName,
-                invalidSource,
+                invalidSource!,
                 name,
                 isEnabled,
                 allowInsecureConnections,
