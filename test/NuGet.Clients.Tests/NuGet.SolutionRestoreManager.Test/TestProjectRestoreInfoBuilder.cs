@@ -14,7 +14,7 @@ namespace NuGet.SolutionRestoreManager.Test;
 
 internal class TestProjectRestoreInfoBuilder
 {
-    List<VsTargetFrameworkInfo4> _targetFrameworks = new();
+    List<IVsTargetFrameworkInfo4> _targetFrameworks = new();
     List<VsReferenceItem2>? _toolReferences = null;
 
     public IVsProjectRestoreInfo3 Build()
@@ -80,10 +80,14 @@ internal class TestProjectRestoreInfoBuilder
             _toolReferences = new List<VsReferenceItem2>();
         }
 
-        var toolReference = new VsReferenceItem2(toolName, new Dictionary<string, string>
+        var toolReference = new VsReferenceItem2
         {
+            Name = toolName,
+            Metadata = new Dictionary<string, string>
+            {
             { "Version", toolVersion },
-        });
+            }
+        };
         _toolReferences.Add(toolReference);
 
         return this;
@@ -95,6 +99,18 @@ internal class TestProjectRestoreInfoBuilder
         public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
         public required IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; init; }
         public required string? OriginalTargetFrameworks { get; init; }
+    }
+
+    private record VsReferenceItem2 : IVsReferenceItem2
+    {
+        public required string Name { get; init; }
+        public required IReadOnlyDictionary<string, string> Metadata { get; init; }
+    }
+
+    private record VsTargetFrameworkInfo4 : IVsTargetFrameworkInfo4
+    {
+        public required IReadOnlyDictionary<string, string> Properties { get; init; }
+        public required IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> Items { get; init; }
     }
 
     internal class TargetFrameworkBuilder
@@ -131,20 +147,28 @@ internal class TestProjectRestoreInfoBuilder
             var itemMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             itemMetadata.AddRange(metadata);
 
-            var newItem = new VsReferenceItem2(itemName, itemMetadata);
+            var newItem = new VsReferenceItem2
+            {
+                Name = itemName,
+                Metadata = itemMetadata
+            };
             items.Add(newItem);
 
             return this;
         }
 
-        internal VsTargetFrameworkInfo4 Build()
+        internal IVsTargetFrameworkInfo4 Build()
         {
             if (Properties.Count == 0)
             {
                 throw new InvalidOperationException("At least one property must be added before building the target framework info.");
             }
 
-            return new VsTargetFrameworkInfo4(Items, Properties);
+            return new VsTargetFrameworkInfo4
+            {
+                Items = Items,
+                Properties = Properties
+            };
         }
     }
 }
