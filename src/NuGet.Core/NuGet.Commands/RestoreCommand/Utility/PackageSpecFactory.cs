@@ -17,6 +17,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
+using NuGet.ProjectManagement;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -52,12 +53,12 @@ namespace NuGet.Commands.Restore.Utility
                 Name = restoreMetadata.ProjectName,
                 RestoreMetadata = restoreMetadata,
                 RuntimeGraph = new RuntimeGraph(
-                    MSBuildStringUtility.Split($"{project.OuterBuild.GetProperty("RuntimeIdentifiers")};{project.OuterBuild.GetProperty("RuntimeIdentifier")}")
-                        .Concat(project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty("RuntimeIdentifiers")};{i.GetProperty("RuntimeIdentifier")}")))
+                    MSBuildStringUtility.Split($"{project.OuterBuild.GetProperty(ProjectBuildProperties.RuntimeIdentifiers)};{project.OuterBuild.GetProperty(ProjectBuildProperties.RuntimeIdentifier)}")
+                        .Concat(project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty(ProjectBuildProperties.RuntimeIdentifiers)};{i.GetProperty(ProjectBuildProperties.RuntimeIdentifier)}")))
                         .Distinct(StringComparer.Ordinal)
                         .Select(rid => new RuntimeDescription(rid))
                         .ToList(),
-                    MSBuildStringUtility.Split(project.OuterBuild.GetProperty("RuntimeSupports"))
+                    MSBuildStringUtility.Split(project.OuterBuild.GetProperty(ProjectBuildProperties.RuntimeSupports))
                         .Distinct(StringComparer.Ordinal)
                         .Select(s => new CompatibilityProfile(s))
                         .ToList()
@@ -75,7 +76,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <returns>The <see cref="NuGetVersion" /> of the specified project if one was found, otherwise <see cref="PackageSpec.DefaultVersion" />.</returns>
         internal static NuGetVersion GetProjectVersion(ITargetFramework project)
         {
-            string? version = project.GetProperty("PackageVersion") ?? project.GetProperty("Version");
+            string? version = project.GetProperty(ProjectBuildProperties.PackageVersion) ?? project.GetProperty(ProjectBuildProperties.Version);
 
             if (version == null)
             {
@@ -124,14 +125,14 @@ namespace NuGet.Commands.Restore.Utility
                 {
                     // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
                     CrossTargeting = (projectStyle == ProjectStyle.PackageReference) && (
-                        project.TargetFrameworks.Count > 1 || !string.IsNullOrWhiteSpace(project.OuterBuild.GetProperty("TargetFrameworks"))),
+                        project.TargetFrameworks.Count > 1 || !string.IsNullOrWhiteSpace(project.OuterBuild.GetProperty(ProjectBuildProperties.TargetFrameworks))),
                     FallbackFolders = GetFallbackFolders(
-                        outerBuild.GetProperty("MSBuildStartupDirectory"),
+                        outerBuild.GetProperty(ProjectBuildProperties.MSBuildProjectExtensionsPath),
                         project.Directory,
-                        SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
-                        SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
-                        project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
-                        project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
+                        SplitPropertyValueOrNull(outerBuild, ProjectBuildProperties.RestoreFallbackFolders),
+                        SplitPropertyValueOrNull(outerBuild, ProjectBuildProperties.RestoreFallbackFolders),
+                        project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty(ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders))),
+                        project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty(ProjectBuildProperties.RestoreAdditionalProjectFallbackFoldersExcludes))),
                         settings),
                     SkipContentFileWrite = IsLegacyProject(outerBuild),
                     ValidateRuntimeAssets = outerBuild.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
@@ -199,15 +200,15 @@ namespace NuGet.Commands.Restore.Utility
 
                 NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
                     projectFilePath: project.FullPath,
-                    targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
-                    targetPlatformMoniker: msBuildProjectInstance.GetProperty("TargetPlatformMoniker"),
-                    targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"),
-                    clrSupport: msBuildProjectInstance.GetProperty("CLRSupport"),
-                    windowsTargetPlatformMinVersion: msBuildProjectInstance.GetProperty("WindowsTargetPlatformMinVersion"));
+                    targetFrameworkMoniker: msBuildProjectInstance.GetProperty(ProjectBuildProperties.TargetFrameworkMoniker),
+                    targetPlatformMoniker: msBuildProjectInstance.GetProperty(ProjectBuildProperties.TargetPlatformMoniker),
+                    targetPlatformMinVersion: msBuildProjectInstance.GetProperty(ProjectBuildProperties.TargetPlatformMinVersion),
+                    clrSupport: msBuildProjectInstance.GetProperty(ProjectBuildProperties.CLRSupport),
+                    windowsTargetPlatformMinVersion: msBuildProjectInstance.GetProperty(ProjectBuildProperties.WindowsTargetPlatformMinVersion));
 
-                var packageTargetFallback = MSBuildStringUtility.Split(msBuildProjectInstance.GetProperty("PackageTargetFallback")).Select(NuGetFramework.Parse).ToList();
+                var packageTargetFallback = MSBuildStringUtility.Split(msBuildProjectInstance.GetProperty(ProjectBuildProperties.PackageTargetFallback)).Select(NuGetFramework.Parse).ToList();
 
-                var assetTargetFallbackEnum = MSBuildStringUtility.Split(msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.AssetTargetFallback))).Select(NuGetFramework.Parse).ToList();
+                var assetTargetFallbackEnum = MSBuildStringUtility.Split(msBuildProjectInstance.GetProperty(ProjectBuildProperties.AssetTargetFallback)).Select(NuGetFramework.Parse).ToList();
 
                 AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallbackEnum, project.FullPath);
 
@@ -584,14 +585,14 @@ namespace NuGet.Commands.Restore.Utility
         internal static ImmutableArray<LibraryDependency> GetPackageReferences(ITargetFramework project, bool isCentralPackageVersionManagementEnabled, IReadOnlyDictionary<string, CentralPackageVersion>? centralPackageVersions)
         {
             // Get the distinct PackageReference items, ignoring duplicates
-            List<IItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
+            List<IItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, ProjectItems.PackageReference).ToList();
 
             var libraryDependencies = new LibraryDependency[packageReferenceItems.Count];
 
             for (int i = 0; i < packageReferenceItems.Count; i++)
             {
                 var packageReferenceItem = packageReferenceItems[i];
-                bool autoReferenced = packageReferenceItem.IsMetadataTrue("IsImplicitlyDefined");
+                bool autoReferenced = packageReferenceItem.IsMetadataTrue(ProjectItemProperties.IsImplicitlyDefined);
                 string version = packageReferenceItem.GetMetadata("Version");
 
                 VersionRange? versionRange = string.IsNullOrWhiteSpace(version) ? null : VersionRange.Parse(version);
@@ -601,7 +602,7 @@ namespace NuGet.Commands.Restore.Utility
                     versionRange = VersionRange.All;
                 }
 
-                string versionOverrideString = packageReferenceItem.GetMetadata("VersionOverride");
+                string versionOverrideString = packageReferenceItem.GetMetadata(ProjectItemProperties.VersionOverride);
                 var versionOverrideRange = string.IsNullOrWhiteSpace(versionOverrideString) ? null : VersionRange.Parse(versionOverrideString);
 
                 CentralPackageVersion? centralPackageVersion = null;
@@ -612,19 +613,19 @@ namespace NuGet.Commands.Restore.Utility
                 }
                 versionRange = versionOverrideRange ?? versionRange;
 
-                ImmutableArray<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetMetadata("NoWarn"));
+                ImmutableArray<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetMetadata(ProjectItemProperties.NoWarn));
 
                 libraryDependencies[i] = new LibraryDependency()
                 {
                     AutoReferenced = autoReferenced,
-                    GeneratePathProperty = packageReferenceItem.IsMetadataTrue("GeneratePathProperty"),
-                    Aliases = packageReferenceItem.GetMetadata("Aliases"),
-                    IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetMetadata("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetMetadata("ExcludeAssets"), LibraryIncludeFlags.None),
+                    GeneratePathProperty = packageReferenceItem.IsMetadataTrue(ProjectItemProperties.GeneratePathProperty),
+                    Aliases = packageReferenceItem.GetMetadata(ProjectItemProperties.Aliases),
+                    IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetMetadata(ProjectItemProperties.IncludeAssets), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetMetadata(ProjectItemProperties.ExcludeAssets), LibraryIncludeFlags.None),
                     LibraryRange = new LibraryRange(
                         packageReferenceItem.Identity,
                         versionRange,
                         LibraryDependencyTarget.Package),
-                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetMetadata("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetMetadata(ProjectItemProperties.PrivateAssets), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     VersionOverride = versionOverrideRange,
                     NoWarn = noWarn,
                     VersionCentrallyManaged = isCentrallyManaged,
@@ -637,7 +638,7 @@ namespace NuGet.Commands.Restore.Utility
         internal static Dictionary<string, PrunePackageReference> GetPrunePackageReferences(ITargetFramework project)
         {
             var result = new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase);
-            IEnumerable<IItem> PrunePackageReferences = GetDistinctItemsOrEmpty(project, "PrunePackageReference");
+            IEnumerable<IItem> PrunePackageReferences = GetDistinctItemsOrEmpty(project, ProjectItems.PrunePackageReference);
 
             foreach (var projectItemInstance in PrunePackageReferences)
             {
@@ -657,7 +658,7 @@ namespace NuGet.Commands.Restore.Utility
         internal static IEnumerable<DownloadDependency> GetPackageDownloads(ITargetFramework project)
         {
             // Get the distinct PackageDownload items, ignoring duplicates
-            foreach (IItem projectItemInstance in GetDistinctItemsOrEmpty(project, "PackageDownload"))
+            foreach (IItem projectItemInstance in GetDistinctItemsOrEmpty(project, ProjectItems.PackageDownload))
             {
                 string id = projectItemInstance.Identity;
 
@@ -691,7 +692,7 @@ namespace NuGet.Commands.Restore.Utility
         internal static IReadOnlyCollection<FrameworkDependency>? GetFrameworkReferences(ITargetFramework project)
         {
             // Get the unique FrameworkReference items, ignoring duplicates
-            List<IItem> frameworkReferenceItems = GetDistinctItemsOrEmpty(project, "FrameworkReference").ToList();
+            List<IItem> frameworkReferenceItems = GetDistinctItemsOrEmpty(project, ProjectItems.FrameworkReference).ToList();
 
             if (frameworkReferenceItems.Count == 0)
             {
@@ -705,7 +706,7 @@ namespace NuGet.Commands.Restore.Utility
             for (int i = 0; i < frameworkReferenceItems.Count; i++)
             {
                 var frameworkReferenceItem = frameworkReferenceItems[i];
-                var privateAssets = MSBuildStringUtility.Split(frameworkReferenceItem.GetMetadata("PrivateAssets"));
+                var privateAssets = MSBuildStringUtility.Split(frameworkReferenceItem.GetMetadata(ProjectItemProperties.PrivateAssets));
 
                 frameworkDependencies[i] = new FrameworkDependency(frameworkReferenceItem.Identity, FrameworkDependencyFlagsUtils.GetFlags(privateAssets));
             }
@@ -852,7 +853,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private static HashSet<string>? GetAuditSuppressions(ITargetFramework project)
         {
-            IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
+            IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, ProjectItems.NuGetAuditSuppress)
                                                     .Select(i => i.Identity);
 
             return new HashSet<string>(suppressions, StringComparer.Ordinal);
