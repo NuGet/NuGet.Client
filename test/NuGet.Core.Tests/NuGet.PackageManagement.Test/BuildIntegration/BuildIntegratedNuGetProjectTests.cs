@@ -16,6 +16,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Test;
@@ -51,7 +52,7 @@ namespace NuGet.PackageManagement.Test
             var nuGetVersioningPackageContext = new SimpleTestPackageContext("NuGet.Versioning", "1.0.7");
             nuGetVersioningPackageContext.AddFile("lib/net452/NuGet.Versioning.dll");
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, nuGetVersioningPackageContext);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
             var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
@@ -64,6 +65,7 @@ namespace NuGet.PackageManagement.Test
                 projectName,
                 pathContext.SolutionRoot,
                 framework: "net452");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, nuGetVersioningPackageContext.Identity);
 
             var projectTargetFramework = NuGetFramework.Parse("net452");
             var testNuGetProjectContext = new TestNuGetProjectContext();
