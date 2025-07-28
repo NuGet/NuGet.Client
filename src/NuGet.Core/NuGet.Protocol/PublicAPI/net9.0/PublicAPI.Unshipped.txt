@@ -1,4 +1,7 @@
 #nullable enable
 NuGet.Protocol.HttpSourceException
+NuGet.Protocol.InvalidPackageIdException
 ~NuGet.Protocol.HttpSourceException.HttpSourceException(string message) -> void
 ~NuGet.Protocol.HttpSourceException.HttpSourceException(string message, System.Exception innerException) -> void
+~NuGet.Protocol.InvalidPackageIdException.InvalidPackageIdException(string message) -> void
+~NuGet.Protocol.InvalidPackageIdException.InvalidPackageIdException(string message, System.Exception innerException) -> void

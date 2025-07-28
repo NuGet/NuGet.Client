@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -49,6 +51,13 @@ namespace NuGet.Protocol
         /// <returns>The first URL from the resource, with the URI template applied.</returns>
         public Uri GetUri(string id, NuGetVersion version)
         {
+            if (!PackageIdValidator.IsValidPackageId(id))
+            {
+                throw new InvalidPackageIdException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_Invalid_package_id,
+                    id));
+            }
             var uriString = _template
 #if NETCOREAPP
                .Replace("{id}", id, StringComparison.OrdinalIgnoreCase)

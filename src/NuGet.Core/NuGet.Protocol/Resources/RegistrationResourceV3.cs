@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -48,12 +49,20 @@ namespace NuGet.Protocol
         /// </summary>
         public virtual Uri GetUri(string packageId)
         {
-            if (String.IsNullOrEmpty(packageId))
+            if (string.IsNullOrEmpty(packageId))
             {
                 throw new InvalidOperationException();
             }
 
-            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
+            if (!PackageIdValidator.IsValidPackageId(packageId))
+            {
+                throw new InvalidPackageIdException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_Invalid_package_id,
+                    packageId));
+            }
+
+            return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
                 BaseUri.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
         }
 
@@ -62,7 +71,7 @@ namespace NuGet.Protocol
         /// </summary>
         public virtual Uri GetUri(string id, NuGetVersion version)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
             }
@@ -87,7 +96,15 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            return new Uri(String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
+            if (!PackageIdValidator.IsValidPackageId(package.Id))
+            {
+                throw new InvalidPackageIdException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_Invalid_package_id,
+                    package.Id));
+            }
+
+            return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
         }
 

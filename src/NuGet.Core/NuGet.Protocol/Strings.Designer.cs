@@ -19,7 +19,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -183,6 +183,15 @@ namespace NuGet.Protocol {
         internal static string Error_Insecure_HTTP {
             get {
                 return ResourceManager.GetString("Error_Insecure_HTTP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid package id : `{0}`.
+        /// </summary>
+        internal static string Error_Invalid_package_id {
+            get {
+                return ResourceManager.GetString("Error_Invalid_package_id", resourceCulture);
             }
         }
         

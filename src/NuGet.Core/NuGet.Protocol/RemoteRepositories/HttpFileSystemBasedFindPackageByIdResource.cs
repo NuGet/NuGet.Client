@@ -495,6 +495,12 @@ namespace NuGet.Protocol
             var maxTries = _maxRetries * _baseUris.Count;
             var packageIdLowerCase = id.ToLowerInvariant();
 
+            if (!PackageIdValidator.IsValidPackageId(id))
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, id);
+                throw new InvalidPackageIdException(message);
+            }
+
             for (var retry = 1; retry <= maxTries; ++retry)
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;

@@ -255,6 +255,11 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
+            if (!PackageIdValidator.IsValidPackageId(identity.Id))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, identity.Id));
+            }
+
             int maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;
 
             for (var retry = 1; retry <= maxRetries; ++retry)

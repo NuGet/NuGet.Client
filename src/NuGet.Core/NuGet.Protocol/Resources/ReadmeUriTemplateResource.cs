@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -35,6 +37,14 @@ namespace NuGet.Protocol
             if (_uriTemplate == null)
             {
                 return string.Empty;
+            }
+
+            if (!PackageIdValidator.IsValidPackageId(id))
+            {
+                throw new InvalidPackageIdException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_Invalid_package_id,
+                    id));
             }
 
             var uriString = _uriTemplate

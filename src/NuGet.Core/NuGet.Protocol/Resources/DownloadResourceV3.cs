@@ -3,9 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
@@ -70,6 +72,14 @@ namespace NuGet.Protocol
         /// </summary>
         private async Task<Uri> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
         {
+            if (!PackageIdValidator.IsValidPackageId(identity.Id))
+            {
+                throw new InvalidPackageIdException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_Invalid_package_id,
+                    identity.Id));
+            }
+
             Uri downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;
 

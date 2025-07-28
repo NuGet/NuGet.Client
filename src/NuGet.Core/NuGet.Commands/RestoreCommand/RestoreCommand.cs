@@ -16,7 +16,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -359,34 +358,8 @@ namespace NuGet.Commands
             success &= EvaluateHttpSourceUsage();
             success &= HasValidPlatformVersions();
             success &= PackageReferencesHaveVersions();
-            success &= ValidatePackageReferences();
 
             return success;
-        }
-
-        private bool ValidatePackageReferences()
-        {
-            foreach (var frameworkInfo in _request.Project.TargetFrameworks)
-            {
-                foreach (var dependency in frameworkInfo.Dependencies)
-                {
-                    try
-                    {
-                        PackageIdValidator.ValidatePackageId(dependency.Name);
-                    }
-                    catch (ArgumentException)
-                    {
-                        _logger.Log(
-                            RestoreLogMessage.CreateError(
-                            NuGetLogCode.NU1017,
-                            string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_packageid, dependency.Name)));
-
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         private void InitializeTelemetry(TelemetryActivity telemetry, int httpSourcesCount, bool auditEnabled)
