@@ -219,6 +219,7 @@ steps:
     parameters:
       PackageName: 'NuGet.Client'
       PackageVersion: "$(SemanticVersion)"
+      publishArtifacts: false
 
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
