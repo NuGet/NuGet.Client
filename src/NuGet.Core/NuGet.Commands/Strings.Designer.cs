@@ -430,15 +430,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid package id : `{0}`..
-        /// </summary>
-        internal static string Error_invalid_packageid {
-            get {
-                return ResourceManager.GetString("Error_invalid_packageid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment..
         /// </summary>
         internal static string Error_InvalidATF {
