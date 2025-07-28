@@ -221,6 +221,8 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            ThrowIfHttpUriAndInsecureConnectionsNotAllowed(request.RequestFactory().RequestUri.AbsoluteUri);
+
             return await ProcessResponseAsync(
                 request,
                 async response =>
