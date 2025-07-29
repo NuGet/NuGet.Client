@@ -214,7 +214,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: "succeeded()"
+        condition: "succeededOrFailed()"
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
         sbomEnabled: true

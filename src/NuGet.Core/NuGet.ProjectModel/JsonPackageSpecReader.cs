@@ -13,8 +13,6 @@ namespace NuGet.ProjectModel
 {
     public static partial class JsonPackageSpecReader
     {
-        private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
-        private static readonly char[] VersionSeparators = new[] { ';' };
         private const char VersionSeparator = ';';
         public static readonly string RestoreOptions = "restore";
         public static readonly string RestoreSettings = "restoreSettings";
