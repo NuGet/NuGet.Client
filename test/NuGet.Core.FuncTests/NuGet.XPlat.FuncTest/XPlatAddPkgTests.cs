@@ -1402,7 +1402,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async Task AddPkg_WithPackageReferenceMatchingExistingProject_Succeeds()
+        public async Task AddPkg_WithPackageReferenceMatchingExistingProject_ErrorsWithInformationMessage()
         {
             using var pathContext = new SimpleTestPathContext();
             var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
@@ -1422,13 +1422,10 @@ namespace NuGet.XPlat.FuncTest
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
-            var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
-            var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
-            var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
-
-            // Assert
-            Assert.Equal(1, result);
-            Assert.Null(itemGroup);
+            var exception = await Assert.ThrowsAsync<CommandException>(async () => await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger)));
+            exception.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgProjectReference,
+                    packageX.Id));
         }
 
         [Fact]

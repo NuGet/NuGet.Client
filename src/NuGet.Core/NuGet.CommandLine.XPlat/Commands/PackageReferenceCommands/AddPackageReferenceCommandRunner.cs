@@ -290,7 +290,23 @@ namespace NuGet.CommandLine.XPlat
             PackageDependency packageDependency)
         {
             // get the package resolved version from restore preview result
-            var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageDependency.Id, userSpecifiedFrameworks);
+            (LibraryType libraryType, NuGetVersion resolvedVersion) = GetPackageVersionFromRestoreResult(restorePreviewResult, packageDependency.Id, userSpecifiedFrameworks);
+
+            if (libraryType == LibraryType.Unresolved)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgUnresolved,
+                    packageDependency.Id));
+            }
+
+            if (libraryType == LibraryType.Project ||
+               libraryType == LibraryType.ExternalProject)
+            {
+                // If the package is a project or external project, we cannot add it as a package reference.
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgProjectReference,
+                    packageDependency.Id));
+            }
 
             // correct package version to write in project file
             var version = packageDependency.VersionRange;
@@ -419,7 +435,7 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        private static NuGetVersion GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+        private static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
             string packageId,
             List<NuGetFramework> userSpecifiedFrameworks)
         {
@@ -448,13 +464,23 @@ namespace NuGet.CommandLine.XPlat
 
                 if (matchingPackageEntries.Any())
                 {
-                    return matchingPackageEntries
-                        .First()
+                    var firstMatchingEntry = matchingPackageEntries
+                        .First();
+
+                    // If we have found that the project is select, then we return null.
+                    if (firstMatchingEntry.Key.Type == LibraryType.Project ||
+                        firstMatchingEntry.Key.Type == LibraryType.ExternalProject)
+                    {
+                        return (firstMatchingEntry.Key.Type, null);
+                    }
+
+                    return (firstMatchingEntry.Key.Type, firstMatchingEntry
                         .Key
-                        .Version;
+                        .Version);
                 }
             }
-            return null;
+
+            return (LibraryType.Unresolved, null);
         }
     }
 }
