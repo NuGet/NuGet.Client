@@ -2432,6 +2432,14 @@ namespace NuGet.Commands.FuncTest
                                 },
                         }
                     },
+                    ""net7.0"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        }
+                    },
                     ""netstandard2.1"": {
                         ""dependencies"": {
                                 ""A"": {
@@ -2481,6 +2489,7 @@ namespace NuGet.Commands.FuncTest
             testEvent["Pruning.FrameworksEnabled.Count"].Should().Be(4);
             testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(1);
             testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(2);
+            testEvent["Pruning.FrameworksDefaultDisabled.Count"].Should().Be(1);
         }
 
         // Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.
