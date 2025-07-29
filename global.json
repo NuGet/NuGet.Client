@@ -5,7 +5,7 @@
     "allowPrerelease": true
   },
   "tools": {
-    "dotnet": "10.0.100-preview.3.25201.16",
+    "dotnet": "9.0.300",
     "pinned": true
   },
   "msbuild-sdks": {
