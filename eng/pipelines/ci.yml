@@ -7,13 +7,6 @@ parameters:
   - Production
   - Staging
 
-- name: NuGetLocalizationType
-  displayName: Whether to do production-ready localization (Full), or pseudo-localization, aka PLOC, (Pseudo) for testing.
-  type: string
-  default: Full
-  values:
-  - Full
-  - Pseudo
 - name: RunBuildForPublishing
   displayName: Build bits for publishing
   type: boolean
@@ -73,8 +66,8 @@ stages:
 - template: templates/pipeline.yml
   parameters:
     isOfficialBuild: false
+    RunOneLocBuild: true
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
     RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
     RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
     RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}

@@ -1,7 +1,4 @@
 parameters:
-- name: NuGetLocalizationType
-  type: string
-
 steps:
 - task: MicroBuildLocalizationPlugin@4
   displayName: "Install Localization Plugin"

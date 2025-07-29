@@ -92,7 +92,7 @@ extends:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
         isOfficialBuild: true
-        NuGetLocalizationType: Full
+        RunOneLocBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
         RunUnitTestsOnWindows: ${{parameters.RunUnitTestsOnWindows}}
