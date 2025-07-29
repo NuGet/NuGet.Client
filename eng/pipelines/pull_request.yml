@@ -86,6 +86,7 @@ extends:
     stages:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
+        RunOneLocBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
         RunUnitTestsOnWindows: ${{parameters.RunUnitTestsOnWindows}}
