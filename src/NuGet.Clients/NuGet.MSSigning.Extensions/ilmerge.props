@@ -79,7 +79,6 @@
     <MergeAllowdup Include="IFrameworkMappings"/>
     <MergeAllowdup Include="IFrameworkNameProvider"/>
     <MergeAllowdup Include="IFrameworkSpecific"/>
-    <MergeAllowdup Include="IFrameworkTargetable"/>
     <MergeAllowdup Include="IPortableFrameworkMappings"/>
     <MergeAllowdup Include="NuGetFramework"/>
     <MergeAllowdup Include="NuGetFrameworkExtensions"/>
