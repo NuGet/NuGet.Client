@@ -52,7 +52,7 @@ param (
     [Alias('n')]
     [int]$BuildNumber,
     [Alias('su')]
-    [switch]$RunUnitTest,
+    [switch]$RunUnitTests,
     [Alias('f')]
     [switch]$Clean,
     [switch]$CI,
@@ -95,7 +95,7 @@ Invoke-BuildStep 'Cleaning artifacts' {
 -skip:(-not $Clean) `
 -ev +BuildErrors
 
-if ($RunUnitTest) {
+if ($RunUnitTests) {
     $VSTarget = "RunVS";
     $VSMessage = "Running Build, Pack, Core unit tests, and Unit tests";
 }

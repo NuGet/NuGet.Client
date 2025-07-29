@@ -104,7 +104,7 @@ NuGet members may contribute directly to the main remote.
 
 ### Notable `build.ps1` switches
 
-- `-RunUnitTest` - skips running unit tests.
+- `-RunUnitTests` - Runs unit tests after building.
 - `-Clean` - cleans build artifacts without deleting files that configure.ps1 creates.
 
 > Reveal all script parameters and switches by running
