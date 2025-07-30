@@ -81,6 +81,7 @@ stages:
     jobs:
     - template: /eng/common/templates/job/onelocbuild.yml
       parameters:
+        is1ESPipeline: true
         LclSource: lclFilesfromPackage
         LclPackageId: 'LCL-JUNO-PROD-YOURREPO'
         MirrorRepo: 'NuGet.Client'
