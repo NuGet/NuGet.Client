@@ -5,6 +5,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update
@@ -13,7 +14,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
     {
         Task<NuGetVersion?> GetLatestVersionAsync(
             string packageId,
-            ILoggerWithColor logger,
+            ILogger logger,
             CancellationToken cancellationToken);
     }
 }

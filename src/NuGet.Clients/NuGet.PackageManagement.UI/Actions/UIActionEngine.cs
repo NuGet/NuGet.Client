@@ -1007,24 +1007,24 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var packageId in packageIds)
                 {
-                    var isInstalled = installed.ContainsKey(packageId);
-                    var isUninstalled = uninstalled.ContainsKey(packageId);
+                    var isInstalled = installed.TryGetValue(packageId, out var installedPackage);
+                    var isUninstalled = uninstalled.TryGetValue(packageId, out var uninstalledPackage);
 
                     if (isInstalled && isUninstalled)
                     {
                         // the package is updated
-                        updated.Add(new UpdatePreviewResult(uninstalled[packageId], installed[packageId]));
+                        updated.Add(new UpdatePreviewResult(uninstalledPackage, installedPackage));
                         installed.Remove(packageId);
                     }
                     else if (isInstalled && !isUninstalled)
                     {
                         // the package is added
-                        added.Add(new AccessiblePackageIdentity(installed[packageId]));
+                        added.Add(new AccessiblePackageIdentity(installedPackage));
                     }
                     else if (!isInstalled && isUninstalled)
                     {
                         // the package is deleted
-                        deleted.Add(new AccessiblePackageIdentity(uninstalled[packageId]));
+                        deleted.Add(new AccessiblePackageIdentity(uninstalledPackage));
                     }
                 }
 
