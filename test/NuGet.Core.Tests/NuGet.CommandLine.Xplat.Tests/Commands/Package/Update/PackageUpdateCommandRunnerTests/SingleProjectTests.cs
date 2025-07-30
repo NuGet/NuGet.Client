@@ -11,6 +11,7 @@ using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -48,10 +49,9 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.UpdatePackageReference(
             It.IsAny<PackageSpec>(),
-            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.Is<PackageDependency>(p => p.Id == "Test.Package" && p.VersionRange.ToString() == "[1.2.3, )"),
             It.IsAny<List<NuGetFramework>>(),
-            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package" && p.NewVersion.ToString() == "[1.2.3, )"),
-            It.IsAny<ILogger>()), Times.Once);
+            It.IsAny<NuGetVersion>()), Times.Once);
     }
 
     [Fact]
@@ -88,10 +88,9 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.UpdatePackageReference(
             It.IsAny<PackageSpec>(),
-            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.Is<PackageDependency>(p => p.Id == "Contoso.Polyfill" && p.VersionRange.ToString() == "[1.2.3, )"),
             It.IsAny<List<NuGetFramework>>(),
-            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Contoso.Polyfill" && p.NewVersion.ToString() == "[1.2.3, )"),
-            It.IsAny<ILogger>()), Times.Once);
+            It.IsAny<NuGetVersion>()), Times.Once);
     }
 
     [Fact]
@@ -123,10 +122,9 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.UpdatePackageReference(
             It.IsAny<PackageSpec>(),
-            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<PackageDependency>(),
             It.IsAny<List<NuGetFramework>>(),
-            It.IsAny<PackageUpdateCommandRunner.PackageToUpdate>(),
-            It.IsAny<ILogger>()), Times.Never);
+            It.IsAny<NuGetVersion>()), Times.Never);
     }
 
     [Fact]
@@ -158,10 +156,9 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.UpdatePackageReference(
             It.IsAny<PackageSpec>(),
-            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<PackageDependency>(),
             It.IsAny<List<NuGetFramework>>(),
-            It.IsAny<PackageUpdateCommandRunner.PackageToUpdate>(),
-            It.IsAny<ILogger>()), Times.Never);
+            It.IsAny<NuGetVersion>()), Times.Never);
     }
 
     [Fact]
@@ -237,10 +234,9 @@ public class SingleProjectTests
 
         ioMock.Setup(x => x.UpdatePackageReference(
             It.IsAny<PackageSpec>(),
-            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<PackageDependency>(),
             It.IsAny<List<NuGetFramework>>(),
-            It.IsAny<PackageUpdateCommandRunner.PackageToUpdate>(),
-            It.IsAny<ILogger>()));
+            It.IsAny<NuGetVersion>()));
 
         ioMock.Setup(x => x.CommitAsync(
             It.IsAny<IPackageUpdateIO.RestoreResult>(),

@@ -230,7 +230,7 @@ namespace NuGet.CommandLine.XPlat
             else if (compatibleFrameworks.Count ==
                      restorePreviewResult.Result.CompatibilityCheckResults.Count(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)))
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
+                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
                 {
                     return 1;
                 }
@@ -249,7 +249,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
+                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
                 {
                     return 1;
                 }
@@ -280,16 +280,16 @@ namespace NuGet.CommandLine.XPlat
             return 0;
         }
 
-        internal static bool TryFindResolvedVersion(List<NuGetFramework> userSpecifiedFrameworks, PackageDependency packageDependency, RestoreResultPair restorePreviewResult, ILogger logger, out NuGetVersion resolvedVersion)
+        internal static bool TryFindResolvedVersion(List<NuGetFramework> userSpecifiedFrameworks, string packageId, RestoreResultPair restorePreviewResult, ILogger logger, out NuGetVersion resolvedVersion)
         {
             // get the package resolved version from restore preview result
-            (LibraryType libraryType, resolvedVersion) = GetPackageVersionFromRestoreResult(restorePreviewResult, packageDependency.Id, userSpecifiedFrameworks);
+            (LibraryType libraryType, resolvedVersion) = GetPackageVersionFromRestoreResult(restorePreviewResult, packageId, userSpecifiedFrameworks);
 
             if (libraryType == LibraryType.Unresolved)
             {
                 logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgUnresolved,
-                    packageDependency.Id));
+                    packageId));
                 return false;
             }
 
@@ -299,7 +299,7 @@ namespace NuGet.CommandLine.XPlat
                 // If the package is a project or external project, we cannot add it as a package reference.
                 logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgProjectReference,
-                    packageDependency.Id));
+                    packageId));
                 return false;
             }
 

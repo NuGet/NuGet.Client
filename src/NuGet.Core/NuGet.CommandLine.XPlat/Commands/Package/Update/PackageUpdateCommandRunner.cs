@@ -96,7 +96,13 @@ internal static class PackageUpdateCommandRunner
         // 3. Preview restore to validate changes
         logger.LogDebug(Strings.PackageUpdate_PreviewRestore);
         var updatedDgSpec = GetUpdatedDependencyGraphSpec(dgSpec, packageToUpdate);
-        var restorePreviewResult = await packageUpdateIO.PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
+        IPackageUpdateIO.RestoreResult restorePreviewResult = await packageUpdateIO.PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
+
+        if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms, packageToUpdate.Id, ((PackageUpdateIO.RestoreResult)restorePreviewResult).RestoreResultPair, logger, out NuGetVersion resolvedVersion))
+        {
+            return ExitCodes.Error;
+        }
+
 
         if (!restorePreviewResult.Success)
         {
@@ -111,7 +117,9 @@ internal static class PackageUpdateCommandRunner
         logger.LogInformation("");
 
         var updatedPackageSpec = updatedDgSpec.Projects[0];
-        packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageTfms!, packageToUpdate, logger);
+
+        PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
+        packageUpdateIO.UpdatePackageReference(updatedPackageSpec, packageDependency, packageTfms!, resolvedVersion);
 
         // 5. Commit restore if everything successful
         await packageUpdateIO.CommitAsync(restorePreviewResult, CancellationToken.None);

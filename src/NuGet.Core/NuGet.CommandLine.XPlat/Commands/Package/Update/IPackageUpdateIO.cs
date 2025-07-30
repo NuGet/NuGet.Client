@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using static NuGet.CommandLine.XPlat.Commands.Package.Update.PackageUpdateCommandRunner;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 
@@ -60,11 +61,10 @@ internal interface IPackageUpdateIO
     /// is used by all target frameworks.
     /// </summary>
     /// <param name="updatedPackageSpec">The updated project specification containing target framework information.</param>
-    /// <param name="restorePreviewResult">The restore preview result containing resolved package information.</param>
     /// <param name="packageTfms">Target frameworks where the package is used.</param>
     /// <param name="packageDependency">Package dependency information.</param>
-    /// <param name="logger">Logger for the operation.</param>
-    void UpdatePackageReference(PackageSpec updatedPackageSpec, RestoreResult restorePreviewResult, List<NuGetFramework> packageTfms, PackageToUpdate packageDependency, ILogger logger);
+    /// <param name="resolvedVersion">The resolved package version.</param>
+    void UpdatePackageReference(PackageSpec updatedPackageSpec, PackageDependency packageDependency, List<NuGetFramework> packageTfms, NuGetVersion resolvedVersion);
 
     /// <summary>
     /// An opaque type, to aid in testing, representing the result of a restore operation.
