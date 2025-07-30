@@ -454,7 +454,7 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        internal static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResult restoreResult,
+        private static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResult restoreResult,
             string packageId,
             List<NuGetFramework> userSpecifiedFrameworks)
         {
@@ -485,7 +485,7 @@ namespace NuGet.CommandLine.XPlat
                     var firstMatchingEntry = matchingPackageEntries
                         .First();
 
-                    // If we have found that the project is select, then we return null.
+                    // If we have found that the project is selected, then we return null.
                     if (firstMatchingEntry.Key.Type == LibraryType.Project ||
                         firstMatchingEntry.Key.Type == LibraryType.ExternalProject)
                     {

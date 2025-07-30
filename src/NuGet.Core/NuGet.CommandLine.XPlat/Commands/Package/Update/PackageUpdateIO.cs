@@ -144,10 +144,11 @@ internal class PackageUpdateIO : IPackageUpdateIO
 
         if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms,
             packageDependency.Id,
-            ((RestoreResult)restorePreviewResult).RestoreResultPair.Result, NullLogger.Instance, out NuGetVersion resolvedVersion))
+            ((RestoreResult)restorePreviewResult).RestoreResultPair.Result, logger, out NuGetVersion resolvedVersion))
         {
             return;
         }
+
         // Generate the LibraryDependency using the same logic as AddPackageReferenceCommandRunner
         var libraryDependency = AddPackageReferenceCommandRunner.GenerateLibraryDependency(
             updatedPackageSpec,
@@ -171,7 +172,7 @@ internal class PackageUpdateIO : IPackageUpdateIO
         }
     }
 
-    internal class RestoreResult : IPackageUpdateIO.RestoreResult
+    private class RestoreResult : IPackageUpdateIO.RestoreResult
     {
         internal required RestoreResultPair RestoreResultPair { get; init; }
 
