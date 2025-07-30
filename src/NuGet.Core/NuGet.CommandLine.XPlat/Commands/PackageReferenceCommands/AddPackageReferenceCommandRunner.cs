@@ -230,7 +230,7 @@ namespace NuGet.CommandLine.XPlat
             else if (compatibleFrameworks.Count ==
                      restorePreviewResult.Result.CompatibilityCheckResults.Count(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)))
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
+                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult.Result, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
                 {
                     return 1;
                 }
@@ -249,7 +249,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
+                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult.Result, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
                 {
                     return 1;
                 }
@@ -280,10 +280,10 @@ namespace NuGet.CommandLine.XPlat
             return 0;
         }
 
-        internal static bool TryFindResolvedVersion(List<NuGetFramework> userSpecifiedFrameworks, string packageId, RestoreResultPair restorePreviewResult, ILogger logger, out NuGetVersion resolvedVersion)
+        internal static bool TryFindResolvedVersion(List<NuGetFramework> userSpecifiedFrameworks, string packageId, RestoreResult restoreResult, ILogger logger, out NuGetVersion resolvedVersion)
         {
             // get the package resolved version from restore preview result
-            (LibraryType libraryType, resolvedVersion) = GetPackageVersionFromRestoreResult(restorePreviewResult, packageId, userSpecifiedFrameworks);
+            (LibraryType libraryType, resolvedVersion) = GetPackageVersionFromRestoreResult(restoreResult, packageId, userSpecifiedFrameworks);
 
             if (libraryType == LibraryType.Unresolved)
             {
@@ -454,13 +454,12 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        internal static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+        internal static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResult restoreResult,
             string packageId,
             List<NuGetFramework> userSpecifiedFrameworks)
         {
             // Get the restore graphs from the restore result
-            var restoreGraphs = restorePreviewResult
-                .Result
+            var restoreGraphs = restoreResult
                 .RestoreGraphs;
 
             if (userSpecifiedFrameworks.Count > 1)
