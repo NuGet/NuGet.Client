@@ -214,7 +214,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+                .Returns(new ValueTask<INuGetProjectManagerService?>(projectManagerService.Object));
 
             IProjectMetadataContextInfo actualResult = await IProjectContextInfoExtensions.GetMetadataAsync(
                 project.Object,
@@ -295,7 +295,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+                .Returns(new ValueTask<INuGetProjectManagerService?>(projectManagerService.Object));
 
             string? actualResult = await IProjectContextInfoExtensions.GetUniqueNameOrNameAsync(
                 project.Object,
@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.Is<ServiceRpcDescriptor>(descriptor => descriptor == NuGetServices.ProjectManagerService),
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService));
+                .Returns(new ValueTask<INuGetProjectManagerService?>(projectManagerService));
 
             Mock.Get(projectManagerService)
                 .Setup(prj => prj.GetPackageFoldersAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+                .Returns(new ValueTask<INuGetProjectManagerService?>(projectManagerService.Object));
 
             (bool, string?) actualResult = await IProjectContextInfoExtensions.TryGetInstalledPackageFilePathAsync(
                 project.Object,
