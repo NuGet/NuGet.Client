@@ -238,7 +238,7 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.ProjectPath));
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
-                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
+                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency, packageReferenceArgs.Logger);
 
                 msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
             }
@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(originalFramework => originalFramework != null);
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
-                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
+                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency, packageReferenceArgs.Logger);
 
                 msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
                     libraryDependency,
@@ -282,30 +282,36 @@ namespace NuGet.CommandLine.XPlat
             return await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packageId, prerelease, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Returns the library dependency for the package reference to be added if appropriate. May return null if the package is not compatible with the project or if it is a project reference.
+        /// </summary>
         internal static LibraryDependency GenerateLibraryDependency(
             PackageSpec project,
             string customPackagesPath,
             RestoreResultPair restorePreviewResult,
             List<NuGetFramework> userSpecifiedFrameworks,
-            PackageDependency packageDependency)
+            PackageDependency packageDependency,
+            ILogger logger)
         {
             // get the package resolved version from restore preview result
             (LibraryType libraryType, NuGetVersion resolvedVersion) = GetPackageVersionFromRestoreResult(restorePreviewResult, packageDependency.Id, userSpecifiedFrameworks);
 
             if (libraryType == LibraryType.Unresolved)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgUnresolved,
                     packageDependency.Id));
+                return null;
             }
 
             if (libraryType == LibraryType.Project ||
                libraryType == LibraryType.ExternalProject)
             {
                 // If the package is a project or external project, we cannot add it as a package reference.
-                throw new CommandException(string.Format(CultureInfo.CurrentCulture,
+                logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgProjectReference,
                     packageDependency.Id));
+                return null;
             }
 
             // correct package version to write in project file

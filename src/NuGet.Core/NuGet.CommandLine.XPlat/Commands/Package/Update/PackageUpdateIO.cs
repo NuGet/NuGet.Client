@@ -147,7 +147,8 @@ internal class PackageUpdateIO : IPackageUpdateIO
             customPackagesPath: null,
             ((RestoreResult)restorePreviewResult).RestoreResultPair,
             packageTfms,
-            packageDependency);
+            packageDependency,
+            NullLogger.Instance);
 
         // Determine whether to add package reference conditionally or unconditionally
         if (packageTfms.Count == updatedPackageSpec.TargetFrameworks.Count)
