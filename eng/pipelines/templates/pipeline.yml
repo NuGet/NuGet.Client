@@ -86,8 +86,8 @@ stages:
         MirrorRepo: 'NuGet.Client'
         GitHubOrg: 'NuGet'
         MirrorBranch: 'dev'
-        ${{ if ne(parameters.isOfficialBuild, true) }}:
-          CreatePr: false
+        # ${{ if ne(parameters.isOfficialBuild, true) }}:
+        CreatePr: false
 
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
