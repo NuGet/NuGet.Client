@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-                .Returns(new ValueTask<INuGetProjectUpgraderService>(projectUpgraderService.Object));
+                .Returns(new ValueTask<INuGetProjectUpgraderService?>(projectUpgraderService.Object));
 
             bool actualResult = await IProjectContextInfoExtensions.IsUpgradeableAsync(
                 project.Object,
@@ -93,7 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             await VerifyMicrosoftAssumesExceptionAsync(
                 () => IProjectContextInfoExtensions.GetInstalledPackagesAsync(
-                    projectContextInfo: null,
+                    projectContextInfo: null!,
                     Mock.Of<IServiceBroker>(),
                     CancellationToken.None)
                 .AsTask());
@@ -146,7 +146,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService.Object));
+                .Returns(new ValueTask<INuGetProjectManagerService?>(projectManagerService.Object));
 
             IReadOnlyCollection<IPackageReferenceContextInfo> actualResult = await IProjectContextInfoExtensions.GetInstalledPackagesAsync(
                 project.Object,
