@@ -138,11 +138,11 @@ internal class PackageUpdateIO : IPackageUpdateIO
         await RestoreRunner.CommitAsync(((RestoreResult)restorePreviewResult).RestoreResultPair, CancellationToken.None);
     }
 
-    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<NuGetFramework> packageTfms, PackageToUpdate packageToUpdate)
+    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<NuGetFramework> packageTfms, PackageToUpdate packageToUpdate, ILogger logger)
     {
         PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
 
-        if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms, packageDependency, ((RestoreResult)restorePreviewResult).RestoreResultPair, NullLogger.Instance, out NuGetVersion resolvedVersion))
+        if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms, packageDependency, ((RestoreResult)restorePreviewResult).RestoreResultPair, logger, out NuGetVersion resolvedVersion))
         {
             return;
         }

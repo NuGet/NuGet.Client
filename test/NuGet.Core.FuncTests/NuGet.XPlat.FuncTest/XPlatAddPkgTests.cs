@@ -1407,8 +1407,8 @@ namespace NuGet.XPlat.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
             var packageX = XPlatTestUtils.CreatePackage(packageVersion: "2.0.0");
-            var projectB = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
-            projectA.AddProjectToAllFrameworks(projectB);
+            var projectX = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
+            projectA.AddProjectToAllFrameworks(projectX);
             projectA.Save();
 
             // Generate Package
@@ -1418,32 +1418,38 @@ namespace NuGet.XPlat.FuncTest
                 packageX);
             var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectB);
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectX);
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
-            var exception = await Assert.ThrowsAsync<CommandException>(async () => await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger)));
-            exception.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture,
+            var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+            result.Should().Be(1);
+            logger.ErrorMessages.Should().Contain(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgProjectReference,
                     packageX.Id));
         }
 
         [Fact]
-        public async Task AddPkg_WithPackageReferenceMatchingExistingTransitiveProject_Succeeds()
+        public async Task AddPkg_WithPackageReferenceMatchingExistingTransitiveProject_AddsPackageReference()
         {
             using var pathContext = new SimpleTestPathContext();
             var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
-            var packageX = XPlatTestUtils.CreatePackage(packageVersion: "2.0.0");
+            var packageX = XPlatTestUtils.CreatePackage(packageVersion: "0.1.0");
             var projectB = XPlatTestUtils.CreateProject("projectB", pathContext, "net46");
-            var projectC = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
+            var projectX = XPlatTestUtils.CreateProject(packageX.Id, pathContext, "net46");
             projectA.AddProjectToAllFrameworks(projectB);
-            projectB.AddProjectToAllFrameworks(projectC);
+            projectB.AddProjectToAllFrameworks(projectX);
             projectA.Save();
             projectB.Save();
 
+            // Generate Package
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX);
             var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: [projectB, projectC]);
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: [projectB, projectX]);
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
@@ -1452,8 +1458,11 @@ namespace NuGet.XPlat.FuncTest
             var itemGroup = XPlatTestUtils.GetItemGroupForAllFrameworks(projectXmlRoot);
 
             // Assert
-            Assert.Equal(1, result);
-            Assert.Null(itemGroup);
+            Assert.Equal(0, result);
+            Assert.NotNull(itemGroup);
+
+            Assert.True(XPlatTestUtils.ValidateReference(itemGroup, packageX.Id, packageX.Version));
+            Assert.True(XPlatTestUtils.ValidateAssetsFile(projectA, packageX.Id));
         }
     }
 }
