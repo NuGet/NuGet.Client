@@ -441,7 +441,7 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        private static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+        internal static (LibraryType, NuGetVersion) GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
             string packageId,
             List<NuGetFramework> userSpecifiedFrameworks)
         {
