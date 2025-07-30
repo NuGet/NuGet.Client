@@ -408,7 +408,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.Is<string>(id => string.Equals(projectId, id)),
                     It.Is<PackageIdentity>(pi => ReferenceEquals(PackageIdentity, pi)),
                     It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<(bool, string)>(expectedResult));
+                .Returns(new ValueTask<(bool, string?)>(expectedResult));
 
             serviceBroker.Setup(
 #pragma warning disable ISB001 // Dispose of proxies
