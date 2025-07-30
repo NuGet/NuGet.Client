@@ -79,7 +79,7 @@ stages:
   - stage: RunOneLocBuild
     displayName: Run OneLocBuild plugin
     jobs:
-    - template: /eng/common/templates/job/onelocbuild.yml
+    - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
         is1ESPipeline: true
         LclSource: lclFilesfromPackage
