@@ -213,7 +213,6 @@ namespace NuGet.CommandLine.XPlat
                 compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
             }
 
-            // 5. Write to Project
             if (compatibleFrameworks.Count == 0)
             {
                 // Package is compatible with none of the project TFMs
@@ -226,15 +225,18 @@ namespace NuGet.CommandLine.XPlat
 
                 return 1;
             }
+
+            // 5. Write to Project
+
+            if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult.Result, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
+            {
+                return 1;
+            }
+
             // Ignore the graphs with RID
-            else if (compatibleFrameworks.Count ==
+            if (compatibleFrameworks.Count ==
                      restorePreviewResult.Result.CompatibilityCheckResults.Count(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)))
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult.Result, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
-                {
-                    return 1;
-                }
-
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
@@ -249,11 +251,6 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                if (!TryFindResolvedVersion(userSpecifiedFrameworks, packageDependency.Id, restorePreviewResult.Result, packageReferenceArgs.Logger, out NuGetVersion resolvedVersion))
-                {
-                    return 1;
-                }
-
                 // Package is compatible with some of the project TFMs
                 // Add conditional package references to the project for the compatible TFMs
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
