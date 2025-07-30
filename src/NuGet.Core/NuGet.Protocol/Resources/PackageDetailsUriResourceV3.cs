@@ -58,6 +58,7 @@ namespace NuGet.Protocol
                     Strings.Error_Invalid_package_id,
                     id));
             }
+
             var uriString = _template
 #if NETCOREAPP
                .Replace("{id}", id, StringComparison.OrdinalIgnoreCase)

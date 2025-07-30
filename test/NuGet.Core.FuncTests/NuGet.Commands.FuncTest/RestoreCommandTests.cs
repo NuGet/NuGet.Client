@@ -4205,8 +4205,8 @@ namespace NuGet.Commands.FuncTest
 
         [Theory]
         [InlineData("../")]
-        [InlineData("../my package")]
-        [InlineData("Some.Package/../newtonsoft.json")]
+        [InlineData("../ contoso ")]
+        [InlineData("Some.Package/../contoso.json")]
         public async Task RestoreCommand_WithInvalidPackageId_ShouldFailAsync(string dependency)
         {
             // Arrange
@@ -4225,7 +4225,7 @@ namespace NuGet.Commands.FuncTest
 
             // Assert
             result.Success.Should().BeFalse();
-            result.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1017 & m.Message == string.Format(Strings.Error_invalid_packageid, dependency));
+            result.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1017 & m.Message == string.Format("Invalid package id : `{0}`", dependency));
         }
 
         private static void CreateFakeProjectFile(PackageSpec project2spec)

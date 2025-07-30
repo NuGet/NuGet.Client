@@ -686,11 +686,6 @@ namespace NuGet.Commands
                         // Log the HTTP endpoint error.
                         await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302, ExceptionUtilities.DisplayMessage(httpSourceException)));
                     }
-                    else if (ContainsExceptionOfType(e, typeof(InvalidPackageIdException), out Exception invalidPackageIdException))
-                    {
-                        // Log the invalid package ID error.
-                        await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1017, ExceptionUtilities.DisplayMessage(invalidPackageIdException)));
-                    }
                     else
                     {
                         // Log the generic error message.
@@ -715,16 +710,16 @@ namespace NuGet.Commands
             {
                 while (e != null)
                 {
-                    if (targetType.IsInstanceOfType(e))
+                    if (e is HttpSourceException)
                     {
-                        matchedException = e;
+                        httpSourceException = (HttpSourceException)e;
                         return true;
                     }
 
                     e = e.InnerException;
                 }
 
-                matchedException = null;
+                httpSourceException = null;
                 return false;
             }
         }
