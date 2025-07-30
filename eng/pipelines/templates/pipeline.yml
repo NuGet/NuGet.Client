@@ -81,11 +81,6 @@ stages:
     jobs:
     - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
-        LclSource: lclFilesfromPackage
-        LclPackageId: 'LCL-JUNO-PROD-YOURREPO'
-        MirrorRepo: 'NuGet.Client'
-        GitHubOrg: 'NuGet'
-        MirrorBranch: 'dev'
         # ${{ if ne(parameters.isOfficialBuild, true) }}:
         CreatePr: false
 
