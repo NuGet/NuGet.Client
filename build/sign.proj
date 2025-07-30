@@ -22,7 +22,9 @@
 
     <PropertyGroup>
       <DryRunSigning Condition="'$(DryRunSigning)' == ''">true</DryRunSigning>
-      <TestSigning>true</TestSigning>
+      <TestSigning>false</TestSigning>
+      <TestSigning Condition="'$(DotNetSignType)' == 'test'">true</TestSigning>
+
       <SigningTempDirectory Condition="'$(SigningTempDirectory)' == ''">$(ArtifactTempDirectory)</SigningTempDirectory>
       <SigningLogDirectory Condition="'$(SigningLogDirectory)' == ''">$(ArtifactTempDirectory)</SigningLogDirectory>
 
