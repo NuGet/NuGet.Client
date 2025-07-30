@@ -239,6 +239,16 @@
 {1} - all / user specified
 {2} - Project Path</note>
       </trans-unit>
+      <trans-unit id="Error_AddPkgProjectReference">
+        <source>Error while adding a PackageReference for '{0}'. There a project sharing the same name that is preferred and as such adding the PackageReference would have no effect.</source>
+        <target state="new">Error while adding a PackageReference for '{0}'. There a project sharing the same name that is preferred and as such adding the PackageReference would have no effect.</target>
+        <note>{0} - PackageId</note>
+      </trans-unit>
+      <trans-unit id="Error_AddPkgUnresolved">
+        <source>Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</source>
+        <target state="new">Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</target>
+        <note>{0} Package Id</note>
+      </trans-unit>
       <trans-unit id="Error_AddPkg_CentralPackageVersions_EmptyVersionOverride">
         <source>VersionOverride for package '{0}' should not be empty.</source>
         <target state="translated">Параметр VersionOverride для пакета "{0}" не должен быть пустым.</target>
