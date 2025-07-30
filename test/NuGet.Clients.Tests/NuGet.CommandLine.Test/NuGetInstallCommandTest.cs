@@ -191,6 +191,7 @@ namespace NuGet.CommandLine.Test
                 r1.Success.Should().BeTrue();
                 r2.Success.Should().BeTrue();
                 File.Exists(nupkgPath).Should().BeTrue();
+                Assert.NotNull(installDir);
                 File.Exists(Path.Combine(installDir, "data", "1.txt")).Should().BeFalse("this package was uninstalled");
                 File.Exists(Path.Combine(installDir, "data", "2.txt")).Should().BeTrue("this package was installed");
 
@@ -661,7 +662,7 @@ namespace NuGet.CommandLine.Test
                     repositoryPath };
 
                 // Act
-                var envVars = new Dictionary<string, string>()
+                var envVars = new Dictionary<string, string?>()
                 {
                     { "PATH", null }
                 };
