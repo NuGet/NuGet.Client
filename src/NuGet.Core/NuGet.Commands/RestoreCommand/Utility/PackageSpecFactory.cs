@@ -176,7 +176,7 @@ namespace NuGet.Commands.Restore.Utility
                         hasPackageReferenceItems: hasPackageReferenceItems,
                         projectJsonPath: project.OuterBuild.GetProperty("_CurrentProjectJsonPath"),
                         projectDirectory: project.Directory,
-                        projectName: project.OuterBuild.GetProperty("MSBuildProjectName"));
+                        projectName: project.OuterBuild.GetProperty("MSBuildProjectName")!);
 
                 return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
             }
@@ -245,9 +245,9 @@ namespace NuGet.Commands.Restore.Utility
 
         private static RestoreAuditProperties? GetRestoreAuditProperties(IProject project)
         {
-            string enableAudit = project.OuterBuild.GetProperty("NuGetAudit");
-            string auditLevel = project.OuterBuild.GetProperty("NuGetAuditLevel");
-            string auditMode = GetAuditMode(project);
+            string? enableAudit = project.OuterBuild.GetProperty("NuGetAudit");
+            string? auditLevel = project.OuterBuild.GetProperty("NuGetAuditLevel");
+            string? auditMode = GetAuditMode(project);
             HashSet<string>? suppressionItems = GetAuditSuppressions(project.OuterBuild);
 
             if (enableAudit != null || auditLevel != null || auditMode != null
@@ -268,19 +268,18 @@ namespace NuGet.Commands.Restore.Utility
             // However, that can only be done by an "inner build" evaulation, but we read other audit settings
             // from the project evaluation, not inner-builds. So, check the inner builds if any TFM sets mode
             // to "all", otherwise use the project's "outer build" mode.
-            string GetAuditMode(IProject project)
+            string? GetAuditMode(IProject project)
             {
                 foreach (var item in project.TargetFrameworks.NoAllocEnumerate())
                 {
-                    string auditMode = item.Value.GetProperty("NuGetAuditMode");
+                    string? auditMode = item.Value.GetProperty("NuGetAuditMode");
                     if (string.Equals(auditMode, "all", StringComparison.OrdinalIgnoreCase))
                     {
                         return auditMode;
                     }
                 }
 
-                string projectAuditMode = project.OuterBuild.GetProperty("NuGetAuditMode");
-                return projectAuditMode;
+                return project.OuterBuild.GetProperty("NuGetAuditMode");
             }
         }
 
@@ -306,7 +305,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
         private static (ProjectStyle ProjectStyle, string? PackagesConfigFilePath)
-            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName)
+            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string? projectJsonPath, string projectDirectory, string projectName)
         {
             ProjectStyle projectStyle;
             string? packagesConfigFilePath = null;
@@ -428,7 +427,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
         /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
         /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
-        private static string[] GetFallbackFolders(string startupDirectory, string projectDirectory, string[]? fallbackFolders, string[]? fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
+        private static string[] GetFallbackFolders(string? startupDirectory, string projectDirectory, string[]? fallbackFolders, string[]? fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
         {
             // Fallback folders
             var currentFallbackFolders = GetValue(
@@ -745,7 +744,7 @@ namespace NuGet.Commands.Restore.Utility
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
                 {
-                    string solutionDir = project.OuterBuild.GetProperty("SolutionPath");
+                    string? solutionDir = project.OuterBuild.GetProperty("SolutionPath");
 
                     solutionDir = string.Equals(solutionDir, "*Undefined*", StringComparison.OrdinalIgnoreCase)
                         ? project.Directory
@@ -799,7 +798,7 @@ namespace NuGet.Commands.Restore.Utility
                 .ToList();
         }
 
-        private static string[] GetSources(string startupDirectory, string projectDirectory, string[]? sources, string[]? sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
+        private static string[] GetSources(string? startupDirectory, string projectDirectory, string[]? sources, string[]? sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
             // Sources
             var currentSources = GetValue(
@@ -907,7 +906,7 @@ namespace NuGet.Commands.Restore.Utility
 
         internal static bool IsPropertyFalse(this ITargetFramework project, string propertyName, bool defaultValue = false)
         {
-            string value = project.GetProperty(propertyName);
+            string? value = project.GetProperty(propertyName);
 
             if (string.IsNullOrWhiteSpace(value))
             {

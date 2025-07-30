@@ -150,14 +150,14 @@ public class TestPackageSpecFactory
         else
         {
             targetFrameworks = new Dictionary<string, ITargetFramework>(StringComparer.OrdinalIgnoreCase);
-            string targetFramework = _outerBuild.GetProperty(ProjectBuildProperties.TargetFramework);
+            string? targetFramework = _outerBuild.GetProperty(ProjectBuildProperties.TargetFramework);
             if (string.IsNullOrWhiteSpace(targetFramework))
             {
                 string targetFrameworkMoniker = _outerBuild.GetProperty(ProjectBuildProperties.TargetFrameworkMoniker)
                     ?? throw new InvalidOperationException("TargetFramework or TargetFrameworkMoniker must be set in the outer build.");
                 targetFramework = string.Empty;
             }
-            targetFrameworks[targetFramework] = _outerBuild;
+            targetFrameworks[targetFramework!] = _outerBuild;
         }
 
         var project = new TestProject
