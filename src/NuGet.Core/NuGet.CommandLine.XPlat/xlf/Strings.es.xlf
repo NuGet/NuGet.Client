@@ -82,6 +82,11 @@
         <target state="translated">Agrega un origen de NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AllowInsecureConnections_Description">
+        <source>Allow pushing to HTTP sources (insecure).</source>
+        <target state="new">Allow pushing to HTTP sources (insecure).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server.</source>
         <target state="translated">La clave de API del servidor.</target>

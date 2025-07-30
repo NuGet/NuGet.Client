@@ -47,6 +47,7 @@ namespace NuGet.Commands.Test
                     false, // no symbols,
                     false, // enable server endpoint
                     false, // no skip duplicate
+                    false, // allow insecure connections
                     new TestLogger());
 
                 // Assert

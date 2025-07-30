@@ -1072,4 +1072,7 @@ Do not translate "PackageVersion"</comment>
     <value>Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</value>
     <comment>{0} - PackageId</comment>
   </data>
+  <data name="AllowInsecureConnections_Description" xml:space="preserve">
+    <value>Allow pushing to HTTP sources (insecure).</value>
+  </data>
 </root>

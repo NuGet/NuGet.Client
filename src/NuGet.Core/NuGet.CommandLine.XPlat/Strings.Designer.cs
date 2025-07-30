@@ -205,6 +205,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow pushing to HTTP sources (insecure)..
+        /// </summary>
+        internal static string AllowInsecureConnections_Description {
+            get {
+                return ResourceManager.GetString("AllowInsecureConnections_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string ApiKey_Description {
