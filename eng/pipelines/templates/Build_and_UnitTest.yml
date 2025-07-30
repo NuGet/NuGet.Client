@@ -7,6 +7,9 @@ parameters:
   displayName: Run unit tests
   type: boolean
   default: true
+- name: SigningType
+  displayName: Type of signing to use
+  type: string
 
 steps:
 - task: PowerShell@1
@@ -199,7 +202,7 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore /p:DryRunSigning=false /p:SigningLogDirectory=$(Build.StagingDirectory)\\binlog /binarylogger:$(Build.StagingDirectory)\\binlog\\15.Sign.binlog"
+    msbuildArguments: "/restore /p:DryRunSigning=false /p:DotNetSignType=$(SigningType) /p:SigningLogDirectory=$(Build.StagingDirectory)\\binlog /binarylogger:$(Build.StagingDirectory)\\binlog\\15.Sign.binlog"
 
 - task: NuGetToolInstaller@1
   displayName: Use NuGet 6.x

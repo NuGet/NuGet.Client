@@ -238,6 +238,7 @@ stages:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -301,6 +302,7 @@ stages:
         BuildRTM: true
         NuGetLocalizationType: Full
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
