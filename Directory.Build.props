@@ -15,5 +15,6 @@
 
   <PropertyGroup>
     <UsingToolXliff>true</UsingToolXliff>
+    <UpdateXlfOnBuild>true</UpdateXlfOnBuild>
   </PropertyGroup>
 </Project>
