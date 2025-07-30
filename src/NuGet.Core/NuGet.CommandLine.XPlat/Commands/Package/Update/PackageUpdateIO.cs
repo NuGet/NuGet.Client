@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using static NuGet.CommandLine.XPlat.Commands.Package.Update.PackageUpdateCommandRunner;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 
@@ -137,8 +138,16 @@ internal class PackageUpdateIO : IPackageUpdateIO
         await RestoreRunner.CommitAsync(((RestoreResult)restorePreviewResult).RestoreResultPair, CancellationToken.None);
     }
 
-    public void UpdatePackageReference(PackageSpec updatedPackageSpec, PackageDependency packageDependency, List<NuGetFramework> packageTfms, NuGetVersion resolvedVersion)
+    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<NuGetFramework> packageTfms, PackageToUpdate packageToUpdate, ILogger logger)
     {
+        PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
+
+        if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms,
+            packageDependency.Id,
+            ((RestoreResult)restorePreviewResult).RestoreResultPair.Result, NullLogger.Instance, out NuGetVersion resolvedVersion))
+        {
+            return;
+        }
         // Generate the LibraryDependency using the same logic as AddPackageReferenceCommandRunner
         var libraryDependency = AddPackageReferenceCommandRunner.GenerateLibraryDependency(
             updatedPackageSpec,
