@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Utility;
@@ -15,6 +16,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using static NuGet.CommandLine.XPlat.Commands.Package.Update.PackageUpdateCommandRunner;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
@@ -141,14 +143,17 @@ internal class PackageUpdateIO : IPackageUpdateIO
     {
         PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
 
+        if (!AddPackageReferenceCommandRunner.TryFindResolvedVersion(packageTfms, packageDependency, ((RestoreResult)restorePreviewResult).RestoreResultPair, NullLogger.Instance, out NuGetVersion resolvedVersion))
+        {
+            return;
+        }
+
         // Generate the LibraryDependency using the same logic as AddPackageReferenceCommandRunner
         var libraryDependency = AddPackageReferenceCommandRunner.GenerateLibraryDependency(
             updatedPackageSpec,
             customPackagesPath: null,
-            ((RestoreResult)restorePreviewResult).RestoreResultPair,
-            packageTfms,
             packageDependency,
-            NullLogger.Instance);
+            resolvedVersion);
 
         // Determine whether to add package reference conditionally or unconditionally
         if (packageTfms.Count == updatedPackageSpec.TargetFrameworks.Count)
