@@ -1418,7 +1418,7 @@ namespace NuGet.XPlat.FuncTest
                 packageX);
             var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: projectX);
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, dependentProjects: projectX);
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
@@ -1449,7 +1449,7 @@ namespace NuGet.XPlat.FuncTest
                 packageX);
             var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, projects: [projectB, projectX]);
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA, dependentProjects: [projectB, projectX]);
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
