@@ -2572,8 +2572,8 @@ $@"<configuration>
         [Fact]
         public void PushCommand_WhenPushingToAnHttpServerWithAllowInsecureConnectionsOptionTrue_Succeeds()
         {
+            // Arrange
             var nugetexe = Util.GetNuGetExePath();
-
             using var packageDirectory = TestDirectory.Create();
             var packageFileName = Util.CreateTestPackage("test", "1.1.0", packageDirectory);
             var outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
@@ -2602,6 +2602,7 @@ $@"<configuration>
             // Assert
             result.Success.Should().BeTrue(result.AllOutput);
             Assert.DoesNotContain($"{server.Uri}push", result.Errors);
+            Assert.True(File.Exists(outputFileName), "The output file was not created as expected.");
         }
 
         [Fact]
