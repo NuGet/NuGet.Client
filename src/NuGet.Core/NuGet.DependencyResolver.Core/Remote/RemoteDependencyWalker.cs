@@ -479,9 +479,18 @@ namespace NuGet.DependencyResolver
                 {
                     var lengthToCompare = Math.Min(nearRelease.Length, farRelease.Length);
 
-                    return StringComparer.OrdinalIgnoreCase.Compare(
+                    var compared = StringComparer.OrdinalIgnoreCase.Compare(
                         nearRelease.Substring(0, lengthToCompare),
                         farRelease.Substring(0, lengthToCompare)) >= 0;
+
+                    if (compared)
+                    {
+                        if (nearVersion.IsFloating && !farVersion.IsFloating)
+                        {
+                            return true;
+                        }
+                    }
+                    return compared;
                 }
             }
 
