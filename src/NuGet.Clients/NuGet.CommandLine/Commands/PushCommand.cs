@@ -17,7 +17,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PushCommandSourceDescription", AltName = "src")]
         public string Source { get; set; }
 
-        [Option(typeof(NuGetCommand), "AllowInsecureConnectionsDescription")]
+        [Option(typeof(NuGetCommand), "PushCommandAllowInsecureConnectionsDescription")]
         public bool AllowInsecureConnections { get; set; }
 
         [Option(typeof(NuGetCommand), "CommandApiKey")]

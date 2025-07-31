@@ -104,7 +104,7 @@ namespace NuGet.Commands
                 noServiceEndpoint,
                 skipDuplicate,
                 allowSnupkg,
-                packageSource.AllowInsecureConnections,
+                allowInsecureConnections || packageSource.AllowInsecureConnections,
                 logger);
         }
     }
