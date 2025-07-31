@@ -1545,6 +1545,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Updated {0} packages in {1} scanned packages..
+        /// </summary>
+        internal static string PackageUpdate_FinalSummary {
+            get {
+                return ResourceManager.GetString("PackageUpdate_FinalSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finding versions of packages to update..
+        /// </summary>
+        internal static string PackageUpdate_FindingUpdateVersions {
+            get {
+                return ResourceManager.GetString("PackageUpdate_FindingUpdateVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading Project(s)..
+        /// </summary>
+        internal static string PackageUpdate_LoadingDGSpec {
+            get {
+                return ResourceManager.GetString("PackageUpdate_LoadingDGSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package reference in the form of a package identifier like &apos;Newtonsoft.Json&apos; or package identifier and version separated by &apos;@&apos; like &apos;Newtonsoft.Json@13.0.3&apos;..
         /// </summary>
         internal static string PackageUpdate_PackageArgumentDescription {
@@ -1554,11 +1581,38 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Running preview restore to check package compatibility..
+        /// </summary>
+        internal static string PackageUpdate_PreviewRestore {
+            get {
+                return ResourceManager.GetString("PackageUpdate_PreviewRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Preview restore with updated packages was not successful. Force mode is not yet available..
         /// </summary>
         internal static string PackageUpdate_PreviewRestoreFailed {
             get {
                 return ResourceManager.GetString("PackageUpdate_PreviewRestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0} {1} to {2}..
+        /// </summary>
+        internal static string PackageUpdate_UpdatedMessage {
+            get {
+                return ResourceManager.GetString("PackageUpdate_UpdatedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updating outdated packages in {0}..
+        /// </summary>
+        internal static string PackageUpdate_UpdatingOutdatedPackages {
+            get {
+                return ResourceManager.GetString("PackageUpdate_UpdatingOutdatedPackages", resourceCulture);
             }
         }
         

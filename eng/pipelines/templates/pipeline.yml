@@ -190,7 +190,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
-        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true')))"
+        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeeded(), eq(variables['IsOfficialBuild'], 'true')))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
@@ -214,7 +214,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: "succeeded()"
+        condition: "succeededOrFailed()"
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
         sbomEnabled: true
@@ -238,6 +238,7 @@ stages:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -301,6 +302,7 @@ stages:
         BuildRTM: true
         NuGetLocalizationType: Full
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
@@ -338,7 +340,7 @@ stages:
         displayName: 'Upload source-build log'
         condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         targetPath: "artifacts/sb/log/source-inner-build.binlog"
-        artifactName: "Source-build log"
+        artifactName: "Source-build log - Attempt $(System.JobAttempt)"
         sbomEnabled: false
     steps:
     - template: /eng/pipelines/templates/Source_Build.yml@self
@@ -370,7 +372,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -410,7 +412,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -449,7 +451,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -478,7 +480,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact
@@ -515,7 +517,7 @@ stages:
         displayName: 'Publish Test Freeze Dump'
         condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
+        artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
         sbomEnabled: false
 
       - output: pipelineArtifact

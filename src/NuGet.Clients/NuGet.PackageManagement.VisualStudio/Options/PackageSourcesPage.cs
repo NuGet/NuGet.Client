@@ -200,6 +200,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
+                    bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
 
                     PackageSource packageSource =
                         PackageSourceValidator.FindExistingOrCreate(
@@ -207,6 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             source,
                             name,
                             isEnabled,
+                            allowInsecureConnections,
                             existingPackageSources);
 
                     packageSources.Add(packageSource);

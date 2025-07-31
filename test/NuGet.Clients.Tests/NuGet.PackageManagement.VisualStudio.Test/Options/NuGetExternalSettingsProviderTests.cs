@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public virtual async Task GetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
+        public async Task GetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
         {
             // Arrange
             VSSettings vsSettings = _vsSettings;
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public virtual async Task SetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
+        public async Task SetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
         {
             // Arrange
             VSSettings vsSettings = _vsSettings;
@@ -93,7 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
-        public virtual async Task GetMessageTextAsync_Always_ThrowsNotImplementedExceptionAsync()
+        public async Task GetMessageTextAsync_Always_ThrowsNotImplementedExceptionAsync()
         {
             // Arrange
             VSSettings vsSettings = _vsSettings;
