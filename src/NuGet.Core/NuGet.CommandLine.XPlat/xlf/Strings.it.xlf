@@ -240,8 +240,8 @@
 {2} - Project Path</note>
       </trans-unit>
       <trans-unit id="Error_AddPkgProjectReference">
-        <source>Error while adding a PackageReference for '{0}'. There a project sharing the same name that is preferred and as such adding the PackageReference would have no effect.</source>
-        <target state="new">Error while adding a PackageReference for '{0}'. There a project sharing the same name that is preferred and as such adding the PackageReference would have no effect.</target>
+        <source>Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</source>
+        <target state="new">Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</target>
         <note>{0} - PackageId</note>
       </trans-unit>
       <trans-unit id="Error_AddPkgUnresolved">

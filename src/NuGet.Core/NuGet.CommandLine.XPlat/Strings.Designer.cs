@@ -502,7 +502,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error while adding a PackageReference for &apos;{0}&apos;. There a project sharing the same name that is preferred and as such adding the PackageReference would have no effect..
+        ///   Looks up a localized string similar to Failed to add a PackageReference for &apos;{0}&apos;. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project..
         /// </summary>
         internal static string Error_AddPkgProjectReference {
             get {
