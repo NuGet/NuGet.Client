@@ -92,7 +92,10 @@ extends:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
         isOfficialBuild: true
-        RunOneLocBuild: true
+        # Only run against dev.
+        # To request a change in localization branch, see https://github.com/dotnet/arcade/blob/main/Documentation/OneLocBuild.md#releasing-with-onelocbuild-using-arcade
+        ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
+          RunOneLocBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
         RunUnitTestsOnWindows: ${{parameters.RunUnitTestsOnWindows}}

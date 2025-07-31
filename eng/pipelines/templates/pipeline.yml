@@ -77,12 +77,14 @@ stages:
 
 - ${{ if eq(parameters.RunOneLocBuild, true) }}:
   - stage: RunOneLocBuild
-    displayName: Run OneLocBuild plugin
+    displayName: Run OneLocBuild
     jobs:
     - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
-        # ${{ if ne(parameters.isOfficialBuild, true) }}:
-        CreatePr: false
+        LclSource: lclFilesfromPackage
+        LclPackageId: 'LCL-JUNO-PROD-YOURREPO'
+        MirrorRepo: 'NuGet.Client'
+        GitHubOrg: 'NuGet'
 
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
