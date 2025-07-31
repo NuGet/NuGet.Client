@@ -479,11 +479,16 @@ namespace NuGet.DependencyResolver
                 {
                     var lengthToCompare = Math.Min(nearRelease.Length, farRelease.Length);
 
-                    var compared = StringComparer.OrdinalIgnoreCase.Compare(
+                    int compareResult = StringComparer.OrdinalIgnoreCase.Compare(
                         nearRelease.Substring(0, lengthToCompare),
-                        farRelease.Substring(0, lengthToCompare)) >= 0;
+                        farRelease.Substring(0, lengthToCompare));
 
-                    if (compared)
+                    if (compareResult > 0)
+                    {
+                        return true;
+                    }
+
+                    if (compareResult == 0)
                     {
                         if (nearVersion.IsFloating && !farVersion.IsFloating)
                         {
@@ -494,8 +499,20 @@ namespace NuGet.DependencyResolver
                         {
                             return false;
                         }
+
+                        if (nearVersion.IsFloating && farVersion.IsFloating)
+                        {
+                            var max = Math.Max(nearRelease.Length, farRelease.Length);
+                            if (max == lengthToCompare)
+                            {
+                                return true;
+                            }
+
+                            return nearRelease.Length < farRelease.Length;
+                        }
+                        return true;
                     }
-                    return compared;
+                    return false;
                 }
             }
 
