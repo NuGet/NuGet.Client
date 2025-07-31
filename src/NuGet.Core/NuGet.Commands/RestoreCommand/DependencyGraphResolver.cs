@@ -1030,7 +1030,7 @@ namespace NuGet.Commands
                     // The chosen item should be evicted or the current item has a greater version, determine if the current item should be chosen instead
                     var isGreaterThanOrEqualTo = RemoteDependencyWalker.IsGreaterThanOrEqualTo(currentVersionRange, chosenVersionRange);
 
-                    if (evictOnTypeConstraint || !isGreaterThanOrEqualTo)
+                    if (evictOnTypeConstraint || isGreaterThanOrEqualTo)
                     {
                         if (chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                         {
