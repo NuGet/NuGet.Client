@@ -508,7 +508,7 @@ namespace NuGet.DependencyResolver
                                 return true;
                             }
 
-                            return nearRelease.Length < farRelease.Length;
+                            return nearRelease.Length > farRelease.Length;
                         }
                         return true;
                     }

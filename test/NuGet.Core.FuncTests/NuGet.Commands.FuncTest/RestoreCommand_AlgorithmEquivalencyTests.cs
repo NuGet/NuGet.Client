@@ -2107,6 +2107,73 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // P1 -> P2 -> A 2.0.0-alpha*
+        // P1 -> P2 -> A 2.0.0-alphabeta*
+        [Fact]
+        public async Task RestoreCommand_WithMultiplePrereleaseTransitiveVersionWithFullyMatchedReleaseLabel_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0"),
+                new SimpleTestPackageContext("a", "2.0.0-alpha.1"),
+                new SimpleTestPackageContext("a", "2.0.0-alpha.2"),
+                new SimpleTestPackageContext("a", "2.0.0-alphabeta.1"),
+                new SimpleTestPackageContext("a", "2.0.0-alphabeta.2")
+                );
+
+            // Setup project
+
+
+            var spec2 = @"
+        {
+            ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                    ""a"": {
+                        ""version"": ""2.0.0-alpha*"",
+                        ""target"": ""Package"",
+                    },
+                }
+            }
+            }
+        }";
+
+            var spec3 = @"
+        {
+            ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                    ""a"": {
+                        ""version"": ""2.0.0-alphabeta*"",
+                        ""target"": ""Package"",
+                    },
+                }
+            }
+            }
+        }";
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net472");
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            var project3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, spec3);
+            project1 = project1.WithTestProjectReference(project2);
+            project1 = project1.WithTestProjectReference(project3);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0-alphabeta.2"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
         // P1 -> P2 -> B 2.0.0-preview.*
         // P1 -> B 2.0.0-preview.2 
         [Fact]
