@@ -489,6 +489,11 @@ namespace NuGet.DependencyResolver
                         {
                             return true;
                         }
+
+                        if (!nearVersion.IsFloating && farVersion.IsFloating)
+                        {
+                            return false;
+                        }
                     }
                     return compared;
                 }
