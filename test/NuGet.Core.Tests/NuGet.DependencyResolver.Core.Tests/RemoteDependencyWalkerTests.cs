@@ -834,7 +834,10 @@ namespace NuGet.DependencyResolver.Tests
             Assert.False(isGreater);
         }
 
-        // When ranges are equivalent in everything but release length, they're considered equivalent.
+        // When ranges are equivalent in everything but release label length, they're considered equivalent.
+        // The longer range is greater, and everything that matches the longer range, matches the shorter range.
+        // If there's no package that matches the longer range, the longer range won't be satisfied and restore would fail
+        // Which range we encounter first is not important.
         [Theory]
         [InlineData("1.8.3.4-alpha*", "1.8.3.4-alphabeta-*")]
         public void IsGreaterThanEqualTo_ReturnsTrue_IfRightVersionAndLeftVersionAreEquivalent(string leftVersionString, string rightVersionString)

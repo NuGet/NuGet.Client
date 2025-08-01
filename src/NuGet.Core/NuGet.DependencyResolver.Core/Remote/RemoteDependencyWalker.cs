@@ -487,8 +487,7 @@ namespace NuGet.DependencyResolver
                     {
                         return true;
                     }
-
-                    if (compareResult == 0)
+                    else if (compareResult == 0)
                     {
                         if (nearVersion.IsFloating && !farVersion.IsFloating)
                         {
@@ -500,19 +499,12 @@ namespace NuGet.DependencyResolver
                             return false;
                         }
 
-                        //if (nearVersion.IsFloating && farVersion.IsFloating)
-                        //{
-                        //    var max = Math.Max(nearRelease.Length, farRelease.Length);
-                        //    if (max == lengthToCompare)
-                        //    {
-                        //        return true;
-                        //    }
-
-                        //    //return nearRelease.Length > farRelease.Length;
-                        //}
                         return true;
                     }
-                    return false;
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
 
