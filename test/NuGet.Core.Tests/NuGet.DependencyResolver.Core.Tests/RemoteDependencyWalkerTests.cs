@@ -780,6 +780,7 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.*-preview.*", "3.0.1")]
         [InlineData("3.0.*-preview.*", "3.0.1")]
         [InlineData("3.0.1.*-preview.*", "3.0.1")]
+        [InlineData("1.8.3.4-alpha3", "1.8.3.4-alpha.*")]
         public void IsGreaterThanEqualTo_ReturnsTrue_IfRightVersionIsSmallerThanLeft(string leftVersionString, string rightVersionString)
         {
             // Arrange

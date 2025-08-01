@@ -491,11 +491,12 @@ namespace NuGet.DependencyResolver
                     }
                     else if (compareResult == 0)
                     {
+                        // When 2 ranges are equivalent, but one is floating and the other is not, the floating one is greater.
                         if (nearVersion.IsFloating && !farVersion.IsFloating)
                         {
                             return true;
                         }
-
+                        // When 2 ranges are equivalent, but one is floating and the other is not, the floating one is greater.
                         if (!nearVersion.IsFloating && farVersion.IsFloating)
                         {
                             return false;
