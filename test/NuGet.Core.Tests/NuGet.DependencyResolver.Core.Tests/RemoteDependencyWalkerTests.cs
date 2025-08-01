@@ -752,8 +752,6 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Theory]
-        [InlineData("3.0", "3.0")]
-        [InlineData("3.0", "3.0.0")]
         [InlineData("3.1", "3.0.0")]
         [InlineData("3.1.2", "3.1.1")]
         [InlineData("3.1.2-beta", "3.1.2-alpha")]
@@ -773,7 +771,6 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("1.8.5.4-alpha-*", "1.8.3.4-gamma*")]
         [InlineData("1.8.3.6-alpha-*", "1.8.3.4-gamma*")]
         [InlineData("1.8.3-*", "1.8.3-alpha*")]
-        [InlineData("1.8.3-*", "1.8.3-*")]
         [InlineData("1.8.4-*", "1.8.3-*")]
         [InlineData("2.8.1-*", "1.8.3-*")]
         [InlineData("3.2.0-*", "3.1.0-beta-234")]
@@ -821,6 +818,8 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.0.1", "3.*-preview.*")]
         [InlineData("3.0.1", "3.0.*-preview.*")]
         [InlineData("3.0.1", "3.0.1.*-preview.*")]
+        [InlineData("99.*", "*-*")]
+        [InlineData("*-preview.*", "*-*")]
         public void IsGreaterThanEqualTo_ReturnsFalse_IfRightVersionIsLargerThanLeft(string leftVersionString, string rightVersionString)
         {
             // Arrange
@@ -839,6 +838,10 @@ namespace NuGet.DependencyResolver.Tests
         // If there's no package that matches the longer range, the longer range won't be satisfied and restore would fail
         // Which range we encounter first is not important.
         [Theory]
+        [InlineData("*", "*")]
+        [InlineData("3.0", "3.0")]
+        [InlineData("3.0", "3.0.0")]
+        [InlineData("1.8.3-*", "1.8.3-*")]
         [InlineData("1.8.3.4-alpha*", "1.8.3.4-alphabeta-*")]
         public void IsGreaterThanEqualTo_ReturnsTrue_IfRightVersionAndLeftVersionAreEquivalent(string leftVersionString, string rightVersionString)
         {
@@ -848,7 +851,7 @@ namespace NuGet.DependencyResolver.Tests
 
             // Act
             var left = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
-            var right = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
+            var right = RemoteDependencyWalker.IsGreaterThanOrEqualTo(rightVersion, leftVersion);
 
             // Assert
             Assert.True(left);
