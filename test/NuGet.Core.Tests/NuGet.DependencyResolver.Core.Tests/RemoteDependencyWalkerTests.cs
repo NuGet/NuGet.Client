@@ -836,10 +836,6 @@ namespace NuGet.DependencyResolver.Tests
             Assert.True(isSmaller);
         }
 
-        // When ranges are equivalent in everything but release label length, they're considered equivalent.
-        // The longer range is greater, and everything that matches the longer range, matches the shorter range.
-        // If there's no package that matches the longer range, the longer range won't be satisfied and restore would fail
-        // Which range we encounter first is not important.
         [Theory]
         [InlineData("*", "*")]
         [InlineData("3.0", "3.0")]

@@ -407,6 +407,8 @@ namespace NuGet.DependencyResolver
 
         // Verifies if minimum version specification for nearVersion is greater than the
         // minimum version specification for farVersion
+        // Floating ranges are considered greater than the equivalent non-floating ranges.
+        // When floating ranges are compared, the shorter one is considered greater, since it matches more.
         public static bool IsGreaterThanOrEqualTo(VersionRange nearVersion, VersionRange farVersion)
         {
             if (!nearVersion.HasLowerBound)
@@ -498,6 +500,10 @@ namespace NuGet.DependencyResolver
                         {
                             return false;
                         }
+                        // When ranges are equivalent in everything but release label length, the shorter is considered greater.
+                        // When comparing versions, the longer one is considered newer, but with 2 floating ranges,
+                        // the shorter one will match everything the longer one does.
+                        // If there's no version satisfying the longer range, then the operation will fail at a later point.
                         return nearRelease.Length <= farRelease.Length;
                     }
                     else
