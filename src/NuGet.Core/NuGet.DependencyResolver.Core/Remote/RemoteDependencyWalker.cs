@@ -490,15 +490,15 @@ namespace NuGet.DependencyResolver
 
                     if (compareResult == 0)
                     {
-                        //if (nearVersion.IsFloating && !farVersion.IsFloating)
-                        //{
-                        //    return true;
-                        //}
+                        if (nearVersion.IsFloating && !farVersion.IsFloating)
+                        {
+                            return true;
+                        }
 
-                        //if (!nearVersion.IsFloating && farVersion.IsFloating)
-                        //{
-                        //    return false;
-                        //}
+                        if (!nearVersion.IsFloating && farVersion.IsFloating)
+                        {
+                            return false;
+                        }
 
                         //if (nearVersion.IsFloating && farVersion.IsFloating)
                         //{
@@ -508,7 +508,7 @@ namespace NuGet.DependencyResolver
                         //        return true;
                         //    }
 
-                        //    return nearRelease.Length > farRelease.Length;
+                        //    //return nearRelease.Length > farRelease.Length;
                         //}
                         return true;
                     }

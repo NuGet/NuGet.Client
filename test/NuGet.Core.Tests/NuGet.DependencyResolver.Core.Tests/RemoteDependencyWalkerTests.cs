@@ -821,7 +821,6 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.0.1", "3.*-preview.*")]
         [InlineData("3.0.1", "3.0.*-preview.*")]
         [InlineData("3.0.1", "3.0.1.*-preview.*")]
-        [InlineData("1.8.3.4-alpha*", "1.8.3.4-alphabeta-*")]
         public void IsGreaterThanEqualTo_ReturnsFalse_IfRightVersionIsLargerThanLeft(string leftVersionString, string rightVersionString)
         {
             // Arrange
@@ -833,6 +832,24 @@ namespace NuGet.DependencyResolver.Tests
 
             // Assert
             Assert.False(isGreater);
+        }
+
+        // When ranges are equivalent in everything but release length, they're considered equivalent.
+        [Theory]
+        [InlineData("1.8.3.4-alpha*", "1.8.3.4-alphabeta-*")]
+        public void IsGreaterThanEqualTo_ReturnsTrue_IfRightVersionAndLeftVersionAreEquivalent(string leftVersionString, string rightVersionString)
+        {
+            // Arrange
+            var leftVersion = VersionRange.Parse(leftVersionString);
+            var rightVersion = VersionRange.Parse(rightVersionString);
+
+            // Act
+            var left = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
+            var right = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
+
+            // Assert
+            Assert.True(left);
+            Assert.True(right);
         }
 
         [Fact]

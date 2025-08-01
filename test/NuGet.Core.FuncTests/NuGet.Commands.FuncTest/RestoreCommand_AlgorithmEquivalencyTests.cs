@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -2108,7 +2109,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         // P1 -> P2 -> A 2.0.0-alpha*
-        // P1 -> P2 -> A 2.0.0-alphabeta*
+        // P1 -> P3 -> A 2.0.0-alphabeta*
         [Fact]
         public async Task RestoreCommand_WithMultiplePrereleaseTransitiveVersionWithFullyMatchedReleaseLabel_VerifiesEquivalency()
         {
@@ -2156,22 +2157,26 @@ namespace NuGet.Commands.FuncTest
         }";
             // Setup project
             var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net472");
+            var project4 = ProjectTestHelpers.GetPackageSpec("Project0", pathContext.SolutionRoot, framework: "net472");
             var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec3);
             var project3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, spec2);
             project1 = project1.WithTestProjectReference(project2);
-            project1 = project1.WithTestProjectReference(project3);
+            project1 = project1.WithTestProjectReference(project4);
+            project4 = project4.WithTestProjectReference(project3);
 
             // Act & Assert
-            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3);
-            result.Success.Should().BeTrue();
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3, project4);
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.LogMessages.Select(e => e.Message)));
             result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0-alphabeta.2"));
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project0");
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
-            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         // P1 -> P2 -> B 2.0.0-preview.*
