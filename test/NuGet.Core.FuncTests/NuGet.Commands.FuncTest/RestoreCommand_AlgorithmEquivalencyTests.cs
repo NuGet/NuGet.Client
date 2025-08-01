@@ -2122,7 +2122,8 @@ namespace NuGet.Commands.FuncTest
                 new SimpleTestPackageContext("a", "2.0.0-alpha.1"),
                 new SimpleTestPackageContext("a", "2.0.0-alpha.2"),
                 new SimpleTestPackageContext("a", "2.0.0-alphabeta.1"),
-                new SimpleTestPackageContext("a", "2.0.0-alphabeta.2")
+                new SimpleTestPackageContext("a", "2.0.0-alphabeta.2"),
+                new SimpleTestPackageContext("a", "2.0.0-alphagamma.2")
                 );
 
             // Setup project
@@ -2170,7 +2171,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
-            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0-alphabeta.2"));
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0-alphagamma.2"));
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project0");
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");

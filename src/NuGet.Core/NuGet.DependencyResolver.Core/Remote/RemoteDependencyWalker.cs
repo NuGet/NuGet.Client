@@ -498,8 +498,7 @@ namespace NuGet.DependencyResolver
                         {
                             return false;
                         }
-
-                        return true;
+                        return nearRelease.Length <= farRelease.Length;
                     }
                     else
                     {

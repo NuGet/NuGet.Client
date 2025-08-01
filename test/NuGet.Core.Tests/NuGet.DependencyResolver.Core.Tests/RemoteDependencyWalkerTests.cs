@@ -761,13 +761,11 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.1.2-beta-*", "3.1.2-alpha-*")]
         [InlineData("3.1.*", "3.1.2-alpha-*")]
         [InlineData("*", "3.1.2-alpha-*")]
-        [InlineData("*", "*")]
         [InlineData("1.*", "1.1.*")]
         [InlineData("1.*", "1.3.*")]
         [InlineData("1.8.*", "1.8.3.*")]
         [InlineData("1.8.3.5*", "1.8.3.4-*")]
         [InlineData("1.8.3.*", "1.8.3.4-*")]
-        [InlineData("1.8.3.4-alphabeta-*", "1.8.3.4-alpha*")]
         [InlineData("1.8.5.4-alpha-*", "1.8.3.4-gamma*")]
         [InlineData("1.8.3.6-alpha-*", "1.8.3.4-gamma*")]
         [InlineData("1.8.3-*", "1.8.3-alpha*")]
@@ -790,9 +788,11 @@ namespace NuGet.DependencyResolver.Tests
 
             // Act
             var isGreater = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
+            var isSmaller = RemoteDependencyWalker.IsGreaterThanOrEqualTo(rightVersion, leftVersion);
 
             // Assert
             Assert.True(isGreater);
+            Assert.False(isSmaller);
         }
 
         [Theory]
@@ -820,6 +820,7 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.0.1", "3.0.1.*-preview.*")]
         [InlineData("99.*", "*-*")]
         [InlineData("*-preview.*", "*-*")]
+        [InlineData("1.8.3.4-alphabeta-*", "1.8.3.4-alpha*")]
         public void IsGreaterThanEqualTo_ReturnsFalse_IfRightVersionIsLargerThanLeft(string leftVersionString, string rightVersionString)
         {
             // Arrange
@@ -828,9 +829,11 @@ namespace NuGet.DependencyResolver.Tests
 
             // Act
             var isGreater = RemoteDependencyWalker.IsGreaterThanOrEqualTo(leftVersion, rightVersion);
+            var isSmaller = RemoteDependencyWalker.IsGreaterThanOrEqualTo(rightVersion, leftVersion);
 
             // Assert
             Assert.False(isGreater);
+            Assert.True(isSmaller);
         }
 
         // When ranges are equivalent in everything but release label length, they're considered equivalent.
@@ -842,7 +845,6 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.0", "3.0")]
         [InlineData("3.0", "3.0.0")]
         [InlineData("1.8.3-*", "1.8.3-*")]
-        [InlineData("1.8.3.4-alpha*", "1.8.3.4-alphabeta-*")]
         public void IsGreaterThanEqualTo_ReturnsTrue_IfRightVersionAndLeftVersionAreEquivalent(string leftVersionString, string rightVersionString)
         {
             // Arrange
