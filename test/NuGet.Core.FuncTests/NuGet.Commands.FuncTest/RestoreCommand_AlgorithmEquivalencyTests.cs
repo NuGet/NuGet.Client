@@ -2156,8 +2156,8 @@ namespace NuGet.Commands.FuncTest
         }";
             // Setup project
             var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net472");
-            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
-            var project3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, spec3);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec3);
+            var project3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, spec2);
             project1 = project1.WithTestProjectReference(project2);
             project1 = project1.WithTestProjectReference(project3);
 

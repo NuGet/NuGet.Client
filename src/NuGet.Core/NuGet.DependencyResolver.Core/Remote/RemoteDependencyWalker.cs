@@ -490,26 +490,26 @@ namespace NuGet.DependencyResolver
 
                     if (compareResult == 0)
                     {
-                        if (nearVersion.IsFloating && !farVersion.IsFloating)
-                        {
-                            return true;
-                        }
+                        //if (nearVersion.IsFloating && !farVersion.IsFloating)
+                        //{
+                        //    return true;
+                        //}
 
-                        if (!nearVersion.IsFloating && farVersion.IsFloating)
-                        {
-                            return false;
-                        }
+                        //if (!nearVersion.IsFloating && farVersion.IsFloating)
+                        //{
+                        //    return false;
+                        //}
 
-                        if (nearVersion.IsFloating && farVersion.IsFloating)
-                        {
-                            var max = Math.Max(nearRelease.Length, farRelease.Length);
-                            if (max == lengthToCompare)
-                            {
-                                return true;
-                            }
+                        //if (nearVersion.IsFloating && farVersion.IsFloating)
+                        //{
+                        //    var max = Math.Max(nearRelease.Length, farRelease.Length);
+                        //    if (max == lengthToCompare)
+                        //    {
+                        //        return true;
+                        //    }
 
-                            return nearRelease.Length > farRelease.Length;
-                        }
+                        //    return nearRelease.Length > farRelease.Length;
+                        //}
                         return true;
                     }
                     return false;
