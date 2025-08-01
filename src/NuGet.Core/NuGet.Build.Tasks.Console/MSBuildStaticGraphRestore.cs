@@ -221,11 +221,11 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Creates a function mapping from a project path to a file path containing the virtual project's XML text (or <see langword="null"/> if the project is not virtual). See <see cref="StaticGraphRestoreTaskBase.ProjectTextFile"/>.
+        /// Creates a function mapping from a project path to a file path containing the virtual project's XML text (or <see langword="null"/> if the project is not virtual). See <see cref="StaticGraphRestoreTaskBase.VirtualProjectTextFile"/>.
         /// </summary>
         private static Func<string, string> GetVirtualProjectTextFileFunction(string entryProjectFilePath, IReadOnlyDictionary<string, string> options)
         {
-            if (options.TryGetValue(nameof(StaticGraphRestoreTaskBase.ProjectTextFile), out string textFile))
+            if (options.TryGetValue(nameof(StaticGraphRestoreTaskBase.VirtualProjectTextFile), out string textFile))
             {
                 return (path) => path == entryProjectFilePath ? textFile : null;
             }

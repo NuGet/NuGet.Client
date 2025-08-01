@@ -69,7 +69,7 @@ namespace NuGet.Build.Tasks
         /// Path to a file containing XML text content of the project file. If set, the project won't be read from <see cref="ProjectFullPath"/>,
         /// but instead created only in memory from this text (but with its full path still set to <see cref="ProjectFullPath"/>).
         /// </summary>
-        public string ProjectTextFile { get; set; }
+        public string VirtualProjectTextFile { get; set; }
 
         /// <summary>
         /// Get or sets a value indicating whether or not the restore should restore all projects or just the entry project.
@@ -376,9 +376,9 @@ namespace NuGet.Build.Tasks
                 [nameof(Recursive)] = Recursive.ToString()
             };
 
-            if (!string.IsNullOrEmpty(ProjectTextFile))
+            if (!string.IsNullOrEmpty(VirtualProjectTextFile))
             {
-                options[nameof(ProjectTextFile)] = ProjectTextFile;
+                options[nameof(VirtualProjectTextFile)] = VirtualProjectTextFile;
             }
 
             return options;
