@@ -1,4 +1,4 @@
-# The VS SDK automatically includes a lot of assemblies in the VSIX. This list represents
+# The VS SDK automatically includes alot of assemblies in the VSIX. This list represents
 # assemblies that should be removed from the list but does not imply that the assembly is
 # completely left out of the VSIX.  NuGet.VisualStudio.Client.csproj will manually add
 # some of the assemblies itself, even if they are listed here
@@ -6,9 +6,7 @@
 Azure.Core.dll
 Ben.Demystifier.dll
 Markdig.Signed.dll
-Microsoft.CodeAnalysis.BannedApiAnalyzers.dll
 Microsoft.DataAI.NuGetRecommender.Contracts.dll
-Microsoft.DotNet.XliffTasks.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll
 Microsoft.IdentityModel.JsonWebTokens.dll
@@ -90,9 +88,6 @@ Microsoft.VisualStudio.ProjectSystem.Query.resources.dll
 Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi.dll
 Microsoft.VisualStudio.Services.TestResults.WebApi.dll
 Microsoft.VisualStudio.Setup.Common.dll
-Microsoft.VisualStudioEng.MicroBuild.Core.dll
-Microsoft.VSSDK.BuildTools.dll
-Microsoft.Web.Xdt.dll
 System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
@@ -103,8 +98,6 @@ System.Web.Http.dll
 
 # Ignore third party assemblies because we sign them in a specific location on disk and manually add them to the list
 Lucene.Net.dll
-Newtonsoft.Json.dll
-SharpZipLib.dll
 
 # Assembly XML Documentation isn't needed in the VSIX
 Microsoft.Build.NuGetSdkResolver.xml
