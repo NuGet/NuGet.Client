@@ -7,6 +7,7 @@
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:shell_controls="clr-namespace:Microsoft.VisualStudio.Shell.Controls;assembly=Microsoft.VisualStudio.Shell.Styles"
+             xmlns:shell_styles="clr-namespace:Microsoft.VisualStudio.Shell.Styles;assembly=Microsoft.VisualStudio.Shell.Styles"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
@@ -453,7 +454,7 @@
           Style="{StaticResource InstalledTextBoxStyle}"
           Background="{x:Null}"
           IsReadOnly="true"
-          BorderBrush="{DynamicResource {x:Static local:Brushes.ComboBoxBorderKey}}"
+          BorderBrush="{DynamicResource {x:Static shell_styles:ShellColors.ControlStrokeDefaultBrushKey}}"
           BorderThickness="1"
           MinHeight="24"
           AutomationProperties.AutomationId="InstalledVersion"
