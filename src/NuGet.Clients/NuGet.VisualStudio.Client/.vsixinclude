@@ -59,6 +59,8 @@ NuGet.Versioning.resources.dll
 Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
+Microsoft.VisualStudio.Shell.Styles.dll
+Microsoft.VisualStudio.Shell.Styles.resources.dll
 Microsoft.Web.XmlTransform.dll
 Microsoft.Web.XmlTransform.resources.dll
 
