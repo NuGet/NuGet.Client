@@ -6,9 +6,7 @@
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-             xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:shell_controls="clr-namespace:Microsoft.VisualStudio.Shell.Controls;assembly=Microsoft.VisualStudio.Shell.Styles"
-             xmlns:shell_styles="clr-namespace:Microsoft.VisualStudio.Shell.Styles;assembly=Microsoft.VisualStudio.Shell.Styles"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
@@ -27,12 +25,6 @@
         x:Key="IntToVulnerabilitySeverityConverter" />
       <local:StringFormatConverter
         x:Key="StringFormatConverter" />
-      <ControlTemplate
-        x:Key="SeparatorControlTemplate">
-        <shell_controls:Separator
-            HorizontalAlignment="Stretch"
-            IsEnabled="False" />
-      </ControlTemplate>
       <!-- style of the list view headers -->
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />

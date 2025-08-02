@@ -61,8 +61,6 @@ Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.VisualStudio.Shell.Styles.dll
 Microsoft.VisualStudio.Shell.Styles.resources.dll
-Microsoft.Web.XmlTransform.dll
-Microsoft.Web.XmlTransform.resources.dll
 
 # Assembly XML Documentation we ship in the VSIX
 NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml
