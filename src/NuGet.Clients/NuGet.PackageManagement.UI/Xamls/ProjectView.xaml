@@ -110,11 +110,7 @@
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <shell_controls:ComboBox.ItemContainerStyle>
         <Style TargetType="{x:Type shell_controls:ComboBoxItem}">
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
           <Style.Triggers>
-            <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
-              <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
-            </DataTrigger>
             <DataTrigger
               Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
               Value="True">
