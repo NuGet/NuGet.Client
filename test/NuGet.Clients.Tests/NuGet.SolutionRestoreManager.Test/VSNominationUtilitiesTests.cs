@@ -476,10 +476,10 @@ namespace NuGet.SolutionRestoreManager.Test
                     builder.WithProperty("NETCoreSdkVersion", sdkVersion);
                 })
                 .Build();
-            NuGetVersion expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
+            NuGetVersion? expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
 
             //Act
-            NuGetVersion actual = VSNominationUtilities.GetSdkVersion(projectRestoreInfo.TargetFrameworks);
+            NuGetVersion? actual = VSNominationUtilities.GetSdkVersion(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);
