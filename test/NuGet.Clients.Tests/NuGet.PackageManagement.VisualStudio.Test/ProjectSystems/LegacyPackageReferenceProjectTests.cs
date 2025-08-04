@@ -627,7 +627,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                LibraryDependency actualDependency = null;
+                LibraryDependency? actualDependency = null;
                 Mock.Get(projectServices.References)
                     .Setup(x => x.AddOrUpdatePackageReferenceAsync(
                         It.IsAny<LibraryDependency>(), CancellationToken.None))
@@ -678,7 +678,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                string actualPackageId = null;
+                string? actualPackageId = null;
                 Mock.Get(projectServices.References)
                     .Setup(x => x.RemovePackageReferenceAsync(It.IsAny<string>()))
                     .Callback<string>(p => actualPackageId = p)
@@ -2030,7 +2030,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             using var testDirectory = TestDirectory.Create();
-            var exception = await Assert.ThrowsAsync<ArgumentException>(() => SetupPrunePackageReferenceDataAndAct("true", new (string, string[])[] { ("PackageA", [null]) }, testDirectory));
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => SetupPrunePackageReferenceDataAndAct("true", new (string, string[])[] { ("PackageA", [null!]) }, testDirectory));
             exception.Message.Should().Contain("PrunePackageReference");
         }
 
