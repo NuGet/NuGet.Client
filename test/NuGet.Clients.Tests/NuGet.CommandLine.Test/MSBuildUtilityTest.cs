@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.Test
         // Test that GetMsBuildDirectoryInternal deals with invalid toolsets (for example ones created from SKUs that don't ship MSBuild like VS Test Agent SKU) See https://github.com/NuGet/Home/issues/5840 for more info
         [Theory]
         [MemberData(nameof(ToolsetDataSource.InvalidToolsetData), MemberType = typeof(ToolsetDataSource))]
-        public void HandlesToolsetsWithInvalidPaths(List<MsBuildToolset> toolsets, string userVersion, string expectedPath)
+        public void HandlesToolsetsWithInvalidPaths(List<MsBuildToolset> toolsets, string? userVersion, string expectedPath)
         {
             // Arrange
             // Act
@@ -594,7 +594,7 @@ namespace NuGet.CommandLine.Test
                     new object[] { LegacyToolsets_NonNumericVersion, "0" },
                 };
 
-            private static readonly TheoryData<List<MsBuildToolset>, string, string> _invalidToolsetData
+            private static readonly TheoryData<List<MsBuildToolset>, string?, string> _invalidToolsetData
                 = new()
                 {
                     { CombinedToolsets_MsBuild15AndVSTestToolsets, null, Toolset15_Wed_LongVersion.Path },
@@ -617,7 +617,7 @@ namespace NuGet.CommandLine.Test
             public static IEnumerable<object[]> IntegerVersionMatchData => _integerVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchData => _nonNumericVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchFailureData => _nonNumericVersionMatchFailureData;
-            public static TheoryData<List<MsBuildToolset>, string, string> InvalidToolsetData => _invalidToolsetData;
+            public static TheoryData<List<MsBuildToolset>, string?, string> InvalidToolsetData => _invalidToolsetData;
             public static IEnumerable<object[]> HighestPathWithLowVersionMatchData => _highestPathWithLowVersionMatchData;
 
         }
