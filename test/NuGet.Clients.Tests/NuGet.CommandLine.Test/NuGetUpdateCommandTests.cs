@@ -1714,7 +1714,7 @@ namespace NuGet.CommandLine.Test
                         testNuGetProjectContext,
                         CancellationToken.None);
                 }
-                string[] args;
+                string?[] args;
                 //Test the case where the code is not provided to ensure it works as expected. (Highest by default)
                 if (string.IsNullOrEmpty(dependencyVersion))
                 {
