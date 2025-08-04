@@ -239,6 +239,16 @@
 {1} - all / user specified
 {2} - Project Path</note>
       </trans-unit>
+      <trans-unit id="Error_AddPkgProjectReference">
+        <source>Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</source>
+        <target state="new">Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</target>
+        <note>{0} - PackageId</note>
+      </trans-unit>
+      <trans-unit id="Error_AddPkgUnresolved">
+        <source>Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</source>
+        <target state="new">Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</target>
+        <note>{0} Package Id</note>
+      </trans-unit>
       <trans-unit id="Error_AddPkg_CentralPackageVersions_EmptyVersionOverride">
         <source>VersionOverride for package '{0}' should not be empty.</source>
         <target state="translated">Element VersionOverride dla pakietu „{0}” nie powinien być pusty.</target>
