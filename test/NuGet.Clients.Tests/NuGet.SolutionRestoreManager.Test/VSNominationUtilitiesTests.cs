@@ -250,7 +250,7 @@ namespace NuGet.SolutionRestoreManager.Test
             NuGetVersion expected = new NuGetVersion(sdkAnalysisLevel);
 
             //Act
-            NuGetVersion actual = VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks);
+            NuGetVersion? actual = VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);
