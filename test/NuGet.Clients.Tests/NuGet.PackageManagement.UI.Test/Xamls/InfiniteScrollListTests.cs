@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI.Test
                         loader: null,
                         loadingMessage: "a",
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo?>(null),
                         token: CancellationToken.None);
                 });
 
@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.UI.Test
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage,
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo?>(null),
                         token: CancellationToken.None);
                 });
 
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.UI.Test
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage: "a",
                         logger: null,
-                        searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
+                        searchResultTask: Task.FromResult<SearchResultContextInfo?>(null),
                         token: new CancellationToken(canceled: true));
                 });
         }
