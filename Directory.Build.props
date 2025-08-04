@@ -12,4 +12,9 @@
     <!-- Reset AssemblySearchPaths to empty to let Microsoft.Common.targets pick the legacy defaults -->
     <AssemblySearchPaths Condition="'$(UsingMicrosoftNETSdk)' != 'true'" />
   </PropertyGroup>
+
+  <PropertyGroup>
+    <UsingToolXliff>true</UsingToolXliff>
+    <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
+  </PropertyGroup>
 </Project>
