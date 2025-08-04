@@ -2954,6 +2954,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Pruning.FrameworksEnabled.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.FrameworksDisabled.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksDefaultDisabled.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
             };
@@ -3068,7 +3069,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(38);
+            projectInformationEvent.Count.Should().Be(39);
 
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
@@ -3108,6 +3109,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["Pruning.FrameworksEnabled.Count"].Should().Be(0);
             projectInformationEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
             projectInformationEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
+            projectInformationEvent["Pruning.FrameworksDefaultDisabled.Count"].Should().Be(0);
         }
 
         [Fact]
@@ -3165,7 +3167,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(46);
+            projectInformationEvent.Count.Should().Be(47);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
