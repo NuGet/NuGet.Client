@@ -82,7 +82,7 @@ stages:
     - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
         LclSource: lclFilesfromPackage
-        LclPackageId: 'LCL-JUNO-PROD-YOURREPO'
+        LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
         MirrorRepo: 'NuGet.Client'
         GitHubOrg: 'NuGet'
 
