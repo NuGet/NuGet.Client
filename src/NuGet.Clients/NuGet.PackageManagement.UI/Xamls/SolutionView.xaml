@@ -7,7 +7,6 @@
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:shell_controls="clr-namespace:Microsoft.VisualStudio.Shell.Controls;assembly=Microsoft.VisualStudio.Shell.Styles"
-             xmlns:shell_styles="clr-namespace:Microsoft.VisualStudio.Shell.Styles;assembly=Microsoft.VisualStudio.Shell.Styles"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
@@ -446,7 +445,7 @@
         VerticalAlignment="Center"
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
-      <TextBox
+      <shell_controls:TextBox
           FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
           Grid.Row="0"
           Grid.Column="2"
@@ -454,7 +453,6 @@
           Style="{StaticResource InstalledTextBoxStyle}"
           Background="{x:Null}"
           IsReadOnly="true"
-          BorderBrush="{DynamicResource {x:Static shell_styles:ShellColors.ControlStrokeDefaultBrushKey}}"
           BorderThickness="1"
           MinHeight="24"
           AutomationProperties.AutomationId="InstalledVersion"
