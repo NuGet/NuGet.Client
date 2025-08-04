@@ -446,18 +446,12 @@
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
       <shell_controls:TextBox
-          FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
           Grid.Row="0"
           Grid.Column="2"
           VerticalAlignment="Center"
-          Style="{StaticResource InstalledTextBoxStyle}"
-          Background="{x:Null}"
           IsReadOnly="true"
-          BorderThickness="1"
-          MinHeight="24"
           AutomationProperties.AutomationId="InstalledVersion"
           AutomationProperties.Name="{x:Static local:Resources.Version_Installed}"
-          Margin="0"
           Focusable="True"
           Text="{Binding InstalledVersions}" />
 
