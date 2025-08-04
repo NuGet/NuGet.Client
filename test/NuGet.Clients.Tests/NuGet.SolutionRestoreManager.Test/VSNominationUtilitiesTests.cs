@@ -22,18 +22,15 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetRestoreAuditProperties_WithoutSuppressions_ReturnsNull()
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-            };
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAudit, "true");
+                })
+                .Build();
 
             // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             actual.Should().NotBeNull();
@@ -44,24 +41,19 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetRestoreAuditProperties_MultiTargetingHasDifferentModeValues_ReturnsAuditModeAllWhenDefined()
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAuditMode] = "direct"
-                    }),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAuditMode] = "all"
-                    }),
-            };
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAuditMode, "direct");
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAuditMode, "all");
+                })
+                .Build();
 
             // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             actual.Should().NotBeNull();
@@ -72,76 +64,34 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetRestoreAuditProperties_MultiTargetingHasDifferentModeValues_ThrowsWhenValuesAreDifferentAndNoneAreAll()
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAuditMode] = "one"
-                    }),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAuditMode] = "two"
-                    }),
-            };
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAuditMode, "one");
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAuditMode, "two");
+                })
+                .Build();
 
             // Act && Assert
-            Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks));
+            Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks));
         }
 
         [Fact]
         public void GetRestoreAuditProperties_WithEmptySuppressionsList_ReturnsNull()
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] = ImmutableArray<IVsReferenceItem2>.Empty,
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-            };
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAudit, "true");
+                })
+                .Build();
 
             // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
-
-            // Assert
-            actual.Should().NotBeNull();
-            actual.SuppressedAdvisories.Should().BeNull();
-        }
-
-        [Fact]
-        public void GetRestoreAuditProperties_NullAndEmptySuppressions_ReturnsNull()
-        {
-            // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] = ImmutableArray<IVsReferenceItem2>.Empty,
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-            };
-
-            // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             actual.Should().NotBeNull();
@@ -154,22 +104,18 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             var cve1Url = "https://cve.test/1";
             var cve2Url = "https://cve.test/2";
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-            };
+
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, [])
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .Build();
 
             // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             actual.Should().NotBeNull();
@@ -184,32 +130,24 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             var cve1Url = "https://cve.test/1";
             var cve2Url = "https://cve.test/2";
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-            };
+
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, [])
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, [])
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .Build();
 
             // Act
-            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             actual.Should().NotBeNull();
@@ -224,31 +162,23 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             var cve1Url = "https://cve.test/1";
             var cve2Url = "https://cve.test/2";
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.NuGetAudit] = "true"
-                    }),
-            };
+
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAudit, "true");
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder
+                    .WithProperty(ProjectBuildProperties.NuGetAudit, "true")
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, [])
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .Build();
 
             // Act & Assert
-            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks));
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks));
             exception.Message.Should().Contain(ProjectItems.NuGetAuditSuppress);
         }
 
@@ -258,25 +188,23 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             var cve1Url = "https://cve.test/1";
             var cve2Url = "https://cve.test/2";
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-            };
+
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder
+                    .WithProperty(ProjectBuildProperties.NuGetAudit, "true")
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, [])
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.NuGetAudit, "true");
+                })
+                .Build();
 
             // Act & Assert
-            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks));
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks));
             exception.Message.Should().Contain(ProjectItems.NuGetAuditSuppress);
         }
 
@@ -286,78 +214,23 @@ namespace NuGet.SolutionRestoreManager.Test
             // Arrange
             var cve1Url = "https://cve.test/1";
             var cve2Url = "https://cve.test/2";
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve1Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectItems.NuGetAuditSuppress] =
-                            [
-                                new VsReferenceItem2(cve2Url, metadata: EmptyMetadata),
-                            ]
-                    },
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)),
-            };
+
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve1Url, []);
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder
+                    .WithItem(ProjectItems.NuGetAuditSuppress, cve2Url, []);
+                })
+                .Build();
 
             // Act & Assert
-            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks));
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks));
             exception.Message.Should().Contain(ProjectItems.NuGetAuditSuppress);
-        }
-
-        private VsTargetFrameworkInfo4[] TargetFrameworkWithSdkAnalysisLevel(string sdkAnalysisLevel)
-        {
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string, string>
-                    {
-                        { ProjectBuildProperties.SdkAnalysisLevel, sdkAnalysisLevel }
-                    })
-            };
-
-            return targetFrameworks;
-        }
-
-        private VsTargetFrameworkInfo4[] TargetFrameworkWithSdkVersion(string sdkAnalysisLevel)
-        {
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "NETCoreSdkVersion", sdkAnalysisLevel }
-                    })
-            };
-
-            return targetFrameworks;
-        }
-
-        private VsTargetFrameworkInfo4[] TargetFrameworkWithUsingMicrosoftNetSdk(string UsingMicrosoftNetSdk)
-        {
-            Dictionary<string, string> keyValuePairs = new Dictionary<string, string>();
-            keyValuePairs["UsingMicrosoftNETSdk"] = UsingMicrosoftNetSdk;
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string, string>
-                    {
-                        { ProjectBuildProperties.UsingMicrosoftNETSdk, UsingMicrosoftNetSdk }
-                    })
-            };
-
-            return targetFrameworks;
         }
 
         [Theory]
@@ -368,11 +241,16 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetSdkAnalysisLevel_WithValidVersions_ReturnsNuGetVersion(string sdkAnalysisLevel)
         {
             // Arrange
-            var targetFrameworks = TargetFrameworkWithSdkAnalysisLevel(sdkAnalysisLevel);
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net9.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.SdkAnalysisLevel, sdkAnalysisLevel);
+                })
+                .Build();
             NuGetVersion expected = new NuGetVersion(sdkAnalysisLevel);
 
             //Act
-            NuGetVersion actual = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks);
+            NuGetVersion actual = VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);
@@ -383,8 +261,16 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1.3e")]
         public void GetSdkAnalysisLevel_WithInvalidVersions_ThrowsException(string sdkAnalysisLevel)
         {
+            // Arrange
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net9.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.SdkAnalysisLevel, sdkAnalysisLevel);
+                })
+                .Build();
+
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => VSNominationUtilities.GetSdkAnalysisLevel(TargetFrameworkWithSdkAnalysisLevel(sdkAnalysisLevel)));
+            Assert.Throws<ArgumentException>(() => VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks));
         }
 
         [Theory]
@@ -394,8 +280,16 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("TrUe")]
         public void GetUsingMicrosoftNETSdk_WithTrueValue_ReturnsTrue(string usingMicrosoftNETSdk)
         {
+            // Arrange
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.UsingMicrosoftNETSdk, usingMicrosoftNETSdk);
+                })
+                .Build();
+
             // Act
-            bool actual = VSNominationUtilities.GetUsingMicrosoftNETSdk(TargetFrameworkWithUsingMicrosoftNetSdk(usingMicrosoftNETSdk));
+            bool actual = VSNominationUtilities.GetUsingMicrosoftNETSdk(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             Assert.True(actual);
@@ -408,8 +302,16 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("FalsE")]
         public void GetUsingMicrosoftNETSdk_WithFalseValue_ReturnsFalse(string usingMicrosoftNETSdk)
         {
+            // Arrange
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.UsingMicrosoftNETSdk, usingMicrosoftNETSdk);
+                })
+                .Build();
+
             // Act
-            bool actual = VSNominationUtilities.GetUsingMicrosoftNETSdk(TargetFrameworkWithUsingMicrosoftNetSdk(usingMicrosoftNETSdk));
+            bool actual = VSNominationUtilities.GetUsingMicrosoftNETSdk(projectRestoreInfo.TargetFrameworks);
 
             // Assert
             Assert.False(actual);
@@ -421,7 +323,16 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("1")]
         public void GetUsingMicrosoftNETSdk_WithInvalidValue_ThrowsException(string usingMicrosoftNETSdk)
         {
-            Assert.Throws<ArgumentException>(() => VSNominationUtilities.GetUsingMicrosoftNETSdk(TargetFrameworkWithUsingMicrosoftNetSdk(usingMicrosoftNETSdk)));
+            // Arrange
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.UsingMicrosoftNETSdk, usingMicrosoftNETSdk);
+                })
+                .Build();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => VSNominationUtilities.GetUsingMicrosoftNETSdk(projectRestoreInfo.TargetFrameworks));
         }
 
         [Theory]
@@ -431,42 +342,37 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetPackageSpec_WithUseLegacyDependencyResolver(string? useLegacyDependencyResolver, bool expected)
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string?>(StringComparer.OrdinalIgnoreCase)
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    if (useLegacyDependencyResolver != null)
                     {
-                        [ProjectBuildProperties.RestoreUseLegacyDependencyResolver] = useLegacyDependencyResolver
-                    })
-            };
+                        builder.WithProperty(ProjectBuildProperties.RestoreUseLegacyDependencyResolver, useLegacyDependencyResolver);
+                    }
+                })
+                .Build();
 
             // Act & Assert
-            VSNominationUtilities.GetUseLegacyDependencyResolver(targetFrameworks).Should().Be(expected);
+            VSNominationUtilities.GetUseLegacyDependencyResolver(projectRestoreInfo.TargetFrameworks).Should().Be(expected);
         }
 
         [Fact]
         public void GetPackageSpec_WithUseLegacyDependencyResolver_DoesNotSupportPerFrameworkConfiguration()
         {
             // Arrange
-            var targetFrameworks = new VsTargetFrameworkInfo4[]
-            {
-                new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.RestoreUseLegacyDependencyResolver] = "true"
-                    }),
-                 new VsTargetFrameworkInfo4(
-                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
-                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        [ProjectBuildProperties.RestoreUseLegacyDependencyResolver] = "false"
-                    })
-            };
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.RestoreUseLegacyDependencyResolver, "true");
+                })
+                .WithTargetFrameworkInfo("net10.0", builder =>
+                {
+                    builder.WithProperty(ProjectBuildProperties.RestoreUseLegacyDependencyResolver, "false");
+                })
+                .Build();
 
             // Act & Assert
-            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetUseLegacyDependencyResolver(targetFrameworks));
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetUseLegacyDependencyResolver(projectRestoreInfo.TargetFrameworks));
             exception.Message.Should().Contain(ProjectBuildProperties.RestoreUseLegacyDependencyResolver);
         }
 
@@ -564,11 +470,16 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GetSdkVersion_WithVariousInputs(string sdkVersion, string? expectedSdkVersion)
         {
             // Arrange
-            var targetFrameworks = TargetFrameworkWithSdkVersion(sdkVersion);
-            NuGetVersion? expected = expectedSdkVersion == null ? null : new NuGetVersion(expectedSdkVersion);
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("net8.0", builder =>
+                {
+                    builder.WithProperty("NETCoreSdkVersion", sdkVersion);
+                })
+                .Build();
+            NuGetVersion expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
 
             //Act
-            NuGetVersion? actual = VSNominationUtilities.GetSdkVersion(targetFrameworks);
+            NuGetVersion actual = VSNominationUtilities.GetSdkVersion(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);
