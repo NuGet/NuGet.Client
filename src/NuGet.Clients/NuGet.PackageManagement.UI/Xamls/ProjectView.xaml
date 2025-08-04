@@ -98,7 +98,6 @@
       KeyUp="Versions_KeyUp"
       Grid.Row="1"
       Grid.Column="2"
-      MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       AutomationProperties.LabeledBy="{Binding ElementName=SubscriptionsLabel}"
       IsEditable="{Binding IsFloatingVersionSupported, Converter={StaticResource InverseNullToVisibilityConverter}}"

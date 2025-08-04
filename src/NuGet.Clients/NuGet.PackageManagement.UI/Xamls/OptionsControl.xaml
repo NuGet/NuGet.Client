@@ -85,7 +85,6 @@
           <shell_controls:ComboBox
             Grid.Row="0"
             Grid.Column="1"
-            MinHeight="22"
             AutomationProperties.Name="{x:Static nuget:Resources.Label_DependencyBehavior}"
             ItemsSource="{Binding Path=Options.DependencyBehaviors}"
             SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}" />
@@ -99,7 +98,6 @@
           <shell_controls:ComboBox
             Grid.Row="2"
             Grid.Column="1"
-            MinHeight="22"
             AutomationProperties.Name="{x:Static nuget:Resources.Label_FileConflictAction}"
             ItemsSource="{Binding Path=Options.FileConflictActions}"
             SelectedItem="{Binding Path=Options.SelectedFileConflictAction}" />
