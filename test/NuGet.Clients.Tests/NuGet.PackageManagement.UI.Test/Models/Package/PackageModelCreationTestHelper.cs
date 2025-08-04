@@ -113,9 +113,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             PackageIdentity packageIdentity,
             string packagePath,
             IEmbeddedResourcesCapable embeddedResourceCapable,
-            string authors,
-            IReadOnlyList<string> ownersList,
-            Uri iconUrl)
+            string? authors,
+            IReadOnlyList<string>? ownersList,
+            Uri? iconUrl)
         {
             return new LocalPackageModel(
                 packageIdentity,

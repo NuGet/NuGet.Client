@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 It.IsAny<ServiceActivationOptions>(),
                 It.IsAny<CancellationToken>()))
 #pragma warning restore ISB001 // Dispose of proxies
-            .Returns(new ValueTask<INuGetPackageFileService>(new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object)));
+            .Returns(new ValueTask<INuGetPackageFileService?>(new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object)));
 
             _packageFileService = new NuGetPackageFileService(_serviceBroker.Object, _telemetryProvider.Object);
             _testData = testData;
