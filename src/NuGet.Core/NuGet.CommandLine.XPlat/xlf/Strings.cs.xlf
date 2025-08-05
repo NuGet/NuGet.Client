@@ -886,6 +886,11 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
         <target state="translated">Cesta k souboru projektu nebo řešení nebo k adresáři</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
+        <source>All packages are already up to date.</source>
+        <target state="new">All packages are already up to date.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
         <source>Updated {0} packages in {1} scanned packages.</source>
         <target state="new">Updated {0} packages in {1} scanned packages.</target>

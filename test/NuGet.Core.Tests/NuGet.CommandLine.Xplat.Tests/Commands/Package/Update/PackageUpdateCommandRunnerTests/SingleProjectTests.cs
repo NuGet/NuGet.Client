@@ -156,7 +156,7 @@ public class SingleProjectTests
         int exitCode = await RunCommand(testData, CancellationToken.None);
 
         // Assert
-        exitCode.Should().Be(ExitCodes.Error);
+        exitCode.Should().Be(3);
 
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
@@ -191,7 +191,7 @@ public class SingleProjectTests
         int exitCode = await RunCommand(testData, CancellationToken.None);
 
         // Assert
-        exitCode.Should().Be(ExitCodes.Error);
+        exitCode.Should().Be(3);
 
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
@@ -238,9 +238,8 @@ public class SingleProjectTests
         int exitCode = await RunCommand(testData, CancellationToken.None);
 
         // Assert
-        exitCode.Should().Be(ExitCodes.Error);
+        exitCode.Should().Be(3);
     }
-
 
     private TestData InitTest(IReadOnlyList<Pkg> packagesToUpdate, PackageSpec project, bool restoreSuccessful = true)
     {

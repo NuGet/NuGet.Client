@@ -886,6 +886,11 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
         <target state="translated">Chemin d’accès à un fichier de projet ou de solution, ou à un répertoire.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
+        <source>All packages are already up to date.</source>
+        <target state="new">All packages are already up to date.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
         <source>Updated {0} packages in {1} scanned packages.</source>
         <target state="new">Updated {0} packages in {1} scanned packages.</target>

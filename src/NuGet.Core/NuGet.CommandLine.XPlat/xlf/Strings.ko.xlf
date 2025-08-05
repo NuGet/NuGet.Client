@@ -886,6 +886,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">프로젝트, 솔루션 파일 또는 디렉터리의 경로입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
+        <source>All packages are already up to date.</source>
+        <target state="new">All packages are already up to date.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
         <source>Updated {0} packages in {1} scanned packages.</source>
         <target state="new">Updated {0} packages in {1} scanned packages.</target>

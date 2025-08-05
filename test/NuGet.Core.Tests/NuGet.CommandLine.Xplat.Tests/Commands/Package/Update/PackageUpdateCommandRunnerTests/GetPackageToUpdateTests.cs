@@ -326,4 +326,127 @@ public class GetPackageToUpdateTests
         packagesToUpdate.Should().BeEmpty();
         logger.Invocations.Count.Should().BeGreaterThan(0);
     }
+
+    [Fact]
+    public async Task NoPackagesProvided_BothPackagesHaveUpdates_UpdatesBothPackages()
+    {
+        // Arrange
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package1", [new("Version", "1.0.0")])
+                   .WithItem("PackageReference", "Test.Package2", [new("Version", "2.0.0")]);
+        })
+            .Build();
+
+        var versionChooser = new Mock<IVersionChooser>(MockBehavior.Strict);
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package1", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("1.2.3"));
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package2", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("2.1.0"));
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act - Pass empty list to trigger "update all packages" behavior
+        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+            [],
+            packageSpec,
+            versionChooser.Object,
+            NullSettings.Instance,
+            logger.Object,
+            CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().HaveCount(2);
+
+        var package1Update = packagesToUpdate.First(p => p.Package.Id == "Test.Package1");
+        package1Update.Package.CurrentVersion.ToString().Should().Be("[1.0.0, )");
+        package1Update.Package.NewVersion.ToString().Should().Be("[1.2.3, )");
+
+        var package2Update = packagesToUpdate.First(p => p.Package.Id == "Test.Package2");
+        package2Update.Package.CurrentVersion.ToString().Should().Be("[2.0.0, )");
+        package2Update.Package.NewVersion.ToString().Should().Be("[2.1.0, )");
+
+        logger.Invocations.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task NoPackagesProvided_OnePackageAlreadyLatest_UpdatesOnlyOutdatedPackage()
+    {
+        // Arrange
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package1", [new("Version", "1.0.0")])
+                   .WithItem("PackageReference", "Test.Package2", [new("Version", "2.1.0")]);
+        })
+            .Build();
+
+        var versionChooser = new Mock<IVersionChooser>(MockBehavior.Strict);
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package1", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("1.2.3"));
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package2", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("2.1.0")); // Same as current version
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act - Pass empty list to trigger "update all packages" behavior
+        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+            [],
+            packageSpec,
+            versionChooser.Object,
+            NullSettings.Instance,
+            logger.Object,
+            CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().HaveCount(1);
+
+        var packageUpdate = packagesToUpdate.First();
+        packageUpdate.Package.Id.Should().Be("Test.Package1");
+        packageUpdate.Package.CurrentVersion.ToString().Should().Be("[1.0.0, )");
+        packageUpdate.Package.NewVersion.ToString().Should().Be("[1.2.3, )");
+
+        logger.Invocations.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task NoPackagesProvided_AllPackagesUpToDate_ReturnsEmptyList()
+    {
+        // Arrange
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package1", [new("Version", "1.2.3")])
+                   .WithItem("PackageReference", "Test.Package2", [new("Version", "2.1.0")]);
+        })
+            .Build();
+
+        var versionChooser = new Mock<IVersionChooser>(MockBehavior.Strict);
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package1", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("1.2.3")); // Same as current version
+        versionChooser
+            .Setup(v => v.GetLatestVersionAsync("Test.Package2", It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("2.1.0")); // Same as current version
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act - Pass empty list to trigger "update all packages" behavior
+        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+            [],
+            packageSpec,
+            versionChooser.Object,
+            NullSettings.Instance,
+            logger.Object,
+            CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().BeEmpty();
+        logger.Invocations.Count.Should().Be(0);
+    }
 }

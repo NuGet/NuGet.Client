@@ -1572,6 +1572,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All packages are already up to date..
+        /// </summary>
+        internal static string PackageUpdate_AllPackagesAlreadyUpToDate {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AllPackagesAlreadyUpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Updated {0} packages in {1} scanned packages..
         /// </summary>
         internal static string PackageUpdate_FinalSummary {

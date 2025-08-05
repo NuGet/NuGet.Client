@@ -87,10 +87,20 @@ internal static class PackageUpdateCommandRunner
         var versionChooser = new VersionChooser(sourceProvider, settings, sourceCacheContext);
         var packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
 
-        if (!packagesToUpdateResult.Any())
+        bool noPackagesSpecified = args.Packages is null || args.Packages.Count == 0;
+        if (packagesToUpdateResult.Count == 0)
         {
-            // GetPackagesToUpdateAsync is responsible for outputting error messages.
-            return ExitCodes.Error;
+            if (noPackagesSpecified)
+            {
+                // When no packages are specified and all packages are already up to date, return exit code 2
+                logger.LogMinimal("All packages are already up to date.", ConsoleColor.Green);
+                return ExitCodes.NoPackagesNeedUpdating;
+            }
+            else
+            {
+                // GetPackagesToUpdateAsync is responsible for outputting error messages.
+                return ExitCodes.Error;
+            }
         }
 
         // 3. Preview restore to validate changes
@@ -139,8 +149,7 @@ internal static class PackageUpdateCommandRunner
     {
         if (packages is null || packages.Count == 0)
         {
-            logger.LogMinimal(Strings.Unsupported_UpgradeAllPackages, ConsoleColor.Red);
-            return new List<PackageUpdateResult>();
+            return await GetAllPackagesWithUpdatesAsync(project, versionChooser, settings, logger, cancellationToken);
         }
 
         var sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
@@ -155,7 +164,7 @@ internal static class PackageUpdateCommandRunner
 
         foreach (var package in packages)
         {
-            var result = await GetSinglePackageToUpdateAsync(package, project, versionChooser, settings, logger, cancellationToken);
+            var result = await GetSinglePackageToUpdateAsync(package, project, versionChooser, settings, logger, suppressWarnings: false, cancellationToken);
             if (result != null)
             {
                 packagesToUpdate.Add(result);
@@ -169,12 +178,62 @@ internal static class PackageUpdateCommandRunner
         return hasErrors ? new List<PackageUpdateResult>() : packagesToUpdate;
     }
 
+    private static async Task<List<PackageUpdateResult>> GetAllPackagesWithUpdatesAsync(
+        PackageSpec project,
+        IVersionChooser versionChooser,
+        ISettings settings,
+        ILoggerWithColor logger,
+        CancellationToken cancellationToken)
+    {
+        var sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+        if (sourceMapping.IsEnabled)
+        {
+            logger.LogMinimal(Strings.Unsupported_PackageSourceMapping, ConsoleColor.Red);
+            return new List<PackageUpdateResult>();
+        }
+
+        var allProjectPackages = GetAllProjectPackages(project);
+        var packagesToUpdate = new List<PackageUpdateResult>();
+
+        foreach (var packageId in allProjectPackages)
+        {
+            var packageToCheck = new Package { Id = packageId, VersionRange = null };
+            var result = await GetSinglePackageToUpdateAsync(packageToCheck, project, versionChooser, settings, logger, suppressWarnings: true, cancellationToken);
+            if (result != null)
+            {
+                packagesToUpdate.Add(result);
+            }
+        }
+
+        return packagesToUpdate;
+    }
+
+    private static HashSet<string> GetAllProjectPackages(PackageSpec project)
+    {
+        var allPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var tfm in project.TargetFrameworks)
+        {
+            foreach (var dependency in tfm.Dependencies)
+            {
+                // Skip auto-referenced packages and packages without explicit names
+                if (!string.IsNullOrEmpty(dependency.Name) && !dependency.AutoReferenced)
+                {
+                    allPackageIds.Add(dependency.Name);
+                }
+            }
+        }
+
+        return allPackageIds;
+    }
+
     private static async Task<PackageUpdateResult?> GetSinglePackageToUpdateAsync(
         Package package,
         PackageSpec project,
         IVersionChooser versionChooser,
         ISettings settings,
         ILoggerWithColor logger,
+         bool suppressWarnings,
         CancellationToken cancellationToken)
     {
         VersionRange? existingVersion = null;
@@ -231,7 +290,10 @@ internal static class PackageUpdateCommandRunner
 
         if (existingVersion is null)
         {
-            logger.LogMinimal(Messages.Error_PackageNotReferenced(package.Id, project.FilePath), ConsoleColor.Red);
+            if (!suppressWarnings)
+            {
+                logger.LogMinimal(Messages.Error_PackageNotReferenced(package.Id, project.FilePath), ConsoleColor.Red);
+            }
             return null;
         }
 
@@ -253,13 +315,19 @@ internal static class PackageUpdateCommandRunner
 
             if (highestVersion is null)
             {
-                logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
+                if (!suppressWarnings)
+                {
+                    logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
+                }
                 return null;
             }
 
             if (existingVersion.MinVersion == highestVersion)
             {
-                logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, highestVersion.OriginalVersion, project.FilePath), ConsoleColor.Yellow);
+                if (!suppressWarnings)
+                {
+                    logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, highestVersion.OriginalVersion, project.FilePath), ConsoleColor.Yellow);
+                }
                 return null;
             }
 
@@ -270,7 +338,10 @@ internal static class PackageUpdateCommandRunner
             newVersion = package.VersionRange;
             if (newVersion == existingVersion)
             {
-                logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, newVersion.OriginalString), ConsoleColor.Yellow);
+                if (!suppressWarnings)
+                {
+                    logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, newVersion.OriginalString), ConsoleColor.Yellow);
+                }
                 return null;
             }
         }
@@ -334,5 +405,15 @@ internal static class PackageUpdateCommandRunner
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_FinalSummary, updatedCount, scannedCount);
         }
+    }
+
+    // These exit codes are documented, so consider changing them or adding new ones a breaking change.
+    private static class ExitCodes
+    {
+        public const int Success = 0;
+        // System.CommandLine returns 1 on parse ererors, so even if this const isn't used, the value 1 is still returned.
+        public const int InvalidArgs = 1;
+        public const int NoPackagesNeedUpdating = 2;
+        public const int Error = 3;
     }
 }
