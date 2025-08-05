@@ -24,7 +24,6 @@
 
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <GetSymbolsToIndexDependsOn Condition="'$(GetSymbolsToIndexDependsOn)' == ''">GetSymbolsToIndexDefault</GetSymbolsToIndexDependsOn>
-    <SignTargetsForRealSigning Condition="'$(SignTargetsForRealSigning)' == ''">GetBuildOutputWithSigningMetadata</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs Condition="'$(SymbolTargetsToGetPdbs)' == ''">GetDebugSymbolsProjectOutput</SymbolTargetsToGetPdbs>
   </PropertyGroup>
 
@@ -143,7 +142,7 @@
   <Target Name="GetSymbolsToIndexDefault" DependsOnTargets="GetTargetFrameworkSet" Returns="@(SymbolFilesToIndex)" Condition=" '$(Shipping)' == 'true' ">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Targets="$(SignTargetsForRealSigning);$(SymbolTargetsToGetPdbs)"
+      Targets="$(SymbolTargetsToGetPdbs)"
       Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
                   BuildProjectReferences=false;">
 
