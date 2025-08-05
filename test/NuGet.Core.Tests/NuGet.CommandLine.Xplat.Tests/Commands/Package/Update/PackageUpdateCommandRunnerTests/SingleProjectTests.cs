@@ -56,6 +56,48 @@ public class SingleProjectTests
     }
 
     [Fact]
+    public async Task SingleTarget_MultiplePackages_UpdatesBothPackages()
+    {
+        // Arrange
+        var packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package1", [new("Version", "1.0.0")])
+                   .WithItem("PackageReference", "Test.Package2", [new("Version", "2.0.0")]);
+        }).Build();
+
+        var packagesToUpdate = new List<Pkg>
+        {
+            new Pkg { Id = "Test.Package1", VersionRange = new VersionRange(new NuGetVersion("1.2.3")) },
+            new Pkg { Id = "Test.Package2", VersionRange = new VersionRange(new NuGetVersion("2.1.0")) }
+        };
+
+        TestData testData = InitTest(packagesToUpdate, packageSpec);
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(0);
+
+        testData.IoMock.Verify(x => x.UpdatePackageReference(
+            It.IsAny<PackageSpec>(),
+            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<List<NuGetFramework>>(),
+            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package1" && p.NewVersion.ToString() == "[1.2.3, )"),
+            It.IsAny<ILogger>()),
+            Times.Once);
+
+        testData.IoMock.Verify(x => x.UpdatePackageReference(
+            It.IsAny<PackageSpec>(),
+            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<List<NuGetFramework>>(),
+            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package2" && p.NewVersion.ToString() == "[2.1.0, )"),
+            It.IsAny<ILogger>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task MultiTargetingWithConditionalPackage_SinglePackage_UpdatesExpectedPackage()
     {
         // Arrange

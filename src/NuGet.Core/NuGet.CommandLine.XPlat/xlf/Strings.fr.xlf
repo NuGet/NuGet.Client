@@ -1252,11 +1252,6 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
         <target state="translated">Nom du signataire approuvé existant à supprimer.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Non pris en charge : La mise à jour de plusieurs packages n’est pas encore prise en charge</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Non pris en charge : Les projets qui utilisent le mappage des sources de package ne sont pas encore pris en charge</target>

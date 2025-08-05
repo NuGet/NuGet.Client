@@ -1252,11 +1252,6 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <target state="translated">Der Name des vorhandenen vertrauenswürdigen Signaturgebers, der entfernt werden soll.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Nicht unterstützt: Das Aktualisieren mehrerer Pakete wird noch nicht unterstützt.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Nicht unterstützt: Projekte, die die Paketquellzuordnung verwenden, werden noch nicht unterstützt.</target>

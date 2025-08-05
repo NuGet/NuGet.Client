@@ -1253,11 +1253,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">제거할 기존 신뢰할 수 있는 서명자의 이름입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">지원되지 않음: 둘 이상의 패키지 업데이트는 아직 지원되지 않음</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">지원되지 않음: 패키지 원본 매핑을 사용하는 프로젝트는 아직 지원되지 않음</target>

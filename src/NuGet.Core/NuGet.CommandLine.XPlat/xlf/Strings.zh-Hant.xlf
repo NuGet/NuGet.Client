@@ -1252,11 +1252,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">要移除之現有信任簽署者的名稱。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">不支援: 尚不支援更新多個套件</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">不支援: 尚不支援使用套件來源對應的專案</target>

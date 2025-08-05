@@ -1252,11 +1252,6 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
         <target state="translated">Kaldırılacak mevcut güvenilen imzalayanın adı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Desteklenmiyor: Birden fazla paketin güncelleştirilmesi henüz desteklenmiyor</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Desteklenmiyor: Paket Kaynağı Eşlemesi özelliğini kullanan projeler henüz desteklenmiyor</target>

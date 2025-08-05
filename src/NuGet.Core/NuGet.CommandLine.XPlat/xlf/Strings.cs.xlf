@@ -1252,11 +1252,6 @@ Hledání porovnává řetězce bez rozlišování malých a velkých písmen po
         <target state="translated">Jméno existující důvěryhodné podepisující osoby, která se má odebrat.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Nepodporováno: Aktualizace více než jednoho balíčku se zatím nepodporuje.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Nepodporované: Projekty používající mapování zdroje balíčku se zatím nepodporují.</target>

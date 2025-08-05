@@ -1252,11 +1252,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">Имя существующего доверенного подписывающего лица, которое нужно удалить.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Не поддерживается: обновление более чем одного пакета пока не поддерживается</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Не поддерживается: проекты, использующие сопоставление источников пакетов, пока не поддерживаются</target>

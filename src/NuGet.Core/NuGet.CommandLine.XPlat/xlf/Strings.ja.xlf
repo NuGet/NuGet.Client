@@ -1252,11 +1252,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">削除する既存の信頼された署名者の名前。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">サポートされていません: 複数のパッケージの更新はまだサポートされていません</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">サポートされていません: パッケージ ソース マッピングを使用するプロジェクトはまだサポートされていません</target>

@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -2319,15 +2319,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string TrustSyncCommandDescription {
             get {
                 return ResourceManager.GetString("TrustSyncCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unsupported: Updating more than one package is not yet supported.
-        /// </summary>
-        internal static string Unsupported_MoreThanOnePackage {
-            get {
-                return ResourceManager.GetString("Unsupported_MoreThanOnePackage", resourceCulture);
             }
         }
         

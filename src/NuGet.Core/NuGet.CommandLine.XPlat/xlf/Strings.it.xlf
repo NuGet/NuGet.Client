@@ -1252,11 +1252,6 @@ La ricerca viene eseguita in un confronto di stringhe senza distinzione tra maiu
         <target state="translated">Nome del firmatario attendibile esistente da rimuovere.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Non supportato: l'aggiornamento di più pacchetti non è ancora supportato</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Non supportato: i progetti che usano il mapping dell'origine pacchetto non sono ancora supportati</target>

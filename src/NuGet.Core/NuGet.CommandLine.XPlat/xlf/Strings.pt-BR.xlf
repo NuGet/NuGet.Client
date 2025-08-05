@@ -1252,11 +1252,6 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
         <target state="translated">O nome do signatário confiável existente a ser removido.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unsupported_MoreThanOnePackage">
-        <source>Unsupported: Updating more than one package is not yet supported</source>
-        <target state="translated">Sem suporte: ainda não há suporte para a atualização de mais de um pacote</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unsupported_PackageSourceMapping">
         <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
         <target state="translated">Sem suporte: ainda não há suporte para projetos que usam o Mapeamento de Origem do Pacote</target>

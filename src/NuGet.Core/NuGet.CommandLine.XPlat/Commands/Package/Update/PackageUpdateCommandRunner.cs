@@ -85,17 +85,17 @@ internal static class PackageUpdateCommandRunner
         CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
         using SourceCacheContext sourceCacheContext = new();
         var versionChooser = new VersionChooser(sourceProvider, settings, sourceCacheContext);
-        (PackageToUpdate? packageToUpdate, List<NuGetFramework>? packageTfms) = await GetPackageToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
+        var packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
 
-        if (packageToUpdate is null)
+        if (!packagesToUpdateResult.Any())
         {
-            // GetPackagesToUpdateAsync is responsible for outputting an error message.
+            // GetPackagesToUpdateAsync is responsible for outputting error messages.
             return ExitCodes.Error;
         }
 
         // 3. Preview restore to validate changes
         logger.LogDebug(Strings.PackageUpdate_PreviewRestore);
-        var updatedDgSpec = GetUpdatedDependencyGraphSpec(dgSpec, packageToUpdate);
+        var updatedDgSpec = GetUpdatedDependencyGraphSpec(dgSpec, packagesToUpdateResult);
         var restorePreviewResult = await packageUpdateIO.PreviewUpdatePackageReferenceAsync(updatedDgSpec, sourceCacheContext, logger, cancellationToken);
 
         if (!restorePreviewResult.Success)
@@ -107,23 +107,29 @@ internal static class PackageUpdateCommandRunner
         // 4. Update MSBuild files
         var projectName = Path.GetFileNameWithoutExtension(dgSpec.Projects[0].FilePath);
         logger.LogInformation($"  {projectName}:");
-        logger.LogInformation($"    " + Format.PackageUpdate_UpdatedMessage(packageToUpdate.Id, packageToUpdate.CurrentVersion.ToShortString(), packageToUpdate.NewVersion.ToShortString()));
-        logger.LogInformation("");
 
         var updatedPackageSpec = updatedDgSpec.Projects[0];
-        packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageTfms!, packageToUpdate, logger);
+        int updatedCount = 0;
+
+        foreach (var packageResult in packagesToUpdateResult)
+        {
+            logger.LogInformation($"    " + Format.PackageUpdate_UpdatedMessage(packageResult.Package.Id, packageResult.Package.CurrentVersion.ToShortString(), packageResult.Package.NewVersion.ToShortString()));
+            packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.Frameworks, packageResult.Package, logger);
+            updatedCount++;
+        }
+
+        logger.LogInformation("");
 
         // 5. Commit restore if everything successful
         await packageUpdateIO.CommitAsync(restorePreviewResult, CancellationToken.None);
 
-        int updatedCount = 1;
-        int scannedCount = 1;
+        int scannedCount = packagesToUpdateResult.Count;
         logger.LogMinimal(Format.PackageUpdate_FinalSummary(updatedCount, scannedCount), ConsoleColor.Green);
 
         return ExitCodes.Success;
     }
 
-    internal static async Task<(PackageToUpdate?, List<NuGetFramework>?)> GetPackageToUpdateAsync(
+    internal static async Task<List<PackageUpdateResult>> GetPackagesToUpdateAsync(
         IReadOnlyList<Package> packages,
         PackageSpec project,
         IVersionChooser versionChooser,
@@ -134,26 +140,46 @@ internal static class PackageUpdateCommandRunner
         if (packages is null || packages.Count == 0)
         {
             logger.LogMinimal(Strings.Unsupported_UpgradeAllPackages, ConsoleColor.Red);
-            return (null, null);
-        }
-
-        if (packages.Count > 1)
-        {
-            logger.LogMinimal(Strings.Unsupported_MoreThanOnePackage, ConsoleColor.Red);
-            return (null, null);
+            return new List<PackageUpdateResult>();
         }
 
         var sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
         if (sourceMapping.IsEnabled)
         {
             logger.LogMinimal(Strings.Unsupported_PackageSourceMapping, ConsoleColor.Red);
-            return (null, null);
+            return new List<PackageUpdateResult>();
         }
 
-        var package = packages.Single();
+        var packagesToUpdate = new List<PackageUpdateResult>();
+        bool hasErrors = false;
 
+        foreach (var package in packages)
+        {
+            var result = await GetSinglePackageToUpdateAsync(package, project, versionChooser, settings, logger, cancellationToken);
+            if (result != null)
+            {
+                packagesToUpdate.Add(result);
+            }
+            else
+            {
+                hasErrors = true;
+            }
+        }
+
+        return hasErrors ? new List<PackageUpdateResult>() : packagesToUpdate;
+    }
+
+    private static async Task<PackageUpdateResult?> GetSinglePackageToUpdateAsync(
+        Package package,
+        PackageSpec project,
+        IVersionChooser versionChooser,
+        ISettings settings,
+        ILoggerWithColor logger,
+        CancellationToken cancellationToken)
+    {
         VersionRange? existingVersion = null;
         List<NuGetFramework>? frameworks = null;
+
         foreach (var tfm in project.TargetFrameworks)
         {
             foreach (var dependency in tfm.Dependencies)
@@ -176,7 +202,7 @@ internal static class PackageUpdateCommandRunner
                             logger.LogMinimal(
                                 Messages.Error_CouldNotFindPackageVersionForCpmPackage(package.Id),
                                 ConsoleColor.Red);
-                            return (null, null);
+                            return null;
                         }
                         tfmVersionRange = centralVersion.VersionRange;
                     }
@@ -196,7 +222,7 @@ internal static class PackageUpdateCommandRunner
                             logger.LogMinimal(
                                 Messages.Unsupported_UpdatePackageWithDifferentPerTfmVersions(package.Id, project.FilePath),
                                 ConsoleColor.Red);
-                            return (null, null);
+                            return null;
                         }
                     }
                 }
@@ -206,7 +232,7 @@ internal static class PackageUpdateCommandRunner
         if (existingVersion is null)
         {
             logger.LogMinimal(Messages.Error_PackageNotReferenced(package.Id, project.FilePath), ConsoleColor.Red);
-            return (null, null);
+            return null;
         }
 
         VersionRange newVersion;
@@ -228,13 +254,13 @@ internal static class PackageUpdateCommandRunner
             if (highestVersion is null)
             {
                 logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
-                return (null, null);
+                return null;
             }
 
             if (existingVersion.MinVersion == highestVersion)
             {
-                logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, highestVersion.OriginalVersion, project.FilePath), ConsoleColor.Red);
-                return (null, null);
+                logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, highestVersion.OriginalVersion, project.FilePath), ConsoleColor.Yellow);
+                return null;
             }
 
             newVersion = new VersionRange(highestVersion);
@@ -244,8 +270,8 @@ internal static class PackageUpdateCommandRunner
             newVersion = package.VersionRange;
             if (newVersion == existingVersion)
             {
-                logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, newVersion.OriginalString), ConsoleColor.Red);
-                return (null, null);
+                logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, newVersion.OriginalString), ConsoleColor.Yellow);
+                return null;
             }
         }
 
@@ -256,14 +282,22 @@ internal static class PackageUpdateCommandRunner
             NewVersion = newVersion
         };
 
-        return (packageToUpdate, frameworks);
+        return new PackageUpdateResult
+        {
+            Package = packageToUpdate,
+            Frameworks = frameworks!
+        };
     }
 
-    private static DependencyGraphSpec GetUpdatedDependencyGraphSpec(DependencyGraphSpec currentDgSpec, PackageToUpdate packageToUpdate)
+    private static DependencyGraphSpec GetUpdatedDependencyGraphSpec(DependencyGraphSpec currentDgSpec, List<PackageUpdateResult> packagesToUpdate)
     {
         var updatedPackageSpec = currentDgSpec.Projects[0].Clone();
-        PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
-        PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency);
+
+        foreach (var packageResult in packagesToUpdate)
+        {
+            PackageDependency packageDependency = new PackageDependency(packageResult.Package.Id, packageResult.Package.NewVersion);
+            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency);
+        }
 
         var updatedDgSpec = currentDgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
         updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
@@ -276,6 +310,12 @@ internal static class PackageUpdateCommandRunner
         public required string Id { get; init; }
         public required VersionRange CurrentVersion { get; init; }
         public required VersionRange NewVersion { get; init; }
+    }
+
+    internal record PackageUpdateResult
+    {
+        public required PackageToUpdate Package { get; init; }
+        public required List<NuGetFramework> Frameworks { get; init; }
     }
 
     private static class Format

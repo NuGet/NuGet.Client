@@ -988,9 +988,6 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
   <data name="PackageUpdate_PreviewRestoreFailed" xml:space="preserve">
     <value>Preview restore with updated packages was not successful. Force mode is not yet available.</value>
   </data>
-  <data name="Unsupported_MoreThanOnePackage" xml:space="preserve">
-    <value>Unsupported: Updating more than one package is not yet supported</value>
-  </data>
   <data name="Unsupported_PackageSourceMapping" xml:space="preserve">
     <value>Unsupported: Projects using Package Source Mapping are not yet supported</value>
   </data>
