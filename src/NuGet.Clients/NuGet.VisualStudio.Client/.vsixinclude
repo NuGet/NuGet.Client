@@ -59,8 +59,6 @@ NuGet.Versioning.resources.dll
 Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
-Microsoft.VisualStudio.Shell.Styles.dll
-Microsoft.VisualStudio.Shell.Styles.resources.dll
 
 # Assembly XML Documentation we ship in the VSIX
 NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml
