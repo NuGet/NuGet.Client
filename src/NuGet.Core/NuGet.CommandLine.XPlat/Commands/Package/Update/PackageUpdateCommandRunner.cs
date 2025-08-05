@@ -85,9 +85,23 @@ internal static class PackageUpdateCommandRunner
         CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
         using SourceCacheContext sourceCacheContext = new();
         var versionChooser = new VersionChooser(sourceProvider, settings, sourceCacheContext);
-        var packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
 
         bool noPackagesSpecified = args.Packages is null || args.Packages.Count == 0;
+        int totalPackagesScanned = 0;
+        List<PackageUpdateResult> packagesToUpdateResult;
+
+        if (noPackagesSpecified)
+        {
+            var allProjectPackages = GetAllProjectPackages(dgSpec.Projects.Single());
+            totalPackagesScanned = allProjectPackages.Count;
+            packagesToUpdateResult = await GetAllPackagesWithUpdatesAsync(dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
+        }
+        else
+        {
+            totalPackagesScanned = args.Packages!.Count;
+            packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
+        }
+
         if (packagesToUpdateResult.Count == 0)
         {
             if (noPackagesSpecified)
@@ -133,7 +147,7 @@ internal static class PackageUpdateCommandRunner
         // 5. Commit restore if everything successful
         await packageUpdateIO.CommitAsync(restorePreviewResult, CancellationToken.None);
 
-        int scannedCount = packagesToUpdateResult.Count;
+        int scannedCount = totalPackagesScanned;
         logger.LogMinimal(Format.PackageUpdate_FinalSummary(updatedCount, scannedCount), ConsoleColor.Green);
 
         return ExitCodes.Success;
