@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,11 @@ public class SingleProjectTests
             It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package" && p.NewVersion.ToString() == "[1.2.3, )"),
             It.IsAny<ILogger>()),
             Times.Once);
+
+        testData.LoggerMock.Verify(x => x.LogMinimal(
+            It.Is<string>(s => s.Contains(string.Format(Strings.PackageUpdate_FinalSummary, 1, 1))),
+            It.IsAny<ConsoleColor>()),
+            Times.Once);
     }
 
     [Fact]
@@ -94,6 +100,11 @@ public class SingleProjectTests
             It.IsAny<List<NuGetFramework>>(),
             It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package2" && p.NewVersion.ToString() == "[2.1.0, )"),
             It.IsAny<ILogger>()),
+            Times.Once);
+
+        testData.LoggerMock.Verify(x => x.LogMinimal(
+            It.Is<string>(s => s.Contains(string.Format(Strings.PackageUpdate_FinalSummary, 2, 2))),
+            It.IsAny<ConsoleColor>()),
             Times.Once);
     }
 

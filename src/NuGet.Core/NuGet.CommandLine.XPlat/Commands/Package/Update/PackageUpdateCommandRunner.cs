@@ -92,7 +92,7 @@ internal static class PackageUpdateCommandRunner
 
         if (noPackagesSpecified)
         {
-            var allProjectPackages = GetAllProjectPackages(dgSpec.Projects.Single());
+            var allProjectPackages = GetAllPackagedReferencedByProject(dgSpec.Projects.Single());
             totalPackagesScanned = allProjectPackages.Count;
             packagesToUpdateResult = await GetAllPackagesWithUpdatesAsync(dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
         }
@@ -206,7 +206,7 @@ internal static class PackageUpdateCommandRunner
             return new List<PackageUpdateResult>();
         }
 
-        var allProjectPackages = GetAllProjectPackages(project);
+        var allProjectPackages = GetAllPackagedReferencedByProject(project);
         var packagesToUpdate = new List<PackageUpdateResult>();
 
         foreach (var packageId in allProjectPackages)
@@ -222,7 +222,7 @@ internal static class PackageUpdateCommandRunner
         return packagesToUpdate;
     }
 
-    private static HashSet<string> GetAllProjectPackages(PackageSpec project)
+    private static HashSet<string> GetAllPackagedReferencedByProject(PackageSpec project)
     {
         var allPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -247,7 +247,7 @@ internal static class PackageUpdateCommandRunner
         IVersionChooser versionChooser,
         ISettings settings,
         ILoggerWithColor logger,
-         bool suppressWarnings,
+        bool suppressWarnings,
         CancellationToken cancellationToken)
     {
         VersionRange? existingVersion = null;
