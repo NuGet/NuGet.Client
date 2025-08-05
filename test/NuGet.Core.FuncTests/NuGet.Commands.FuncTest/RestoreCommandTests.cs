@@ -4203,31 +4203,6 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpsSource));
         }
 
-        [Theory]
-        [InlineData("../")]
-        [InlineData("../ contoso ")]
-        [InlineData("Some.Package/../contoso.json")]
-        public async Task RestoreCommand_WithInvalidPackageId_ShouldFailAsync(string dependency)
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-
-            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1",
-                pathContext.SolutionRoot,
-                framework: "net5.0",
-                dependencyName: dependency);
-
-            var logger = new TestLogger();
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1spec));
-
-            // Act
-            RestoreResult result = await command.ExecuteAsync();
-
-            // Assert
-            result.Success.Should().BeFalse();
-            result.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1017 & m.Message == string.Format("Invalid package id : `{0}`", dependency));
-        }
-
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));

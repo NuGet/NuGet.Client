@@ -2879,6 +2879,30 @@ EndGlobal";
             mockServer.Stop();
         }
 
+        [Theory]
+        [InlineData("../")]
+        [InlineData("../ contoso ")]
+        [InlineData("Some.Package/../contoso.json")]
+        public void DotnetRestore_WithInvalidPackageId_Fails(string id)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            pathContext.Settings.RemoveSource("source");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+            var targetFramework = Constants.DefaultTargetFramework.GetShortFolderName();
+            string csprojContents = GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, id);
+            var csprojPath = Path.Combine(pathContext.SolutionRoot, "test.csproj");
+            File.WriteAllText(csprojPath, csprojContents);
+            mockServer.Start();
+
+            // Act & Assert
+            var result = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, "restore");
+            result.AllOutput.Should().Contain("NU1017");
+
+            mockServer.Stop();
+        }
+
         [Fact]
         public async Task DotnetRestore_WithServerWithoutAuditData_RestoreTaskReturnsCountProperties()
         {
@@ -2911,13 +2935,18 @@ EndGlobal";
 
         private string GetProjectFileForRestoreTaskOutputTests(string targetFramework)
         {
+            return GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, "packageA");
+        }
+
+        private string GetProjectFileForRestoreTaskOutputTestsFromPackageId(string targetFramework, string packageId)
+        {
             string csprojContents = @$"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>{targetFramework}</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include=""packageA"" Version=""1.0.0"" />
+        <PackageReference Include=""{packageId}"" Version=""1.0.0"" />
     </ItemGroup>
 
     <Target Name=""AssertRestoreTaskOutputProperties""
