@@ -90,8 +90,6 @@ Microsoft.VisualStudio.Services.TestResults.WebApi.dll
 Microsoft.VisualStudio.Setup.Common.dll
 Microsoft.VisualStudio.Shell.Styles.dll
 Microsoft.VisualStudio.Shell.Styles.resources.dll
-Microsoft.Web.XmlTransform.dll
-Microsoft.Web.XmlTransform.resources.dll
 System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
