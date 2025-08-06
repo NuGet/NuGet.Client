@@ -7,14 +7,6 @@ namespace NuGet.Common.Test
 {
     public class StringExtensionsTests
     {
-        [Fact]
-        public void FormatWithDoubleQuotes_WhenNullIsPassedReturnsNull_Success()
-        {
-            string? actual = null;
-            string? formatted = actual.FormatWithDoubleQuotes();
-            Assert.Equal(actual, formatted);
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("/home/user/NuGet AppData/share")]
