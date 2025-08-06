@@ -2881,7 +2881,7 @@ EndGlobal";
 
         [Theory]
         [InlineData("../")]
-        [InlineData("../ contoso ")]
+        [InlineData("../ contoso")]
         [InlineData("Some.Package/../contoso.json")]
         public void DotnetRestore_WithInvalidPackageId_Fails(string id)
         {
@@ -2899,6 +2899,7 @@ EndGlobal";
             // Act & Assert
             var result = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, "restore");
             result.AllOutput.Should().Contain("NU1017");
+            result.AllOutput.Should().Contain(string.Format("Invalid package id : `{0}`", id));
 
             mockServer.Stop();
         }

@@ -257,7 +257,7 @@ namespace NuGet.Protocol
         {
             if (!PackageIdValidator.IsValidPackageId(identity.Id))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, identity.Id));
+                throw new InvalidPackageIdException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, identity.Id));
             }
 
             int maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;
