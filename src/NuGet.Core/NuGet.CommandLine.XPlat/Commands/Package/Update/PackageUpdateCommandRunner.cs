@@ -7,14 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -75,6 +73,10 @@ internal static class PackageUpdateCommandRunner
             return ExitCodes.Error;
         }
 
+        PackageSpec projectSpec = dgSpec.Projects.Count == 1
+            ? dgSpec.Projects[0]
+            : dgSpec.GetProjectSpec(dgSpec.Restore[0]);
+
         // 2. Find suitable version of package(s) to update
         // Source provider will be needed to find the package version and to restore, so create it here.
         logger.LogVerbose(Strings.PackageUpdate_FindingUpdateVersions);
@@ -92,14 +94,14 @@ internal static class PackageUpdateCommandRunner
 
         if (noPackagesSpecified)
         {
-            var allProjectPackages = GetAllPackagedReferencedByProject(dgSpec.Projects.Single());
+            var allProjectPackages = GetAllPackagesReferencedByProject(projectSpec);
             totalPackagesScanned = allProjectPackages.Count;
-            packagesToUpdateResult = await GetAllPackagesWithUpdatesAsync(dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
+            packagesToUpdateResult = await GetAllPackagesWithUpdatesAsync(projectSpec, versionChooser, settings, logger, cancellationToken);
         }
         else
         {
             totalPackagesScanned = args.Packages!.Count;
-            packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, dgSpec.Projects.Single(), versionChooser, settings, logger, cancellationToken);
+            packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, projectSpec, versionChooser, settings, logger, cancellationToken);
         }
 
         if (packagesToUpdateResult.Count == 0)
@@ -138,10 +140,11 @@ internal static class PackageUpdateCommandRunner
         foreach (var packageResult in packagesToUpdateResult)
         {
             logger.LogInformation($"    " + Format.PackageUpdate_UpdatedMessage(packageResult.Package.Id, packageResult.Package.CurrentVersion.ToShortString(), packageResult.Package.NewVersion.ToShortString()));
-            packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.Frameworks, packageResult.Package, logger);
+            packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.TargetFrameworkAliases, packageResult.Package, logger);
             updatedCount++;
         }
 
+        // New line in between projects, or before the final summary.
         logger.LogInformation("");
 
         // 5. Commit restore if everything successful
@@ -206,13 +209,15 @@ internal static class PackageUpdateCommandRunner
             return new List<PackageUpdateResult>();
         }
 
-        var allProjectPackages = GetAllPackagedReferencedByProject(project);
+        var allProjectPackages = GetAllPackagesReferencedByProject(project);
         var packagesToUpdate = new List<PackageUpdateResult>();
 
         foreach (var packageId in allProjectPackages)
         {
             var packageToCheck = new Package { Id = packageId, VersionRange = null };
             var result = await GetSinglePackageToUpdateAsync(packageToCheck, project, versionChooser, settings, logger, suppressWarnings: true, cancellationToken);
+            // GetSinglePackageToUpdateAsync returns null if the package is already using the highest version.
+            // This is not an error when updating all packages in a project.
             if (result != null)
             {
                 packagesToUpdate.Add(result);
@@ -222,7 +227,7 @@ internal static class PackageUpdateCommandRunner
         return packagesToUpdate;
     }
 
-    private static HashSet<string> GetAllPackagedReferencedByProject(PackageSpec project)
+    private static HashSet<string> GetAllPackagesReferencedByProject(PackageSpec project)
     {
         var allPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -251,7 +256,7 @@ internal static class PackageUpdateCommandRunner
         CancellationToken cancellationToken)
     {
         VersionRange? existingVersion = null;
-        List<NuGetFramework>? frameworks = null;
+        List<string> frameworks = new();
 
         foreach (var tfm in project.TargetFrameworks)
         {
@@ -259,11 +264,7 @@ internal static class PackageUpdateCommandRunner
             {
                 if (string.Equals(package.Id, dependency.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (frameworks is null)
-                    {
-                        frameworks = new List<NuGetFramework>();
-                    }
-                    frameworks.Add(tfm.FrameworkName);
+                    frameworks.Add(tfm.TargetAlias);
 
                     VersionRange tfmVersionRange;
                     if (project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
@@ -370,7 +371,7 @@ internal static class PackageUpdateCommandRunner
         return new PackageUpdateResult
         {
             Package = packageToUpdate,
-            Frameworks = frameworks!
+            TargetFrameworkAliases = frameworks!
         };
     }
 
@@ -400,7 +401,8 @@ internal static class PackageUpdateCommandRunner
     internal record PackageUpdateResult
     {
         public required PackageToUpdate Package { get; init; }
-        public required List<NuGetFramework> Frameworks { get; init; }
+
+        public required List<string> TargetFrameworkAliases { get; init; }
     }
 
     private static class Format
