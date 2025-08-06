@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 
         public async Task<NuGetVersion?> GetLatestVersionAsync(
             string packageId,
-            ILoggerWithColor logger,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             var sources = new List<SourceRepository>();
