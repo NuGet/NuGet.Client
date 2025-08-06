@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
         public static LocalPackageModel CreateLocalPackageModel(PackageIdentity packageIdentity, string packagePath, IEmbeddedResourcesCapable embeddedResourceCapable)
         {
-            return CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapable, authors: null!, ownersList: null!, iconUrl: null!);
+            return CreateLocalPackageModel(packageIdentity, packagePath, embeddedResourceCapable, authors: null, ownersList: null, iconUrl: null);
         }
 
         public static LocalPackageModel CreateLocalPackageModel(
