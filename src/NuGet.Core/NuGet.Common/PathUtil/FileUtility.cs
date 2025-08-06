@@ -262,10 +262,8 @@ namespace NuGet.Common
                 // Ignore exceptions for the first attempts
                 try
                 {
-                    using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions))
-                    {
-                        return await read(stream, filePath);
-                    }
+                    using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileSharePermissions, 4096, FileOptions.Asynchronous);
+                    return await read(stream, filePath);
                 }
                 catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
                 {
