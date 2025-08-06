@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -32,6 +33,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
+            actual.Should().NotBeNull();
             actual.SuppressedAdvisories.Should().BeNull();
         }
 
@@ -54,6 +56,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
+            actual.Should().NotBeNull();
             actual.AuditMode.Should().Be("all");
         }
 
@@ -91,6 +94,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
+            actual.Should().NotBeNull();
             actual.SuppressedAdvisories.Should().BeNull();
         }
 
@@ -114,6 +118,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
+            actual.Should().NotBeNull();
             actual.SuppressedAdvisories.Should().HaveCount(2);
             actual.SuppressedAdvisories.Should().Contain(cve1Url);
             actual.SuppressedAdvisories.Should().Contain(cve2Url);
@@ -145,6 +150,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VSNominationUtilities.GetRestoreAuditProperties(projectRestoreInfo.TargetFrameworks);
 
             // Assert
+            actual.Should().NotBeNull();
             actual.SuppressedAdvisories.Should().HaveCount(2);
             actual.SuppressedAdvisories.Should().Contain(cve1Url);
             actual.SuppressedAdvisories.Should().Contain(cve2Url);
@@ -244,7 +250,7 @@ namespace NuGet.SolutionRestoreManager.Test
             NuGetVersion expected = new NuGetVersion(sdkAnalysisLevel);
 
             //Act
-            NuGetVersion actual = VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks);
+            NuGetVersion? actual = VSNominationUtilities.GetSdkAnalysisLevel(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);
@@ -333,7 +339,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("true", true)]
         [InlineData("falSe", false)]
         [InlineData(null, false)]
-        public void GetPackageSpec_WithUseLegacyDependencyResolver(string useLegacyDependencyResolver, bool expected)
+        public void GetPackageSpec_WithUseLegacyDependencyResolver(string? useLegacyDependencyResolver, bool expected)
         {
             // Arrange
             var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
@@ -461,7 +467,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData("9.0.100", "9.0.100")]
         [InlineData("Not a version", null)]
-        public void GetSdkVersion_WithVariousInputs(string sdkVersion, string expectedSdkVersion)
+        public void GetSdkVersion_WithVariousInputs(string sdkVersion, string? expectedSdkVersion)
         {
             // Arrange
             var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
@@ -470,10 +476,10 @@ namespace NuGet.SolutionRestoreManager.Test
                     builder.WithProperty("NETCoreSdkVersion", sdkVersion);
                 })
                 .Build();
-            NuGetVersion expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
+            NuGetVersion? expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
 
             //Act
-            NuGetVersion actual = VSNominationUtilities.GetSdkVersion(projectRestoreInfo.TargetFrameworks);
+            NuGetVersion? actual = VSNominationUtilities.GetSdkVersion(projectRestoreInfo.TargetFrameworks);
 
             //Assert
             Assert.Equal(expected, actual);

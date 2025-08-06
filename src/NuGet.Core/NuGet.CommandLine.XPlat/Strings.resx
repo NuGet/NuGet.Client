@@ -1073,6 +1073,6 @@ Do not translate "PackageVersion"</comment>
     <comment>{0} - PackageId</comment>
   </data>
   <data name="AllowInsecureConnections_Description" xml:space="preserve">
-    <value>Allow pushing to HTTP sources (insecure).</value>
+    <value>Allows pushing to HTTP sources (insecure).</value>
   </data>
 </root>
