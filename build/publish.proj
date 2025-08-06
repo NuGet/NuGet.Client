@@ -13,9 +13,8 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" />
   </ItemGroup>
 
-  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToAzureDevOpsArtifacts" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Feed)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll" />
-  <UsingTask TaskName="Microsoft.DotNet.Maestro.Tasks.PushMetadataToBuildAssetRegistry" AssemblyFile="$(PkgMicrosoft_DotNet_Maestro_Tasks)\tools\net6.0\Microsoft.DotNet.Maestro.Tasks.dll" />
-
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBuildStorage" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Feed)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll" />
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PublishBuildToMaestro" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Feed)\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll" />
 
   <Target Name="PublishToBuildAssetRegistry">
     <PropertyGroup>
@@ -28,7 +27,7 @@
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
     <ItemGroup>
-      <ItemsToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" />
+      <ItemsToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" Kind="Package" />
       <ItemsToPush Remove="$(NuGetClientNupkgsDirectoryPath)/NuGet.Packaging.Core.*" />
     </ItemGroup>
 

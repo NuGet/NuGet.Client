@@ -841,12 +841,7 @@ namespace NuGet.Commands
 
         internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)
         {
-            bool enablePruningWarnings =
-                SdkAnalysisLevelMinimums.IsEnabled(
-                    project.RestoreMetadata.SdkAnalysisLevel,
-                    project.RestoreMetadata.UsingMicrosoftNETSdk,
-                    SdkAnalysisLevelMinimums.V10_0_100) &&
-                HasFrameworkNewerThanNET10(project);
+            bool enablePruningWarnings = HasFrameworkNewerThanNET10(project);
 
             Dictionary<string, List<string>> prunedDirectPackages = GetPrunableDirectPackages(project);
 
