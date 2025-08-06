@@ -246,4 +246,7 @@
   <data name="Error_PackageSourceMappingSource_Missing" xml:space="preserve">
     <value>At least one source must be selected.</value>
   </data>
+  <data name="Text_AllowInsecureConnections_Header" xml:space="preserve">
+    <value>Allow Insecure Connections</value>
+  </data>
 </root>

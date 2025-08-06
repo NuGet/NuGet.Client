@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             string source,
             string name,
             bool isEnabled,
+            bool allowInsecureConnections,
             List<PackageSource> packageSources)
         {
             string trimmedLookupName = lookupName?.Trim() ?? string.Empty;
@@ -49,19 +50,15 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             // Create and validate a new Package Source since an existing one was not found.
             if (foundByName is null)
             {
-                packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
-                SetAllowInsecureConnectionsProperty(packageSource);
+                packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled)
+                {
+                    AllowInsecureConnections = allowInsecureConnections,
+                };
+
                 EnsureValidSources(packageSource);
             }
             else // Found an existing source to update.
             {
-                bool isHttpSourceChanged =
-                    foundByName.IsHttp
-                    && !string.Equals(
-                        trimmedSource,
-                        foundByName.Source,
-                        StringComparison.OrdinalIgnoreCase);
-
                 // Preserve existing properties by cloning the package source.
                 packageSource = new PackageSource(
                     trimmedSource,
@@ -75,15 +72,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     ClientCertificates = foundByName.ClientCertificates,
                     Description = foundByName.Description,
                     ProtocolVersion = foundByName.ProtocolVersion,
-                    AllowInsecureConnections = foundByName.AllowInsecureConnections,
+                    AllowInsecureConnections = allowInsecureConnections,
                     DisableTLSCertificateValidation = foundByName.DisableTLSCertificateValidation,
                     MaxHttpRequestsPerSource = foundByName.MaxHttpRequestsPerSource,
                 };
-
-                if (isHttpSourceChanged)
-                {
-                    SetAllowInsecureConnectionsProperty(packageSource);
-                }
             }
 
             return packageSource;
@@ -161,23 +153,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
                 }
-            }
-        }
-
-        private static void SetAllowInsecureConnectionsProperty(PackageSource packageSource)
-        {
-            _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
-
-            if (packageSource.IsHttp && !packageSource.IsHttps)
-            {
-                packageSource.AllowInsecureConnections = true;
-            }
-
-            // An HTTP source has been changed to HTTPS, so allowing insecure connections
-            // is no longer needed.
-            if (packageSource.AllowInsecureConnections && packageSource.IsHttps)
-            {
-                packageSource.AllowInsecureConnections = false;
             }
         }
 
