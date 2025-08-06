@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.UI.Test
             var searchResultTask = Task.FromResult(new SearchResultContextInfo());
 
             var list = new InfiniteScrollList();
-            var taskCompletionSource = new TaskCompletionSource<string>();
+            var taskCompletionSource = new TaskCompletionSource<string?>();
 
             // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
             // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
