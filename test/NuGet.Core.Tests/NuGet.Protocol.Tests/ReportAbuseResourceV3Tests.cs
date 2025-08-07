@@ -43,9 +43,9 @@ namespace NuGet.Protocol.Tests
             var resource = new ReportAbuseResourceV3(uriTemplate);
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidPackageIdException>(() => resource.GetReportAbuseUrl(id, NuGetVersion.Parse("1.0.0")));
+            var exception = Assert.Throws<Packaging.InvalidPackageIdException>(() => resource.GetReportAbuseUrl(id, NuGetVersion.Parse("1.0.0")));
 
-            exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, id));
+            exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
         }
     }
 }

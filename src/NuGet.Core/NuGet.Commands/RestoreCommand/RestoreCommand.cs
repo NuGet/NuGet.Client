@@ -18,7 +18,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
@@ -1889,7 +1888,7 @@ namespace NuGet.Commands
                 {
                     failed = true;
                 }
-                catch (InvalidPackageIdException ex)
+                catch (Packaging.InvalidPackageIdException ex)
                 {
                     _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1017, ex.Message));
                     failed = true;

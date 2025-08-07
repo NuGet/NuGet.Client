@@ -887,4 +887,8 @@ Valid from:</comment>
 {2}</value>
     <comment>0 is a certificate subject, 1 is a certificate fingerprint, and 2 is a PEM-encoded certificate.</comment>
   </data>
+  <data name="Error_Invalid_package_id" xml:space="preserve">
+    <value>Invalid package id : `{0}`</value>
+    <comment>0 - package id</comment>
+  </data>
 </root>

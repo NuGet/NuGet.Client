@@ -41,8 +41,8 @@ namespace NuGet.Protocol.Tests
             const string id = "../contoso";
             var resource = new ReadmeUriTemplateResource(uriTemplate);
 
-            var exception = Assert.Throws<InvalidPackageIdException>(() => resource.GetReadmeUrl(id, NuGetVersion.Parse("1.0.0")));
-            exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, id));
+            var exception = Assert.Throws<Packaging.InvalidPackageIdException>(() => resource.GetReadmeUrl(id, NuGetVersion.Parse("1.0.0")));
+            exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
         }
     }
 }

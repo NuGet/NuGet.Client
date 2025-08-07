@@ -3,17 +3,12 @@
 
 using System;
 
-namespace NuGet.Protocol
+namespace NuGet.Packaging
 {
     public class InvalidPackageIdException : ArgumentException
     {
         public InvalidPackageIdException(string message)
             : base(message)
-        {
-        }
-
-        public InvalidPackageIdException(string message, Exception innerException)
-            : base(message, innerException)
         {
         }
     }

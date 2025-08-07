@@ -1,1 +1,4 @@
 #nullable enable
+NuGet.Packaging.InvalidPackageIdException
+~NuGet.Packaging.InvalidPackageIdException.InvalidPackageIdException(string message) -> void
+~static NuGet.Packaging.PackageIdValidator.ValidatePackageIdRegex(string packageId) -> void

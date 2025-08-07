@@ -317,7 +317,7 @@ namespace NuGet.Protocol.Tests
                 cacheContext.DirectDownload = true;
 
                 // Act
-                var exception = await Assert.ThrowsAsync<InvalidPackageIdException>(() => tc.Target.GetNuspecReaderFromNupkgAsync(
+                var exception = await Assert.ThrowsAsync<Packaging.InvalidPackageIdException>(() => tc.Target.GetNuspecReaderFromNupkgAsync(
                     id,
                     tc.NupkgUrl,
                     cacheContext,
@@ -325,7 +325,7 @@ namespace NuGet.Protocol.Tests
                     CancellationToken.None));
 
                 // Assert
-                exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, id.Id));
+                exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id.Id));
             }
         }
 

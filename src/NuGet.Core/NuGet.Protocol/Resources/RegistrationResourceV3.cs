@@ -54,13 +54,7 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            if (!PackageIdValidator.IsValidPackageId(packageId))
-            {
-                throw new InvalidPackageIdException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_Invalid_package_id,
-                    packageId));
-            }
+            PackageIdValidator.ValidatePackageIdRegex(packageId);
 
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
                 BaseUri.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
@@ -96,13 +90,7 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            if (!PackageIdValidator.IsValidPackageId(package.Id))
-            {
-                throw new InvalidPackageIdException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_Invalid_package_id,
-                    package.Id));
-            }
+            PackageIdValidator.ValidatePackageIdRegex(package.Id);
 
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));

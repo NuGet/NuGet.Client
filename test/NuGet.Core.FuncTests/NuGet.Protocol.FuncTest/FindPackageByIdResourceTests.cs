@@ -232,14 +232,14 @@ namespace NuGet.Protocol.FuncTest
                 context.NoCache = true;
 
                 // Act
-                var exception = await Assert.ThrowsAsync<InvalidPackageIdException>(() => findPackageByIdResource.GetAllVersionsAsync(
+                var exception = await Assert.ThrowsAsync<Packaging.InvalidPackageIdException>(() => findPackageByIdResource.GetAllVersionsAsync(
                     invalidPackageId,
                     context,
                     logger,
                     CancellationToken.None));
 
                 // Assert
-                exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, invalidPackageId));
+                exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", invalidPackageId));
             }
         }
     }

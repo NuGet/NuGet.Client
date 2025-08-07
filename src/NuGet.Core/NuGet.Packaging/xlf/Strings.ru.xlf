@@ -219,6 +219,11 @@
         <target state="translated">Неподдерживаемое значение targetFramework: "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_Invalid_package_id">
+        <source>Invalid package id : `{0}`</source>
+        <target state="new">Invalid package id : `{0}`</target>
+        <note>0 - package id</note>
+      </trans-unit>
       <trans-unit id="Error_LoadingHashFile">
         <source>Error parsing nupkg metadata file {0} : {1}</source>
         <target state="translated">Ошибка при синтаксическом анализе файла метаданных nupkg {0}: {1}</target>
