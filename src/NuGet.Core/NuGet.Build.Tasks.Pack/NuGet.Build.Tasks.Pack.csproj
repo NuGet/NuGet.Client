@@ -65,7 +65,7 @@
   <Target
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
-    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(DotNetBuildSourceOnly)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    Condition="'$(TargetFramework)' != '' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
   </Target>
 
