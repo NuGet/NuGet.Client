@@ -3013,11 +3013,6 @@ EndGlobal";
         public async Task DotnetRestore_WithCoreFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, bool useStaticGraphRestore)
         {
             string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
-            await DotnetRestore_WithFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(sdkAnalysisLevel, restoreEnablePackagePruning, tfm, useStaticGraphRestore);
-        }
-
-        private async Task DotnetRestore_WithFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, string tfm, bool useStaticGraphRestore)
-        {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
@@ -3072,11 +3067,6 @@ EndGlobal";
         public async Task DotnetRestore_WithCoreFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning)
         {
             string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
-            await DotnetRestore_WithFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(sdkAnalysisLevel, restoreEnablePackagePruning, tfm);
-        }
-
-        private async Task DotnetRestore_WithFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, string tfm)
-        {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
