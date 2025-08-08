@@ -1,8 +1,6 @@
 parameters:
 - name: BuildRTM
   type: boolean
-- name: NuGetLocalizationType
-  type: string
 - name: RunUnitTests
   displayName: Run unit tests
   type: boolean

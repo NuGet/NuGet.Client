@@ -53,22 +53,15 @@
       Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       Text="{x:Static local:Resources.Label_InstalledColon}" />
 
-    <Border
+    <shell_controls:TextBox
       Grid.Row="0"
       Grid.Column="2"
-      MinHeight="22"
-      BorderBrush="{DynamicResource {x:Static shell_styles:ShellColors.ControlStrokeDefaultBrushKey}}"
-      Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
-      BorderThickness="1"
       VerticalAlignment="Center"
-      Margin="0,0,0,9">
-      <TextBox
-        Style="{DynamicResource SelectableTextBlockStyle}"
-        VerticalAlignment="Center"
-        AutomationProperties.LabeledBy="{Binding ElementName=_InstalledVersion}"
-        Margin="4,0,0,0"
-        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, Mode=OneWay}" />
-    </Border>
+      IsReadOnly="true"
+      AutomationProperties.LabeledBy="{Binding ElementName=_InstalledVersion}"
+      Margin="0,0,0,9"
+      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, Mode=OneWay}"
+      Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
     <Button
       Grid.Row="0"
