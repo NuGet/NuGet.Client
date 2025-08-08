@@ -3010,7 +3010,7 @@ EndGlobal";
         [InlineData("9.0.100", "true", true)]
         [InlineData("10.0.100", null, false)]
         [InlineData("9.0.100", "true", false)]
-        public async Task DotnetRestore_WithCoreFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, bool useStaticGraphRestore)
+        public async Task DotnetRestore_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, bool useStaticGraphRestore)
         {
             string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
@@ -3064,7 +3064,7 @@ EndGlobal";
         [Theory]
         [InlineData("9.0.100", null)]
         [InlineData("10.0.100", "false")]
-        public async Task DotnetRestore_WithCoreFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning)
+        public async Task DotnetRestore_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning)
         {
             string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
@@ -3114,6 +3114,87 @@ EndGlobal";
             assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().BeEmpty();
             assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("X"));
             assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("Y"));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetedProjectAndPrunePackageReference_EnablesForAllFrameworks(bool useStaticGraphRestore)
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+            LockFile assetsFile = await DotnetRestore_WithMultiTargetedProject_Setup(pathContext, "10.0.100", useStaticGraphRestore);
+
+            assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().NotBeEmpty();
+            assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("X"));
+            assetsFile.Targets[0].Libraries.Should().NotContain(e => e.Name.Equals("Y"));
+
+            assetsFile.PackageSpec.TargetFrameworks[1].PackagesToPrune.Should().NotBeEmpty();
+            assetsFile.Targets[1].Libraries.Should().Contain(e => e.Name.Equals("X"));
+            assetsFile.Targets[1].Libraries.Should().NotContain(e => e.Name.Equals("Y"));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetedProjectAndPrunePackageReference_DisablesForAllFrameworks(bool useStaticGraphRestore)
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+            LockFile assetsFile = await DotnetRestore_WithMultiTargetedProject_Setup(pathContext, "9.0.100", useStaticGraphRestore);
+
+            assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().BeEmpty();
+            assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("X"));
+            assetsFile.Targets[0].Libraries.Should().Contain(e => e.Name.Equals("Y"));
+
+            assetsFile.PackageSpec.TargetFrameworks[1].PackagesToPrune.Should().BeEmpty();
+            assetsFile.Targets[1].Libraries.Should().Contain(e => e.Name.Equals("X"));
+            assetsFile.Targets[1].Libraries.Should().Contain(e => e.Name.Equals("Y"));
+        }
+
+        private async Task<LockFile> DotnetRestore_WithMultiTargetedProject_Setup(SimpleTestPathContext pathContext, string sdkAnalysisLevel, bool useStaticGraphRestore)
+        {
+            string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
+            var projectName = "ClassLibrary1";
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, new SimpleTestPackageContext("X", "1.0.0") { Dependencies = [new SimpleTestPackageContext("Y", "1.0.0")] });
+
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
+
+            using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"{tfm};netstandard2.1");
+                ProjectFileUtils.AddProperty(xml, "SdkAnalysisLevel", sdkAnalysisLevel);
+                //if (!string.IsNullOrEmpty(restoreEnablePackagePruning))
+                //{
+                //    ProjectFileUtils.AddProperty(xml, "RestoreEnablePackagePruning", restoreEnablePackagePruning);
+                //}
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PackageReference",
+                    "X",
+                    string.Empty,
+                    [],
+                    new Dictionary<string, string>() { { "Version", "1.0.0" } });
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PrunePackageReference",
+                    "Y",
+                    string.Empty,
+                    [],
+                    new Dictionary<string, string>() { { "Version", "2.0.0" } });
+
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile} {(useStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty)}", testOutputHelper: _testOutputHelper);
+            result.AllOutput.Should().NotContain("Warning");
+            string assetsFilePath = Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName);
+            LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+            assetsFile.Targets.Should().HaveCount(2);
+            assetsFile.PackageSpec.TargetFrameworks.Should().HaveCount(2);
+            return assetsFile;
         }
 
         [Theory]
