@@ -19,6 +19,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -3839,8 +3840,6 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
             string httpSourceUrl = "http://unit.test/index.json";
             string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
@@ -3868,8 +3867,6 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
             string httpSourceUrl = "http://unit.test/index.json";
             string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
@@ -3886,9 +3883,49 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
+            result.Success.Should().BeTrue();
             result.LockFile.LogMessages.Should().HaveCount(1);
             IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
             logMessage.Code.Should().Be(NuGetLogCode.NU1803);
+            logMessage.Level.Should().Be(LogLevel.Warning);
+            Assert.Contains(httpSourceUrl, logMessage.Message);
+        }
+
+
+        [Fact]
+        public async Task Restore_WithHttpSourceSdkAnalysisLevelLowerThan90100WarningAsError_Errors()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            string httpSourceUrl = "http://unit.test/index.json";
+            pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var projectPath = Path.Combine(pathContext.SolutionRoot, "my.csproj");
+            var packageSpecFactory = new TestPackageSpecFactory(projectPath, builder =>
+            {
+                builder.WithProperty(ProjectBuildProperties.TargetFramework, "net9.0")
+                       .WithProperty(ProjectBuildProperties.SdkAnalysisLevel, "8.0.400")
+                       .WithProperty(ProjectBuildProperties.TreatWarningsAsErrors, "true")
+                       .WithItem(ProjectItems.PackageReference, "SomePackage", [new("Version", "1.0.0")]);
+            });
+            PackageSpec project1Spec = packageSpecFactory.Build(settings);
+
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse();
+            // Source has invalid URL, so we would expect protocol errors if graph resolver is run.
+            // But if graph resolver is not run, we expect only the insecure http message.
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
+            logMessage.Code.Should().Be(NuGetLogCode.NU1803);
+            logMessage.Level.Should().Be(LogLevel.Error);
             Assert.Contains(httpSourceUrl, logMessage.Message);
         }
 
@@ -4139,7 +4176,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task Restore_WithHttpsSourceIndexJsonReturningHttpResources_LogsNU1303()
+        public async Task Restore_WithHttpsSourceIndexJsonReturningHttpResources_LogsNU1302()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4162,9 +4199,8 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            server.StopServer();
             result.Success.Should().BeFalse(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains("http://"));
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpsSource));
         }
 
         private static void CreateFakeProjectFile(PackageSpec project2spec)

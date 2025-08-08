@@ -5,12 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.Commands.Restore;
 using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
 namespace Test.Utility;
@@ -39,7 +41,7 @@ public class TestPackageSpecFactory
         _fullPath = string.IsNullOrWhiteSpace(fullPath) ? throw new ArgumentException("Must not be null or whitespace", nameof(fullPath)) : fullPath;
         _directory = string.IsNullOrWhiteSpace(directory) ? throw new ArgumentNullException("Must not be null or whitespace", nameof(directory)) : directory;
 
-        var tfBuilder = new TargetFrameworkBuilder();
+        var tfBuilder = new TargetFrameworkBuilder(_directory);
         builder(tfBuilder);
 
         TestTargetFramework outerBuild = tfBuilder.ToTargetFramework();
@@ -49,12 +51,18 @@ public class TestPackageSpecFactory
             outerBuild.Properties["MSBuildProjectName"] = msbuildProjectName;
         }
 
+        if (!outerBuild.Properties.TryGetValue(ProjectBuildProperties.MSBuildProjectExtensionsPath, out _))
+        {
+            outerBuild.Properties[ProjectBuildProperties.MSBuildProjectExtensionsPath] = System.IO.Path.Combine(_directory, "obj");
+        }
+
         string? targetFramework = outerBuild.GetProperty("TargetFramework");
         string? targetFrameworks = outerBuild.GetProperty("TargetFrameworks");
+        string? targetFrameworkMoniker = outerBuild.GetProperty(ProjectBuildProperties.TargetFrameworkMoniker);
 
-        if (string.IsNullOrWhiteSpace(targetFramework) && string.IsNullOrWhiteSpace(targetFrameworks))
+        if (string.IsNullOrWhiteSpace(targetFramework) && string.IsNullOrWhiteSpace(targetFrameworks) && string.IsNullOrWhiteSpace(targetFrameworkMoniker))
         {
-            throw new ArgumentException("TargetFramework or TargetFrameworks must be set in the outer build.");
+            throw new ArgumentException("TargetFramework, TargetFrameworks, or TargetFrameworkMoniker must be set in the outer build.");
         }
         else if (!string.IsNullOrWhiteSpace(targetFrameworks) && !string.IsNullOrWhiteSpace(targetFramework))
         {
@@ -71,7 +79,7 @@ public class TestPackageSpecFactory
             throw new ArgumentNullException(nameof(builder));
         }
 
-        var tfBuilder = new TargetFrameworkBuilder();
+        var tfBuilder = new TargetFrameworkBuilder(_directory);
         builder(tfBuilder);
 
         ITargetFramework innerBuild = tfBuilder.ToTargetFramework(_outerBuild);
@@ -143,7 +151,13 @@ public class TestPackageSpecFactory
         else
         {
             targetFrameworks = new Dictionary<string, ITargetFramework>(StringComparer.OrdinalIgnoreCase);
-            string targetFramework = _outerBuild.GetProperty("TargetFramework") ?? throw new InvalidOperationException("TargetFramework must be set in the outer build.");
+            string targetFramework = _outerBuild.GetProperty(ProjectBuildProperties.TargetFramework);
+            if (string.IsNullOrWhiteSpace(targetFramework))
+            {
+                string targetFrameworkMoniker = _outerBuild.GetProperty(ProjectBuildProperties.TargetFrameworkMoniker)
+                    ?? throw new InvalidOperationException("TargetFramework or TargetFrameworkMoniker must be set in the outer build.");
+                targetFramework = string.Empty;
+            }
             targetFrameworks[targetFramework] = _outerBuild;
         }
 
@@ -166,7 +180,13 @@ public class TestPackageSpecFactory
     public record TargetFrameworkBuilder
     {
         private readonly Dictionary<string, string> _properties = new(StringComparer.OrdinalIgnoreCase);
+        private readonly string _projectDirectory;
         private Dictionary<string, List<IItem>>? _items;
+
+        public TargetFrameworkBuilder(string projectDirectory)
+        {
+            _projectDirectory = projectDirectory;
+        }
 
         public TargetFrameworkBuilder WithProperty(string name, string value)
         {
@@ -194,10 +214,22 @@ public class TestPackageSpecFactory
             if (string.IsNullOrWhiteSpace(itemType)) { throw new ArgumentNullException(nameof(itemType)); }
             if (string.IsNullOrWhiteSpace(identity)) { throw new ArgumentNullException(nameof(identity)); }
 
+            Dictionary<string, string> itemMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in metadata ?? [])
+            {
+                itemMetadata[kvp.Key] = kvp.Value;
+            }
+
+            if (itemType.Equals(ProjectItems.ProjectReference, StringComparison.OrdinalIgnoreCase))
+            {
+                string fullPath = Path.GetFullPath(Path.Combine(_projectDirectory, identity));
+                TryAdd(itemMetadata, "FullPath", fullPath);
+            }
+
             TestItem item = new TestItem
             {
                 Identity = identity,
-                Metadata = metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) ?? []
+                Metadata = itemMetadata
             };
 
             if (_items is null)
@@ -213,6 +245,14 @@ public class TestPackageSpecFactory
             itemList.Add(item);
 
             return this;
+
+            void TryAdd(Dictionary<string, string> dictionary, string key, string value)
+            {
+                if (!dictionary.ContainsKey(key))
+                {
+                    dictionary[key] = value;
+                }
+            }
         }
 
         internal TestTargetFramework ToTargetFramework(TestTargetFramework outerBuild)
@@ -312,6 +352,15 @@ public class TestPackageSpecFactory
                         targetPlatformMoniker = $"{targetPlatformIdentifier},Version={targetPlatformVersion}";
                         properties["TargetPlatformMoniker"] = targetPlatformMoniker;
                     }
+                }
+
+                if (!properties.TryGetValue(ProjectBuildProperties.SdkAnalysisLevel, out _)
+                    && framework is not null
+                    && framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, StringComparison.OrdinalIgnoreCase)
+                    && framework.Version.Major >= 9)
+                {
+                    string sdkAnalysisLevel = $"{framework.Version.Major}.0.100";
+                    properties[ProjectBuildProperties.SdkAnalysisLevel] = sdkAnalysisLevel;
                 }
             }
         }

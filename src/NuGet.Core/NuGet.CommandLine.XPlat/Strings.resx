@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -988,9 +988,6 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
   <data name="PackageUpdate_PreviewRestoreFailed" xml:space="preserve">
     <value>Preview restore with updated packages was not successful. Force mode is not yet available.</value>
   </data>
-  <data name="Unsupported_MoreThanOnePackage" xml:space="preserve">
-    <value>Unsupported: Updating more than one package is not yet supported</value>
-  </data>
   <data name="Unsupported_PackageSourceMapping" xml:space="preserve">
     <value>Unsupported: Projects using Package Source Mapping are not yet supported</value>
   </data>
@@ -1039,5 +1036,43 @@ Do not translate "PackageVersion"</comment>
   </data>
   <data name="PackageUpdate_PackageArgumentDescription" xml:space="preserve">
     <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
+  </data>
+  <data name="PackageUpdate_UpdatingOutdatedPackages" xml:space="preserve">
+    <value>Updating outdated packages in {0}.</value>
+    <comment>{0}: the project or solution that is being updated</comment>
+  </data>
+  <data name="PackageUpdate_LoadingDGSpec" xml:space="preserve">
+    <value>Loading Project(s).</value>
+  </data>
+  <data name="PackageUpdate_FindingUpdateVersions" xml:space="preserve">
+    <value>Finding versions of packages to update.</value>
+  </data>
+  <data name="PackageUpdate_PreviewRestore" xml:space="preserve">
+    <value>Running preview restore to check package compatibility.</value>
+  </data>
+  <data name="PackageUpdate_UpdatedMessage" xml:space="preserve">
+    <value>Updated {0} {1} to {2}.</value>
+    <comment>{0}: package id
+{1}: existing version
+{2}: new version</comment>
+  </data>
+  <data name="PackageUpdate_FinalSummary" xml:space="preserve">
+    <value>Updated {0} packages in {1} scanned packages.</value>
+    <comment>{0}: Number of packages updated
+{1}: Package checked for updated versions</comment>
+  </data>
+  <data name="Error_AddPkgUnresolved" xml:space="preserve">
+    <value>Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</value>
+    <comment>{0} Package Id</comment>
+  </data>
+  <data name="Error_AddPkgProjectReference" xml:space="preserve">
+    <value>Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</value>
+    <comment>{0} - PackageId</comment>
+  </data>
+  <data name="AllowInsecureConnections_Description" xml:space="preserve">
+    <value>Allows pushing to HTTP sources (insecure).</value>
+  </data>
+  <data name="PackageUpdate_AllPackagesAlreadyUpToDate" xml:space="preserve">
+    <value>All packages are already up to date.</value>
   </data>
 </root>

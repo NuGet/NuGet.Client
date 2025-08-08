@@ -156,7 +156,8 @@
                 "type": "string",
                 "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                 "uniqueness": "caseInsensitive",
-                "default": "Package source",
+                "default":  "",
+                "example": "Package source",
                 "messages": [
                   {
                     "text": "@Error_PackageSourceName_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
@@ -171,7 +172,8 @@
                 "pathKind": "folderOrUri",
                 "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                 "uniqueness": "caseInsensitive",
-                "default": "https://packagesource",
+                "default": "",
+                "example": "https://packagesource",
                 "messages": [
                   {
                     "text": "@Error_PackageSourceUri_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
