@@ -252,7 +252,8 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
-        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow        /// </summary>
+        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow
+        /// </summary>
         internal static IEnumerable<string> GetRestoreSources(IReadOnlyList<IVsTargetFrameworkInfo4> values)
         {
             string? propertyValue = GetSingleNonEvaluatedPropertyOrNull(values, ProjectBuildProperties.RestoreSources, e => e);
@@ -272,7 +273,8 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// The restoreEnablePackagePruning will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
-        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the restoreEnablePackagePruning and then all the additional fallback folders will follow        /// </summary>
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the restoreEnablePackagePruning and then all the additional fallback folders will follow
+        /// </summary>
         internal static IEnumerable<string> GetRestoreFallbackFolders(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             var value = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreFallbackFolders, e => e);

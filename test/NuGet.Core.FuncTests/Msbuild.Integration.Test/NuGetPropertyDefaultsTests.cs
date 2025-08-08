@@ -56,8 +56,8 @@ namespace Msbuild.Integration.Test
         [Theory]
         // .NET (Core) SDK 10.0
         [InlineData("10.0.100", "net10.0", "true")]
-        [InlineData("10.0.100", "net9.0", "true")]
-        [InlineData("10.0.100", "net8.0", "true")]
+        [InlineData("10.0.100", "net9.0", "false")]
+        [InlineData("10.0.100", "net8.0", "false")]
         [InlineData("10.0.100", "net7.0", "false")]
         [InlineData("10.0.100", "net6.0", "false")]
         [InlineData("10.0.100", "net5.0", "false")]
@@ -69,8 +69,8 @@ namespace Msbuild.Integration.Test
         [InlineData("10.0.100", "netcoreapp1.1", "false")]
         [InlineData("10.0.100", "netcoreapp1.0", "false")]
         // .NET Standard SDK 10.0
-        [InlineData("10.0.100", "netstandard2.1", "true")]
-        [InlineData("10.0.100", "netstandard2.0", "true")]
+        [InlineData("10.0.100", "netstandard2.1", "false")]
+        [InlineData("10.0.100", "netstandard2.0", "false")]
         [InlineData("10.0.100", "netstandard1.6", "false")]
         // .NET Framework SDK 10.0
         [InlineData("10.0.100", "net48", "false")]
@@ -91,7 +91,7 @@ namespace Msbuild.Integration.Test
             var projectFilePath = Path.Combine(testDirectory, "my.proj");
             File.WriteAllText(projectFilePath, projectText);
 
-            string args = $"{projectFilePath} -getProperty:RestoreEnablePackagePruning";
+            string args = $"{projectFilePath} -getProperty:_RestorePackagePruningDefault";
             if (!string.IsNullOrEmpty(SdkAnalysisLevel)) args += $" -p:SdkAnalysisLevel={SdkAnalysisLevel}";
 
             var framework = NuGetFramework.Parse(targetFramework);
