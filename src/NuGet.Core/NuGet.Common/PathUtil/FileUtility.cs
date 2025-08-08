@@ -269,7 +269,7 @@ namespace NuGet.Common
                 }
                 catch (Exception ex) when ((i < retries) && (ex is UnauthorizedAccessException || ex is IOException))
                 {
-                    Sleep(100);
+                    await Task.Delay(100);
                 }
             }
             // This will never reached, but the compiler can't detect that 
