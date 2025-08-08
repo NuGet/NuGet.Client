@@ -724,12 +724,21 @@ namespace NuGet.Commands
                 prunePackageReferences.Add(targetFramework.TargetAlias, new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase));
             }
 
-            foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
+            List<IMSBuildItem> tfiItems = GetItemByType(items, "TargetFrameworkInformation").ToList();
+            bool isPruningEnabledGlobally = false;
+            foreach (var item in tfiItems)
+            {
+                isPruningEnabledGlobally |= IsPropertyTrue(item, "_RestorePackagePruningDefault");
+            }
+
+            foreach (var item in tfiItems)
             {
                 var tfm = item.GetProperty("TargetFramework") ?? string.Empty;
 
-                bool enabled = IsPropertyTrue(item, "RestoreEnablePackagePruning");
-                isPruningEnabled[tfm] = enabled;
+                bool? restoreEnablePackagePruning = MSBuildStringUtility.GetBooleanOrNull(item.GetProperty("RestoreEnablePackagePruning"));
+                bool isPackagePruningEnabled = restoreEnablePackagePruning == null ? isPruningEnabledGlobally : restoreEnablePackagePruning == true;
+
+                isPruningEnabled[tfm] = isPackagePruningEnabled;
             }
 
             foreach (var item in GetItemByType(items, "PrunePackageReference"))

@@ -91,7 +91,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo4 targetFrameworkInfo, bool cpvmEnabled, string projectFullPath)
+            IVsTargetFrameworkInfo4 targetFrameworkInfo, bool cpvmEnabled, bool isPruningEnabledGlobally, string projectFullPath)
         {
             var frameworkName = GetTargetFramework(targetFrameworkInfo.Properties, projectFullPath);
 
@@ -105,7 +105,8 @@ namespace NuGet.SolutionRestoreManager
                 ? MSBuildStringUtility.Split(atfString).Select(NuGetFramework.Parse).ToList()
                 : null;
 
-            bool isPackagePruningEnabled = MSBuildStringUtility.IsTrue(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.RestoreEnablePackagePruning));
+            bool? restoreEnablePackagePruning = MSBuildStringUtility.GetBooleanOrNull(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.RestoreEnablePackagePruning));
+            bool isPackagePruningEnabled = restoreEnablePackagePruning == null ? isPruningEnabledGlobally : restoreEnablePackagePruning == true;
 
             // Get fallback properties
             (frameworkName, var imports, var assetTargetFallback, var warn) = AssetTargetFallbackUtility.GetFallbackFrameworkInformation(frameworkName, ptf, atf);
@@ -251,8 +252,7 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// The result will contain CLEAR and no sources specified in RestoreSources if the clear keyword is in it.
-        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow
-        /// </summary>
+        /// If there are additional sources specified, the value AdditionalValue will be set in the result and then all the additional sources will follow        /// </summary>
         internal static IEnumerable<string> GetRestoreSources(IReadOnlyList<IVsTargetFrameworkInfo4> values)
         {
             string? propertyValue = GetSingleNonEvaluatedPropertyOrNull(values, ProjectBuildProperties.RestoreSources, e => e);
@@ -271,9 +271,8 @@ namespace NuGet.SolutionRestoreManager
         }
 
         /// <summary>
-        /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
-        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the result and then all the additional fallback folders will follow
-        /// </summary>
+        /// The restoreEnablePackagePruning will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the restoreEnablePackagePruning and then all the additional fallback folders will follow        /// </summary>
         internal static IEnumerable<string> GetRestoreFallbackFolders(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             var value = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreFallbackFolders, e => e);
@@ -333,6 +332,21 @@ namespace NuGet.SolutionRestoreManager
         internal static bool GetUseLegacyDependencyResolver(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreUseLegacyDependencyResolver, MSBuildStringUtility.IsTrue);
+        }
+
+        internal static bool GetIsPruningEnabledGlobally(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        {
+            foreach (var value in GetNonEvaluatedPropertyOrNull(tfms, "_RestorePackagePruningDefault", s => s))
+            {
+                if (value is not null)
+                {
+                    if (MSBuildStringUtility.IsTrue(value))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         internal static RestoreAuditProperties? GetRestoreAuditProperties(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)

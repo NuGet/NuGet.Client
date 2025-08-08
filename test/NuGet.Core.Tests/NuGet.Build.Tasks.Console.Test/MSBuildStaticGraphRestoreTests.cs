@@ -922,7 +922,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     }),
             };
 
-            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true, isPruningEnabledGlobally: false);
 
             // Assert
             Assert.Equal(4, targetFrameworkInfos.Count);
@@ -1000,7 +1000,8 @@ namespace NuGet.Build.Tasks.Console.Test
                     new Dictionary<string, IMSBuildProject>() {
                         { string.Empty, project }
                     },
-                    isCpvmEnabled: false);
+                    isCpvmEnabled: false,
+                    isPruningEnabledGlobally: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(1);
@@ -1069,7 +1070,7 @@ namespace NuGet.Build.Tasks.Console.Test
             };
 
             // Act
-            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false);
+            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPruningEnabledGlobally: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(2);
@@ -1156,7 +1157,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     })
             };
 
-            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false);
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPruningEnabledGlobally: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(3);
@@ -1210,7 +1211,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     })
             };
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false));
+            var exception = Assert.Throws<ArgumentException>(() => MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPruningEnabledGlobally: false));
             exception.Message.Should().Contain("PrunePackageReference");
         }
 
@@ -1261,7 +1262,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     })
             };
 
-            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false);
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPruningEnabledGlobally: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(2);
