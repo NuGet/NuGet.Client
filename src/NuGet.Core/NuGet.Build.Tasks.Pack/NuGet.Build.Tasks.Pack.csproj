@@ -62,20 +62,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target
-    Name="PublishAndMergePackNupkg"
-    AfterTargets="AfterBuild"
-    Condition="'$(TargetFramework)' != '' AND '$(BuildingInsideVisualStudio)' != 'true'">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
-  </Target>
-
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll" Exclude="$(OutputPath)\publish\**\NuGet*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(OutputPath)\NuGet*.dll">
