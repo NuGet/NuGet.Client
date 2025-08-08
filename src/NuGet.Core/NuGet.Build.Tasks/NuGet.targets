@@ -1205,6 +1205,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
         <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
         <RestoreEnablePackagePruning>$(RestoreEnablePackagePruning)</RestoreEnablePackagePruning>
+        <_RestorePackagePruningDefault>$(_RestorePackagePruningDefault)</_RestorePackagePruningDefault>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
       </_RestoreGraphEntry>
     </ItemGroup>
