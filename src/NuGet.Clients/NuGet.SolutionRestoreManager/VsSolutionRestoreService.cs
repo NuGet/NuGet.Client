@@ -319,7 +319,7 @@ namespace NuGet.SolutionRestoreManager
             var targetFrameworks = projectRestoreInfo.TargetFrameworks;
 
             var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(targetFrameworks);
-            var isPruningEnabledGlobally = VSNominationUtilities.GetIsPruningEnabledGlobally(targetFrameworks);
+            var isPruningEnabledGlobally = VSNominationUtilities.IsPruningEnabledGlobally(targetFrameworks);
 
             TargetFrameworkInformation[] tfis = new TargetFrameworkInformation[targetFrameworks.Count];
             for (int i = 0; i < targetFrameworks.Count; i++)

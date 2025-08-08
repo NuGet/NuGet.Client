@@ -272,8 +272,8 @@ namespace NuGet.SolutionRestoreManager
         }
 
         /// <summary>
-        /// The restoreEnablePackagePruning will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
-        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the restoreEnablePackagePruning and then all the additional fallback folders will follow
+        /// The result will contain CLEAR and no sources specified in RestoreFallbackFolders if the clear keyword is in it.
+        /// If there are additional fallback folders specified, the value AdditionalValue will be set in the result and then all the additional fallback folders will follow
         /// </summary>
         internal static IEnumerable<string> GetRestoreFallbackFolders(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
@@ -336,7 +336,7 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreUseLegacyDependencyResolver, MSBuildStringUtility.IsTrue);
         }
 
-        internal static bool GetIsPruningEnabledGlobally(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        internal static bool IsPruningEnabledGlobally(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             foreach (var value in GetNonEvaluatedPropertyOrNull(tfms, "_RestorePackagePruningDefault", s => s))
             {
