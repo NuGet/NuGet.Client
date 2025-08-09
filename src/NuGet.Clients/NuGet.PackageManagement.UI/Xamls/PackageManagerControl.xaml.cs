@@ -145,6 +145,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (SearchControl is SearchControl searchControl)
                 {
+                    // Use Fluent UI style for the search control.
                     searchControl.SetResourceReference(FrameworkElement.StyleProperty, SearchControl.ToolBarStyleKey);
                 }
             }
