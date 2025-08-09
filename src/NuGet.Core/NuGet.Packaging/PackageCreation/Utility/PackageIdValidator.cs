@@ -21,9 +21,9 @@ namespace NuGet.Packaging
 
         public static void ValidatePackageIdRegex(string packageId)
         {
-            if (packageId == null || !IdRegex.IsMatch(packageId))
+            if (!(IsValidPackageId(packageId)))
             {
-                throw new InvalidPackageIdException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, packageId ?? ""));
+                throw new InvalidPackageIdException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, packageId));
             }
         }
 

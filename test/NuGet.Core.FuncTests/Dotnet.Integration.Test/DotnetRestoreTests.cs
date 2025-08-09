@@ -2905,6 +2905,38 @@ EndGlobal";
         }
 
         [Fact]
+        public async Task DotnetRestore_With100CharsPackageID_Succeeds()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            pathContext.Settings.RemoveSource("source");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+            string packageid = new string('a', 200);
+            var packageA1 = new SimpleTestPackageContext()
+            {
+                Id = packageid,
+                Version = "1.0.0"
+            };
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageA1);
+
+            var targetFramework = Constants.DefaultTargetFramework.GetShortFolderName();
+            string csprojContents = GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, packageid);
+            var csprojPath = Path.Combine(pathContext.SolutionRoot, "test.csproj");
+            File.WriteAllText(csprojPath, csprojContents);
+
+            mockServer.Start();
+
+            // Act & Assert
+            var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, "restore -p:ExpectedRestoreProjectCount=1 -p:ExpectedRestoreSkippedCount=0  -p:ExpectedRestoreProjectsAuditedCount=0");
+
+            mockServer.Stop();
+        }
+
+        [Fact]
         public async Task DotnetRestore_WithServerWithoutAuditData_RestoreTaskReturnsCountProperties()
         {
             // Arrange
