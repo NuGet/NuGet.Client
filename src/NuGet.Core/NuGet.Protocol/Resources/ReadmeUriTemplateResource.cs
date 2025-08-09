@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -38,7 +37,7 @@ namespace NuGet.Protocol
                 return string.Empty;
             }
 
-            PackageIdValidator.ValidatePackageIdRegex(id);
+            new ValidatePackageId().Validate(id);
 
             var uriString = _uriTemplate
 #if NETCOREAPP

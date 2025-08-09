@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -54,7 +53,7 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            PackageIdValidator.ValidatePackageIdRegex(packageId);
+            new ValidatePackageId().Validate(packageId);
 
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
                 BaseUri.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
@@ -90,7 +89,7 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            PackageIdValidator.ValidatePackageIdRegex(package.Id);
+            new ValidatePackageId().Validate(package.Id);
 
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));

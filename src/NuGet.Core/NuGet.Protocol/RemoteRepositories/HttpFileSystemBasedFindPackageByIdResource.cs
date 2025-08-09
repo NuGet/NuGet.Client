@@ -495,7 +495,7 @@ namespace NuGet.Protocol
             var maxTries = _maxRetries * _baseUris.Count;
             var packageIdLowerCase = id.ToLowerInvariant();
 
-            PackageIdValidator.ValidatePackageIdRegex(id);
+            new ValidatePackageId().Validate(id);
 
             for (var retry = 1; retry <= maxTries; ++retry)
             {

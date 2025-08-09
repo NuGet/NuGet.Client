@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -96,7 +95,7 @@ namespace NuGet.Protocol
 
         public string BuildFindPackagesByIdUri(string id)
         {
-            PackageIdValidator.ValidatePackageIdRegex(id);
+            new ValidatePackageId().Validate(id);
 
             var uri = string.Format(
                 CultureInfo.InvariantCulture,
@@ -118,7 +117,7 @@ namespace NuGet.Protocol
                 throw new ArgumentException(nameof(package.Version));
             }
 
-            PackageIdValidator.ValidatePackageIdRegex(package.Id);
+            new ValidatePackageId().Validate(package.Id);
 
             var uri = string.Format(
                 CultureInfo.InvariantCulture,
