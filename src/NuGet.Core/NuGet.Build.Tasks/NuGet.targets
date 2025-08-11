@@ -90,8 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                     AND '$(NuGetExeSkipSdkAnalysisLevelCheck)' != 'true'
                     AND '$(SdkAnalysisLevel)' != ''
                     AND $([MSBuild]::VersionGreaterThanOrEquals('$(SdkAnalysisLevel)', '10.0.100'))
-                    AND (('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' != '' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0')))
-                        OR ('$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' != '' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '2.0'))))"
+                    AND ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' != '' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0')))"
                     >true</RestoreEnablePackagePruning>
     <RestoreEnablePackagePruning Condition="$(RestoreEnablePackagePruning) == '' AND '$(TargetFrameworks)' == ''">false</RestoreEnablePackagePruning>
     <_RestorePackagePruningDefault Condition="'$(UsingMicrosoftNETSdk)' == 'true'
