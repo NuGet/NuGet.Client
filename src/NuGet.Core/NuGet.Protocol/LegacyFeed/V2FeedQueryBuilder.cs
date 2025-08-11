@@ -95,8 +95,6 @@ namespace NuGet.Protocol
 
         public string BuildFindPackagesByIdUri(string id)
         {
-            new ValidatePackageId().Validate(id);
-
             var uri = string.Format(
                 CultureInfo.InvariantCulture,
                 FindPackagesByIdFormat,

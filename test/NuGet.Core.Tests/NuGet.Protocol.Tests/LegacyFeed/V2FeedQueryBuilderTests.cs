@@ -232,17 +232,6 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void BuildFindPackagesByIdUri_InvalidPackageId_ThrowsAnException()
-        {
-            // Arrange
-            var target = new V2FeedQueryBuilder();
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidPackageIdException>(() => target.BuildFindPackagesByIdUri("../contoso"));
-            exception.Message.Should().Contain("Invalid package id : `../contoso`");
-        }
-
-        [Fact]
         public void BuildGetPackageUri_RejectsNullPackageIdentity()
         {
             // Arrange
