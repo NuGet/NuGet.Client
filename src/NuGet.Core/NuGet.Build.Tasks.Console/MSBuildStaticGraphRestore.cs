@@ -1077,7 +1077,7 @@ namespace NuGet.Build.Tasks.Console
             }
         }
 
-        private static bool GetPackagePruningDefault(IEnumerable<IMSBuildProject> innerBuilds)
+        internal static bool GetPackagePruningDefault(IEnumerable<IMSBuildProject> innerBuilds)
         {
             foreach (var item in innerBuilds.NoAllocEnumerate())
             {

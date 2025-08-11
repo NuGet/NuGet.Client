@@ -105,7 +105,6 @@ namespace NuGet.Commands.Restore.Utility
 
             RestoreAuditProperties? auditProperties = GetRestoreAuditProperties(project);
             bool isPruningEnabledGlobally = GetPackagePruningDefault(project);
-
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(project, isCentralPackageManagementEnabled, isPruningEnabledGlobally);
 
             ProjectRestoreMetadata restoreMetadata;

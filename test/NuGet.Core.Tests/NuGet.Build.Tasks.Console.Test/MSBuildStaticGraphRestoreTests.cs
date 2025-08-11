@@ -1284,5 +1284,84 @@ namespace NuGet.Build.Tasks.Console.Test
             net471PackagesToPrune[0].Value.Name.Should().Be("x");
             net471PackagesToPrune[0].Value.VersionRange.Should().Be(VersionRange.Parse("(, 1.0.0]"));
         }
+
+        [Theory]
+        [MemberData(nameof(IsPruningEnabledGlobally))]
+        public void GetPackagePruningDefault(string[] members, bool expected)
+        {
+            // Arrange
+            string net471 = "net471";
+            string net472 = "net472";
+            string net47 = "net47";
+
+            members.Should().HaveCount(3);
+
+            var innerNodes = new Dictionary<string, IMSBuildProject>
+            {
+                [net472] = new MockMSBuildProject("Project",
+                    new Dictionary<string, string>
+                    {
+                        { "ManagePackageVersionsCentrally", "true"},
+                        { "TargetFramework", "net472" },
+                        { "TargetFrameworkIdentifier", ".NETFramework" },
+                        { "TargetFrameworkVersion", "v4.7.2" },
+                        { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
+                        { "_RestorePackagePruningDefault", members[0] },
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PrunePackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("x", new Dictionary<string, string> { ["Version"] = "1.0.0"}),
+                            new MSBuildItem("y", new Dictionary<string, string> { ["Version"] = "5.0.0"}),
+                        }
+                    }),
+                [net471] = new MockMSBuildProject("Project",
+                    new Dictionary<string, string>
+                    {
+                        { "TargetFramework", "net471" },
+                        { "TargetFrameworkIdentifier", ".NETFramework" },
+                        { "TargetFrameworkVersion", "v4.7.1" },
+                        { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.1" },
+                        { "_RestorePackagePruningDefault", members[1] },
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PrunePackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("x", new Dictionary<string, string> { ["Version"] = "1.0.0"}),
+                        }
+                    }),
+                [net47] = new MockMSBuildProject("Project",
+                    new Dictionary<string, string>
+                    {
+                        { "TargetFramework", "net47" },
+                        { "TargetFrameworkIdentifier", ".NETFramework" },
+                        { "TargetFrameworkVersion", "v4.7.0" },
+                        { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.0" },
+                        { "_RestorePackagePruningDefault", members[2] },
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PrunePackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("x", new Dictionary<string, string> { ["Version"] = "1.0.0"}),
+                        }
+                    })
+            };
+
+            var result = MSBuildStaticGraphRestore.GetPackagePruningDefault(innerNodes.Values);
+
+            // Assert
+            result.Should().Be(expected);
+        }
+
+        public static readonly List<object[]> IsPruningEnabledGlobally
+            = new List<object[]>
+            {
+                    new object[] { new string[] { "true", "false", "false" }, true },
+                    new object[] { new string[] { "true", "", "false" }, true },
+                    new object[] { new string[] { "", "", "false" }, false },
+            };
     }
 }
