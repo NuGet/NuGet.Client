@@ -68,10 +68,10 @@
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)**\NuGet*.resources.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\NuGet*.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)*.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
