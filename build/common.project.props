@@ -16,13 +16,9 @@
     <NETCoreLegacyTargetFrameworkForSigning>net8.0</NETCoreLegacyTargetFrameworkForSigning>
 
     <!-- Target frameworks for class libraries-->
-    <TargetFrameworksLibrary>$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary>$(NETCoreTargetFramework)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NETCoreTargetFramework);$(TargetFrameworksLibrary)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NETFXTargetFramework);$(TargetFrameworksLibrary)</TargetFrameworksLibrary>
-
-    <!-- Target frameworks for class libraries which require signing APIs which need to target NET 5.0 -->
-    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary)</TargetFrameworksLibraryForSigning>
-    <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(TargetFrameworksLibraryForSigning);$(NETCoreLegacyTargetFrameworkForSigning)</TargetFrameworksLibraryForSigning>
 
     <!-- Target framework for runnable apps -->
     <TargetFrameworksExe>$(NETCoreTargetFramework)</TargetFrameworksExe>
