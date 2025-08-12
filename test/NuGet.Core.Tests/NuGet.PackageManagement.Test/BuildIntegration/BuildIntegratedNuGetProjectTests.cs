@@ -571,10 +571,9 @@ namespace NuGet.PackageManagement.Test
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.FallbackFolder, nuGetVersioningPackageContext);
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(solutionManager.GlobalPackagesFolder, nuGetVersioningPackageContext);
             var fallbackFolderSourceRepository = CreateMockSourceRepository(pathContext.FallbackFolder);
             var globalPackagesFolderSourceRepository = CreateMockSourceRepository(solutionManager.GlobalPackagesFolder);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider([fallbackFolderSourceRepository.PackageSource, globalPackagesFolderSourceRepository.PackageSource]);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(fallbackFolderSourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
