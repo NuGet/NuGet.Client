@@ -255,7 +255,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            new ValidatePackageId().Validate(identity.Id);
+            PackageIdValidator.Validate(identity.Id);
 
             int maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;
 

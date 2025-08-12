@@ -49,7 +49,7 @@ namespace NuGet.Protocol
         /// <returns>The first URL from the resource, with the URI template applied.</returns>
         public Uri GetUri(string id, NuGetVersion version)
         {
-            new ValidatePackageId().Validate(id);
+            PackageIdValidator.Validate(id);
 
             var uriString = _template
 #if NETCOREAPP

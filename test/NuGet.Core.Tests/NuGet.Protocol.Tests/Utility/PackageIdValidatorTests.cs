@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests.Utility
 {
-    public class ValidatePackageIdTests
+    public class PackageIdValidatorTests
     {
         [Theory]
         [InlineData("../contoso")]
@@ -16,11 +16,8 @@ namespace NuGet.Protocol.Tests.Utility
         [InlineData("contoso/.?///?")]
         public void Validate_InvalidId_Throws(string id)
         {
-            // Arrange
-            var validator = new ValidatePackageId();
-
             // Act & Assert
-            var exception = Assert.Throws<InvalidPackageIdException>(() => validator.Validate(id));
+            var exception = Assert.Throws<InvalidPackageIdException>(() => PackageIdValidator.Validate(id));
             exception.Message.Contains(id);
         }
 
@@ -31,11 +28,10 @@ namespace NuGet.Protocol.Tests.Utility
             var environment = new Mock<IEnvironmentVariableReader>();
             environment.Setup(e => e.GetEnvironmentVariable("NUGET_DISABLE_PACKAGEID_VALIDATION"))
                        .Returns("true");
-            var validator = new ValidatePackageId(environment.Object);
 
             // Act & Assert
             // This should not throw for an invalid package ID
-            validator.Validate("contoso/../package");
+            PackageIdValidator.Validate("contoso/../package", environment.Object);
             Assert.True(true);
         }
     }

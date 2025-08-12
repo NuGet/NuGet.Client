@@ -37,7 +37,7 @@ namespace NuGet.Protocol
                 return string.Empty;
             }
 
-            new ValidatePackageId().Validate(id);
+            PackageIdValidator.Validate(id);
 
             var uriString = _uriTemplate
 #if NETCOREAPP

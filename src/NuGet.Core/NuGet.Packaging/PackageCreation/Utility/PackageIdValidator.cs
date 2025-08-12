@@ -19,14 +19,6 @@ namespace NuGet.Packaging
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
 
-        public static void ValidatePackageIdRegex(string packageId)
-        {
-            if (!(IsValidPackageId(packageId)))
-            {
-                throw new InvalidPackageIdException(string.Format(CultureInfo.CurrentCulture, Strings.Error_Invalid_package_id, packageId));
-            }
-        }
-
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)

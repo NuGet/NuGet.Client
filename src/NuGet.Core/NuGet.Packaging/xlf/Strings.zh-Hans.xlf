@@ -219,11 +219,6 @@
         <target state="translated">不支持的 targetFramework 值“{0}”。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Error_Invalid_package_id">
-        <source>Invalid package id : `{0}`</source>
-        <target state="new">Invalid package id : `{0}`</target>
-        <note>0 - package id</note>
-      </trans-unit>
       <trans-unit id="Error_LoadingHashFile">
         <source>Error parsing nupkg metadata file {0} : {1}</source>
         <target state="translated">分析 nupkg 元数据文件 {0} 时出错: {1}</target>
