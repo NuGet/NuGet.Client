@@ -10,10 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
@@ -31,6 +32,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
+using Hyperlink = System.Windows.Documents.Hyperlink;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
@@ -71,6 +73,14 @@ namespace NuGet.PackageManagement.UI
         private INuGetPackageFileService _nugetPackageFileService;
         private bool _isReadmeTabEnabled;
 
+        private SearchControl SearchControl
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return ((IVsWindowSearchHostPrivate)_windowSearchHost).SearchControl as SearchControl;
+            }
+        }
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -132,6 +142,12 @@ namespace NuGet.PackageManagement.UI
                 _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(_topPanel.SearchControlParent);
                 _windowSearchHost.SetupSearch(this);
                 _windowSearchHost.IsVisible = true;
+
+                if (SearchControl is SearchControl searchControl)
+                {
+                    // Use Fluent UI style for the search control.
+                    searchControl.SetResourceReference(FrameworkElement.StyleProperty, SearchControl.ToolBarStyleKey);
+                }
             }
 
             AddRestoreBar();
