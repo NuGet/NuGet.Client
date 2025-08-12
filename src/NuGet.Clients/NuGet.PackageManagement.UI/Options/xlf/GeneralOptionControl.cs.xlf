@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="BindingRedirectsHeader.Text">
         <source>Binding Redirects</source>
-        <target state="translated">Přesměrování vazeb</target>
+        <target state="new">Binding Redirects</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagementHeader.Text">
         <source>Package Management</source>
-        <target state="translated">Správa balíčků</target>
+        <target state="new">Package Management</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreHeader.Text">
         <source>Package Restore</source>
-        <target state="translated">Obnovení balíčků</target>
+        <target state="new">Package Restore</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormatItems.AccessibleName">
         <source>Default Package Management Format</source>
-        <target state="translated">Výchozí formát správy balíčků</target>
+        <target state="new">Default Package Management Format</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormatItems.Items">
@@ -29,42 +29,42 @@
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormatItems.Items1">
         <source>PackageReference</source>
-        <target state="translated">PackageReference</target>
+        <target state="new">PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormatLabel.Text">
         <source>Default package management format:</source>
-        <target state="translated">Výchozí formát správy balíčků:</target>
+        <target state="new">Default package management format:</target>
         <note />
       </trans-unit>
       <trans-unit id="localsCommandButton.Text">
         <source>&amp;Clear All NuGet Storage</source>
-        <target state="translated">&amp;Vymazat celé úložiště NuGet</target>
+        <target state="new">&amp;Clear All NuGet Storage</target>
         <note />
       </trans-unit>
       <trans-unit id="localsCommandStatusText.Text">
         <source>http://example.com/help/locals</source>
-        <target state="translated">http://example.com/help/locals</target>
+        <target state="new">http://example.com/help/locals</target>
         <note />
       </trans-unit>
       <trans-unit id="packageRestoreAutomaticCheckBox.Text">
         <source>Auto&amp;matically check for missing packages during build in Visual Studio</source>
-        <target state="translated">Auto&amp;maticky kontrolovat chybějící balíčky při vytváření sestavení v sadě Visual Studio</target>
+        <target state="new">Auto&amp;matically check for missing packages during build in Visual Studio</target>
         <note />
       </trans-unit>
       <trans-unit id="packageRestoreConsentCheckBox.Text">
         <source>&amp;Allow NuGet to download missing packages</source>
-        <target state="translated">&amp;Umožnit správci balíčků NuGet stáhnout chybějící balíčky</target>
+        <target state="new">&amp;Allow NuGet to download missing packages</target>
         <note />
       </trans-unit>
       <trans-unit id="showPackageManagementChooser.Text">
         <source>Prompt for &amp;format selection on first package install</source>
-        <target state="translated">Zobrazit výzvu k výběru &amp;formátu při první instalaci balíčku</target>
+        <target state="new">Prompt for &amp;format selection on first package install</target>
         <note />
       </trans-unit>
       <trans-unit id="skipBindingRedirects.Text">
         <source>Skip applying &amp;binding redirects</source>
-        <target state="translated">Přes&amp;kočit použití přesměrování vazeb</target>
+        <target state="new">Skip applying &amp;binding redirects</target>
         <note />
       </trans-unit>
     </body>

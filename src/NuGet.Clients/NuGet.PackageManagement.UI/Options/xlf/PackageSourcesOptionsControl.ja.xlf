@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="BrowseButton.AccessibleName">
         <source>Browse</source>
-        <target state="translated">参照</target>
+        <target state="new">Browse</target>
         <note />
       </trans-unit>
       <trans-unit id="BrowseButton.Text">
@@ -14,72 +14,72 @@
       </trans-unit>
       <trans-unit id="CopyPackageSourceStripMenuItem.Text">
         <source>Copy</source>
-        <target state="translated">コピー</target>
+        <target state="new">Copy</target>
         <note />
       </trans-unit>
       <trans-unit id="HeaderLabel.Text">
         <source>Package sources:</source>
-        <target state="translated">パッケージ ソース:</target>
+        <target state="new">Package sources:</target>
         <note />
       </trans-unit>
       <trans-unit id="HttpWarningIcon.AccessibleDescription">
         <source>HTTP Warning Icon</source>
-        <target state="translated">HTTP 警告アイコン</target>
+        <target state="new">HTTP Warning Icon</target>
         <note />
       </trans-unit>
       <trans-unit id="HttpWarningIcon.AccessibleName">
         <source>HTTP Warning Icon</source>
-        <target state="translated">HTTP 警告アイコン</target>
+        <target state="new">HTTP Warning Icon</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineWidePackageSourcesListBox.AccessibleName">
         <source>Machine-wide package sources</source>
-        <target state="translated">コンピューター全体のパッケージ ソース</target>
+        <target state="new">Machine-wide package sources</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineWideSourcesLabel.Text">
         <source>&amp;Machine-wide package sources:</source>
-        <target state="translated">コンピューター全体のパッケージ ソース(&amp;M):</target>
+        <target state="new">&amp;Machine-wide package sources:</target>
         <note />
       </trans-unit>
       <trans-unit id="NewPackageNameLabel.Text">
         <source>&amp;Name:</source>
-        <target state="translated">名前(&amp;N):</target>
+        <target state="new">&amp;Name:</target>
         <note />
       </trans-unit>
       <trans-unit id="NewPackageSourceLabel.Text">
         <source>&amp;Source:</source>
-        <target state="translated">ソース(&amp;S):</target>
+        <target state="new">&amp;Source:</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSourcesListBox.AccessibleName">
         <source>Package sources</source>
-        <target state="translated">パッケージ ソース:</target>
+        <target state="new">Package sources</target>
         <note />
       </trans-unit>
       <trans-unit id="addButton.AccessibleDescription">
         <source>Add a new package source</source>
-        <target state="translated">新しいパッケージ ソースの追加</target>
+        <target state="new">Add a new package source</target>
         <note />
       </trans-unit>
       <trans-unit id="addButton.AccessibleName">
         <source>Add package source</source>
-        <target state="translated">パッケージ ソースを追加する</target>
+        <target state="new">Add package source</target>
         <note />
       </trans-unit>
       <trans-unit id="removeButton.AccessibleDescription">
         <source>Delete the selected package source</source>
-        <target state="translated">選択したパッケージ ソースの削除</target>
+        <target state="new">Delete the selected package source</target>
         <note />
       </trans-unit>
       <trans-unit id="removeButton.AccessibleName">
         <source>Delete package source</source>
-        <target state="translated">パッケージ ソースを削除する</target>
+        <target state="new">Delete package source</target>
         <note />
       </trans-unit>
       <trans-unit id="updateButton.Text">
         <source>&amp;Update</source>
-        <target state="translated">更新(&amp;U)</target>
+        <target state="new">&amp;Update</target>
         <note />
       </trans-unit>
     </body>
