@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
@@ -29,12 +30,12 @@ namespace NuGet.PackageManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
-        private static SourceRepository CreateGPFSourceRepository(string gpfPath)
+        private static SourceRepository CreateMockSourceRepository(string sourcePath)
         {
-            PackageSource gpfPackageSource = new(gpfPath);
+            PackageSource packageSource = new(sourcePath);
 
-            var mockSourceRepository = new Mock<SourceRepository>(gpfPackageSource, new List<INuGetResourceProvider>());
-            mockSourceRepository.SetupGet(m => m.PackageSource).Returns(gpfPackageSource);
+            var mockSourceRepository = new Mock<SourceRepository>(packageSource, new List<INuGetResourceProvider>());
+            mockSourceRepository.SetupGet(m => m.PackageSource).Returns(packageSource);
 
             return mockSourceRepository.Object;
         }
@@ -53,7 +54,7 @@ namespace NuGet.PackageManagement.Test
             nuGetVersioningPackageContext.AddFile("lib/net452/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
 
@@ -224,7 +225,7 @@ namespace NuGet.PackageManagement.Test
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
@@ -327,7 +328,7 @@ namespace NuGet.PackageManagement.Test
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
@@ -413,7 +414,7 @@ namespace NuGet.PackageManagement.Test
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateGPFSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
@@ -552,74 +553,99 @@ namespace NuGet.PackageManagement.Test
             }
         }
 
-        [Fact(Skip = "Add nuget.config to bring in fallback folders")]
-        public void BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChangesFallbackFolderIgnoresOtherHashes()
+        [Fact]
+        public async Task BuildIntegratedNuGetProject_IsRestoreRequiredWithNoChanges_FallbackFolderIgnoresOtherHashesAsync()
         {
             // Arrange
-            //var projectName = "testproj";
+            using var pathContext = new SimpleTestPathContext();
+            using var solutionManager = new TestSolutionManager(pathContext);
 
-            //using (var globalFolder = TestDirectory.Create())
-            //using (var fallbackFolder = TestDirectory.Create())
-            //using (var rootFolder = TestDirectory.Create())
-            //{
-            //    var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-            //    projectFolder.Create();
-            //    var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-            //    var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
+            var projectName = "testproj";
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
+            projectFolder.Create();
 
-            //    BuildIntegrationTestUtility.CreateConfigJson(projectConfig.FullName);
+            var testLogger = new TestLogger();
 
-            //    var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+            var nuGetVersioningPackageContext = new SimpleTestPackageContext("NuGet.Versioning", "1.0.7");
+            nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
-            //    JsonConfigUtility.AddDependency(json, new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.FallbackFolder, nuGetVersioningPackageContext);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(solutionManager.GlobalPackagesFolder, nuGetVersioningPackageContext);
+            var fallbackFolderSourceRepository = CreateMockSourceRepository(pathContext.FallbackFolder);
+            var globalPackagesFolderSourceRepository = CreateMockSourceRepository(solutionManager.GlobalPackagesFolder);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider([fallbackFolderSourceRepository.PackageSource, globalPackagesFolderSourceRepository.PackageSource]);
+            var sources = sourceRepositoryProvider.GetRepositories();
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
-            //    using (var writer = new StreamWriter(projectConfig.FullName))
-            //    {
-            //        writer.Write(json.ToString());
-            //    }
+            // Create a PackageSpec for the PackageReference project.
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(
+                testSettings,
+                projectName,
+                pathContext.SolutionRoot,
+                framework: "uap10.0");
 
-            //    var sources = new List<SourceRepository>
-            //    {
-            //        Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-            //    };
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency("NuGet.Versioning", VersionRange.Parse("1.0.*")));
 
-            //    var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-            //    var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-            //    var project = new ProjectJsonBuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(nuGetVersioningPackageContext.Identity);
 
-            //    // Restore to the fallback folder
-            //    var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-            //        BuildIntegrationTestUtility.GetExternalProjectReferenceContext(),
-            //        sources,
-            //        fallbackFolder,
-            //        Enumerable.Empty<string>(),
-            //        CancellationToken.None);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                projectFullPath: Path.GetDirectoryName(packageSpec.FilePath),
+                projectName);
 
-            //    // Restore to global folder
-            //    result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-            //        BuildIntegrationTestUtility.GetExternalProjectReferenceContext(),
-            //        sources,
-            //        globalFolder,
-            //        Enumerable.Empty<string>(),
-            //        CancellationToken.None);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
-            //    var resolver = new VersionFolderPathResolver(fallbackFolder);
-            //    var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
-            //    File.WriteAllText(hashPath, "AA00F==");
+            solutionManager.NuGetProjects.Add(buildIntegratedProject);
 
-            //    var packageFolders = new List<string>() { globalFolder, fallbackFolder };
+            var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+            var providersCache = new RestoreCommandProvidersCache();
+            var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
-            //    var context = BuildIntegrationTestUtility.GetExternalProjectReferenceContext();
+            // Restore to the global & fallback folders.
+            var firstRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                solutionManager,
+                await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                restoreContext,
+                providersCache,
+                (c) => { },
+                sources,
+                Guid.Empty,
+                false,
+                true,
+                testLogger,
+                CancellationToken.None);
 
-            //    // Act
-            //    var actual = project.IsRestoreRequired(
-            //        packageFolders.Select(p => new VersionFolderPathResolver(p)),
-            //        new HashSet<PackageIdentity>(),
-            //        context);
+            firstRestoreSummaries.Should().HaveCount(1);
+            var firstRestoreSummary = firstRestoreSummaries[0];
+            firstRestoreSummary.NoOpRestore.Should().BeFalse();
+            firstRestoreSummary.Success.Should().BeTrue();
 
-            //    // Assert
-            //    Assert.False(actual);
-            //}
+            // Modify the package's hash in the Fallback Folder
+            string fallbackFolder = fallbackFolderSourceRepository.PackageSource.Source;
+            var resolver = new VersionFolderPathResolver(fallbackFolder);
+            var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            File.WriteAllText(hashPath, "AA00F==");
+
+            var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                solutionManager,
+                await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                restoreContext,
+                providersCache,
+                (c) => { },
+                sources,
+                Guid.Empty,
+                false,
+                true,
+                testLogger,
+                CancellationToken.None);
+
+            noOpRestoreSummaries.Should().HaveCount(1);
+            var secondRestoreSummary = noOpRestoreSummaries[0];
+            secondRestoreSummary.NoOpRestore.Should().BeTrue();
+            secondRestoreSummary.Success.Should().BeTrue();
         }
     }
 }
