@@ -340,12 +340,9 @@ namespace NuGet.SolutionRestoreManager
         {
             foreach (var value in GetNonEvaluatedPropertyOrNull(tfms, "_RestorePackagePruningDefault", s => s))
             {
-                if (value is not null)
+                if (value is not null && MSBuildStringUtility.IsTrue(value))
                 {
-                    if (MSBuildStringUtility.IsTrue(value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             return false;

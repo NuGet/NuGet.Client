@@ -187,6 +187,7 @@ namespace NuGet.Commands.Restore.Utility
         /// </summary>
         /// <param name="project">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
+        /// <param name="isPruningEnabledGlobally">A flag that tells us the default for pruning, if the pruning property is not set.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
         internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IProject project, bool isCpvmEnabled, bool isPruningEnabledGlobally)
         {

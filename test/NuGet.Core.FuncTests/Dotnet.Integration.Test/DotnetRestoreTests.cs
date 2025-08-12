@@ -3195,12 +3195,12 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData("false", "'$(TargetFramework)' == 'netstandard2.1'", true)]
-        [InlineData("false", "'$(TargetFramework)' == 'netstandard2.1'", false)]
-        public async Task DotnetRestore_WithMultiTargetedProjectAndRestoreEnablePackagePruning_CanConditionallyDisablePruning(string restoreEnablePackagePruning, string condition, bool useStaticGraphRestore)
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetedProjectAndRestoreEnablePackagePruning_CanConditionallyDisablePruning(bool useStaticGraphRestore)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            LockFile assetsFile = await DotnetRestore_MultiTargetedProjectWithRestoreEnablePackagePruning(pathContext, restoreEnablePackagePruning, condition, useStaticGraphRestore);
+            LockFile assetsFile = await DotnetRestore_MultiTargetedProjectWithRestoreEnablePackagePruning(pathContext, "false", "'$(TargetFramework)' == 'netstandard2.1'", useStaticGraphRestore);
 
             assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().NotBeEmpty();
             var firstTarget = assetsFile.GetTarget(assetsFile.PackageSpec.TargetFrameworks[0].TargetAlias, string.Empty);
@@ -3214,12 +3214,12 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData("false", null, true)]
-        [InlineData("false", null, false)]
-        public async Task DotnetRestore_WithMultiTargetedProjectAndRestoreEnablePackagePruning_CanDisablePruningForAll(string restoreEnablePackagePruning, string condition, bool useStaticGraphRestore)
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetedProjectAndRestoreEnablePackagePruning_CanDisablePruningForAll(bool useStaticGraphRestore)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            LockFile assetsFile = await DotnetRestore_MultiTargetedProjectWithRestoreEnablePackagePruning(pathContext, restoreEnablePackagePruning, condition, useStaticGraphRestore);
+            LockFile assetsFile = await DotnetRestore_MultiTargetedProjectWithRestoreEnablePackagePruning(pathContext, "false", null, useStaticGraphRestore);
 
             assetsFile.PackageSpec.TargetFrameworks[0].PackagesToPrune.Should().BeEmpty();
             var firstTarget = assetsFile.GetTarget(assetsFile.PackageSpec.TargetFrameworks[0].TargetAlias, string.Empty);

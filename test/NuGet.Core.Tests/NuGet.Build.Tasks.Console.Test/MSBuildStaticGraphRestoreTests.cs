@@ -1286,15 +1286,15 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Theory]
-        [MemberData(nameof(IsPruningEnabledGlobally))]
-        public void GetPackagePruningDefault(string[] members, bool expected)
+        [InlineData("true", "false", "false", true)]
+        [InlineData("true", "", "false", true)]
+        [InlineData("", "", "false", false)]
+        public void GetPackagePruningDefault(string firstDefault, string secondDefault, string thirdDefault, bool expected)
         {
             // Arrange
             string net471 = "net471";
             string net472 = "net472";
             string net47 = "net47";
-
-            members.Should().HaveCount(3);
 
             var innerNodes = new Dictionary<string, IMSBuildProject>
             {
@@ -1306,7 +1306,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkIdentifier", ".NETFramework" },
                         { "TargetFrameworkVersion", "v4.7.2" },
                         { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
-                        { "_RestorePackagePruningDefault", members[0] },
+                        { "_RestorePackagePruningDefault", firstDefault },
                     },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
@@ -1323,7 +1323,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkIdentifier", ".NETFramework" },
                         { "TargetFrameworkVersion", "v4.7.1" },
                         { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.1" },
-                        { "_RestorePackagePruningDefault", members[1] },
+                        { "_RestorePackagePruningDefault", secondDefault },
                     },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
@@ -1339,7 +1339,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         { "TargetFrameworkIdentifier", ".NETFramework" },
                         { "TargetFrameworkVersion", "v4.7.0" },
                         { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.0" },
-                        { "_RestorePackagePruningDefault", members[2] },
+                        { "_RestorePackagePruningDefault", thirdDefault },
                     },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
@@ -1355,13 +1355,5 @@ namespace NuGet.Build.Tasks.Console.Test
             // Assert
             result.Should().Be(expected);
         }
-
-        public static readonly List<object[]> IsPruningEnabledGlobally
-            = new List<object[]>
-            {
-                    new object[] { new string[] { "true", "false", "false" }, true },
-                    new object[] { new string[] { "true", "", "false" }, true },
-                    new object[] { new string[] { "", "", "false" }, false },
-            };
     }
 }
