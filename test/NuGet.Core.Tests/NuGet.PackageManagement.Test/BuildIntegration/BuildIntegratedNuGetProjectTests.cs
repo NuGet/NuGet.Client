@@ -428,7 +428,6 @@ namespace NuGet.PackageManagement.Test
                     foreach (var restoreSummary in noOpRestoreSummaries)
                     {
                         Assert.True(restoreSummary.NoOpRestore);
-                        restoreSummary.NoOpRestore
                     }
                 }
             }
