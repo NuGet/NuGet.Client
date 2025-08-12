@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="ArgumentCannotBeNullOrEmpty">
         <source>The argument cannot be null or empty.</source>
-        <target state="translated">参数不能为 null 或为空。</target>
+        <target state="new">The argument cannot be null or empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkDoesNotSupportProfiles">
         <source>.NET 5.0 and above does not support profiles.</source>
-        <target state="translated">.NET 5.0 及更高版本不支持配置文件。</target>
+        <target state="new">.NET 5.0 and above does not support profiles.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkMismatch">
         <source>Frameworks must have the same identifier, profile, and platform.</source>
-        <target state="translated">框架必须具有相同的标识符、配置文件和平台。</target>
+        <target state="new">Frameworks must have the same identifier, profile, and platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidFrameworkIdentifier">
         <source>Invalid framework identifier '{0}'.</source>
-        <target state="translated">无效的框架标识符“{0}”。</target>
+        <target state="new">Invalid framework identifier '{0}'.</target>
         <note>{0} is the invalid framework identifier.</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkVersion">
         <source>Invalid framework version '{0}'.</source>
-        <target state="translated">框架版本“{0}”无效。</target>
+        <target state="new">Invalid framework version '{0}'.</target>
         <note>{0} is the invalid framework version.</note>
       </trans-unit>
       <trans-unit id="InvalidPlatformVersion">
         <source>Invalid platform version '{0}'.</source>
-        <target state="translated">平台版本“{0}”无效。</target>
+        <target state="new">Invalid platform version '{0}'.</target>
         <note>{0} is the invalid platform version.</note>
       </trans-unit>
       <trans-unit id="InvalidPortableFrameworksDueToHyphen">
         <source>Invalid portable frameworks '{0}'. A hyphen may not be in any of the portable framework names.</source>
-        <target state="translated">无效的可移植框架“{0}”。任何可移植框架名称都中不得包含连字符。</target>
+        <target state="new">Invalid portable frameworks '{0}'. A hyphen may not be in any of the portable framework names.</target>
         <note>{0} is the invalid portable framework string.</note>
       </trans-unit>
       <trans-unit id="MissingPortableFrameworks">
         <source>Invalid portable frameworks for '{0}'. A portable framework must have at least one framework in the profile.</source>
-        <target state="translated">对于“{0}”无效的可移植框架。可移植框架的配置文件中必须包含至少一个框架。</target>
+        <target state="new">Invalid portable frameworks for '{0}'. A portable framework must have at least one framework in the profile.</target>
         <note>{0} is the invalid portable framework string.</note>
       </trans-unit>
     </body>
