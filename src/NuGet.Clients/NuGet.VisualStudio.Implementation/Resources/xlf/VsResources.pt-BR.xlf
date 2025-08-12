@@ -4,388 +4,388 @@
     <body>
       <trans-unit id="CouldNotGetShortFrameworkName">
         <source>The framework name '{0}' cannot be converted to a short framework name.</source>
-        <target state="translated">O nome da estrutura '{0}' não pode ser convertido para um nome de estrutura curto.</target>
+        <target state="new">The framework name '{0}' cannot be converted to a short framework name.</target>
         <note>Arguments in order:
 The string representation of the user's input framework name.</note>
       </trans-unit>
       <trans-unit id="DiagnosticBrowseObjectClassName">
         <source>Diagnostic</source>
-        <target state="translated">Diagnóstico</target>
+        <target state="new">Diagnostic</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticCodeDescription">
         <source>The diagnostic's identifying code.</source>
-        <target state="translated">O código de identificação do diagnóstico.</target>
+        <target state="new">The diagnostic's identifying code.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticCodeDisplayName">
         <source>Code</source>
-        <target state="translated">Código</target>
+        <target state="new">Code</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLevelDescription">
         <source>The diagnostic's level.</source>
-        <target state="translated">O nível do diagnóstico.</target>
+        <target state="new">The diagnostic's level.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLevelDisplayName">
         <source>Level</source>
-        <target state="translated">Nível</target>
+        <target state="new">Level</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLibraryNameDescription">
         <source>The name of the package or project this diagnostic applies to.</source>
-        <target state="translated">O nome do pacote ou do projeto ao qual este diagnóstico se aplica.</target>
+        <target state="new">The name of the package or project this diagnostic applies to.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLibraryNameDisplayName">
         <source>Library</source>
-        <target state="translated">Biblioteca</target>
+        <target state="new">Library</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticMessageDescription">
         <source>The diagnostic's descriptive message.</source>
-        <target state="translated">A mensagem descritiva do diagnóstico.</target>
+        <target state="new">The diagnostic's descriptive message.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticMessageDisplayName">
         <source>Message</source>
-        <target state="translated">Mensagem</target>
+        <target state="new">Message</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticWarningLevelDescription">
         <source>The diagnostic's warning level. Only applies to warnings.</source>
-        <target state="translated">O nível de aviso do diagnóstico. Aplica-se somente a avisos.</target>
+        <target state="new">The diagnostic's warning level. Only applies to warnings.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticWarningLevelDisplayName">
         <source>Warning Level</source>
-        <target state="translated">Nível de Aviso</target>
+        <target state="new">Warning Level</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FileNotExists">
         <source>The project file '{0}' does not exist on disk.</source>
-        <target state="translated">O arquivo de projeto '{0}' não existe no disco.</target>
+        <target state="new">The project file '{0}' does not exist on disk.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">O projeto {0} não existe no cache do sistema do projeto.</target>
+        <target state="new">Project {0} does not exist in the project system cache.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNetStandardFramework">
         <source>The specified framework name '{0}' must be .NETStandard.</source>
-        <target state="translated">O nome da estrutura '{0}' especificada deve ser .NETStandard.</target>
+        <target state="new">The specified framework name '{0}' must be .NETStandard.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNuGetVersionString">
         <source>The provided version string is not a valid nuget version.</source>
-        <target state="translated">A cadeia de versão fornecida não é uma versão nuget válida.</target>
+        <target state="new">The provided version string is not a valid nuget version.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidSource">
         <source>The specified source '{0}' is invalid. Please provide a valid source.</source>
-        <target state="translated">A fonte especificada '{0}' é inválida. Forneça uma fonte válida.</target>
+        <target state="new">The specified source '{0}' is invalid. Please provide a valid source.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyBrowseObjectClassName">
         <source>Assembly</source>
-        <target state="translated">Assembly</target>
+        <target state="new">Assembly</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyNameDescription">
         <source>The assembly's name.</source>
-        <target state="translated">O nome do assembly.</target>
+        <target state="new">The assembly's name.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyNameDisplayName">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="new">Name</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyPathDescription">
         <source>The assembly's path.</source>
-        <target state="translated">O caminho do assembly.</target>
+        <target state="new">The assembly's path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyPathDisplayName">
         <source>Path</source>
-        <target state="translated">Caminho</target>
+        <target state="new">Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileBrowseObjectClassName">
         <source>Build File</source>
-        <target state="translated">Criar Arquivo</target>
+        <target state="new">Build File</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileGroupName">
         <source>Build Files</source>
-        <target state="translated">Arquivos de compilação</target>
+        <target state="new">Build Files</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileNameDescription">
         <source>The build file's name.</source>
-        <target state="translated">O nome do arquivo de build.</target>
+        <target state="new">The build file's name.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileNameDisplayName">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="new">Name</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFilePathDescription">
         <source>The build file's path.</source>
-        <target state="translated">O caminho do arquivo de build.</target>
+        <target state="new">The build file's path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFilePathDisplayName">
         <source>Path</source>
-        <target state="translated">Caminho</target>
+        <target state="new">Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildMultiTargetingFileGroupName">
         <source>Build Files (Multi-targeting)</source>
-        <target state="translated">Arquivos de Build (Multiplataforma)</target>
+        <target state="new">Build Files (Multi-targeting)</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCompileTimeAssemblyGroupName">
         <source>Compile Time Assemblies</source>
-        <target state="translated">Assemblies de Tempo de Compilação</target>
+        <target state="new">Compile Time Assemblies</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBrowseObjectClassName">
         <source>Content File</source>
-        <target state="translated">Arquivo de Conteúdo</target>
+        <target state="new">Content File</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBuildActionDescription">
         <source>The content file's build action.</source>
-        <target state="translated">A ação de build do arquivo de conteúdo.</target>
+        <target state="new">The content file's build action.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBuildActionDisplayName">
         <source>Build Action</source>
-        <target state="translated">Ação de Build</target>
+        <target state="new">Build Action</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCodeLanguageDescription">
         <source>Controls whether this file should be included in the referencing project based on that project's language.</source>
-        <target state="translated">Controla se este arquivo deve ser incluído no projeto da referência com base na linguagem do projeto.</target>
+        <target state="new">Controls whether this file should be included in the referencing project based on that project's language.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCodeLanguageDisplayName">
         <source>Code Language</source>
-        <target state="translated">Linguagem do Código</target>
+        <target state="new">Code Language</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCopyToOutputDescription">
         <source>Whether the content file is copied to the output directory during build.</source>
-        <target state="translated">Se o arquivo de conteúdo é copiado para o diretório de saída durante o build.</target>
+        <target state="new">Whether the content file is copied to the output directory during build.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCopyToOutputDisplayName">
         <source>Copy to Output</source>
-        <target state="translated">Copiar para Saída</target>
+        <target state="new">Copy to Output</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileOutputPathDescription">
         <source>The content file's output path.</source>
-        <target state="translated">O caminho de saída do arquivo de conteúdo.</target>
+        <target state="new">The content file's output path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileOutputPathDisplayName">
         <source>Output Path</source>
-        <target state="translated">Caminho de Saída</target>
+        <target state="new">Output Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePPOutputPathDescription">
         <source>The content file's preprocessed output path.</source>
-        <target state="translated">O caminho de saída pré-processado do arquivo de conteúdo.</target>
+        <target state="new">The content file's preprocessed output path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePPOutputPathDisplayName">
         <source>Preprocessed Output Path</source>
-        <target state="translated">Caminho de Saída Pré-processado</target>
+        <target state="new">Preprocessed Output Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePathDescription">
         <source>The content file's path.</source>
-        <target state="translated">O caminho do arquivo de conteúdo.</target>
+        <target state="new">The content file's path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePathDisplayName">
         <source>Path</source>
-        <target state="translated">Caminho</target>
+        <target state="new">Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilesGroupName">
         <source>Content Files</source>
-        <target state="translated">Arquivos de Conteúdo</target>
+        <target state="new">Content Files</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentBrowseObjectClassName">
         <source>Package Document</source>
-        <target state="translated">Documento do Pacote</target>
+        <target state="new">Package Document</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentGroupName">
         <source>Documents</source>
-        <target state="translated">Documentos</target>
+        <target state="new">Documents</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentPathDescription">
         <source>The document's path.</source>
-        <target state="translated">O caminho do documento.</target>
+        <target state="new">The document's path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentPathDisplayName">
         <source>Path</source>
-        <target state="translated">Caminho</target>
+        <target state="new">Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFrameworkAssemblyGroupName">
         <source>Framework Assemblies</source>
-        <target state="translated">Assemblies de Estrutura</target>
+        <target state="new">Framework Assemblies</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceBrowseObjectClassName">
         <source>Package Reference</source>
-        <target state="translated">Referência de Pacote</target>
+        <target state="new">Package Reference</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceNameDescription">
         <source>The package's name.</source>
-        <target state="translated">O nome do pacote.</target>
+        <target state="new">The package's name.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceNameDisplayName">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="new">Name</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferencePathDescription">
         <source>The package's resolved full path.</source>
-        <target state="translated">O caminho completo resolvido do pacote.</target>
+        <target state="new">The package's resolved full path.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferencePathDisplayName">
         <source>Path</source>
-        <target state="translated">Caminho</target>
+        <target state="new">Path</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceVersionDescription">
         <source>The package's version.</source>
-        <target state="translated">A versão do pacote.</target>
+        <target state="new">The package's version.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceVersionDisplayName">
         <source>Version</source>
-        <target state="translated">Versão</target>
+        <target state="new">Version</target>
         <note />
       </trans-unit>
       <trans-unit id="PathContext_CreateContextError">
         <source>Failed creating a path context for "{0}". Reason: {1}</source>
-        <target state="translated">Falha ao criar um contexto de caminho para "{0}". Razão: {1}</target>
+        <target state="new">Failed creating a path context for "{0}". Reason: {1}</target>
         <note>{0} is the project name or full path, {1} is the error message generated earlier</note>
       </trans-unit>
       <trans-unit id="PathContext_LockFileError">
         <source>The lock file doesn't exist or it's an older format that doesn't have the package folders property persisted.</source>
-        <target state="translated">O arquivo de bloqueio não existe ou é de um formato antigo cujas propriedades de pastas do pacote não persistiram.</target>
+        <target state="new">The lock file doesn't exist or it's an older format that doesn't have the package folders property persisted.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathContext_PackageDirectoryNotFound">
         <source>Package directory for "{0}" is not found.</source>
-        <target state="translated">O diretório do pacote para "{0}" não foi encontrado.</target>
+        <target state="new">Package directory for "{0}" is not found.</target>
         <note>{0} is the package ID</note>
       </trans-unit>
       <trans-unit id="PreinstalledPackages_ExtensionManagerError">
         <source>Error accessing Extension Manager.</source>
-        <target state="translated">Erro ao acessar o Gerenciador de Extensões.</target>
+        <target state="new">Error accessing Extension Manager.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_FailedToInstallPackage">
         <source>Could not add all required packages to the project. The following packages failed to install from '{0}':</source>
-        <target state="translated">Não foi possível adicionar todos os pacotes necessários para o projeto. Os pacotes a seguir não foram instalados a partir de '{0}':</target>
+        <target state="new">Could not add all required packages to the project. The following packages failed to install from '{0}':</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_InvalidExtensionId">
         <source>The preinstalled packages have a reference to a missing Extension. Could not find an Extension with ID '{0}'.</source>
-        <target state="translated">Os pacotes pré-instalados têm uma referência a uma extensão ausente. Não foi possível encontrar uma extensão com a ID '{0}'.</target>
+        <target state="new">The preinstalled packages have a reference to a missing Extension. Could not find an Extension with ID '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_InvalidRegistryValue">
         <source>The preinstalled packages have a reference to a missing Registry value. Could not find a Registry key with name '{0}' under '{1}'.</source>
-        <target state="translated">Os pacotes pré-instalados têm uma referência a um valor do Registro ausente. Não foi possível encontrar uma chave do Registro com o nome '{0}' sob '{1}'.</target>
+        <target state="new">The preinstalled packages have a reference to a missing Registry value. Could not find a Registry key with name '{0}' under '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_PackageInstallStatus">
         <source>Adding {0}.{1} to project...</source>
-        <target state="translated">Adicionando {0}.{1} ao projeto...</target>
+        <target state="new">Adding {0}.{1} to project...</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_RegistryKeyError">
         <source>The preinstalled packages are configured to use a Registry-provided package repository but there was an error accessing Registry key '{0}'.</source>
-        <target state="translated">Os pacotes pré-instalados são configurados para usar um repositório de pacotes fornecido pelo registro, mas houve um erro ao acessar a chave do Registro '{0}'.</target>
+        <target state="new">The preinstalled packages are configured to use a Registry-provided package repository but there was an error accessing Registry key '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_VersionConflict">
         <source>Attempting to install version '{1}' of '{0}' but the project already includes a different version. Skipping...</source>
-        <target state="translated">Tentando instalar a versão '{1}' de '{0}', mas o projeto já inclui uma versão diferente. Ignorando...</target>
+        <target state="new">Attempting to install version '{1}' of '{0}' but the project already includes a different version. Skipping...</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceBrowseObjectClassName">
         <source>Project Reference</source>
-        <target state="translated">Referência de Projeto</target>
+        <target state="new">Project Reference</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceNameDescription">
         <source>The project's name.</source>
-        <target state="translated">O nome do projeto.</target>
+        <target state="new">The project's name.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceNameDisplayName">
         <source>Name</source>
-        <target state="translated">Nome</target>
+        <target state="new">Name</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="translated">'{0}' não pode ser nulo.</target>
+        <target state="new">'{0}' cannot be null.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="TemplateWizard_ErrorDialogTitle">
         <source>Package Installation Error</source>
-        <target state="translated">Erro de instalação do pacote</target>
+        <target state="new">Package Installation Error</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidPackageElementAttributes">
         <source>The project template lists one or more packages with missing, empty, or invalid values for the "id" or "version" attributes. Both attributes are required and must have valid values.</source>
-        <target state="translated">O modelo do projeto lista um ou mais pacotes com valores ausentes, vazios ou inválidos para os atributos "id" ou "version". Ambos os atributos são necessários e devem ter valores válidos.</target>
+        <target state="new">The project template lists one or more packages with missing, empty, or invalid values for the "id" or "version" attributes. Both attributes are required and must have valid values.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidRepositoryAttribute">
         <source>The "repository" attribute of the package element has an invalid value: '{0}'. Valid values are: 'template' or 'extension'.</source>
-        <target state="translated">O atributo "repository" do elemento de pacote tem um valor inválido: '{0}'. Os valores válidos são: 'template' ou 'extension'.</target>
+        <target state="new">The "repository" attribute of the package element has an invalid value: '{0}'. Valid values are: 'template' or 'extension'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidWizardRunKind">
         <source>This template wizard can only be applied to single-project or project-item templates.</source>
-        <target state="translated">Este assistente de modelo só pode ser aplicado aos modelos de projeto único ou de item de projeto.</target>
+        <target state="new">This template wizard can only be applied to single-project or project-item templates.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_MissingExtensionId">
         <source>The project template is configured to use an Extension-specific package repository but the Extension ID has not been specified. Use the "repositoryId" attribute to specify the Extension ID.</source>
-        <target state="translated">O modelo de projeto está configurado para usar um repositório de pacotes específicos de extensão, mas a ID de extensão não foi especificada. Use o atributo "repositoryId" para especificar a ID de extensão.</target>
+        <target state="new">The project template is configured to use an Extension-specific package repository but the Extension ID has not been specified. Use the "repositoryId" attribute to specify the Extension ID.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_MissingRegistryKeyName">
         <source>The project template is configured to use a Registry-provided package repository but the Registry value name has not been specified. Use the "keyName" attribute to specify the Registry value.</source>
-        <target state="translated">O modelo de projeto está configurado para usar um repositório de pacotes fornecido pelo Registro, mas o nome do valor do Registro não foi especificado. Use o atributo "keyName" para especificar o valor do Registro.</target>
+        <target state="new">The project template is configured to use a Registry-provided package repository but the Registry value name has not been specified. Use the "keyName" attribute to specify the Registry value.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownPackage">
         <source>Unable to find package '{0}'.</source>
-        <target state="translated">Não é possível localizar o pacote '{0}'.</target>
+        <target state="new">Unable to find package '{0}'.</target>
         <note />
       </trans-unit>
     </body>
