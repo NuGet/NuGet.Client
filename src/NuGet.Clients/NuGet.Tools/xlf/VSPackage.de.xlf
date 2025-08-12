@@ -9,47 +9,47 @@
       </trans-unit>
       <trans-unit id="110">
         <source>NuGet Package Manager</source>
-        <target state="translated">NuGet-Paket-Manager</target>
+        <target state="new">NuGet Package Manager</target>
         <note />
       </trans-unit>
       <trans-unit id="112">
         <source>NuGet Package Manager in Visual Studio. For more information about NuGet, visit https://docs.nuget.org/</source>
-        <target state="translated">NuGet-Paket-Manager in Visual Studio. Weitere Informationen zu NuGet finden Sie unter https://docs.nuget.org/.</target>
+        <target state="new">NuGet Package Manager in Visual Studio. For more information about NuGet, visit https://docs.nuget.org/</target>
         <note />
       </trans-unit>
       <trans-unit id="113">
         <source>NuGet Package Manager</source>
-        <target state="translated">NuGet-Paket-Manager</target>
+        <target state="new">NuGet Package Manager</target>
         <note />
       </trans-unit>
       <trans-unit id="114">
         <source>Package Sources</source>
-        <target state="translated">Paketquellen</target>
+        <target state="new">Package Sources</target>
         <note />
       </trans-unit>
       <trans-unit id="115">
         <source>General</source>
-        <target state="translated">Allgemein</target>
+        <target state="new">General</target>
         <note />
       </trans-unit>
       <trans-unit id="116">
         <source>Package Source Mapping</source>
-        <target state="translated">Paketquellzuordnung</target>
+        <target state="new">Package Source Mapping</target>
         <note />
       </trans-unit>
       <trans-unit id="117">
         <source>Configuration Files</source>
-        <target state="translated">Konfigurationsdateien</target>
+        <target state="new">Configuration Files</target>
         <note />
       </trans-unit>
       <trans-unit id="2">
         <source>plk</source>
-        <target state="translated">plk</target>
+        <target state="new">plk</target>
         <note />
       </trans-unit>
       <trans-unit id="200">
         <source>Package Manager Console</source>
-        <target state="translated">Paket-Manager-Konsole</target>
+        <target state="new">Package Manager Console</target>
         <note />
       </trans-unit>
       <trans-unit id="3">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="300">
         <source>PackageManagerDocumentWindow</source>
-        <target state="translated">PackageManagerDocumentWindow</target>
+        <target state="new">PackageManagerDocumentWindow</target>
         <note />
       </trans-unit>
       <trans-unit id="4">

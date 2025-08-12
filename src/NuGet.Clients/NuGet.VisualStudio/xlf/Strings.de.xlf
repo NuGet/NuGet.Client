@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="ArgumentTypeExceptionMessage">
         <source>Argument must be of type '{0}'.</source>
-        <target state="translated">Das Argument muss vom Typ "{0}" sein.</target>
+        <target state="new">Argument must be of type '{0}'.</target>
         <note>0 - Type name</note>
       </trans-unit>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Value cannot be null or an empty string.</source>
-        <target state="translated">Der Wert darf nicht NULL und keine leere Zeichenfolge sein.</target>
+        <target state="new">Value cannot be null or an empty string.</target>
         <note />
       </trans-unit>
       <trans-unit id="SemanticVersionStringInvalid">
         <source>'{0}' is not a valid version string.</source>
-        <target state="translated">"{0}" ist keine gültige Versionszeichenfolge.</target>
+        <target state="new">'{0}' is not a valid version string.</target>
         <note>0 - Version string</note>
       </trans-unit>
     </body>

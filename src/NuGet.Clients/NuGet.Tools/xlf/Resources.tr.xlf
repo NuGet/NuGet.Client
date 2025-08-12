@@ -4,97 +4,97 @@
     <body>
       <trans-unit id="BindingRedirects">
         <source>Binding Redirects</source>
-        <target state="translated">Bağlama Yeniden Yönlendirmeleri</target>
+        <target state="new">Binding Redirects</target>
         <note />
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
         <source>Can not create tool window.</source>
-        <target state="translated">Araç penceresi oluşturulamıyor.</target>
+        <target state="new">Can not create tool window.</target>
         <note />
       </trans-unit>
       <trans-unit id="DTE_ProjectUnsupported">
         <source>The project '{0}' is unsupported</source>
-        <target state="translated">'{0}' projesi desteklenmiyor</target>
+        <target state="new">The project '{0}' is unsupported</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorDialogBoxTitle">
         <source>Operation failed</source>
-        <target state="translated">İşlem başarısız oldu</target>
+        <target state="new">Operation failed</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
         <source>A package pattern must be provided.</source>
-        <target state="translated">Bir paket deseni sağlanmalıdır.</target>
+        <target state="new">A package pattern must be provided.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingSource_Missing">
         <source>At least one source must be selected.</source>
-        <target state="translated">En az bir kaynak seçilmelidir.</target>
+        <target state="new">At least one source must be selected.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">
         <source>A name must be provided.</source>
-        <target state="translated">Bir ad sağlanmalı.</target>
+        <target state="new">A name must be provided.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceUriHostname_Missing">
         <source>A hostname must be provided after '://'.</source>
-        <target state="translated">'://' öğesinden sonra bir ana bilgisayar adı belirtilmelidir.</target>
+        <target state="new">A hostname must be provided after '://'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceUri_Missing">
         <source>A source must be provided.</source>
-        <target state="translated">Bir kaynak sağlanmalı.</target>
+        <target state="new">A source must be provided.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectSelected">
         <source>No project is selected for this operation.</source>
-        <target state="translated">Bu işlem için proje seçilmedi.</target>
+        <target state="new">No project is selected for this operation.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSupportedProjectsInSolution">
         <source>No projects supported by NuGet in the solution.</source>
-        <target state="translated">Çözümde NuGet tarafından desteklenen proje yok.</target>
+        <target state="new">No projects supported by NuGet in the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetSearchProvider_CategoryShortcut">
         <source>nuget</source>
-        <target state="translated">nuget</target>
+        <target state="new">nuget</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetSearchProvider_Description">
         <source>Search NuGet packages</source>
-        <target state="translated">NuGet paketlerinde ara</target>
+        <target state="new">Search NuGet packages</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetSearchProvider_DisplayText">
         <source>NuGet Packages</source>
-        <target state="translated">NuGet Paketleri</target>
+        <target state="new">NuGet Packages</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetStaticResult_DisplayText">
         <source>Search Online for NuGet Packages matching '{0}'</source>
-        <target state="translated">'{0}' ile eşleşen NuGet Paketlerini Çevrimiçi Ara</target>
+        <target state="new">Search Online for NuGet Packages matching '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagement">
         <source>Package Management</source>
-        <target state="translated">Paket Yönetimi</target>
+        <target state="new">Package Management</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReference">
         <source>PackageReference</source>
-        <target state="translated">PackageReference</target>
+        <target state="new">PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestore">
         <source>Package Restore</source>
-        <target state="translated">Paket Geri Yükleme</target>
+        <target state="new">Package Restore</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
         <source>Allow NuGet to download missing packages</source>
-        <target state="translated">NuGet'in eksik paketleri indirmesine izin ver</target>
+        <target state="new">Allow NuGet to download missing packages</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagesConfig">
@@ -104,117 +104,117 @@
       </trans-unit>
       <trans-unit id="ProjectHasAnInvalidNuGetConfiguration">
         <source>{0} nuget configuration is invalid.</source>
-        <target state="translated">{0} nuget yapılandırması geçersiz.</target>
+        <target state="new">{0} nuget configuration is invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectJsonMigrateErrorMessage">
         <source>Project is not eligible for migration. Either the project is not packages.config based or doesn't support PackageReference yet. Visit https://docs.microsoft.com/en-us/nuget/reference/migrate-packages-config-to-package-reference for more information.</source>
-        <target state="translated">Proje geçiş için uygun değil. Proje packages.config tabanlı değil veya henüz PackageReference'ı desteklemiyor. Daha fazla bilgi için https://docs.microsoft.com/en-us/nuget/reference/migrate-packages-config-to-package-reference adresini ziyaret edin.</target>
+        <target state="new">Project is not eligible for migration. Either the project is not packages.config based or doesn't support PackageReference yet. Visit https://docs.microsoft.com/en-us/nuget/reference/migrate-packages-config-to-package-reference for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="translated">Proje, proje tabanlı olmadığından geçiş için project.json değil.</target>
+        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
         <source>These settings are stored in %NuGet.Config% files</source>
-        <target state="translated">Bu ayarlar %NuGet.Config% dosyada depolanır</target>
+        <target state="new">These settings are stored in %NuGet.Config% files</target>
         <note>Do not translate % % or what is between them</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
         <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">Çözüm kaydedilmedi. Lütfen NuGet paketlerini yönetmeden önce çözümünüzü kaydedin.</target>
+        <target state="new">Solution is not saved. Please save your solution before managing NuGet packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
         <source>Allow Insecure Connections</source>
-        <target state="translated">Güvenli Olmayan Bağlantılara İzin Ver</target>
+        <target state="new">Allow Insecure Connections</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
-        <target state="translated">Ortak NuGet yapılandırmaları: [Ayarların uygulanması](https://aka.ms/nuget/how-settings-are-applied/)</target>
+        <target state="new">Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</target>
         <note>Please leave the [ and ] brackets in place and do translate the words between them. Do not translate the URL inside ( ).</note>
       </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_Priority">
         <source>Configuration files are listed in order from highest to lowest priority.</source>
-        <target state="translated">Yapılandırma dosyaları en yüksek öncelikten en düşük önceliğe doğru sıralanır.</target>
+        <target state="new">Configuration files are listed in order from highest to lowest priority.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_FilePath_Header">
         <source>File Path</source>
-        <target state="translated">Dosya Yolu</target>
+        <target state="new">File Path</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Error">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) for more information.</source>
-        <target state="translated">NuGet için HTTPS kaynakları gereklidir. Bir HTTP kaynağı kullanmak için NuGet.Config dosyanızda 'allowInsecureConnections' ayarını açıkça “true” olarak ayarlamanız gerekir. Daha güvenli seçenekler için [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) adresine bakın.</target>
+        <target state="new">NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Warning">
         <source>HTTP sources are insecure. Consider using HTTPS instead. 'AllowInsecureConnections' is enabled, permitting HTTP access. For more secure options, see [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere).</source>
-        <target state="translated">HTTP kaynakları güvenli değil. Bunun yerine HTTPS kullanmayı düşünün. 'AllowInsecureConnections' etkinleştirildi ve HTTP erişimine izin verildi. Daha güvenli seçenekler için [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) adresine bakın.</target>
+        <target state="new">HTTP sources are insecure. Consider using HTTPS instead. 'AllowInsecureConnections' is enabled, permitting HTTP access. For more secure options, see [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere).</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceEnabled_Header">
         <source>Enabled</source>
-        <target state="translated">Etkin</target>
+        <target state="new">Enabled</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceMappingPattern_Header">
         <source>Package pattern</source>
-        <target state="translated">Paket deseni</target>
+        <target state="new">Package pattern</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceName_Header">
         <source>Name</source>
-        <target state="translated">Ad</target>
+        <target state="new">Name</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceUrl_Header">
         <source>Source</source>
-        <target state="translated">Kaynak</target>
+        <target state="new">Source</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources_MachineWide">
         <source>Machine-wide package sources</source>
-        <target state="translated">Makine genelindeki paket kaynakları</target>
+        <target state="new">Machine-wide package sources</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources_NotMachineWide">
         <source>Package sources</source>
-        <target state="translated">Paket kaynakları</target>
+        <target state="new">Package sources</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Watermark_ExamplePackageIdPattern">
         <source>Contoso.Contracts or System.*</source>
-        <target state="translated">Contoso.Contracts veya System.*</target>
+        <target state="new">Contoso.Contracts or System.*</target>
         <note>"Contoso.Contracts" and "System.*" are examples of a package ID pattern and a package prefix pattern, respectively, so these two specific examples should not be translated.</note>
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
-        <target state="translated">NuGet yerel kaynaklarını temizle</target>
+        <target state="new">Clear NuGet local resources</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormat">
         <source>Default package management format</source>
-        <target state="translated">Varsayılan paket yönetim biçimi</target>
+        <target state="new">Default package management format</target>
         <note />
       </trans-unit>
       <trans-unit id="packageRestoreAutomatic">
         <source>Automatically check for missing packages during build in Visual Studio</source>
-        <target state="translated">Visual Studio'da yapı oluşturulurken eksik paketleri otomatik olarak denetle</target>
+        <target state="new">Automatically check for missing packages during build in Visual Studio</target>
         <note />
       </trans-unit>
       <trans-unit id="showPackageManagementChooser">
         <source>Prompt for format selection on first package install</source>
-        <target state="translated">İlk paket yüklemesinde biçim seçimi istemi</target>
+        <target state="new">Prompt for format selection on first package install</target>
         <note />
       </trans-unit>
       <trans-unit id="skipBindingRedirects">
         <source>Skip applying binding redirects</source>
-        <target state="translated">Bağlama yönlendirmelerini uygulamayı atla</target>
+        <target state="new">Skip applying binding redirects</target>
         <note />
       </trans-unit>
     </body>
