@@ -323,7 +323,6 @@ namespace NuGet.PackageManagement.Test
 
             var testLogger = new TestLogger();
 
-            //project3.AddPackageToAllFrameworks(new SimpleTestPackageContext("packageE", "1.0.*"));
             var nuGetVersioningPackageContext = new SimpleTestPackageContext("NuGet.Versioning", "1.0.7");
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
@@ -340,11 +339,9 @@ namespace NuGet.PackageManagement.Test
                 pathContext.SolutionRoot,
                 framework: "uap10.0");
 
-            //PackageIdentity floatingVersionPackage = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.*"));
             PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency("NuGet.Versioning", VersionRange.Parse("1.0.*")));
 
             var testNuGetProjectContext = new TestNuGetProjectContext();
-            //testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(floatingVersionPackage);
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                 projectTargetFramework,
                 testNuGetProjectContext,
@@ -359,7 +356,7 @@ namespace NuGet.PackageManagement.Test
             var providersCache = new RestoreCommandProvidersCache();
             var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
-            await DependencyGraphRestoreUtility.RestoreAsync(
+            var mutatingRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                 solutionManager,
                 await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                 restoreContext,
@@ -371,6 +368,13 @@ namespace NuGet.PackageManagement.Test
                 true,
                 testLogger,
                 CancellationToken.None);
+
+            foreach (var restoreSummary in mutatingRestoreSummaries)
+            {
+                Assert.False(restoreSummary.NoOpRestore);
+                Assert.Equal(1, restoreSummary.InstallCount);
+                Assert.True(restoreSummary.Success, "Restore should succeed for floating version");
+            }
 
             var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                 solutionManager,
