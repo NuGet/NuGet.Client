@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Tests
 
             // Act & Assert
             var excetion = Assert.Throws<Packaging.InvalidPackageIdException>(() => resource.GetUri(id));
-            excetion.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
+            excetion.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, id));
         }
     }
 }

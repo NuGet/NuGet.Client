@@ -226,7 +226,7 @@ namespace NuGet.Protocol.Tests
 
             // Act & Assert
             var exception = Assert.Throws<InvalidPackageIdException>(() => target.BuildFindPackagesByIdUri("../contoso"));
-            exception.Message.Should().Contain("Invalid package id : `../contoso`");
+            exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, "../contoso"));
         }
 
         [Fact]

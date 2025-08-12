@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Tests
 
             // Act & Assert
             var exception = Assert.Throws<Packaging.InvalidPackageIdException>(() => resource.GetUri(id, NuGetVersion.Parse("1.0.0.0-ALPHA+git")));
-            exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
+            exception.Message.Should().Contain(string.Format(Strings.Error_Invalid_package_id, id));
         }
 
         [Theory]
