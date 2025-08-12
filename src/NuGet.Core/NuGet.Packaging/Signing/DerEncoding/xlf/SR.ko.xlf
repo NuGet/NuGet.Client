@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Argument_InvalidOidValue">
         <source>The OID value was invalid.</source>
-        <target state="translated">OID 값이 잘못되었습니다.</target>
+        <target state="new">The OID value was invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cryptography_Der_Invalid_Encoding">
         <source>ASN1 corrupted data.</source>
-        <target state="translated">ASN1 손상된 데이터입니다.</target>
+        <target state="new">ASN1 corrupted data.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cryptography_Invalid_IA5String">
         <source>The string contains a character not in the 7 bit ASCII character set.</source>
-        <target state="translated">7비트 ASCII 문자 집합에 없는 문자가 문자열에 포함되어 있습니다.</target>
+        <target state="new">The string contains a character not in the 7 bit ASCII character set.</target>
         <note />
       </trans-unit>
     </body>
