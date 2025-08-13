@@ -2,13 +2,10 @@ parameters:
 - name: isOfficialBuild
   type: boolean
   default: false
-- name: NuGetLocalizationType
-  displayName: Whether to do production-ready localization (Full), or pseudo-localization, aka PLOC, (Pseudo) for testing.
-  type: string
-  default: Full
-  values:
-  - Full
-  - Pseudo
+- name: RunOneLocBuild
+  displayName: Run OneLocBuild
+  type: boolean
+  default: false
 - name: RunBuildForPublishing
   displayName: Build bits for publishing
   type: boolean
@@ -77,6 +74,18 @@ stages:
       os: windows
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
+
+- ${{ if eq(parameters.RunOneLocBuild, true) }}:
+  - stage: RunOneLocBuild
+    displayName: Run OneLocBuild
+    jobs:
+    - template: /eng/common/templates-official/job/onelocbuild.yml
+      parameters:
+        LclSource: lclFilesfromPackage
+        LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
+        MirrorRepo: 'NuGet.Client'
+        MirrorBranch: ${{ variables['Build.SourceBranchName'] }}
+        GitHubOrg: 'NuGet'
 
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
@@ -189,13 +198,6 @@ stages:
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
-        displayName: 'Publish localizationArtifacts artifact'
-        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeeded(), eq(variables['IsOfficialBuild'], 'true')))"
-        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
-        artifactName: "localizationArtifacts"
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
-
-      - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
@@ -214,7 +216,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: "succeeded()"
+        condition: "succeededOrFailed()"
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
         sbomEnabled: true
@@ -236,8 +238,8 @@ stages:
     - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: false
-        NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -299,8 +301,8 @@ stages:
     - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: true
-        NuGetLocalizationType: Full
         RunUnitTests: ${{ parameters.RunUnitTestsOnWindows }}
+        SigningType: ${{ parameters.SigningType }}
 
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"

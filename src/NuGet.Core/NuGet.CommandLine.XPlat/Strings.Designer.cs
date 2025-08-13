@@ -205,6 +205,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allows pushing to HTTP sources (insecure)..
+        /// </summary>
+        internal static string AllowInsecureConnections_Description {
+            get {
+                return ResourceManager.GetString("AllowInsecureConnections_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string ApiKey_Description {
@@ -498,6 +507,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_AddPkgIncompatibleWithAllFrameworks {
             get {
                 return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to add a PackageReference for &apos;{0}&apos;. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project..
+        /// </summary>
+        internal static string Error_AddPkgProjectReference {
+            get {
+                return ResourceManager.GetString("Error_AddPkgProjectReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a resolved package for &apos;{0}&apos;. This is a tooling error. Please file an issue at https://github.com/NuGet/Home..
+        /// </summary>
+        internal static string Error_AddPkgUnresolved {
+            get {
+                return ResourceManager.GetString("Error_AddPkgUnresolved", resourceCulture);
             }
         }
         
@@ -1545,6 +1572,42 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All packages are already up to date..
+        /// </summary>
+        internal static string PackageUpdate_AllPackagesAlreadyUpToDate {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AllPackagesAlreadyUpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0} packages in {1} scanned packages..
+        /// </summary>
+        internal static string PackageUpdate_FinalSummary {
+            get {
+                return ResourceManager.GetString("PackageUpdate_FinalSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finding versions of packages to update..
+        /// </summary>
+        internal static string PackageUpdate_FindingUpdateVersions {
+            get {
+                return ResourceManager.GetString("PackageUpdate_FindingUpdateVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading Project(s)..
+        /// </summary>
+        internal static string PackageUpdate_LoadingDGSpec {
+            get {
+                return ResourceManager.GetString("PackageUpdate_LoadingDGSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package reference in the form of a package identifier like &apos;Newtonsoft.Json&apos; or package identifier and version separated by &apos;@&apos; like &apos;Newtonsoft.Json@13.0.3&apos;..
         /// </summary>
         internal static string PackageUpdate_PackageArgumentDescription {
@@ -1554,11 +1617,38 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Running preview restore to check package compatibility..
+        /// </summary>
+        internal static string PackageUpdate_PreviewRestore {
+            get {
+                return ResourceManager.GetString("PackageUpdate_PreviewRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Preview restore with updated packages was not successful. Force mode is not yet available..
         /// </summary>
         internal static string PackageUpdate_PreviewRestoreFailed {
             get {
                 return ResourceManager.GetString("PackageUpdate_PreviewRestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0} {1} to {2}..
+        /// </summary>
+        internal static string PackageUpdate_UpdatedMessage {
+            get {
+                return ResourceManager.GetString("PackageUpdate_UpdatedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updating outdated packages in {0}..
+        /// </summary>
+        internal static string PackageUpdate_UpdatingOutdatedPackages {
+            get {
+                return ResourceManager.GetString("PackageUpdate_UpdatingOutdatedPackages", resourceCulture);
             }
         }
         
@@ -2238,15 +2328,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string TrustSyncCommandDescription {
             get {
                 return ResourceManager.GetString("TrustSyncCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unsupported: Updating more than one package is not yet supported.
-        /// </summary>
-        internal static string Unsupported_MoreThanOnePackage {
-            get {
-                return ResourceManager.GetString("Unsupported_MoreThanOnePackage", resourceCulture);
             }
         }
         
