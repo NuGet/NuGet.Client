@@ -14,7 +14,7 @@ using NuGet.Packaging.Signing;
 using static NuGet.Commands.TrustedSignersArgs;
 using NuGet.Packaging;
 using NuGet.Protocol;
- 
+
 namespace NuGet.Commands
 {
     /// <summary>
