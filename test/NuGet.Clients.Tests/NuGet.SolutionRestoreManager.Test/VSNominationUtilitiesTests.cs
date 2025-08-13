@@ -484,5 +484,34 @@ namespace NuGet.SolutionRestoreManager.Test
             //Assert
             Assert.Equal(expected, actual);
         }
+
+        [Theory]
+        [MemberData(nameof(IsPruningEnabledGlobally))]
+        public void IsPruningEnabledGlobally_WithVariousInputs_ReturnsExpectedResult(string[] members, bool expected)
+        {
+            // Arrange
+            var builder = new TestProjectRestoreInfoBuilder();
+
+            for (int i = 0; i < members.Length; i++)
+            {
+                builder = builder.WithTargetFrameworkInfo($"net{i + 1}.0", builder =>
+                {
+                    builder
+                    .WithProperty(ProjectBuildProperties.RestorePackagePruningDefault, members[i]);
+                });
+            }
+            var projectRestoreInfo = builder.Build();
+
+            // Act & Assert
+            VSNominationUtilities.IsPruningEnabledGlobally(projectRestoreInfo.TargetFrameworks).Should().Be(expected);
+        }
+
+        public static readonly List<object[]> IsPruningEnabledGlobally
+            = new List<object[]>
+            {
+                    new object[] { new string[] { "true", "false" }, true },
+                    new object[] { new string[] { "true", "" }, true },
+                    new object[] { new string[] { "", "", "false" }, false },
+            };
     }
 }

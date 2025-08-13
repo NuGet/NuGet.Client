@@ -21,7 +21,7 @@ namespace NuGet.Common
         /// </summary>
         public static string GetTempFilePath(string directory)
         {
-            var fileName = $"{Guid.NewGuid()}.tmp".ToLowerInvariant();
+            var fileName = $"{Guid.NewGuid()}.tmp";
 
             return Path.GetFullPath(Path.Combine(directory, fileName));
         }
