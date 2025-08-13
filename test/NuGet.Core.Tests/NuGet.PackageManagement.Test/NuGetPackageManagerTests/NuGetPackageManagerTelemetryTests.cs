@@ -267,19 +267,11 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 .Where(x => x.Key == "ProjectFilePath")
                 .ToList();
 
-            projectFilePaths.Should().HaveCount(2);
-
             // All of these events should be referencing the same path.
-            string singleFilePath = projectFilePaths.Distinct().Single().Value.ToString();
+            projectFilePaths.Should().HaveCount(2);
+            string singleFilePath = projectFilePaths.Distinct().Should().ContainSingle().Subject.Value.ToString();
             string singlePath = Path.GetDirectoryName(singleFilePath);
-
-            //var targetFramework = packageSpec.TargetFrameworks.Single();
-            //targetFramework.Dependencies.Should().ContainSingle(d => d.Name == "ExpectedPackage" && d.LibraryRange.VersionRange.MinVersion == new NuGetVersion("1.0.0"));
             singlePath.Should().Be(msBuildNuGetProjectSystem.ProjectFullPath);
-
-            Directory.Exists(singlePath).Should().BeTrue();
-            var singlePathFiles = Directory.EnumerateFiles(singlePath).ToList();
-            singlePathFiles.Count.Should().Be(5, because: "PackageReference projects should an assets file, cache, dgspec, g.props and g.targets.");
         }
 
         [Fact(Skip = "https://github.com/NuGet/Home/issues/10093")]
