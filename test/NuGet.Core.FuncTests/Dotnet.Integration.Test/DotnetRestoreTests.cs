@@ -2899,7 +2899,7 @@ EndGlobal";
             // Act & Assert
             var result = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, "restore");
             result.AllOutput.Should().Contain("NU1017");
-            result.AllOutput.Should().Contain(string.Format("Invalid package id : `{0}`", id));
+            result.AllOutput.Should().Contain(string.Format(NuGet.Protocol.Strings.Error_Invalid_package_id, id));
 
             mockServer.Stop();
         }

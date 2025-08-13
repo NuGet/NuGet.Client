@@ -239,7 +239,7 @@ namespace NuGet.Protocol.FuncTest
                     CancellationToken.None));
 
                 // Assert
-                exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", invalidPackageId));
+                exception.Message.Should().Contain(string.Format(Protocol.Strings.Error_Invalid_package_id, invalidPackageId));
             }
         }
     }

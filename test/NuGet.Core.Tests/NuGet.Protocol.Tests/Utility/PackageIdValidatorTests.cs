@@ -34,5 +34,24 @@ namespace NuGet.Protocol.Tests.Utility
             PackageIdValidator.Validate("contoso/../package", environment.Object);
             Assert.True(true);
         }
+
+        [Theory]
+        [InlineData("contoso")]
+        [InlineData("contoso.package.package")]
+        [InlineData("contoso.package")]
+        public void Validate_ValidId_DoesNotThrow(string id)
+        {
+            // Act & Assert
+            PackageIdValidator.Validate(id);
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void Validate_MoreThan100Chars_Succeeds()
+        {
+            // Act & Assert
+            PackageIdValidator.Validate(new string('a', 200));
+            Assert.True(true);
+        }
     }
 }

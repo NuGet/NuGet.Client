@@ -24,9 +24,9 @@ namespace NuGet.Protocol
                 env = EnvironmentVariableWrapper.Instance;
             }
 
-            string envVar = env.GetEnvironmentVariable("NUGET_DISABLE_PACKAGEID_VALIDATION");
+            string disableValidationEnvVarValue = env.GetEnvironmentVariable("NUGET_DISABLE_PACKAGEID_VALIDATION");
 
-            if (!string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(disableValidationEnvVarValue, "true", StringComparison.OrdinalIgnoreCase))
             {
                 if (!Packaging.PackageIdValidator.IsValidPackageId(packageId))
                 {
