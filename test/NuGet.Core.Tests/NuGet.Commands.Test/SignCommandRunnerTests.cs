@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-#if IS_SIGNING_SUPPORTED
 using System.IO.Compression;
-#endif
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -93,8 +91,6 @@ namespace NuGet.Commands.Test
             }
         }
 
-        // Skip the tests when signing is not supported.
-#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndNoPassword_Succeed()
         {
@@ -220,7 +216,6 @@ namespace NuGet.Commands.Test
                 }
             }
         }
-#endif
 
         [Fact]
         public async Task ExecuteCommandAsync_WithAmbiguousMatch_RaisesErrorsOnceAsync()
@@ -241,8 +236,6 @@ namespace NuGet.Commands.Test
             }
         }
 
-        //skip this test when signing is not supported.
-#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
@@ -273,7 +266,6 @@ namespace NuGet.Commands.Test
                     message => message.Level == LogLevel.Warning && message.Code == NuGetLogCode.NU3018));
             }
         }
-#endif
 
         private static byte[] GetResource(string name)
         {

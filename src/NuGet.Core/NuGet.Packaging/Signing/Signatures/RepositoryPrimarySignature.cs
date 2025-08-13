@@ -13,7 +13,6 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class RepositoryPrimarySignature : PrimarySignature, IRepositorySignature
     {
-#if IS_SIGNING_SUPPORTED
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
@@ -54,6 +53,5 @@ namespace NuGet.Packaging.Signing
                 summary.ExpirationTime,
                 issues.Concat(summary.Issues));
         }
-#endif
     }
 }
