@@ -71,7 +71,5 @@
     <InternalsVisibleTo Include="NuGet.VisualStudio.Common.Test" />
     <InternalsVisibleTo Include="NuGet.XPlat.FuncTest" />
     <InternalsVisibleTo Include="Test.Utility" />
-    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
-    <InternalsVisibleTo Include="NuGet.PackageManagement.Test" />
   </ItemGroup>
 </Project>

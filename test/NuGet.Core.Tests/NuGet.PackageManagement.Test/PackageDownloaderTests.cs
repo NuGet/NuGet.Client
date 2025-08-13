@@ -647,7 +647,7 @@ namespace NuGet.PackageManagement
                 NullLogger.Instance,
                 CancellationToken.None));
             server.Stop();
-            exception.Message.Should().Contain(string.Format(Protocol.Strings.Error_Invalid_package_id, id));
+            exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
         }
 
         private static async Task VerifyDirectDownloadSkipsGlobalPackagesFolderAsync(
