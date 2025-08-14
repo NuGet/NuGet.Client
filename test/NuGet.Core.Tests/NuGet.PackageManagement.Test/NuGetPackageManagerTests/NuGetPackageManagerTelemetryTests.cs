@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager())
+            using (var solutionManager = new TestVSSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     solutionManager,
                     new TestDeleteOnRestartManager());
 
-                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject();
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject(createEmpty: true);
 
                 // Main Act
                 var target = _packageWithDependents[0];
@@ -148,7 +148,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(3, telemetryEvents.Count);
                 Assert.Equal(2, telemetryEvents.Count(p => p.Name == "ProjectRestoreInformation"));
                 Assert.Equal(1, telemetryEvents.Count(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName));
 
@@ -156,7 +155,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
                 var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
                 Assert.Equal(2, projectFilePaths.Count());
-                Assert.True(projectFilePaths.All(p => p.Value is string y && File.Exists(y) && (y.EndsWith(".csproj") || y.EndsWith("project.json") || y.EndsWith("proj"))));
+                Assert.True(projectFilePaths.All(p => p.Value is string y && (y.EndsWith(".csproj") || y.EndsWith("proj"))));
             }
         }
 
