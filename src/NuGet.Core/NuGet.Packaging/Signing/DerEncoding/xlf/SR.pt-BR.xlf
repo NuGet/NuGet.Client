@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Argument_InvalidOidValue">
         <source>The OID value was invalid.</source>
-        <target state="new">The OID value was invalid.</target>
+        <target state="translated">O valor de OID era inválido.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cryptography_Der_Invalid_Encoding">
         <source>ASN1 corrupted data.</source>
-        <target state="new">ASN1 corrupted data.</target>
+        <target state="translated">Dados corrompidos ASN1.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cryptography_Invalid_IA5String">
         <source>The string contains a character not in the 7 bit ASCII character set.</source>
-        <target state="new">The string contains a character not in the 7 bit ASCII character set.</target>
+        <target state="translated">A cadeia de caracteres contém um caractere que não faz parte do conjunto de caracteres ASCII de 7 bits.</target>
         <note />
       </trans-unit>
     </body>
