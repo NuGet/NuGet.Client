@@ -20,6 +20,11 @@
     <PropertyGroup>
       <AssetManifestFileName>nuget.client.xml</AssetManifestFileName>
       <AssetManifestPath>$(ArtifactsLogDir)AssetManifest\$(AssetManifestFileName)</AssetManifestPath>
+
+      <SymbolPackageBaseRelativeBlobPath>assets/symbols/</SymbolPackageBaseRelativeBlobPath>
+      <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_REPOSITORY_NAME)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(BUILD_REPOSITORY_NAME)/</SymbolPackageBaseRelativeBlobPath>
+      <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_REPOSITORY_NAME)' == '' and '$(RepositoryName)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(RepositoryName)/</SymbolPackageBaseRelativeBlobPath>
+      <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_BUILDNUMBER)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(BUILD_BUILDNUMBER)/</SymbolPackageBaseRelativeBlobPath>
     </PropertyGroup>
 
     <Error Condition="'$(NuGetClientNupkgsDirectoryPath)' == ''" Text="The property '$(NuGetClientNupkgsDirectoryPath)' is required.  Set it at the command-line with /property:&lt;NuGetClientNupkgsDirectoryPath&gt;" />
@@ -27,7 +32,14 @@
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
     <ItemGroup>
-      <ItemsToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" Kind="Package" />
+      <ItemsToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" Exclude="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg" Kind="Package" />
+      <ItemsToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg">
+        <!-- Update the kind of the symbol packages to blob -->
+        <Kind>Blob</Kind>
+        <!-- Set the category to Symbols (otherwise it will inherit the original package category -->
+        <Category>Symbols</Category>
+        <RelativeBlobPath>$(SymbolPackageBaseRelativeBlobPath)%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPush>
       <ItemsToPush Remove="$(NuGetClientNupkgsDirectoryPath)/NuGet.Packaging.Core.*" />
     </ItemGroup>
 
