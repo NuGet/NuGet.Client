@@ -9,47 +9,47 @@
       </trans-unit>
       <trans-unit id="110">
         <source>NuGet Package Manager</source>
-        <target state="new">NuGet Package Manager</target>
+        <target state="translated">NuGet 패키지 관리자</target>
         <note />
       </trans-unit>
       <trans-unit id="112">
         <source>NuGet Package Manager in Visual Studio. For more information about NuGet, visit https://docs.nuget.org/</source>
-        <target state="new">NuGet Package Manager in Visual Studio. For more information about NuGet, visit https://docs.nuget.org/</target>
+        <target state="translated">Visual Studio의 NuGet 패키지 관리자입니다. NuGet에 대한 자세한 내용은 https://docs.nuget.org/를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="113">
         <source>NuGet Package Manager</source>
-        <target state="new">NuGet Package Manager</target>
+        <target state="translated">NuGet 패키지 관리자</target>
         <note />
       </trans-unit>
       <trans-unit id="114">
         <source>Package Sources</source>
-        <target state="new">Package Sources</target>
+        <target state="translated">패키지 소스</target>
         <note />
       </trans-unit>
       <trans-unit id="115">
         <source>General</source>
-        <target state="new">General</target>
+        <target state="translated">일반</target>
         <note />
       </trans-unit>
       <trans-unit id="116">
         <source>Package Source Mapping</source>
-        <target state="new">Package Source Mapping</target>
+        <target state="translated">패키지 원본 매핑</target>
         <note />
       </trans-unit>
       <trans-unit id="117">
         <source>Configuration Files</source>
-        <target state="new">Configuration Files</target>
+        <target state="translated">구성 파일</target>
         <note />
       </trans-unit>
       <trans-unit id="2">
         <source>plk</source>
-        <target state="new">plk</target>
+        <target state="translated">plk</target>
         <note />
       </trans-unit>
       <trans-unit id="200">
         <source>Package Manager Console</source>
-        <target state="new">Package Manager Console</target>
+        <target state="translated">패키지 관리자 콘솔</target>
         <note />
       </trans-unit>
       <trans-unit id="3">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="300">
         <source>PackageManagerDocumentWindow</source>
-        <target state="new">PackageManagerDocumentWindow</target>
+        <target state="translated">패키지 관리자 문서 창</target>
         <note />
       </trans-unit>
       <trans-unit id="4">

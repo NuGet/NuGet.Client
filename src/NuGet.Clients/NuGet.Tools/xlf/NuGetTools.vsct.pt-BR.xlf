@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="new">Manage &amp;NuGet Packages for Solution...</target>
+        <target state="translated">Gerenciar Pacotes do &amp;NuGet para a Solução...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="new">&amp;Migrate packages.config to PackageReference...</target>
+        <target state="translated">&amp;Migrar packages.config para PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|CommandName">
@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="new">&amp;Migrate packages.config to PackageReference...</target>
+        <target state="translated">&amp;Migrar packages.config para PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|CommandName">
