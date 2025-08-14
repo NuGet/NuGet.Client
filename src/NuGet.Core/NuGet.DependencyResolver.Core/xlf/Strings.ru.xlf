@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="Error_PackageNotFoundWhenExpected">
         <source>The feed '{0}' lists package '{1}' but multiple attempts to download the nupkg have failed. The feed is either invalid or required packages were removed while the current operation was in progress. Verify the package exists on the feed and try again.</source>
-        <target state="new">The feed '{0}' lists package '{1}' but multiple attempts to download the nupkg have failed. The feed is either invalid or required packages were removed while the current operation was in progress. Verify the package exists on the feed and try again.</target>
+        <target state="translated">Пакет "{1}" указан в веб-канале "{0}", но после нескольких попыток не удалось скачать файл NUPKG. Указан недопустимый веб-канал либо необходимые пакеты были удалены во время выполнения текущей операции. Убедитесь, что пакет существует в веб-канале и повторите попытку.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_MatchingSourceFoundForPackage">
         <source>Package source mapping matches found for package ID '{0}' are: '{1}'.</source>
-        <target state="new">Package source mapping matches found for package ID '{0}' are: '{1}'.</target>
+        <target state="translated">Обнаружены соответствия для сопоставления источника пакета с идентификатором "{0}": "{1}".</target>
         <note>{0} - Package id {1} - list of sources</note>
       </trans-unit>
       <trans-unit id="Log_NoMatchingSourceFoundForPackage">
         <source>Package source mapping match not found for package ID '{0}'.</source>
-        <target state="new">Package source mapping match not found for package ID '{0}'.</target>
+        <target state="translated">Соответствия для сопоставления источника пакета с идентификатором "{0}" не обнаружены.</target>
         <note>{0} - Package id</note>
       </trans-unit>
     </body>
