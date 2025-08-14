@@ -192,14 +192,14 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
+            var sourceRepository = CreateMockSourceRepository(pathContext.PackageSource);
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
-                NullSettings.Instance,
+                settings: testSettings,
                 solutionManager,
                 new TestDeleteOnRestartManager());
 
@@ -220,12 +220,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 projectName);
 
             var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
-
             solutionManager.NuGetProjects.Add(buildIntegratedProject);
-
-            var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
-            var providersCache = new RestoreCommandProvidersCache();
-            var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
             // Act
             var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("99.9.9"));
