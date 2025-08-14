@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
-using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -192,8 +191,8 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateMockSourceRepository(pathContext.PackageSource);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
+            PackageSource packageSource = new PackageSource(pathContext.PackageSource);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
@@ -290,8 +289,8 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateMockSourceRepository(pathContext.PackageSource);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
+            PackageSource packageSource = new PackageSource(pathContext.PackageSource);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
@@ -517,14 +516,14 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             nuGetVersioningPackageContext.AddFile("lib/uap10.0/NuGet.Versioning.dll");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, nuGetVersioningPackageContext);
-            var sourceRepository = CreateMockSourceRepository(pathContext.UserPackagesFolder);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sourceRepository.PackageSource);
+            PackageSource packageSource = new PackageSource(pathContext.PackageSource);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSource);
             var sources = sourceRepositoryProvider.GetRepositories();
             var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
-                NullSettings.Instance,
+                settings: testSettings,
                 solutionManager,
                 new TestDeleteOnRestartManager());
 
@@ -543,12 +542,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 projectName);
 
             var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
-
             solutionManager.NuGetProjects.Add(buildIntegratedProject);
-
-            var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
-            var providersCache = new RestoreCommandProvidersCache();
-            var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
             // Act
             var target = new PackageIdentity("NuGet.Versioning", new NuGetVersion("1.0.0"));
@@ -638,16 +632,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
                 _telemetrySession.PostEvent(telemetryData);
             }
-        }
-
-        private static SourceRepository CreateMockSourceRepository(string sourcePath)
-        {
-            PackageSource packageSource = new(sourcePath);
-
-            var mockSourceRepository = new Mock<SourceRepository>(packageSource, new List<INuGetResourceProvider>());
-            mockSourceRepository.SetupGet(m => m.PackageSource).Returns(packageSource);
-
-            return mockSourceRepository.Object;
         }
     }
 }
