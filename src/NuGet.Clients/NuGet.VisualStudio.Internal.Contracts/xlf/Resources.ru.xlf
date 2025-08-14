@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="ArgumentCannotBeNullOrEmpty">
         <source>The argument cannot be null or empty.</source>
-        <target state="new">The argument cannot be null or empty.</target>
+        <target state="translated">Аргумент не может иметь значение NULL или быть пустым.</target>
         <note />
       </trans-unit>
     </body>
