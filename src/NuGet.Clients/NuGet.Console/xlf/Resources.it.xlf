@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="Console_InitializeHostFails">
         <source>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</source>
-        <target state="new">Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</target>
+        <target state="translated">Non è stato possibile inizializzare l'host PowerShell. Se l'opzione relativa ai criteri di esecuzione di PowerShell è impostata su AllSigned, aprire la console di Gestione pacchetti per inizializzare prima l'host.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutingScript">
         <source>Executing script file '{0}'...</source>
-        <target state="new">Executing script file '{0}'...</target>
+        <target state="translated">Esecuzione del file di script '{0}' in corso...</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputConsolePaneName">
         <source>Package Manager</source>
-        <target state="new">Package Manager</target>
+        <target state="translated">Gestione pacchetti</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleBusy">
         <source>Package Manager Console busy at the moment...</source>
-        <target state="new">Package Manager Console busy at the moment...</target>
+        <target state="translated">Console di Gestione pacchetti occupata...</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleCommandExecuted">
         <source>Package Manager Console Command Executed</source>
-        <target state="new">Package Manager Console Command Executed</target>
+        <target state="translated">Console di Gestione pacchetti - Comando eseguito</target>
         <note />
       </trans-unit>
       <trans-unit id="RegistryKeyShouldBeDWORD">
         <source>Registry key '{0}' should be a DWORD.</source>
-        <target state="new">Registry key '{0}' should be a DWORD.</target>
+        <target state="translated">La chiave del Registro di sistema '{0}' deve essere di tipo DWORD.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowInitializing">
         <source>Initializing PowerShell host...</source>
-        <target state="new">Initializing PowerShell host...</target>
+        <target state="translated">Inizializzazione dell'host PowerShell in corso...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowTitle">
         <source>Package Manager Console</source>
-        <target state="new">Package Manager Console</target>
+        <target state="translated">Console di Gestione pacchetti</target>
         <note />
       </trans-unit>
     </body>

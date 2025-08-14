@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="Console_InitializeHostFails">
         <source>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</source>
-        <target state="new">Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</target>
+        <target state="translated">Не удалось инициализировать узел PowerShell. Если для политики выполнения PowerShell выбран режим AllSigned, откройте консоль диспетчера пакетов, чтобы сначала инициализировать узел.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutingScript">
         <source>Executing script file '{0}'...</source>
-        <target state="new">Executing script file '{0}'...</target>
+        <target state="translated">Выполнение файла сценария «{0}»…</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputConsolePaneName">
         <source>Package Manager</source>
-        <target state="new">Package Manager</target>
+        <target state="translated">Диспетчер пакетов</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleBusy">
         <source>Package Manager Console busy at the moment...</source>
-        <target state="new">Package Manager Console busy at the moment...</target>
+        <target state="translated">Настоящий момент консоль диспетчера пакетов используется…</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleCommandExecuted">
         <source>Package Manager Console Command Executed</source>
-        <target state="new">Package Manager Console Command Executed</target>
+        <target state="translated">Выполнена команда консоли диспетчера пакетов</target>
         <note />
       </trans-unit>
       <trans-unit id="RegistryKeyShouldBeDWORD">
         <source>Registry key '{0}' should be a DWORD.</source>
-        <target state="new">Registry key '{0}' should be a DWORD.</target>
+        <target state="translated">Раздел реестра «{0}» должен иметь тип DWORD.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowInitializing">
         <source>Initializing PowerShell host...</source>
-        <target state="new">Initializing PowerShell host...</target>
+        <target state="translated">Инициализация узла PowerShell…</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowTitle">
         <source>Package Manager Console</source>
-        <target state="new">Package Manager Console</target>
+        <target state="translated">Консоль диспетчера пакетов</target>
         <note />
       </trans-unit>
     </body>

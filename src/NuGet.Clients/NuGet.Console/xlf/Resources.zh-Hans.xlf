@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="Console_InitializeHostFails">
         <source>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</source>
-        <target state="new">Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</target>
+        <target state="translated">无法初始化 PowerShell 主机。如果将你的 PowerShell 执行策略设置设置为 AllSigned，请先打开程序包管理器控制台以初始化该主机。</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutingScript">
         <source>Executing script file '{0}'...</source>
-        <target state="new">Executing script file '{0}'...</target>
+        <target state="translated">正在执行脚本文件“{0}”...</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputConsolePaneName">
         <source>Package Manager</source>
-        <target state="new">Package Manager</target>
+        <target state="translated">程序包管理器</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleBusy">
         <source>Package Manager Console busy at the moment...</source>
-        <target state="new">Package Manager Console busy at the moment...</target>
+        <target state="translated">程序包管理器控制台此时正忙...</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleCommandExecuted">
         <source>Package Manager Console Command Executed</source>
-        <target state="new">Package Manager Console Command Executed</target>
+        <target state="translated">程序包管理器控制台命令已执行</target>
         <note />
       </trans-unit>
       <trans-unit id="RegistryKeyShouldBeDWORD">
         <source>Registry key '{0}' should be a DWORD.</source>
-        <target state="new">Registry key '{0}' should be a DWORD.</target>
+        <target state="translated">注册表项“{0}”应为 DWORD。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowInitializing">
         <source>Initializing PowerShell host...</source>
-        <target state="new">Initializing PowerShell host...</target>
+        <target state="translated">正在初始化 PowerShell 主机...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowTitle">
         <source>Package Manager Console</source>
-        <target state="new">Package Manager Console</target>
+        <target state="translated">程序包管理器控制台</target>
         <note />
       </trans-unit>
     </body>

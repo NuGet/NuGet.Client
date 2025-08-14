@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="Console_InitializeHostFails">
         <source>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</source>
-        <target state="new">Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</target>
+        <target state="translated">Inicializace hostitele prostředí PowerShell se nepovedla. Když je zásada spouštění prostředí PowerShell nastavená na možnost AllSigned, spusťte nejdřív Konzolu Správce balíčků a inicializujte hostitele.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExecutingScript">
         <source>Executing script file '{0}'...</source>
-        <target state="new">Executing script file '{0}'...</target>
+        <target state="translated">Spouští se soubor skriptu {0}...</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputConsolePaneName">
         <source>Package Manager</source>
-        <target state="new">Package Manager</target>
+        <target state="translated">Správce balíčků</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleBusy">
         <source>Package Manager Console busy at the moment...</source>
-        <target state="new">Package Manager Console busy at the moment...</target>
+        <target state="translated">Konzola Správce balíčků je nyní zaneprázdněna...</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageManagerConsoleCommandExecuted">
         <source>Package Manager Console Command Executed</source>
-        <target state="new">Package Manager Console Command Executed</target>
+        <target state="translated">Proveden příkaz konzoly Správce balíčků</target>
         <note />
       </trans-unit>
       <trans-unit id="RegistryKeyShouldBeDWORD">
         <source>Registry key '{0}' should be a DWORD.</source>
-        <target state="new">Registry key '{0}' should be a DWORD.</target>
+        <target state="translated">Klíč registru {0} musí být typu DWORD.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowInitializing">
         <source>Initializing PowerShell host...</source>
-        <target state="new">Initializing PowerShell host...</target>
+        <target state="translated">Inicializuje se hostitel prostředí PowerShell...</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolWindowTitle">
         <source>Package Manager Console</source>
-        <target state="new">Package Manager Console</target>
+        <target state="translated">Konzola Správce balíčků</target>
         <note />
       </trans-unit>
     </body>
