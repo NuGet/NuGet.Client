@@ -572,7 +572,7 @@ namespace NuGet.Packaging.Test
                 using (var zipArchive = new ZipArchive(packageStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
                     // Sanity check before testing.
-                    Assert.Equal(desiredFileCount, zipArchive.Entries.Count());
+                    Assert.Equal(desiredFileCount, zipArchive.Entries.Count);
                 }
 
                 packageStream.Position = 0;

@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel
             var actualTargetFrameworks = spec.TargetFrameworks;
 
             // The lock file should contain dependencies for each framework plus dependencies shared by all frameworks
-            if (ProjectFileDependencyGroups.Count != actualTargetFrameworks.Count() + 1)
+            if (ProjectFileDependencyGroups.Count != actualTargetFrameworks.Count + 1)
             {
                 return false;
             }

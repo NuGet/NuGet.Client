@@ -1409,7 +1409,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
             Assert.Null(logMessage.FilePath);
@@ -1548,7 +1548,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
             Assert.Null(logMessage.FilePath);
@@ -1629,7 +1629,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
             Assert.Equal("kung\\fu\\fighting.targets", logMessage.FilePath);
@@ -1712,7 +1712,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Warning, logMessage.Level);
             Assert.Equal(WarningLevel.Important, logMessage.WarningLevel);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
@@ -1796,7 +1796,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Warning, logMessage.Level);
             Assert.Equal(WarningLevel.Important, logMessage.WarningLevel);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
@@ -1878,7 +1878,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Warning, logMessage.Level);
             Assert.Equal(WarningLevel.Severe, logMessage.WarningLevel);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
@@ -1970,7 +1970,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(lockFileObj);
-            Assert.Equal(5, lockFileObj.LogMessages.Count());
+            Assert.Equal(5, lockFileObj.LogMessages.Count);
             Assert.Equal(3, lockFileObj.LogMessages.Count(m => m.Level == LogLevel.Error));
             Assert.Equal(2, lockFileObj.LogMessages.Count(m => m.Level == LogLevel.Warning));
             Assert.Equal(2, lockFileObj.LogMessages.Count(m => m.Message == "test log message"));
@@ -2045,7 +2045,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
             Assert.NotNull(logMessage.FilePath);
@@ -2122,7 +2122,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.NotNull(lockFileObj);
             Assert.NotNull(logMessage);
-            Assert.Equal(1, lockFileObj.LogMessages.Count());
+            Assert.Equal(1, lockFileObj.LogMessages.Count);
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.Equal(NuGetLogCode.NU1000, logMessage.Code);
             Assert.NotNull(logMessage.FilePath);
@@ -2188,7 +2188,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, runtimeTargetLibrary.RuntimeAssemblies.Count);
             Assert.Equal(1, runtimeTargetLibrary.ToolsAssemblies.Count);
             Assert.Equal("tools/dotnet/any/test.dll", runtimeTargetLibrary.ToolsAssemblies.Single().Path);
-            Assert.Equal(0, runtimeTargetLibrary.Dependencies.Count());
+            Assert.Equal(0, runtimeTargetLibrary.Dependencies.Count);
 
             var runtimeLibrary = lockFile.Libraries.Single();
             Assert.Equal("GlobalTool", runtimeLibrary.Name);

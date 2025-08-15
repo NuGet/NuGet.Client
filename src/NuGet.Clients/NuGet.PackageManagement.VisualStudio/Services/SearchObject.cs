@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
                 }
-                totalCount += searchResult.Items?.Count() ?? 0;
+                totalCount += searchResult.Items?.Count ?? 0;
                 nextToken = searchResult.NextToken;
             } while (nextToken != null && totalCount < maxCount);
 

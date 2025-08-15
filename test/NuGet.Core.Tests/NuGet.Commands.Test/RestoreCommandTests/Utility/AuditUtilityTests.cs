@@ -409,7 +409,7 @@ public class AuditUtilityTests
         }
         else
         {
-            context.Log.Messages.Count().Should().Be(0);
+            context.Log.Messages.Count.Should().Be(0);
         }
 
         auditUtility.DirectPackagesWithAdvisory.Should().BeNullOrEmpty();

@@ -87,8 +87,8 @@ namespace NuGet.Tools.Test
         {
             using (await NuGetBrokeredServiceFactory.ProfferServicesAsync(this))
             {
-                Assert.Equal(ServicesAndFactories.Count(), _serviceFactories.Count);
-                Assert.Equal(ServicesAndAuthorizingFactories.Count(), _authorizingServiceFactories.Count);
+                Assert.Equal(ServicesAndFactories.Count, _serviceFactories.Count);
+                Assert.Equal(ServicesAndAuthorizingFactories.Count, _authorizingServiceFactories.Count);
             }
         }
 

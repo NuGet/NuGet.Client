@@ -1034,7 +1034,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(3, target.Libraries.Count(lib => lib.Type == LibraryType.Package));
                 Assert.Equal(3, result.LockFile.Libraries.Count(lib => lib.Type == LibraryType.Package));
-                Assert.Equal(1, dependencies.Count());
+                Assert.Equal(1, dependencies.Count);
             }
         }
 

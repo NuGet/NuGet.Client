@@ -320,7 +320,7 @@ namespace NuGet.Tests.Apex
             using (var file = File.Create(configurationPath))
             {
                 var info = Encoding.UTF8.GetBytes(configurationContent);
-                file.Write(info, 0, info.Count());
+                file.Write(info, 0, info.Length);
             }
         }
 
