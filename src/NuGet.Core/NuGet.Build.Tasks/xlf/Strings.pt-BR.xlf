@@ -65,7 +65,7 @@
       <trans-unit id="Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream">
         <source>An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0} Please file an issue at https://github.com/NuGet/Home
 {1}</source>
-        <target state="new">An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0} Please file an issue at https://github.com/NuGet/Home
+        <target state="translated">Ocorreu um erro ao analisar os argumentos da linha de comando na restauração baseada em gráfico estático, pois ocorreu uma exceção ao ler o fluxo de entrada padrão. {0} Registre um problema em https://github.com/NuGet/Home
 {1}</target>
         <note>0 - The exception message
 1 - The string representation of the exception</note>
@@ -83,7 +83,7 @@
       <trans-unit id="Error_StaticGraphUnhandledException">
         <source>Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
 {0}</source>
-        <target state="new">Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
+        <target state="translated">A restauração baseada em grafo estático encontrou uma exceção sem tratamento. Registre um problema em https://github.com/NuGet/Home.  A exceção foi:
 {0}</target>
         <note>0 - The exception as a string.</note>
       </trans-unit>

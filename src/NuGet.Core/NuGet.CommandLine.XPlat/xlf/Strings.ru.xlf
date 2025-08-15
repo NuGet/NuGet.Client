@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AddPkg_All">
         <source>all</source>
-        <target state="new">all</target>
+        <target state="translated">все</target>
         <note />
       </trans-unit>
       <trans-unit id="AddPkg_Description">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="AllowInsecureConnections_Description">
         <source>Allows pushing to HTTP sources (insecure).</source>
-        <target state="new">Allows pushing to HTTP sources (insecure).</target>
+        <target state="translated">Разрешает отправку в HTTP-источники (небезопасные).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApiKey_Description">
@@ -246,12 +246,12 @@
       </trans-unit>
       <trans-unit id="Error_AddPkgProjectReference">
         <source>Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</source>
-        <target state="new">Failed to add a PackageReference for '{0}'. A ProjectReference with the same name already exists and a package with the same name cannot be added to the project.</target>
+        <target state="translated">Не удалось добавить PackageReference для "{0}". ProjectReference с таким именем уже существует, и пакет с таким именем нельзя добавить в проект.</target>
         <note>{0} - PackageId</note>
       </trans-unit>
       <trans-unit id="Error_AddPkgUnresolved">
         <source>Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</source>
-        <target state="new">Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</target>
+        <target state="translated">Не удалось найти разрешенный пакет для "{0}". Это ошибка инструментирования. Сообщите о проблеме на странице https://github.com/NuGet/Home.</target>
         <note>{0} Package Id</note>
       </trans-unit>
       <trans-unit id="Error_AddPkg_CentralPackageVersions_EmptyVersionOverride">
@@ -323,8 +323,8 @@ Do not translate "PackageVersion"</note>
       <trans-unit id="Error_HttpServerUsage_MultipleSources">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}
 NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">You are running the '{0}' operation with 'HTTP' sources: {1}
-NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Вы выполняете операцию "{0}" с источниками "HTTP": {1}
+Для NuGet требуются источники HTTPS. Чтобы использовать источники HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server uris</note>
       </trans-unit>
       <trans-unit id="Error_InvalidCultureInfo">
@@ -359,7 +359,7 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       </trans-unit>
       <trans-unit id="Error_MultipleProjectOrSolutionFilesInDirectory">
         <source>The directory '{0}' contains multiple project or solution files. Please specify which project or solution file to use.</source>
-        <target state="new">The directory '{0}' contains multiple project or solution files. Please specify which project or solution file to use.</target>
+        <target state="translated">Каталог "{0}" содержит несколько проектов или файлов решений. Укажите, какой проект или файл решения следует использовать.</target>
         <note>{0} - Directory</note>
       </trans-unit>
       <trans-unit id="Error_NoDgSpec">
@@ -369,7 +369,7 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       </trans-unit>
       <trans-unit id="Error_NoProjectOrSolutionFilesInDirectory">
         <source>The directory '{0}' does not contain any project or solution files.</source>
-        <target state="new">The directory '{0}' does not contain any project or solution files.</target>
+        <target state="translated">Каталог "{0}" не содержит проектов или файлов решений.</target>
         <note>{0} - Directory</note>
       </trans-unit>
       <trans-unit id="Error_NoSource">
@@ -395,12 +395,12 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
-        <target state="new">Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</target>
+        <target state="translated">Путь "{0}" отсутствует или является недопустимым. Укажите путь к проекту, файлу решения или каталогу.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
         <source>The specified path '{0}' does not exist.</source>
-        <target state="new">The specified path '{0}' does not exist.</target>
+        <target state="translated">Указанный путь "{0}" не существует.</target>
         <note>0 - path</note>
       </trans-unit>
       <trans-unit id="Error_PkgMissingArgument">
@@ -573,7 +573,7 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="new">Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</target>
+        <target state="translated">Параметры "--outdated", "--deprecated" и "--vulnerable" не могут использоваться вместе.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -888,7 +888,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
         <source>All packages are already up to date.</source>
-        <target state="new">All packages are already up to date.</target>
+        <target state="translated">Все пакеты уже обновлены.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
@@ -909,7 +909,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
         <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="new">Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</target>
+        <target state="translated">Ссылка на пакет в виде идентификатора пакета, например "Newtonsoft.Json", или идентификатора пакета и версии, разделенных "@", например "Newtonsoft.Json@13.0.3".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestore">
@@ -1343,17 +1343,17 @@ The search is a case-insensitive string comparison using the supplied value, whi
       </trans-unit>
       <trans-unit id="WhyCommand_Description">
         <source>Shows the dependency graph for a particular package for a given project or solution.</source>
-        <target state="new">Shows the dependency graph for a particular package for a given project or solution.</target>
+        <target state="translated">Отображает граф зависимостей для определенного пакета заданного проекта или решения.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_ArgumentCannotBeEmpty">
         <source>Unable to run 'dotnet nuget why'. The '{0}' argument cannot be empty.</source>
-        <target state="new">Unable to run 'dotnet nuget why'. The '{0}' argument cannot be empty.</target>
+        <target state="translated">Не удалось выполнить команду "dotnet nuget why". Аргумент "{0}" не может быть пустым.</target>
         <note>{0} - Argument that was not provided</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Error_ArgumentExceptionThrown">
         <source>Unable to run 'dotnet nuget why'. {0}</source>
-        <target state="new">Unable to run 'dotnet nuget why'. {0}</target>
+        <target state="translated">Не удалось выполнить команду "dotnet nuget why".{0}</target>
         <note>{0} - Exception mssage</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
@@ -1368,22 +1368,22 @@ The search is a case-insensitive string comparison using the supplied value, whi
       </trans-unit>
       <trans-unit id="WhyCommand_FrameworksOption_Description">
         <source>The target framework(s) for which dependency graphs are shown.</source>
-        <target state="new">The target framework(s) for which dependency graphs are shown.</target>
+        <target state="translated">Целевые платформы, для которых отображаются графы зависимостей.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Message_DependencyGraphsFoundInProject">
         <source>Project '{0}' has the following dependency graph(s) for '{1}':</source>
-        <target state="new">Project '{0}' has the following dependency graph(s) for '{1}':</target>
+        <target state="translated">У проекта "{0}" есть следующие графы зависимостей для "{1}":</target>
         <note>{0} - Project name, {1} - Target package</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Message_NoDependencyGraphsFoundForFramework">
         <source>No dependency graph(s) found for this target framework.</source>
-        <target state="new">No dependency graph(s) found for this target framework.</target>
+        <target state="translated">Графы зависимостей для этой целевой платформы не найдены.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Message_NoDependencyGraphsFoundInProject">
         <source>Project '{0}' does not have a dependency on '{1}'.</source>
-        <target state="new">Project '{0}' does not have a dependency on '{1}'.</target>
+        <target state="translated">У проекта "{0}" нет зависимости от "{1}".</target>
         <note>{0} - Project name, {1} - Target package</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Message_NonSDKStyleProjectsAreNotSupported">
@@ -1393,17 +1393,17 @@ The search is a case-insensitive string comparison using the supplied value, whi
       </trans-unit>
       <trans-unit id="WhyCommand_PackageArgument_Description">
         <source>The package name to lookup in the dependency graph.</source>
-        <target state="new">The package name to lookup in the dependency graph.</target>
+        <target state="translated">Имя пакета для поиска в графе зависимостей.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
         <source>A path to a project, solution file, or directory.</source>
-        <target state="new">A path to a project, solution file, or directory.</target>
+        <target state="translated">Путь к проекту, файлу решения или каталогу.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">
         <source>The assets file '{0}' for project '{1}' does not contain a target for the specified input framework '{2}'.</source>
-        <target state="new">The assets file '{0}' for project '{1}' does not contain a target for the specified input framework '{2}'.</target>
+        <target state="translated">Файл ресурсов "{0}" для проекта "{1}" не содержит целевой объект для указанной входной платформы "{2}".</target>
         <note>{0} - Assets file path, {1} - Project name, {2} - Framework</note>
       </trans-unit>
       <trans-unit id="pkgSearch_Description">

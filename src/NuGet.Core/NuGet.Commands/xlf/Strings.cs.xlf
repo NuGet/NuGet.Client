@@ -461,12 +461,12 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</source>
-        <target state="new">PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</target>
+        <target state="translated">PackageReference {0} se nevyřadí. Zvažte odebrání tohoto balíčku ze závislostí, protože je pravděpodobně nepotřebný.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
         <source>A ProjectReference cannot be pruned, {0}.</source>
-        <target state="new">A ProjectReference cannot be pruned, {0}.</target>
+        <target state="translated">ProjectReference nelze vyřadit, {0}.</target>
         <note>0 - project reference</note>
       </trans-unit>
       <trans-unit id="Error_ServiceIndexShouldBeHttps">
@@ -501,7 +501,7 @@
       </trans-unit>
       <trans-unit id="Error_UnableToFindProjectInfo">
         <source>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</source>
-        <target state="new">Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</target>
+        <target state="translated">Nepovedlo se najít informace o projektu pro {0}. Pokud používáte Visual Studio, může se to stát v případě, že je projekt uvolněný nebo není součástí aktuálního řešení, proto z příkazového řádku spusťte obnovení. Kromě toho je možné, že soubor projektu není platný nebo v něm chybí cíle potřebné k obnovení.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnableToLocateBuildOutput">
@@ -1073,7 +1073,7 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       </trans-unit>
       <trans-unit id="ReservedPackageNameAll">
         <source>All</source>
-        <target state="new">All</target>
+        <target state="translated">Vše</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolverRequest_ToStringFormat">
@@ -1083,7 +1083,7 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       </trans-unit>
       <trans-unit id="RestoreDebugPruningPackageReference">
         <source>Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</source>
-        <target state="new">Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</target>
+        <target state="translated">Vyřazuje se balíček {0} jako závislost {1}. Maximální verze, která se dá vyřadit, je {2}.</target>
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1184,12 +1184,12 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       </trans-unit>
       <trans-unit id="SourcesCommandDisabled">
         <source>Disabled</source>
-        <target state="new">Disabled</target>
+        <target state="translated">Zakázáno</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandEnabled">
         <source>Enabled</source>
-        <target state="new">Enabled</target>
+        <target state="translated">Povoleno</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandInvalidSource">
@@ -1422,7 +1422,7 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
         <source>unknown</source>
-        <target state="new">unknown</target>
+        <target state="translated">neznámé</target>
         <note>As in "This package has a unknown severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="WarningAsError">
@@ -1458,15 +1458,15 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       <trans-unit id="Warning_List_HttpSource">
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following is a 'Non-HTTPS' source: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Následující zdroj není zdroj HTTPS: {0}
+NuGet vyžaduje zdroje HTTPS. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following are 'Non-HTTPS' sources: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Následující zdroje nejsou zdroje HTTPS: {0}
+NuGet vyžaduje zdroje HTTPS. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
