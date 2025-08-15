@@ -280,7 +280,7 @@ function Test-ComplexCustomTabExpansion {
 
 function Test-TabExpansionForVersionForUninstallPackage {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     $p | Install-Package elmah -Version 1.1
 
     # Act
