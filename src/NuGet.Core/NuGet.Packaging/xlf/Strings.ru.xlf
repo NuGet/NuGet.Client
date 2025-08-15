@@ -414,12 +414,12 @@
       </trans-unit>
       <trans-unit id="InvalidX509StorePurpose">
         <source>Invalid X.509 store purpose.</source>
-        <target state="new">Invalid X.509 store purpose.</target>
+        <target state="translated">Недопустимое назначение хранилища X.509.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_InstalledPackage">
         <source>Installed {0} {1} from {2} to {3} with content hash {4}.</source>
-        <target state="new">Installed {0} {1} from {2} to {3} with content hash {4}.</target>
+        <target state="translated">Установлено {0} {1} из {2} в {3} с хэшем содержимого {4}.</target>
         <note>0 - package id
 1 - package version
 2 - package source
@@ -428,7 +428,7 @@
       </trans-unit>
       <trans-unit id="Message_Path">
         <source>Path: {0}</source>
-        <target state="new">Path: {0}</target>
+        <target state="translated">Путь: {0}</target>
         <note>0 - folder path</note>
       </trans-unit>
       <trans-unit id="MinClientVersionAlreadyExist">
@@ -665,7 +665,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">"{0}" не может иметь значение null.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RangeOutOfBoundsForArray">
@@ -959,10 +959,10 @@
     Fingerprint (SHA-256):  {2}
     Certificate (PEM):
 {3}</source>
-        <target state="new">The following X.509 root certificate is untrusted because it is not present in the certificate bundle at {0}.  For more information, see documentation for NU3042.
-    Subject:  {1}
-    Fingerprint (SHA-256):  {2}
-    Certificate (PEM):
+        <target state="translated">Следующий корневой сертификат X.509 не является доверенным, так как он отсутствует в наборе сертификатов в {0}.  Дополнительные сведения см. в документации по NU3042.
+    Тема: {1}
+    Отпечаток пальца (SHA-256): {2}
+    Сертификат (PEM):
 {3}</target>
         <note>0 is a file path, 1 is a certificate subject, 2 is a certificate fingerprint, and 3 is a PEM-encoded certificate.</note>
       </trans-unit>
@@ -972,10 +972,10 @@
     Fingerprint (SHA-256):  {1}
     Certificate (PEM):
 {2}</source>
-        <target state="new">The following X.509 root certificate is untrusted because no certificate bundle was found.  For more information, see documentation for NU3042.
-    Subject:  {0}
-    Fingerprint (SHA-256):  {1}
-    Certificate (PEM):
+        <target state="translated">Следующий корневой сертификат X.509 не является доверенным, так как набор сертификатов не найден.  Дополнительные сведения см. в документации по NU3042.
+    Тема: {0}
+    Отпечаток пальца (SHA-256): {1}
+    Сертификат (PEM):
 {2}</target>
         <note>0 is a certificate subject, 1 is a certificate fingerprint, and 2 is a PEM-encoded certificate.</note>
       </trans-unit>
