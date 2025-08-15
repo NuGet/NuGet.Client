@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
         <source>{0} (y/N) </source>
-        <target state="new">{0} (y/N) </target>
+        <target state="translated">{0} (y/N) </target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessageAccept">
@@ -130,7 +130,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_CannotFindNonArchitectureSpecificMsbuild">
         <source>The resolved MSBuild directory is `{0}` which is an architecture-specific directory. Could not find MSBuild in its parent directory (non-architecture specific).</source>
-        <target state="new">The resolved MSBuild directory is `{0}` which is an architecture-specific directory. Could not find MSBuild in its parent directory (non-architecture specific).</target>
+        <target state="translated">La directory MSBuild risolta è '{0}', che è una directory specifica per dell'architettura. Non è stato possibile trovare MSBuild nella sua directory padre (non specifica dell'architettura).</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotGetGetAllProjectFileNamesMethod">
@@ -252,9 +252,9 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
         <source>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
 Please consider migrating '{0}' to `PackageReference` and using the pack targets.
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</source>
-        <target state="new">`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
-Please consider migrating '{0}' to `PackageReference` and using the pack targets.
-You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</target>
+        <target state="translated">Il pacchetto 'project.json' è disabilitato nella versione corrente di NuGet e verrà rimosso definitivamente in una versione futura.
+Prova a eseguire la migrazione di '{0}' in 'PackageReference' e usa le destinazioni del pacchetto.
+Puoi impostare la variabile di ambiente '{1}' su 'true' per riabilitare temporaneamente questa funzionalità.</target>
         <note>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</note>
       </trans-unit>
       <trans-unit id="Error_ResponseFileDoesNotExist">
@@ -751,8 +751,8 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       <trans-unit id="RestoreCommandPackageRestoreOptOutMessage">
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
-        <target state="new">Restoring NuGet packages...
-To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</target>
+        <target state="translated">Ripristino dei pacchetti NuGet in corso...
+Per evitare che NuGet scarichi i pacchetti durante la compilazione, apri la finestra di dialogo Opzioni di Visual Studio, fai clic sul nodo Gestione pacchetti NuGet e deseleziona '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">

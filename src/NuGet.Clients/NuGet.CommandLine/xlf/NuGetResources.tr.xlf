@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
         <source>{0} (y/N) </source>
-        <target state="new">{0} (y/N) </target>
+        <target state="translated">{0} (e/H) </target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessageAccept">
@@ -252,9 +252,9 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
         <source>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
 Please consider migrating '{0}' to `PackageReference` and using the pack targets.
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</source>
-        <target state="new">`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
-Please consider migrating '{0}' to `PackageReference` and using the pack targets.
-You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</target>
+        <target state="translated">'project.json' paketi geçerli NuGet sürümünde devre dışı bırakıldı ve gelecekteki bir sürümde kalıcı olarak kaldırılacak.
+Lütfen '{0}' öğesini 'PackageReference'a geçirmeyi ve paket hedeflerini kullanmayı düşünün.
+Bu işlevi geçici olarak yeniden etkinleştirmek için '{1}' ortam değişkenini 'true' olarak ayarlayabilirsiniz.</target>
         <note>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</note>
       </trans-unit>
       <trans-unit id="Error_ResponseFileDoesNotExist">
@@ -751,8 +751,8 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       <trans-unit id="RestoreCommandPackageRestoreOptOutMessage">
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
-        <target state="new">Restoring NuGet packages...
-To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</target>
+        <target state="translated">NuGet paketleri geri yükleniyor...
+NuGet'in derleme sırasında paketleri geri yüklemesini önlemek için Visual Studio Seçenekleri iletişim kutusunu açın, NuGet Paket Yöneticisi düğümüne tıklayın ve '{0}' öğesinin işaretini kaldırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">

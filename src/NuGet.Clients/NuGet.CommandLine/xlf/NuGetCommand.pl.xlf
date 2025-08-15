@@ -288,7 +288,7 @@ nuget help push
 nuget ?
 
 nuget push -?</source>
-        <target state="new">nuget help
+        <target state="translated">nuget help
 
 nuget help push
 

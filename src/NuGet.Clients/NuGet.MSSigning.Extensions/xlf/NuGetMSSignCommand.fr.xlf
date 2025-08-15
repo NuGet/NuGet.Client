@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="new">SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</target>
+        <target state="translated">Empreinte digitale SHA-256, SHA-384 ou SHA-512 du certificat utilisée pour rechercher le certificat dans un fichier p7b.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
         <source>Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</source>
-        <target state="new">Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
+        <target state="translated">Valeur non valide fournie pour « {0} ». Pour obtenir une liste des valeurs acceptées, veuillez consulter https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
         <note>{0} - argument name</note>
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
@@ -108,7 +108,7 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="MSSignCommandUsageSummary">
         <source>&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContainer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;</source>
-        <target state="new">&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContainer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;</target>
+        <target state="translated">&lt;package_path&gt; -Timestamper &lt;timestamp_server_url&gt; -CertificateFile &lt;p7b_file_path&gt; -CSPName &lt;cryptographic_service _provider_name&gt;  -KeyContainer &lt;key_container_guid&gt;  -CertificateFingerprint &lt;certificate_fingerprint&gt;</target>
         <note>Please don't localize this string</note>
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">

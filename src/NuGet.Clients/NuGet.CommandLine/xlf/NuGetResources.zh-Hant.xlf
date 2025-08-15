@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
         <source>{0} (y/N) </source>
-        <target state="new">{0} (y/N) </target>
+        <target state="translated">{0} (y/N)</target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessageAccept">
@@ -252,9 +252,9 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
         <source>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
 Please consider migrating '{0}' to `PackageReference` and using the pack targets.
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</source>
-        <target state="new">`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
-Please consider migrating '{0}' to `PackageReference` and using the pack targets.
-You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</target>
+        <target state="translated">目前的 NuGet 版本已停用 'project.json' 封裝，未來版本將永久移除。
+請考慮將 '{0}' 移轉至 'PackageReference' 並使用封裝目標。
+您可以將 '{1}' 環境變數設定為 'true' 以暫時重新啟用此功能。</target>
         <note>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</note>
       </trans-unit>
       <trans-unit id="Error_ResponseFileDoesNotExist">
@@ -751,8 +751,8 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       <trans-unit id="RestoreCommandPackageRestoreOptOutMessage">
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
-        <target state="new">Restoring NuGet packages...
-To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</target>
+        <target state="translated">正在還原 NuGet 套件...
+為避免 NuGet 在建置期間下載封裝，請開啟 [Visual Studio 選項] 對話方塊、按一下 [NuGet 套件管理員] 節點，然後取消核取「{0}」。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">
