@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Moq;
@@ -98,7 +97,7 @@ namespace NuGet.Build.Tasks.Test
                 Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
                 Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
 
-                // Test 
+                // Test
                 settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
                 filePaths = settings.GetConfigFilePaths();
 
@@ -514,7 +513,7 @@ namespace NuGet.Build.Tasks.Test
 
         /// <summary>
         /// This mimics the GetRestoreSettingsTask call when msbuild /t:restore is called.
-        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level.
         /// </summary>
         [Fact]
         public void GetRestoreSettingsTask_RestoreTaskBased_PackageReference_ProjectLevelConfig()
@@ -553,7 +552,7 @@ namespace NuGet.Build.Tasks.Test
 
         /// <summary>
         /// This mimics the GetRestoreSettingsTask call when NuGet.exe on a solution is called.
-        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level.
         /// </summary>
         [Fact]
         public void GetRestoreSettingsTask_NuGetExeBased_PackageReference_ProjectLevelConfig_IsIgnored()
@@ -598,7 +597,7 @@ namespace NuGet.Build.Tasks.Test
 
         /// <summary>
         /// This mimics the GetRestoreSettingsTask call when NuGet.exe on a solution is called.
-        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level.
         /// </summary>
         [Fact]
         public void GetRestoreSettingsTask_WithRestoreRootDirectory_ProjectLevelConfigIsIgnored()
