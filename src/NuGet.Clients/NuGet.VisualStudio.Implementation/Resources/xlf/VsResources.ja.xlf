@@ -350,7 +350,7 @@ The string representation of the user's input framework name.</note>
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">'{0}' を null 値にはできません。</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="TemplateWizard_ErrorDialogTitle">
