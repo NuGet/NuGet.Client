@@ -428,7 +428,7 @@
       </trans-unit>
       <trans-unit id="Message_Path">
         <source>Path: {0}</source>
-        <target state="new">Path: {0}</target>
+        <target state="translated">Ścieżka: {0}</target>
         <note>0 - folder path</note>
       </trans-unit>
       <trans-unit id="MinClientVersionAlreadyExist">

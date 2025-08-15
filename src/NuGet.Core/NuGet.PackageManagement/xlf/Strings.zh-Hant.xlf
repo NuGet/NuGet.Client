@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="Error_FileDoesNotExist">
         <source>File {0} does not exist.</source>
-        <target state="new">File {0} does not exist.</target>
+        <target state="translated">檔案 {0} 不存在。</target>
         <note>{0} is the filename.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
@@ -331,7 +331,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">「{0}」不得為 Null。</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RemovedPackageFromFolder">

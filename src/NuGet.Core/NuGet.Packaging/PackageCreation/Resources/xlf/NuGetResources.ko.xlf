@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="Manifest_DependenciesHasMixedElements">
         <source>&lt;dependencies&gt; element must not contain both &lt;group&gt; and &lt;dependency&gt; child elements.</source>
-        <target state="new">&lt;dependencies&gt; element must not contain both &lt;group&gt; and &lt;dependency&gt; child elements.</target>
+        <target state="translated">&lt;dependencies&gt; 요소에는 &lt;group&gt; 및 &lt;dependency&gt; 자식 요소가 포함되어서는 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_ExcludeContainsInvalidCharacters">

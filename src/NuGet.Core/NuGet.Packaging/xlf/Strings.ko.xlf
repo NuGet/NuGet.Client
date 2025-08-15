@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="InvalidX509StorePurpose">
         <source>Invalid X.509 store purpose.</source>
-        <target state="new">Invalid X.509 store purpose.</target>
+        <target state="translated">잘못된 X.509 저장소 용도입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_InstalledPackage">
@@ -428,7 +428,7 @@
       </trans-unit>
       <trans-unit id="Message_Path">
         <source>Path: {0}</source>
-        <target state="new">Path: {0}</target>
+        <target state="translated">경로: {0}</target>
         <note>0 - folder path</note>
       </trans-unit>
       <trans-unit id="MinClientVersionAlreadyExist">
@@ -665,7 +665,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">'{0}'은(는) null일 수 없습니다.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RangeOutOfBoundsForArray">
@@ -959,10 +959,10 @@
     Fingerprint (SHA-256):  {2}
     Certificate (PEM):
 {3}</source>
-        <target state="new">The following X.509 root certificate is untrusted because it is not present in the certificate bundle at {0}.  For more information, see documentation for NU3042.
-    Subject:  {1}
-    Fingerprint (SHA-256):  {2}
-    Certificate (PEM):
+        <target state="translated">다음 X.509 루트 인증서는 {0}에 있는 인증서 번들에 없으므로 신뢰할 수 없습니다.  자세한 내용은 NU3042에 대한 설명서를 참조하세요.
+    제목:  {1}
+    지문(SHA-256):  {2}
+    인증서(PEM):
 {3}</target>
         <note>0 is a file path, 1 is a certificate subject, 2 is a certificate fingerprint, and 3 is a PEM-encoded certificate.</note>
       </trans-unit>
@@ -972,10 +972,10 @@
     Fingerprint (SHA-256):  {1}
     Certificate (PEM):
 {2}</source>
-        <target state="new">The following X.509 root certificate is untrusted because no certificate bundle was found.  For more information, see documentation for NU3042.
-    Subject:  {0}
-    Fingerprint (SHA-256):  {1}
-    Certificate (PEM):
+        <target state="translated">다음 X.509 루트 인증서는 인증서 번들을 찾을 수 없으므로 신뢰할 수 없습니다.  자세한 내용은 NU3042에 대한 설명서를 참조하세요.
+    제목:  {0}
+    지문(SHA-256):  {1}
+    인증서(PEM):
 {2}</target>
         <note>0 is a certificate subject, 1 is a certificate fingerprint, and 2 is a PEM-encoded certificate.</note>
       </trans-unit>
