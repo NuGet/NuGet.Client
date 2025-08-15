@@ -32,15 +32,16 @@
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
     <ItemGroup>
-      <NonSymbolPackagesToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" Exclude="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg;$(NuGetClientNupkgsDirectoryPath)/NuGet.Packaging.Core.*" Kind="Package" />
-      <SymbolPackagesToPush Include="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg">
+      <_NonSymbolPackages Include="$(NuGetClientNupkgsDirectoryPath)/*.nupkg" Exclude="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg;$(NuGetClientNupkgsDirectoryPath)/NuGet.Packaging.Core.*" Kind="Package" />
+      <_SymbolPackages Include="$(NuGetClientNupkgsDirectoryPath)/*.symbols.nupkg" />
+      <_SymbolPackagesWithMetadata Include="@(_SymbolPackages)">
       <!-- Update the kind of the symbol packages to blob -->
         <Kind>Blob</Kind>
         <!-- Set the category to Symbols (otherwise it will inherit the original package category -->
         <Category>Symbols</Category>
         <RelativeBlobPath>$(SymbolPackageBaseRelativeBlobPath)%(Filename)%(Extension)</RelativeBlobPath>
-      </SymbolPackagesToPush>
-      <ItemsToPush Include="@(NonSymbolPackagesToPush);@(SymbolPackagesToPush)" />
+      </_SymbolPackagesWithMetadata>
+      <ItemsToPush Include="@(_NonSymbolPackages);@(_SymbolPackagesWithMetadata)" />
     </ItemGroup>
 
     <Error Condition="@(ItemsToPush->Count()) == 0" Text="There were no packages found at '$(NuGetClientNupkgsDirectoryPath)'." />
