@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="new">{0} version {1}</target>
+        <target state="translated">{0} sürüm {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
         <source>Packages</source>
-        <target state="new">Packages</target>
+        <target state="translated">Paketler</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="new">Selected</target>
+        <target state="translated">Seçili</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
@@ -434,7 +434,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_License">
         <source>License</source>
-        <target state="new">License</target>
+        <target state="translated">Lisans</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Owner">
@@ -449,7 +449,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="new">Project URL</target>
+        <target state="translated">Proje URL'si</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
@@ -459,7 +459,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
-        <target state="new">Report Abuse</target>
+        <target state="translated">Uygunsuz Kullanımı Bildir</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoreUpgrade">
@@ -509,7 +509,7 @@
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="new">Deprecated</target>
+        <target state="translated">Kullanım dışı</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
@@ -739,7 +739,7 @@
       </trans-unit>
       <trans-unit id="Label_Vulnerable">
         <source>Vulnerable</source>
-        <target state="new">Vulnerable</target>
+        <target state="translated">Savunmasız</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseFile_Loading">
@@ -906,9 +906,9 @@
         <source>NuGet storage clear failed at {0}. 
 Error: {1}
 Please see https://aka.ms/troubleshoot_nuget_cache for more help.</source>
-        <target state="new">NuGet storage clear failed at {0}. 
-Error: {1}
-Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
+        <target state="translated">{0} konumundaki NuGet depolama alanını temizleme işlemi başarısız oldu. 
+Hata: {1}
+Daha fazla yardım için https://aka.ms/troubleshoot_nuget_cache sayfasına bakın.</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
@@ -1025,7 +1025,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_LoadingReadme">
         <source>Loading README...</source>
-        <target state="new">Loading README...</target>
+        <target state="translated">BENİOKU dosyası yükleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
@@ -1050,7 +1050,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="new">There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
+        <target state="translated">Seçili paket sürümü için kullanılabilir bir BENİOKU dosyası yok. Daha fazla bilgi için lütfen [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme) adresini ziyaret edin.</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
@@ -1135,7 +1135,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_ReadmeLoaded">
         <source>README loaded</source>
-        <target state="new">README loaded</target>
+        <target state="translated">BENİOKU yüklendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchBoxText">
@@ -1315,12 +1315,12 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="new">Once started, this action cannot be cancelled.</target>
+        <target state="translated">Başlatıldıktan sonra bu eylem iptal edilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="new">Clear all local NuGet resources?</target>
+        <target state="translated">Tüm yerel NuGet kaynakları temizlensin mi?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">

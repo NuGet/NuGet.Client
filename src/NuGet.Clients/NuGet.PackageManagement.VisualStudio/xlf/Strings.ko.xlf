@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">'{0}'은(는) null일 수 없습니다.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">

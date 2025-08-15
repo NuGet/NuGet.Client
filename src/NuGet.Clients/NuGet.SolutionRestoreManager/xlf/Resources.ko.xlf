@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="ItemValuesAreDifferentAcrossTargetFrameworks">
         <source>'{0}' items do not have the same value(s) across all target frameworks. Remove any condition from MSBuild files for '{0}' items.</source>
-        <target state="new">'{0}' items do not have the same value(s) across all target frameworks. Remove any condition from MSBuild files for '{0}' items.</target>
+        <target state="translated">'{0}' 항목은 모든 대상 프레임워크에서 동일한 값을 가지지 않습니다. '{0}' 항목에 대한 MSBuild 파일에서 조건을 제거하세요.</target>
         <note>{0} - MSBuild item type. For example, NuGetAuditSuppress</note>
       </trans-unit>
       <trans-unit id="NU1105">

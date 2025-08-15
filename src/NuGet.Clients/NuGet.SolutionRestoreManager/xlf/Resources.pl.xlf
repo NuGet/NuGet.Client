@@ -24,12 +24,12 @@
       </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
         <source>Manage NuGet Packages</source>
-        <target state="new">Manage NuGet Packages</target>
+        <target state="translated">Zarządzaj pakietami NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="InfoBar_TextMessage">
         <source>This solution contains packages with vulnerabilities.</source>
-        <target state="new">This solution contains packages with vulnerabilities.</target>
+        <target state="translated">To rozwiązanie zawiera pakiety z lukami w zabezpieczeniach.</target>
         <note />
       </trans-unit>
       <trans-unit id="ItemValuesAreDifferentAcrossTargetFrameworks">

@@ -106,7 +106,7 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
       </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
-        <target state="new">The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</target>
+        <target state="translated">屬性 {0} 應在所有目標 Framework 上具有單一值，卻具有下列值: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RelativeGlobalPackagesFolder">

@@ -133,7 +133,7 @@
       </trans-unit>
       <trans-unit id="Error_VulnerabilityDataFetch">
         <source>Error occurred while getting package vulnerability data: {0}</source>
-        <target state="new">Error occurred while getting package vulnerability data: {0}</target>
+        <target state="translated">Si è verificato un errore durante il recupero dei dati sulla vulnerabilità del pacchetto: {0}</target>
         <note>{0} is an error message</note>
       </trans-unit>
       <trans-unit id="Error_WhileLoadingConfigForBindingRedirects">
@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">'{0}' non può essere null.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
