@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">
         <source>A name must be provided.</source>
-        <target state="new">A name must be provided.</target>
+        <target state="translated">Name muss angegeben werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceUriHostname_Missing">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
         <source>Allow NuGet to download missing packages</source>
-        <target state="new">Allow NuGet to download missing packages</target>
+        <target state="translated">NuGet das Herunterladen fehlender Pakete erlauben</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagesConfig">
@@ -114,12 +114,12 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
+        <target state="translated">Das Projekt ist nicht für die Migration geeignet, da es nicht auf project.json basiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
         <source>These settings are stored in %NuGet.Config% files</source>
-        <target state="new">These settings are stored in %NuGet.Config% files</target>
+        <target state="translated">Diese Einstellungen werden in %NuGet.Config%-Dateien gespeichert.</target>
         <note>Do not translate % % or what is between them</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
@@ -194,27 +194,27 @@
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
-        <target state="new">Clear NuGet local resources</target>
+        <target state="translated">Lokale NuGet-Ressourcen löschen</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormat">
         <source>Default package management format</source>
-        <target state="new">Default package management format</target>
+        <target state="translated">Standardformat für Paketverwaltung</target>
         <note />
       </trans-unit>
       <trans-unit id="packageRestoreAutomatic">
         <source>Automatically check for missing packages during build in Visual Studio</source>
-        <target state="new">Automatically check for missing packages during build in Visual Studio</target>
+        <target state="translated">Automatisch auf fehlende Pakete während des Builds in Visual Studio überprüfen</target>
         <note />
       </trans-unit>
       <trans-unit id="showPackageManagementChooser">
         <source>Prompt for format selection on first package install</source>
-        <target state="new">Prompt for format selection on first package install</target>
+        <target state="translated">Prompt für Formatauswahl bei der ersten Paketinstallation</target>
         <note />
       </trans-unit>
       <trans-unit id="skipBindingRedirects">
         <source>Skip applying binding redirects</source>
-        <target state="new">Skip applying binding redirects</target>
+        <target state="translated">Anwenden von Bindungsumleitungen überspringen</target>
         <note />
       </trans-unit>
     </body>

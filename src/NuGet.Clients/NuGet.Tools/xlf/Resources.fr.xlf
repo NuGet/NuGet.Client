@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">
         <source>A name must be provided.</source>
-        <target state="new">A name must be provided.</target>
+        <target state="translated">Le nom doit être renseigné.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceUriHostname_Missing">
@@ -114,12 +114,12 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
+        <target state="translated">Le projet n’est pas éligible à la migration, car il n’est pas basé sur project.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
         <source>These settings are stored in %NuGet.Config% files</source>
-        <target state="new">These settings are stored in %NuGet.Config% files</target>
+        <target state="translated">Ces paramètres sont stockés dans les fichiers %NuGet.Config%</target>
         <note>Do not translate % % or what is between them</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
@@ -194,7 +194,7 @@
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
-        <target state="new">Clear NuGet local resources</target>
+        <target state="translated">Effacer les ressources locales NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="defaultPackageManagementFormat">
