@@ -61,7 +61,7 @@ function Test-GetPackageAcceptsSourceName {
 
 function Test-GetPackageWithUpdatesAcceptsSourceName {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package Antlr -Version 3.1.1 -Project $p.Name -Source $SourceNuGet

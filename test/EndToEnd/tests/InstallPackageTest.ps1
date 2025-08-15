@@ -395,7 +395,7 @@ function Test-InstallComplexPackageStructure {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package MyFirstPackage -Project $p.Name -Source $context.RepositoryPath

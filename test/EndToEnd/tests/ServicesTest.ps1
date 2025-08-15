@@ -62,7 +62,7 @@ function Test-VsPackageInstallerServices {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
 
