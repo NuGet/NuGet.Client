@@ -316,7 +316,7 @@
       </trans-unit>
       <trans-unit id="Error_InvalidWindowsTargetPlatformMinVersion">
         <source>Invalid value for WindowsTargetPlatformMinVersion: {0}</source>
-        <target state="new">Invalid value for WindowsTargetPlatformMinVersion: {0}</target>
+        <target state="translated">WindowsTargetPlatformMinVersion için geçersiz değer: {0}</target>
         <note>{0} is the value supplied </note>
       </trans-unit>
       <trans-unit id="Error_MissingSourceParameter">
@@ -461,12 +461,12 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</source>
-        <target state="new">PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</target>
+        <target state="translated">PackageReference {0} ayıklanmayacak. Bu paketi bağımlılıklarınızdan kaldırmayı düşünün, çünkü muhtemelen gereksizdir.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
         <source>A ProjectReference cannot be pruned, {0}.</source>
-        <target state="new">A ProjectReference cannot be pruned, {0}.</target>
+        <target state="translated">Bir ProjectReference ayıklanamaz, {0}.</target>
         <note>0 - project reference</note>
       </trans-unit>
       <trans-unit id="Error_ServiceIndexShouldBeHttps">
@@ -1073,7 +1073,7 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="ReservedPackageNameAll">
         <source>All</source>
-        <target state="new">All</target>
+        <target state="translated">Tümü</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolverRequest_ToStringFormat">
@@ -1083,7 +1083,7 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="RestoreDebugPruningPackageReference">
         <source>Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</source>
-        <target state="new">Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</target>
+        <target state="translated">‘{0}’ paketini ‘{1}’ bağımlılığı olarak ayıklama. Maksimum ayıklanabilir sürüm ‘{2}’</target>
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1184,12 +1184,12 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="SourcesCommandDisabled">
         <source>Disabled</source>
-        <target state="new">Disabled</target>
+        <target state="translated">Devre dışı</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandEnabled">
         <source>Enabled</source>
-        <target state="new">Enabled</target>
+        <target state="translated">Etkin</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandInvalidSource">
@@ -1422,7 +1422,7 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
         <source>unknown</source>
-        <target state="new">unknown</target>
+        <target state="translated">bilinmiyor</target>
         <note>As in "This package has a unknown severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="WarningAsError">
@@ -1458,15 +1458,15 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Warning_List_HttpSource">
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following is a 'Non-HTTPS' source: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Aşağıdaki, 'HTTPS Olmayan' bir kaynaktır: {0}
+NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following are 'Non-HTTPS' sources: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Aşağıdakiler, 'HTTPS Olmayan' kaynaklardır: {0}
+NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">

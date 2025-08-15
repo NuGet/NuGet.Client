@@ -240,7 +240,7 @@
       </trans-unit>
       <trans-unit id="ShowError_UnknownOrigin">
         <source>File location not known</source>
-        <target state="new">File location not known</target>
+        <target state="translated">Neznámé umístění souboru</target>
         <note />
       </trans-unit>
       <trans-unit id="TextShouldNotBeEmpty">

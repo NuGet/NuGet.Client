@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="UnableToSetNuGetTempFolderPermission">
         <source>User is unable to set permission to 700 while creating {0}, errno={1}.</source>
-        <target state="new">User is unable to set permission to 700 while creating {0}, errno={1}.</target>
+        <target state="translated">Użytkownik nie może ustawić uprawnienia na wartość 700 podczas tworzenia ścieżki {0}, błąd={1}.</target>
         <note>{0} is a file path; {1} is an error code.</note>
       </trans-unit>
       <trans-unit id="UnauthorizedLockFail">

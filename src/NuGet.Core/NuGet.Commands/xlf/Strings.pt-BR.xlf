@@ -461,12 +461,12 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</source>
-        <target state="new">PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</target>
+        <target state="translated">PackageReference {0} não será podado. Considere remover este pacote das dependências, pois ele provavelmente é desnecessário.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
         <source>A ProjectReference cannot be pruned, {0}.</source>
-        <target state="new">A ProjectReference cannot be pruned, {0}.</target>
+        <target state="translated">Uma ProjectReference não pode ser podada, {0}.</target>
         <note>0 - project reference</note>
       </trans-unit>
       <trans-unit id="Error_ServiceIndexShouldBeHttps">
@@ -1073,7 +1073,7 @@ Para obter mais informações, visite https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="ReservedPackageNameAll">
         <source>All</source>
-        <target state="new">All</target>
+        <target state="translated">Todos</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolverRequest_ToStringFormat">
@@ -1083,7 +1083,7 @@ Para obter mais informações, visite https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="RestoreDebugPruningPackageReference">
         <source>Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</source>
-        <target state="new">Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</target>
+        <target state="translated">Podando o pacote '{0}' como dependência de '{1}'. A versão máxima que pode ser removida é '{2}'</target>
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1184,12 +1184,12 @@ Para obter mais informações, visite https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="SourcesCommandDisabled">
         <source>Disabled</source>
-        <target state="new">Disabled</target>
+        <target state="translated">Desabilitado</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandEnabled">
         <source>Enabled</source>
-        <target state="new">Enabled</target>
+        <target state="translated">Habilitado</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandInvalidSource">
@@ -1422,7 +1422,7 @@ Para obter mais informações, visite https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
         <source>unknown</source>
-        <target state="new">unknown</target>
+        <target state="translated">desconhecido</target>
         <note>As in "This package has a unknown severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="WarningAsError">
@@ -1458,25 +1458,25 @@ Para obter mais informações, visite https://docs.nuget.org/docs/reference/comm
       <trans-unit id="Warning_List_HttpSource">
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following is a 'Non-HTTPS' source: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">A seguir está uma fonte 'Não HTTPS': {0}
+O NuGet exige fontes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following are 'Non-HTTPS' sources: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">As seguintes são fontes 'Não HTTPS': {0}
+O NuGet exige fontes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
         <source>{0} depends on {1} but {2} was not found. {3} was resolved instead.</source>
-        <target state="new">{0} depends on {1} but {2} was not found. {3} was resolved instead.</target>
+        <target state="translated">{0} depende de {1}, mas {2} não foi encontrado. {3} foi resolvido em vez disso.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_MinVersionNonInclusive">
         <source>{0} does not provide an inclusive lower bound for dependency {1}. {2} was resolved instead.</source>
-        <target state="new">{0} does not provide an inclusive lower bound for dependency {1}. {2} was resolved instead.</target>
+        <target state="translated">{0} não fornece um limite inferior inclusivo para a dependência {1}. {2} foi resolvido.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">

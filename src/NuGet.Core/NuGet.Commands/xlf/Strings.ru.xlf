@@ -461,12 +461,12 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</source>
-        <target state="new">PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</target>
+        <target state="translated">PackageReference {0} не будет урезано. Рассмотрите возможность удаления этого пакета из зависимостей, так как он, вероятно, не требуется.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
         <source>A ProjectReference cannot be pruned, {0}.</source>
-        <target state="new">A ProjectReference cannot be pruned, {0}.</target>
+        <target state="translated">ProjectReference нельзя урезать, {0}.</target>
         <note>0 - project reference</note>
       </trans-unit>
       <trans-unit id="Error_ServiceIndexShouldBeHttps">
@@ -1073,7 +1073,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="ReservedPackageNameAll">
         <source>All</source>
-        <target state="new">All</target>
+        <target state="translated">Все</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolverRequest_ToStringFormat">
@@ -1083,7 +1083,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="RestoreDebugPruningPackageReference">
         <source>Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</source>
-        <target state="new">Pruning the package '{0}' as a dependency of '{1}'. The maximum prunable version is '{2}'</target>
+        <target state="translated">Урезание пакета "{0}" как зависимости "{1}". Максимальная версия, которую можно урезать: "{2}"</target>
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1184,12 +1184,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="SourcesCommandDisabled">
         <source>Disabled</source>
-        <target state="new">Disabled</target>
+        <target state="translated">Отключено</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandEnabled">
         <source>Enabled</source>
-        <target state="new">Enabled</target>
+        <target state="translated">Включено</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandInvalidSource">
@@ -1249,7 +1249,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="SourcesCommandValidProtocolVersion">
         <source>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</source>
-        <target state="new">The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</target>
+        <target state="translated">Указана недопустимая версия протокола. Допустимые версии протокола: от {0} до {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecValidationDuplicateFrameworks">
@@ -1422,7 +1422,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
         <source>unknown</source>
-        <target state="new">unknown</target>
+        <target state="translated">неизвестно</target>
         <note>As in "This package has a unknown severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="WarningAsError">
@@ -1458,15 +1458,15 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Warning_List_HttpSource">
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following is a 'Non-HTTPS' source: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Ниже приведен источник, не поддерживающий HTTPS: {0}
+Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">The following are 'Non-HTTPS' sources: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Ниже приведены источники, не поддерживающие HTTPS: {0}
+Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
@@ -1481,7 +1481,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
       </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
-        <target state="new">Package '{0}' {1} has a known {2} severity vulnerability, {3}</target>
+        <target state="translated">У пакета "{0}" {1} есть известная уязвимость {3} (уровень серьезности: {2})</target>
         <note>{0} - package id
 {1} - package version
 {2} - severity, for example low, moderate, high, or critical
