@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="showPackageManagementChooser.Text">
         <source>Prompt for &amp;format selection on first package install</source>
-        <target state="new">Prompt for &amp;format selection on first package install</target>
+        <target state="translated">Prompt für &amp;Formatauswahl bei der ersten Paketinstallation</target>
         <note />
       </trans-unit>
       <trans-unit id="skipBindingRedirects.Text">

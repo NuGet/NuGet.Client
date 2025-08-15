@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="new">{0} version {1}</target>
+        <target state="translated">{0} versión {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
         <source>Packages</source>
-        <target state="new">Packages</target>
+        <target state="translated">Paquetes</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="new">Selected</target>
+        <target state="translated">Seleccionado</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
@@ -434,7 +434,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_License">
         <source>License</source>
-        <target state="new">License</target>
+        <target state="translated">Licencia</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Owner">
@@ -444,12 +444,12 @@
       </trans-unit>
       <trans-unit id="Hyperlink_PackageSourceMappingSettings">
         <source>Configure</source>
-        <target state="new">Configure</target>
+        <target state="translated">Configurar</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="new">Project URL</target>
+        <target state="translated">Dirección URL del proyecto</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
@@ -459,7 +459,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
-        <target state="new">Report Abuse</target>
+        <target state="translated">Notificar abuso</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoreUpgrade">
@@ -509,7 +509,7 @@
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="new">Deprecated</target>
+        <target state="translated">En desuso</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
@@ -906,9 +906,9 @@
         <source>NuGet storage clear failed at {0}. 
 Error: {1}
 Please see https://aka.ms/troubleshoot_nuget_cache for more help.</source>
-        <target state="new">NuGet storage clear failed at {0}. 
+        <target state="translated">Error al borrar el almacenamiento de NuGet en {0}. 
 Error: {1}
-Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
+Consulte https://aka.ms/troubleshoot_nuget_cache para obtener ayuda.</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
@@ -1025,7 +1025,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_LoadingReadme">
         <source>Loading README...</source>
-        <target state="new">Loading README...</target>
+        <target state="translated">Cargando archivo README...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
@@ -1050,7 +1050,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="new">There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
+        <target state="translated">No hay ningún archivo README disponible para la versión del paquete seleccionada. Para más información, visite [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
@@ -1100,17 +1100,17 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_PackageMappingsDisabled">
         <source>Package source mapping is off.</source>
-        <target state="new">Package source mapping is off.</target>
+        <target state="translated">La asignación del origen del paquete está desactivada.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsFound">
         <source>Package source mapping found.</source>
-        <target state="new">Package source mapping found.</target>
+        <target state="translated">Se encontró la asignación del origen del paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsNotFound">
         <source>Requires a package source mapping.</source>
-        <target state="new">Requires a package source mapping.</target>
+        <target state="translated">Requiere una asignación del origen del paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport">
@@ -1135,7 +1135,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="Text_ReadmeLoaded">
         <source>README loaded</source>
-        <target state="new">README loaded</target>
+        <target state="translated">Archivo README cargado</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchBoxText">
@@ -1315,12 +1315,12 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="new">Once started, this action cannot be cancelled.</target>
+        <target state="translated">Una vez iniciada, esta acción no se puede cancelar.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="new">Clear all local NuGet resources?</target>
+        <target state="translated">¿Borrar todos los recursos de NuGet locales?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">
