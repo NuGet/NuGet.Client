@@ -1888,6 +1888,11 @@ namespace NuGet.Commands
                 {
                     failed = true;
                 }
+                catch (Packaging.InvalidPackageIdException ex)
+                {
+                    _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1017, ex.Message));
+                    failed = true;
+                }
             }
 
             if (failed)
