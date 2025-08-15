@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="Error_FileDoesNotExist">
         <source>File {0} does not exist.</source>
-        <target state="new">File {0} does not exist.</target>
+        <target state="translated">Файл {0} не существует.</target>
         <note>{0} is the filename.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
@@ -331,7 +331,7 @@
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="new">'{0}' cannot be null.</target>
+        <target state="translated">"{0}" не может иметь значение null.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RemovedPackageFromFolder">
@@ -502,7 +502,7 @@
       </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
-        <target state="new">Package '{0}' {1} has a known {2} severity vulnerability, {3}</target>
+        <target state="translated">У пакета "{0}" {1} есть известная уязвимость {3} (уровень серьезности: {2})</target>
         <note>{0} - package id
 {1} - package version
 {2} - severity, for example low, moderate, high, or critical
