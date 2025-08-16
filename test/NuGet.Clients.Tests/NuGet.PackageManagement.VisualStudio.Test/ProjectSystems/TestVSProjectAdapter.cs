@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.RuntimeModel;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio.Test

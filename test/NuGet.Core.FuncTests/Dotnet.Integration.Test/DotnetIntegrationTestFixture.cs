@@ -125,20 +125,8 @@ namespace Dotnet.Integration.Test
                 Path.Combine(workingDirectory, projectName + ".csproj"));
         }
 
-        internal CommandRunnerResult RestoreToolProjectExpectFailure(string workingDirectory, string projectName, string args = "", ITestOutputHelper testOutputHelper = null)
-            => RunDotnetExpectFailure(workingDirectory, $"restore {projectName}.csproj {args}", testOutputHelper: testOutputHelper);
-
-        internal CommandRunnerResult RestoreToolProjectExpectSuccess(string workingDirectory, string projectName, string args = "", ITestOutputHelper testOutputHelper = null)
-            => RunDotnetExpectSuccess(workingDirectory, $"restore {projectName}.csproj {args}", testOutputHelper: testOutputHelper);
-
-        internal CommandRunnerResult RestoreProjectExpectFailure(string workingDirectory, string projectName, string args = "", ITestOutputHelper testOutputHelper = null)
-            => RestoreProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, expectSuccess: false, testOutputHelper: testOutputHelper);
-
         internal CommandRunnerResult RestoreProjectExpectSuccess(string workingDirectory, string projectName, string args = "", ITestOutputHelper testOutputHelper = null)
             => RestoreProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, expectSuccess: true, testOutputHelper: testOutputHelper);
-
-        internal CommandRunnerResult RestoreSolutionExpectFailure(string workingDirectory, string solutionName, string args = "", ITestOutputHelper testOutputHelper = null)
-            => RestoreProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, expectSuccess: false, testOutputHelper: testOutputHelper);
 
         internal CommandRunnerResult RestoreSolutionExpectSuccess(string workingDirectory, string solutionName, string args = "", ITestOutputHelper testOutputHelper = null)
             => RestoreProjectOrSolution(workingDirectory, $"{solutionName}.sln", args, expectSuccess: true, testOutputHelper: testOutputHelper);
