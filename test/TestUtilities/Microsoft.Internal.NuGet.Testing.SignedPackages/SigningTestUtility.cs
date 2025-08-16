@@ -795,7 +795,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
         //So if we use APIs above to verify the results of chain.build, we should use AssertOfflineRevocation
         public static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string offlineRevocation = X509ChainStatusFlags.OfflineRevocation.ToString();
+            string offlineRevocation = nameof(X509ChainStatusFlags.OfflineRevocation);
 
             bool isOfflineRevocation = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
@@ -840,7 +840,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel, NuGetLogCode code)
         {
-            string revocationStatusUnknown = X509ChainStatusFlags.RevocationStatusUnknown.ToString();
+            string revocationStatusUnknown = nameof(X509ChainStatusFlags.RevocationStatusUnknown);
 
             bool isRevocationStatusUnknown = issues.Any(issue =>
                 issue.Code == code &&
@@ -852,7 +852,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
         {
-            string untrustedRoot = X509ChainStatusFlags.UntrustedRoot.ToString();
+            string untrustedRoot = nameof(X509ChainStatusFlags.UntrustedRoot);
 
             bool isUntrustedRoot = issues.Any(issue =>
                 issue.Code == code &&
@@ -879,7 +879,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string notTimeValid = X509ChainStatusFlags.NotTimeValid.ToString();
+            string notTimeValid = nameof(X509ChainStatusFlags.NotTimeValid);
 
             bool isNotTimeValid = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&

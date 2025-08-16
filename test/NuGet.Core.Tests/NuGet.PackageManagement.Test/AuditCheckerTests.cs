@@ -675,7 +675,7 @@ namespace NuGet.PackageManagement.Test
             warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
                                packageIdentity.Version.ToNormalizedString(),
-                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               nameof(PackageVulnerabilitySeverity.Moderate).ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
             warnings[0].ProjectPath.Should().Be(projectPath1);
 
@@ -683,7 +683,7 @@ namespace NuGet.PackageManagement.Test
             warnings[1].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
                                packageIdentity.Version.ToNormalizedString(),
-                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               nameof(PackageVulnerabilitySeverity.Moderate).ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
             warnings[1].ProjectPath.Should().Be(projectPath2);
 
@@ -733,7 +733,7 @@ namespace NuGet.PackageManagement.Test
             warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
                                packageIdentity.Version.ToNormalizedString(),
-                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               nameof(PackageVulnerabilitySeverity.Moderate).ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
             warnings[0].ProjectPath.Should().Be(projectPath);
 
@@ -856,7 +856,7 @@ namespace NuGet.PackageManagement.Test
             warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
                                packageIdentity.Version.ToNormalizedString(),
-                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               nameof(PackageVulnerabilitySeverity.Moderate).ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
             warnings[0].ProjectPath.Should().Be(projectPath1);
 
@@ -912,7 +912,7 @@ namespace NuGet.PackageManagement.Test
             warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
                                packageIdentity.Version.ToNormalizedString(),
-                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               nameof(PackageVulnerabilitySeverity.Moderate).ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
             warnings[0].ProjectPath.Should().Be(projectPath1);
 

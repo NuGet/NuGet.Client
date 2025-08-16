@@ -10211,7 +10211,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddProjectToAllFrameworks(projectB);
 
                 // B -> C with PrivateAssets
-                projectC.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectC.PrivateAssets = nameof(LibraryIncludeFlags.All);
                 projectB.AddProjectToAllFrameworks(projectC);
 
                 // Solution
@@ -10279,7 +10279,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddProjectToAllFrameworks(projectB);
 
                 // B -> C with PrivateAssets
-                projectCWithPrivateAssets.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectCWithPrivateAssets.PrivateAssets = nameof(LibraryIncludeFlags.All);
                 projectB.AddProjectToAllFrameworks(projectCWithPrivateAssets);
 
                 // A -> D
@@ -10353,7 +10353,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddProjectToAllFrameworks(projectB);
 
                 // B -> C with PrivateAssets
-                projectC.PrivateAssets = LibraryIncludeFlags.All.ToString();
+                projectC.PrivateAssets = nameof(LibraryIncludeFlags.All);
                 projectB.AddProjectToAllFrameworks(projectC);
 
                 // C - package X

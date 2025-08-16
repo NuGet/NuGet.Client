@@ -1699,7 +1699,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 logger.Errors.Should().Be(0);
 
-                logger.WarningMessages.Should().NotContain(i => i.Contains(NuGetLogCode.NU1507.ToString()));
+                logger.WarningMessages.Should().NotContain(i => i.Contains(nameof(NuGetLogCode.NU1507)));
             }
         }
 
@@ -1790,13 +1790,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 if (enablePackageSourceMapping)
                 {
-                    logger.WarningMessages.Should().NotContain(i => i.Contains(NuGetLogCode.NU1507.ToString()));
+                    logger.WarningMessages.Should().NotContain(i => i.Contains(nameof(NuGetLogCode.NU1507)));
                 }
                 else
                 {
                     // NU1507: There are 3 package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: D:\NuGet\.test\work\298ed94f\653dd6db\source, https://feed1, https://feed2
                     logger.WarningMessages.Should()
-                        .Contain(i => i.Contains(NuGetLogCode.NU1507.ToString()))
+                        .Contain(i => i.Contains(nameof(NuGetLogCode.NU1507)))
                         .Which.Should().Contain("There are 2 package sources defined in your configuration")
                         .And.Contain($"The following sources are defined: https://feed1, https://feed2");
                 }
@@ -2820,7 +2820,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                     logger.ErrorMessages.TryDequeue(out var errorMessage);
 
-                    Assert.True(errorMessage.Contains(NuGetLogCode.NU1013.ToString()));
+                    Assert.True(errorMessage.Contains(nameof(NuGetLogCode.NU1013)));
 
                     Assert.True(result.LockFile.LogMessages.Any(m => m.Code == NuGetLogCode.NU1013), "Lockfile should contain an error with code NU1013");
                 }

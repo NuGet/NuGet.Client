@@ -239,7 +239,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 
             telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Should().Contain(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
-            string expectedLogCode = NuGetLogCode.NU1102.ToString();
+            string expectedLogCode = nameof(NuGetLogCode.NU1102);
             telemetryEvents
                 .Where(p => p.Name == "ProjectRestoreInformation")
                 .ElementAt(1)["ErrorCodes"].Should().NotBeNull()
@@ -340,7 +340,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 .Where(p => p.Name == "ProjectRestoreInformation").ToList();
             eventsProjectRestoreInformation.Should().HaveCountGreaterThanOrEqualTo(1);
 
-            string expectedLogCode = NuGetLogCode.NU1604.ToString();
+            string expectedLogCode = nameof(NuGetLogCode.NU1604);
 
             List<string> warningCodes = eventsProjectRestoreInformation
                 .Select(item => item["WarningCodes"]?.ToString())

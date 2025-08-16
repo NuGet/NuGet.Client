@@ -24,8 +24,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
     [Collection(MSSignCommandTestCollection.Name)]
     public class MSSignCommandTests
     {
-        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
-        private readonly string _invalidCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
+        private readonly string _noTimestamperWarningCode = nameof(NuGetLogCode.NU3002);
+        private readonly string _invalidCertificateFingerprintCode = nameof(NuGetLogCode.NU3043);
         private const string Sha256Hash = "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b55b046cbb7f506fb";
 
         private readonly TrustedTestCert<TestCertificate> _trustedTestCertWithPrivateKey;

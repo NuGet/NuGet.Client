@@ -3543,7 +3543,7 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 if (expectToError)
                 {
-                    result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                    result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5102));
                     result.AllOutput.Should().NotContain("success");
                     Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 }
@@ -3584,13 +3584,13 @@ namespace ClassLibrary
                 var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper);
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5102));
 
                 // Call twice.
                 result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper);
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5102));
             }
         }
 
@@ -4456,7 +4456,7 @@ namespace ClassLibrary
                 _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
                 var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5030.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5030), result.Output);
                 Assert.Contains($"'{realLicenseFileName}'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'LICENSE.txt'?"
             }
         }
@@ -5060,7 +5060,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5046), result.Output);
             }
         }
 
@@ -5083,7 +5083,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5046), result.Output);
                 Assert.Contains("'icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'icon.jpg'?"
             }
         }
@@ -5107,7 +5107,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5046), result.Output);
                 Assert.Contains("'folder/icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'folder/icon.jpg'?"
             }
         }
@@ -5165,7 +5165,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5048), result.Output);
                 Assert.Contains("iconUrl", result.Output);
                 Assert.Contains("PackageIconUrl", result.Output);
             }
@@ -5199,7 +5199,7 @@ namespace ClassLibrary
 
                 Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place. {result.AllOutput}");
                 Assert.True(File.Exists(nuspecPath), $"The intermediate nuspec file is not in the expected place. {result.AllOutput}");
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
+                result.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5105));
             }
         }
 
@@ -5373,7 +5373,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5039.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5039), result.Output);
             }
         }
 
@@ -5393,7 +5393,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5019.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5019), result.Output);
             }
         }
 
@@ -5416,7 +5416,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5038.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5038), result.Output);
             }
         }
 
@@ -5439,7 +5439,7 @@ namespace ClassLibrary
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
                 var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(NuGetLogCode.NU5040.ToString(), result.Output);
+                Assert.Contains(nameof(NuGetLogCode.NU5040), result.Output);
             }
         }
 
@@ -5753,7 +5753,7 @@ namespace ClassLibrary
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5104));
                 result.AllOutput.Should().Contain($"A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency \"{prereleaseDependencyName} [{prereleaseDependencyVersion}, )\" or update the version field in the nuspec.");
             }
         }
@@ -5795,7 +5795,7 @@ namespace ClassLibrary
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5104));
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -5868,7 +5868,7 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
                 result.AllOutput.Should().Contain(prereleaseDependencyBName);
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5104));
             }
         }
 
@@ -5912,7 +5912,7 @@ namespace ClassLibrary
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5104));
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -5991,7 +5991,7 @@ namespace ClassLibrary
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg is shouldn't created.");
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().Contain(nameof(NuGetLogCode.NU5104));
                 result.AllOutput.Should().Contain($"A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency \"{prereleaseDependencyBName} [{prereleaseDependencyBVersion}, )\" or update the version field in the nuspec.");
             }
         }
@@ -6051,7 +6051,7 @@ namespace ClassLibrary
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5104));
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -6130,7 +6130,7 @@ namespace ClassLibrary
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 File.Exists(nupkgPath).Should().BeTrue("The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
+                result.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5104));
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {

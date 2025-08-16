@@ -122,9 +122,9 @@ namespace NuGet.Packaging.Test
 
             var certFingerprints = new Dictionary<string, string>()
             {
-                { HashAlgorithmName.SHA256.ConvertToOidString(), HashAlgorithmName.SHA256.ToString() },
-                { HashAlgorithmName.SHA384.ConvertToOidString(), HashAlgorithmName.SHA384.ToString() },
-                { HashAlgorithmName.SHA512.ConvertToOidString(), HashAlgorithmName.SHA512.ToString() },
+                { HashAlgorithmName.SHA256.ConvertToOidString(), nameof(HashAlgorithmName.SHA256) },
+                { HashAlgorithmName.SHA384.ConvertToOidString(), nameof(HashAlgorithmName.SHA384) },
+                { HashAlgorithmName.SHA512.ConvertToOidString(), nameof(HashAlgorithmName.SHA512) },
                 { "1.3.14.3.2.26", "SHA1" },
             };
 
@@ -145,9 +145,9 @@ namespace NuGet.Packaging.Test
 
             var expectedAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA256.ToString(), HashAlgorithmName.SHA256),
-                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA384.ToString(), HashAlgorithmName.SHA384),
-                new CertificateHashAllowListEntry(target, placement, HashAlgorithmName.SHA512.ToString(), HashAlgorithmName.SHA512)
+                new CertificateHashAllowListEntry(target, placement, nameof(HashAlgorithmName.SHA256), HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, placement, nameof(HashAlgorithmName.SHA384), HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, placement, nameof(HashAlgorithmName.SHA512), HashAlgorithmName.SHA512)
             };
 
             // Act
@@ -166,14 +166,14 @@ namespace NuGet.Packaging.Test
 
             var firstCertFingerprints = new Dictionary<string, string>()
             {
-                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{HashAlgorithmName.SHA256.ToString()}_first" },
-                { HashAlgorithmName.SHA384.ConvertToOidString(), $"{HashAlgorithmName.SHA384.ToString()}_first" },
-                { HashAlgorithmName.SHA512.ConvertToOidString(), $"{HashAlgorithmName.SHA512.ToString()}_first" }
+                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{nameof(HashAlgorithmName.SHA256)}_first" },
+                { HashAlgorithmName.SHA384.ConvertToOidString(), $"{nameof(HashAlgorithmName.SHA384)}_first" },
+                { HashAlgorithmName.SHA512.ConvertToOidString(), $"{nameof(HashAlgorithmName.SHA512)}_first" }
             };
 
             var secondCertFingerprints = new Dictionary<string, string>()
             {
-                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{HashAlgorithmName.SHA256.ToString()}_second"},
+                { HashAlgorithmName.SHA256.ConvertToOidString(), $"{nameof(HashAlgorithmName.SHA256)}_second"},
             };
 
             var repoCertificateInfo = new List<IRepositoryCertificateInfo>()
@@ -200,10 +200,10 @@ namespace NuGet.Packaging.Test
 
             var expectedAllowList = new List<CertificateHashAllowListEntry>()
             {
-                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA256.ToString()}_first", HashAlgorithmName.SHA256),
-                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA384.ToString()}_first", HashAlgorithmName.SHA384),
-                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA512.ToString()}_first", HashAlgorithmName.SHA512),
-                new CertificateHashAllowListEntry(target, placement, $"{HashAlgorithmName.SHA256.ToString()}_second", HashAlgorithmName.SHA256)
+                new CertificateHashAllowListEntry(target, placement, $"{nameof(HashAlgorithmName.SHA256)}_first", HashAlgorithmName.SHA256),
+                new CertificateHashAllowListEntry(target, placement, $"{nameof(HashAlgorithmName.SHA384)}_first", HashAlgorithmName.SHA384),
+                new CertificateHashAllowListEntry(target, placement, $"{nameof(HashAlgorithmName.SHA512)}_first", HashAlgorithmName.SHA512),
+                new CertificateHashAllowListEntry(target, placement, $"{nameof(HashAlgorithmName.SHA256)}_second", HashAlgorithmName.SHA256)
             };
 
             // Act
