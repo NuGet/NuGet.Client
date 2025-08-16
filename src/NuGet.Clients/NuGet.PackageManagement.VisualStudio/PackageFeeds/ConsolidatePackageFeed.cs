@@ -19,12 +19,10 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly Common.ILogger _logger;
 
         public ConsolidatePackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
-            IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger)
+            IPackageMetadataProvider metadataProvider)
         {
             if (installedPackages == null)
             {
@@ -37,12 +35,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
             _metadataProvider = metadataProvider;
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            _logger = logger;
 
             PageSize = 25;
         }

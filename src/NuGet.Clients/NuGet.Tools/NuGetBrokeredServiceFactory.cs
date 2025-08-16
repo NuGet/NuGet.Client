@@ -77,9 +77,7 @@ namespace NuGetVSExtension
         {
             await _lazyInitializer.InitializeAsync(cancellationToken);
 
-            var service = new NuGetSourcesService(
-                options,
-                serviceBroker,
+            var service = new NuGetSourcesService(serviceBroker,
                 authorizationServiceClient,
                 _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider);
 

@@ -494,7 +494,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
 
-                packageFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, logger);
+                packageFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider);
                 return packageFeed;
             }
 

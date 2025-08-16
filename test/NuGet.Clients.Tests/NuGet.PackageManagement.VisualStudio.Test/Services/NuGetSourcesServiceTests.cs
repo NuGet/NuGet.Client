@@ -27,9 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Constructor_WhenServiceBrokerIsNull_Throws()
         {
             Exception exception = Assert.ThrowsAny<Exception>(
-                () => new NuGetSourcesService(
-                    default(ServiceActivationOptions),
-                    serviceBroker: null!,
+                () => new NuGetSourcesService(serviceBroker: null!,
                     new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                     Mock.Of<IPackageSourceProvider>()));
 
@@ -40,9 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Constructor_WhenAuthorizationServiceClientIsNull_Throws()
         {
             Exception exception = Assert.ThrowsAny<Exception>(
-                () => new NuGetSourcesService(
-                    default(ServiceActivationOptions),
-                    Mock.Of<IServiceBroker>(),
+                () => new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                     authorizationServiceClient: null!,
                     Mock.Of<IPackageSourceProvider>()));
 
@@ -53,9 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Constructor_WhenStateIsNull_Throws()
         {
             Exception exception = Assert.ThrowsAny<Exception>(
-                () => new NuGetSourcesService(
-                    default(ServiceActivationOptions),
-                    Mock.Of<IServiceBroker>(),
+                () => new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                     new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                     packageSourceProvider: null!));
 
@@ -78,8 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             packageSourceProvider.Setup(psp => psp.SavePackageSources(It.IsAny<IEnumerable<PackageSource>>()))
                 .Callback((IEnumerable<PackageSource> newSources) => { savedSources = newSources.ToList(); });
 
-            var target = new NuGetSourcesService(options: default,
-                Mock.Of<IServiceBroker>(),
+            var target = new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                 new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                 packageSourceProvider.Object);
 
@@ -113,8 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             packageSourceProvider.Setup(psp => psp.SavePackageSources(It.IsAny<IEnumerable<PackageSource>>()))
                 .Callback((IEnumerable<PackageSource> newSources) => { savedSources = newSources.ToList(); });
 
-            var target = new NuGetSourcesService(options: default,
-                Mock.Of<IServiceBroker>(),
+            var target = new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                 new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                 packageSourceProvider.Object);
 
@@ -149,8 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             packageSourceProvider.Setup(psp => psp.SavePackageSources(It.IsAny<IEnumerable<PackageSource>>()))
                 .Callback((IEnumerable<PackageSource> newSources) => { savedSources = newSources.ToList(); });
 
-            var target = new NuGetSourcesService(options: default,
-                Mock.Of<IServiceBroker>(),
+            var target = new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                 new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                 packageSourceProvider.Object);
 
@@ -186,8 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             packageSourceProvider.Setup(psp => psp.SavePackageSources(It.IsAny<IEnumerable<PackageSource>>()))
                 .Callback((IEnumerable<PackageSource> newSources) => { savedSources = newSources.ToList(); });
 
-            var target = new NuGetSourcesService(options: default,
-                Mock.Of<IServiceBroker>(),
+            var target = new NuGetSourcesService(Mock.Of<IServiceBroker>(),
                 new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                 packageSourceProvider.Object);
 

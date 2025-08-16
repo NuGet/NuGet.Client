@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void ConsolidatePackageFeed_NullInstalledPackages_Throws()
         {
             // Arrange, Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new ConsolidatePackageFeed(installedPackages: null, _packageMetadataProvider, _logger));
+            Assert.Throws<ArgumentNullException>(() => new ConsolidatePackageFeed(installedPackages: null, _packageMetadataProvider));
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 new PackageCollectionItem("FakePackage", new NuGetVersion("3.0.0"), installedReferences: null),
             };
 
-            var feed = new ConsolidatePackageFeed(installed, _packageMetadataProvider, _logger);
+            var feed = new ConsolidatePackageFeed(installed, _packageMetadataProvider);
             var token = FeedTestUtils.CreateInitialToken();
 
             // Act
@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task ContinueSearchAsync_EmptyInstalledVersions_ReturnsEmptySearchResults()
         {
             // Arrange
-            var feed = new ConsolidatePackageFeed(Enumerable.Empty<PackageCollectionItem>(), _packageMetadataProvider, _logger);
+            var feed = new ConsolidatePackageFeed(Enumerable.Empty<PackageCollectionItem>(), _packageMetadataProvider);
             var token = FeedTestUtils.CreateInitialToken();
 
             // Act

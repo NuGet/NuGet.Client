@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -19,17 +18,13 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginFindPackageByIdResourceTests
     {
-        private readonly Mock<ICredentialService> _credentialService;
         private readonly PackageSource _packageSource;
         private readonly Mock<IPlugin> _plugin;
-        private readonly Mock<IWebProxy> _proxy;
         private readonly Mock<IPluginMulticlientUtilities> _utilities;
 
         public PluginFindPackageByIdResourceTests()
         {
             _packageSource = new PackageSource("https://unit.test");
-            _proxy = new Mock<IWebProxy>();
-            _credentialService = new Mock<ICredentialService>();
             _plugin = new Mock<IPlugin>();
             _utilities = new Mock<IPluginMulticlientUtilities>();
 

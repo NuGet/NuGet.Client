@@ -18,15 +18,12 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetSourcesService : INuGetSourcesService
     {
-        private readonly ServiceActivationOptions _options;
-        private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private readonly IPackageSourceProvider _packageSourceProvider;
 
         public event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
 
         public NuGetSourcesService(
-            ServiceActivationOptions options,
             IServiceBroker serviceBroker,
             AuthorizationServiceClient authorizationServiceClient,
             IPackageSourceProvider packageSourceProvider)
@@ -35,8 +32,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(authorizationServiceClient);
             Assumes.NotNull(packageSourceProvider);
 
-            _options = options;
-            _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
             _packageSourceProvider = packageSourceProvider;
             _packageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
