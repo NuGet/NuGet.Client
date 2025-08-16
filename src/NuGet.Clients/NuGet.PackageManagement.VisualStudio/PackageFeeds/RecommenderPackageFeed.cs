@@ -31,7 +31,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly List<string> _transitivePackages;
         private readonly IReadOnlyCollection<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly Common.ILogger _logger;
 
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: null, vsixVersion: null);
 
@@ -65,7 +64,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _decoratedPackageFeed = decoratedFeed ?? throw new ArgumentNullException(nameof(decoratedFeed));
             _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // The recommender package feed should only created when one of the sources is nuget.org.
             _sourceRepository = sourceRepositories.FirstOrDefault(item => UriUtility.IsNuGetOrg(item.PackageSource.Source));

@@ -24,7 +24,6 @@ namespace NuGet.Commands
     {
         private readonly List<NuGetv3LocalRepository> _localRepositories;
         private readonly RestoreRequest _request;
-        private readonly ToolPathResolver _toolPathResolver;
         private readonly VersionFolderPathResolver _pathResolver;
 
         public Guid ParentId { get; }
@@ -49,10 +48,6 @@ namespace NuGet.Commands
             _localRepositories.AddRange(request.DependencyProviders.FallbackPackageFolders);
 
             _pathResolver = new VersionFolderPathResolver(
-                _request.PackagesDirectory,
-                _request.IsLowercasePackagesDirectory);
-
-            _toolPathResolver = new ToolPathResolver(
                 _request.PackagesDirectory,
                 _request.IsLowercasePackagesDirectory);
         }

@@ -25,7 +25,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetProjectUpgraderService : INuGetProjectUpgraderService
     {
-        private readonly ServiceActivationOptions _options;
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private readonly ISharedServiceState _state;
@@ -40,7 +39,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(authorizationServiceClient);
             Assumes.NotNull(state);
 
-            _options = options;
             _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
             _state = state;
