@@ -1884,11 +1884,6 @@ namespace NuGet.Test
                 return await base.GetPackageSpecsAsync(context);
             }
 
-            public T GetGlobalService<T>() where T : class
-            {
-                throw new NotImplementedException();
-            }
-
             public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
             {
                 throw new NotImplementedException();
