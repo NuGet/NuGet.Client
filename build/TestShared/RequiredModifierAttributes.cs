@@ -17,8 +17,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal sealed class RequiredMemberAttribute : Attribute
-    { }
+    internal sealed class RequiredMemberAttribute : Attribute;
 }
 
 // Licensed to the .NET Foundation under one or more agreements.
@@ -69,7 +68,6 @@ namespace System.Diagnostics.CodeAnalysis
     /// do not need to set any required members themselves.
     /// </summary>
     [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-    internal sealed class SetsRequiredMembersAttribute : Attribute
-    { }
+    internal sealed class SetsRequiredMembersAttribute : Attribute;
 }
 #endif
