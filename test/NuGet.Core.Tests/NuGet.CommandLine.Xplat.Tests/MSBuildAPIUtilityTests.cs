@@ -558,7 +558,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
-            solution.Create(pathContext.SolutionRoot);
+            solution.Create();
 
             // Act
             var projectList = MSBuildAPIUtility.GetProjectsFromSolution(solution.SolutionPath);
