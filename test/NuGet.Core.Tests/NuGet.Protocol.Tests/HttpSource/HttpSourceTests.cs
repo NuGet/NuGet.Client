@@ -25,10 +25,6 @@ namespace NuGet.Protocol.Tests
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class HttpSourceTests
     {
-        /// <summary>
-        /// We need a lock whenever we set static properties on <see cref="HttpHandlerResourceV3"/>.
-        /// </summary>
-        private static readonly SemaphoreSlim HttpHandlerResourceV3Lock = new SemaphoreSlim(1);
         private const string FakeSource = "https://fake.server/users.json";
 
         [Fact]
