@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
-                solution.Create(pathContext.SolutionRoot);
+                solution.Create();
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageI2);
 
                 solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
+                solution.Create();
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageB);
 
                 solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
+                solution.Create();
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
@@ -170,7 +170,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageB);
 
                 solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
+                solution.Create();
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);

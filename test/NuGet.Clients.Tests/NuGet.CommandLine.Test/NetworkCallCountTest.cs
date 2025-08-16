@@ -1567,7 +1567,7 @@ namespace NuGet.CommandLine.Test
             project3.AddPackageToAllFrameworks(new SimpleTestPackageContext("packageF", "*"));
 
             var simpleTestSolutionContext = new SimpleTestSolutionContext(workingPath, project1, project2, project3, project4);
-            simpleTestSolutionContext.Create(string.Empty);
+            simpleTestSolutionContext.Create();
         }
 
         private Action<HttpListenerResponse> ServerHandler(
