@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Commands;
@@ -416,49 +415,6 @@ namespace Dotnet.Integration.Test
                 catch
                 {
                 }
-            }
-        }
-
-        /// <summary>
-        /// Depth-first recursive delete, with handling for descendant
-        /// directories open in Windows Explorer or used by another process
-        /// </summary>
-        private static void DeleteDirectory(string path)
-        {
-            foreach (string directory in Directory.EnumerateDirectories(path))
-            {
-                DeleteDirectory(directory);
-            }
-
-            try
-            {
-                Directory.Delete(path, true);
-            }
-            catch (IOException)
-            {
-                Directory.Delete(path, true);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                var MaxTries = 100;
-
-                for (var i = 0; i < MaxTries; i++)
-                {
-
-                    try
-                    {
-                        Directory.Delete(path, recursive: true);
-                        break;
-                    }
-                    catch (UnauthorizedAccessException) when (i < (MaxTries - 1))
-                    {
-                        Thread.Sleep(100);
-                    }
-                }
-            }
-            catch
-            {
-
             }
         }
     }
