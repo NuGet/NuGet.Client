@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.UI.Test.Models.Package;
@@ -25,7 +24,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
     {
         protected readonly LocalPackageSearchMetadataFixture _testData;
         protected readonly PackageItemViewModel _testViewModel;
-        protected readonly JoinableTaskContext _joinableTaskContext;
         protected bool disposedValue = false;
 
         public LocalDetailControlModelTestBase(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
