@@ -859,8 +859,6 @@ namespace NuGet.Commands.Test
 
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
-                testLogger,
-                cacheContext,
                 ignoreFailedSources: true,
                 ignoreWarning: true,
                 fileCache: null,
@@ -921,8 +919,6 @@ namespace NuGet.Commands.Test
 
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
-                testLogger,
-                cacheContext,
                 ignoreFailedSources: true,
                 ignoreWarning: true,
                 fileCache: null,
