@@ -19,7 +19,5 @@ namespace NuGet.Protocol.Utility
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
     [JsonSerializable(typeof(IReadOnlyList<V3VulnerabilityIndexEntry>), TypeInfoPropertyName = "VulnerabilityIndex")]
     [JsonSerializable(typeof(CaseInsensitiveDictionary<IReadOnlyList<PackageVulnerabilityInfo>>), TypeInfoPropertyName = "VulnerabilityPage")]
-    internal partial class JsonContext : JsonSerializerContext
-    {
-    }
+    internal partial class JsonContext : JsonSerializerContext;
 }

@@ -10,7 +10,5 @@ namespace NuGet.Packaging.Signing
     /// <summary>
     /// Represents a certificate chain ordered from end certificate (index 0) to root certificate.
     /// </summary>
-    public interface IX509CertificateChain : IReadOnlyList<X509Certificate2>, IDisposable
-    {
-    }
+    public interface IX509CertificateChain : IReadOnlyList<X509Certificate2>, IDisposable;
 }

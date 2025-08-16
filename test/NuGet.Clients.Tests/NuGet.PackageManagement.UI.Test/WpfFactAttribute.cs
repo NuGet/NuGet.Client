@@ -9,7 +9,5 @@ namespace NuGet.PackageManagement.UI.Test
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     [XunitTestCaseDiscoverer("NuGet.PackageManagement.UI.Test.WpfFactDiscoverer", "NuGet.PackageManagement.UI.Test")]
-    public sealed class WpfFactAttribute : FactAttribute
-    {
-    }
+    public sealed class WpfFactAttribute : FactAttribute;
 }

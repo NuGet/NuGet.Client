@@ -802,9 +802,7 @@ namespace Commands.Test
             }
         }
 
-        private class CorruptionException : Exception
-        {
-        }
+        private class CorruptionException : Exception;
 
         private sealed class ThrowingPackageArchiveDownloader : IPackageDownloader
         {

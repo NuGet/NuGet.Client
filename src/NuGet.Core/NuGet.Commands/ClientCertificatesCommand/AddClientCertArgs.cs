@@ -7,7 +7,5 @@ namespace NuGet.Commands
                                              IClientCertArgsWithConfigFile,
                                              IClientCertArgsWithFileData,
                                              IClientCertArgsWithStoreData,
-                                             IClientCertArgsWithForce
-    {
-    }
+                                             IClientCertArgsWithForce;
 }

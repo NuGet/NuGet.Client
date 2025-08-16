@@ -6,13 +6,9 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
-    public class Message
-    {
-    }
+    public class Message;
 
-    public class ExecutionCompleteMessage : Message
-    {
-    }
+    public class ExecutionCompleteMessage : Message;
 
     public class LogMessage : Message
     {
@@ -42,7 +38,5 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     /// this message in the <see cref="BlockingCollection{T}"/> should be flushed before
     /// continuing.
     /// </summary>
-    public class FlushMessage : Message
-    {
-    }
+    public class FlushMessage : Message;
 }

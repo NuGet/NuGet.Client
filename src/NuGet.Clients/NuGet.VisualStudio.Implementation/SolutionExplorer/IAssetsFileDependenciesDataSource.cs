@@ -9,7 +9,5 @@ using NuGet.VisualStudio.SolutionExplorer.Models;
 namespace NuGet.VisualStudio.SolutionExplorer
 {
     [ProjectSystemContract(ProjectSystemContractScope.UnconfiguredProject, ProjectSystemContractProvider.Private)]
-    internal interface IAssetsFileDependenciesDataSource : IProjectValueDataSource<AssetsFileDependenciesSnapshot>
-    {
-    }
+    internal interface IAssetsFileDependenciesDataSource : IProjectValueDataSource<AssetsFileDependenciesSnapshot>;
 }

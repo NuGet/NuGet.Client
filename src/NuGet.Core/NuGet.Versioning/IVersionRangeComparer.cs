@@ -8,7 +8,5 @@ namespace NuGet.Versioning
     /// <summary>
     /// Version range comparer
     /// </summary>
-    public interface IVersionRangeComparer : IEqualityComparer<VersionRangeBase>
-    {
-    }
+    public interface IVersionRangeComparer : IEqualityComparer<VersionRangeBase>;
 }

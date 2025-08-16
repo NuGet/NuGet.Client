@@ -10,8 +10,6 @@ namespace System.Runtime.CompilerServices;
 // This class allows the compiler to emit record structs in earlier versions of .NET
 
 [DebuggerNonUserCode]
-internal static class IsExternalInit
-{
-}
+internal static class IsExternalInit;
 
 #endif

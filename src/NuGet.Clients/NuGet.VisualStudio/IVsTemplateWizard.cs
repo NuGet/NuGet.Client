@@ -11,7 +11,5 @@ namespace NuGet.VisualStudio
     /// </summary>
     [ComImport]
     [Guid("D6DEA71B-4A42-4B55-8A59-3191B91EF36E")]
-    public interface IVsTemplateWizard : IWizard
-    {
-    }
+    public interface IVsTemplateWizard : IWizard;
 }

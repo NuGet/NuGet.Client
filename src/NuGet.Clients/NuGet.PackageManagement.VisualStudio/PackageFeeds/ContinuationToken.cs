@@ -8,5 +8,5 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Feed specific data describing current position to continue search from.
     /// It's opaque to external consumer.
     /// </summary>
-    public class ContinuationToken { }
+    public class ContinuationToken;
 }

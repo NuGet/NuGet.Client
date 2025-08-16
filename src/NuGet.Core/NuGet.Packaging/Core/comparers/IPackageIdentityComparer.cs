@@ -8,7 +8,5 @@ namespace NuGet.Packaging.Core
     /// <summary>
     /// Compares the id and version of a package
     /// </summary>
-    public interface IPackageIdentityComparer : IEqualityComparer<PackageIdentity>, IComparer<PackageIdentity>
-    {
-    }
+    public interface IPackageIdentityComparer : IEqualityComparer<PackageIdentity>, IComparer<PackageIdentity>;
 }

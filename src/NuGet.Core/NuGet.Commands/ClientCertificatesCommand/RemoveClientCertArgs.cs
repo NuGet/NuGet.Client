@@ -4,7 +4,5 @@
 namespace NuGet.Commands
 {
     public partial class RemoveClientCertArgs : IClientCertArgsWithConfigFile,
-                                                IClientCertArgsWithPackageSource
-    {
-    }
+                                                IClientCertArgsWithPackageSource;
 }

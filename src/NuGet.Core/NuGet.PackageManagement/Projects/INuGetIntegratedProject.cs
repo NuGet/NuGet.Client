@@ -6,7 +6,5 @@ namespace NuGet.ProjectManagement.Projects
     /// <summary>
     /// A NuGet aware project system
     /// </summary>
-    public interface INuGetIntegratedProject
-    {
-    }
+    public interface INuGetIntegratedProject;
 }

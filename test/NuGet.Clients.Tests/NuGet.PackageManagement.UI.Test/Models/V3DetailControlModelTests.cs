@@ -1422,9 +1422,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         /// <summary>
         /// We need an interface that implements both: SVsBrokeredServiceContainer and IBrokeredServiceContainer so we can add it to the service host
         /// </summary>
-        public interface IBrokeredServiceContainerMock : SVsBrokeredServiceContainer, IBrokeredServiceContainer
-        {
-        }
+        public interface IBrokeredServiceContainerMock : SVsBrokeredServiceContainer, IBrokeredServiceContainer;
     }
 
     [Collection(MockedVS.Collection)]

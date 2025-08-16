@@ -1229,13 +1229,9 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
-        private sealed class Request
-        {
-        }
+        private sealed class Request;
 
-        private sealed class Response
-        {
-        }
+        private sealed class Response;
 
         private sealed class RequestHandler : IRequestHandler
         {

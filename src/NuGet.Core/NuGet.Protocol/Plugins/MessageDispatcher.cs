@@ -733,8 +733,6 @@ namespace NuGet.Protocol.Plugins
             return connection.Options.RequestTimeout;
         }
 
-        private sealed class NullPayload
-        {
-        }
+        private sealed class NullPayload;
     }
 }

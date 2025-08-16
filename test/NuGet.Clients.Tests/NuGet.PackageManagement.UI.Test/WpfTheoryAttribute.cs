@@ -9,7 +9,5 @@ namespace NuGet.PackageManagement.UI.Test
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     [XunitTestCaseDiscoverer("NuGet.PackageManagement.UI.Test.WpfTheoryDiscoverer", "NuGet.PackageManagement.UI.Test")]
-    public sealed class WpfTheoryAttribute : TheoryAttribute
-    {
-    }
+    public sealed class WpfTheoryAttribute : TheoryAttribute;
 }

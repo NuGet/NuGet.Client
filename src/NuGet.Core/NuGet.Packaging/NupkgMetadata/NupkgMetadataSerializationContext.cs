@@ -10,7 +10,5 @@ namespace NuGet.Packaging.NupkgMetadata
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(NupkgMetadataFile))]
-    internal partial class NupkgMetadataSerializationContext : JsonSerializerContext
-    {
-    }
+    internal partial class NupkgMetadataSerializationContext : JsonSerializerContext;
 }

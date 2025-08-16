@@ -9,7 +9,5 @@ namespace NuGet.PackageManagement.Telemetry
     /// Exception used only for telemetry.
     /// </summary>
     [Serializable]
-    public class CacheMissException : Exception
-    {
-    }
+    public class CacheMissException : Exception;
 }
