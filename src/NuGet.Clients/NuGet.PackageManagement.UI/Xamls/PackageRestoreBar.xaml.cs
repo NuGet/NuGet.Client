@@ -11,7 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
@@ -38,7 +37,6 @@ namespace NuGet.PackageManagement.UI
         private readonly IPackageRestoreManager _packageRestoreManager;
         // This class does not own this instance, so do not dispose of it in this class.
         private readonly INuGetSolutionManagerService _solutionManager;
-        private readonly Dispatcher _uiDispatcher;
         private Exception _restoreException;
         private Storyboard _showRestoreBar;
         private Storyboard _hideRestoreBar;
@@ -76,7 +74,6 @@ namespace NuGet.PackageManagement.UI
         {
             DataContext = this;
             InitializeComponent();
-            _uiDispatcher = Dispatcher.CurrentDispatcher;
             _solutionManager = solutionManager;
             _packageRestoreManager = packageRestoreManager;
             _projectContextInfo = projectContextInfo;

@@ -18,7 +18,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly AsyncLazy<EnvDTE.DTE> _dte;
         private IDictionary<string, ISet<VsHierarchyItem>> _expandedNodes;
-        private readonly IAsyncServiceProvider _asyncServiceProvider;
 
         [ImportingConstructor]
         public VsCommonOperations(
@@ -26,7 +25,6 @@ namespace NuGet.PackageManagement.VisualStudio
             IAsyncServiceProvider asyncServiceProvider)
         {
             Assumes.NotNull(asyncServiceProvider);
-            _asyncServiceProvider = asyncServiceProvider;
             _dte = new AsyncLazy<EnvDTE.DTE>(async () =>
             {
                 return await asyncServiceProvider.GetDTEAsync();

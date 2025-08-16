@@ -29,7 +29,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public static readonly string LocalIconPrefix = "localIcon:";
         public static readonly string LicensePrefix = "license:";
 
-        private ServiceActivationOptions? _options;
         private IServiceBroker _serviceBroker;
         private AuthorizationServiceClient? _authorizationServiceClient;
         private INuGetTelemetryProvider _nuGetTelemetryProvider;
@@ -81,7 +80,6 @@ namespace NuGet.PackageManagement.VisualStudio
             AuthorizationServiceClient authorizationServiceClient,
             INuGetTelemetryProvider nuGetTelemetryProvider)
         {
-            _options = options;
             _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
             _nuGetTelemetryProvider = nuGetTelemetryProvider;

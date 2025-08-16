@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.UI
                     NuGetPackageFileService.AddLicenseToCache(
                         packageIdentity,
                         CreateEmbeddedLicenseUri(packagePath, metadata));
-                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, packagePath, metadata.License, packageIdentity));
+                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, packagePath, packageIdentity));
                     break;
 
                 default:

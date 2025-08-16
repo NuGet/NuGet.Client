@@ -28,7 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetPackageSearchService : INuGetSearchService
     {
-        private readonly ServiceActivationOptions _options;
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private SearchObject? _searchObject;
@@ -52,7 +51,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
-            _options = options;
             _serviceBroker = sb;
             _authorizationServiceClient = ac;
             _sharedServiceState = state;
