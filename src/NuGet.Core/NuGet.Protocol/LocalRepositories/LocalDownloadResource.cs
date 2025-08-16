@@ -20,13 +20,8 @@ namespace NuGet.Protocol
 
         public LocalDownloadResource(string source, FindLocalPackagesResource localResource)
         {
-            if (localResource == null)
-            {
-                throw new ArgumentNullException(nameof(localResource));
-            }
-
             _source = source;
-            _localResource = localResource;
+            _localResource = localResource ?? throw new ArgumentNullException(nameof(localResource));
         }
 
         public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(

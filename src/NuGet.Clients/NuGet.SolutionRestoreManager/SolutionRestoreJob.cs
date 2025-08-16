@@ -159,18 +159,8 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(jobContext));
             }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (vulnerabilitiesFoundService == null)
-            {
-                throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
-            }
-
-            _logger = logger;
-            _vulnerabilitiesFoundService = vulnerabilitiesFoundService;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _vulnerabilitiesFoundService = vulnerabilitiesFoundService ?? throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
 
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;

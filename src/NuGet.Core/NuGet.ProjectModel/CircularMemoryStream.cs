@@ -17,12 +17,7 @@ namespace NuGet.ProjectModel
 
         internal CircularMemoryStream(byte[] buffer) : base(buffer)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            _buffer = buffer;
+            _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         }
 
         public override void Write(byte[] buffer, int offset, int count)

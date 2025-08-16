@@ -28,11 +28,9 @@ namespace NuGet.Frameworks
         public CompatibilityTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
         {
             if (frameworks is null) throw new ArgumentNullException(nameof(frameworks));
-            if (mappings is null) throw new ArgumentNullException(nameof(mappings));
-            if (compat is null) throw new ArgumentNullException(nameof(compat));
 
-            _compat = compat;
-            _mappings = mappings;
+            _compat = compat ?? throw new ArgumentNullException(nameof(compat));
+            _mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
             _table = GetTable(frameworks, _compat);
             _reducer = new FrameworkReducer(_mappings, _compat);
         }

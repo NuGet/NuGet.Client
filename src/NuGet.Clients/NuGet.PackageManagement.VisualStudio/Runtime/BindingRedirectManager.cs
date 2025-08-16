@@ -32,13 +32,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     Strings.Argument_Cannot_Be_Null_Or_Empty,
                     nameof(configurationFile));
             }
-            if (msBuildNuGetProjectSystem == null)
-            {
-                throw new ArgumentNullException(nameof(msBuildNuGetProjectSystem));
-            }
 
             _configurationFile = configurationFile;
-            _msBuildNuGetProjectSystem = msBuildNuGetProjectSystem;
+            _msBuildNuGetProjectSystem = msBuildNuGetProjectSystem ?? throw new ArgumentNullException(nameof(msBuildNuGetProjectSystem));
         }
 
         public void AddBindingRedirects(IEnumerable<AssemblyBinding> bindingRedirects)

@@ -64,27 +64,12 @@ namespace NuGet.Protocol.Plugins
             InboundRequestProcessingHandler inboundRequestProcessingHandler,
             IPluginLogger logger)
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException(nameof(connection));
-            }
-
             if (string.IsNullOrEmpty(requestId))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(requestId));
             }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (inboundRequestProcessingHandler == null)
-            {
-                throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
-            }
-
-            _connection = connection;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             RequestId = requestId;
 
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -93,9 +78,9 @@ namespace NuGet.Protocol.Plugins
             // is disposed race conditions may cause an exception acccessing its Token property.
             _cancellationToken = _cancellationTokenSource.Token;
 
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _inboundRequestProcessingHandler = inboundRequestProcessingHandler;
+            _inboundRequestProcessingHandler = inboundRequestProcessingHandler ?? throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
         }
 
         private async Task ProcessResponseAsync(IRequestHandler requestHandler, Message request, IResponseHandler responseHandler)

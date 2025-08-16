@@ -72,12 +72,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="startInfo" /> is <see langword="null" />.</exception>
         public PluginProcess(ProcessStartInfo startInfo)
         {
-            if (startInfo == null)
-            {
-                throw new ArgumentNullException(nameof(startInfo));
-            }
-
-            _startInfo = startInfo;
+            _startInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
             _process = new Process();
         }
 

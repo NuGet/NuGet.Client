@@ -17,13 +17,9 @@ namespace NuGet.ProjectModel
             {
                 throw new ArgumentNullException(nameof(framework));
             }
-            if (transitiveDependencies == null)
-            {
-                throw new ArgumentNullException(nameof(transitiveDependencies));
-            }
 
             FrameworkName = framework.ToString();
-            TransitiveDependencies = transitiveDependencies;
+            TransitiveDependencies = transitiveDependencies ?? throw new ArgumentNullException(nameof(transitiveDependencies));
         }
 
         public string FrameworkName { get; }

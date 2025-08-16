@@ -32,14 +32,9 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
             IReadOnlyList<Request> requestList,
             IReadOnlyList<X509ExtensionAsn>? requestExtensions)
         {
-            if (requestList is null)
-            {
-                throw new ArgumentNullException(nameof(requestList));
-            }
-
             Version = version;
             RequestorName = requestorName;
-            RequestList = requestList;
+            RequestList = requestList ?? throw new ArgumentNullException(nameof(requestList));
             RequestExtensions = requestExtensions;
         }
 

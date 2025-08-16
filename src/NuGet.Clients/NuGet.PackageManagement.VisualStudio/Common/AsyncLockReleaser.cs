@@ -15,12 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public AsyncLockReleaser(AsyncLockAwaiter awaiter)
         {
-            if (awaiter == null)
-            {
-                throw new ArgumentNullException(nameof(awaiter));
-            }
-
-            _awaiter = awaiter;
+            _awaiter = awaiter ?? throw new ArgumentNullException(nameof(awaiter));
         }
 
         public void Dispose()

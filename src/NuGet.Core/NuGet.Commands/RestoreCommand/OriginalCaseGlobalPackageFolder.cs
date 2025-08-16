@@ -36,12 +36,7 @@ namespace NuGet.Commands
 
         public OriginalCaseGlobalPackageFolder(RestoreRequest request, Guid parentId)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            _request = request;
+            _request = request ?? throw new ArgumentNullException(nameof(request));
             ParentId = parentId;
 
             _localRepositories = new List<NuGetv3LocalRepository>();

@@ -24,12 +24,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
             AlgorithmIdentifier hashAlgorithm,
             ReadOnlyMemory<byte> hashedMessage)
         {
-            if (hashAlgorithm is null)
-            {
-                throw new ArgumentNullException(nameof(hashAlgorithm));
-            }
-
-            HashAlgorithm = hashAlgorithm;
+            HashAlgorithm = hashAlgorithm ?? throw new ArgumentNullException(nameof(hashAlgorithm));
             HashedMessage = hashedMessage;
         }
 

@@ -21,13 +21,8 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(fileInfo));
             }
 
-            if (parent == null)
-            {
-                throw new ArgumentNullException(nameof(parent));
-            }
-
             Name = fileInfo.Name;
-            ParentDirectory = parent;
+            ParentDirectory = parent ?? throw new ArgumentNullException(nameof(parent));
 
             FullName = ParentDirectory == null
                 ? string.Empty

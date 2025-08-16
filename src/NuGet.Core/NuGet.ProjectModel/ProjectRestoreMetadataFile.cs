@@ -22,18 +22,8 @@ namespace NuGet.ProjectModel
 
         public ProjectRestoreMetadataFile(string packagePath, string absolutePath)
         {
-            if (packagePath == null)
-            {
-                throw new ArgumentNullException(nameof(packagePath));
-            }
-
-            if (absolutePath == null)
-            {
-                throw new ArgumentNullException(nameof(absolutePath));
-            }
-
-            PackagePath = packagePath;
-            AbsolutePath = absolutePath;
+            PackagePath = packagePath ?? throw new ArgumentNullException(nameof(packagePath));
+            AbsolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
         }
 
         public bool Equals(ProjectRestoreMetadataFile other)

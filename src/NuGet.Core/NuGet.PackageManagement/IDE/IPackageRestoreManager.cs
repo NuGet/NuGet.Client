@@ -116,12 +116,7 @@ namespace NuGet.PackageManagement
 
         public PackageRestoredEventArgs(PackageIdentity packageIdentity, bool restored)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            Package = packageIdentity;
+            Package = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             Restored = restored;
         }
     }

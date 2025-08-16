@@ -27,13 +27,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(httpSourceResource));
             }
 
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
             _httpSource = httpSourceResource.HttpSource;
-            _packageSource = packageSource;
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource.Source);
         }
 

@@ -28,17 +28,12 @@ namespace NuGet.Protocol.Core.Types
             IEnumerable<PackageDependencyGroup> dependencyGroups,
             string contentUri)
         {
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
             if (dependencyGroups == null)
             {
                 throw new ArgumentNullException(nameof(dependencyGroups));
             }
 
-            Identity = identity;
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Listed = listed;
             DependencyGroups = dependencyGroups.ToList();
             ContentUri = contentUri;

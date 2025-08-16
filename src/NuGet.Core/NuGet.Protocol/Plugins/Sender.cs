@@ -31,12 +31,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer" /> is <see langword="null" />.</exception>
         public Sender(TextWriter writer)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            _textWriter = writer;
+            _textWriter = writer ?? throw new ArgumentNullException(nameof(writer));
             _sendLock = new object();
         }
 

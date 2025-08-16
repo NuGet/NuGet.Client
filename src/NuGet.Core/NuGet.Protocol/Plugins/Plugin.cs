@@ -92,16 +92,6 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
-            if (connection == null)
-            {
-                throw new ArgumentNullException(nameof(connection));
-            }
-
-            if (process == null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
             if (idleTimeout < Timeout.InfiniteTimeSpan)
             {
                 throw new ArgumentOutOfRangeException(
@@ -113,8 +103,8 @@ namespace NuGet.Protocol.Plugins
             Name = Path.GetFileNameWithoutExtension(filePath);
             FilePath = filePath;
             Id = id ?? CreateNewId();
-            Connection = connection;
-            _process = process;
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _process = process ?? throw new ArgumentNullException(nameof(process));
             _isOwnProcess = isOwnProcess;
             _idleTimerLock = new object();
             _idleTimeout = idleTimeout;

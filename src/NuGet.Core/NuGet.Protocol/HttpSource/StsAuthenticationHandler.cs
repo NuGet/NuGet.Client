@@ -57,19 +57,9 @@ namespace NuGet.Protocol
 
             _baseUri = packageSource.SourceUri;
 
-            if (tokenStore == null)
-            {
-                throw new ArgumentNullException(nameof(tokenStore));
-            }
+            _tokenStore = tokenStore ?? throw new ArgumentNullException(nameof(tokenStore));
 
-            _tokenStore = tokenStore;
-
-            if (tokenFactory == null)
-            {
-                throw new ArgumentNullException(nameof(tokenFactory));
-            }
-
-            _tokenFactory = tokenFactory;
+            _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

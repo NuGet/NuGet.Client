@@ -46,12 +46,7 @@ namespace NuGet.PackageManagement
 
         protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository, VersionRange versionRange)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            PackageIdentity = packageIdentity;
+            PackageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             NuGetProjectActionType = nuGetProjectActionType;
             SourceRepository = sourceRepository;
             Project = project;

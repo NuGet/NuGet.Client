@@ -24,17 +24,12 @@ namespace NuGet.Protocol
 
         public RegistrationResourceV3(HttpSource client, Uri baseUrl)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
             if (baseUrl == null)
             {
                 throw new ArgumentNullException(nameof(baseUrl));
             }
 
-            _client = client;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
             BaseUri = baseUrl;
         }
 

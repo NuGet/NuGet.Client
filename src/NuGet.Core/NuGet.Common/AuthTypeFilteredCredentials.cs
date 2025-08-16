@@ -23,17 +23,12 @@ namespace NuGet.Common
         /// <param name="authTypes">List of authTypes to respond to. If empty, responds to all authTypes.</param>
         public AuthTypeFilteredCredentials(NetworkCredential innerCredential, IEnumerable<string> authTypes)
         {
-            if (innerCredential == null)
-            {
-                throw new ArgumentNullException(nameof(innerCredential));
-            }
-
             if (authTypes == null)
             {
                 throw new ArgumentNullException(nameof(authTypes));
             }
 
-            InnerCredential = innerCredential;
+            InnerCredential = innerCredential ?? throw new ArgumentNullException(nameof(innerCredential));
             AuthTypes = new List<string>(authTypes);
         }
 

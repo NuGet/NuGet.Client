@@ -30,12 +30,7 @@ namespace NuGet.Packaging
 
         public Manifest(ManifestMetadata metadata, ICollection<ManifestFile> files)
         {
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-
-            Metadata = metadata;
+            Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
 
             if (files != null)
             {

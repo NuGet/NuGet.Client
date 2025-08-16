@@ -16,11 +16,6 @@ namespace NuGet.Packaging.Signing
 
         internal RetriableX509ChainBuildPolicy(IX509ChainBuildPolicy innerPolicy, int retryCount, TimeSpan sleepInterval)
         {
-            if (innerPolicy is null)
-            {
-                throw new ArgumentNullException(nameof(innerPolicy));
-            }
-
             if (retryCount < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(retryCount));
@@ -31,7 +26,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(sleepInterval));
             }
 
-            InnerPolicy = innerPolicy;
+            InnerPolicy = innerPolicy ?? throw new ArgumentNullException(nameof(innerPolicy));
             RetryCount = retryCount;
             SleepInterval = sleepInterval;
         }

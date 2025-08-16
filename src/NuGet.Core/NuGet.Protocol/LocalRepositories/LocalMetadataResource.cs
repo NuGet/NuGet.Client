@@ -20,12 +20,7 @@ namespace NuGet.Protocol
 
         public LocalMetadataResource(FindLocalPackagesResource localResource)
         {
-            if (localResource == null)
-            {
-                throw new ArgumentNullException(nameof(localResource));
-            }
-
-            _localResource = localResource;
+            _localResource = localResource ?? throw new ArgumentNullException(nameof(localResource));
         }
 
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(

@@ -14,11 +14,7 @@ namespace NuGet.ProjectManagement
 
         protected SourceControlManager(ISettings settings)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-            Settings = settings;
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         /// <summary>

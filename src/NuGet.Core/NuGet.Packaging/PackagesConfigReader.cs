@@ -37,18 +37,8 @@ namespace NuGet.Packaging
         /// <param name="xml">Packages.config XML</param>
         public PackagesConfigReader(IFrameworkNameProvider frameworkMappings, XDocument xml)
         {
-            if (xml == null)
-            {
-                throw new ArgumentNullException(nameof(xml));
-            }
-
-            if (frameworkMappings == null)
-            {
-                throw new ArgumentNullException(nameof(frameworkMappings));
-            }
-
-            _doc = xml;
-            _frameworkMappings = frameworkMappings;
+            _doc = xml ?? throw new ArgumentNullException(nameof(xml));
+            _frameworkMappings = frameworkMappings ?? throw new ArgumentNullException(nameof(frameworkMappings));
         }
 
         /// <summary>
@@ -83,12 +73,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            if (frameworkMappings == null)
-            {
-                throw new ArgumentNullException(nameof(frameworkMappings));
-            }
-
-            _frameworkMappings = frameworkMappings;
+            _frameworkMappings = frameworkMappings ?? throw new ArgumentNullException(nameof(frameworkMappings));
             _doc = XDocument.Load(stream);
 
             if (!leaveStreamOpen)

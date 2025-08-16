@@ -19,11 +19,7 @@ namespace NuGet.CommandLine.XPlat
 
         public static void Setup(ILogger logger, IEnvironmentVariableReader environmentVariableReader)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CultureInfo language = GetOverriddenUILanguage(environmentVariableReader);
             if (language != null)
             {

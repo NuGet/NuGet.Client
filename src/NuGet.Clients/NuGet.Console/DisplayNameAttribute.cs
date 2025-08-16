@@ -28,11 +28,7 @@ namespace NuGetConsole
         /// </remarks>
         public DisplayNameAttribute(string displayName)
         {
-            if (displayName == null)
-            {
-                throw new ArgumentNullException(nameof(displayName));
-            }
-            this.DisplayName = displayName;
+            this.DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
         }
     }
 }

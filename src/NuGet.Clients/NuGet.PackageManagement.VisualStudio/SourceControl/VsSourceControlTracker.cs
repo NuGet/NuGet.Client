@@ -39,24 +39,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            if (sourceControlManagerProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceControlManagerProvider));
-            }
-
-            if (vsSettings == null)
-            {
-                throw new ArgumentNullException(nameof(vsSettings));
-            }
-
-            _solutionManager = solutionManager;
-            _sourceControlManagerProvider = sourceControlManagerProvider;
-            _vsSettings = vsSettings;
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
+            _sourceControlManagerProvider = sourceControlManagerProvider ?? throw new ArgumentNullException(nameof(sourceControlManagerProvider));
+            _vsSettings = vsSettings ?? throw new ArgumentNullException(nameof(vsSettings));
 
             _projectTracker = new AsyncLazy<IVsTrackProjectDocuments2>(async () =>
                 {

@@ -26,18 +26,8 @@ namespace NuGet.Commands
 
         public MSBuildItem(string identity, IDictionary<string, string> metadata)
         {
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-
-            Identity = identity;
-            _metadata = metadata;
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         /// <summary>

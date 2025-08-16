@@ -76,17 +76,12 @@ namespace NuGet.Protocol
                 throw new ArgumentException(Strings.OneOrMoreUrisMustBeSpecified, nameof(baseUris));
             }
 
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
             _baseUris = baseUris
                 .Take(DefaultMaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
 
-            _httpSource = httpSource;
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
             _maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;

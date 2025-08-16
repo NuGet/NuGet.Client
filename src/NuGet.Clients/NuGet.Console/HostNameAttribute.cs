@@ -28,11 +28,7 @@ namespace NuGetConsole
         /// </summary>
         public HostNameAttribute(string hostName)
         {
-            if (hostName == null)
-            {
-                throw new ArgumentNullException(nameof(hostName));
-            }
-            this.HostName = hostName;
+            this.HostName = hostName ?? throw new ArgumentNullException(nameof(hostName));
         }
     }
 }

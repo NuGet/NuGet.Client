@@ -58,13 +58,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(packageSource));
             }
 
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
             _baseUri = packageSource.Source.EndsWith("/", StringComparison.Ordinal) ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = httpSource;
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(_httpSource);
             _queryBuilder = new V2FeedQueryBuilder();
 

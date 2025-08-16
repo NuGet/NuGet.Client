@@ -12,12 +12,7 @@ namespace Test.Utility
 
         public TestSourceControlManagerProvider(TestSourceControlManager testSourceControlManager)
         {
-            if (testSourceControlManager == null)
-            {
-                throw new ArgumentNullException(nameof(testSourceControlManager));
-            }
-
-            TestSourceControlManager = testSourceControlManager;
+            TestSourceControlManager = testSourceControlManager ?? throw new ArgumentNullException(nameof(testSourceControlManager));
         }
 
         public SourceControlManager GetSourceControlManager()

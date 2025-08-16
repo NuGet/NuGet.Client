@@ -19,19 +19,9 @@ namespace NuGet.Indexing
 
         public SearchResultsAggregator(ISearchResultsIndexer indexer, IPackageSearchMetadataSplicer splicer)
         {
-            if (indexer == null)
-            {
-                throw new ArgumentNullException(nameof(indexer));
-            }
+            _indexer = indexer ?? throw new ArgumentNullException(nameof(indexer));
 
-            _indexer = indexer;
-
-            if (splicer == null)
-            {
-                throw new ArgumentNullException(nameof(splicer));
-            }
-
-            _splicer = splicer;
+            _splicer = splicer ?? throw new ArgumentNullException(nameof(splicer));
         }
 
         public Task<IEnumerable<IPackageSearchMetadata>> AggregateAsync(string queryString, params IEnumerable<IPackageSearchMetadata>[] inputResults)
@@ -102,12 +92,7 @@ namespace NuGet.Indexing
 
             public MergedIndex(IPackageSearchMetadataSplicer splicer)
             {
-                if (splicer == null)
-                {
-                    throw new ArgumentNullException(nameof(splicer));
-                }
-
-                _splicer = splicer;
+                _splicer = splicer ?? throw new ArgumentNullException(nameof(splicer));
             }
 
             public void MergeResults(IEnumerable<IPackageSearchMetadata> result)

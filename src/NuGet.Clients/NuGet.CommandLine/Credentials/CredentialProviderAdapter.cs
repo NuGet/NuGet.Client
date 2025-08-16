@@ -19,12 +19,7 @@ namespace NuGet.Credentials
 
         public CredentialProviderAdapter(CoreV2.NuGet.ICredentialProvider provider)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            _provider = provider;
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             Id = $"{typeof(CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
         }
 

@@ -13,11 +13,7 @@ namespace NuGet.PackageManagement
 
         public IDEExecutionContext(ICommonOperations commonOperations)
         {
-            if (commonOperations == null)
-            {
-                throw new ArgumentNullException(nameof(commonOperations));
-            }
-            CommonOperations = commonOperations;
+            CommonOperations = commonOperations ?? throw new ArgumentNullException(nameof(commonOperations));
         }
 
         public override async Task OpenFile(string fullPath)

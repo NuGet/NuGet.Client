@@ -17,18 +17,8 @@ namespace NuGet.Protocol
 
         public DownloadTimeoutStream(string downloadName, Stream networkStream, TimeSpan timeout)
         {
-            if (downloadName == null)
-            {
-                throw new ArgumentNullException(nameof(downloadName));
-            }
-
-            if (networkStream == null)
-            {
-                throw new ArgumentNullException(nameof(networkStream));
-            }
-
-            _downloadName = downloadName;
-            _networkStream = networkStream;
+            _downloadName = downloadName ?? throw new ArgumentNullException(nameof(downloadName));
+            _networkStream = networkStream ?? throw new ArgumentNullException(nameof(networkStream));
             _timeout = timeout;
             if (networkStream.CanTimeout)
             {

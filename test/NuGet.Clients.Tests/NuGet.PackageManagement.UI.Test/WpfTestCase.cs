@@ -38,12 +38,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         public WpfTestCase(IXunitTestCase testCase)
         {
-            if (testCase == null)
-            {
-                throw new ArgumentNullException(nameof(testCase));
-            }
-
-            _testCase = testCase;
+            _testCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
         }
 
         [Obsolete("Called by the deserializer", error: true)]

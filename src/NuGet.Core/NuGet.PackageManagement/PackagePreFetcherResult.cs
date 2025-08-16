@@ -54,25 +54,10 @@ namespace NuGet.PackageManagement
             PackageIdentity package,
             Configuration.PackageSource source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            if (downloadTask == null)
-            {
-                throw new ArgumentNullException(nameof(downloadTask));
-            }
-
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            _downloadTask = downloadTask;
-            Package = package;
+            _downloadTask = downloadTask ?? throw new ArgumentNullException(nameof(downloadTask));
+            Package = package ?? throw new ArgumentNullException(nameof(package));
             InPackagesFolder = false;
-            Source = source;
+            Source = source ?? throw new ArgumentNullException(nameof(source));
             _downloadStartTime = DateTimeOffset.Now;
         }
 
@@ -83,20 +68,10 @@ namespace NuGet.PackageManagement
             string nupkgPath,
             PackageIdentity package)
         {
-            if (nupkgPath == null)
-            {
-                throw new ArgumentNullException(nameof(nupkgPath));
-            }
-
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
             InPackagesFolder = true;
             IsComplete = true;
-            Package = package;
-            _nupkgPath = nupkgPath;
+            Package = package ?? throw new ArgumentNullException(nameof(package));
+            _nupkgPath = nupkgPath ?? throw new ArgumentNullException(nameof(nupkgPath));
         }
 
         /// <summary>

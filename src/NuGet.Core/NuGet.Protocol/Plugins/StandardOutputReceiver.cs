@@ -24,12 +24,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process" /> is <see langword="null" />.</exception>
         public StandardOutputReceiver(IPluginProcess process)
         {
-            if (process == null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            _process = process;
+            _process = process ?? throw new ArgumentNullException(nameof(process));
         }
 
         /// <summary>

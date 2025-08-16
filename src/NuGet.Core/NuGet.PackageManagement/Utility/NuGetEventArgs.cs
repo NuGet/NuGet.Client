@@ -22,12 +22,7 @@ namespace NuGet.PackageManagement
         /// <param name="arg"> Argument to NuGetEventArgs of type T.</param>
         public NuGetEventArgs(T arg)
         {
-            if (arg == null)
-            {
-                throw new ArgumentNullException(nameof(arg));
-            }
-
-            Arg = arg;
+            Arg = arg ?? throw new ArgumentNullException(nameof(arg));
         }
     }
 }

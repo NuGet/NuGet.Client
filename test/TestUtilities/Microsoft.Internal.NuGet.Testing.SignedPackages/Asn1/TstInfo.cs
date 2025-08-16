@@ -58,19 +58,9 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
             GeneralName? tsa = null,
             X509ExtensionCollection? extensions = null)
         {
-            if (policy is null)
-            {
-                throw new ArgumentNullException(nameof(policy));
-            }
-
-            if (messageImprint is null)
-            {
-                throw new ArgumentNullException(nameof(messageImprint));
-            }
-
             Version = version;
-            Policy = policy;
-            MessageImprint = messageImprint;
+            Policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            MessageImprint = messageImprint ?? throw new ArgumentNullException(nameof(messageImprint));
             SerialNumber = serialNumber;
             Timestamp = timestamp;
             Accuracy = accuracy;

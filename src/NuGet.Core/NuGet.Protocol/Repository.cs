@@ -24,12 +24,7 @@ namespace NuGet.Protocol.Core.Types
             }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _providerFactory = value;
+                _providerFactory = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 

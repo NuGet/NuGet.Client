@@ -47,12 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _globalLocalRepositories = optionalGlobalLocalRepositories;
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(PackageIdentity identity, CancellationToken cancellationToken)

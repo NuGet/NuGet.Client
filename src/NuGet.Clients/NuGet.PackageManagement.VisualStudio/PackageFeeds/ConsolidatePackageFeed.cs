@@ -26,23 +26,11 @@ namespace NuGet.PackageManagement.VisualStudio
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
-            if (installedPackages == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackages));
-            }
-            _installedPackages = installedPackages;
+            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
 
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            _metadataProvider = metadataProvider;
+            _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             PageSize = 25;
         }

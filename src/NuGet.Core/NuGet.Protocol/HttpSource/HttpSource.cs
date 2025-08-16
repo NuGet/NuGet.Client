@@ -40,25 +40,10 @@ namespace NuGet.Protocol
             Func<Task<HttpHandlerResource>> messageHandlerFactory,
             IThrottle throttle)
         {
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
-            if (messageHandlerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(messageHandlerFactory));
-            }
-
-            if (throttle == null)
-            {
-                throw new ArgumentNullException(nameof(throttle));
-            }
-
-            _packageSource = packageSource;
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             _sourceUri = packageSource.SourceUri;
-            _messageHandlerFactory = messageHandlerFactory;
-            _throttle = throttle;
+            _messageHandlerFactory = messageHandlerFactory ?? throw new ArgumentNullException(nameof(messageHandlerFactory));
+            _throttle = throttle ?? throw new ArgumentNullException(nameof(throttle));
         }
 
         /// <summary>
@@ -485,18 +470,8 @@ namespace NuGet.Protocol
 
             public ThrottledResponse(IThrottle throttle, HttpResponseMessage response)
             {
-                if (throttle == null)
-                {
-                    throw new ArgumentNullException(nameof(throttle));
-                }
-
-                if (response == null)
-                {
-                    throw new ArgumentNullException(nameof(response));
-                }
-
-                _throttle = throttle;
-                Response = response;
+                _throttle = throttle ?? throw new ArgumentNullException(nameof(throttle));
+                Response = response ?? throw new ArgumentNullException(nameof(response));
             }
 
             public HttpResponseMessage Response { get; }

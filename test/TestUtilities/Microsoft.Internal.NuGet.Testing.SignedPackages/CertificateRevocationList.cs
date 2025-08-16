@@ -23,12 +23,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
             X509CertificateWithKeyInfo issuerCert,
             string crlLocalPath)
         {
-            if (issuerCert is null)
-            {
-                throw new ArgumentNullException(nameof(issuerCert));
-            }
-
-            _issuerCert = issuerCert;
+            _issuerCert = issuerCert ?? throw new ArgumentNullException(nameof(issuerCert));
             _crlFilePath = Path.Combine(crlLocalPath, $"{issuerCert.Certificate.Subject}.crl");
             _nextVersion = BigInteger.One;
             _crlBuilder = new CertificateRevocationListBuilder();

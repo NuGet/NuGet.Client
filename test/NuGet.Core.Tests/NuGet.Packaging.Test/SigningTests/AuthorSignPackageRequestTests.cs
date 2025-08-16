@@ -15,12 +15,7 @@ namespace NuGet.Packaging.Test
 
         public AuthorSignPackageRequestTests(CertificatesFixture fixture)
         {
-            if (fixture == null)
-            {
-                throw new ArgumentNullException(nameof(fixture));
-            }
-
-            _fixture = fixture;
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]

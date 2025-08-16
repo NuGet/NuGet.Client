@@ -34,18 +34,8 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
             DateTimeOffset? nextUpdate,
             IReadOnlyList<X509ExtensionAsn>? singleExtensions)
         {
-            if (certId is null)
-            {
-                throw new ArgumentNullException(nameof(certId));
-            }
-
-            if (certStatus is null)
-            {
-                throw new ArgumentNullException(nameof(certStatus));
-            }
-
-            CertId = certId;
-            CertStatus = certStatus;
+            CertId = certId ?? throw new ArgumentNullException(nameof(certId));
+            CertStatus = certStatus ?? throw new ArgumentNullException(nameof(certStatus));
             ThisUpdate = thisUpdate;
             NextUpdate = nextUpdate;
             SingleExtensions = singleExtensions;

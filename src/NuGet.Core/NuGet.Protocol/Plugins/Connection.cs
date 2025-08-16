@@ -81,36 +81,11 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
         internal Connection(IMessageDispatcher dispatcher, ISender sender, IReceiver receiver, ConnectionOptions options, IPluginLogger logger)
         {
-            if (dispatcher == null)
-            {
-                throw new ArgumentNullException(nameof(dispatcher));
-            }
-
-            if (sender == null)
-            {
-                throw new ArgumentNullException(nameof(sender));
-            }
-
-            if (receiver == null)
-            {
-                throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            MessageDispatcher = dispatcher;
-            _sender = sender;
-            _receiver = receiver;
-            Options = options;
-            _logger = logger;
+            MessageDispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _sender = sender ?? throw new ArgumentNullException(nameof(sender));
+            _receiver = receiver ?? throw new ArgumentNullException(nameof(receiver));
+            Options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             MessageDispatcher.SetConnection(this);
         }

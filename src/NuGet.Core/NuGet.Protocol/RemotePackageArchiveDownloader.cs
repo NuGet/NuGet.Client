@@ -89,30 +89,10 @@ namespace NuGet.Protocol
             SourceCacheContext cacheContext,
             ILogger logger)
         {
-            if (resource == null)
-            {
-                throw new ArgumentNullException(nameof(resource));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _resource = resource;
-            _packageIdentity = packageIdentity;
-            _cacheContext = cacheContext;
-            _logger = logger;
+            _resource = resource ?? throw new ArgumentNullException(nameof(resource));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            _cacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
             _handleExceptionAsync = exception => TaskResult.False;
             Source = source;
@@ -247,12 +227,7 @@ namespace NuGet.Protocol
         /// is <see langword="null" />.</exception>
         public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
         {
-            if (handleExceptionAsync == null)
-            {
-                throw new ArgumentNullException(nameof(handleExceptionAsync));
-            }
-
-            _handleExceptionAsync = handleExceptionAsync;
+            _handleExceptionAsync = handleExceptionAsync ?? throw new ArgumentNullException(nameof(handleExceptionAsync));
         }
 
         /// <summary>

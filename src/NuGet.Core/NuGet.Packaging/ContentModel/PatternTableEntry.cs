@@ -24,18 +24,8 @@ namespace NuGet.ContentModel
 
         public PatternTableEntry(string propertyName, string name, object value)
         {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            PropertyName = propertyName;
-            Name = name;
+            PropertyName = propertyName ?? throw new ArgumentNullException(nameof(propertyName));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Value = value;
         }
     }

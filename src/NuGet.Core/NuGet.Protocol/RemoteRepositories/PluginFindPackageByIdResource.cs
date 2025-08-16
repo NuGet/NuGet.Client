@@ -51,24 +51,9 @@ namespace NuGet.Protocol.Core.Types
             IPluginMulticlientUtilities utilities,
             PackageSource packageSource)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            if (utilities == null)
-            {
-                throw new ArgumentNullException(nameof(utilities));
-            }
-
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
-            _plugin = plugin;
-            _utilities = utilities;
-            _packageSource = packageSource;
+            _plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            _utilities = utilities ?? throw new ArgumentNullException(nameof(utilities));
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
         }
 
         /// <summary>

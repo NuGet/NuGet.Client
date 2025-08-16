@@ -53,16 +53,11 @@ namespace NuGet.PackageManagement
             GatherCache gatherCache,
             SourceCacheContext sourceCacheContext)
         {
-            if (gatherCache == null)
-            {
-                throw new ArgumentNullException(nameof(gatherCache));
-            }
-
             DependencyBehavior = dependencyBehavior;
             IncludePrerelease = includePrelease;
             IncludeUnlisted = includeUnlisted;
             VersionConstraints = versionConstraints;
-            GatherCache = gatherCache;
+            GatherCache = gatherCache ?? throw new ArgumentNullException(nameof(gatherCache));
             SourceCacheContext = sourceCacheContext;
         }
 

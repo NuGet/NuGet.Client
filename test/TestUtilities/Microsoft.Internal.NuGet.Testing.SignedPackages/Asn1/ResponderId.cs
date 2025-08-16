@@ -26,12 +26,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
 
         internal ResponderId(X500DistinguishedName name)
         {
-            if (name is null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            _name = name;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         internal void Encode(AsnWriter writer)

@@ -29,12 +29,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1
             IReadOnlyList<EssCertIdV2> certs,
             IReadOnlyList<PolicyInformation>? policies = null)
         {
-            if (certs is null)
-            {
-                throw new ArgumentNullException(nameof(certs));
-            }
-
-            Certs = certs;
+            Certs = certs ?? throw new ArgumentNullException(nameof(certs));
             Policies = policies;
         }
 

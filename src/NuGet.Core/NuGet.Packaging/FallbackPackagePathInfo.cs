@@ -25,24 +25,14 @@ namespace NuGet.Packaging
 
         public FallbackPackagePathInfo(string id, NuGetVersion version, VersionFolderPathResolver resolver)
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             if (version == null)
             {
                 throw new ArgumentNullException(nameof(version));
             }
 
-            if (resolver == null)
-            {
-                throw new ArgumentNullException(nameof(resolver));
-            }
-
-            Id = id;
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             Version = version;
-            PathResolver = resolver;
+            PathResolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         }
     }
 }

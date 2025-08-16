@@ -66,12 +66,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public NuspecCoreReaderBase(XDocument xml)
         {
-            if (xml == null)
-            {
-                throw new ArgumentNullException(nameof(xml));
-            }
-
-            _xml = xml;
+            _xml = xml ?? throw new ArgumentNullException(nameof(xml));
         }
 
         /// <summary>

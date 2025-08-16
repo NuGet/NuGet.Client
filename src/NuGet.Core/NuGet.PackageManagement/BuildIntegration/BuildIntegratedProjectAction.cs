@@ -60,19 +60,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (originalLockFile == null)
-            {
-                throw new ArgumentNullException(nameof(originalLockFile));
-            }
-
             if (restoreResultPair == null)
             {
                 throw new ArgumentNullException(nameof(restoreResultPair));
-            }
-
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
             }
 
             if (originalActions == null)
@@ -85,10 +75,10 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(installationContext));
             }
 
-            OriginalLockFile = originalLockFile;
+            OriginalLockFile = originalLockFile ?? throw new ArgumentNullException(nameof(originalLockFile));
             RestoreResult = restoreResultPair.Result;
             RestoreResultPair = restoreResultPair;
-            Sources = sources;
+            Sources = sources ?? throw new ArgumentNullException(nameof(sources));
             ActionAndContextList = originalActions.Select(e => (e, installationContext)).ToList();
         }
 
@@ -112,19 +102,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (originalLockFile == null)
-            {
-                throw new ArgumentNullException(nameof(originalLockFile));
-            }
-
             if (restoreResultPair == null)
             {
                 throw new ArgumentNullException(nameof(restoreResultPair));
-            }
-
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
             }
 
             if (originalActionsAndInstallationContexts == null)
@@ -137,10 +117,10 @@ namespace NuGet.PackageManagement
                 throw new ArgumentException("Must contain at least 1 element.", nameof(originalActionsAndInstallationContexts));
             }
 
-            OriginalLockFile = originalLockFile;
+            OriginalLockFile = originalLockFile ?? throw new ArgumentNullException(nameof(originalLockFile));
             RestoreResult = restoreResultPair.Result;
             RestoreResultPair = restoreResultPair;
-            Sources = sources;
+            Sources = sources ?? throw new ArgumentNullException(nameof(sources));
             ActionAndContextList = originalActionsAndInstallationContexts;
         }
 

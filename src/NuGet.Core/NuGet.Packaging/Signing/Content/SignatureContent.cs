@@ -30,17 +30,12 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName hashAlgorithm,
             string hashValue)
         {
-            if (signingSpecifications == null)
-            {
-                throw new ArgumentNullException(nameof(signingSpecifications));
-            }
-
             if (string.IsNullOrEmpty(hashValue))
             {
                 throw new ArgumentException(Strings.StringCannotBeNullOrEmpty, nameof(hashValue));
             }
 
-            _signingSpecifications = signingSpecifications;
+            _signingSpecifications = signingSpecifications ?? throw new ArgumentNullException(nameof(signingSpecifications));
             HashAlgorithm = hashAlgorithm;
             HashValue = hashValue;
         }

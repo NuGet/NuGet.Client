@@ -15,18 +15,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
         public ProjectInstalledPackage(VersionRange versionRange, PackageIdentity installedPackage)
         {
-            if (versionRange == null)
-            {
-                throw new ArgumentNullException(nameof(versionRange));
-            }
-
-            if (installedPackage == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackage));
-            }
-
-            AllowedVersions = versionRange;
-            InstalledPackage = installedPackage;
+            AllowedVersions = versionRange ?? throw new ArgumentNullException(nameof(versionRange));
+            InstalledPackage = installedPackage ?? throw new ArgumentNullException(nameof(installedPackage));
         }
 
         public bool Equals(ProjectInstalledPackage other)

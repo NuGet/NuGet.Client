@@ -70,12 +70,7 @@ namespace NuGet.PackageManagement.UI
 
         internal InfiniteScrollList(Lazy<JoinableTaskFactory> joinableTaskFactory)
         {
-            if (joinableTaskFactory == null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
-            }
-
-            _joinableTaskFactory = joinableTaskFactory;
+            _joinableTaskFactory = joinableTaskFactory ?? throw new ArgumentNullException(nameof(joinableTaskFactory));
 
             InitializeComponent();
 

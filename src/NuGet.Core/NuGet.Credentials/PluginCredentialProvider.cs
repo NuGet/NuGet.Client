@@ -36,24 +36,9 @@ namespace NuGet.Credentials
         /// <param name="verbosity">Verbosity string to pass to the plugin.</param>
         public PluginCredentialProvider(Common.ILogger logger, string path, int timeoutSeconds, string verbosity)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (verbosity == null)
-            {
-                throw new ArgumentNullException(nameof(verbosity));
-            }
-
-            _logger = logger;
-            _verbosity = verbosity;
-            Path = path;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _verbosity = verbosity ?? throw new ArgumentNullException(nameof(verbosity));
+            Path = path ?? throw new ArgumentNullException(nameof(path));
             TimeoutSeconds = timeoutSeconds;
             var filename = System.IO.Path.GetFileName(path);
             Id = $"{typeof(PluginCredentialProvider).Name}_{filename}_{Guid.NewGuid()}";

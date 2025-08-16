@@ -23,12 +23,7 @@ namespace NuGet.Protocol
 
         public DependencyInfoResourceV2Feed(V2FeedParser feedParser, SourceRepository source)
         {
-            if (feedParser == null)
-            {
-                throw new ArgumentNullException(nameof(feedParser));
-            }
-
-            _feedParser = feedParser;
+            _feedParser = feedParser ?? throw new ArgumentNullException(nameof(feedParser));
             _source = source;
         }
 

@@ -83,23 +83,13 @@ namespace NuGet.Protocol.Plugins
             CancellationToken cancellationToken,
             IPluginLogger logger)
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException(nameof(connection));
-            }
-
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _connection = connection;
-            _request = request;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _request = request ?? throw new ArgumentNullException(nameof(request));
             _taskCompletionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             _timeout = timeout;
             _isKeepAlive = isKeepAlive;

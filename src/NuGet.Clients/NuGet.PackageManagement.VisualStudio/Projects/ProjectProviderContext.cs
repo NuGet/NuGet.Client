@@ -20,18 +20,8 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectContext projectContext,
             Func<string> packagesPathFactory)
         {
-            if (projectContext == null)
-            {
-                throw new ArgumentNullException(nameof(projectContext));
-            }
-
-            if (packagesPathFactory == null)
-            {
-                throw new ArgumentNullException(nameof(packagesPathFactory));
-            }
-
-            ProjectContext = projectContext;
-            PackagesPathFactory = packagesPathFactory;
+            ProjectContext = projectContext ?? throw new ArgumentNullException(nameof(projectContext));
+            PackagesPathFactory = packagesPathFactory ?? throw new ArgumentNullException(nameof(packagesPathFactory));
         }
     }
 }

@@ -41,13 +41,8 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(pluginCreationResults));
             }
 
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
             _pluginCreationResults = pluginCreationResults.ToArray();
-            _packageSource = packageSource;
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             _credentialService = credentialService;
         }
 

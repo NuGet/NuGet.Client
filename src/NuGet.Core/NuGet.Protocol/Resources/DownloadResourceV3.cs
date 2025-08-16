@@ -28,13 +28,8 @@ namespace NuGet.Protocol
         public DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource)
             : this(client)
         {
-            if (regResource == null)
-            {
-                throw new ArgumentNullException(nameof(regResource));
-            }
-
             _source = source;
-            _regResource = regResource;
+            _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
         }
 
         /// <summary>
@@ -54,12 +49,7 @@ namespace NuGet.Protocol
 
         private DownloadResourceV3(HttpSource client)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            _client = client;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>

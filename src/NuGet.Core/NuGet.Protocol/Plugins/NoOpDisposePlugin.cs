@@ -69,12 +69,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" /> is <see langword="null" />.</exception>
         public NoOpDisposePlugin(IPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            _plugin = plugin;
+            _plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
         }
 
         /// <summary>

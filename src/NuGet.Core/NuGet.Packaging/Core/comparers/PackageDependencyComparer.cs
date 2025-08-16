@@ -19,12 +19,7 @@ namespace NuGet.Packaging.Core
 
         public PackageDependencyComparer(IVersionRangeComparer versionRangeComparer)
         {
-            if (versionRangeComparer == null)
-            {
-                throw new ArgumentNullException(nameof(versionRangeComparer));
-            }
-
-            _versionRangeComparer = versionRangeComparer;
+            _versionRangeComparer = versionRangeComparer ?? throw new ArgumentNullException(nameof(versionRangeComparer));
         }
 
         /// <summary>

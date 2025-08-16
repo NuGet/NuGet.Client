@@ -46,17 +46,12 @@ namespace NuGet.ProjectModel
             string msbuildProjectPath,
             IEnumerable<string> projectReferences)
         {
-            if (uniqueName == null)
-            {
-                throw new ArgumentNullException(nameof(uniqueName));
-            }
-
             if (projectReferences == null)
             {
                 throw new ArgumentNullException(nameof(projectReferences));
             }
 
-            UniqueName = uniqueName;
+            UniqueName = uniqueName ?? throw new ArgumentNullException(nameof(uniqueName));
             ProjectJsonPath = packageSpecPath;
             MSBuildProjectPath = msbuildProjectPath;
             PackageSpecProjectName = packageSpecProjectName;

@@ -20,12 +20,7 @@ namespace NuGet.Credentials
 
         public CredentialServiceAdapter(ICredentialService service)
         {
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            _credentialService = service;
+            _credentialService = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         /// <summary>

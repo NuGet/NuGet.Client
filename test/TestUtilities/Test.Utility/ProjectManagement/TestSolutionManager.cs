@@ -66,12 +66,7 @@ namespace Test.Utility
 
         public TestSolutionManager(string solutionDirectory)
         {
-            if (solutionDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(solutionDirectory));
-            }
-
-            SolutionDirectory = solutionDirectory;
+            SolutionDirectory = solutionDirectory ?? throw new ArgumentNullException(nameof(solutionDirectory));
         }
 
         public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string projectPath = null, bool validateExistingProject = true)

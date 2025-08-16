@@ -28,25 +28,10 @@ namespace NuGet.PackageManagement.UI.Utility
 
         private NuGetSearchServiceReconnector(IServiceBroker serviceBroker, JoinableTaskFactory jtf, INuGetSearchService initialService)
         {
-            if (serviceBroker == null)
-            {
-                throw new ArgumentNullException(nameof(serviceBroker));
-            }
-
-            if (jtf == null)
-            {
-                throw new ArgumentNullException(nameof(jtf));
-            }
-
-            if (initialService == null)
-            {
-                throw new ArgumentNullException(nameof(initialService));
-            }
-
             _disposedTokenSource = new CancellationTokenSource();
-            _jtf = jtf;
-            _serviceBroker = serviceBroker;
-            _service = initialService;
+            _jtf = jtf ?? throw new ArgumentNullException(nameof(jtf));
+            _serviceBroker = serviceBroker ?? throw new ArgumentNullException(nameof(serviceBroker));
+            _service = initialService ?? throw new ArgumentNullException(nameof(initialService));
 
             _serviceBroker.AvailabilityChanged += AvailabilityChanged;
 

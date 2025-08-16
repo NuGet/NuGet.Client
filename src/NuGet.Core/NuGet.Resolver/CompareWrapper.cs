@@ -16,11 +16,7 @@ namespace NuGet.Resolver
 
         public CompareWrapper(Func<T, T, int> compareImpl)
         {
-            if (compareImpl == null)
-            {
-                throw new ArgumentNullException(nameof(compareImpl));
-            }
-            this.compareImpl = compareImpl;
+            this.compareImpl = compareImpl ?? throw new ArgumentNullException(nameof(compareImpl));
         }
 
         public int Compare(T x, T y)

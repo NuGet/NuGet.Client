@@ -49,12 +49,7 @@ namespace NuGet.PackageManagement
 
         internal AuditCheckResult(IReadOnlyList<ILogMessage> warnings)
         {
-            if (warnings is null)
-            {
-                throw new ArgumentNullException(nameof(warnings));
-            }
-
-            Warnings = warnings;
+            Warnings = warnings ?? throw new ArgumentNullException(nameof(warnings));
         }
 
         public void AddMetricsToTelemetry(TelemetryEvent telemetryEvent)

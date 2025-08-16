@@ -35,12 +35,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public PackageIdentityComparer(IVersionComparer versionComparer)
         {
-            if (versionComparer == null)
-            {
-                throw new ArgumentNullException(nameof(versionComparer));
-            }
-
-            _versionComparer = versionComparer;
+            _versionComparer = versionComparer ?? throw new ArgumentNullException(nameof(versionComparer));
         }
 
         /// <summary>

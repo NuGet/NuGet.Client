@@ -43,13 +43,8 @@ namespace NuGet.Packaging
         /// <param name="frameworkMappings">Framework mappings</param>
         public PackagesConfigWriter(string fullPath, bool createNew, IFrameworkNameProvider frameworkMappings)
         {
-            if (fullPath == null)
-            {
-                throw new ArgumentNullException(nameof(fullPath));
-            }
-
             _frameworkMappings = frameworkMappings;
-            _filePath = fullPath;
+            _filePath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
 
             if (createNew)
             {
@@ -91,12 +86,7 @@ namespace NuGet.Packaging
         /// <param name="frameworkMappings">Framework mappings</param>
         public PackagesConfigWriter(Stream stream, bool createNew, IFrameworkNameProvider frameworkMappings)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            _stream = stream;
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             _frameworkMappings = frameworkMappings;
 
             if (createNew)

@@ -20,12 +20,7 @@ namespace NuGet.Protocol
 
         public LocalPackageSearchResource(FindLocalPackagesResource localResource)
         {
-            if (localResource == null)
-            {
-                throw new ArgumentNullException(nameof(localResource));
-            }
-
-            _localResource = localResource;
+            _localResource = localResource ?? throw new ArgumentNullException(nameof(localResource));
         }
 
         public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(

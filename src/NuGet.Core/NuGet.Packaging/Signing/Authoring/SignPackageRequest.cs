@@ -51,11 +51,6 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName signatureHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm)
         {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-
             if (!Enum.IsDefined(typeof(HashAlgorithmName), signatureHashAlgorithm) ||
                 signatureHashAlgorithm == HashAlgorithmName.Unknown)
             {
@@ -68,7 +63,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(timestampHashAlgorithm));
             }
 
-            Certificate = certificate;
+            Certificate = certificate ?? throw new ArgumentNullException(nameof(certificate));
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
             AdditionalCertificates = new X509Certificate2Collection();

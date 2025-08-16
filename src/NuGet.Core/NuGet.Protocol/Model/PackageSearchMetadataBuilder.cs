@@ -64,11 +64,7 @@ namespace NuGet.Protocol.Core.Types
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
         {
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-            _metadata = metadata;
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         public PackageSearchMetadataBuilder WithVersions(AsyncLazy<IEnumerable<VersionInfo>> lazyVersionsFactory)

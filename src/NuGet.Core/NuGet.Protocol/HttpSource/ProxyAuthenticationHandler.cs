@@ -36,22 +36,12 @@ namespace NuGet.Protocol
             IProxyCredentialCache credentialCache)
             : base(clientHandler)
         {
-            if (clientHandler == null)
-            {
-                throw new ArgumentNullException(nameof(clientHandler));
-            }
-
-            _clientHandler = clientHandler;
+            _clientHandler = clientHandler ?? throw new ArgumentNullException(nameof(clientHandler));
 
             // credential service is optional
             _credentialService = credentialService;
 
-            if (credentialCache == null)
-            {
-                throw new ArgumentNullException(nameof(credentialCache));
-            }
-
-            _credentialCache = credentialCache;
+            _credentialCache = credentialCache ?? throw new ArgumentNullException(nameof(credentialCache));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,

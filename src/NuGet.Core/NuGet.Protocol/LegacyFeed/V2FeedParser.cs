@@ -79,25 +79,15 @@ namespace NuGet.Protocol
         /// <param name="source">PackageSource useful for reporting meaningful errors that relate back to the configuration</param>
         public V2FeedParser(HttpSource httpSource, string baseAddress, string source)
         {
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
             if (baseAddress == null)
             {
                 throw new ArgumentNullException(nameof(baseAddress));
             }
 
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            _httpSource = httpSource;
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _baseAddress = baseAddress.Trim('/');
             _queryBuilder = new V2FeedQueryBuilder();
-            Source = source;
+            Source = source ?? throw new ArgumentNullException(nameof(source));
         }
 
         public string Source { get; private set; }

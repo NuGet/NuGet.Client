@@ -22,12 +22,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <see langword="null" />.</exception>
         public MessageEventArgs(Message message)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            Message = message;
+            Message = message ?? throw new ArgumentNullException(nameof(message));
         }
     }
 }

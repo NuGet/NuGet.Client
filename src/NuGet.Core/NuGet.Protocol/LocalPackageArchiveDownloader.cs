@@ -94,19 +94,9 @@ namespace NuGet.Protocol
                     nameof(packageFilePath));
             }
 
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _packageFilePath = packageFilePath;
-            _packageIdentity = packageIdentity;
-            _logger = logger;
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
             _sourceStream = new Lazy<FileStream>(GetSourceStream);
             _handleExceptionAsync = exception => TaskResult.False;
@@ -253,12 +243,7 @@ namespace NuGet.Protocol
         /// is <see langword="null" />.</exception>
         public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
         {
-            if (handleExceptionAsync == null)
-            {
-                throw new ArgumentNullException(nameof(handleExceptionAsync));
-            }
-
-            _handleExceptionAsync = handleExceptionAsync;
+            _handleExceptionAsync = handleExceptionAsync ?? throw new ArgumentNullException(nameof(handleExceptionAsync));
         }
 
         /// <summary>

@@ -28,18 +28,8 @@ namespace NuGetConsole
             IVsOutputWindow vsOutputWindow,
             IVsUIShell vsUiShell)
         {
-            if (vsOutputWindow == null)
-            {
-                throw new ArgumentNullException(nameof(vsOutputWindow));
-            }
-
-            if (vsUiShell == null)
-            {
-                throw new ArgumentNullException(nameof(vsUiShell));
-            }
-
-            _vsOutputWindow = vsOutputWindow;
-            _vsUiShell = vsUiShell;
+            _vsOutputWindow = vsOutputWindow ?? throw new ArgumentNullException(nameof(vsOutputWindow));
+            _vsUiShell = vsUiShell ?? throw new ArgumentNullException(nameof(vsUiShell));
 
             _outputWindowPane = new AsyncLazy<IVsOutputWindowPane>(async () =>
             {

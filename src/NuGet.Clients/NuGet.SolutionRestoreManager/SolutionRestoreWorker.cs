@@ -120,54 +120,14 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
             Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService)
         {
-            if (asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            if (lockService == null)
-            {
-                throw new ArgumentNullException(nameof(lockService));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (errorList == null)
-            {
-                throw new ArgumentNullException(nameof(errorList));
-            }
-
-            if (outputConsoleProvider == null)
-            {
-                throw new ArgumentNullException(nameof(outputConsoleProvider));
-            }
-
-            if (nugetFeatureFlagService == null)
-            {
-                throw new ArgumentNullException(nameof(nugetFeatureFlagService));
-            }
-
-            if (vulnerabilitiesFoundService == null)
-            {
-                throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
-            }
-
-            _asyncServiceProvider = asyncServiceProvider;
-            _solutionManager = solutionManager;
-            _lockService = lockService;
-            _logger = logger;
-            _errorList = errorList;
-            _outputConsoleProvider = outputConsoleProvider;
-            _nugetFeatureFlagService = nugetFeatureFlagService;
-            _vulnerabilitiesFoundService = vulnerabilitiesFoundService;
+            _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
+            _lockService = lockService ?? throw new ArgumentNullException(nameof(lockService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorList = errorList ?? throw new ArgumentNullException(nameof(errorList));
+            _outputConsoleProvider = outputConsoleProvider ?? throw new ArgumentNullException(nameof(outputConsoleProvider));
+            _nugetFeatureFlagService = nugetFeatureFlagService ?? throw new ArgumentNullException(nameof(nugetFeatureFlagService));
+            _vulnerabilitiesFoundService = vulnerabilitiesFoundService ?? throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();

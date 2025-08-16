@@ -14,18 +14,8 @@ namespace NuGet.PackageManagement
 
         public PackageRestoreData(Packaging.PackageReference packageReference, IEnumerable<string> projectNames, bool isMissing)
         {
-            if (packageReference == null)
-            {
-                throw new ArgumentNullException(nameof(packageReference));
-            }
-
-            if (projectNames == null)
-            {
-                throw new ArgumentNullException(nameof(projectNames));
-            }
-
-            PackageReference = packageReference;
-            ProjectNames = projectNames;
+            PackageReference = packageReference ?? throw new ArgumentNullException(nameof(packageReference));
+            ProjectNames = projectNames ?? throw new ArgumentNullException(nameof(projectNames));
             IsMissing = isMissing;
         }
     }

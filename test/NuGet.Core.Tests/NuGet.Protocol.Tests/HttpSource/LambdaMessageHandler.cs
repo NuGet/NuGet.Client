@@ -24,12 +24,7 @@ namespace NuGet.Protocol.Tests
 
         public LambdaMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> @delegate)
         {
-            if (@delegate == null)
-            {
-                throw new ArgumentNullException(nameof(@delegate));
-            }
-
-            _delegate = @delegate;
+            _delegate = @delegate ?? throw new ArgumentNullException(nameof(@delegate));
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -41,30 +41,10 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="after">providers that this provider should be called after</param>
         public ResourceProvider(Type resourceType, string name, IEnumerable<string> before, IEnumerable<string> after)
         {
-            if (resourceType == null)
-            {
-                throw new ArgumentNullException(nameof(resourceType));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (before == null)
-            {
-                throw new ArgumentNullException(nameof(before));
-            }
-
-            if (after == null)
-            {
-                throw new ArgumentNullException(nameof(after));
-            }
-
-            _resourceType = resourceType;
-            _name = name;
-            _before = before;
-            _after = after;
+            _resourceType = resourceType ?? throw new ArgumentNullException(nameof(resourceType));
+            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _before = before ?? throw new ArgumentNullException(nameof(before));
+            _after = after ?? throw new ArgumentNullException(nameof(after));
         }
 
         public virtual IEnumerable<string> After

@@ -24,12 +24,7 @@ namespace NuGet.Commands
             IFileInfo fileInfo,
             FileProviderGlobbingDirectory parent)
         {
-            if (fileProvider == null)
-            {
-                throw new ArgumentNullException(nameof(fileProvider));
-            }
-
-            _fileProvider = fileProvider;
+            _fileProvider = fileProvider ?? throw new ArgumentNullException(nameof(fileProvider));
             _fileInfo = fileInfo;
             _parent = parent;
 

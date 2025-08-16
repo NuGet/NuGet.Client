@@ -47,18 +47,8 @@ namespace NuGet.Packaging
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="compatibilityProvider" /> is <see langword="null" />.</exception>
         public PackageReaderBase(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
         {
-            if (frameworkProvider == null)
-            {
-                throw new ArgumentNullException(nameof(frameworkProvider));
-            }
-
-            if (compatibilityProvider == null)
-            {
-                throw new ArgumentNullException(nameof(compatibilityProvider));
-            }
-
-            FrameworkProvider = frameworkProvider;
-            CompatibilityProvider = compatibilityProvider;
+            FrameworkProvider = frameworkProvider ?? throw new ArgumentNullException(nameof(frameworkProvider));
+            CompatibilityProvider = compatibilityProvider ?? throw new ArgumentNullException(nameof(compatibilityProvider));
         }
 
         #region IPackageCoreReader implementation

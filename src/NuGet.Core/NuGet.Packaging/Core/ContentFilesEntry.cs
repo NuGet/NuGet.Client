@@ -44,12 +44,7 @@ namespace NuGet.Packaging.Core
             bool? copyToOutput,
             bool? flatten)
         {
-            if (include == null)
-            {
-                throw new ArgumentNullException(nameof(include));
-            }
-
-            Include = include;
+            Include = include ?? throw new ArgumentNullException(nameof(include));
             Exclude = exclude;
             BuildAction = buildAction;
             CopyToOutput = copyToOutput;

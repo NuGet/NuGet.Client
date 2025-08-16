@@ -28,12 +28,7 @@ namespace NuGet.ProjectManagement
         /// is <see langword="null" />.</exception>
         public XmlTransformer(IDictionary<XName, Action<XElement, XElement>> nodeActions)
         {
-            if (nodeActions == null)
-            {
-                throw new ArgumentNullException(nameof(nodeActions));
-            }
-
-            _nodeActions = nodeActions;
+            _nodeActions = nodeActions ?? throw new ArgumentNullException(nameof(nodeActions));
         }
 
         /// <summary>

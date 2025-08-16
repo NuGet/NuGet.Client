@@ -23,12 +23,7 @@ namespace NuGet.Packaging.Core
         /// <param name="version">version</param>
         public PackageIdentity(string id, NuGetVersion version)
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
-            _id = id;
+            _id = id ?? throw new ArgumentNullException(nameof(id));
             _version = version;
         }
 

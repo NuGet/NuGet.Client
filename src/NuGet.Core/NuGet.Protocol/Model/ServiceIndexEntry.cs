@@ -33,18 +33,13 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(serviceType));
             }
 
-            if (serviceType == null)
-            {
-                throw new ArgumentNullException(nameof(serviceType));
-            }
-
             if (clientVersion == null)
             {
                 throw new ArgumentNullException(nameof(clientVersion));
             }
 
             Uri = serviceUri;
-            Type = serviceType;
+            Type = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
             ClientVersion = clientVersion;
         }
     }

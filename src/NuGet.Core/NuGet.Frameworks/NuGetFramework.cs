@@ -56,12 +56,11 @@ namespace NuGet.Frameworks
 
         internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion)
         {
-            if (frameworkIdentifier == null) throw new ArgumentNullException(nameof(frameworkIdentifier));
             if (frameworkVersion == null) throw new ArgumentNullException(nameof(frameworkVersion));
             if (platform == null) throw new ArgumentNullException(nameof(platform));
             if (platformVersion == null) throw new ArgumentNullException(nameof(platformVersion));
 
-            _frameworkIdentifier = frameworkIdentifier;
+            _frameworkIdentifier = frameworkIdentifier ?? throw new ArgumentNullException(nameof(frameworkIdentifier));
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = profile;
 

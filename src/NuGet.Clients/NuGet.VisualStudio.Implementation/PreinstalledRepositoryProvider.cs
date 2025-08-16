@@ -40,25 +40,10 @@ namespace NuGet.VisualStudio
             Action<string> errorHandler,
             ISourceRepositoryProvider provider)
         {
-            if (registryKeyRoot == null)
-            {
-                throw new ArgumentNullException(nameof(registryKeyRoot));
-            }
-
-            if (errorHandler == null)
-            {
-                throw new ArgumentNullException(nameof(errorHandler));
-            }
-
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            _registryKeyRoot = registryKeyRoot;
+            _registryKeyRoot = registryKeyRoot ?? throw new ArgumentNullException(nameof(registryKeyRoot));
             _repositories = new List<SourceRepository>();
-            _errorHandler = errorHandler;
-            _provider = provider;
+            _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         public void AddFromRegistry(string keyName, bool isPreUnzipped)

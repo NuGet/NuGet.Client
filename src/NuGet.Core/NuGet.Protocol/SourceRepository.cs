@@ -56,17 +56,12 @@ namespace NuGet.Protocol.Core.Types
             FeedType feedTypeOverride)
             : this()
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
             if (providers == null)
             {
                 throw new ArgumentNullException(nameof(providers));
             }
 
-            _source = source;
+            _source = source ?? throw new ArgumentNullException(nameof(source));
             _providerCache = Init(providers);
             FeedTypeOverride = feedTypeOverride;
         }

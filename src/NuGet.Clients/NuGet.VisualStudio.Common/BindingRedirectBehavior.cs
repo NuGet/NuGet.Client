@@ -13,12 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public BindingRedirectBehavior(Configuration.ISettings settings)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public bool IsSkipped

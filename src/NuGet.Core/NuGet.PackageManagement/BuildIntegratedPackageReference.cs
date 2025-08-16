@@ -32,12 +32,7 @@ namespace NuGet.ProjectManagement
                   requireReinstallation: false,
                   allowedVersions: GetAllowedVersions(dependency))
         {
-            if (dependency == null)
-            {
-                throw new ArgumentNullException(nameof(dependency));
-            }
-
-            Dependency = dependency;
+            Dependency = dependency ?? throw new ArgumentNullException(nameof(dependency));
         }
 
         /// <summary>
@@ -53,12 +48,7 @@ namespace NuGet.ProjectManagement
                   requireReinstallation: false,
                   allowedVersions: GetAllowedVersions(dependency))
         {
-            if (dependency == null)
-            {
-                throw new ArgumentNullException(nameof(dependency));
-            }
-
-            Dependency = dependency;
+            Dependency = dependency ?? throw new ArgumentNullException(nameof(dependency));
         }
 
         /// <summary>

@@ -46,13 +46,8 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(targetFramework));
             }
 
-            if (packages == null)
-            {
-                throw new ArgumentNullException(nameof(packages));
-            }
-
             _targetFramework = targetFramework;
-            _packages = packages;
+            _packages = packages ?? throw new ArgumentNullException(nameof(packages));
         }
 
         /// <summary>

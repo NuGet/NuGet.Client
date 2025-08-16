@@ -47,24 +47,9 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="claims" /> is <see langword="null" />.</exception>
         public PluginCreationResult(IPlugin plugin, IPluginMulticlientUtilities utilities, IReadOnlyList<OperationClaim> claims)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            if (utilities == null)
-            {
-                throw new ArgumentNullException(nameof(utilities));
-            }
-
-            if (claims == null)
-            {
-                throw new ArgumentNullException(nameof(claims));
-            }
-
-            Plugin = plugin;
-            PluginMulticlientUtilities = utilities;
-            Claims = claims;
+            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            PluginMulticlientUtilities = utilities ?? throw new ArgumentNullException(nameof(utilities));
+            Claims = claims ?? throw new ArgumentNullException(nameof(claims));
         }
 
         /// <summary>
@@ -94,12 +79,7 @@ namespace NuGet.Protocol.Plugins
         public PluginCreationResult(string message, Exception exception)
             : this(message)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            Exception = exception;
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
         }
     }
 }

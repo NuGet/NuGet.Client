@@ -16,13 +16,8 @@ namespace NuGet.Packaging
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(assemblyName));
             }
 
-            if (supportedFrameworks == null)
-            {
-                throw new ArgumentNullException(nameof(supportedFrameworks));
-            }
-
             AssemblyName = assemblyName;
-            SupportedFrameworks = supportedFrameworks;
+            SupportedFrameworks = supportedFrameworks ?? throw new ArgumentNullException(nameof(supportedFrameworks));
         }
 
         public string AssemblyName { get; private set; }

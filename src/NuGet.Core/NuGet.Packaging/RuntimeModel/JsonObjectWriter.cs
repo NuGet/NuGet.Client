@@ -19,12 +19,7 @@ namespace NuGet.RuntimeModel
 
         public JsonObjectWriter(JsonWriter writer)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            _writer = writer;
+            _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         }
 
         public void Dispose()

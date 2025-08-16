@@ -30,24 +30,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Action<string, Exception> handleException,
             CancellationToken cancellationToken)
         {
-            if (packageFeed == null)
-            {
-                throw new ArgumentNullException(nameof(packageFeed));
-            }
-
-            if (searchTask == null)
-            {
-                throw new ArgumentNullException(nameof(searchTask));
-            }
-
-            if (handleException == null)
-            {
-                throw new ArgumentNullException(nameof(handleException));
-            }
-
-            _packageFeed = packageFeed;
-            _startFromTask = searchTask;
-            _handleException = handleException;
+            _packageFeed = packageFeed ?? throw new ArgumentNullException(nameof(packageFeed));
+            _startFromTask = searchTask ?? throw new ArgumentNullException(nameof(searchTask));
+            _handleException = handleException ?? throw new ArgumentNullException(nameof(handleException));
             _cancellationToken = cancellationToken;
 
             Reset();

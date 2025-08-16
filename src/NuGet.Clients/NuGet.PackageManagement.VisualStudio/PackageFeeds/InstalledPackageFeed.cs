@@ -24,17 +24,9 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider)
         {
-            if (installedPackages == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackages));
-            }
-            _installedPackages = installedPackages;
+            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
 
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            _metadataProvider = metadataProvider;
+            _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)

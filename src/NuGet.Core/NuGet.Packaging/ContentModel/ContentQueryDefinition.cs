@@ -104,9 +104,8 @@ namespace NuGet.ContentModel
             PatternTable? table,
             IEnumerable<KeyValuePair<string, object>> defaults)
         {
-            if (pattern == null) throw new ArgumentNullException(nameof(pattern));
             if (defaults == null) throw new ArgumentNullException(nameof(defaults));
-            Pattern = pattern;
+            Pattern = pattern ?? throw new ArgumentNullException(nameof(pattern));
             Table = table;
             Defaults = defaults.ToDictionary(p => p.Key, p => p.Value);
         }

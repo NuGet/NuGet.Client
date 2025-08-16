@@ -17,24 +17,9 @@ namespace NuGet.Protocol
     {
         public HttpSourceCachedRequest(string uri, string cacheKey, HttpSourceCacheContext cacheContext)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (cacheKey == null)
-            {
-                throw new ArgumentNullException(nameof(cacheKey));
-            }
-
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            Uri = uri;
-            CacheKey = cacheKey;
-            CacheContext = cacheContext;
+            Uri = uri ?? throw new ArgumentNullException(nameof(uri));
+            CacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
+            CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
         }
 
         /// <summary>

@@ -34,12 +34,7 @@ namespace NuGet.Configuration
             get => _source;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(paramName: nameof(value));
-                }
-
-                _source = value;
+                _source = value ?? throw new ArgumentNullException(paramName: nameof(value));
 
                 HashCodeCombiner hash = new();
                 hash.AddStringIgnoreCase(Name);

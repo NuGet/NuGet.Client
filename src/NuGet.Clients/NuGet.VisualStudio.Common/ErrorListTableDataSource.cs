@@ -45,19 +45,9 @@ namespace NuGet.VisualStudio.Common
         /// </summary>
         public ErrorListTableDataSource(IErrorList errorList, ITableManager tableManager)
         {
-            if (errorList == null)
-            {
-                throw new ArgumentNullException(nameof(errorList));
-            }
-
-            if (tableManager == null)
-            {
-                throw new ArgumentNullException(nameof(tableManager));
-            }
-
             _initialized = true;
-            _errorList = errorList;
-            _tableManager = tableManager;
+            _errorList = errorList ?? throw new ArgumentNullException(nameof(errorList));
+            _tableManager = tableManager ?? throw new ArgumentNullException(nameof(tableManager));
         }
 
         public ErrorListTableDataSource()

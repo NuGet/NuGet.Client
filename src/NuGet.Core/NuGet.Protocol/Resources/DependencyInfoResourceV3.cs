@@ -30,24 +30,9 @@ namespace NuGet.Protocol
         /// <param name="regResource">Registration blob resource</param>
         public DependencyInfoResourceV3(HttpSource client, RegistrationResourceV3 regResource, SourceRepository source)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            if (regResource == null)
-            {
-                throw new ArgumentNullException(nameof(regResource));
-            }
-
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            _client = client;
-            _regResource = regResource;
-            _source = source;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
+            _source = source ?? throw new ArgumentNullException(nameof(source));
         }
 
         /// <summary>

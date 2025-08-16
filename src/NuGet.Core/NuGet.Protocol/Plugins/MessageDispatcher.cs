@@ -58,32 +58,13 @@ namespace NuGet.Protocol.Plugins
         /// is <see langword="null" />.</exception>
         internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, InboundRequestProcessingHandler inboundRequestProcessingHandler, IPluginLogger logger)
         {
-            if (requestHandlers == null)
-            {
-                throw new ArgumentNullException(nameof(requestHandlers));
-            }
-
-            if (idGenerator == null)
-            {
-                throw new ArgumentNullException(nameof(idGenerator));
-            }
-
-            if (inboundRequestProcessingHandler == null)
-            {
-                throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            RequestHandlers = requestHandlers;
-            _idGenerator = idGenerator;
-            _logger = logger;
+            RequestHandlers = requestHandlers ?? throw new ArgumentNullException(nameof(requestHandlers));
+            _idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>();
             _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>();
-            _inboundRequestProcessingContext = inboundRequestProcessingHandler;
+            _inboundRequestProcessingContext = inboundRequestProcessingHandler ?? throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
         }
 
         /// <summary>

@@ -21,12 +21,7 @@ namespace NuGet.Commands
 
         public MSBuildOutputFile(string path, XDocument content)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            Path = path;
+            Path = path ?? throw new ArgumentNullException(nameof(path));
             Content = content;
         }
     }

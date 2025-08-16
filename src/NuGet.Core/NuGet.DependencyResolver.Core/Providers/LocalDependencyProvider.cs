@@ -31,12 +31,7 @@ namespace NuGet.DependencyResolver
         /// is <see langword="null" />.</exception>
         public LocalDependencyProvider(IDependencyProvider dependencyProvider)
         {
-            if (dependencyProvider == null)
-            {
-                throw new ArgumentNullException(nameof(dependencyProvider));
-            }
-
-            _dependencyProvider = dependencyProvider;
+            _dependencyProvider = dependencyProvider ?? throw new ArgumentNullException(nameof(dependencyProvider));
         }
 
         /// <summary>

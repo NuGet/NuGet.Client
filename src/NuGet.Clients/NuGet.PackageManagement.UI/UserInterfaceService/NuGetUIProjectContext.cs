@@ -22,18 +22,8 @@ namespace NuGet.PackageManagement.UI
             INuGetUILogger logger,
             ISourceControlManagerProvider sourceControlManagerProvider)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (sourceControlManagerProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceControlManagerProvider));
-            }
-
-            _logger = logger;
-            SourceControlManagerProvider = sourceControlManagerProvider;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            SourceControlManagerProvider = sourceControlManagerProvider ?? throw new ArgumentNullException(nameof(sourceControlManagerProvider));
 
             if (commonOperations != null)
             {

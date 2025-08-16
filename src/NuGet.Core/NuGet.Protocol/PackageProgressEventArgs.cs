@@ -27,12 +27,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentOutOfRangeException(nameof(complete));
             }
 
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
-            _identity = identity;
+            _identity = identity ?? throw new ArgumentNullException(nameof(identity));
             _source = source;
             _complete = complete;
         }

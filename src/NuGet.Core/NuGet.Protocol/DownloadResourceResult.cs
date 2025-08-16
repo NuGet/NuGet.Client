@@ -44,13 +44,8 @@ namespace NuGet.Protocol.Core.Types
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream" /> is <see langword="null" />.</exception>
         public DownloadResourceResult(Stream stream, string source)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
             Status = DownloadResourceResultStatus.Available;
-            _stream = stream;
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             _packageSource = source;
         }
 
@@ -75,13 +70,8 @@ namespace NuGet.Protocol.Core.Types
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageReader" /> is <see langword="null" />.</exception>
         public DownloadResourceResult(PackageReaderBase packageReader, string source)
         {
-            if (packageReader == null)
-            {
-                throw new ArgumentNullException(nameof(packageReader));
-            }
-
             Status = DownloadResourceResultStatus.AvailableWithoutStream;
-            _packageReader = packageReader;
+            _packageReader = packageReader ?? throw new ArgumentNullException(nameof(packageReader));
             _packageSource = source;
         }
 

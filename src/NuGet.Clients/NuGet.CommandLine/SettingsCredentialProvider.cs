@@ -19,12 +19,7 @@ namespace NuGet.CommandLine
 
         public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Common.ILogger logger)
         {
-            if (packageSourceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(packageSourceProvider));
-            }
-
-            _packageSourceProvider = packageSourceProvider;
+            _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
             _logger = logger;
         }
 

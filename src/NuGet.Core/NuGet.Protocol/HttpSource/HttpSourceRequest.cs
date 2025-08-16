@@ -26,12 +26,7 @@ namespace NuGet.Protocol
 
         public HttpSourceRequest(Func<HttpRequestMessage> requestFactory)
         {
-            if (requestFactory == null)
-            {
-                throw new ArgumentNullException(nameof(requestFactory));
-            }
-
-            RequestFactory = requestFactory;
+            RequestFactory = requestFactory ?? throw new ArgumentNullException(nameof(requestFactory));
         }
 
         /// <summary>

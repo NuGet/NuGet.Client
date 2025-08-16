@@ -18,12 +18,7 @@ namespace NuGet.Protocol
 
         public LocalPackageMetadataResource(FindLocalPackagesResource localResource)
         {
-            if (localResource == null)
-            {
-                throw new ArgumentNullException(nameof(localResource));
-            }
-
-            _localResource = localResource;
+            _localResource = localResource ?? throw new ArgumentNullException(nameof(localResource));
         }
 
         public override Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(

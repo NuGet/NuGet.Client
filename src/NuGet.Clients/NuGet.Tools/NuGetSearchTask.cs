@@ -20,32 +20,12 @@ namespace NuGetVSExtension
 
         public NuGetSearchTask(NuGetSearchProvider provider, uint cookie, IVsSearchQuery searchQuery, IVsSearchProviderCallback searchCallback, OleMenuCommand managePackageDialogCommand, OleMenuCommand managePackageForSolutionDialogCommand)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-            if (searchQuery == null)
-            {
-                throw new ArgumentNullException(nameof(searchQuery));
-            }
-            if (searchCallback == null)
-            {
-                throw new ArgumentNullException(nameof(searchCallback));
-            }
-            if (managePackageDialogCommand == null)
-            {
-                throw new ArgumentNullException(nameof(managePackageDialogCommand));
-            }
-            if (managePackageForSolutionDialogCommand == null)
-            {
-                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
-            }
-            _provider = provider;
-            _searchCallback = searchCallback;
-            _managePackageDialogCommand = managePackageDialogCommand;
-            _managePackageForSolutionDialogCommand = managePackageForSolutionDialogCommand;
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _searchCallback = searchCallback ?? throw new ArgumentNullException(nameof(searchCallback));
+            _managePackageDialogCommand = managePackageDialogCommand ?? throw new ArgumentNullException(nameof(managePackageDialogCommand));
+            _managePackageForSolutionDialogCommand = managePackageForSolutionDialogCommand ?? throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
 
-            SearchQuery = searchQuery;
+            SearchQuery = searchQuery ?? throw new ArgumentNullException(nameof(searchQuery));
             Id = cookie;
             ErrorCode = 0;
 

@@ -44,12 +44,7 @@ namespace NuGet.Protocol.Plugins
             IWebProxy proxy,
             ICredentialService credentialService)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            _plugin = plugin;
+            _plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
             _proxy = proxy;
             _credentialService = credentialService;
             _repositories = new ConcurrentDictionary<string, SourceRepository>();

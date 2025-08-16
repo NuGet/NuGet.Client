@@ -13,12 +13,7 @@ namespace NuGet.Protocol
     {
         public V2FeedPage(List<V2FeedPackageInfo> items, string nextUri)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            Items = items;
+            Items = items ?? throw new ArgumentNullException(nameof(items));
             NextUri = nextUri;
         }
 

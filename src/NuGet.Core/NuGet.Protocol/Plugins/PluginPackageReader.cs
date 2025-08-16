@@ -48,23 +48,13 @@ namespace NuGet.Protocol.Plugins
         public PluginPackageReader(IPlugin plugin, PackageIdentity packageIdentity, string packageSourceRepository)
             : base(DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
             if (string.IsNullOrEmpty(packageSourceRepository))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(packageSourceRepository));
             }
 
-            _plugin = plugin;
-            _packageIdentity = packageIdentity;
+            _plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             _packageSourceRepository = packageSourceRepository;
             _getFilesSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
             _getNuspecReaderSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);

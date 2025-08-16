@@ -28,12 +28,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <see langword="null" />.</exception>
         public StandardInputReceiver(TextReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            _reader = reader;
+            _reader = reader ?? throw new ArgumentNullException(nameof(reader));
             _receiveCancellationTokenSource = new CancellationTokenSource();
         }
 

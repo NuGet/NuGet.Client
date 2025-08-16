@@ -22,22 +22,9 @@ namespace NuGetVSExtension
 
         public NuGetSearchProvider(OleMenuCommandService menuCommandService, OleMenuCommand managePackageDialogCommand, OleMenuCommand managePackageForSolutionDialogCommand)
         {
-            if (menuCommandService == null)
-            {
-                throw new ArgumentNullException(nameof(menuCommandService));
-            }
-            if (managePackageDialogCommand == null)
-            {
-                throw new ArgumentNullException(nameof(managePackageDialogCommand));
-            }
-            if (managePackageForSolutionDialogCommand == null)
-            {
-                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
-            }
-
-            _menuCommandService = menuCommandService;
-            _managePackageDialogCommand = managePackageDialogCommand;
-            _managePackageForSolutionDialogCommand = managePackageForSolutionDialogCommand;
+            _menuCommandService = menuCommandService ?? throw new ArgumentNullException(nameof(menuCommandService));
+            _managePackageDialogCommand = managePackageDialogCommand ?? throw new ArgumentNullException(nameof(managePackageDialogCommand));
+            _managePackageForSolutionDialogCommand = managePackageForSolutionDialogCommand ?? throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
         }
 
         internal OleMenuCommandService MenuCommandService

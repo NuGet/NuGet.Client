@@ -23,17 +23,12 @@ namespace NuGet.Protocol
         public RawSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : base()
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
             if (searchEndpoints == null)
             {
                 throw new ArgumentNullException(nameof(searchEndpoints));
             }
 
-            _client = client;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
             _searchEndpoints = searchEndpoints.ToArray();
         }
 

@@ -27,12 +27,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="exception" /> is <see langword="null" />.</exception>
         public ProtocolErrorEventArgs(Exception exception)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            Exception = exception;
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
         }
 
         /// <summary>
@@ -45,12 +40,7 @@ namespace NuGet.Protocol.Plugins
         public ProtocolErrorEventArgs(Exception exception, Message message)
             : this(exception)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            Message = message;
+            Message = message ?? throw new ArgumentNullException(nameof(message));
         }
     }
 }

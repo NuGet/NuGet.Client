@@ -17,12 +17,7 @@ namespace NuGet.Build.Tasks.Pack
     {
         public MSBuildTaskItem(ITaskItem item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            Item = item;
+            Item = item ?? throw new ArgumentNullException(nameof(item));
         }
 
         public ITaskItem Item { get; }

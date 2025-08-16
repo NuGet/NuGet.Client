@@ -34,13 +34,8 @@ namespace NuGet.ProjectModel
         /// <param name="hashFunc">An <see cref="IHashFunction"/> instance.  Throws if <see langword="null" />.</param>
         public HashObjectWriter(IHashFunction hashFunc)
         {
-            if (hashFunc == null)
-            {
-                throw new ArgumentNullException(nameof(hashFunc));
-            }
-
             _buffer = new byte[DefaultBufferSize];
-            _hashFunc = hashFunc;
+            _hashFunc = hashFunc ?? throw new ArgumentNullException(nameof(hashFunc));
             _stream = new CircularMemoryStream(_buffer);
             _streamWriter = new StreamWriter(_stream);
             _writer = new JsonTextWriter(_streamWriter);

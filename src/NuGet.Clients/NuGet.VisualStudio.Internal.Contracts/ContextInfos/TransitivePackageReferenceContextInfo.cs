@@ -14,13 +14,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
     {
         public TransitivePackageReferenceContextInfo(PackageIdentity identity, NuGetFramework? framework)
         {
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
             // framework is null for project.json package references. 
 
-            Identity = identity;
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Framework = framework;
             TransitiveOrigins = new List<IPackageReferenceContextInfo>();
         }

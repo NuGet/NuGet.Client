@@ -27,25 +27,10 @@ namespace NuGet.Protocol
             Lazy<NuspecReader> nuspec,
             bool useFolder)
         {
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (nuspec == null)
-            {
-                throw new ArgumentNullException(nameof(nuspec));
-            }
-
-            Identity = identity;
-            Path = path;
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            Path = path ?? throw new ArgumentNullException(nameof(path));
             LastWriteTimeUtc = lastWriteTimeUtc;
-            _nuspecHelper = nuspec;
+            _nuspecHelper = nuspec ?? throw new ArgumentNullException(nameof(nuspec));
             _getPackageReader = new Func<PackageReaderBase>(() =>
             {
                 if (useFolder)

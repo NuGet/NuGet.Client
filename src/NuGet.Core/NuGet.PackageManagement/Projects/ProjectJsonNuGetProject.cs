@@ -46,14 +46,9 @@ namespace NuGet.ProjectManagement.Projects
                 throw new ArgumentNullException(nameof(jsonConfig));
             }
 
-            if (msBuildProjectPath == null)
-            {
-                throw new ArgumentNullException(nameof(msBuildProjectPath));
-            }
-
             _jsonConfig = new FileInfo(jsonConfig);
 
-            MSBuildProjectPath = msBuildProjectPath;
+            MSBuildProjectPath = msBuildProjectPath ?? throw new ArgumentNullException(nameof(msBuildProjectPath));
             ProjectStyle = ProjectStyle.ProjectJson;
 
             _projectName = Path.GetFileNameWithoutExtension(msBuildProjectPath);

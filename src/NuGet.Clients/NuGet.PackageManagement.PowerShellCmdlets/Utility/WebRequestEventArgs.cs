@@ -12,12 +12,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public WebRequestEventArgs(WebRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            Request = request;
+            Request = request ?? throw new ArgumentNullException(nameof(request));
         }
     }
 }

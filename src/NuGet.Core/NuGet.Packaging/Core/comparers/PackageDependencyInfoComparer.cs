@@ -20,18 +20,8 @@ namespace NuGet.Packaging.Core
 
         public PackageDependencyInfoComparer(IPackageIdentityComparer identityComparer, PackageDependencyComparer dependencyComparer)
         {
-            if (identityComparer == null)
-            {
-                throw new ArgumentNullException(nameof(identityComparer));
-            }
-
-            if (dependencyComparer == null)
-            {
-                throw new ArgumentNullException(nameof(dependencyComparer));
-            }
-
-            _identityComparer = identityComparer;
-            _dependencyComparer = dependencyComparer;
+            _identityComparer = identityComparer ?? throw new ArgumentNullException(nameof(identityComparer));
+            _dependencyComparer = dependencyComparer ?? throw new ArgumentNullException(nameof(dependencyComparer));
         }
 
         /// <summary>

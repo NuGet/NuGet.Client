@@ -25,12 +25,7 @@ namespace NuGet.Packaging.Signing
 
         internal X509ChainWrapper(X509Chain chain, Func<X509Chain, ILogMessage> getAdditionalContext)
         {
-            if (chain is null)
-            {
-                throw new ArgumentNullException(nameof(chain));
-            }
-
-            _chain = chain;
+            _chain = chain ?? throw new ArgumentNullException(nameof(chain));
             _getAdditionalContext = getAdditionalContext;
         }
 

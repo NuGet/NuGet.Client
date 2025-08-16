@@ -22,12 +22,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" /> is <see langword="null" />.</exception>
         public PluginEventArgs(IPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            Plugin = plugin;
+            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
         }
     }
 }

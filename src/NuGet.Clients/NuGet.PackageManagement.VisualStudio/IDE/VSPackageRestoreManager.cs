@@ -25,12 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ISolutionManager solutionManager)
             : base(sourceRepositoryProvider, settings, solutionManager)
         {
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            SolutionManager = solutionManager;
+            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
             SolutionManager.SolutionOpened += OnSolutionOpened;
             SolutionManager.SolutionClosed += OnSolutionClosed;

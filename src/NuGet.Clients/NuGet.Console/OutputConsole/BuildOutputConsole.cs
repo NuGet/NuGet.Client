@@ -26,12 +26,7 @@ namespace NuGetConsole
 
         public BuildOutputConsole(IVsOutputWindow vsOutputWindow)
         {
-            if (vsOutputWindow == null)
-            {
-                throw new ArgumentNullException(nameof(vsOutputWindow));
-            }
-
-            _vsOutputWindow = vsOutputWindow;
+            _vsOutputWindow = vsOutputWindow ?? throw new ArgumentNullException(nameof(vsOutputWindow));
 
             _outputWindowPane = new AsyncLazy<IVsOutputWindowPane>(async () =>
             {

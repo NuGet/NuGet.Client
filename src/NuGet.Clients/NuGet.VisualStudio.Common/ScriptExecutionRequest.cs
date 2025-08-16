@@ -15,18 +15,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public ScriptExecutionRequest(string scriptPath, string installPath, PackageIdentity identity, EnvDTEProject project)
         {
-            if (scriptPath == null)
-            {
-                throw new ArgumentNullException(nameof(scriptPath));
-            }
-
-            if (identity == null)
-            {
-                throw new ArgumentNullException(nameof(identity));
-            }
-
-            Identity = identity;
-            ScriptPath = scriptPath;
+            Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            ScriptPath = scriptPath ?? throw new ArgumentNullException(nameof(scriptPath));
             InstallPath = installPath;
 
             ToolsPath = Path.GetDirectoryName(ScriptPath);

@@ -14,24 +14,9 @@ namespace NuGet.PackageManagement
 
         public PackageRestoreFailedEventArgs(Packaging.PackageReference restoredFailedPackageReference, Exception exception, IEnumerable<string> projectNames)
         {
-            if (restoredFailedPackageReference == null)
-            {
-                throw new ArgumentNullException(nameof(restoredFailedPackageReference));
-            }
-
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            if (projectNames == null)
-            {
-                throw new ArgumentNullException(nameof(projectNames));
-            }
-
-            RestoreFailedPackageReference = restoredFailedPackageReference;
-            Exception = exception;
-            ProjectNames = projectNames;
+            RestoreFailedPackageReference = restoredFailedPackageReference ?? throw new ArgumentNullException(nameof(restoredFailedPackageReference));
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
+            ProjectNames = projectNames ?? throw new ArgumentNullException(nameof(projectNames));
         }
     }
 }

@@ -13,18 +13,8 @@ namespace NuGet.Repositories
 
         public LocalPackageSourceInfo(NuGetv3LocalRepository repository, LocalPackageInfo package)
         {
-            if (repository == null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
-
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            Repository = repository;
-            Package = package;
+            Repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            Package = package ?? throw new ArgumentNullException(nameof(package));
         }
     }
 }

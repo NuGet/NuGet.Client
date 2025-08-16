@@ -19,18 +19,8 @@ namespace NuGet.Protocol
 
         public HttpHandlerResourceV3(HttpClientHandler clientHandler, HttpMessageHandler messageHandler)
         {
-            if (clientHandler == null)
-            {
-                throw new ArgumentNullException(nameof(clientHandler));
-            }
-
-            if (messageHandler == null)
-            {
-                throw new ArgumentNullException(nameof(messageHandler));
-            }
-
-            _clientHandler = clientHandler;
-            _messageHandler = messageHandler;
+            _clientHandler = clientHandler ?? throw new ArgumentNullException(nameof(clientHandler));
+            _messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }
 
         public override HttpClientHandler ClientHandler => _clientHandler;

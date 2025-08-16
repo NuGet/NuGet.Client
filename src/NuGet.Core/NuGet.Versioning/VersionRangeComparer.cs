@@ -34,12 +34,7 @@ namespace NuGet.Versioning
         /// </summary>
         public VersionRangeComparer(IVersionComparer versionComparer)
         {
-            if (versionComparer == null)
-            {
-                throw new ArgumentNullException(nameof(versionComparer));
-            }
-
-            _versionComparer = versionComparer;
+            _versionComparer = versionComparer ?? throw new ArgumentNullException(nameof(versionComparer));
         }
 
         /// <summary>

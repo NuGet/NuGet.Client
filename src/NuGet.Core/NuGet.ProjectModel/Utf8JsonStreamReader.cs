@@ -41,11 +41,6 @@ namespace NuGet.ProjectModel
 
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
             if (bufferSize < MinBufferSize)
             {
                 throw new ArgumentException($"Buffer size must be at least {MinBufferSize} bytes", nameof(bufferSize));
@@ -54,7 +49,7 @@ namespace NuGet.ProjectModel
             _bufferPool = arrayPool ?? ArrayPool<byte>.Shared;
             _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
-            _stream = stream;
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
 
             if (_stream.Read(_buffer, offset: 0, count: 1) == 1 &&
                 _stream.Read(_buffer, offset: ++_bufferUsed, count: 1) == 1 &&

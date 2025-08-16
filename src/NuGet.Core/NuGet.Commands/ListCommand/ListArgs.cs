@@ -44,50 +44,18 @@ namespace NuGet.Commands
             string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported,
             bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-            if (listEndpoints == null)
-            {
-                throw new ArgumentNullException(nameof(listEndpoints));
-            }
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (printJustified == null)
-            {
-                throw new ArgumentNullException(nameof(printJustified));
-            }
-            if (listCommandNoPackages == null)
-            {
-                throw new ArgumentNullException(nameof(listCommandNoPackages));
-            }
-            if (listCommandLicenseUrl == null)
-            {
-                throw new ArgumentNullException(nameof(listCommandLicenseUrl));
-            }
-            if (listCommandListNotSupported == null)
-            {
-                throw new ArgumentNullException(nameof(listCommandListNotSupported));
-            }
-            Arguments = arguments;
-            ListEndpoints = listEndpoints;
-            Settings = settings;
+            Arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
+            ListEndpoints = listEndpoints ?? throw new ArgumentNullException(nameof(listEndpoints));
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             AllVersions = allVersions;
             IncludeDelisted = includeDelisted;
             Prerelease = prerelease;
-            Logger = logger;
-            PrintJustified = printJustified;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            PrintJustified = printJustified ?? throw new ArgumentNullException(nameof(printJustified));
             IsDetailed = isDetailedl;
-            ListCommandNoPackages = listCommandNoPackages;
-            ListCommandLicenseUrl = listCommandLicenseUrl;
-            ListCommandListNotSupported = listCommandListNotSupported;
+            ListCommandNoPackages = listCommandNoPackages ?? throw new ArgumentNullException(nameof(listCommandNoPackages));
+            ListCommandLicenseUrl = listCommandLicenseUrl ?? throw new ArgumentNullException(nameof(listCommandLicenseUrl));
+            ListCommandListNotSupported = listCommandListNotSupported ?? throw new ArgumentNullException(nameof(listCommandListNotSupported));
             CancellationToken = token;
         }
     }

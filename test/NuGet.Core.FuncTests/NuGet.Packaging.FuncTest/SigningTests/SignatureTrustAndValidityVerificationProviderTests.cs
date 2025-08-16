@@ -577,12 +577,7 @@ namespace NuGet.Packaging.FuncTest
 
             public AuthorPrimarySignatures(SigningTestFixture fixture)
             {
-                if (fixture == null)
-                {
-                    throw new ArgumentNullException(nameof(fixture));
-                }
-
-                _fixture = fixture;
+                _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
@@ -844,12 +839,7 @@ namespace NuGet.Packaging.FuncTest
 
             public RepositoryPrimarySignatures(SigningTestFixture fixture)
             {
-                if (fixture == null)
-                {
-                    throw new ArgumentNullException(nameof(fixture));
-                }
-
-                _fixture = fixture;
+                _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
@@ -1172,12 +1162,7 @@ namespace NuGet.Packaging.FuncTest
 
             public RepositoryCountersignatures(SigningTestFixture fixture)
             {
-                if (fixture == null)
-                {
-                    throw new ArgumentNullException(nameof(fixture));
-                }
-
-                _fixture = fixture;
+                _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
@@ -1548,12 +1533,7 @@ namespace NuGet.Packaging.FuncTest
 
             public FallbackFromPrimarySignaturesToCountersignatures(SigningTestFixture fixture)
             {
-                if (fixture == null)
-                {
-                    throw new ArgumentNullException(nameof(fixture));
-                }
-
-                _fixture = fixture;
+                _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 

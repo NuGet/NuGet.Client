@@ -83,29 +83,14 @@ namespace NuGet.Protocol.Plugins
             PluginPackageReader packageReader,
             string packageSourceRepository)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
-
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            if (packageReader == null)
-            {
-                throw new ArgumentNullException(nameof(packageReader));
-            }
-
             if (string.IsNullOrEmpty(packageSourceRepository))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(packageSourceRepository));
             }
 
-            _plugin = plugin;
-            _packageIdentity = packageIdentity;
-            _packageReader = packageReader;
+            _plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            _packageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            _packageReader = packageReader ?? throw new ArgumentNullException(nameof(packageReader));
             _packageSourceRepository = packageSourceRepository;
             _handleExceptionAsync = exception => TaskResult.False;
         }
@@ -222,12 +207,7 @@ namespace NuGet.Protocol.Plugins
         /// is <see langword="null" />.</exception>
         public void SetExceptionHandler(Func<Exception, Task<bool>> handleExceptionAsync)
         {
-            if (handleExceptionAsync == null)
-            {
-                throw new ArgumentNullException(nameof(handleExceptionAsync));
-            }
-
-            _handleExceptionAsync = handleExceptionAsync;
+            _handleExceptionAsync = handleExceptionAsync ?? throw new ArgumentNullException(nameof(handleExceptionAsync));
         }
 
         /// <summary>

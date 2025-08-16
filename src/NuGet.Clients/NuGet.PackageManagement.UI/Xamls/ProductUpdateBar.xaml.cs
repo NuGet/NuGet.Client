@@ -20,12 +20,7 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            if (productUpdateService == null)
-            {
-                throw new ArgumentNullException(nameof(productUpdateService));
-            }
-
-            _productUpdateService = productUpdateService;
+            _productUpdateService = productUpdateService ?? throw new ArgumentNullException(nameof(productUpdateService));
             _productUpdateService.UpdateAvailable += OnUpdateAvailable;
 
             // Set DynamicResource binding in code 

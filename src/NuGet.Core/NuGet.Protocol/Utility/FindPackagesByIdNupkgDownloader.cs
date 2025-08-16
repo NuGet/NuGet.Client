@@ -30,12 +30,7 @@ namespace NuGet.Protocol
 
         internal FindPackagesByIdNupkgDownloader(HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
-            _httpSource = httpSource;
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 

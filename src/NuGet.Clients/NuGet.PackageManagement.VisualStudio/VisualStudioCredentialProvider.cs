@@ -26,18 +26,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal VisualStudioCredentialProvider(IVsWebProxy webProxyService, Lazy<JoinableTaskFactory> joinableTaskFactory)
         {
-            if (webProxyService == null)
-            {
-                throw new ArgumentNullException(nameof(webProxyService));
-            }
-
-            if (joinableTaskFactory == null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
-            }
-
-            _webProxyService = webProxyService;
-            _joinableTaskFactory = joinableTaskFactory;
+            _webProxyService = webProxyService ?? throw new ArgumentNullException(nameof(webProxyService));
+            _joinableTaskFactory = joinableTaskFactory ?? throw new ArgumentNullException(nameof(joinableTaskFactory));
             Id = $"{typeof(VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
         }
 

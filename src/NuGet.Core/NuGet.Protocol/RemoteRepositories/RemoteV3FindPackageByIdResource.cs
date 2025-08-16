@@ -47,18 +47,8 @@ namespace NuGet.Protocol
         /// is <see langword="null" />.</exception>
         public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, HttpSource httpSource)
         {
-            if (sourceRepository == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepository));
-            }
-
-            if (httpSource == null)
-            {
-                throw new ArgumentNullException(nameof(httpSource));
-            }
-
-            SourceRepository = sourceRepository;
-            _httpSource = httpSource;
+            SourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
+            _httpSource = httpSource ?? throw new ArgumentNullException(nameof(httpSource));
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 
