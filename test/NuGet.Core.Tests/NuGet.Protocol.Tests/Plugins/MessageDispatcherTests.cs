@@ -18,10 +18,8 @@ namespace NuGet.Protocol.Plugins.Tests
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class MessageDispatcherTests
     {
-        private readonly Mock<IConnection> _connection = new Mock<IConnection>(MockBehavior.Strict);
         private readonly ConstantIdGenerator _idGenerator = new ConstantIdGenerator();
         private readonly MessageMethod _method = MessageMethod.None;
-        private readonly TimeSpan _timeout = TimeSpan.FromHours(1);
 
         [Fact]
         public void Constructor_ThrowsForNullRequestHandlers()
