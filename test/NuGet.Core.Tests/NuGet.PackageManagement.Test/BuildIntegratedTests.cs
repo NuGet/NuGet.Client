@@ -1936,14 +1936,6 @@ namespace NuGet.Test
             {
             }
 
-            public Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
-            {
-                return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
-                    .Select(e => e.Project)
-                    .Where(e => e != null)
-                    .ToList());
-            }
-
             public Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
                 return Task.FromResult<IReadOnlyList<PackageSpec>>(new List<PackageSpec>() { PackageSpec });
@@ -1952,20 +1944,6 @@ namespace NuGet.Test
             public Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
             {
                 return Task.FromResult<(IReadOnlyList<PackageSpec>, IReadOnlyList<IAssetsLogMessage>)>((new List<PackageSpec>() { PackageSpec }, null));
-            }
-
-            public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
-            {
-                var dgSpec = new DependencyGraphSpec();
-                dgSpec.AddProject(PackageSpec);
-                dgSpec.AddRestore(PackageSpec.RestoreMetadata.ProjectUniqueName);
-
-                return Task.FromResult(dgSpec);
-            }
-
-            public Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
-            {
-                throw new NotImplementedException();
             }
 
             public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)

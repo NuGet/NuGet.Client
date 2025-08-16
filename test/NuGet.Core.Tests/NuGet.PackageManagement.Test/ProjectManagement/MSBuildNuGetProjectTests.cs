@@ -2044,11 +2044,6 @@ namespace ProjectManagement.Test
                 ProjectServices = this;
             }
 
-            public T GetGlobalService<T>() where T : class
-            {
-                throw new NotImplementedException();
-            }
-
             public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
             {
                 var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
