@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Commands.Test;
@@ -29,7 +28,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility;
-using Test.Utility.VisualStudio;
 using Xunit;
 using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
@@ -39,14 +37,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     [Collection(MockedVS.Collection)]
     public class CpsPackageReferenceProjectTests : MockedVSCollectionTests
     {
-        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
-        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
         public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
-            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
-            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
-            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
         }
 
         [Fact]
@@ -2675,7 +2668,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // https://github.com/NuGet/Home/issues/9932
                 Assert.Equal(restoringLogs.Count(l => l.EndsWith("project0.csproj...")), 1);
                 Assert.Equal(restoredLogs.Count(l => l.Contains("project0.csproj")), 1);
-                // Making sure project1 restored only once, not many. 
+                // Making sure project1 restored only once, not many.
                 Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
                 Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
                 var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
@@ -2833,7 +2826,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // https://github.com/NuGet/Home/issues/9932
                 Assert.Equal(restoringLogs.Count(l => l.EndsWith("project1.csproj...")), 1);
                 Assert.Equal(restoredLogs.Count(l => l.Contains("project1.csproj")), 1);
-                // Making sure project2 restored only once, not many. 
+                // Making sure project2 restored only once, not many.
                 Assert.Equal(restoringLogs.Count(l => l.EndsWith("project2.csproj...")), 1);
                 Assert.Equal(restoredLogs.Count(l => l.Contains("project2.csproj")), 1);
                 var writingAssetsLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Writing assets file to disk.")).ToList();
@@ -4522,7 +4515,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
 
-            // Arrange - Setup project 
+            // Arrange - Setup project
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
             var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource) };
@@ -4556,7 +4549,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 new SourceCacheContext(),
                 CancellationToken.None);
 
-            // Assert 
+            // Assert
             progressReporter.VerifyAll();
         }
 
@@ -4617,7 +4610,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 new SourceCacheContext(),
                 CancellationToken.None);
 
-            // Assert 
+            // Assert
             progressReporter.VerifyAll();
         }
 
