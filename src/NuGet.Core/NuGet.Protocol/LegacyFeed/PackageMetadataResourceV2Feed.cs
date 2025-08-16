@@ -13,8 +13,6 @@ namespace NuGet.Protocol
 {
     public class PackageMetadataResourceV2Feed : PackageMetadataResource
     {
-        private readonly HttpSource _httpSource;
-        private readonly Configuration.PackageSource _packageSource;
         private readonly V2FeedParser _feedParser;
 
         public PackageMetadataResourceV2Feed(
@@ -32,9 +30,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(packageSource));
             }
 
-            _httpSource = httpSourceResource.HttpSource;
-            _packageSource = packageSource;
-            _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource.Source);
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, baseAddress, packageSource.Source);
         }
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
