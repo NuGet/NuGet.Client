@@ -196,7 +196,7 @@ namespace NuGet.Protocol.Core.Types
                 AddOrUpdateLogger(_plugin, logger);
 
                 await _utilities.DoOncePerPluginLifetimeAsync(
-                    MessageMethod.SetLogLevel.ToString(),
+                    nameof(MessageMethod.SetLogLevel),
                     () => SetLogLevelAsync(logger, cancellationToken),
                     cancellationToken);
 
@@ -274,7 +274,7 @@ namespace NuGet.Protocol.Core.Types
                     AddOrUpdateLogger(_plugin, logger);
 
                     await _utilities.DoOncePerPluginLifetimeAsync(
-                        MessageMethod.SetLogLevel.ToString(),
+                        nameof(MessageMethod.SetLogLevel),
                         () => SetLogLevelAsync(logger, cancellationToken),
                         cancellationToken);
 

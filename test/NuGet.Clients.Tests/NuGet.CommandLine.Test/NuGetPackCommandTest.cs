@@ -360,7 +360,7 @@ namespace NuGet.CommandLine.Test
                     "packageA.nuspec",
 @"<package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
   <metadata>
-    <id>$package$</id>    
+    <id>$package$</id>
     <version>$version$$prerelease$</version>
     <description>Package description</description>
     <authors>Author</authors>
@@ -4383,7 +4383,7 @@ namespace Proj1
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     testOutputHelper: _testOutputHelper);
                 r.Success.Should().BeTrue(because: r.AllOutput);
-                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
+                var expectedMessage = "WARNING: " + nameof(NuGetLogCode.NU5115);
                 if (expectToWarn)
                 {
                     r.AllOutput.Should().Contain(expectedMessage);
@@ -4454,7 +4454,7 @@ namespace Proj1
 
                 var nupkgPath = Path.Combine(workingDirectory, "proj1", "proj1.1.0.0-rtm.nupkg");
 
-                var expectedMessage = "Error " + NuGetLogCode.NU5115.ToString();
+                var expectedMessage = "Error " + nameof(NuGetLogCode.NU5115);
                 if (expectToError)
                 {
                     Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
@@ -4528,7 +4528,7 @@ namespace Proj1
 
                 var nupkgPath = Path.Combine(workingDirectory, "proj1", "proj1.1.0.0-rtm.nupkg");
 
-                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
+                var expectedMessage = "WARNING: " + nameof(NuGetLogCode.NU5115);
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place..");
                 r.AllOutput.Should().Contain(expectedMessage);
@@ -5611,7 +5611,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     $"pack {testDirBuilder.NuspecPath}",
                     testOutputHelper: _testOutputHelper);
 
-                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Util.VerifyResultSuccess(r, expectedOutputMessage: nameof(NuGetLogCode.NU5048));
                 Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
             }
         }
@@ -5664,7 +5664,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             testDirBuilder
                 .WithNuspec(nuspecBuilder);
 
-            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
+            TestPackPropertyFailure(testDirBuilder, nameof(NuGetLogCode.NU5019));
         }
 
         [Theory]
@@ -5710,7 +5710,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithNuspec(nuspecBuilder)
                 .WithFile(iconFile, rng.Next(1, 1024));
 
-            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5045.ToString());
+            TestPackPropertyFailure(testDirBuilder, nameof(NuGetLogCode.NU5045));
         }
 
         [Theory]
@@ -5830,7 +5830,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     $"pack A.csproj -Build",
                     testOutputHelper: _testOutputHelper);
 
-                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Util.VerifyResultSuccess(r, expectedOutputMessage: nameof(NuGetLogCode.NU5048));
                 Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
             }
         }
@@ -6179,7 +6179,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("dummy.txt", 6)
                 .WithNuspec(nuspecBuilder);
 
-            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5039.ToString());
+            TestPackPropertyFailure(testDirBuilder, nameof(NuGetLogCode.NU5039));
         }
 
         [Fact]
@@ -6195,7 +6195,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             testDirBuilder
                 .WithNuspec(nuspecBuilder);
 
-            TestPackPropertyFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
+            TestPackPropertyFailure(testDirBuilder, nameof(NuGetLogCode.NU5019));
         }
 
         [Fact]
@@ -6212,7 +6212,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("readme.txt", 6)
                 .WithNuspec(nuspec);
 
-            TestPackPropertyFailure(testDir, NuGetLogCode.NU5038.ToString());
+            TestPackPropertyFailure(testDir, nameof(NuGetLogCode.NU5038));
         }
 
         [Fact]
@@ -6229,7 +6229,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("readme.md", 0)
                 .WithNuspec(nuspec);
 
-            TestPackPropertyFailure(testDir, NuGetLogCode.NU5040.ToString());
+            TestPackPropertyFailure(testDir, nameof(NuGetLogCode.NU5040));
         }
 
         /// <summary>
@@ -6664,7 +6664,7 @@ namespace Proj1
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     testOutputHelper: _testOutputHelper);
                 r.Success.Should().BeTrue(because: r.AllOutput);
-                r.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
+                r.AllOutput.Should().NotContain(nameof(NuGetLogCode.NU5105));
             }
         }
 

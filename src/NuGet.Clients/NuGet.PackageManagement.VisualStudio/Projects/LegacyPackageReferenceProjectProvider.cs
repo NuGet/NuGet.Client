@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Order(After = nameof(CpsPackageReferenceProjectProvider))]
     public sealed class LegacyPackageReferenceProjectProvider : INuGetProjectProvider
     {
-        private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
+        private static readonly string PackageReference = nameof(ProjectStyle.PackageReference);
 
         private readonly IVsProjectThreadingService _threadingService;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;

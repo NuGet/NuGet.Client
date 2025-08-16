@@ -337,7 +337,7 @@ namespace NuGet.Commands
                     var excludes = new List<string>();
                     if (effectiveInclude == LibraryIncludeFlags.All)
                     {
-                        includes.Add(LibraryIncludeFlags.All.ToString());
+                        includes.Add(nameof(LibraryIncludeFlags.All));
                     }
                     else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
                     {
@@ -727,7 +727,7 @@ namespace NuGet.Commands
         private bool BuildSymbolsPackage(string path)
         {
             PackageBuilder symbolsBuilder = CreatePackageBuilderFromNuspec(path);
-            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType. 
+            if (_packArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg) // Snupkgs can only have 1 PackageType.
             {
                 symbolsBuilder.PackageTypes.Clear();
                 symbolsBuilder.PackageTypes.Add(PackageType.SymbolsPackage);
