@@ -1929,8 +1929,6 @@ namespace NuGet.Test
 
             public string MSBuildProjectPath { get; set; }
 
-            public DateTimeOffset LastModified { get; set; }
-
             public PackageSpec PackageSpec { get; set; }
 
             public TestNonBuildIntegratedNuGetProject()
