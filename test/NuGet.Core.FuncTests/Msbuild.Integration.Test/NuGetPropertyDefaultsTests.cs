@@ -6,19 +6,16 @@ using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Msbuild.Integration.Test
 {
     public class NuGetPropertyDefaultsTests : IClassFixture<MsbuildIntegrationTestFixture>
     {
         private MsbuildIntegrationTestFixture _fixture;
-        private ITestOutputHelper _output;
 
-        public NuGetPropertyDefaultsTests(MsbuildIntegrationTestFixture fixture, ITestOutputHelper output)
+        public NuGetPropertyDefaultsTests(MsbuildIntegrationTestFixture fixture)
         {
             _fixture = fixture;
-            _output = output;
         }
 
         [Theory]

@@ -21,7 +21,6 @@ namespace Dotnet.Integration.Test
         private readonly FileInfo _codeSigningCertificateBundle;
         private readonly FileInfo _timestampingCertificateBundle;
         private readonly TestLogger _logger;
-        private readonly ITestOutputHelper _testOutputHelper;
 
         public X509TrustStoreTests(DotnetIntegrationTestFixture dotnetFixture, ITestOutputHelper testOutputHelper)
         {
@@ -42,7 +41,6 @@ namespace Dotnet.Integration.Test
             _logger.LogVerbose($"Code signing fallback certificate bundle file exists:  {_codeSigningCertificateBundle.Exists}");
             _logger.LogVerbose($"Expected timestamping fallback certificate bundle file path:  {_timestampingCertificateBundle.FullName}");
             _logger.LogVerbose($"Timestamping fallback certificate bundle file exists:  {_timestampingCertificateBundle.Exists}");
-            _testOutputHelper = testOutputHelper;
         }
 
         [PlatformTheory(Platform.Windows)]

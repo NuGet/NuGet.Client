@@ -18,7 +18,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
@@ -26,13 +25,6 @@ using Pkg = NuGet.CommandLine.XPlat.Commands.Package.Update.Package;
 
 public class GetPackageToUpdateTests
 {
-    private readonly ITestOutputHelper _output;
-
-    public GetPackageToUpdateTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
     [Fact]
     public async Task RequestSinglePackage_GetsRequestedVersion()
     {
