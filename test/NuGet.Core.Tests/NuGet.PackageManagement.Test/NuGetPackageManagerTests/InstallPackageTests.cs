@@ -24,7 +24,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 {
@@ -73,13 +72,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
                 new PackageIdentity("Microsoft.AspNet.Mvc.Core", new NuGetVersion("6.0.0-beta3"))
             };
-
-        private readonly XunitLogger _logger;
-
-        public InstallPackageTests(ITestOutputHelper output)
-        {
-            _logger = new XunitLogger(output);
-        }
 
         [Fact]
         public async Task InstallAndUninstallPackages_RunningOnMultipleThreads_CompletesWithoutThrowingException()

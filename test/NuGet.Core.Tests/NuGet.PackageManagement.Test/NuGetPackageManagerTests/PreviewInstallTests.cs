@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -24,7 +23,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 {
@@ -65,13 +63,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
                 new PackageIdentity("Microsoft.AspNet.Mvc.Core", new NuGetVersion("6.0.0-beta3"))
             };
-
-        private readonly XunitLogger _logger;
-
-        public PreviewInstallTests(ITestOutputHelper output)
-        {
-            _logger = new XunitLogger(output);
-        }
 
         [Fact]
         public async Task PreviewInstallOrderOfDependencies()

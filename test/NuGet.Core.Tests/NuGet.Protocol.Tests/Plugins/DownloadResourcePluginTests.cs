@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -18,19 +17,15 @@ namespace NuGet.Protocol.Plugins.Tests
     public class DownloadResourcePluginTests
     {
         private readonly Mock<IConnection> _connection;
-        private readonly Mock<ICredentialService> _credentialService;
         private readonly Mock<IMessageDispatcher> _dispatcher;
         private readonly PackageSource _packageSource;
         private readonly Mock<IPlugin> _plugin;
-        private readonly Mock<IWebProxy> _proxy;
         private readonly DownloadResourcePlugin _resource;
         private readonly Mock<IPluginMulticlientUtilities> _utilities;
 
         public DownloadResourcePluginTests()
         {
             _packageSource = new PackageSource("https://unit.test");
-            _proxy = new Mock<IWebProxy>();
-            _credentialService = new Mock<ICredentialService>();
             _dispatcher = new Mock<IMessageDispatcher>();
             _connection = new Mock<IConnection>();
             _plugin = new Mock<IPlugin>();
