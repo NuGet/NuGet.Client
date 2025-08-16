@@ -50,8 +50,6 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
 
-        private INuGetUI _uiController;
-
         protected DetailControlModel(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
@@ -59,7 +57,6 @@ namespace NuGet.PackageManagement.UI
         {
             _nugetProjects = projects;
             ServiceBroker = serviceBroker;
-            _uiController = uiController;
 
             _options = new OptionsViewModel();
             PackageSourceMappingViewModel = PackageSourceMappingActionViewModel.Create(uiController);

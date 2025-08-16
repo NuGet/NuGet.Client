@@ -16,8 +16,6 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using EnvDTE;
 using Microsoft;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
@@ -43,7 +41,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const int MaxTasks = 16;
         private static bool PowerShellLoaded = false;
 
-        private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
 #pragma warning disable RS0030 // Do not used banned APIs
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
 #pragma warning restore RS0030 // Do not used banned APIs
@@ -68,8 +65,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly Lazy<DTE> _dte;
-
-        private uint _solutionExistsCookie;
 
         private IConsole _activeConsole;
         private NuGetPSHost _nugetHost;
@@ -129,22 +124,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
             _restoreEvents.SolutionRestoreCompleted += RestoreEvents_SolutionRestoreCompleted;
-
-            _vsMonitorSelection = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection>(
-                async () =>
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    // get the UI context cookie for the debugging mode
-                    var vsMonitorSelection = await ServiceLocator.GetGlobalServiceAsync<IVsMonitorSelection, IVsMonitorSelection>();
-
-                    var guidCmdUI = VSConstants.UICONTEXT.SolutionExists_guid;
-                    vsMonitorSelection.GetCmdUIContextCookie(
-                        ref guidCmdUI, out _solutionExistsCookie);
-
-                    return vsMonitorSelection;
-                },
-                ThreadHelper.JoinableTaskFactory);
         }
 
         private void InitializeSources()
