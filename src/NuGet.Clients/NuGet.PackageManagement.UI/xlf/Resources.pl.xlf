@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="new">{0} version {1}</target>
+        <target state="translated">Pakiet {0} w wersji {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
         <source>Packages</source>
-        <target state="new">Packages</target>
+        <target state="translated">Pakiety</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="new">Selected</target>
+        <target state="translated">Wybrane</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
@@ -434,7 +434,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_License">
         <source>License</source>
-        <target state="new">License</target>
+        <target state="translated">Licencja</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Owner">
@@ -444,12 +444,12 @@
       </trans-unit>
       <trans-unit id="Hyperlink_PackageSourceMappingSettings">
         <source>Configure</source>
-        <target state="new">Configure</target>
+        <target state="translated">Konfiguruj</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="new">Project URL</target>
+        <target state="translated">Adres URL projektu</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
@@ -509,7 +509,7 @@
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="new">Deprecated</target>
+        <target state="translated">Przestarzałe</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
@@ -906,9 +906,9 @@
         <source>NuGet storage clear failed at {0}. 
 Error: {1}
 Please see https://aka.ms/troubleshoot_nuget_cache for more help.</source>
-        <target state="new">NuGet storage clear failed at {0}. 
-Error: {1}
-Please see https://aka.ms/troubleshoot_nuget_cache for more help.</target>
+        <target state="translated">Czyszczenie pamięci menedżera NuGet nie powiodło się: {0}. /
+Błąd: {1}
+Aby uzyskać dodatkową pomoc, zobacz witrynę https://aka.ms/troubleshoot_nuget_cache.</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
