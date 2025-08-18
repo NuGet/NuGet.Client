@@ -349,7 +349,7 @@ nuget push -?</target>
       </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Adds all the packages from the &lt;srcPackageSourcePath&gt; to the hierarchical &lt;destPackageSourcePath&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command.</source>
-        <target state="new">Adds all the packages from the &lt;srcPackageSourcePath&gt; to the hierarchical &lt;destPackageSourcePath&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command.</target>
+        <target state="translated">Fügt dem hierarchischen &lt;destPackageSourcePath&gt; alle Pakete aus dem &lt;srcPackageSourcePath&gt; hinzu. HTTP-Feeds werden nicht unterstützt. Weitere Informationen finden Sie unter https://docs.nuget.org/consume/command-line-reference#init-command.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitCommandUsageDescription">

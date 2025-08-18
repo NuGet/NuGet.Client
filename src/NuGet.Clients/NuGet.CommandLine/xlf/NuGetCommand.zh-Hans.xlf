@@ -242,7 +242,7 @@ nuget delete MyPackage 1.0 -NoPrompt</target>
       </trans-unit>
       <trans-unit id="DeleteCommandUsageSummary">
         <source>&lt;package Id&gt; &lt;package version&gt; [API Key] [options]</source>
-        <target state="new">&lt;package Id&gt; &lt;package version&gt; [API Key] [options]</target>
+        <target state="translated">&lt;package Id&gt; &lt;package version&gt; [API 密钥] [选项]</target>
         <note />
       </trans-unit>
       <trans-unit id="EulaDescription">
