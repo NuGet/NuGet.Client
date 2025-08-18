@@ -14,7 +14,7 @@
     <NETCoreTargetFramework>net8.0</NETCoreTargetFramework>
     <NETCoreTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">net10.0</NETCoreTargetFramework>
     <LatestNETCoreTargetFramework>net9.0</LatestNETCoreTargetFramework>
-    <LatestNETCoreTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">net10.0</NETCoreTargetFramework>
+    <LatestNETCoreTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">net10.0</LatestNETCoreTargetFramework>
 
     <!-- Target frameworks for class libraries-->
     <TargetFrameworksLibrary>$(NETCoreTargetFramework)</TargetFrameworksLibrary>
