@@ -10,13 +10,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("15C605EC-4FD7-446B-BA4A-75ECF0C0B2D0")]
-    public class PackageSourcesPage : NuGetExternalSettingsProvider
+    public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
@@ -27,11 +28,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerAllowInsecureConnections = "allowInsecureConnections";
 
         private IPackageSourceProvider _packageSourceProvider;
+        public event EventHandler? RevalidationRequired;
 
         public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
             : base(vsSettings)
         {
             _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
+        }
+
+        internal override void VsSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            RevalidationRequired?.Invoke(sender, e);
+            base.VsSettings_SettingsChanged(sender, e);
         }
 
         private List<PackageSource> LoadPackageSources(bool isMachineWide)
@@ -234,6 +242,40 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return (result, hasAnyHiddenPropertyChanged);
         }
 
+        private static (PackageSource, bool) ParsePackageSource(IReadOnlyDictionary<string, object> packageSourceDictionary)
+        {
+            bool hasPackageSourceNameChanged = false;
+            string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
+            string? lookupName;
+
+            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+            if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+            {
+                lookupName = packageSourceIdObj.ToString().Trim();
+
+                if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
+                    hasPackageSourceNameChanged = true;
+                }
+            }
+            else // Newly added Package Sources will not have a Package ID yet.
+            {
+                lookupName = name;
+            }
+
+            string source = packageSourceDictionary[MonikerSourceUrl].ToString().Trim();
+            bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
+            bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
+
+            var packageSource = new PackageSource(source, lookupName, isEnabled)
+            {
+                AllowInsecureConnections = allowInsecureConnections,
+            };
+
+            return (packageSource, hasPackageSourceNameChanged);
+        }
+
         private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
         {
             ExternalSettingOperationResult<T> result;
@@ -272,6 +314,71 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 
             return result;
+        }
+
+        public OneOrMany<SettingMessage> ValidateSetting(string moniker, object value)
+        {
+            return default;
+        }
+
+        public OneOrMany<SettingMessage> ValidateArrayItemProperty(string arraySettingMoniker, int arrayItemIndex, string propertyMoniker, IReadOnlyList<IReadOnlyDictionary<string, object>> arraySettingContent)
+        {
+            var packageSourceDictionaryList = arraySettingContent as IReadOnlyList<IReadOnlyDictionary<string, object>>;
+            if (packageSourceDictionaryList is null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (arraySettingMoniker != MonikerPackageSources)
+            {
+                return new OneOrMany<SettingMessage>();
+            }
+
+            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
+
+            try
+            {
+
+                switch (propertyMoniker)
+                {
+                    case MonikerSourceName:
+                        {
+                            break;
+                        }
+                    case MonikerSourceUrl:
+                        {
+                            // TODO iterate all items since we don't know which item is the new one.
+                            // Actually arrayItemIndex probably helps.
+
+                            var packageSourceDictionary = packageSourceDictionaryList[0];
+                            (PackageSource packageSource, bool _) parsedResult = ParsePackageSource(packageSourceDictionary);
+                            PackageSourceValidator.EnsureValidSources(parsedResult.packageSource);
+
+                            // TODO?
+                            //PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+                            break;
+                        }
+                    case MonikerIsEnabled:
+                        {
+                            break;
+                        }
+                    case MonikerAllowInsecureConnections:
+                        {
+                            break;
+                        }
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                var validationMessage = new SettingMessage(Text: ex.Message, Severity: MessageSeverity.Error);
+                return new OneOrMany<SettingMessage>(validationMessage);
+            }
+
+            return new OneOrMany<SettingMessage>();
         }
     }
 }

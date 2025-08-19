@@ -98,6 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 !Common.PathValidator.IsValidUncPath(source) &&
                 !Common.PathValidator.IsValidUrl(source))
             {
+                //TODO: enable soft mode.
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(PackageSource.Source),
                     actualValue: source,
