@@ -323,6 +323,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public OneOrMany<SettingMessage> ValidateArrayItemProperty(string arraySettingMoniker, int arrayItemIndex, string propertyMoniker, IReadOnlyList<IReadOnlyDictionary<string, object>> arraySettingContent)
         {
+            var settingMessages = new OneOrMany<SettingMessage>();
             var packageSourceDictionaryList = arraySettingContent as IReadOnlyList<IReadOnlyDictionary<string, object>>;
             if (packageSourceDictionaryList is null)
             {
@@ -331,7 +332,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             if (arraySettingMoniker != MonikerPackageSources)
             {
-                return new OneOrMany<SettingMessage>();
+                return settingMessages;
             }
 
             List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
@@ -350,9 +351,17 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             // TODO iterate all items since we don't know which item is the new one.
                             // Actually arrayItemIndex probably helps.
 
-                            var packageSourceDictionary = packageSourceDictionaryList[0];
+                            var packageSourceDictionary = packageSourceDictionaryList[arrayItemIndex];
                             (PackageSource packageSource, bool _) parsedResult = ParsePackageSource(packageSourceDictionary);
-                            PackageSourceValidator.EnsureValidSources(parsedResult.packageSource);
+
+                            var isValidSource = PackageSourceValidator.TryEnsureValidSources(parsedResult.packageSource);
+                            if (!isValidSource)
+                            {
+                                var validationMessage = new SettingMessage(
+                                    Text: Strings.Error_PackageSource_InvalidSource,
+                                    Severity: MessageSeverity.Error);
+                                settingMessages.Add(validationMessage);
+                            }
 
                             // TODO?
                             //PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
@@ -375,10 +384,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 var validationMessage = new SettingMessage(Text: ex.Message, Severity: MessageSeverity.Error);
-                return new OneOrMany<SettingMessage>(validationMessage);
+                settingMessages.Add(validationMessage);
             }
 
-            return new OneOrMany<SettingMessage>();
+            return settingMessages;
         }
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.Package;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
@@ -83,13 +84,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         /// <summary>
         /// Validates the Uri of a remote or local package source.
-        /// The regex used here will eventually be supported in the Unified Settings registration.json file
-        /// for the package sources page. See https://github.com/NuGet/Home/issues/14358.
         /// </summary>
-        /// <param name="packageSource"></param>
+        /// <returns>True when valid, false otherwise.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        internal static void EnsureValidSources(PackageSource packageSource)
+        internal static bool TryEnsureValidSources(PackageSource packageSource)
         {
             _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             string source = packageSource.Source;
@@ -98,14 +96,33 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 !Common.PathValidator.IsValidUncPath(source) &&
                 !Common.PathValidator.IsValidUrl(source))
             {
-                //TODO: enable soft mode.
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the Uri of a remote or local package source and throws <see cref="ArgumentOutOfRangeException"/> if invalid.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        internal static void EnsureValidSources(PackageSource packageSource)
+        {
+            if (!TryEnsureValidSources(packageSource))
+            {
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(PackageSource.Source),
-                    actualValue: source,
-                    Strings.Error_PackageSource_InvalidSource);
+                    actualValue: packageSource.Source,
+                    message: Strings.Error_PackageSource_InvalidSource);
             }
         }
 
+        /// <summary>
+        /// Validates the Uri of a remote or local package source.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         internal static void ValidateUniquenessOrThrow(List<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
