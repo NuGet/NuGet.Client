@@ -348,9 +348,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         }
                     case MonikerSourceUrl:
                         {
-                            // TODO iterate all items since we don't know which item is the new one.
-                            // Actually arrayItemIndex probably helps.
-
                             var packageSourceDictionary = packageSourceDictionaryList[arrayItemIndex];
                             (PackageSource packageSource, bool _) parsedResult = ParsePackageSource(packageSourceDictionary);
 

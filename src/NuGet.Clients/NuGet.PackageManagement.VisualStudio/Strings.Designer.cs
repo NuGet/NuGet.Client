@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified is invalid..
+        ///   Looks up a localized string similar to A valid local or remote path must be specified..
         /// </summary>
         public static string Error_PackageSource_InvalidSource {
             get {

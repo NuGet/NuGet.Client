@@ -117,8 +117,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_InvalidSource">
-        <source>The source specified is invalid.</source>
-        <target state="translated">指定的源无效。</target>
+        <source>A valid local or remote path must be specified.</source>
+        <target state="needs-review-translation">指定的源无效。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_UniqueName">

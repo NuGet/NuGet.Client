@@ -293,7 +293,7 @@
     <value>_Open</value>
   </data>
   <data name="Error_PackageSource_InvalidSource" xml:space="preserve">
-    <value>The source specified is invalid.</value>
+    <value>A valid local or remote path must be specified.</value>
   </data>
   <data name="Error_PackageSource_UniqueName" xml:space="preserve">
     <value>The name specified has already been added to the list of available package sources.</value>
