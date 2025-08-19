@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NuGetPackTaskAssemblyFile) -->
   <PropertyGroup Condition="$(NuGetPackTaskAssemblyFile) == ''">
-    <NuGetPackTaskAssemblyFile Condition="'$(UsingMicrosoftNetSdk)' == 'true' And '$(MSBuildRuntimeType)' != 'Core'">Sdks\Microsoft.NET.Sdk\tools\net472</NuGetPackTaskAssemblyFile>
+    <NuGetPackTaskAssemblyFile Condition="'$(UsingMicrosoftNetSdk)' == 'true' And '$(MSBuildRuntimeType)' != 'Core'">Sdks\Microsoft.NET.Sdk\tools\net472\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
     <NuGetPackTaskAssemblyFile Condition="'$(NuGetPackTaskAssemblyFile)' == ''">NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
   </PropertyGroup>
 
@@ -460,7 +460,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_GetDebugSymbolsWithTfm"
-          DependsOnTargets="DebugSymbolsProjectOutputGroup;$(TargetsForTfmSpecificDebugSymbolsInPackage)" 
+          DependsOnTargets="DebugSymbolsProjectOutputGroup;$(TargetsForTfmSpecificDebugSymbolsInPackage)"
           Returns="@(_TargetPathsToSymbolsWithTfm)">
     <ItemGroup Condition="'$(IncludeBuildOutput)' == 'true'">
       <_TargetPathsToSymbolsWithTfm Include="@(DebugSymbolsProjectOutputGroupOutput)">
