@@ -65,7 +65,7 @@
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)**\NuGet*.resources.dll">

@@ -450,71 +450,6 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task InstallAndRollbackPackage()
-        {
-            // Arrange
-            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
-            {
-                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
-                var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                var nuGetPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    testSolutionManager,
-                    deleteOnRestartManager);
-
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var token = CancellationToken.None;
-
-                GetBasicConfig(randomConfig);
-
-                var projectTargetFramework = NuGetFramework.Parse("net45");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath);
-
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
-
-                var message = string.Empty;
-
-                // Act
-                var rollback = false;
-
-                try
-                {
-                    await nuGetPackageManager.InstallPackageAsync(
-                        buildIntegratedProject,
-                        packageIdentity,
-                        new ResolutionContext(),
-                        new TestNuGetProjectContext(),
-                        sourceRepositoryProvider.GetRepositories(),
-                        sourceRepositoryProvider.GetRepositories(),
-                        CancellationToken.None);
-                }
-                catch (InvalidOperationException)
-                {
-                    // Catch rollback
-                    rollback = true;
-                }
-
-                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
-
-                // Assert
-                Assert.True(rollback);
-                Assert.Equal(0, installedPackages.Count());
-                Assert.False(File.Exists(lockFile));
-            }
-        }
-
-        [Fact]
         public async Task InstallAndRollbackPackageVerifyAdditionalMessages()
         {
             // Arrange
@@ -1388,12 +1323,13 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var projectName = "TestProjectName";
 
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testSolutionManager = new TestSolutionManager(pathContext))
             {
-                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+                var testSettings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1401,16 +1337,11 @@ namespace NuGet.Test
                     testSolutionManager,
                     deleteOnRestartManager);
 
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
-
-                CreateConfigJson(randomConfig);
-
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+                var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName);
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(packageSpec.TargetFrameworks[0].FrameworkName, testNuGetProjectContext, packageSpec.FilePath);
+                var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
                 var message = string.Empty;
 
@@ -1433,16 +1364,23 @@ namespace NuGet.Test
         [Fact]
         public async Task UninstallPackageNoRollback()
         {
-            // uninstall json.net from a project where a parent depends on it
-            // this should result in the item being removed from project.json, but still existing in the lock file
+            // uninstall the package from a project where a parent depends on it
+            // this should result in the item being removed from project, but still existing in the assets file
 
-            // Arrange
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var projectName = "TestProjectName";
 
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testSolutionManager = new TestSolutionManager(pathContext))
             {
-                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
+                var packageIdentity = new SimpleTestPackageContext("bad2l3kj42lk4234234", "99999.9.9");
+                var packageIdentity2 = new SimpleTestPackageContext("nuget.versioning", "1.0.7");
+                packageIdentity.Dependencies.Add(packageIdentity2);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageIdentity, packageIdentity2);
+
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1450,26 +1388,17 @@ namespace NuGet.Test
                     testSolutionManager,
                     deleteOnRestartManager);
 
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
-                var basicConfig = BasicConfig;
-                var dependencies = basicConfig["dependencies"] as JObject;
-                dependencies.Add(new JProperty("bad2l3kj42lk4234234", "99999.9.9"));
-                dependencies.Add(new JProperty("nuget.versioning", "1.0.7"));
+                var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, rootPath: pathContext.SolutionRoot);
+                PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency("bad2l3kj42lk4234234", VersionRange.Parse("99999.9.9")));
+                PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
 
-                using (var writer = new StreamWriter(randomConfig))
-                {
-                    writer.Write(basicConfig.ToString());
-                }
-
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var projectTargetFramework = packageSpec.TargetFrameworks[0].FrameworkName;
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, packageSpec.FilePath);
+                var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
 
-                // Check that there are no packages returned by PackagesConfigProject
                 var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, installedPackages.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
@@ -1482,68 +1411,6 @@ namespace NuGet.Test
                 // Check the number of packages and packages returned by PackagesConfigProject after the installation
                 installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, installedPackages.Count);
-            }
-        }
-
-        [Fact]
-        public async Task UninstallPackage()
-        {
-            // uninstall json.net from a project where a parent depends on it
-            // this should result in the item being removed from project.json, but still existing in the lock file
-
-            // Arrange
-            var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-
-            using (var testSolutionManager = new TestSolutionManager())
-            using (var randomProjectFolderPath = TestDirectory.Create())
-            {
-                var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
-                var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                var nuGetPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    testSolutionManager,
-                    deleteOnRestartManager);
-
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var token = CancellationToken.None;
-
-                CreateConfigJson(randomConfig);
-
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new ProjectJsonNuGetProject(randomConfig, projectFilePath);
-
-                await buildIntegratedProject.InstallPackageAsync(
-                    "dotnetrdf",
-                    VersionRange.Parse("1.0.8.3533"),
-                    new TestNuGetProjectContext(),
-                    null,
-                    token);
-                await buildIntegratedProject.InstallPackageAsync(
-                    "newtonsoft.json",
-                    VersionRange.Parse("6.0.8"),
-                    new TestNuGetProjectContext(),
-                    null,
-                    token);
-
-                // Check that there are no packages returned by PackagesConfigProject
-                var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(2, installedPackages.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-
-                // Act
-                await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, packageIdentity.Id,
-                    new UninstallationContext(), new TestNuGetProjectContext(), token);
-
-                // Assert
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(1, installedPackages.Count);
-                Assert.Equal(packageIdentity.Id, "newtonsoft.json", StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -1943,61 +1810,12 @@ namespace NuGet.Test
             return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
         }
 
-        private static void CreateConfigJson(string path)
-        {
-            using (var writer = new StreamWriter(path))
-            {
-                writer.Write(BasicConfig.ToString());
-            }
-        }
-
-        private static JObject BasicConfig
-        {
-            get
-            {
-                var json = new JObject();
-
-                var frameworks = new JObject();
-                frameworks["netcore50"] = new JObject();
-
-                json["dependencies"] = new JObject();
-
-                json["frameworks"] = frameworks;
-
-                json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
-
-                return json;
-            }
-        }
-
-        private static void GetBasicConfig(string path, string framework = "net46")
-        {
-            using (var writer = new StreamWriter(path))
-            {
-                writer.Write(GetBasicConfigForFramework(framework).ToString());
-            }
-        }
-
         private static void BasicConfigWithPackage(string path)
         {
             using (var writer = new StreamWriter(path))
             {
                 writer.Write(ConfigWithPackage.ToString());
             }
-        }
-
-        private static JObject GetBasicConfigForFramework(string framework)
-        {
-            var json = new JObject();
-
-            var frameworks = new JObject();
-            frameworks[framework] = new JObject();
-
-            json["dependencies"] = new JObject();
-
-            json["frameworks"] = frameworks;
-
-            return json;
         }
 
         private static JObject ConfigWithPackage
