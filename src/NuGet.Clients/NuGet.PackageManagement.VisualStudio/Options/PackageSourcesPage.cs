@@ -360,8 +360,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                                 settingMessages.Add(validationMessage);
                             }
 
-                            // TODO?
-                            //PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
                             break;
                         }
                     case MonikerIsEnabled:
