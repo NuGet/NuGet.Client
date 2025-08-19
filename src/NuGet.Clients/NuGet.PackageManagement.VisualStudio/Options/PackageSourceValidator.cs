@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.Package;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
