@@ -242,9 +242,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return (result, hasAnyHiddenPropertyChanged);
         }
 
-        private static (PackageSource, bool) ParsePackageSource(IReadOnlyDictionary<string, object> packageSourceDictionary)
+        private static PackageSource ParsePackageSource(IReadOnlyDictionary<string, object> packageSourceDictionary)
         {
-            bool hasPackageSourceNameChanged = false;
             string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
             string? lookupName;
 
@@ -252,12 +251,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
             {
                 lookupName = packageSourceIdObj.ToString().Trim();
-
-                if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
-                    hasPackageSourceNameChanged = true;
-                }
             }
             else // Newly added Package Sources will not have a Package ID yet.
             {
@@ -273,7 +266,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 AllowInsecureConnections = allowInsecureConnections,
             };
 
-            return (packageSource, hasPackageSourceNameChanged);
+            return packageSource;
         }
 
         private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
@@ -349,9 +342,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     case MonikerSourceUrl:
                         {
                             var packageSourceDictionary = packageSourceDictionaryList[arrayItemIndex];
-                            (PackageSource packageSource, bool _) parsedResult = ParsePackageSource(packageSourceDictionary);
+                            var result = ParsePackageSource(packageSourceDictionary);
 
-                            var isValidSource = PackageSourceValidator.TryEnsureValidSources(parsedResult.packageSource);
+                            var isValidSource = PackageSourceValidator.TryEnsureValidSources(result);
                             if (!isValidSource)
                             {
                                 var validationMessage = new SettingMessage(
