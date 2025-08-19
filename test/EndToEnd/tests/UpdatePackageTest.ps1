@@ -696,7 +696,7 @@ function Test-UpdateAllPackagesInSolutionWithSafeFlag {
     )
 
     # Arrange
-    $p1 = New-WebApplication
+    $p1 = New-ConsoleApplication
     $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
     $p1 | Install-Package B -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
     $p1 | Install-Package C -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
