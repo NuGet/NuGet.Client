@@ -314,21 +314,20 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return default;
         }
 
-        public OneOrMany<SettingMessage> ValidateArrayItemProperty(string arraySettingMoniker, int arrayItemIndex, string propertyMoniker, IReadOnlyList<IReadOnlyDictionary<string, object>> arraySettingContent)
+        public OneOrMany<SettingMessage> ValidateArrayItemProperty(
+            string arraySettingMoniker,
+            int arrayItemIndex,
+            string propertyMoniker,
+            IReadOnlyList<IReadOnlyDictionary<string, object>> arraySettingContent)
         {
             var settingMessages = new OneOrMany<SettingMessage>();
-            var packageSourceDictionaryList = arraySettingContent as IReadOnlyList<IReadOnlyDictionary<string, object>>;
-            if (packageSourceDictionaryList is null)
-            {
-                throw new InvalidOperationException();
-            }
 
             if (arraySettingMoniker != MonikerPackageSources)
             {
                 return settingMessages;
             }
 
-            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
+            List<PackageSource> packageSources = new List<PackageSource>(capacity: arraySettingContent.Count);
 
             try
             {
@@ -341,7 +340,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         }
                     case MonikerSourceUrl:
                         {
-                            var packageSourceDictionary = packageSourceDictionaryList[arrayItemIndex];
+                            var packageSourceDictionary = arraySettingContent[arrayItemIndex];
                             var result = ParsePackageSource(packageSourceDictionary);
 
                             var isValidSource = PackageSourceValidator.IsValidSource(result);
