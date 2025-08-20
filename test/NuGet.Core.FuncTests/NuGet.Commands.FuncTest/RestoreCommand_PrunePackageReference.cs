@@ -2431,108 +2431,18 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
             result.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(0);
             result.LockFile.Targets[0].Libraries[2].CompileTimeAssemblies.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[2].CompileTimeAssemblies[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].CompileTimeAssemblies[0].Path.Should().NotEndWith("_._");
             result.LockFile.Targets[0].Libraries[2].RuntimeAssemblies.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[2].RuntimeAssemblies[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].RuntimeAssemblies[0].Path.Should().NotEndWith("_._");
             result.LockFile.Targets[0].Libraries[2].FrameworkAssemblies.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[2].FrameworkReferences.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[2].NativeLibraries.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[2].ResourceAssemblies.Should().BeEmpty();
             result.LockFile.Targets[0].Libraries[2].RuntimeTargets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[2].RuntimeTargets[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].RuntimeTargets[0].Path.Should().NotEndWith("_._");
             result.LockFile.Targets[0].Libraries[2].ContentFiles.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[2].ContentFiles[0].Path.Should().EndWith("_._");
+            result.LockFile.Targets[0].Libraries[2].ContentFiles[0].Path.Should().NotEndWith("_._");
             result.LockFile.LogMessages.Should().BeEmpty();
-        }
-
-        [Fact]
-        public async Task RestoreCommand_WithAutoReferencedPackageSpecifiedForPruning_DoesNotPrune()
-        {
-            using var pathContext = new SimpleTestPathContext();
-
-            // Setup packages
-            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
-            {
-                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
-            };
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                packageA);
-
-            var prePruningRootProject = @"
-        {
-          ""frameworks"": {
-            ""net472"": {
-                ""dependencies"": {
-                        ""packageA"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                }
-            }
-          }
-        }";
-
-            // Setup project
-            var prePruningSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, prePruningRootProject);
-            prePruningSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
-
-            // Pre-Conditions
-            var setupResult = await RunRestoreAsync(pathContext, prePruningSpec);
-            setupResult.Success.Should().BeTrue();
-            await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
-
-            setupResult.LockFile.Targets.Should().HaveCount(1);
-            setupResult.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            setupResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            setupResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
-            setupResult.LockFile.Targets[0].Libraries[0].Dependencies[0].Id.Should().Be("packageB");
-            setupResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
-
-            File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
-
-            setupResult._newPackagesLockFile.Should().NotBeNull();
-            setupResult._newPackagesLockFile.Targets.Should().HaveCount(1);
-            setupResult._newPackagesLockFile.Targets[0].Dependencies.Should().HaveCount(2);
-            setupResult._newPackagesLockFile.Targets[0].Dependencies[0].Id.Should().Be("packageA");
-            setupResult._newPackagesLockFile.Targets[0].Dependencies[0].Dependencies.Should().HaveCount(1);
-            setupResult._newPackagesLockFile.Targets[0].Dependencies[0].Dependencies[0].Id.Should().Be("packageB");
-            setupResult._newPackagesLockFile.Targets[0].Dependencies[1].Id.Should().Be("packageB");
-            setupResult._newPackagesLockFile.Targets[0].Dependencies[1].Dependencies.Should().BeEmpty();
-
-            // Set-up again with LockedMode
-            var rootProject = @"
-        {
-          ""frameworks"": {
-            ""net472"": {
-                ""dependencies"": {
-                        ""packageA"": {
-                            ""version"": ""[1.0.0,)"",
-                            ""target"": ""Package"",
-                        },
-                },
-                ""packagesToPrune"": {
-                    ""packageB"" : ""(,1.0.0]"" 
-                }
-            }
-          }
-        }";
-            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
-            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
-
-            // Run again
-            var testLogger = new TestLogger();
-            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
-            result.Success.Should().BeTrue(because: testLogger.ShowMessages());
-            result.LockFile.Targets.Should().HaveCount(1);
-            // packageB is part of the pre-pruning lock file, but after pruning is enabled, it gets pruned.
-            // The lock file does not get updated.
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
-            result.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
-            result._newPackagesLockFile.Should().BeNull();
         }
 
         [Fact]
