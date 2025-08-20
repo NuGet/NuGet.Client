@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// </summary>
         /// <returns>True when valid, false otherwise.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        internal static bool TryEnsureValidSources(PackageSource packageSource)
+        internal static bool IsValidSource(PackageSource packageSource)
         {
             _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             string source = packageSource.Source;
@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         internal static void EnsureValidSources(PackageSource packageSource)
         {
-            if (!TryEnsureValidSources(packageSource))
+            if (!IsValidSource(packageSource))
             {
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(PackageSource.Source),
@@ -117,11 +117,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        /// <summary>
-        /// Validates the Uri of a remote or local package source.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
         internal static void ValidateUniquenessOrThrow(List<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));

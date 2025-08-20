@@ -344,7 +344,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             var packageSourceDictionary = packageSourceDictionaryList[arrayItemIndex];
                             var result = ParsePackageSource(packageSourceDictionary);
 
-                            var isValidSource = PackageSourceValidator.TryEnsureValidSources(result);
+                            var isValidSource = PackageSourceValidator.IsValidSource(result);
                             if (!isValidSource)
                             {
                                 var validationMessage = new SettingMessage(
