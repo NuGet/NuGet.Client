@@ -307,12 +307,6 @@
   <data name="Migrating_ProjectJson_Started" xml:space="preserve">
     <value>Migrating project.json project...</value>
   </data>
-  <data name="Migrating_ProjectJson_ProjectName" xml:space="preserve">
-    <value>Project name: {0}</value>
-  </data>
-  <data name="Migrating_ProjectJson_ProjectPath" xml:space="preserve">
-    <value>Project path: {0}</value>
-  </data>
   <data name="Migrating_ProjectJson_Succeeded" xml:space="preserve">
     <value>Migration Succeeded</value>
   </data>

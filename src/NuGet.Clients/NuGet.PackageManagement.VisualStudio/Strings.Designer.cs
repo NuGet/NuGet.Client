@@ -367,24 +367,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project name: {0}.
-        /// </summary>
-        public static string Migrating_ProjectJson_ProjectName {
-            get {
-                return ResourceManager.GetString("Migrating_ProjectJson_ProjectName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Project path: {0}.
-        /// </summary>
-        public static string Migrating_ProjectJson_ProjectPath {
-            get {
-                return ResourceManager.GetString("Migrating_ProjectJson_ProjectPath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Migrating project.json project....
         /// </summary>
         public static string Migrating_ProjectJson_Started {

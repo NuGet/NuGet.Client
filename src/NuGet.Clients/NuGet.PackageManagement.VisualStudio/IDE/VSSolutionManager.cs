@@ -762,20 +762,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<IVsProjectJsonToPackageReferenceMigrateResult> ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(NuGetProject nuGetProject)
         {
             IVsProjectJsonToPackageReferenceMigrateResult migrationResult = null;
-            if (nuGetProject is not ProjectJsonNuGetProject)
-            {
-                return null;
-            }
 
             _outputConsoleLogger.Value.Log(MessageLevel.Info, message: Strings.Migrating_ProjectJson_Started);
-
-            string projectJsonUniqueName = string.Empty;
-            if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string value))
-            {
-                projectJsonUniqueName = value;
-            }
-
-            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: string.Format(CultureInfo.CurrentCulture, Strings.Migrating_ProjectJson_ProjectName, projectJsonUniqueName));
 
             string projectFullPath = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string valuePath))
@@ -783,7 +771,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectFullPath = valuePath;
             }
 
-            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: string.Format(CultureInfo.CurrentCulture, Strings.Migrating_ProjectJson_ProjectPath, projectFullPath));
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: projectFullPath);
 
             var result = await _projectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(projectFullPath);
 
@@ -822,28 +810,15 @@ namespace NuGet.PackageManagement.VisualStudio
                                 try
                                 {
                                     IVsProjectAdapter vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
-                                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                                    NuGetProject nuGetProject = await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
 
-                                    NuGetProject projectJsonNuGetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
-                                    IVsProjectJsonToPackageReferenceMigrateResult migrationResult = await
-                                    ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(projectJsonNuGetProject);
-                                    if (migrationResult is not null && migrationResult.IsSuccess)
+                                    if (nuGetProject is ProjectJsonNuGetProject projectJsonNuGetProject)
                                     {
-                                        string projectJsonUniqueName = null;
-
-                                        // Refresh the adapter in the cache after migration.
-                                        if (projectJsonNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out projectJsonUniqueName))
-                                        {
-                                            RemoveVsProjectAdapterFromCache(projectJsonUniqueName);
-                                            IVsProjectAdapter vsProjectAdapterMigrated = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
-                                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapterMigrated);
-                                        }
+                                        await MigrateProjectJsonAsync(projectJsonNuGetProject, hierarchy, vsProjectAdapter);
                                     }
 
                                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                                 catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                                 {
                                     // Ignore failed projects.
                                     _logger.LogWarning($"The project {VsHierarchyUtility.GetProjectPath(hierarchy)} failed to initialize as a NuGet project.");
@@ -891,7 +866,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }, CancellationToken.None);
         }
 
-        private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
+        private async Task MigrateProjectJsonAsync(ProjectJsonNuGetProject projectJsonNuGetProject, IVsHierarchy hierarchy, IVsProjectAdapter vsProjectAdapter)
+        {
+            IVsProjectJsonToPackageReferenceMigrateResult migrationResult = await
+                ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(projectJsonNuGetProject);
+
+            if (migrationResult is not null && migrationResult.IsSuccess)
+            {
+                string projectJsonUniqueName = null;
+
+                // Refresh the adapter in the cache after migration.
+                if (projectJsonNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out projectJsonUniqueName))
+                {
+                    RemoveVsProjectAdapterFromCache(projectJsonUniqueName);
+                    IVsProjectAdapter vsProjectAdapterMigrated = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
+                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapterMigrated);
+                }
+            }
+        }
+
+        private async Task<NuGetProject> AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
             _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out var oldProjectName);
 
@@ -919,6 +913,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     oldProjectName.CustomUniqueName :
                     newProjectName.ShortName;
             }
+
+            return nuGetProject;
         }
 
         private void RemoveVsProjectAdapterFromCache(string name)
