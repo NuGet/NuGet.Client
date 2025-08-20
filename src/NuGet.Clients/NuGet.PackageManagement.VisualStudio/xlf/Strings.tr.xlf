@@ -117,8 +117,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_InvalidSource">
-        <source>The source specified is invalid.</source>
-        <target state="translated">Belirtilen kaynak geçersiz.</target>
+        <source>A valid local or remote path must be specified.</source>
+        <target state="new">A valid local or remote path must be specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_UniqueName">
