@@ -557,7 +557,10 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     projectReadyCheckMeasurement.Stop();
-                                    projectReadyTimings ??= new();
+                                    if (projectReadyTimings == null)
+                                    {
+                                        projectReadyTimings = new();
+                                    }
                                     projectReadyTimings.Add(projectReadyCheckMeasurement.Elapsed);
 
                                     if (allProjectsReady)
