@@ -182,16 +182,6 @@
         <target state="translated">'{1}' projesi için {0} MSBuild özelliği bulunamadı.</target>
         <note>{0} is the name of the property that was not set.  {1} is the full path to the project.</note>
       </trans-unit>
-      <trans-unit id="Migrating_ProjectJson_ProjectName">
-        <source>Project name: {0}</source>
-        <target state="new">Project name: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Migrating_ProjectJson_ProjectPath">
-        <source>Project path: {0}</source>
-        <target state="new">Project path: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Migrating_ProjectJson_Started">
         <source>Migrating project.json project...</source>
         <target state="new">Migrating project.json project...</target>
