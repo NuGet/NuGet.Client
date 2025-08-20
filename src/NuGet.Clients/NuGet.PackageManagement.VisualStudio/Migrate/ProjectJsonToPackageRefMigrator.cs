@@ -127,6 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await TaskScheduler.Default;
                 var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
+
                 Directory.CreateDirectory(backupDirectory);
 
                 var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
