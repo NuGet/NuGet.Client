@@ -47,6 +47,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             try
             {
+                if (string.IsNullOrEmpty(projectFullPath))
+                {
+                    throw new ArgumentNullException(nameof(projectFullPath));
+                }
+
                 if (!File.Exists(projectFullPath))
                 {
                     throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.Error_FileNotExists, projectFullPath));
