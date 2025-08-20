@@ -2766,6 +2766,7 @@ namespace NuGet.Commands.FuncTest
                 restoreResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
                 restoreResult.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
                 restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(0);
+                restoreResult.LockFile.Targets[0].Libraries[1].CompileTimeAssemblies[0].Path.Should().NotEndWith("_._");
                 restoreResult.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
                 restoreResult.LockFile.Targets[0].Libraries[2].Dependencies.Should().HaveCount(2);
             }
