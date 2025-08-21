@@ -2383,7 +2383,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithLockFileAndPrunableAutoreferenced_WhenAutoReferencedPackageIsRemoved_Fails()
+        public async Task RestoreCommand_WithLockFileAndPrunablePackage_WhenPackageIsRemoved_Fails()
         {
             using var pathContext = new SimpleTestPathContext();
 
