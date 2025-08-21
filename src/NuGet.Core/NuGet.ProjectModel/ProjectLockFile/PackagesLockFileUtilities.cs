@@ -450,7 +450,7 @@ namespace NuGet.ProjectModel
             var transitivelyFlowingDependencies = newDependencies.Where(
                 dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package
                     && dep.SuppressParent != LibraryIncludeFlags.All
-                    && !(IsDependencyPruned(dep, dependentProjectPackagesToPrune) && !dep.AutoReferenced));
+                    && !IsDependencyPruned(dep, dependentProjectPackagesToPrune));
 
             var transitivelyFlowingProjectReferences = projectRestoreReferences.Where(e => e.PrivateAssets != LibraryIncludeFlags.All);
 
