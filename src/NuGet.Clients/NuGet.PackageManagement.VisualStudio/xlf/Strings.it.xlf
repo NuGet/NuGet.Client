@@ -118,7 +118,7 @@
       </trans-unit>
       <trans-unit id="Error_PackageSource_InvalidSource">
         <source>A valid local or remote path must be specified.</source>
-        <target state="new">A valid local or remote path must be specified.</target>
+        <target state="translated">È necessario specificare un percorso locale o remoto valido.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_UniqueName">
@@ -184,12 +184,12 @@
       </trans-unit>
       <trans-unit id="Migrating_ProjectJson_Started">
         <source>Migrating project.json project...</source>
-        <target state="new">Migrating project.json project...</target>
+        <target state="translated">Migrazione del progetto project.json in corso...</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrating_ProjectJson_Succeeded">
         <source>Migration Succeeded</source>
-        <target state="new">Migration Succeeded</target>
+        <target state="translated">Migrazione completata</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToExistingFileNotPresent">
