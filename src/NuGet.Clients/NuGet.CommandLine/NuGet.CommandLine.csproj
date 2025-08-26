@@ -69,6 +69,7 @@
 
   <ItemGroup>
     <PackageReference Include="ILRepack" PrivateAssets="all" />
+    <PackageReference Include="System.Memory" />
     <None Include="$(BuildCommonDirectory)\NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
