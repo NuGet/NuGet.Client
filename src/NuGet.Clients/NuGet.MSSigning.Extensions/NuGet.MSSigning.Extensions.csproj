@@ -42,7 +42,8 @@
       <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe</PathToMergedNuGetExe>
     </PropertyGroup>
     <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude);$(OutputPath)\NuGet.Core.dll" />
+      <BuildArtifacts Include="$(OutputPath)\NuGet.Core.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
