@@ -142,7 +142,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/14508")]
         public void PackCommand_NewSolution_OutputInDefaultPaths()
         {
             // Arrange
@@ -198,7 +198,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/14508")]
         public void PackCommand_NewSolution_ContinuousOutputInDefaultPaths()
         {
             // Arrange
@@ -3267,7 +3267,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/14508")]
         public void PackCommand_PackSolution_AddsProjectRefsAsPackageRefs()
         {
             // Arrange
@@ -4815,7 +4815,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/14508")]
         [InlineData("Microsoft.NETCore.App", "true", "netcoreapp3.0", "", "netcoreapp3.0")]
         [InlineData("Microsoft.NETCore.App", "false", "netcoreapp3.0", "", "")]
         [InlineData("Microsoft.WindowsDesktop.App", "true", "netstandard2.1;netcoreapp3.0", "netcoreapp3.0", "netcoreapp3.0")]
