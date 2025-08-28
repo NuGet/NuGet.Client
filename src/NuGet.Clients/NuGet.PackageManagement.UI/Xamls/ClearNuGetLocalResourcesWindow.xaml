@@ -53,8 +53,24 @@
     <TextBlock Grid.Row="0" Margin="0" Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" Visibility="{Binding IsCommandComplete, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"/>
 
     <!-- Content -->
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-      <TextBlock TextWrapping="Wrap" Text="{Binding CommandCompleteText}" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="{Binding IsCommandComplete, Converter={StaticResource BooleanToVisibilityConverter}}">
+      <StackPanel>
+        <TextBlock TextWrapping="Wrap" Text="{Binding CommandCompleteText}" />
+
+        <!-- When the operation fails, show more information and a help link -->
+        <TextBlock
+          Margin="0,9,0,9"
+          TextWrapping="Wrap"
+          Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <Run Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandMoreInformation}" />
+          <shell_controls:Hyperlink
+            NavigateUri="https://aka.ms/troubleshoot_nuget_cache"
+            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+            AutomationProperties.LabeledBy="{Binding ElementName=_commandTextBlock}">
+              <Run Text="https://aka.ms/troubleshoot_nuget_cache" />
+          </shell_controls:Hyperlink>
+        </TextBlock>
+      </StackPanel>
     </ScrollViewer>
 
     <!-- Progress Bar -->
@@ -82,18 +98,6 @@
           </Style>
         </vsui:LiveTextBlock.Resources>
       </vsui:LiveTextBlock>
-
-      <TextBlock
-        Margin="0,0,0,9"
-        Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
-        <Run Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandMoreInformation}" />
-        <shell_controls:Hyperlink
-          NavigateUri="https://aka.ms/troubleshoot_nuget_cache"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-          AutomationProperties.LabeledBy="{Binding ElementName=_commandTextBlock}">
-            <Run Text="https://aka.ms/troubleshoot_nuget_cache" />
-        </shell_controls:Hyperlink>
-      </TextBlock>
 
       <ProgressBar Height="20" AutomationProperties.Name="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100" />
     </StackPanel>
