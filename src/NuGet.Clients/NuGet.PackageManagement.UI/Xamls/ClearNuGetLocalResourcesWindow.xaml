@@ -8,6 +8,7 @@
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:shell_controls="clr-namespace:Microsoft.VisualStudio.Shell.Controls;assembly=Microsoft.VisualStudio.Shell.Styles"
   xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
   xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   mc:Ignorable="d"
@@ -28,6 +29,11 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>
+  <Window.CommandBindings>
+    <CommandBinding
+    Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+    Executed="ExecuteOpenExternalLink" />
+  </Window.CommandBindings>
   <Grid Margin="12,12,12,12" Focusable="False">
     <Grid.RowDefinitions>
       <!-- Top caption -->
@@ -52,17 +58,17 @@
     </ScrollViewer>
 
     <!-- Progress Bar -->
-    <Grid Grid.Row="2" Margin="0,9,0,0">
-      <ProgressBar Height="20" AutomationProperties.Name="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100" />
+    <StackPanel Grid.Row="2" Margin="0,9,0,0">
       <!--
         Special TextBlock to report loading status to assistive technologies (narrator).
         Changes to the Text property will trigger a narrator event.
       -->
       <vsui:LiveTextBlock
-        Visibility="Collapsed"
-        IsFrequencyLimited="True"
-        Focusable="False"
-        AutomationProperties.IsOffscreenBehavior="Offscreen">
+          x:Name="_commandTextBlock"
+          Visibility="Collapsed"
+          IsFrequencyLimited="True"
+          Focusable="False"
+          AutomationProperties.IsOffscreenBehavior="Offscreen">
         <vsui:LiveTextBlock.Resources>
           <Style TargetType="vsui:LiveTextBlock">
             <Style.Triggers>
@@ -76,7 +82,21 @@
           </Style>
         </vsui:LiveTextBlock.Resources>
       </vsui:LiveTextBlock>
-    </Grid>
+
+      <TextBlock
+        Margin="0,0,0,9"
+        Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Run Text="{x:Static nuget:Resources.ShowMessage_LocalsCommandMoreInformation}" />
+        <shell_controls:Hyperlink
+          NavigateUri="https://aka.ms/troubleshoot_nuget_cache"
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.LabeledBy="{Binding ElementName=_commandTextBlock}">
+            <Run Text="https://aka.ms/troubleshoot_nuget_cache" />
+        </shell_controls:Hyperlink>
+      </TextBlock>
+
+      <ProgressBar Height="20" AutomationProperties.Name="{x:Static nuget:Resources.ShowMessage_LocalsCommandWorking}" IsIndeterminate="{Binding IsCommandComplete, Converter={StaticResource InverseBooleanConverter}}" Value="100" />
+    </StackPanel>
 
     <!-- Buttons -->
     <StackPanel Grid.Row="3" Margin="0,18,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
