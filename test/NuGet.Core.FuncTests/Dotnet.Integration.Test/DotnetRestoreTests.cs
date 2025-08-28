@@ -1171,7 +1171,7 @@ EndGlobal";
         /// Create 3 projects, each with their own nuget.config file and source.
         /// When restoring in PackageReference the settings should be found from the project folder.
         /// </summary>
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/14508")]
         public async Task DotnetRestore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithSolutionAsync()
         {
             // Arrange
@@ -1431,7 +1431,7 @@ EndGlobal";
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/NuGet/Home/issues/14508")]
         [InlineData(true)]
         [InlineData(false)]
         public void GenerateRestoreGraphFile_StandardAndStaticGraphRestore_AreEquivalent(bool usePackageSpecFactory)
@@ -1468,7 +1468,7 @@ EndGlobal";
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/NuGet/Home/issues/14508")]
         [InlineData(true, true)]
         [InlineData(true, false)]
         [InlineData(false, false)]
