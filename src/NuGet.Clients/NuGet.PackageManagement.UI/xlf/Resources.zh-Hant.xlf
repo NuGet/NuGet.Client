@@ -904,14 +904,18 @@
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">
         <source>NuGet storage clear failed at {0}. 
-Error: {1}
-Please see https://aka.ms/troubleshoot_nuget_cache for more help.</source>
-        <target state="translated">清除位於 {0} 的 NuGet 儲存體失敗。
+Error: {1}</source>
+        <target state="needs-review-translation">清除位於 {0} 的 NuGet 儲存體失敗。
 錯誤: {1}
 如需詳細說明，請參閱 https://aka.ms/troubleshoot_nuget_cache。</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
+      </trans-unit>
+      <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
+        <source>For more information, see</source>
+        <target state="new">For more information, see</target>
+        <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
         <source>NuGet storage cleared at {0}</source>

@@ -125,7 +125,9 @@ namespace NuGet.Tools.Commands
             var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
 
             LocalsCommandRunner localsCommandRunner = new();
-            localsCommandRunner.ExecuteCommand(localsArgs);
+            //localsCommandRunner.ExecuteCommand(localsArgs);
+            await Task.Delay(500);
+            throw new ApplicationException("testing");
         }
 
         private void LogError(string message)
