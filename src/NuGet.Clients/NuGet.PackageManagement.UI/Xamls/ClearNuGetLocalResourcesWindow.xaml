@@ -31,8 +31,8 @@
   </Window.Resources>
   <Window.CommandBindings>
     <CommandBinding
-    Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-    Executed="ExecuteOpenExternalLink" />
+      Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+      Executed="ExecuteOpenExternalLink" />
   </Window.CommandBindings>
   <Grid Margin="12,12,12,12" Focusable="False">
     <Grid.RowDefinitions>
