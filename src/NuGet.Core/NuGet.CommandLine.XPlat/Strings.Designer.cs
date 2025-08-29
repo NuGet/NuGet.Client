@@ -681,6 +681,14 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("Error_InvalidVersion", resourceCulture);
             }
         }
+
+        ///   Looks up a localized string similar to Invalid verbosity level &apos;{0}&apos;. Allowed values are: quiet, normal, detailed..
+        /// </summary>
+        internal static string Error_InvalidVerbosity {
+            get {
+                return ResourceManager.GetString("Error_InvalidVerbosity", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Invalid version range &apos;{0}&apos;.
@@ -1757,6 +1765,141 @@ namespace NuGet.CommandLine.XPlat {
         internal static string PackageUpdateCommand_VulnerableOptionDescription {
             get {
                 return ResourceManager.GetString("PackageUpdateCommand_VulnerableOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allows downloading from HTTP (non-HTTPS) package sources..
+        /// </summary>
+        internal static string pkgDownload_AllowInsecureConnectionsDescritption {
+            get {
+                return ResourceManager.GetString("pkgDownload_AllowInsecureConnectionsDescritption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipping download. Package &apos;{0}&apos; version {1} already exists at &apos;{2}&apos;..
+        /// </summary>
+        internal static string PkgDownload_AlreadyInstalled {
+            get {
+                return ResourceManager.GetString("PkgDownload_AlreadyInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to a NuGet.config file to use for settings and sources..
+        /// </summary>
+        internal static string pkgDownload_configFileDesciption {
+            get {
+                return ResourceManager.GetString("pkgDownload_configFileDesciption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloads a NuGet package to a local folder without requiring a project file..
+        /// </summary>
+        internal static string pkgDownload_descritpion {
+            get {
+                return ResourceManager.GetString("pkgDownload_descritpion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download only the .nupkg file without extracting it..
+        /// </summary>
+        internal static string pkgDownload_downloadOnlyDeciption {
+            get {
+                return ResourceManager.GetString("pkgDownload_downloadOnlyDeciption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; ({1}) failed to download..
+        /// </summary>
+        internal static string PkgDownload_Failed {
+            get {
+                return ResourceManager.GetString("PkgDownload_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allows interactive authentication if required..
+        /// </summary>
+        internal static string pkgDownload_interactiveDecription {
+            get {
+                return ResourceManager.GetString("pkgDownload_interactiveDecription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Directory where the package will be placed. Defaults to the current working directory..
+        /// </summary>
+        internal static string pkgDownload_OutputDirectoryDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_OutputDirectoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package identifier (e.g. &apos;Newtonsoft.Json&apos;)..
+        /// </summary>
+        internal static string pkgDownload_packageIdDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_packageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allows downloading prerelease versions..
+        /// </summary>
+        internal static string pkgDownload_prereleaseDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_prereleaseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies one or more NuGet package sources to use..
+        /// </summary>
+        internal static string pkgDownload_sourcesDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_sourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading package {0}, version {1}..
+        /// </summary>
+        internal static string PkgDownload_Starting {
+            get {
+                return ResourceManager.GetString("PkgDownload_Starting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; ({1}) successfully downloaded to &apos;{2}&apos;..
+        /// </summary>
+        internal static string PkgDownload_Succeeded {
+            get {
+                return ResourceManager.GetString("PkgDownload_Succeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set the verbosity level. Allowed values: quiet | normal | detailed..
+        /// </summary>
+        internal static string pkgDownload_verbosityDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_verbosityDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specific package version to download.
+        /// </summary>
+        internal static string pkgDownload_versionDescription {
+            get {
+                return ResourceManager.GetString("pkgDownload_versionDescription", resourceCulture);
             }
         }
         

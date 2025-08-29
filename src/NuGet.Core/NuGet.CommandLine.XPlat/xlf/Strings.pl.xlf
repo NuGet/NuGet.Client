@@ -358,6 +358,12 @@ Menedżer NuGet wymaga źródeł HTTPS. Aby użyć źródeł HTTP, musisz wyraź
         <target state="new">Invalid version value '{0}'.</target>
         <note>0 - package version</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVerbosity">
+        <source>Invalid verbosity level '{0}'. Allowed values are: quiet, normal, detailed.</source>
+        <target state="new">Invalid verbosity level '{0}'. Allowed values are: quiet, normal, detailed.</target>
+        <note>0 - verbosity level
+do not translate: quiet, normal, detailed.</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">Nieprawidłowy zakres wersji „{0}”</target>
@@ -984,6 +990,32 @@ Aby uzyskać więcej informacji, odwiedź stronę https://docs.nuget.org/docs/re
         <target state="translated">Aktualizowanie pakietów z ostrzeżeniami dotyczącymi zabezpieczeń w {0}</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
+      <trans-unit id="PkgDownload_AlreadyInstalled">
+        <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
+        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
+        <note>0 - package id
+1 - version
+2 - directory path where the package was downloaded</note>
+      </trans-unit>
+      <trans-unit id="PkgDownload_Failed">
+        <source>Package '{0}' ({1}) failed to download.</source>
+        <target state="new">Package '{0}' ({1}) failed to download.</target>
+        <note>0 - package id
+1 - package version</note>
+      </trans-unit>
+      <trans-unit id="PkgDownload_Starting">
+        <source>Downloading package {0}, version {1}.</source>
+        <target state="new">Downloading package {0}, version {1}.</target>
+        <note>0- package id
+1- package version</note>
+      </trans-unit>
+      <trans-unit id="PkgDownload_Succeeded">
+        <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
+        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
+        <note>0 - package id
+1 - package version
+2 - package download location</note>
+      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">Brak dostępnych stabilnych wersji. Najlepsza dostępna opcja to {0}. Rozważ dodanie opcji --prerelease</target>
@@ -1450,6 +1482,61 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
         <source>The assets file '{0}' for project '{1}' does not contain a target for the specified input framework '{2}'.</source>
         <target state="translated">Plik zasobów „{0}” dla projektu „{1}” nie zawiera celu dla określonej struktury wejściowej „{2}”.</target>
         <note>{0} - Assets file path, {1} - Project name, {2} - Framework</note>
+      </trans-unit>
+      <trans-unit id="pkgDownload_AllowInsecureConnectionsDescritption">
+        <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
+        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_OutputDirectoryDescription">
+        <source>Directory where the package will be placed. Defaults to the current working directory.</source>
+        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_configFileDesciption">
+        <source>Path to a NuGet.config file to use for settings and sources.</source>
+        <target state="new">Path to a NuGet.config file to use for settings and sources.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_descritpion">
+        <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
+        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_downloadOnlyDeciption">
+        <source>Download only the .nupkg file without extracting it.</source>
+        <target state="new">Download only the .nupkg file without extracting it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_interactiveDecription">
+        <source>Allows interactive authentication if required.</source>
+        <target state="new">Allows interactive authentication if required.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_packageIdDescription">
+        <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
+        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_prereleaseDescription">
+        <source>Allows downloading prerelease versions.</source>
+        <target state="new">Allows downloading prerelease versions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_sourcesDescription">
+        <source>Specifies one or more NuGet package sources to use.</source>
+        <target state="new">Specifies one or more NuGet package sources to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="pkgDownload_verbosityDescription">
+        <source>Set the verbosity level. Allowed values: quiet | normal | detailed.</source>
+        <target state="new">Set the verbosity level. Allowed values: quiet | normal | detailed.</target>
+        <note>Please do not translate `quiet`, `normal`, `detailed`</note>
+      </trans-unit>
+      <trans-unit id="pkgDownload_versionDescription">
+        <source>Specific package version to download</source>
+        <target state="new">Specific package version to download</target>
+        <note />
       </trans-unit>
       <trans-unit id="pkgSearch_Description">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
