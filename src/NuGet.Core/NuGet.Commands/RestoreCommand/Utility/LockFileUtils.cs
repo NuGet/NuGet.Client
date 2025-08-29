@@ -223,6 +223,12 @@ namespace NuGet.Commands
                 contentItems,
                 managedCodeConventions.Patterns.NativeLibraries);
 
+            // Analyzers
+            lockFileLib.AnalyzerAssets = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                managedCodeConventions.Patterns.Analyzers);
+
             // Add MSBuild files
             AddMSBuildAssets(library.Name, managedCodeConventions, lockFileLib, orderedCriteria, contentItems);
 

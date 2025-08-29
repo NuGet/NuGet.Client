@@ -1,6 +1,8 @@
 #nullable enable
 NuGet.ProjectModel.LockFileLibrary.HasTools.init -> void
 NuGet.ProjectModel.LockFileLibrary.IsServiceable.init -> void
+NuGet.ProjectModel.LockFileTargetLibrary.AnalyzerAssets.get -> System.Collections.Generic.IList<NuGet.ProjectModel.LockFileItem!>!
+NuGet.ProjectModel.LockFileTargetLibrary.AnalyzerAssets.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Files.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.MSBuildProject.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.Name.init -> void

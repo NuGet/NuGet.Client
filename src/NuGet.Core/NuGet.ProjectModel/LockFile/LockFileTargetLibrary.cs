@@ -31,6 +31,7 @@ namespace NuGet.ProjectModel
         private static readonly PropertyKey ToolsAssembliesKey = new(nameof(ToolsAssemblies));
         private static readonly PropertyKey EmbedAssembliesKey = new(nameof(EmbedAssemblies));
         private static readonly PropertyKey PackageTypeKey = new(nameof(PackageType));
+        private static readonly PropertyKey AnalyzerAssetsKey = new(nameof(AnalyzerAssets));
 
         private readonly Dictionary<PropertyKey, object> _propertyValues = new();
 
@@ -74,6 +75,11 @@ namespace NuGet.ProjectModel
 
         public string? Type { get; set; }
 
+        public IList<LockFileItem> AnalyzerAssets
+        {
+            get => GetListProperty<LockFileItem>(AnalyzerAssetsKey);
+            set => SetListProperty(AnalyzerAssetsKey, value);
+        }
         public IList<PackageDependency> Dependencies
         {
             get => GetListProperty<PackageDependency>(DependenciesKey);
@@ -188,7 +194,8 @@ namespace NuGet.ProjectModel
                 && IsListOrderedEqual<LockFileItem>(BuildKey, static o => o.Path)
                 && IsListOrderedEqual<LockFileItem>(BuildMultiTargetingKey, static o => o.Path)
                 && IsListOrderedEqual<LockFileItem>(ToolsAssembliesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey, static o => o.Path);
+                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey, static o => o.Path)
+                && IsListOrderedEqual<LockFileItem>(AnalyzerAssetsKey, static o => o.Path);
 
             // NOTE we don't include PackageType in Equals or GetHashCode, since it's only used for compatibility checking post restore.
 
@@ -230,6 +237,7 @@ namespace NuGet.ProjectModel
             combiner.AddUnorderedSequence(BuildMultiTargeting);
             combiner.AddUnorderedSequence(ToolsAssemblies);
             combiner.AddUnorderedSequence(EmbedAssemblies);
+            combiner.AddUnorderedSequence(AnalyzerAssets);
 
             return combiner.CombinedHash;
 

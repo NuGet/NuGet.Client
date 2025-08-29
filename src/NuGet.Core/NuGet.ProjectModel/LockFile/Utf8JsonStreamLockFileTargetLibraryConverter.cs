@@ -67,6 +67,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] ToolsPropertyName = Encoding.UTF8.GetBytes("tools");
         private static readonly byte[] EmbedPropertyName = Encoding.UTF8.GetBytes("embed");
         private static readonly byte[] FrameworkReferencesPropertyName = Encoding.UTF8.GetBytes("frameworkReferences");
+        private static readonly byte[] AnalyzerAssetspropertyName = Encoding.UTF8.GetBytes("analyzers");
 
         public LockFileTargetLibrary Read(ref Utf8JsonStreamReader reader)
         {
@@ -163,6 +164,11 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
                     lockFileTargetLibrary.FrameworkReferences = reader.ReadStringArrayAsIList();
+                }
+                else if (reader.ValueTextEquals(AnalyzerAssetspropertyName))
+                {
+                    reader.Read();
+                    lockFileTargetLibrary.AnalyzerAssets = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else
                 {

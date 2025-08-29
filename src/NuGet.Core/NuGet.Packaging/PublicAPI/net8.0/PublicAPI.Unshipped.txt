@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.Analyzers.get -> NuGet.ContentModel.PatternSet

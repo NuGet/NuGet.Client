@@ -49,6 +49,7 @@ namespace NuGet.ProjectModel
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
         private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
+        private const string AnalyzersProperty = "analyzers";
 
         public LockFile Parse(string lockFileContent, string path)
         {
@@ -398,7 +399,13 @@ namespace NuGet.ProjectModel
                 writer.WritePropertyName(CompileProperty);
                 JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
+            if (library.AnalyzerAssets.Count > 0)
+            {
+                var ordered = library.AnalyzerAssets.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
+                writer.WritePropertyName(AnalyzersProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
+            }
             if (library.RuntimeAssemblies.Count > 0)
             {
                 var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);

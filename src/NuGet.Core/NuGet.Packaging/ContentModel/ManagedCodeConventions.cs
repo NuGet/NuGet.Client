@@ -471,6 +471,11 @@ namespace NuGet.Client
             public PatternSet EmbedAssemblies { get; }
 
             /// <summary>
+            /// pattern used to locate analyzer assemblies
+            /// </summary>
+            public PatternSet Analyzers { get; }
+
+            /// <summary>
             /// Pattern used to identify MSBuild transitive targets and props files
             /// </summary>
             public PatternSet MSBuildTransitiveFiles { get; }
@@ -618,6 +623,16 @@ namespace NuGet.Client
                             new PatternDefinition("embed/{tfm}/{assembly}", table: DotnetAnyTable),
                         });
 
+                Analyzers = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("analyzers/{codeLanguage}/{tfm}/{any?}", table:DotnetAnyTable)
+                        },
+                    pathPatterns: new PatternDefinition[]
+                        {
+                            new PatternDefinition("analyzers/{codeLanguage}/{tfm}/{any?}", table : DotnetAnyTable)
+                        });
                 MSBuildTransitiveFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
