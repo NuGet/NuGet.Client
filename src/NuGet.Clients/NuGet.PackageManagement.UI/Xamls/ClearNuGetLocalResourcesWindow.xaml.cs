@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Diagnostics;
 using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
@@ -36,10 +35,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
-            var hyperlink = (Hyperlink)e.OriginalSource;
-            if (hyperlink.NavigateUri != null)
+            var hyperlink = e.OriginalSource as Hyperlink;
+            if (hyperlink != null
+                && hyperlink.NavigateUri != null)
             {
-                Process.Start(hyperlink.NavigateUri.AbsoluteUri);
+                UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
             }
         }
