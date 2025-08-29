@@ -115,9 +115,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
 
-                // Keep any existing source mappings for package sources that are not configured.
-                PackageSourceMappingUtility.PreserveInvalidPackageSourceMappings(sourceNamesToPackagePatterns, existingPackageSources, originalPackageSourceMappings);
-
                 List<PackageSourceMappingSourceItem> packageSourceMappingSourceItems =
                     PackageSourceMappingUtility.ConvertPackageIdAndSourcesToSourceMappingSourceItems(sourceNamesToPackagePatterns, packagePatternToSources);
 
@@ -171,7 +168,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     string packageIdOrPattern = packageSourceMapping.Key;
                     List<PackageSourceContextInfo> packageSources = packageSourceMapping.Value;
-                    IEnumerable<string> packageSourceNames = packageSources.Select(source => source.Name);
+                    List<string> packageSourceNames = packageSources.Select(source => source.Name).ToList();
 
                     var dict = new Dictionary<string, object>(capacity: 2)
                     {
