@@ -184,13 +184,13 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"restore {solutionName}.slnx", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
 
-                var nupkgPath = Path.Combine(projectFolder, @"bin\Release", $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(projectFolder, @"obj\Release", $"{projectName}.1.0.0.nuspec");
+                var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"pack {solutionName}.slnx", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -240,17 +240,17 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"restore {solutionName}.slnx", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"build {solutionName}.slnx -c Release", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.BuildSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
 
                 // With default output path within project folder
 
                 // Arrange
-                var nupkgPath = Path.Combine(projectFolder, @"bin\Release", $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(projectFolder, @"obj\Release", $"{projectName}.1.0.0.nuspec");
+                var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"pack {solutionName}.slnx --no-build", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, "--no-build", nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -3323,12 +3323,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"restore {solutionName}.slnx", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
                 // Act
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, $"pack {solutionName}.slnx", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
 
-                var nupkgPath = Path.Combine(projectFolder, "bin", "Release", $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(projectFolder, "obj", "Release", $"{projectName}.1.0.0.nuspec");
+                var nupkgPath = Path.Combine(projectFolder, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(projectFolder, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
