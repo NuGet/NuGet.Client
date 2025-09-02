@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -97,7 +98,7 @@ namespace NuGet.Protocol
             V2FeedPackageInfo packageVersion,
             NuGetFramework projectFramework)
         {
-            var deps = Enumerable.Empty<PackageDependency>();
+            List<PackageDependency> deps = null;
 
             var identity = new PackageIdentity(packageVersion.Id, NuGetVersion.Parse(packageVersion.Version.ToString()));
             if (packageVersion.DependencySets != null
@@ -111,9 +112,11 @@ namespace NuGet.Protocol
                 if (nearestFramework != null)
                 {
                     var matches = packageVersion.DependencySets.Where(e => (e.TargetFramework.Equals(nearestFramework)));
-                    deps = matches.First().Packages;
+                    deps = matches.First().Packages.AsList();
                 }
             }
+
+            deps = deps ?? [];
 
             var result = new SourcePackageDependencyInfo(
                 identity,

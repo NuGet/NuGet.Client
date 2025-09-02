@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 #nullable enable
@@ -44,7 +45,7 @@ namespace NuGet.Packaging.Core
         public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency>? dependencies)
             : base(id, version)
         {
-            Dependencies = dependencies?.ToArray() ?? Array.Empty<PackageDependency>();
+            Dependencies = dependencies?.AsList() ?? [];
         }
 
         public bool Equals(PackageDependencyInfo? other)

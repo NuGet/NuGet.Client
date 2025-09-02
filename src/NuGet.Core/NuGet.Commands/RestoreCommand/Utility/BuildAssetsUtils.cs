@@ -872,7 +872,7 @@ namespace NuGet.Commands
 
             foreach (var item in items)
             {
-                IEnumerable<PackageDependency> dependencies;
+                List<PackageDependency> dependencies;
                 if (item.Data?.Dependencies == null || item.Data.Dependencies.Count == 0)
                 {
                     // If there are no dependencies, pass null.
