@@ -905,9 +905,8 @@
       <trans-unit id="ShowMessage_LocalsCommandFailure">
         <source>NuGet storage clear failed at {0}. 
 Error: {1}</source>
-        <target state="needs-review-translation">{0} konumundaki NuGet depolama alanını temizleme işlemi başarısız oldu. 
-Hata: {1}
-Daha fazla yardım için https://aka.ms/troubleshoot_nuget_cache sayfasına bakın.</target>
+        <target state="new">NuGet storage clear failed at {0}. 
+Error: {1}</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
