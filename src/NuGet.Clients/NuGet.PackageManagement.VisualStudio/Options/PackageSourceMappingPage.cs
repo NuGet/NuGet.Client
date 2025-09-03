@@ -168,7 +168,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     string packageIdOrPattern = packageSourceMapping.Key;
                     List<PackageSourceContextInfo> packageSources = packageSourceMapping.Value;
-                    List<string> packageSourceNames = packageSources.Select(source => source.Name).ToList();
+                    List<string> packageSourceNames = new(packageSources.Count);
+                    packageSourceNames.AddRange(packageSources.Select(source => source.Name));
 
                     var dict = new Dictionary<string, object>(capacity: 2)
                     {
