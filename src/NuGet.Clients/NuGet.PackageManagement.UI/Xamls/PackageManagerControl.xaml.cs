@@ -197,8 +197,10 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
-            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
-            _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, _uiLogger);
+            List<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList();
+
+            var auditSourceRepositories = Model.Context.SourceService.GetAuditSources();
+            _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
 
             var solutionManager = Model.Context.SolutionManagerService;
             solutionManager.ProjectAdded += OnProjectChanged;
