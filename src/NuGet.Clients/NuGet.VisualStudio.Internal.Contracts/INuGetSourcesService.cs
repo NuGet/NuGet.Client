@@ -9,19 +9,19 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public interface INuGetSourcesService : IDisposable
-    {
-        /// <remarks> First available in version 1.0.1 </remarks>
-        event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
+        public interface INuGetSourcesService : IDisposable
+        {
+                /// <remarks> First available in version 1.0.1 </remarks>
+                event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
 
-        /// <remarks> First available in version 1.0.1 </remarks>
-        ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);
+                /// <remarks> First available in version 1.0.1 </remarks>
+                ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);
 
-        /// <remarks> First available in version 1.0.1 </remarks>
-        ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken);
+                /// <remarks> First available in version 1.0.1 </remarks>
+                ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken);
 
-        ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken);
+                ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken);
 
-        public IReadOnlyList<SourceRepository> GetEnabledAuditSources();
-    }
+                public IReadOnlyList<SourceRepository> GetEnabledAuditSources();
+        }
 }
