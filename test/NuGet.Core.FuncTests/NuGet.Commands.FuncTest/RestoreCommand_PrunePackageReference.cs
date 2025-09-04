@@ -2641,9 +2641,9 @@ namespace NuGet.Commands.FuncTest
 
             RestoreCommand.PopulatePruningEnabledTelemetry(projectSpec, testEvent);
             testEvent["Pruning.FrameworksEnabled.Count"].Should().Be(4);
-            testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(1);
+            testEvent["Pruning.DefaultEnabled"].Should().Be(true);
             testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(2);
-            testEvent["Pruning.FrameworksDefaultDisabled.Count"].Should().Be(1);
+            testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(2);
         }
 
         // Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.

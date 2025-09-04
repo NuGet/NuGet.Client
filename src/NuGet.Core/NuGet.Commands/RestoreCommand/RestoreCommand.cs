@@ -135,9 +135,9 @@ namespace NuGet.Commands
         private const string AuditSuppressedAdvisoriesDistinctPackageDownloadAdvisoriesSuppressedCount = "Audit.Vulnerability.PackageDownload.DistinctAdvisoriesSuppressed.Count";
 
         // PackagePruning names
+        private const string PackagePruningDefaultEnabled = "Pruning.DefaultEnabled";
         private const string PackagePruningFrameworksEnabledCount = "Pruning.FrameworksEnabled.Count";
         private const string PackagePruningFrameworksDisabledCount = "Pruning.FrameworksDisabled.Count";
-        private const string PackagePruningFrameworksDefaultDisabledCount = "Pruning.FrameworksDefaultDisabled.Count";
         private const string PackagePruningFrameworksUnsupportedCount = "Pruning.FrameworksUnsupported.Count";
         private const string PackagePruningRemovablePackagesCount = "Pruning.RemovablePackages.Count";
         private const string PackagePruningDirectCount = "Pruning.Pruned.Direct.Count";
@@ -401,16 +401,24 @@ namespace NuGet.Commands
         {
             int pruningEnabledCount = 0;
             int pruningDisabledCount = 0;
-            int pruningDefaultDisabledCount = 0;
             int pruningNotApplicableCount = 0;
+            bool pruningDefault = false;
 
             foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
             {
                 bool isPruningEnabled = framework.PackagesToPrune.Count > 0;
-                bool isPruningCompatibleNSFramework = StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) && framework.FrameworkName.Version.Major >= 2;
                 bool isNetCoreAppFramework = StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
-                bool isNetCoreAppFrameworkWithPruningByDefault = isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 8;
-                bool isFrameworkPruningEnabledByDefault = isNetCoreAppFrameworkWithPruningByDefault || isPruningCompatibleNSFramework;
+                // All .NETCoreApp, .NET Standard >= 2.0 , and .NET Framework >= 4.6.1 projects are compatible with package pruning.
+                bool isPruningCompatibleFramework = isNetCoreAppFramework ||
+                    (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) &&
+                        framework.FrameworkName.Version.Major >= 2) ||
+                    (project.RestoreMetadata.UsingMicrosoftNETSdk &&
+                        StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.Net) &&
+                        framework.FrameworkName.Version.Major >= 4 &&
+                        framework.FrameworkName.Version.Minor >= 6 &&
+                        framework.FrameworkName.Version.Revision >= 1);
+
+                pruningDefault |= isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 10;
 
                 if (isPruningEnabled)
                 {
@@ -418,13 +426,9 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    if (isFrameworkPruningEnabledByDefault)
+                    if (isPruningCompatibleFramework)
                     {
                         pruningDisabledCount++;
-                    }
-                    else if (isNetCoreAppFramework && !isNetCoreAppFrameworkWithPruningByDefault)
-                    {
-                        pruningDefaultDisabledCount++;
                     }
                     else
                     {
@@ -432,9 +436,10 @@ namespace NuGet.Commands
                     }
                 }
             }
+
+            telemetryEvent[PackagePruningDefaultEnabled] = pruningDefault;
             telemetryEvent[PackagePruningFrameworksEnabledCount] = pruningEnabledCount;
             telemetryEvent[PackagePruningFrameworksDisabledCount] = pruningDisabledCount;
-            telemetryEvent[PackagePruningFrameworksDefaultDisabledCount] = pruningDefaultDisabledCount;
             telemetryEvent[PackagePruningFrameworksUnsupportedCount] = pruningNotApplicableCount;
         }
 
