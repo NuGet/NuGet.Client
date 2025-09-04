@@ -1076,6 +1076,14 @@ namespace NuGet.PackageManagement.UI
                 {
                     vulnerablePackagesCount++;
                 }
+                else // Fallback to checking audit sources.
+                {
+                    List<PackageVulnerabilityMetadataContextInfo> auditSourceVulnerabilityContextInfo = await _packageVulnerabilityService.GetVulnerabilityInfoAsync(s.Identity, token);
+                    if (auditSourceVulnerabilityContextInfo.Count > 0)
+                    {
+                        vulnerablePackagesCount++;
+                    }
+                }
                 if (d != null)
                 {
                     deprecatedPackagesCount++;
