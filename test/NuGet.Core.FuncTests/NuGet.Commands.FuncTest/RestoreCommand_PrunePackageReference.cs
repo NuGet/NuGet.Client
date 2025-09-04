@@ -2551,7 +2551,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public void PopulatePruningEnabledTelemetry_WithVariousFrameworks_PopulatesTelemetryCorrectly()
+        public void PopulatePruningEnabledTelemetry_WithPruningEnabledByDefault_AndVariousFrameworks_PopulatesTelemetryCorrectly()
         {
             var rootProject = @"
                 {
@@ -2646,7 +2646,52 @@ namespace NuGet.Commands.FuncTest
             testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(2);
         }
 
-        // Add a test where a new package is introduced, but a different package gets pruned, bringing the counter to be the same.
+        [Fact]
+        public void PopulatePruningEnabledTelemetry_WithPruningDisabledByDefault_AndVariousFrameworks_PopulatesTelemetryCorrectly()
+        {
+            var rootProject = @"
+                {
+                  ""frameworks"": {
+                    ""netstandard2.1"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        },
+                    },
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        },
+                        ""packagesToPrune"": {
+                            ""a"" : ""(,1.0.0]"" 
+                        }
+                    },
+                    ""net46"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        }
+                    },
+                  }
+                }";
+
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", Path.GetTempPath(), rootProject);
+            var testLogger = new TestLogger();
+            var testEvent = new TelemetryEvent("dummyEvent");
+
+            RestoreCommand.PopulatePruningEnabledTelemetry(projectSpec, testEvent);
+            testEvent["Pruning.FrameworksEnabled.Count"].Should().Be(1);
+            testEvent["Pruning.DefaultEnabled"].Should().Be(false);
+            testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
+            testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(1);
+        }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
