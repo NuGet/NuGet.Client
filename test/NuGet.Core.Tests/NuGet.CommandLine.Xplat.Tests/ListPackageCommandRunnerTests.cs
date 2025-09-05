@@ -405,7 +405,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Act & Assert - Test the private method using reflection
             var getPackageMetadataAsyncMethod = typeof(ListPackageCommandRunner)
-                .GetMethod("GetPackageMetadataAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                .GetMethod("GetPackageMetadataAsync", BindingFlags.NonPublic | BindingFlags.Instance);
 
             Assert.NotNull(getPackageMetadataAsyncMethod);
 
