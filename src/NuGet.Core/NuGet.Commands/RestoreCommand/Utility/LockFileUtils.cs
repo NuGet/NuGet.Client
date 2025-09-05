@@ -226,12 +226,11 @@ namespace NuGet.Commands
                 orderedCriteria,
                 contentItems,
                 managedCodeConventions.Patterns.NativeLibraries);
-
             // Analyzers
             lockFileLib.AnalyzerAssets = GetLockFileItems(
-                orderedCriteria,
-                contentItems,
-                managedCodeConventions.Patterns.Analyzers);
+               orderedCriteria,
+               contentItems,
+               managedCodeConventions.Patterns.Analyzers);
 
             AddAnalyzerFiles(managedCodeConventions, lockFileLib, contentItems, compilerApiVersion, projectLanguage);
 
@@ -324,6 +323,32 @@ namespace NuGet.Commands
                     contentFileGroupsForFramework);
             }
         }
+        public static bool IsApplicableAnalyzer(string file, string projectLanguage)
+        {
+            bool IsAnalyzer()
+            {
+                return file.StartsWith("analyzers", StringComparison.Ordinal)
+                    && file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                    && !file.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase);
+            }
+
+            bool CS() => file.IndexOf("/cs/", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool VB() => file.IndexOf("/vb/", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            bool FileMatchesProjectLanguage()
+            {
+                switch (projectLanguage)
+                {
+                    case "C#":
+                        return CS() || !VB();
+                    case "VB":
+                        return VB() || !CS();
+                    default:
+                        return false;
+                }
+            }
+            return IsAnalyzer() && FileMatchesProjectLanguage();
+        }
 
         private static void AddAnalyzerFiles(ManagedCodeConventions managedCodeConventions, LockFileTargetLibrary lockFileLib, ContentItemCollection contentItems, string compilerApiVersion, string projectLanguage)
         {
@@ -339,9 +364,112 @@ namespace NuGet.Commands
                     .Select(i => new LockFileItem(i.Path))
                     .Where(item => IsApplicableAnalyzer(item.Path, projectLanguage))
                     .ToList();
+
+                // Filter analyzer assets based on compiler version if specified
+                if (!string.IsNullOrEmpty(compilerApiVersion) && ParseCompilerApiVersion(compilerApiVersion, out string compilerName, out Version compilerVersion))
+                {
+                    string compilerNameSearchString = "/" + compilerName;
+
+                    var potentialAnalyzers = new List<(LockFileItem item, Version compilerVersion)>();
+                    Version maxApplicableVersion = null;
+                    var filteredItems = new List<LockFileItem>();
+
+                    foreach (var item in analyzerAssets)
+                    {
+                        if (IsFileCompilerVersionSpecific(item.Path, compilerNameSearchString, compilerVersion, out Version fileCompilerVersion))
+                        {
+                            if (fileCompilerVersion <= compilerVersion)
+                            {
+                                potentialAnalyzers.Add((item, fileCompilerVersion));
+
+                                if (maxApplicableVersion == null || fileCompilerVersion > maxApplicableVersion)
+                                {
+                                    maxApplicableVersion = fileCompilerVersion;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // If not compiler-specific, add directly
+                            filteredItems.Add(item);
+                        }
+                    }
+
+                    // Add analyzers with the highest compatible version
+                    if (maxApplicableVersion != null)
+                    {
+                        foreach (var (item, version) in potentialAnalyzers)
+                        {
+                            if (version.Equals(maxApplicableVersion))
+                            {
+                                filteredItems.Add(item);
+                            }
+                        }
+                    }
+
+                    lockFileLib.AnalyzerAssets = filteredItems;
+                }
+                else
+                {
+                    // If no compiler version, just use the language-filtered assets
+                    lockFileLib.AnalyzerAssets = analyzerAssets;
+                }
             }
         }
+        private static bool IsFileCompilerVersionSpecific(string file, string compilerNameSearchString, Version compilerVersion, out Version fileCompilerVersion)
+        {
+            fileCompilerVersion = null;
+
+            if (string.IsNullOrEmpty(compilerNameSearchString))
+            {
+                return false;
+            }
+
+            int compilerNameStart = file.IndexOf(compilerNameSearchString, StringComparison.OrdinalIgnoreCase);
+            if (compilerNameStart == -1)
+            {
+                return false;
+            }
+
+            int compilerVersionStart = compilerNameStart + compilerNameSearchString.Length;
+            int compilerVersionStop = file.IndexOf('/', compilerVersionStart);
+            if (compilerVersionStop == -1)
+            {
+                return false;
+            }
+
+            return Version.TryParse(file.Substring(compilerVersionStart, compilerVersionStop - compilerVersionStart), out fileCompilerVersion);
         }
+        private static bool ParseCompilerApiVersion(string compilerApiVersion, out string compilerName, out Version compilerVersion)
+        {
+            compilerName = null;
+            compilerVersion = null;
+
+            if (string.IsNullOrEmpty(compilerApiVersion))
+            {
+                return false;
+            }
+
+            int compilerVersionStart = -1;
+            for (int i = 0; i < compilerApiVersion.Length; i++)
+            {
+                if (char.IsDigit(compilerApiVersion[i]))
+                {
+                    compilerVersionStart = i;
+                    break;
+                }
+            }
+
+            if (compilerVersionStart > 0)
+            {
+                if (Version.TryParse(compilerApiVersion.Substring(compilerVersionStart), out compilerVersion))
+                {
+                    compilerName = compilerApiVersion.Substring(0, compilerVersionStart);
+                    return true;
+                }
+            }
+
+            return false;
         }
         /// <summary>
         /// Runtime targets
