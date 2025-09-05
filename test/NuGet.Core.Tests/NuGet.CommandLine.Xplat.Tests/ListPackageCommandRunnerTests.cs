@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -365,6 +366,60 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Assert.Equal(includeTopLevelPositives || includeTransitivePositives, isFilteredSetNonEmpty);
                 Assert.Equal(includeTopLevelPositives ? 1 : 0, allPackages.First().TopLevelPackages.Count());
                 Assert.Equal(includeTransitivePositives ? 1 : 0, allPackages.First().TransitivePackages.Count());
+            }
+        }
+
+        public class GetPackageMetadataAsyncWithEmptyPackageSources
+        {
+            [Fact]
+            public async Task GetPackageMetadataAsync_WithEmptyPackageSources_DoesNotThrowDivideByZero()
+            {
+                // Arrange
+                var packages = new FrameworkPackages("net40");
+                var topLevelPackages = new List<InstalledPackageReference>
+                {
+                    ListPackageTestHelper.CreateInstalledPackageReference(name: "TestPackage")
+                };
+                packages.TopLevelPackages = topLevelPackages;
+                var allPackages = new List<FrameworkPackages> { packages };
+
+                var output = new StringBuilder();
+                var error = new StringBuilder();
+                using TextWriter consoleOut = new StringWriter(output);
+                using TextWriter consoleError = new StringWriter(error);
+
+                // Create ListPackageArgs with empty packageSources list to trigger the divide by zero scenario
+                var listPackageArgs = new ListPackageArgs(
+                    path: "",
+                    packageSources: new List<PackageSource>(), // Empty package sources - this would cause divide by zero
+                    frameworks: new List<string>(),
+                    ReportType.Outdated, // This will trigger the code path that calls GetPackageMetadataAsync
+                    new ListPackageConsoleRenderer(consoleOut, consoleError),
+                    includeTransitive: false,
+                    prerelease: false,
+                    highestPatch: false,
+                    highestMinor: false,
+                    auditSources: null,
+                    logger: new Mock<ILogger>().Object,
+                    CancellationToken.None);
+
+                var listPackageRunner = new ListPackageCommandRunner();
+
+                // Act & Assert - Test the private method using reflection
+                var getPackageMetadataAsyncMethod = typeof(ListPackageCommandRunner)
+                    .GetMethod("GetPackageMetadataAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                Assert.NotNull(getPackageMetadataAsyncMethod);
+
+                // This should not throw DivideByZeroException
+                Exception exception = await Record.ExceptionAsync(async () =>
+                {
+                    var task = (Task<Dictionary<string, List<IPackageSearchMetadata>>>)getPackageMetadataAsyncMethod.Invoke(
+                        listPackageRunner, new object[] { allPackages, listPackageArgs });
+                    await task;
+                });
+
+                Assert.Null(exception);
             }
         }
     }

@@ -415,7 +415,9 @@ namespace NuGet.CommandLine.XPlat
 
             int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
                 ? 8 // Try to be nice to HTTP package sources
-                : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
+                : listPackageArgs.PackageSources.Count == 0
+                    ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
+                    : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
             await ThrottledForEachAsync(allPackages,
                 async (packageId, cancellationToken) => await GetPackageVersionsAsync(packageId, listPackageArgs, cancellationToken),
