@@ -10,3 +10,7 @@ NuGet.ProjectModel.LockFileTargetLibrary.AnalyzerAssets.set -> void
 ~NuGet.ProjectModel.LockFileLibrary.Sha512.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.Type.init -> void
 ~NuGet.ProjectModel.LockFileLibrary.Version.init -> void
+~NuGet.ProjectModel.ProjectRestoreMetadata.CompilerApiVersion.get -> string
+~NuGet.ProjectModel.ProjectRestoreMetadata.CompilerApiVersion.set -> void
+~NuGet.ProjectModel.ProjectRestoreMetadata.ProjectLanguage.get -> string
+~NuGet.ProjectModel.ProjectRestoreMetadata.ProjectLanguage.set -> void

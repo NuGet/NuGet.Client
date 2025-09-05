@@ -227,7 +227,9 @@ namespace NuGet.Commands
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
-                            cache: lockFileBuilderCache);
+                            cache: lockFileBuilderCache,
+                            compilerApiVersion: project.RestoreMetadata.CompilerApiVersion,
+                            projectLanguage: project.RestoreMetadata.ProjectLanguage);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -247,7 +249,9 @@ namespace NuGet.Commands
                                     targetFrameworkOverride: nonFallbackFramework,
                                     dependencyType: includeFlags,
                                     dependencies: graphItem.Data.Dependencies,
-                                    cache: lockFileBuilderCache);
+                                    cache: lockFileBuilderCache,
+                                    compilerApiVersion: project.RestoreMetadata.CompilerApiVersion,
+                                    projectLanguage: project.RestoreMetadata.ProjectLanguage);
                                 usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
                             }
 

@@ -627,11 +627,19 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
-                            new PatternDefinition("analyzers/{codeLanguage}/{tfm}/{any?}", table:DotnetAnyTable)
+                            new PatternDefinition("analyzers/{any}/{codeLanguage}/{any}/{any}", table:AnyTable),
+
+                            new PatternDefinition("analyzers/{any?}/{any?}/{any?}", table:AnyTable),
+                            new PatternDefinition("analyzers/{any?}/{any?}/{any?}/{any?}", table:AnyTable),
+                            new PatternDefinition("analyzers/{codeLanguage}/{codeLanguage}/{any?}", table:AnyTable)
                         },
                     pathPatterns: new PatternDefinition[]
                         {
-                            new PatternDefinition("analyzers/{codeLanguage}/{tfm}/{any?}", table : DotnetAnyTable)
+                            new PatternDefinition("analyzers/{any}/{codeLanguage}/{any}/{any}", table:AnyTable),
+
+                            new PatternDefinition("analyzers/{any?}/{any?}/{any?}", table:AnyTable),
+                            new PatternDefinition("analyzers/{any?}/{any?}/{any?}/{any?}", table:AnyTable),
+                            new PatternDefinition("analyzers/{codeLanguage}/{codeLanguage}/{any?}", table:AnyTable)
                         });
                 MSBuildTransitiveFiles = new PatternSet(
                     conventions.Properties,

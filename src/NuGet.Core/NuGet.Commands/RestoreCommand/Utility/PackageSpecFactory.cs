@@ -163,6 +163,8 @@ namespace NuGet.Commands.Restore.Utility
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(outerBuild.GetProperty("UsingMicrosoftNETSdk"));
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(outerBuild.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = outerBuild.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
+            restoreMetadata.CompilerApiVersion = outerBuild.GetProperty("CompilerApiVersioon");
+            restoreMetadata.ProjectLanguage = outerBuild.GetProperty("Language");
 
             return (restoreMetadata, targetFrameworkInfos);
 

@@ -147,6 +147,9 @@ namespace NuGet.ProjectModel
 
         public bool UseLegacyDependencyResolver { get; set; }
 
+        public string CompilerApiVersion { get; set; }
+
+        public string ProjectLanguage { get; set; }
         public override int GetHashCode()
         {
             StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
@@ -180,6 +183,8 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(UsingMicrosoftNETSdk);
             hashCode.AddObject(SdkAnalysisLevel);
             hashCode.AddObject(UseLegacyDependencyResolver);
+            hashCode.AddObject(CompilerApiVersion);
+            hashCode.AddObject(ProjectLanguage);
 
             return hashCode.CombinedHash;
         }
@@ -228,7 +233,9 @@ namespace NuGet.ProjectModel
                    RestoreAuditProperties == other.RestoreAuditProperties &&
                    UsingMicrosoftNETSdk == other.UsingMicrosoftNETSdk &&
                    EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
-                   UseLegacyDependencyResolver == other.UseLegacyDependencyResolver;
+                   UseLegacyDependencyResolver == other.UseLegacyDependencyResolver &&
+                   CompilerApiVersion == other.CompilerApiVersion &&
+                   ProjectLanguage == other.ProjectLanguage;
         }
 
         private HashSet<string> GetSources(IList<PackageSource> sources)
@@ -282,6 +289,8 @@ namespace NuGet.ProjectModel
             clone.SdkAnalysisLevel = SdkAnalysisLevel;
             clone.UsingMicrosoftNETSdk = UsingMicrosoftNETSdk;
             clone.UseLegacyDependencyResolver = UseLegacyDependencyResolver;
+            clone.CompilerApiVersion = CompilerApiVersion;
+            clone.ProjectLanguage = ProjectLanguage;
         }
     }
 }

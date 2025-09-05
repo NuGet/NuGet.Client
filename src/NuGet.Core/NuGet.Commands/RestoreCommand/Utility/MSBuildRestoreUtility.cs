@@ -308,6 +308,8 @@ namespace NuGet.Commands
                 result.RestoreMetadata.UsingMicrosoftNETSdk = GetUsingMicrosoftNETSdk(specItem.GetProperty("UsingMicrosoftNETSdk"));
                 result.RestoreMetadata.SdkAnalysisLevel = GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel"));
                 result.RestoreMetadata.UseLegacyDependencyResolver = IsPropertyTrue(specItem, "RestoreUseLegacyDependencyResolver");
+                result.RestoreMetadata.CompilerApiVersion = specItem.GetProperty("CompilerApiVersion");
+                result.RestoreMetadata.ProjectLanguage = specItem.GetProperty("ProjectLanguage");
             }
 
             return result;

@@ -978,6 +978,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
         <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
         <RestoreUseLegacyDependencyResolver>$(RestoreUseLegacyDependencyResolver)</RestoreUseLegacyDependencyResolver>
+        <CompilerApiVersion>$(CompilerApiVersion)</CompilerApiVersion>
+        <ProjectLanguage>$(Language)</ProjectLanguage>
       </_RestoreGraphEntry>
     </ItemGroup>
 

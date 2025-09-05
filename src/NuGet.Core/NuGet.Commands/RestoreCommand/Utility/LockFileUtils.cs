@@ -64,7 +64,9 @@ namespace NuGet.Commands
                 LibraryIncludeFlags dependencyType,
                 NuGetFramework targetFrameworkOverride,
                 List<LibraryDependency> dependencies,
-                LockFileBuilderCache cache)
+                LockFileBuilderCache cache,
+                string compilerApiVersion = null,
+                string projectLanguage = null)
         {
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
@@ -85,7 +87,7 @@ namespace NuGet.Commands
                     for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
                         lockFileLib = CreateLockFileTargetLibrary(aliases, library, package, targetGraph.Conventions, dependencyType,
-                             framework, runtimeIdentifier, contentItems, nuspec, packageTypes, orderedCriteriaSets[i].orderedCriteria);
+                             framework, runtimeIdentifier, contentItems, nuspec, packageTypes, orderedCriteriaSets[i].orderedCriteria, compilerApiVersion, projectLanguage);
                         // Check if compatible assets were found.
                         // If no compatible assets were found and this is the last check
                         // continue on with what was given, this will fail in the normal
@@ -174,7 +176,9 @@ namespace NuGet.Commands
             ContentItemCollection contentItems,
             NuspecReader nuspec,
             IList<PackageType> packageTypes,
-            List<SelectionCriteria> orderedCriteria)
+            List<SelectionCriteria> orderedCriteria,
+            string compilerApiVersion = null,
+            string projectLanguage = null)
         {
             LockFileTargetLibrary lockFileLib = new LockFileTargetLibrary()
             {
@@ -228,6 +232,8 @@ namespace NuGet.Commands
                 orderedCriteria,
                 contentItems,
                 managedCodeConventions.Patterns.Analyzers);
+
+            AddAnalyzerFiles(managedCodeConventions, lockFileLib, contentItems, compilerApiVersion, projectLanguage);
 
             // Add MSBuild files
             AddMSBuildAssets(library.Name, managedCodeConventions, lockFileLib, orderedCriteria, contentItems);
@@ -319,6 +325,24 @@ namespace NuGet.Commands
             }
         }
 
+        private static void AddAnalyzerFiles(ManagedCodeConventions managedCodeConventions, LockFileTargetLibrary lockFileLib, ContentItemCollection contentItems, string compilerApiVersion, string projectLanguage)
+        {
+            // Get all analyzer files from the package
+            List<ContentItemGroup> contentFileGroups = new();
+            contentItems.PopulateItemGroups(managedCodeConventions.Patterns.Analyzers, contentFileGroups);
+
+            if (contentFileGroups.Count > 0)
+            {
+                // Get all analyzer assets and filter them by language
+                var analyzerAssets = contentFileGroups.ToArray()
+                    .SelectMany(g => g.Items)
+                    .Select(i => new LockFileItem(i.Path))
+                    .Where(item => IsApplicableAnalyzer(item.Path, projectLanguage))
+                    .ToList();
+            }
+        }
+        }
+        }
         /// <summary>
         /// Runtime targets
         /// These are applied only to non-RID target graphs.

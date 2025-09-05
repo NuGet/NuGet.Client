@@ -64,5 +64,7 @@ namespace NuGet.ProjectManagement
         public const string RestoreUseLegacyDependencyResolver = nameof(RestoreUseLegacyDependencyResolver);
         public const string RestoreEnablePackagePruning = nameof(RestoreEnablePackagePruning);
         public const string RestorePackagePruningDefault = "_" + nameof(RestorePackagePruningDefault);
+        public const string CompilerApiVersion = "_" + nameof(CompilerApiVersion);
+        public const string ProjectLanguage = nameof(ProjectLanguage);
     }
 }
