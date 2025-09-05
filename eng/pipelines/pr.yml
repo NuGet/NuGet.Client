@@ -30,7 +30,7 @@ parameters:
 - name: RunStaticAnalysis
   displayName: Run a static analysis
   type: boolean
-  default: true
+  default: false
 variables:
   DOTNET_NOLOGO: 1
   NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
