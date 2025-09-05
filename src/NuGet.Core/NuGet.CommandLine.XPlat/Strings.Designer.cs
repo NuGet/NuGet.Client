@@ -1581,6 +1581,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All packages are up to date.
+        /// </summary>
+        internal static string PackageUpdate_AlreadyUpToDate {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AlreadyUpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Updated {0} packages in {1} scanned packages..
         /// </summary>
         internal static string PackageUpdate_FinalSummary {
@@ -1604,6 +1613,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string PackageUpdate_LoadingDGSpec {
             get {
                 return ResourceManager.GetString("PackageUpdate_LoadingDGSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No upgradable packages have known vulnerabilities..
+        /// </summary>
+        internal static string PackageUpdate_NoVulnerablePackages {
+            get {
+                return ResourceManager.GetString("PackageUpdate_NoVulnerablePackages", resourceCulture);
             }
         }
         
@@ -1635,7 +1653,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Updated {0} {1} to {2}..
+        ///   Looks up a localized string similar to Updating {0} {1} to {2}..
         /// </summary>
         internal static string PackageUpdate_UpdatedMessage {
             get {
@@ -1649,6 +1667,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string PackageUpdate_UpdatingOutdatedPackages {
             get {
                 return ResourceManager.GetString("PackageUpdate_UpdatingOutdatedPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updating packages with security advisories in {0}.
+        /// </summary>
+        internal static string PackageUpdate_UpdatingVulnerablePackages {
+            get {
+                return ResourceManager.GetString("PackageUpdate_UpdatingVulnerablePackages", resourceCulture);
             }
         }
         
@@ -1667,6 +1694,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string PackageUpdateCommand_ProjectOptionDescription {
             get {
                 return ResourceManager.GetString("PackageUpdateCommand_ProjectOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upgrade packages with known vulnerabilities..
+        /// </summary>
+        internal static string PackageUpdateCommand_VulnerableOptionDescription {
+            get {
+                return ResourceManager.GetString("PackageUpdateCommand_VulnerableOptionDescription", resourceCulture);
             }
         }
         

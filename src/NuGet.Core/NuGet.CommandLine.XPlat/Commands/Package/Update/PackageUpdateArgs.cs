@@ -17,5 +17,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         public required bool Interactive { get; init; }
 
         public required LogLevel LogLevel { get; init; }
+
+        public required bool Vulnerable { get; init; }
     }
 }

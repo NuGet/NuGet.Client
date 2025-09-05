@@ -886,9 +886,19 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
         <target state="translated">Ruta de acceso a un archivo de proyecto o solución, o a un directorio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
+        <source>Upgrade packages with known vulnerabilities.</source>
+        <target state="new">Upgrade packages with known vulnerabilities.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
         <source>All packages are already up to date.</source>
         <target state="translated">Todos los paquetes ya están actualizados.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_AlreadyUpToDate">
+        <source>All packages are up to date</source>
+        <target state="new">All packages are up to date</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
@@ -907,6 +917,11 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
         <target state="translated">Cargando proyectos.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_NoVulnerablePackages">
+        <source>No upgradable packages have known vulnerabilities.</source>
+        <target state="new">No upgradable packages have known vulnerabilities.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
         <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
         <target state="translated">Referencia de paquete en forma de identificador de paquete como 'Newtonsoft.Json' o identificador de paquete y versión separados por '@', como 'Newtonsoft.Json@13.0.3'.</target>
@@ -923,8 +938,8 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatedMessage">
-        <source>Updated {0} {1} to {2}.</source>
-        <target state="translated">{0} {1} actualizado a {2}.</target>
+        <source>Updating {0} {1} to {2}.</source>
+        <target state="needs-review-translation">{0} {1} actualizado a {2}.</target>
         <note>{0}: package id
 {1}: existing version
 {2}: new version</note>
@@ -933,6 +948,11 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
         <source>Updating outdated packages in {0}.</source>
         <target state="translated">Actualizando paquetes desactualizados en {0}.</target>
         <note>{0}: the project or solution that is being updated</note>
+      </trans-unit>
+      <trans-unit id="PackageUpdate_UpdatingVulnerablePackages">
+        <source>Updating packages with security advisories in {0}</source>
+        <target state="new">Updating packages with security advisories in {0}</target>
+        <note>{0} - the project/solution being checked</note>
       </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>

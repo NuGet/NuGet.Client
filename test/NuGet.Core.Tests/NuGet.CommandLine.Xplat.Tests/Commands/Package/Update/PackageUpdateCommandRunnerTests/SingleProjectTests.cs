@@ -276,7 +276,8 @@ public class SingleProjectTests
                 new Pkg { Id = "Test.Package", VersionRange = new VersionRange(new NuGetVersion("1.2.3")) }
             },
             Interactive = false,
-            LogLevel = LogLevel.Information
+            LogLevel = LogLevel.Information,
+            Vulnerable = false,
         };
         var loggerMock = new Mock<ILoggerWithColor>();
         ILoggerWithColor logger = loggerMock.Object;
@@ -305,7 +306,8 @@ public class SingleProjectTests
             Project = project.FilePath,
             Packages = packagesToUpdate,
             Interactive = false,
-            LogLevel = LogLevel.Information
+            LogLevel = LogLevel.Information,
+            Vulnerable = false,
         };
 
         var loggerMock = new Mock<ILoggerWithColor>();

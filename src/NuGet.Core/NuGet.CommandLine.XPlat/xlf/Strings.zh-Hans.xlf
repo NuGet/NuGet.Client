@@ -886,9 +886,19 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">项目或解决方案文件或目录的路径。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
+        <source>Upgrade packages with known vulnerabilities.</source>
+        <target state="new">Upgrade packages with known vulnerabilities.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
         <source>All packages are already up to date.</source>
         <target state="translated">所有包均处于最新状态。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_AlreadyUpToDate">
+        <source>All packages are up to date</source>
+        <target state="new">All packages are up to date</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
@@ -907,6 +917,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">正在加载项目。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_NoVulnerablePackages">
+        <source>No upgradable packages have known vulnerabilities.</source>
+        <target state="new">No upgradable packages have known vulnerabilities.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
         <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
         <target state="translated">包引用采用包标识符形式，如 'Newtonsoft.Json'，或采用以 ‘@’ 分隔包标识符和版本的形式，如 ‘Newtonsoft.Json@13.0.3’。</target>
@@ -923,8 +938,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatedMessage">
-        <source>Updated {0} {1} to {2}.</source>
-        <target state="translated">已将 {0} {1} 更新到 {2}。</target>
+        <source>Updating {0} {1} to {2}.</source>
+        <target state="needs-review-translation">已将 {0} {1} 更新到 {2}。</target>
         <note>{0}: package id
 {1}: existing version
 {2}: new version</note>
@@ -933,6 +948,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <source>Updating outdated packages in {0}.</source>
         <target state="translated">正在更新 {0} 中已过时的包。</target>
         <note>{0}: the project or solution that is being updated</note>
+      </trans-unit>
+      <trans-unit id="PackageUpdate_UpdatingVulnerablePackages">
+        <source>Updating packages with security advisories in {0}</source>
+        <target state="new">Updating packages with security advisories in {0}</target>
+        <note>{0} - the project/solution being checked</note>
       </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
