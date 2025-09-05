@@ -375,7 +375,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var packages = new FrameworkPackages("net40");
             var topLevelPackages = new List<InstalledPackageReference>
             {
-                ListPackageTestHelper.CreateInstalledPackageReference(name: "TestPackage")
+                ListPackageTestHelper.CreateInstalledPackageReference("TestPackage")
             };
             packages.TopLevelPackages = topLevelPackages;
             var allPackages = new List<FrameworkPackages> { packages };
