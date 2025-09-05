@@ -153,10 +153,9 @@ namespace NuGet.Commands
             // Validate the lock file version requested
             if (_request.LockFileVersion < 1 || _request.LockFileVersion > LockFileFormat.Version)
             {
-                Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(request),
-                    message: nameof(request.LockFileVersion));
+                    message: $"Lock file version {_request.LockFileVersion} is not supported.");
             }
 
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
@@ -1408,11 +1407,7 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(projectLockFilePath))
             {
-                if (_request.ProjectStyle == ProjectStyle.PackageReference)
-                {
-                    projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
-                }
-                else if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
                     var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
                     var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
@@ -1430,7 +1425,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    projectLockFilePath = Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName);
+                    projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
                 }
             }
 
