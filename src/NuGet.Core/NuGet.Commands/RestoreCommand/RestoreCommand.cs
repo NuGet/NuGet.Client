@@ -414,9 +414,7 @@ namespace NuGet.Commands
                         framework.FrameworkName.Version.Major >= 2) ||
                     (project.RestoreMetadata.UsingMicrosoftNETSdk &&
                         StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.Net) &&
-                        framework.FrameworkName.Version.Major >= 4 &&
-                        framework.FrameworkName.Version.Minor >= 6 &&
-                        framework.FrameworkName.Version.Revision >= 1);
+                        framework.FrameworkName.Version >= FrameworkConstants.CommonFrameworks.Net461.Version);
 
                 pruningDefault |= isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 10;
 

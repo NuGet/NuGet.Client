@@ -2659,6 +2659,9 @@ namespace NuGet.Commands.FuncTest
                                     ""target"": ""Package"",
                                 },
                         },
+                        ""packagesToPrune"": {
+                            ""a"" : ""(,1.0.0]"" 
+                        }
                     },
                     ""net472"": {
                         ""dependencies"": {
@@ -2666,9 +2669,6 @@ namespace NuGet.Commands.FuncTest
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                 },
-                        },
-                        ""packagesToPrune"": {
-                            ""a"" : ""(,1.0.0]"" 
                         }
                     },
                     ""net46"": {
@@ -2683,6 +2683,9 @@ namespace NuGet.Commands.FuncTest
                 }";
 
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", Path.GetTempPath(), rootProject);
+            projectSpec.RestoreMetadata.SdkAnalysisLevel = NuGetVersion.Parse("10.0.100");
+            projectSpec.RestoreMetadata.UsingMicrosoftNETSdk = true;
+
             var testLogger = new TestLogger();
             var testEvent = new TelemetryEvent("dummyEvent");
 
@@ -2691,6 +2694,54 @@ namespace NuGet.Commands.FuncTest
             testEvent["Pruning.DefaultEnabled"].Should().Be(false);
             testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
             testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(1);
+        }
+
+        [Fact]
+        public void PopulatePruningEnabledTelemetry_WithPruningEnabled_WithoutNETSDK_AndVariousFrameworks_PopulatesTelemetryCorrectly()
+        {
+            var rootProject = @"
+                {
+                  ""frameworks"": {
+                    ""net10.0"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        },
+                        ""packagesToPrune"": {
+                            ""a"" : ""(,1.0.0]"" 
+                        }
+                    },
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        }
+                    },
+                    ""net46"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                        }
+                    },
+                  }
+                }";
+
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", Path.GetTempPath(), rootProject);
+
+            var testLogger = new TestLogger();
+            var testEvent = new TelemetryEvent("dummyEvent");
+
+            RestoreCommand.PopulatePruningEnabledTelemetry(projectSpec, testEvent);
+            testEvent["Pruning.FrameworksEnabled.Count"].Should().Be(1);
+            testEvent["Pruning.DefaultEnabled"].Should().Be(true);
+            testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(2);
+            testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
