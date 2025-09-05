@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -403,18 +402,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var listPackageRunner = new ListPackageCommandRunner();
 
-            // Act & Assert - Test the private method using reflection
-            var getPackageMetadataAsyncMethod = typeof(ListPackageCommandRunner)
-                .GetMethod("GetPackageMetadataAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            Assert.NotNull(getPackageMetadataAsyncMethod);
-
-            // This should not throw DivideByZeroException
+            // Act & Assert - Call the method directly since it's now internal
             Exception exception = await Record.ExceptionAsync(async () =>
             {
-                var task = (Task<Dictionary<string, List<IPackageSearchMetadata>>>)getPackageMetadataAsyncMethod.Invoke(
-                    listPackageRunner, new object[] { allPackages, listPackageArgs });
-                await task;
+                await listPackageRunner.GetPackageMetadataAsync(allPackages, listPackageArgs);
             });
 
             Assert.Null(exception);
