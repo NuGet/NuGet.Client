@@ -913,7 +913,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
         <source>For more information, see</source>
-        <target state="new">For more information, see</target>
+        <target state="translated">Pour plus d'informations, consultez</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
