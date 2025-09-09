@@ -316,16 +316,13 @@ namespace NuGet.CommandLine.XPlat
             bool noVersion,
             string framework = null)
         {
-            // Getting all the item groups in a given project
-            var itemGroups = GetItemGroups(project);
-
             // Add packageReference to the project file only if it does not exist.
             if (!libraryDependency.VersionCentrallyManaged)
             {
                 if (!existingPackageReferences.Any())
                 {
                     //Modify the project file.
-                    ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework);
+                    ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework, project);
                     AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
                 }
                 else
@@ -343,7 +340,7 @@ namespace NuGet.CommandLine.XPlat
                 if (!existingPackageReferences.Any())
                 {
                     //Add <PackageReference/> to the project file.
-                    ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework);
+                    ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework, project);
                     AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
                 }
 
@@ -379,9 +376,11 @@ namespace NuGet.CommandLine.XPlat
 
             project.Save();
 
-            ProjectItemGroupElement GetOrCreateItemGroup(string targetFramework)
+            static ProjectItemGroupElement GetOrCreateItemGroup(string targetFrameworkAlias, Project project)
             {
-                string condition = framework is null ? null : GetTargetFrameworkCondition(framework);
+                // Getting all the item groups in a given project
+                var itemGroups = GetItemGroups(project);
+                string condition = targetFrameworkAlias is null ? null : GetTargetFrameworkCondition(targetFrameworkAlias);
                 var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG, condition) ?? CreateItemGroup(project, condition);
                 return itemGroup;
             }
