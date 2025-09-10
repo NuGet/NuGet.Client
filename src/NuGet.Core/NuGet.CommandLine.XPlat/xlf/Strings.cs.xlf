@@ -896,10 +896,25 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
         <target state="translated">Všechny balíčky jsou už aktuální.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_AllVersionsHaveAdvisories">
+        <source>All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</source>
+        <target state="new">All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</target>
+        <note>{0}: package id</note>
+      </trans-unit>
       <trans-unit id="PackageUpdate_AlreadyUpToDate">
         <source>All packages are up to date</source>
         <target state="new">All packages are up to date</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_AuditDisabled">
+        <source>This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</source>
+        <target state="new">This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</target>
+        <note>{Locked="NuGetAudit"}{Locked="dotnet package update"}</note>
+      </trans-unit>
+      <trans-unit id="PackageUpdate_AuditModeIsDirect">
+        <source>NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</source>
+        <target state="new">NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</target>
+        <note>{Locked="NuGetAuditMode"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
         <source>Updated {0} packages in {1} scanned packages.</source>

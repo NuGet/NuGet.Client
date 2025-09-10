@@ -1581,11 +1581,38 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to..
+        /// </summary>
+        internal static string PackageUpdate_AllVersionsHaveAdvisories {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AllVersionsHaveAdvisories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All packages are up to date.
         /// </summary>
         internal static string PackageUpdate_AlreadyUpToDate {
             get {
                 return ResourceManager.GetString("PackageUpdate_AlreadyUpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information..
+        /// </summary>
+        internal static string PackageUpdate_AuditDisabled {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AuditDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information..
+        /// </summary>
+        internal static string PackageUpdate_AuditModeIsDirect {
+            get {
+                return ResourceManager.GetString("PackageUpdate_AuditModeIsDirect", resourceCulture);
             }
         }
         

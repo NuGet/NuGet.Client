@@ -8,7 +8,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 {
-    internal class PackageUpdateArgs
+    internal record PackageUpdateArgs
     {
         public required string Project { get; init; }
 

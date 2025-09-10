@@ -103,18 +103,29 @@ internal static class PackageUpdateCommandRunner
 
         if (args.Vulnerable)
         {
-            (packagesToUpdateResult, totalPackagesScanned) = await GetAllVulnerablePackagesToUpdateAsync(args.Packages, dgSpec, versionChooser, settings, logger, packageUpdateIO, cancellationToken);
+            if (!NuGetAuditEnabled(projectSpec))
+            {
+                logger.LogError(Strings.PackageUpdate_AuditDisabled);
+                return ExitCodes.InvalidArgs;
+            }
+
+            if (!IsNuGetAuditModeSetToAll(projectSpec))
+            {
+                logger.LogWarning(Strings.PackageUpdate_AuditModeIsDirect);
+            }
+
+            (packagesToUpdateResult, totalPackagesScanned) = await SelectVulnerablePackagesToUpdateAsync(args.Packages, dgSpec, versionChooser, settings, logger, packageUpdateIO, cancellationToken);
         }
         else if (noPackagesSpecified)
         {
             var allProjectPackages = GetAllPackagesReferencedByProject(projectSpec);
             totalPackagesScanned = allProjectPackages.Count;
-            packagesToUpdateResult = await GetAllPackagesWithUpdatesAsync(projectSpec, versionChooser, settings, logger, cancellationToken);
+            packagesToUpdateResult = await SelectAllPackagesWithUpdatesAsync(projectSpec, versionChooser, settings, logger, cancellationToken);
         }
         else
         {
             totalPackagesScanned = args.Packages!.Count;
-            packagesToUpdateResult = await GetPackagesToUpdateAsync(args.Packages, projectSpec, versionChooser, settings, logger, cancellationToken);
+            packagesToUpdateResult = await SelectPackagesToUpdateAsync(args.Packages, projectSpec, versionChooser, settings, logger, cancellationToken);
         }
 
         if (packagesToUpdateResult.Count == 0)
@@ -179,7 +190,7 @@ internal static class PackageUpdateCommandRunner
         return ExitCodes.Success;
     }
 
-    private static async Task<(List<PackageUpdateResult> vulnerablePackages, int packagesScanned)> GetAllVulnerablePackagesToUpdateAsync(
+    private static async Task<(List<PackageUpdateResult> vulnerablePackages, int packagesScanned)> SelectVulnerablePackagesToUpdateAsync(
         IReadOnlyList<Package>? packages,
         DependencyGraphSpec dgSpec,
         IVersionChooser versionChooser,
@@ -205,7 +216,7 @@ internal static class PackageUpdateCommandRunner
         {
             IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities = await GetKnownVulnerabilitiesAsync(settings, logger, cancellationToken);
 
-            var packagesToUpdate = assetsFile
+            List<(PackageIdentity package, List<string> targetFrameworkAliases)> packagesToUpdate = assetsFile
                 .Targets
                 .SelectMany(tf => tf.Libraries.Select(library => (tf.TargetFramework, library)))
                 .Where(tuple => tuple.library.Type == "package" && packageIdsWithVulnerabilities.Contains(tuple.library.Name!) && PackageHasVulnerability(tuple.library.Name!, tuple.library.Version!, knownVulnerabilities))
@@ -221,7 +232,7 @@ internal static class PackageUpdateCommandRunner
                 var nonVulnerableVersion = await versionChooser.GetNonVulnerableAsync(packageIdentity.Id, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
                 if (nonVulnerableVersion is null)
                 {
-                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, "no vulnerable packages found", packageIdentity.Id, packageIdentity.Version.ToNormalizedString()), ConsoleColor.Yellow);
+                    logger.LogMinimal(Format.PackageUpdate_AllVersionsHaveAdvisories(packageIdentity.Id), ConsoleColor.Yellow);
                 }
                 else
                 {
@@ -348,7 +359,7 @@ internal static class PackageUpdateCommandRunner
         return assetsFile;
     }
 
-    internal static async Task<List<PackageUpdateResult>> GetPackagesToUpdateAsync(
+    internal static async Task<List<PackageUpdateResult>> SelectPackagesToUpdateAsync(
         IReadOnlyList<Package> packages,
         PackageSpec project,
         IVersionChooser versionChooser,
@@ -358,7 +369,7 @@ internal static class PackageUpdateCommandRunner
     {
         if (packages is null || packages.Count == 0)
         {
-            return await GetAllPackagesWithUpdatesAsync(project, versionChooser, settings, logger, cancellationToken);
+            return await SelectAllPackagesWithUpdatesAsync(project, versionChooser, settings, logger, cancellationToken);
         }
 
         var sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
@@ -387,7 +398,7 @@ internal static class PackageUpdateCommandRunner
         return hasErrors ? new List<PackageUpdateResult>() : packagesToUpdate;
     }
 
-    private static async Task<List<PackageUpdateResult>> GetAllPackagesWithUpdatesAsync(
+    private static async Task<List<PackageUpdateResult>> SelectAllPackagesWithUpdatesAsync(
         PackageSpec project,
         IVersionChooser versionChooser,
         ISettings settings,
@@ -592,6 +603,14 @@ internal static class PackageUpdateCommandRunner
         return updatedDgSpec;
     }
 
+    private static bool NuGetAuditEnabled(PackageSpec projectSpec) =>
+        bool.TryParse(projectSpec?.RestoreMetadata?.RestoreAuditProperties?.EnableAudit, out bool result)
+            ? result
+            : true;
+
+    private static bool IsNuGetAuditModeSetToAll(PackageSpec projectSpec) =>
+        string.Equals(projectSpec?.RestoreMetadata?.RestoreAuditProperties?.AuditMode, "all", StringComparison.OrdinalIgnoreCase);
+
     internal record PackageToUpdate
     {
         public required string Id { get; init; }
@@ -627,10 +646,15 @@ internal static class PackageUpdateCommandRunner
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_FinalSummary, updatedCount, scannedCount);
         }
+
+        internal static string PackageUpdate_AllVersionsHaveAdvisories(string packageId)
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_AllVersionsHaveAdvisories, packageId);
+        }
     }
 
     // These exit codes are documented, so consider changing them or adding new ones a breaking change.
-    private static class ExitCodes
+    internal static class ExitCodes
     {
         public const int Success = 0;
         // System.CommandLine returns 1 on parse ererors, so even if this const isn't used, the value 1 is still returned.

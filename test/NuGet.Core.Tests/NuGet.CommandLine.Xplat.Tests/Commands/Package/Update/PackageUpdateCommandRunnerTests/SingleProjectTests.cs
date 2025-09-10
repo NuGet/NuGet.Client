@@ -299,6 +299,32 @@ public class SingleProjectTests
         exitCode.Should().Be(3);
     }
 
+    [Fact]
+    public async Task ProjectWithAuditDisabled_UpdateVulerableShowsErrorMessage()
+    {
+        // Arrange
+        var packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithProperty("NuGetAudit", "false");
+        }).Build();
+        var packagesToUpdate = new List<Pkg>();
+
+        TestData testData = InitTest(packagesToUpdate, packageSpec);
+        testData = testData with
+        {
+            CommandArgs = testData.CommandArgs with { Vulnerable = true }
+        };
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.InvalidArgs);
+        testData.LoggerMock.Verify(x => x.LogError(It.Is<string>(s => s.Contains(Strings.PackageUpdate_AuditDisabled))),
+            Times.Once);
+    }
+
     private TestData InitTest(IReadOnlyList<Pkg> packagesToUpdate, PackageSpec project, bool restoreSuccessful = true)
     {
         var commandArgs = new PackageUpdateArgs

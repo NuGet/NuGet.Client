@@ -1088,4 +1088,16 @@ Do not translate "PackageVersion"</comment>
     <value>Updating packages with security advisories in {0}</value>
     <comment>{0} - the project/solution being checked</comment>
   </data>
+  <data name="PackageUpdate_AllVersionsHaveAdvisories" xml:space="preserve">
+    <value>All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</value>
+    <comment>{0}: package id</comment>
+  </data>
+  <data name="PackageUpdate_AuditDisabled" xml:space="preserve">
+    <value>This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</value>
+    <comment>{Locked="NuGetAudit"}{Locked="dotnet package update"}</comment>
+  </data>
+  <data name="PackageUpdate_AuditModeIsDirect" xml:space="preserve">
+    <value>NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</value>
+    <comment>{Locked="NuGetAuditMode"}</comment>
+  </data>
 </root>
