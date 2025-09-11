@@ -1093,7 +1093,7 @@ Do not translate "PackageVersion"</comment>
     <comment>{0}: package id</comment>
   </data>
   <data name="PackageUpdate_AuditDisabled" xml:space="preserve">
-    <value>This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</value>
+    <value>This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</value>
     <comment>{Locked="NuGetAudit"}{Locked="dotnet package update"}</comment>
   </data>
   <data name="PackageUpdate_AuditModeIsDirect" xml:space="preserve">

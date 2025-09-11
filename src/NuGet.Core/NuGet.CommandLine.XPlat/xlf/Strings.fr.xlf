@@ -907,8 +907,8 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditDisabled">
-        <source>This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</source>
-        <target state="new">This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information.</target>
+        <source>This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</source>
+        <target state="new">This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</target>
         <note>{Locked="NuGetAudit"}{Locked="dotnet package update"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditModeIsDirect">

@@ -1599,7 +1599,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This command requires NuGetAudit to be enabled at this time. Consider using MSBuild conditions and environment variables to disable NuGetAudit during restore, but enable it for dotnet package update. See https://aka.ms/nuget/audit for more information..
+        ///   Looks up a localized string similar to This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information..
         /// </summary>
         internal static string PackageUpdate_AuditDisabled {
             get {
