@@ -1739,7 +1739,7 @@ EndGlobal";
         [InlineData("nunit")]
         [InlineData("web")]
         [InlineData("webapi")]
-        [InlineData("webapiaot")]
+        // [InlineData("webapiaot")] Skipping due to failures: https://github.com/NuGet/Home/issues/14523
         [InlineData("webapp")]
         [InlineData("worker")]
         [InlineData("xunit")]
