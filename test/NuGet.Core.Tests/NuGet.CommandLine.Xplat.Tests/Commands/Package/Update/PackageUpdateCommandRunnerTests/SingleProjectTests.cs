@@ -300,7 +300,7 @@ public class SingleProjectTests
     }
 
     [Fact]
-    public async Task ProjectWithAuditDisabled_UpdateVulerableShowsErrorMessage()
+    public async Task ProjectWithAuditDisabled_UpdateVulnerableShowsErrorMessage()
     {
         // Arrange
         var packageSpec = new TestPackageSpecFactory(builder =>
