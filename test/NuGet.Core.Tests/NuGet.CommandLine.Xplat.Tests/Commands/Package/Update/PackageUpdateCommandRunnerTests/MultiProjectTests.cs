@@ -11,9 +11,7 @@ using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -82,7 +80,6 @@ public class MultiProjectTests
         // preview restore must have both projects, but only project1 for restore
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.Is<DependencyGraphSpec>(d => d.Projects.Count == 2 && d.Restore.Count == 1 && d.Restore[0] == project1Path),
-            It.IsAny<SourceCacheContext>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
@@ -113,14 +110,10 @@ public class MultiProjectTests
 
         var ioMock = new Mock<IPackageUpdateIO>();
 
-        ioMock.Setup(x => x.LoadSettings(It.IsAny<string>()))
-            .Returns(NullSettings.Instance);
-
         ioMock.Setup(x => x.GetDependencyGraphSpec(commandArgs.Project)).Returns(dgSpec);
 
         ioMock.Setup(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
-            It.IsAny<SourceCacheContext>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(restoreResult);

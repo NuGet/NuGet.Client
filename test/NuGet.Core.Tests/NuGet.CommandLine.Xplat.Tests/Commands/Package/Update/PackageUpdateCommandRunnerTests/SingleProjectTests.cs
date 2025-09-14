@@ -10,9 +10,7 @@ using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -217,7 +215,6 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
-            It.IsAny<SourceCacheContext>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()), Times.Never);
 
@@ -252,7 +249,6 @@ public class SingleProjectTests
 
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
-            It.IsAny<SourceCacheContext>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()), Times.Once);
 
@@ -350,14 +346,10 @@ public class SingleProjectTests
 
         var ioMock = new Mock<IPackageUpdateIO>();
 
-        ioMock.Setup(x => x.LoadSettings(It.IsAny<string>()))
-            .Returns(NullSettings.Instance);
-
         ioMock.Setup(x => x.GetDependencyGraphSpec(commandArgs.Project)).Returns(dgSpec);
 
         ioMock.Setup(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),
-            It.IsAny<SourceCacheContext>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(restoreResult);
