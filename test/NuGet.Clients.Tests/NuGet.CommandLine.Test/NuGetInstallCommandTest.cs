@@ -17,7 +17,6 @@ using NuGet.Configuration.Test;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
