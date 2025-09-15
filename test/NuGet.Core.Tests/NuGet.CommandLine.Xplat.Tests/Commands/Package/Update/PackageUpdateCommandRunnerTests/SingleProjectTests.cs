@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
@@ -321,7 +322,119 @@ public class SingleProjectTests
             Times.Once);
     }
 
-    private TestData InitTest(IReadOnlyList<Pkg> packagesToUpdate, PackageSpec project, bool restoreSuccessful = true)
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ProjectWithPackageSourceMapping_ErrorWhenPackageNameIsNotMapped(bool omitPackageName)
+    {
+        // Arrange
+        var packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        }).Build();
+        var packagesToUpdate = new List<Pkg>();
+
+        TestData testData = InitTest(packagesToUpdate, packageSpec, disablePackageSourceMapping: false);
+        if (!omitPackageName)
+        {
+            testData = testData with
+            {
+                CommandArgs = testData.CommandArgs with
+                {
+                    Packages = new List<Pkg>
+                    {
+                        new Pkg { Id = "Test.Package", VersionRange = null }
+                    }
+                }
+            };
+        }
+
+        testData.IoMock.Setup(io => io.GetPackageSourceMapping())
+            .Returns(new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "contoso.*", new List<string> { "contoso-packages" } }
+            }));
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.Error);
+        testData.LoggerMock.Verify(x => x.LogError(Messages.Error_PackageSourceMappingNotFound("Test.Package")),
+            Times.Once);
+        testData.IoMock.Verify(x => x.UpdatePackageReference(
+            It.IsAny<PackageSpec>(),
+            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<List<string>>(),
+            It.IsAny<PackageUpdateCommandRunner.PackageToUpdate>(),
+            It.IsAny<ILogger>()),
+            Times.Never);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ProjectWithPackageSourceMapping_PassesMappedSourcesToGetLatestVersion(bool omitPackageName)
+    {
+        // Arrange
+        var packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        }).Build();
+        var packagesToUpdate = new List<Pkg>();
+
+        TestData testData = InitTest(packagesToUpdate, packageSpec, disablePackageSourceMapping: false);
+        if (!omitPackageName)
+        {
+            testData = testData with
+            {
+                CommandArgs = testData.CommandArgs with
+                {
+                    Packages = new List<Pkg>
+                    {
+                        new Pkg { Id = "Test.Package", VersionRange = null }
+                    }
+                }
+            };
+        }
+
+        List<string> mappedSources = ["package-feed"];
+        testData.IoMock.Setup(io => io.GetPackageSourceMapping())
+            .Returns(new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "package-feed", ["test.package"]}
+            }));
+
+        testData.IoMock.Setup(x => x.GetLatestVersionAsync("Test.Package",
+            It.IsAny<bool>(),
+            It.IsAny<IReadOnlyList<string>>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("1.2.3"));
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.Success);
+
+        // Make sure the mapped source was passed to GetLatestVersionAsync
+        testData.IoMock.Verify(x => x.GetLatestVersionAsync(
+            "Test.Package",
+            false,
+            It.Is<IReadOnlyList<string>>(sources => sources.Count == 1 && sources[0] == "package-feed"),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    private TestData InitTest(
+        IReadOnlyList<Pkg> packagesToUpdate,
+        PackageSpec project,
+        bool restoreSuccessful = true,
+        bool disablePackageSourceMapping = true)
     {
         var commandArgs = new PackageUpdateArgs
         {
@@ -365,6 +478,13 @@ public class SingleProjectTests
             It.IsAny<IPackageUpdateIO.RestoreResult>(),
             It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        if (disablePackageSourceMapping)
+        {
+            var noMappings = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            var packageSourceMapping = new PackageSourceMapping(noMappings);
+            ioMock.Setup(x => x.GetPackageSourceMapping()).Returns(packageSourceMapping);
+        }
 
         var testData = new TestData
         {

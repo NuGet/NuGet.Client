@@ -398,6 +398,11 @@ Menedżer NuGet wymaga źródeł HTTPS. Aby użyć źródeł HTTP, musisz wyraź
         <target state="translated">Projekt „{0}” używa pliku package.config dla pakietów NuGet, podczas gdy polecenie działa tylko w przypadku projektów odwołania do pakietu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">Brak ścieżki „{0}” lub jest ona nieprawidłowa. Podaj ścieżkę do projektu, pliku rozwiązania lub katalogu.</target>

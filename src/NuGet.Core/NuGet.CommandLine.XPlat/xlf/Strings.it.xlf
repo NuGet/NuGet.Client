@@ -398,6 +398,11 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
         <target state="translated">Il progetto `{0}` usa package.config per i pacchetti NuGet, mentre il comando funziona solo con progetti di riferimento al pacchetto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">Percorso mancante o non valido: '{0}'. Specificare un percorso di un progetto, di un file di soluzione o una directory.</target>

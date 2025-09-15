@@ -398,6 +398,11 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <target state="translated">專案 `{0}` 會使用 NuGet 套件的 package.config，且命令僅能搭配套件參考專案使用。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">路徑 '{0}' 遺漏或無效。請提供專案檔、方案檔或目錄的路徑。</target>

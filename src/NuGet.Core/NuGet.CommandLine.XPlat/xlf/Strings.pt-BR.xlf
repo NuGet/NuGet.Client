@@ -398,6 +398,11 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">O projeto '{0}' usa package.config para pacotes do NuGet, enquanto o comando funciona somente com projetos de referência do pacote.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">Caminho "{0}" ausente ou inválido. Forneça um caminho para um projeto, arquivo de solução ou diretório.</target>

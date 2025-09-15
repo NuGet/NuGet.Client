@@ -398,6 +398,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">`{0}` 프로젝트는 NuGet 패키지에 대한 package.config를 사용합니다. 명령은 패키지 참조 프로젝트에서만 작동합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">'{0}' 경로가 없거나 잘못되었습니다. 프로젝트, 솔루션 파일 또는 디렉터리의 경로를 제공하세요.</target>
@@ -1078,8 +1083,8 @@ This option should be used when specifying the certificate via --certificate-sub
       <trans-unit id="SignCommandCertificateSubjectNameDescription">
         <source>Subject name of the certificate used to search a local certificate store for the certificate.
 The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
-        <target state="translated">인증서에 대한 로컬 인증서 저장소를 검색하는 데 사용되는 인증서의 주체 이름입니다. 
- 
+        <target state="translated">인증서에 대한 로컬 인증서 저장소를 검색하는 데 사용되는 인증서의 주체 이름입니다.
+
 검색은 제공된 값을 사용하는 대소문자를 구분하지 않는 문자열 비교입니다. 이 검색은 다른 주체 값과 관계 없이, 해당 문자열이 포함된 주체 이름을 가진 모든 인증서를 찾습니다. 인증서 저장소는 --certificate-store-name 및 --certificate-store-location 옵션으로 지정할 수 있습니다.</target>
         <note>Please don't localize '--certificate-store-name' and '--certificate-store-location'</note>
       </trans-unit>

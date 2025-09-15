@@ -398,6 +398,11 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
         <target state="translated">Projekt {0} používá pro balíčky NuGet package.config, ale daný příkaz funguje jen s projekty odkazů na balíčky.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="new">Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</target>
+        <note>{0} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
         <target state="translated">Chybějící nebo neplatná cesta {0}. Zadejte prosím cestu k projektu, souboru řešení nebo adresáři.</target>

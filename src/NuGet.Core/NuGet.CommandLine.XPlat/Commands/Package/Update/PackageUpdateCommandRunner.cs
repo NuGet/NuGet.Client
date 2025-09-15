@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Credentials;
@@ -223,10 +224,18 @@ internal static class PackageUpdateCommandRunner
                     (key, g) => (key, g.Distinct().ToList()))
                 .ToList();
 
+            PackageSourceMapping sourceMapping = packageUpdateIO.GetPackageSourceMapping();
             var packagesToUpdateResult = new List<PackageUpdateResult>(packagesToUpdate.Count);
             foreach (var (packageIdentity, tfmAliases) in packagesToUpdate)
             {
-                var nonVulnerableVersion = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
+                IReadOnlyList<string>? mappedSources = sourceMapping.IsEnabled ? sourceMapping.GetConfiguredPackageSources(packageIdentity.Id) : null;
+                if (mappedSources is not null && mappedSources.Count == 0)
+                {
+                    logger.LogError(Messages.Error_PackageSourceMappingNotFound(packageIdentity.Id));
+                    continue;
+                }
+
+                var nonVulnerableVersion = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, mappedSources, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
                 if (nonVulnerableVersion is null)
                 {
                     logger.LogMinimal(Format.PackageUpdate_AllVersionsHaveAdvisories(packageIdentity.Id), ConsoleColor.Yellow);
@@ -287,11 +296,20 @@ internal static class PackageUpdateCommandRunner
             throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(packages));
         }
 
+        var sourceMapping = packageUpdateIO.GetPackageSourceMapping();
         var packagesToUpdate = new List<PackageUpdateResult>();
         bool hasErrors = false;
 
         foreach (var package in packages)
         {
+            IReadOnlyList<string>? mappedSources = sourceMapping.IsEnabled ? sourceMapping.GetConfiguredPackageSources(package.Id) : null;
+            if (mappedSources is not null && mappedSources.Count == 0)
+            {
+                logger.LogError(Messages.Error_PackageSourceMappingNotFound(package.Id));
+                hasErrors = true;
+                continue;
+            }
+
             var (existingVersion, packageTfms) = GetReferencedVersion(package.Id, project, logger);
             if (existingVersion is null)
             {
@@ -315,7 +333,7 @@ internal static class PackageUpdateCommandRunner
             else
             {
                 bool usePrerelease = existingVersion.HasLowerBound && existingVersion.MinVersion.IsPrerelease;
-                var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, NullLogger.Instance, cancellationToken);
+                var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
                 if (latestVersion is null)
                 {
                     logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
@@ -434,15 +452,24 @@ internal static class PackageUpdateCommandRunner
             return (null, 0);
         }
 
+        var sourceMapping = packageUpdateIO.GetPackageSourceMapping();
         var packagesToUpdate = new List<PackageUpdateResult>();
         bool successful = true;
 
         foreach (var package in allProjectPackages)
         {
+            IReadOnlyList<string>? mappedSources = sourceMapping.IsEnabled ? sourceMapping.GetConfiguredPackageSources(package.identity.Id) : null;
+            if (mappedSources is not null && mappedSources.Count == 0)
+            {
+                logger.LogError(Messages.Error_PackageSourceMappingNotFound(package.identity.Id));
+                successful = false;
+                continue;
+            }
+
             // package.identity.VersionRange is the project's referenced version.
             Debug.Assert(package.identity.VersionRange != null);
             bool usePrerelease = package.identity.VersionRange.HasLowerBound && package.identity.VersionRange.MinVersion.IsPrerelease;
-            var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, NullLogger.Instance, cancellationToken);
+            var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
 
             if (latestVersion is null)
             {

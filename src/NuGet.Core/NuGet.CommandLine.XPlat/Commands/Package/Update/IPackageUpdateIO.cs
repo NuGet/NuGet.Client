@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Common;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Model;
@@ -68,6 +69,8 @@ internal interface IPackageUpdateIO
     /// </summary>
     /// <param name="packageId">The package name to check.</param>
     /// <param name="includePrerelease">Whether prerelease packages should be considered.</param>
+    /// <param name="allowedSources">Package source mapping sources configured for this package name.
+    /// <see langword="null"/> if package source mapping is not configured.</param>
     /// <param name="logger">Output logger</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The <see cref="NuGetVersion"/> of the highest version of the package available.
@@ -75,6 +78,7 @@ internal interface IPackageUpdateIO
     Task<NuGetVersion?> GetLatestVersionAsync(
         string packageId,
         bool includePrerelease,
+        IReadOnlyList<string>? allowedSources,
         ILogger logger,
         CancellationToken cancellationToken);
 
@@ -89,6 +93,8 @@ internal interface IPackageUpdateIO
     /// <summary>Finds the lowest package version above a minimum version, that does not have any
     /// known vulnerabilities.</summary>
     /// <param name="packageId">The package name to check</param>
+    /// <param name="allowedSources">Package source mapping sources configured for this package name.
+    /// <see langword="null"/> if package source mapping is not configured.</param>
     /// <param name="minVersion">The minimum version to accept.</param>
     /// <param name="logger">Output logger</param>
     /// <param name="knownVulnerabilities">The known vulnerabilities list.</param>
@@ -98,6 +104,7 @@ internal interface IPackageUpdateIO
     /// available on the source(s) have known vulnerabilities.</returns>
     Task<NuGetVersion?> GetNonVulnerableAsync(
         string packageId,
+        IReadOnlyList<string>? allowedSources,
         NuGetVersion minVersion,
         ILogger logger,
         IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
@@ -109,6 +116,10 @@ internal interface IPackageUpdateIO
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The assets file for the project.</returns>
     Task<LockFile> GetProjectAssetsFileAsync(DependencyGraphSpec dgSpec, ILogger logger, CancellationToken cancellationToken);
+
+    /// <summary>Gets the package source mapping configuration for the current settins context.</summary>
+    /// <returns>The package source mapping settings.</returns>
+    PackageSourceMapping GetPackageSourceMapping();
 
     /// <summary>
     /// An opaque type, to aid in testing, representing the result of a restore operation.

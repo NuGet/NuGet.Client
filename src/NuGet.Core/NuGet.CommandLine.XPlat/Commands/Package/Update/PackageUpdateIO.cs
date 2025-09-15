@@ -207,14 +207,15 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         }
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.GetLatestVersionAsync(string, bool, ILogger, CancellationToken)"/>
+    /// <inheritdoc cref="IPackageUpdateIO.GetLatestVersionAsync(string, bool, IReadOnlyList{string}?, ILogger, CancellationToken)"/>
     public async Task<NuGetVersion?> GetLatestVersionAsync(
         string packageId,
         bool includePrerelease,
+        IReadOnlyList<string>? allowedSources,
         ILogger logger,
         CancellationToken cancellationToken)
     {
-        var sources = GetSourcesForPackage(packageId);
+        var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<NuGetVersion?>[sources.Count];
         for (int source = 0; source < sources.Count; source++)
         {
@@ -284,15 +285,16 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         return allVulnerabilities;
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.GetNonVulnerableAsync(string, NuGetVersion, ILogger, IReadOnlyList{IReadOnlyDictionary{string, IReadOnlyList{PackageVulnerabilityInfo}}}, CancellationToken)"/>
+    /// <inheritdoc cref="IPackageUpdateIO.GetNonVulnerableAsync(string, IReadOnlyList{string}?, NuGetVersion, ILogger, IReadOnlyList{IReadOnlyDictionary{string, IReadOnlyList{PackageVulnerabilityInfo}}}, CancellationToken)"/>
     public async Task<NuGetVersion?> GetNonVulnerableAsync(
         string packageId,
+        IReadOnlyList<string>? allowedSources,
         NuGetVersion minVersion,
         ILogger logger,
         IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
         CancellationToken cancellationToken)
     {
-        var sources = GetSourcesForPackage(packageId);
+        var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<NuGetVersion?>[sources.Count];
         for (int source = 0; source < sources.Count; source++)
         {
@@ -318,12 +320,36 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         return lowestNonVulnerableVersion;
     }
 
-    private List<SourceRepository> GetSourcesForPackage(string packageId)
+    public PackageSourceMapping GetPackageSourceMapping()
     {
-        var sources = new List<SourceRepository>(_enabledSources.Count);
-        for (int i = 0; i < _enabledSources.Count; i++)
+        return PackageSourceMapping.GetPackageSourceMapping(_settings);
+    }
+
+    private List<SourceRepository> GetSourcesForPackage(string packageId, IReadOnlyList<string>? allowedSources)
+    {
+        IReadOnlyList<PackageSource> packageSources;
+
+        // Apply package source mapping if enabled
+        if (allowedSources is not null)
         {
-            SourceRepository sourceRepository = _cachingSourceProvider.CreateRepository(_enabledSources[i]);
+            if (allowedSources.Count == 0)
+            {
+                throw new ArgumentException("The allowedSources list must contain at least one source if specified.", nameof(allowedSources));
+            }
+
+            List<PackageSource> sourceMappedSources = new List<PackageSource>(allowedSources.Count);
+            sourceMappedSources.AddRange(_enabledSources.Where(ps => allowedSources.Contains(ps.Name, StringComparer.OrdinalIgnoreCase)));
+            packageSources = sourceMappedSources;
+        }
+        else
+        {
+            packageSources = _enabledSources;
+        }
+
+        var sources = new List<SourceRepository>(packageSources.Count);
+        for (int i = 0; i < packageSources.Count; i++)
+        {
+            SourceRepository sourceRepository = _cachingSourceProvider.CreateRepository(packageSources[i]);
             sources.Add(sourceRepository);
         }
         return sources;

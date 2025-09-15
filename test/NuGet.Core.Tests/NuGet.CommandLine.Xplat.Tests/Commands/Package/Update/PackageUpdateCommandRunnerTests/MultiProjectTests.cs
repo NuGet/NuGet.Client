@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
@@ -90,7 +91,12 @@ public class MultiProjectTests
             Times.Once);
     }
 
-    private TestData InitTest(string updateTarget, IReadOnlyList<Pkg> packagesToUpdate, DependencyGraphSpec dgSpec, bool restoreSuccessful = true)
+    private TestData InitTest(
+        string updateTarget,
+        IReadOnlyList<Pkg> packagesToUpdate,
+        DependencyGraphSpec dgSpec,
+        bool restoreSuccessful = true,
+        bool disablePackageSourceMapping = true)
     {
         var commandArgs = new PackageUpdateArgs
         {
@@ -129,6 +135,13 @@ public class MultiProjectTests
             It.IsAny<IPackageUpdateIO.RestoreResult>(),
             It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        if (disablePackageSourceMapping)
+        {
+            var noMappings = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            var packageSourceMapping = new PackageSourceMapping(noMappings);
+            ioMock.Setup(x => x.GetPackageSourceMapping()).Returns(packageSourceMapping);
+        }
 
         var testData = new TestData
         {

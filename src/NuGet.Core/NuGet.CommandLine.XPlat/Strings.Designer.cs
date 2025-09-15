@@ -755,6 +755,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information..
+        /// </summary>
+        internal static string Error_PackageSourceMappingNotFound {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceMappingNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution file, or directory..
         /// </summary>
         internal static string Error_PathIsMissingOrInvalid {
