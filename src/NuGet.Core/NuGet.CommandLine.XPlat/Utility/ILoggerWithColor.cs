@@ -21,6 +21,6 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="data">The message text to be logged.</param>
         /// <param name="color">The ConsoleColor value to set the text color.</param>
-        void LogRaw(string data, ConsoleColor color);
+        void LogInline(string data, ConsoleColor color);
     }
 }

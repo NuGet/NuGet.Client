@@ -147,7 +147,7 @@ namespace NuGet.CommandLine.XPlat
             Console.ForegroundColor = currentColor;
         }
 
-        public void LogRaw(string data, ConsoleColor color)
+        public void LogInline(string data, ConsoleColor color)
         {
             var currentColor = Console.ForegroundColor;
             Console.ForegroundColor = color;
