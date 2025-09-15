@@ -53,96 +53,96 @@ namespace NuGet.CommandLine.Xplat.Tests
             else
             {
                 // Asserts for "| Package ID       "
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("P", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("a", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("c", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("k", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("a", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("g", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(" ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("I", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("D", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("| ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("P", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("a", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("c", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("k", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("a", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("g", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(" ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("I", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("D", System.Console.ForegroundColor));
 
                 // Asserts for "| Latest Version "
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("L", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("a", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("t", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("s", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("t", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(" ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("V", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("r", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("s", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("i", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("o", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("n", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("| ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("L", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("a", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("t", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("s", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("t", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(" ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("V", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("r", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("s", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("i", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("o", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("n", System.Console.ForegroundColor));
 
                 // Asserts for "| Owners "
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("O", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("w", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("n", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("r", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("s", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(" ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("| ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("O", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("w", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("n", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("r", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("s", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(" ", System.Console.ForegroundColor));
 
                 // Asserts for "| Total Downloads "
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("T", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("o", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("t", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("a", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("l", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(" ", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("D", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("o", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("w", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("n", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("l", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("o", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("a", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("d", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("s", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("| ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("T", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("o", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("t", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("a", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("l", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(" ", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("D", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("o", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("w", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("n", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("l", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("o", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("a", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("d", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("s", System.Console.ForegroundColor));
 
                 // Assert for "NuGet.Versioning"
-                mockLoggerWithColor.Verify(x => x.LogMinimal("N", ConsoleColor.Red));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("u", ConsoleColor.Red));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("G", ConsoleColor.Red));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", ConsoleColor.Red));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("t", ConsoleColor.Red));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(".", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("V", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("e", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("r", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("s", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("i", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("o", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("n", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("i", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("n", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("g", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("N", ConsoleColor.Red));
+                mockLoggerWithColor.Verify(x => x.LogRaw("u", ConsoleColor.Red));
+                mockLoggerWithColor.Verify(x => x.LogRaw("G", ConsoleColor.Red));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", ConsoleColor.Red));
+                mockLoggerWithColor.Verify(x => x.LogRaw("t", ConsoleColor.Red));
+                mockLoggerWithColor.Verify(x => x.LogRaw(".", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("V", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("e", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("r", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("s", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("i", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("o", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("n", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("i", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("n", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("g", System.Console.ForegroundColor));
 
                 // Assert for "4.3.0"
-                mockLoggerWithColor.Verify(x => x.LogMinimal("4", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(".", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("3", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(".", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("0", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("4", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(".", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("3", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(".", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("0", System.Console.ForegroundColor));
 
                 // Assert for "123,456"
-                mockLoggerWithColor.Verify(x => x.LogMinimal("1", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("2", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("3", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal(",", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("4", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("5", System.Console.ForegroundColor));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("6", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("1", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("2", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("3", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw(",", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("4", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("5", System.Console.ForegroundColor));
+                mockLoggerWithColor.Verify(x => x.LogRaw("6", System.Console.ForegroundColor));
             }
         }
 
