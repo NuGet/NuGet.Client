@@ -46,7 +46,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package],
             packageSpec,
             versionChooser.Object,
@@ -90,7 +90,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package],
             packageSpec,
             versionChooser.Object,
@@ -129,7 +129,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package],
             packageSpec,
             versionChooser.Object,
@@ -171,7 +171,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package],
             packageSpec,
             versionChooser.Object,
@@ -206,7 +206,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package],
             packageSpec,
             versionChooser.Object,
@@ -257,7 +257,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package1, package2],
             packageSpec,
             versionChooser.Object,
@@ -306,7 +306,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [package1, package2],
             packageSpec,
             versionChooser.Object,
@@ -342,7 +342,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act - Pass empty list to trigger "update all packages" behavior
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [],
             packageSpec,
             versionChooser.Object,
@@ -387,7 +387,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act - Pass empty list to trigger "update all packages" behavior
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [],
             packageSpec,
             versionChooser.Object,
@@ -429,7 +429,7 @@ public class GetPackageToUpdateTests
         var logger = new Mock<ILoggerWithColor>();
 
         // Act - Pass empty list to trigger "update all packages" behavior
-        var packagesToUpdate = await PackageUpdateCommandRunner.GetPackagesToUpdateAsync(
+        var packagesToUpdate = await PackageUpdateCommandRunner.SelectPackagesToUpdateAsync(
             [],
             packageSpec,
             versionChooser.Object,
