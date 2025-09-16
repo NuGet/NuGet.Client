@@ -303,19 +303,19 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
 
         await Task.WhenAll(lookups);
 
-        NuGetVersion? lowestVersion = null;
+        NuGetVersion? lowestNonVulnerableVersion = null;
         foreach (var task in lookups)
         {
             if (task.Result != null)
             {
-                if (lowestVersion == null || task.Result < lowestVersion)
+                if (lowestNonVulnerableVersion == null || task.Result < lowestNonVulnerableVersion)
                 {
-                    lowestVersion = task.Result;
+                    lowestNonVulnerableVersion = task.Result;
                 }
             }
         }
 
-        return lowestVersion;
+        return lowestNonVulnerableVersion;
     }
 
     private List<SourceRepository> GetSourcesForPackage(string packageId)
@@ -357,7 +357,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             .Where(p => p.Version >= minVersion && !PackageHasKnownVulnerability(p))
             .Select(p => p.Version);
 
-        VersionRange versionRange = new VersionRange(minVersion, true, null, true);
+        VersionRange versionRange = new VersionRange(minVersion, includeMinVersion: true, maxVersion: null, includeMaxVersion: true);
         NuGetVersion? result = versionRange.FindBestMatch(versions);
 
         return result;
