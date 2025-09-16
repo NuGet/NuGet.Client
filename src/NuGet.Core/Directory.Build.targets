@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <IsAotCompatible>$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NETCoreTargetFramework)'))</IsAotCompatible>
+    <NoWarn>$(NoWarn);IL2075;IL2091;IL3000;IL2090;IL2080;IL3050;IL2026;IL2087</NoWarn>
+  </PropertyGroup>
+  <Import Project="..\..\Directory.Build.targets" />
+</Project>

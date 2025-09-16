@@ -213,7 +213,7 @@ namespace NuGet.Commands
                     context,
                     token);
 
-                if (NuGetEventSource.IsEnabled)
+                if (NuGetEventSource.Instance.IsEnabled())
                 {
                     TraceEvents.CreateRestoreTargetGraphStart(_request.Project.FilePath, frameworkRuntimeDefinition);
                 }
@@ -222,7 +222,7 @@ namespace NuGet.Commands
                 // information about the graph including the nodes with their parent/child relationships, cycles, downgrades, and conflicts.
                 (bool wasRestoreTargetGraphCreationSuccessful, RestoreTargetGraph restoreTargetGraph) = await CreateRestoreTargetGraphAsync(frameworkRuntimeDefinition, runtimeGraph, isCentralPackageTransitivePinningEnabled, unresolvedPackages, resolvedPackages, resolvedDependencyGraphItems, context);
 
-                if (NuGetEventSource.IsEnabled)
+                if (NuGetEventSource.Instance.IsEnabled())
                 {
                     TraceEvents.CreateRestoreTargetGraphStop(_request.Project.FilePath, frameworkRuntimeDefinition, wasRestoreTargetGraphCreationSuccessful, resolvedPackages.Count, unresolvedPackages.Count);
                 }
@@ -913,7 +913,7 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            if (NuGetEventSource.IsEnabled)
+            if (NuGetEventSource.Instance.IsEnabled())
             {
                 TraceEvents.ResolveDependencyGraphItemsStart(_request.Project.FilePath, pair);
             }
@@ -1405,7 +1405,7 @@ namespace NuGet.Commands
                 }
             }
 
-            if (NuGetEventSource.IsEnabled)
+            if (NuGetEventSource.Instance.IsEnabled())
             {
                 TraceEvents.ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair, resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
             }

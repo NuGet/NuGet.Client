@@ -260,7 +260,7 @@ namespace NuGet.Commands
                 telemetry.StartIntervalMeasure();
 
                 // Create assets file
-                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
+                if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
 
                 LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
@@ -269,7 +269,7 @@ namespace NuGet.Commands
                     localRepositories,
                     contextForProject);
 
-                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
+                if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
 
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
@@ -448,9 +448,9 @@ namespace NuGet.Commands
             bool noOpCacheFileEvaluation;
             TimeSpan? cacheFileAge;
 
-            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
             (cacheFile, noOpCacheFileEvaluation, cacheFileAge) = EvaluateCacheFile();
-            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
 
             telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOpCacheFileEvaluation;
             telemetry.TelemetryEvent[ForceRestore] = !_request.AllowNoOp;
@@ -579,7 +579,7 @@ namespace NuGet.Commands
             {
                 using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                 {
-                    if (NuGetEventSource.IsEnabled)
+                    if (NuGetEventSource.Instance.IsEnabled())
                         TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
 
                     bool resultSuccessful;
@@ -594,7 +594,7 @@ namespace NuGet.Commands
                     }
                     success &= resultSuccessful;
 
-                    if (NuGetEventSource.IsEnabled)
+                    if (NuGetEventSource.Instance.IsEnabled())
                         TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                 }
             }

@@ -257,9 +257,9 @@ namespace NuGet.Commands
             var request = summaryRequest.Request;
 
             var command = new RestoreCommand(request);
-            if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
-            if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStop(request.Project.FilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.RestoreProjectStop(request.Project.FilePath);
 
             return new RestoreResultPair(summaryRequest, result);
         }
@@ -290,9 +290,9 @@ namespace NuGet.Commands
 
                 // Commit the result
                 log.LogVerbose(Strings.Log_Committing);
-                if (NuGetEventSource.IsEnabled) TraceEvents.CommitAsyncStart(summaryRequest.InputPath);
+                if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.CommitAsyncStart(summaryRequest.InputPath);
                 await result.CommitAsync(log, token);
-                if (NuGetEventSource.IsEnabled) TraceEvents.CommitAsyncStop(summaryRequest.InputPath);
+                if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.CommitAsyncStop(summaryRequest.InputPath);
             }
             finally
             {

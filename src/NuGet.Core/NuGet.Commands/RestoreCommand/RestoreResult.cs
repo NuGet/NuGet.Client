@@ -184,34 +184,34 @@ namespace NuGet.Commands
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteAssetsFileStart(LockFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteAssetsFileStart(LockFilePath);
             await CommitAssetsFileAsync(
                 lockFileFormat,
                 log: log,
                 toolCommit: isTool,
                 token: token);
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteAssetsFileStop(LockFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteAssetsFileStop(LockFilePath);
 
             //Commit the cache file to disk
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteCacheFileStart(CacheFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteCacheFileStart(CacheFilePath);
             await CommitCacheFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteCacheFileStop(CacheFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteCacheFileStop(CacheFilePath);
 
             // Commit the lock file to disk
-            if (NuGetEventSource.IsEnabled) TraceEvents.WritePackagesLockFileStart(_newPackagesLockFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WritePackagesLockFileStart(_newPackagesLockFilePath);
             await CommitLockFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSource.IsEnabled) TraceEvents.WritePackagesLockFileStop(_newPackagesLockFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WritePackagesLockFileStop(_newPackagesLockFilePath);
 
             // Commit the dg spec file to disk
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteDgSpecFileStart(_dependencyGraphSpecFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteDgSpecFileStart(_dependencyGraphSpecFilePath);
             await CommitDgSpecFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSource.IsEnabled) TraceEvents.WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
+            if (NuGetEventSource.Instance.IsEnabled()) TraceEvents.WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
         }
 
         private async Task CommitAssetsFileAsync(

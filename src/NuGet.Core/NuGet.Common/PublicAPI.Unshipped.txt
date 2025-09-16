@@ -1,1 +1,6 @@
 #nullable enable
+NuGet.Common.NuGetEventSource.MigrationRunnerStart(string! migrationFilePath, bool migrationPerformed) -> void
+NuGet.Common.NuGetEventSource.SettingsLoadingContextFileRead(string! filePath, bool isMachineWide, bool isReadOnly) -> void
+NuGet.Common.NuGetLogCode.NU1015 = 1015 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1016 = 1016 -> NuGet.Common.NuGetLogCode
+static NuGet.Common.NuGetEventSource.Instance.get -> NuGet.Common.NuGetEventSource!

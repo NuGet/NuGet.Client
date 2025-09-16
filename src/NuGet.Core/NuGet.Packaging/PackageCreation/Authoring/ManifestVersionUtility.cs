@@ -6,6 +6,8 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 
+#pragma warning disable IL2072
+
 namespace NuGet.Packaging
 {
     public static class ManifestVersionUtility
