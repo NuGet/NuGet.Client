@@ -232,6 +232,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty..
+        /// </summary>
+        internal static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet configuration CLI.
         /// </summary>
         internal static string Config_Description {

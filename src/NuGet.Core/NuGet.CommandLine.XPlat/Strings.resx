@@ -1097,4 +1097,7 @@ Do not translate "PackageVersion"</comment>
     <comment>{0} - project referencing the package
 {1} - package id</comment>
   </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
 </root>

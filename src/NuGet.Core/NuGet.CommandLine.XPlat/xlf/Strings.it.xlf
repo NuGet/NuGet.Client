@@ -97,6 +97,11 @@
         <target state="translated">NuGet Command Line</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArgumentNullOrEmpty">
+        <source>Argument cannot be null or empty.</source>
+        <target state="new">Argument cannot be null or empty.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ConfigCommandKeyNotFound">
         <source>Key '{0}' not found.</source>
         <target state="translated">La chiave '{0}' non è stata trovata.</target>

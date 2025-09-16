@@ -284,7 +284,7 @@ internal static class PackageUpdateCommandRunner
     {
         if (packages is null || packages.Count == 0)
         {
-            throw new ArgumentException("packages list must not be null or empty.", nameof(packages));
+            throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(packages));
         }
 
         var packagesToUpdate = new List<PackageUpdateResult>();
