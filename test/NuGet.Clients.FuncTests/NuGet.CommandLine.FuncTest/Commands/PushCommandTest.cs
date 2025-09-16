@@ -1115,12 +1115,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Func<int, HttpStatusCode> responseCodeFunc)
         {
             int packageCounter = 0;
-            server.Put.Add("/push", (Func<HttpListenerRequest, object>) ((r) =>
+            server.Put.Add("/push", _ =>
             {
                 packageCounter++;
                 var statusCode = responseCodeFunc(packageCounter);
                 return statusCode;
-            }));
+            });
         }
 
         /// <summary>
