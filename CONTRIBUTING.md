@@ -1,6 +1,6 @@
 # Contributing
 
-This repo's official location is [https://github.com/NuGet/NuGet.Client].
+This repo's official location is <https://github.com/NuGet/NuGet.Client>.
 The NuGet team does not accept pull requests in other locations, but security issues must follow the [security process](SECURITY.md).
 
 This project welcomes contributions and suggestions.

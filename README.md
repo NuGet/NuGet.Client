@@ -19,7 +19,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 For how to contribute to this repo follow the [Contributing doc](CONTRIBUTING.md).
 
-This repo's official location is [https://github.com/NuGet/NuGet.Client].
+This repo's official location is <https://github.com/NuGet/NuGet.Client>.
 The NuGet team does not accept pull requests in other locations, but security issues must follow the [security process](SECURITY.md).
 
 ## NuGet/Home repo
