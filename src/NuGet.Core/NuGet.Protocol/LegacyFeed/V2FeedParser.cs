@@ -45,6 +45,7 @@ namespace NuGet.Protocol
         private static readonly XName _xnameTags = XName.Get("Tags", DataServicesNS);
         private static readonly XName _xnameGalleryDetailsUrl = XName.Get("GalleryDetailsUrl", DataServicesNS);
         private static readonly XName _xnameReportAbuseUrl = XName.Get("ReportAbuseUrl", DataServicesNS);
+        private static readonly XName _xnameReleaseNotes = XName.Get("ReleaseNotes", DataServicesNS);
         private static readonly XName _xnameDependencies = XName.Get("Dependencies", DataServicesNS);
         private static readonly XName _xnameRequireLicenseAcceptance = XName.Get("RequireLicenseAcceptance", DataServicesNS);
         private static readonly XName _xnameDownloadCount = XName.Get("DownloadCount", DataServicesNS);
@@ -347,6 +348,7 @@ namespace NuGet.Protocol
             var projectUrl = metadataCache.GetString(GetString(properties, _xnameProjectUrl));
             var galleryDetailsUrl = metadataCache.GetString(GetString(properties, _xnameGalleryDetailsUrl));
             var reportAbuseUrl = metadataCache.GetString(GetString(properties, _xnameReportAbuseUrl));
+            string releaseNotes = metadataCache.GetString(GetString(properties, _xnameReleaseNotes));
             var tags = metadataCache.GetString(GetString(properties, _xnameTags));
             var dependencies = metadataCache.GetString(GetString(properties, _xnameDependencies));
 
@@ -383,7 +385,7 @@ namespace NuGet.Protocol
             return new V2FeedPackageInfo(new PackageIdentity(identityId, version), title, summary, description, authors,
                 owners, iconUrl, licenseUrl, projectUrl, reportAbuseUrl, galleryDetailsUrl, tags, created, lastEdited,
                 published, dependencies, requireLicenseAcceptance, downloadUrl, downloadCount, packageHash,
-                packageHashAlgorithm, minClientVersion);
+                packageHashAlgorithm, minClientVersion, releaseNotes);
         }
 
         /// <summary>

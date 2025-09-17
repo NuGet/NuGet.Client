@@ -56,6 +56,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", latestPackage.Tags);
             Assert.Equal(6, latestPackage.DependencySets.Count());
             Assert.Equal("dotnet54", latestPackage.DependencySets.First().TargetFramework.GetShortFolderName());
+            Assert.Equal("release notes", latestPackage.ReleaseNotes);
         }
 
         [Fact]

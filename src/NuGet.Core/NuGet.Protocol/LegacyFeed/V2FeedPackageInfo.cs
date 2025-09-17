@@ -13,7 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.Protocol
 {
     /// <summary>
-    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing 
+    /// Represents a V2 package entry from the OData feed. This object primarily just holds the strings parsed from XML, all parsing
     /// and converting should be done after based on the scenario.
     /// </summary>
     public class V2FeedPackageInfo : PackageIdentity
@@ -39,12 +39,23 @@ namespace NuGet.Protocol
         private readonly string _packageHash;
         private readonly string _packageHashAlgorithm;
         private readonly NuGetVersion _minClientVersion;
+        private readonly string _releaseNotes;
         private const string NullString = "null";
 
+        // Original constructor (backwards compatibility)
         public V2FeedPackageInfo(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, IEnumerable<string> owners,
             string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl, string galleryDetailsUrl,
             string tags, DateTimeOffset? created, DateTimeOffset? lastEdited, DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount,
             string packageHash, string packageHashAlgorithm, NuGetVersion minClientVersion)
+            : this(identity, title, summary, description, authors, owners, iconUrl, licenseUrl, projectUrl, reportAbuseUrl, galleryDetailsUrl, tags, created, lastEdited, published, dependencies, requireLicenseAccept, downloadUrl, downloadCount, packageHash, packageHashAlgorithm, minClientVersion, null)
+        {
+        }
+
+        // New constructor with releaseNotes parameter
+        public V2FeedPackageInfo(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, IEnumerable<string> owners,
+            string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl, string galleryDetailsUrl,
+            string tags, DateTimeOffset? created, DateTimeOffset? lastEdited, DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount,
+            string packageHash, string packageHashAlgorithm, NuGetVersion minClientVersion, string releaseNotes)
             : base(identity.Id, identity.Version)
         {
             _summary = summary;
@@ -70,6 +81,7 @@ namespace NuGet.Protocol
             _packageHash = packageHash;
             _packageHashAlgorithm = packageHashAlgorithm;
             _minClientVersion = minClientVersion;
+            _releaseNotes = releaseNotes;
         }
 
         public string Title
@@ -346,6 +358,14 @@ namespace NuGet.Protocol
             get
             {
                 return _minClientVersion;
+            }
+        }
+
+        public string ReleaseNotes
+        {
+            get
+            {
+                return _releaseNotes;
             }
         }
     }

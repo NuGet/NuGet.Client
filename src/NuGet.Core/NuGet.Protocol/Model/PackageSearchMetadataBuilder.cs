@@ -47,6 +47,7 @@ namespace NuGet.Protocol.Core.Types
             public string Summary { get; set; }
             public string Tags { get; set; }
             public string Title { get; set; }
+            public string ReleaseNotes { get; set; }
             public bool PrefixReserved { get; set; }
             public LicenseMetadata LicenseMetadata { get; set; }
 
@@ -106,6 +107,7 @@ namespace NuGet.Protocol.Core.Types
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,
                 Title = _metadata.Title,
+                ReleaseNotes = _metadata.ReleaseNotes,
                 LazyVersionsFactory = _lazyVersionsFactory,
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
@@ -135,7 +137,8 @@ namespace NuGet.Protocol.Core.Types
                 Identity = identity,
                 Title = identity.Id,
                 Summary = string.Empty,
-                Authors = string.Empty
+                Authors = string.Empty,
+                ReleaseNotes = string.Empty
             };
             return FromMetadata(metadata);
         }

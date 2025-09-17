@@ -53,6 +53,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public string Title => _packageSearchMetadata.Title;
 
+        public string ReleaseNotes => _packageSearchMetadata.ReleaseNotes;
+
         public bool IsListed => _packageSearchMetadata.IsListed;
 
         public bool PrefixReserved => _packageSearchMetadata.PrefixReserved;

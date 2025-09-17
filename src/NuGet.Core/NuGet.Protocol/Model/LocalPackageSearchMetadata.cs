@@ -75,6 +75,8 @@ namespace NuGet.Protocol
         /// </remarks>
         public Uri ReportAbuseUrl => null;
 
+        public string ReleaseNotes => _nuspec.GetReleaseNotes();
+
         public Uri PackageDetailsUrl => null;
 
         public bool RequireLicenseAcceptance => _nuspec.GetRequireLicenseAcceptance();

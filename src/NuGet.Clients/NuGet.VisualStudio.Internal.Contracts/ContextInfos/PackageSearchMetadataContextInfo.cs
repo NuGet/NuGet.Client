@@ -32,6 +32,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public Uri? PackageDetailsUrl { get; internal set; }
         public bool RequireLicenseAcceptance { get; internal set; }
         public string? Summary { get; internal set; }
+        public string? ReleaseNotes { get; internal set; }
         public bool PrefixReserved { get; internal set; }
         public bool IsRecommended { get; internal set; }
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; internal set; }
@@ -77,6 +78,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,
                 RequireLicenseAcceptance = packageSearchMetadata.RequireLicenseAcceptance,
                 Summary = packageSearchMetadata.Summary,
+                ReleaseNotes = packageSearchMetadata.ReleaseNotes,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,
                 IsListed = packageSearchMetadata.IsListed,
                 DependencySets = packageSearchMetadata.DependencySets?.ToList(),

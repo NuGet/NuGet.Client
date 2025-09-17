@@ -56,6 +56,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             Assert.Equal(expectedResult.PackagePath, actualResult.PackagePath);
             Assert.Equal(expectedResult.Published, actualResult.Published);
             Assert.Equal(expectedResult.ReportAbuseUrl, actualResult.ReportAbuseUrl);
+            Assert.Equal(expectedResult.ReleaseNotes, actualResult.ReleaseNotes);
             Assert.Equal(expectedResult.Title, actualResult.Title);
             Assert.Equal(expectedResult.Vulnerabilities, actualResult.Vulnerabilities);
         }
@@ -84,7 +85,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
                         RequireLicenseAcceptance = true,
                         Summary = "summary",
                         Tags = "tags",
-                        Title = "title"
+                        Title = "title",
+                        ReleaseNotes = "release notes"
                     })
                 },
                 { PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata() { }) }

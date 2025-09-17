@@ -27,6 +27,7 @@ namespace NuGet.Protocol
             LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            ReleaseNotes = package.ReleaseNotes;
             PackageDetailsUrl = GetUriSafe(package.GalleryDetailsUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
             Summary = package.Summary;
@@ -56,6 +57,7 @@ namespace NuGet.Protocol
             LastEdited = package.LastEdited;
             Published = package.Published;
             ReportAbuseUrl = GetUriSafe(package.ReportAbuseUrl);
+            ReleaseNotes = package.ReleaseNotes;
             PackageDetailsUrl = GetUriSafe(package.GalleryDetailsUrl);
             RequireLicenseAcceptance = package.RequireLicenseAcceptance;
             Summary = package.Summary;
@@ -135,6 +137,8 @@ namespace NuGet.Protocol
         public PackageDeprecationMetadata DeprecationMetadata { get; } = null; // Deprecation metadata is not added to the v2 feed.
 
         public NuGetVersion Version { get; private set; }
+
+        public string ReleaseNotes { get; private set; }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => TaskResult.EmptyEnumerable<VersionInfo>();

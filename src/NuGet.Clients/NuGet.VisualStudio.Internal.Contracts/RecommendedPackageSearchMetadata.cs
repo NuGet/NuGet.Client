@@ -44,6 +44,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string Summary => _inner.Summary;
         public string Tags => _inner.Tags;
         public string Title => _inner.Title;
+        public string ReleaseNotes => _inner.ReleaseNotes;
         public bool IsListed => _inner.IsListed;
         public bool PrefixReserved => _inner.PrefixReserved;
         public LicenseMetadata LicenseMetadata => _inner.LicenseMetadata;

@@ -1,1 +1,9 @@
 #nullable enable
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReleaseNotes.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReleaseNotes.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReleaseNotes.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.ReleaseNotes.get -> string
+~NuGet.Protocol.PackageSearchMetadata.ReleaseNotes.get -> string
+~NuGet.Protocol.PackageSearchMetadataV2Feed.ReleaseNotes.get -> string
+~NuGet.Protocol.V2FeedPackageInfo.ReleaseNotes.get -> string
+~NuGet.Protocol.V2FeedPackageInfo.V2FeedPackageInfo(NuGet.Packaging.Core.PackageIdentity identity, string title, string summary, string description, System.Collections.Generic.IEnumerable<string> authors, System.Collections.Generic.IEnumerable<string> owners, string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl, string galleryDetailsUrl, string tags, System.DateTimeOffset? created, System.DateTimeOffset? lastEdited, System.DateTimeOffset? published, string dependencies, bool requireLicenseAccept, string downloadUrl, string downloadCount, string packageHash, string packageHashAlgorithm, NuGet.Versioning.NuGetVersion minClientVersion, string releaseNotes) -> void

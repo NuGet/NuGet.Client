@@ -36,7 +36,7 @@
       <d:PackageSize m:type="Edm.Int64">118348</d:PackageSize>
       <d:ProjectUrl>http://watwp.codeplex.com/</d:ProjectUrl>
       <d:ReportAbuseUrl>https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/1.0.0</d:ReportAbuseUrl>
-      <d:ReleaseNotes m:null="true" />
+      <d:ReleaseNotes>release notes</d:ReleaseNotes>
       <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
       <d:Tags xml:space="preserve"> Storage WindowsAzure DPE </d:Tags>
       <d:Title>Windows Azure Storage Proxy Cloud Services</d:Title>
