@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -90,7 +93,8 @@ namespace NuGet.CommandLine.XPlat
                 return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
             }
 
-            MethodInfo projectShouldBuildMethod = typeof(SolutionFile).GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            MethodInfo? projectShouldBuildMethod = typeof(SolutionFile).GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            Debug.Assert(projectShouldBuildMethod != null, "Could not find ProjectShouldBuild method on SolutionFile");
             Func<string, bool> projectShouldBuild = (Func<string, bool>)Delegate.CreateDelegate(typeof(Func<string, bool>), sln, projectShouldBuildMethod);
 
             List<string> projects = new List<string>();
@@ -190,7 +194,7 @@ namespace NuGet.CommandLine.XPlat
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
 
             // Get VersionOverride if it exisits in the package reference.
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = null;
+            IEnumerable<LibraryDependency>? dependenciesWithVersionOverride = null;
 
             if (packageSpec.RestoreMetadata.CentralPackageVersionOverrideDisabled)
             {
@@ -249,8 +253,8 @@ namespace NuGet.CommandLine.XPlat
                 return false;
             }
 
-            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId));
-            ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
+            ProjectItem? packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId));
+            ProjectItem? packageVersionInProps = packageVersions.LastOrDefault();
             var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
 
             // If package reference exists and the user defined a VersionOverride or PackageVersions but didn't specified a version, no-op
@@ -269,7 +273,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
-        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool noVersion)
+        /// <param name="newItemAdditionalMetadata">Additional metadata to add to new items.</param>
+        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool noVersion, IReadOnlyDictionary<string, string>? newItemAdditionalMetadata)
         {
             var project = GetProject(projectPath);
 
@@ -277,7 +282,7 @@ namespace NuGet.CommandLine.XPlat
             // If the project has a conditional reference, then an unconditional reference is not added.
 
             var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, libraryDependency);
-            AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion);
+            AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework: null, newItemAdditionalMetadata);
             ProjectCollection.GlobalProjectCollection.UnloadProject(project);
         }
 
@@ -288,8 +293,9 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
         /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
+        /// <param name="newItemAdditionalMetadata">Additional metadata to add to new items.</param>
         public void AddPackageReferencePerTFM(string projectPath, LibraryDependency libraryDependency,
-            IEnumerable<string> frameworks, bool noVersion)
+            IEnumerable<string> frameworks, bool noVersion, IReadOnlyDictionary<string, string>? newItemAdditionalMetadata)
         {
             foreach (var framework in frameworks)
             {
@@ -297,7 +303,7 @@ namespace NuGet.CommandLine.XPlat
                 { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
                 var existingPackageReferences = GetPackageReferences(project, libraryDependency);
-                AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework);
+                AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework, newItemAdditionalMetadata);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
         }
@@ -310,11 +316,13 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="existingPackageReferences">Package references that already exist in the project.</param>
         /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
         /// <param name="framework">Target Framework for which the package reference should be added.</param>
+        /// <param name="newItemAdditionalMetadata">Additional metadata to add to new items.</param>
         private void AddPackageReference(Project project,
             LibraryDependency libraryDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
             bool noVersion,
-            string framework = null)
+            string? framework,
+            IReadOnlyDictionary<string, string>? newItemAdditionalMetadata)
         {
             // Add packageReference to the project file only if it does not exist.
             if (!libraryDependency.VersionCentrallyManaged)
@@ -323,7 +331,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     //Modify the project file.
                     ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework, project);
-                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency, newItemAdditionalMetadata);
                 }
                 else
                 {
@@ -334,7 +342,7 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 // Get package version and VersionOverride if it already exists in the props file. Returns null if there is no matching package version.
-                ProjectItem packageReferenceInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_REFERENCE_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                ProjectItem? packageReferenceInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_REFERENCE_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
                 var versionOverrideExists = packageReferenceInProps?.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride") && !string.IsNullOrWhiteSpace(i.EvaluatedValue));
 
                 if (!existingPackageReferences.Any())
@@ -347,13 +355,15 @@ namespace NuGet.CommandLine.XPlat
                 if (versionOverrideExists != null)
                 {
                     // Update if VersionOverride instead of Directory.Packages.props file
-                    string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString;
+                    string? packageVersion = libraryDependency.LibraryRange.VersionRange?.OriginalString;
+                    Debug.Assert(packageVersion != null, "Package version should not be null here.");
+                    Debug.Assert(packageReferenceInProps != null, "Package reference in props should not be null here.");
                     UpdateVersionOverride(project, packageReferenceInProps, packageVersion);
                 }
                 else
                 {
                     // Get package version if it already exists in the props file. Returns null if there is no matching package version.
-                    ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                    ProjectItem? packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
 
                     // If no <PackageVersion /> exists in the Directory.Packages.props file.
                     if (packageVersionInProps == null)
@@ -366,7 +376,8 @@ namespace NuGet.CommandLine.XPlat
                         // Modify the Directory.Packages.props file with the version that is passed in.
                         if (!noVersion)
                         {
-                            string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString;
+                            string? packageVersion = libraryDependency.LibraryRange.VersionRange?.OriginalString;
+                            Debug.Assert(packageVersion != null, "Package version should not be null here.");
                             UpdatePackageVersion(project, packageVersionInProps, packageVersion);
                         }
 
@@ -376,11 +387,11 @@ namespace NuGet.CommandLine.XPlat
 
             project.Save();
 
-            static ProjectItemGroupElement GetOrCreateItemGroup(string targetFrameworkAlias, Project project)
+            static ProjectItemGroupElement GetOrCreateItemGroup(string? targetFrameworkAlias, Project project)
             {
                 // Getting all the item groups in a given project
                 var itemGroups = GetItemGroups(project);
-                string condition = targetFrameworkAlias is null ? null : GetTargetFrameworkCondition(targetFrameworkAlias);
+                string? condition = targetFrameworkAlias is null ? null : GetTargetFrameworkCondition(targetFrameworkAlias);
                 var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG, condition) ?? CreateItemGroup(project, condition);
                 return itemGroup;
             }
@@ -438,13 +449,16 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="itemGroup">Item group to add to.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="additionalMetadata">Additional metadata to be added.</param>
         private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
-            LibraryDependency libraryDependency)
+            LibraryDependency libraryDependency,
+            IReadOnlyDictionary<string, string>? additionalMetadata)
         {
             // Add both package reference information and version metadata using the PACKAGE_REFERENCE_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
             AddExtraMetadataToProjectItemElement(libraryDependency, item);
+            AddAdditionalMetadataToProjectItemElement(additionalMetadata, item);
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath));
         }
 
@@ -484,6 +498,22 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
+        /// Add other metadata based on certain flags.
+        /// </summary>
+        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
+        /// <param name="item">Item to add the metadata to.</param>
+        private static void AddAdditionalMetadataToProjectItemElement(IReadOnlyDictionary<string, string>? additionalMetadata, ProjectItemElement item)
+        {
+            if (additionalMetadata != null)
+            {
+                foreach (var metadata in additionalMetadata)
+                {
+                    item.AddMetadata(metadata.Key, metadata.Value, expressAsAttribute: true);
+                }
+            }
+        }
+
+        /// <summary>
         /// Get all the item groups in a given project.
         /// </summary>
         /// <param name="project">A specified project.</param>
@@ -493,7 +523,8 @@ namespace NuGet.CommandLine.XPlat
             return project
                 .Items
                 .Where(i => !i.IsImported)
-                .Select(item => item.Xml.Parent as ProjectItemGroupElement)
+                .Select(item => item.Xml.Parent)
+                .OfType<ProjectItemGroupElement>()
                 .Distinct();
         }
 
@@ -504,9 +535,9 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
         /// <param name="condition">The condition that the Item Group must have. Use <see langword="null" /> for no condition.</param>
         /// <returns>An ItemGroup, which could be null.</returns>
-        internal static ProjectItemGroupElement GetItemGroup(IEnumerable<ProjectItemGroupElement> itemGroups,
+        internal static ProjectItemGroupElement? GetItemGroup(IEnumerable<ProjectItemGroupElement> itemGroups,
             string itemType,
-            string condition)
+            string? condition)
         {
             var itemGroup = itemGroups?
                 .Where(itemGroupElement => itemGroupElement.Items.Any(item => item.ItemType == itemType))?
@@ -522,7 +553,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project">Project where the item group should be created.</param>
         /// <param name="condition">The condition to be put on the Item Group. Use <see langword="null" /> for no condition.</param>
         /// <returns>An Item Group.</returns>
-        internal static ProjectItemGroupElement CreateItemGroup(Project project, string condition)
+        internal static ProjectItemGroupElement CreateItemGroup(Project project, string? condition)
         {
             // Create a new item group and add a condition if given
             var itemGroup = project.Xml.AddItemGroup();
@@ -541,10 +572,11 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>The package version that is added in the metadata.</returns>
         private static string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item)
         {
-            var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+            var packageVersion = libraryDependency.LibraryRange.VersionRange?.OriginalString ??
+                    libraryDependency.LibraryRange.VersionRange?.MinVersion?.ToString();
+            Debug.Assert(packageVersion != null, "Package version should not be null here.");
 
-            ProjectMetadataElement versionAttribute = item.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
+            ProjectMetadataElement? versionAttribute = item.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
 
             // If version attribute does not exist at all, add it.
             if (versionAttribute == null)
@@ -573,8 +605,8 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var packageReferenceItem in packageReferencesItems)
             {
-                var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+                var packageVersion = libraryDependency.LibraryRange.VersionRange?.OriginalString ??
+                    libraryDependency.LibraryRange.VersionRange?.MinVersion?.ToString();
 
                 packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
 
@@ -597,10 +629,12 @@ namespace NuGet.CommandLine.XPlat
         internal static void UpdateVersionOverride(Project project, ProjectItem packageReference, string versionCLIArgument)
         {
             // Determine where the <PackageVersion /> item is decalred
-            ProjectItemElement packageReferenceItemElement = project.GetItemProvenance(packageReference).LastOrDefault()?.ItemElement;
+            ProjectItemElement? packageReferenceItemElement = project.GetItemProvenance(packageReference).LastOrDefault()?.ItemElement;
+            Debug.Assert(packageReferenceItemElement != null, "PackageReference item should exist if we are updating it.");
 
             // Get the Version attribute on the packageVersionItemElement.
-            ProjectMetadataElement versionOverrideAttribute = packageReferenceItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride"));
+            ProjectMetadataElement? versionOverrideAttribute = packageReferenceItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride"));
+            Debug.Assert(versionOverrideAttribute != null, "VersionOverride attribute should exist if we are updating it.");
 
             // Update the version
             versionOverrideAttribute.Value = versionCLIArgument;
@@ -616,10 +650,13 @@ namespace NuGet.CommandLine.XPlat
         internal static void UpdatePackageVersion(Project project, ProjectItem packageVersion, string versionCLIArgument)
         {
             // Determine where the <PackageVersion /> item is decalred
-            ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
+            ProjectItemElement? packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
+            Debug.Assert(packageVersionItemElement != null, "PackageVersion item should exist if we are updating it.");
 
             // Get the Version attribute on the packageVersionItemElement.
-            ProjectMetadataElement versionAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
+            ProjectMetadataElement? versionAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
+            Debug.Assert(versionAttribute != null, "Version attribute should exist if we are updating it.");
+
             // Update the version
             versionAttribute.Value = versionCLIArgument;
             packageVersionItemElement.ContainingProject.Save();
@@ -788,14 +825,14 @@ namespace NuGet.CommandLine.XPlat
                     var matchingPackages = frameworkDependencies.Where(d =>
                         d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)).ToList();
 
-                    var resolvedVersion = library.Version.ToString();
+                    var resolvedVersion = library.Version?.ToString();
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level.
                     if (matchingPackages.Any())
                     {
                         var topLevelPackage = matchingPackages.Single();
-                        InstalledPackageReference installedPackage = default;
+                        InstalledPackageReference installedPackage;
 
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
                         if (!topLevelPackage.AutoReferenced)
@@ -811,7 +848,7 @@ namespace NuGet.CommandLine.XPlat
                         }
                         else
                         {
-                            var projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
+                            var projectFileVersion = topLevelPackage.LibraryRange.VersionRange?.ToString();
                             installedPackage = new InstalledPackageReference(library.Name)
                             {
                                 OriginalRequestedVersion = projectFileVersion
@@ -1033,7 +1070,7 @@ namespace NuGet.CommandLine.XPlat
             return frameworks;
         }
 
-        private static ProjectRootElement TryOpenProjectRootElement(string filename)
+        private static ProjectRootElement? TryOpenProjectRootElement(string filename)
         {
             try
             {

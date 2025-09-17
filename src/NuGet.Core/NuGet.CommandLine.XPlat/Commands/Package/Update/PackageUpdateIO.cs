@@ -165,11 +165,15 @@ internal class PackageUpdateIO : IPackageUpdateIO
             packageDependency,
             resolvedVersion);
 
+        IReadOnlyDictionary<string, string> newItemAdditionalMetadata = new Dictionary<string, string>
+        {
+            { "TransitiveFix", "true" }
+        };
         // Determine whether to add package reference conditionally or unconditionally
         if (packageTfms.Count == updatedPackageSpec.TargetFrameworks.Count)
         {
             // package is used by all project TFMs (no condition)
-            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, true);
+            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, true, newItemAdditionalMetadata);
         }
         else
         {
@@ -177,7 +181,7 @@ internal class PackageUpdateIO : IPackageUpdateIO
                 .Select(e => AddPackageReferenceCommandRunner.GetAliasForFramework(updatedPackageSpec, e))
                 .Where(originalFramework => originalFramework != null);
 
-            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, frameworkAliases, true);
+            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, frameworkAliases, true, newItemAdditionalMetadata);
         }
     }
 

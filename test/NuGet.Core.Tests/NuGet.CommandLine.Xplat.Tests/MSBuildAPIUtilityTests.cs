@@ -784,5 +784,54 @@ namespace NuGet.CommandLine.Xplat.Tests
             var version = result.First().TopLevelPackages.First().OriginalRequestedVersion;
             Assert.Equal("1.1.1", version);
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("net9.0")]
+        public void AddPackageReference_WithAdditionalMetadata(string targetFramework)
+        {
+            /// Arrange
+            using var testDirectory = TestDirectory.Create();
+            var projectFilePath = Path.Combine(testDirectory, "projectA.csproj");
+            File.WriteAllText(projectFilePath,
+                """
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>net9.0</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+
+            var msbuildAPIUtility = new MSBuildAPIUtility(logger: new TestLogger());
+
+            LibraryDependency libraryDependency = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                        name: "X",
+                        versionRange: VersionRange.Parse("1.0.0"),
+                        typeConstraint: LibraryDependencyTarget.Package),
+                IncludeType = LibraryIncludeFlags.All,
+                SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent
+            };
+
+            var newItemAdditionalMetadata = new Dictionary<string, string>
+            {
+                { "one", "two" },
+            };
+
+            /// Act
+            if (string.IsNullOrEmpty(targetFramework))
+            {
+                msbuildAPIUtility.AddPackageReference(projectFilePath, libraryDependency, noVersion: true, newItemAdditionalMetadata);
+            }
+            else
+            {
+                msbuildAPIUtility.AddPackageReferencePerTFM(projectFilePath, libraryDependency, [targetFramework], noVersion: true, newItemAdditionalMetadata);
+            }
+
+            // Assert
+            var projectFileContent = File.ReadAllText(projectFilePath);
+            projectFileContent.Should().Contain("<PackageReference Include=\"X\" Version=\"1.0.0\" one=\"two\" />");
+        }
     }
 }
