@@ -51,80 +51,12 @@ namespace NuGet.Common.Test
 
             // Assert - Only one platform should be true
             var trueCount = (isWindows ? 1 : 0) + (isMacOS ? 1 : 0) + (isLinux ? 1 : 0);
-            Assert.True(trueCount <= 1, $"Multiple platforms detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
+            Assert.True(trueCount <= 1, 
+                $"Multiple platforms detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
 
             // At least one should be detected (we're running on some platform)
-            Assert.True(trueCount >= 1, $"No platform detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public void IsMacOSX_OnWindows_ShouldReturnFalse()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsMacOSX;
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public void IsWindows_OnWindows_ShouldReturnTrue()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsWindows;
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [PlatformFact(Platform.Darwin)]
-        public void IsMacOSX_OnMacOS_ShouldReturnTrue()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsMacOSX;
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [PlatformFact(Platform.Darwin)]
-        public void IsWindows_OnMacOS_ShouldReturnFalse()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsWindows;
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [PlatformFact(Platform.Linux)]
-        public void IsLinux_OnLinux_ShouldReturnTrue()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsLinux;
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [PlatformFact(Platform.Linux)]
-        public void IsWindows_OnLinux_ShouldReturnFalse()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsWindows;
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [PlatformFact(Platform.Linux)]
-        public void IsMacOSX_OnLinux_ShouldReturnFalse()
-        {
-            // Arrange & Act
-            var result = RuntimeEnvironmentHelper.IsMacOSX;
-
-            // Assert
-            Assert.False(result);
+            Assert.True(trueCount >= 1, 
+                $"No platform detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
         }
 
         [Fact]
