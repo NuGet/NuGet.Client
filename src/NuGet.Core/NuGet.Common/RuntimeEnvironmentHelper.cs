@@ -34,9 +34,6 @@ namespace NuGet.Common
                 process => process.Equals(currentProcessName, StringComparison.OrdinalIgnoreCase));
         });
 
-        [DllImport("libc")]
-        static extern int uname(IntPtr buf);
-
         public static bool IsWindows
         {
             get => _isWindows.Value;
@@ -95,51 +92,8 @@ namespace NuGet.Common
 
         private static bool GetIsMacOSX()
         {
-#if IS_CORECLR
-            // This API does work on full framework but it requires a newer nuget client (RID aware)
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
-            {
-                return true;
-            }
-
-            return false;
-#else
-            // On Windows, return false immediately to avoid first-chance exception from uname() P/Invoke
-            if (IsWindows)
-            {
-                return false;
-            }
-
-            var buf = IntPtr.Zero;
-
-            try
-            {
-                buf = Marshal.AllocHGlobal(8192);
-
-                // This is a hacktastic way of getting sysname from uname ()
-                if (uname(buf) == 0)
-                {
-                    var os = Marshal.PtrToStringAnsi(buf);
-
-                    if (os == "Darwin")
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                if (buf != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(buf);
-                }
-            }
-
-            return false;
-#endif
+            // RuntimeInformation.IsOSPlatform is available on .NET Framework 4.7.1+ and .NET Core
+            return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX);
         }
 
         public static bool IsLinux
