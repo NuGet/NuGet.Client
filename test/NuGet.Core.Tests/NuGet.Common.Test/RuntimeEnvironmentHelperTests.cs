@@ -1,0 +1,127 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Test.Utility;
+using Xunit;
+
+namespace NuGet.Common.Test
+{
+    public class RuntimeEnvironmentHelperTests
+    {
+        [Fact]
+        public void IsWindows_ShouldReturnConsistentValue()
+        {
+            // Arrange & Act
+            var result1 = RuntimeEnvironmentHelper.IsWindows;
+            var result2 = RuntimeEnvironmentHelper.IsWindows;
+
+            // Assert
+            Assert.Equal(result1, result2);
+        }
+
+        [Fact]
+        public void IsMacOSX_ShouldReturnConsistentValue()
+        {
+            // Arrange & Act
+            var result1 = RuntimeEnvironmentHelper.IsMacOSX;
+            var result2 = RuntimeEnvironmentHelper.IsMacOSX;
+
+            // Assert
+            Assert.Equal(result1, result2);
+        }
+
+        [Fact]
+        public void IsLinux_ShouldReturnConsistentValue()
+        {
+            // Arrange & Act
+            var result1 = RuntimeEnvironmentHelper.IsLinux;
+            var result2 = RuntimeEnvironmentHelper.IsLinux;
+
+            // Assert
+            Assert.Equal(result1, result2);
+        }
+
+        [Fact]
+        public void PlatformDetection_ShouldBeExclusive()
+        {
+            // Arrange & Act
+            var isWindows = RuntimeEnvironmentHelper.IsWindows;
+            var isMacOS = RuntimeEnvironmentHelper.IsMacOSX;
+            var isLinux = RuntimeEnvironmentHelper.IsLinux;
+
+            // Assert - Only one platform should be true
+            var trueCount = (isWindows ? 1 : 0) + (isMacOS ? 1 : 0) + (isLinux ? 1 : 0);
+            Assert.True(trueCount <= 1, $"Multiple platforms detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void IsMacOSX_OnWindows_ShouldReturnFalse()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsMacOSX;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void IsWindows_OnWindows_ShouldReturnTrue()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsWindows;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [PlatformFact(Platform.Darwin)]
+        public void IsMacOSX_OnMacOS_ShouldReturnTrue()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsMacOSX;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [PlatformFact(Platform.Darwin)]
+        public void IsWindows_OnMacOS_ShouldReturnFalse()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsWindows;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void IsLinux_OnLinux_ShouldReturnTrue()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsLinux;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void IsWindows_OnLinux_ShouldReturnFalse()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsWindows;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public void IsMacOSX_OnLinux_ShouldReturnFalse()
+        {
+            // Arrange & Act
+            var result = RuntimeEnvironmentHelper.IsMacOSX;
+
+            // Assert
+            Assert.False(result);
+        }
+    }
+}

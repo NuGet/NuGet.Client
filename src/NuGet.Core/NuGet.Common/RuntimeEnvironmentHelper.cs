@@ -104,6 +104,12 @@ namespace NuGet.Common
 
             return false;
 #else
+            // On Windows, return false immediately to avoid first-chance exception from uname() P/Invoke
+            if (IsWindows)
+            {
+                return false;
+            }
+
             var buf = IntPtr.Zero;
 
             try
