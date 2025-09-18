@@ -52,7 +52,7 @@ namespace NuGet.Common.Test
             // Assert - Only one platform should be true
             var trueCount = (isWindows ? 1 : 0) + (isMacOS ? 1 : 0) + (isLinux ? 1 : 0);
             Assert.True(trueCount <= 1, $"Multiple platforms detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
-            
+
             // At least one should be detected (we're running on some platform)
             Assert.True(trueCount >= 1, $"No platform detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
         }
@@ -126,7 +126,7 @@ namespace NuGet.Common.Test
             // Assert
             Assert.False(result);
         }
-        
+
         [Fact]
         public void IsMacOSX_ShouldNotThrowException()
         {
@@ -140,7 +140,7 @@ namespace NuGet.Common.Test
                 var result2 = RuntimeEnvironmentHelper.IsMacOSX;
                 Assert.Equal(result, result2);
             });
-            
+
             Assert.Null(exception);
         }
     }
