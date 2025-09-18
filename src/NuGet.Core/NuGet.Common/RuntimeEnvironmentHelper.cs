@@ -40,18 +40,7 @@ namespace NuGet.Common
 
         private static bool GetIsWindows()
         {
-#if IS_CORECLR
-            // This API does work on full framework but it requires a newer nuget client (RID aware)
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-            {
-                return true;
-            }
-
-            return false;
-#else
-            var platform = (int)Environment.OSVersion.Platform;
-            return (platform != 4) && (platform != 6) && (platform != 128);
-#endif
+            return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
         }
 
         public static bool IsMono
@@ -91,7 +80,6 @@ namespace NuGet.Common
 
         private static bool GetIsMacOSX()
         {
-            // RuntimeInformation.IsOSPlatform is available on .NET Framework 4.7.1+ and .NET Core
             return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX);
         }
 
@@ -102,7 +90,6 @@ namespace NuGet.Common
 
         private static bool GetIsLinux()
         {
-#if IS_CORECLR
             // This API does work on full framework but it requires a newer nuget client (RID aware)
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
             {
@@ -117,10 +104,6 @@ namespace NuGet.Common
             }
 
             return false;
-#else
-            var platform = (int)Environment.OSVersion.Platform;
-            return platform == 4;
-#endif
         }
     }
 }
