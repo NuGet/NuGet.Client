@@ -118,7 +118,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            msObject.AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
+            msObject.AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency, additionalMetadata: null);
             project.Save();
 
             // Assert
@@ -177,7 +177,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            msObject.AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
+            msObject.AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency, additionalMetadata: null);
             project.Save();
 
             // Assert
@@ -242,7 +242,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            msObject.AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency);
+            msObject.AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency, additionalMetadata: null);
             // Save the updated props file.
             directoryBuildPropsRootElement.Save();
 
@@ -313,7 +313,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            msObject.AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency);
+            msObject.AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency, additionalMetadata: null);
             // Save the updated props file
             directoryBuildPropsRootElement.Save();
 
@@ -832,6 +832,69 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             var projectFileContent = File.ReadAllText(projectFilePath);
             projectFileContent.Should().Contain("<PackageReference Include=\"X\" Version=\"1.0.0\" one=\"two\" />");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("net9.0")]
+        public void AddPackageReference_UsingCPM_WithAdditionalMetadata(string targetFramework)
+        {
+            /// Arrange
+            using var testDirectory = TestDirectory.Create();
+            var packagesPropsFilePath = Path.Combine(testDirectory, "Directory.Packages.props");
+            File.WriteAllText(packagesPropsFilePath,
+                """
+                <Project>
+                    <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                    </PropertyGroup>
+                </Project>
+                """);
+
+            var projectFilePath = Path.Combine(testDirectory, "projectA.csproj");
+            File.WriteAllText(projectFilePath,
+                """
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>net9.0</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+
+            var msbuildAPIUtility = new MSBuildAPIUtility(logger: new TestLogger());
+
+            LibraryDependency libraryDependency = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                        name: "X",
+                        versionRange: VersionRange.Parse("1.0.0"),
+                        typeConstraint: LibraryDependencyTarget.Package),
+                IncludeType = LibraryIncludeFlags.All,
+                SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent,
+                VersionCentrallyManaged = true
+            };
+
+            var newItemAdditionalMetadata = new Dictionary<string, string>
+            {
+                { "one", "two" },
+            };
+
+            /// Act
+            if (string.IsNullOrEmpty(targetFramework))
+            {
+                msbuildAPIUtility.AddPackageReference(projectFilePath, libraryDependency, noVersion: true, newItemAdditionalMetadata);
+            }
+            else
+            {
+                msbuildAPIUtility.AddPackageReferencePerTFM(projectFilePath, libraryDependency, [targetFramework], noVersion: true, newItemAdditionalMetadata);
+            }
+
+            // Assert
+            var projectFileContent = File.ReadAllText(projectFilePath);
+            projectFileContent.Should().Contain("<PackageReference Include=\"X\" one=\"two\" />");
+
+            var packagesPropsContent = File.ReadAllText(packagesPropsFilePath);
+            packagesPropsContent.Should().Contain("<PackageVersion Include=\"X\" Version=\"1.0.0\" one=\"two\" />");
         }
     }
 }

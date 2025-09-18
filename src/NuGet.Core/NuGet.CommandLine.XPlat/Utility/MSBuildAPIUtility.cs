@@ -349,7 +349,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     //Add <PackageReference/> to the project file.
                     ProjectItemGroupElement itemGroup = GetOrCreateItemGroup(framework, project);
-                    AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
+                    AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency, newItemAdditionalMetadata);
                 }
 
                 if (versionOverrideExists != null)
@@ -369,7 +369,7 @@ namespace NuGet.CommandLine.XPlat
                     if (packageVersionInProps == null)
                     {
                         // Modifying the props file if project is onboarded to CPM.
-                        AddPackageVersionIntoItemGroupCPM(project, libraryDependency);
+                        AddPackageVersionIntoItemGroupCPM(project, libraryDependency, newItemAdditionalMetadata);
                     }
                     else
                     {
@@ -402,14 +402,15 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project that needs to be modified.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        private void AddPackageVersionIntoItemGroupCPM(Project project, LibraryDependency libraryDependency)
+        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
+        private void AddPackageVersionIntoItemGroupCPM(Project project, LibraryDependency libraryDependency, IReadOnlyDictionary<string, string>? additionalMetadata)
         {
             // If onboarded to CPM get the directoryBuildPropsRootElement.
             ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
 
             // Get the ItemGroup to add a PackageVersion to or create a new one.
             var propsItemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_VERSION_TYPE_TAG, condition: null) ?? directoryBuildPropsRootElement.AddItemGroup();
-            AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency);
+            AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency, additionalMetadata);
 
             // Save the updated props file.
             directoryBuildPropsRootElement.Save();
@@ -433,13 +434,15 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="itemGroup">Item group that needs to be modified in the props file.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
         internal void AddPackageVersionIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
-            LibraryDependency libraryDependency)
+            LibraryDependency libraryDependency,
+            IReadOnlyDictionary<string, string>? additionalMetadata)
         {
             // Add both package reference information and version metadata using the PACKAGE_VERSION_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_VERSION_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
-            AddExtraMetadataToProjectItemElement(libraryDependency, item);
+            AddExtraMetadataToProjectItemElement(libraryDependency, additionalMetadata, item);
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath
             ));
         }
@@ -457,8 +460,7 @@ namespace NuGet.CommandLine.XPlat
             // Add both package reference information and version metadata using the PACKAGE_REFERENCE_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
-            AddExtraMetadataToProjectItemElement(libraryDependency, item);
-            AddAdditionalMetadataToProjectItemElement(additionalMetadata, item);
+            AddExtraMetadataToProjectItemElement(libraryDependency, additionalMetadata, item);
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath));
         }
 
@@ -468,12 +470,13 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project">Project to be modified.</param>
         /// <param name="itemGroup">Item group to add to.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
         internal void AddPackageReferenceIntoItemGroupCPM(Project project, ProjectItemGroupElement itemGroup,
-            LibraryDependency libraryDependency)
+            LibraryDependency libraryDependency, IReadOnlyDictionary<string, string>? additionalMetadata)
         {
             // Only add the package reference information using the PACKAGE_REFERENCE_TYPE_TAG.
             ProjectItemElement item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
-            AddExtraMetadataToProjectItemElement(libraryDependency, item);
+            AddExtraMetadataToProjectItemElement(libraryDependency, additionalMetadata, item);
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgCPM, libraryDependency.Name, itemGroup.ContainingProject.FullPath, project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName)));
         }
 
@@ -482,7 +485,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="item">Item to add the metadata to.</param>
-        private static void AddExtraMetadataToProjectItemElement(LibraryDependency libraryDependency, ProjectItemElement item)
+        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
+        private static void AddExtraMetadataToProjectItemElement(LibraryDependency libraryDependency, IReadOnlyDictionary<string, string>? additionalMetadata, ProjectItemElement item)
         {
             if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
             {
@@ -495,15 +499,7 @@ namespace NuGet.CommandLine.XPlat
                 var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
                 item.AddMetadata(PrivateAssets, suppressParent, expressAsAttribute: false);
             }
-        }
 
-        /// <summary>
-        /// Add other metadata based on certain flags.
-        /// </summary>
-        /// <param name="additionalMetadata">Additional metadata to add to the item.</param>
-        /// <param name="item">Item to add the metadata to.</param>
-        private static void AddAdditionalMetadataToProjectItemElement(IReadOnlyDictionary<string, string>? additionalMetadata, ProjectItemElement item)
-        {
             if (additionalMetadata != null)
             {
                 foreach (var metadata in additionalMetadata)
