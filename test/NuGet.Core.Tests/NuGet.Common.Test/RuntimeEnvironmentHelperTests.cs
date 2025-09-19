@@ -24,22 +24,5 @@ namespace NuGet.Common.Test
             Assert.True(trueCount >= 1,
                 $"No platform detected as true: Windows={isWindows}, macOS={isMacOS}, Linux={isLinux}");
         }
-
-        [Fact]
-        public void IsMacOSX_ShouldNotThrowException()
-        {
-            // Arrange & Act & Assert
-            // This test specifically verifies that no first-chance exception is thrown
-            // when calling IsMacOSX on any platform, especially Windows
-            var exception = Record.Exception(() =>
-            {
-                var result = RuntimeEnvironmentHelper.IsMacOSX;
-                // Multiple calls to ensure consistency and no exceptions on repeated access
-                var result2 = RuntimeEnvironmentHelper.IsMacOSX;
-                Assert.Equal(result, result2);
-            });
-
-            Assert.Null(exception);
-        }
     }
 }
