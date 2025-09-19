@@ -201,7 +201,7 @@ steps:
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.BuildToolsVSIX.binlog"
+    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:SkipSbomExistsCheck=true /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.BuildToolsVSIX.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
