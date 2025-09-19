@@ -196,6 +196,18 @@ steps:
       PackageVersion: "$(SemanticVersion)"
       publishArtifacts: false
 
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "The value of ARTIFACT_NAME is: $(ARTIFACT_NAME)"
+      Write-Host "The value of ARTIFACT_NAME is: $ARTIFACT_NAME"
+      Write-Host "The value of ARTIFACTNAME is: $(ARTIFACTNAME)"
+      Write-Host "The value of ARTIFACTNAME is: $ARTIFACTNAME"
+      Write-Host "The value of SafeArtifactName is: $(SafeArtifactName)"
+      throw "Stop!!"
+    failOnStderr: true
+
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
