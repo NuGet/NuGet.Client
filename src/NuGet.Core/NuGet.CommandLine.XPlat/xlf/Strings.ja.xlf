@@ -898,7 +898,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
         <source>Upgrade packages with known vulnerabilities.</source>
-        <target state="new">Upgrade packages with known vulnerabilities.</target>
+        <target state="translated">既知の脆弱性があるパッケージをアップグレードします。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
@@ -908,22 +908,22 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_AllVersionsHaveAdvisories">
         <source>All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</source>
-        <target state="new">All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</target>
+        <target state="translated">パッケージ {0} のすべてのバージョンにセキュリティ アドバイザリがあります。更新対象の脆弱性のないバージョンが見つかりません。</target>
         <note>{0}: package id</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_AlreadyUpToDate">
         <source>All packages are up to date</source>
-        <target state="new">All packages are up to date</target>
+        <target state="translated">すべてのパッケージが最新の状態です</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditDisabled">
         <source>This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</source>
-        <target state="new">This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</target>
+        <target state="translated">このコマンドでは、現時点で NuGetAudit を有効にする必要があります。詳細については、https://aka.ms/nuget/audit を参照してください。</target>
         <note>{Locked="NuGetAudit"}{Locked="dotnet package update"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditModeIsDirect">
         <source>NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</source>
-        <target state="new">NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</target>
+        <target state="translated">NuGetAuditMode が direct に設定されています。これは、既知の脆弱性がある推移的なパッケージは更新されないことを意味しています。詳細については、https://aka.ms/nuget/audit を参照してください。</target>
         <note>{Locked="NuGetAuditMode"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
@@ -944,7 +944,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_NoVulnerablePackages">
         <source>No upgradable packages have known vulnerabilities.</source>
-        <target state="new">No upgradable packages have known vulnerabilities.</target>
+        <target state="translated">既知の脆弱性があるアップグレード可能なパッケージはありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
@@ -964,7 +964,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatedMessage">
         <source>Updating {0} {1} to {2}.</source>
-        <target state="new">Updating {0} {1} to {2}.</target>
+        <target state="translated">{0} {1} を {2} に更新しています。</target>
         <note>{0}: package id
 {1}: existing version
 {2}: new version</note>
@@ -976,7 +976,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatingVulnerablePackages">
         <source>Updating packages with security advisories in {0}</source>
-        <target state="new">Updating packages with security advisories in {0}</target>
+        <target state="translated">{0} 内のセキュリティ アドバイザリがあるパッケージを更新しています</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
