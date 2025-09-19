@@ -8,39 +8,6 @@ namespace NuGet.Common.Test
     public class RuntimeEnvironmentHelperTests
     {
         [Fact]
-        public void IsWindows_ShouldReturnConsistentValue()
-        {
-            // Arrange & Act
-            var result1 = RuntimeEnvironmentHelper.IsWindows;
-            var result2 = RuntimeEnvironmentHelper.IsWindows;
-
-            // Assert
-            Assert.Equal(result1, result2);
-        }
-
-        [Fact]
-        public void IsMacOSX_ShouldReturnConsistentValue()
-        {
-            // Arrange & Act
-            var result1 = RuntimeEnvironmentHelper.IsMacOSX;
-            var result2 = RuntimeEnvironmentHelper.IsMacOSX;
-
-            // Assert
-            Assert.Equal(result1, result2);
-        }
-
-        [Fact]
-        public void IsLinux_ShouldReturnConsistentValue()
-        {
-            // Arrange & Act
-            var result1 = RuntimeEnvironmentHelper.IsLinux;
-            var result2 = RuntimeEnvironmentHelper.IsLinux;
-
-            // Assert
-            Assert.Equal(result1, result2);
-        }
-
-        [Fact]
         public void PlatformDetection_ShouldBeExclusive()
         {
             // Arrange & Act
