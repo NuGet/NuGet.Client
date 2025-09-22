@@ -14,12 +14,14 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Services;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsProjectJsonToPackageReferenceMigrator))]
-    public class VsProjectJsonToPackageReferenceMigrator : IVsProjectJsonToPackageReferenceMigrator
+    [Export(typeof(IProjectJsonToPackageReferenceMigratorExt))]
+    public class VsProjectJsonToPackageReferenceMigrator : IProjectJsonToPackageReferenceMigratorExt
     {
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGetProjectFactory> _projectFactory;
@@ -116,9 +118,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
             catch (Exception ex)
             {
-                // reload the projectAdapter in memory from the file on disk, discarding any changes that might have
-                // been made as a result of an incomplete migration.
-                await ReloadProjectAsync(projectAdapter);
                 EmitTelemetryEvent(startTime, stopwatch, nuGetProject, NuGetOperationStatus.Failed);
                 return new VsProjectJsonToPackageReferenceMigrateResult(success: false, errorMessage: ex.Message);
             }
@@ -154,11 +153,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 // Ignore issues sending telemetry. We don't want to fail 
             }
 #pragma warning restore CA1031 // Do not catch general exception types
-        }
-
-        private async Task ReloadProjectAsync(IVsProjectAdapter project)
-        {
-            project = await _solutionManager.Value.GetVsProjectAdapterAsync(project.FullName);
         }
     }
 }
