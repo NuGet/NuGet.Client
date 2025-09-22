@@ -22,6 +22,5 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="projectUniqueName">The full path to the project that needs to be migrated</param>
         Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName);
-
     }
 }
