@@ -1,0 +1,215 @@
+name: Build, Test, Package and Push
+
+# Controls when the action will run.
+on:
+  push:
+    # Triggers the workflow on pull request events and merges/pushes to master
+    branches:
+      - octopus
+      - release/*
+    tags-ignore:
+      - '**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  schedule:
+    # Daily 5am australian/brisbane time
+    - cron: '0 19 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  CURRENT_BRANCH: ${{ github.head_ref || github.ref }}
+  NIGHTLY_LABEL: ""
+  OCTOPUS_SPACE: "Core Platform"
+
+jobs:
+  build-packages:
+    runs-on: windows-latest
+    permissions:
+      id-token: write # Required to obtain the ID token from GitHub Actions
+      contents: write # Read Required to check out code, Write to create Git Tags
+      checks: write # Required for test-reporter
+    steps:
+      # Must clone the entire history for OctoVersion to work
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Configure NuGet Client (Fast) 🔧
+        run: |
+          # Create cli directory and symlink to system dotnet to skip .NET installation
+          New-Item -ItemType Directory -Force -Path "cli" | Out-Null
+          $systemDotnet = (Get-Command dotnet).Source
+          Copy-Item $systemDotnet -Destination "cli\dotnet.exe"
+        shell: powershell
+
+      - name: Set Octopus Deploy Flag
+        run: |
+          $shouldDeploy = $true
+
+          # Skip if dependabot or prettybot
+          if ("${{ github.ref }}" -like "*dependabot*" -or "${{ github.ref }}" -like "*prettybot*") {
+            $shouldDeploy = $false
+          }
+
+          # Skip merge builds unless targeting octopus or release branches
+          if ("${{ github.ref }}" -like "*/merge" -and
+              "${{ github.base_ref }}" -notlike "*octopus*" -and
+              "${{ github.base_ref }}" -notlike "*release/*") {
+            $shouldDeploy = $false
+          }
+          Write-Host "ref: ${{ github.ref }}"
+          Write-Host "base_ref: ${{ github.base_ref }}"
+          Write-Host "shouldDeploy: $shouldDeploy"
+
+          echo "DEPLOY_TO_OCTOPUS=$shouldDeploy" >> $env:GITHUB_ENV
+        shell: powershell
+
+      - name: Set Release Label
+        run: |
+          if ("${{ github.event_name }}" -eq "schedule") {
+            $releaseLabel = "nightly$(Get-Date -Format 'yyyyMMdd')"
+          } elseif ("${{ github.ref_name }}" -eq "${{ github.event.repository.default_branch }}") {
+            $releaseLabel = "final"
+          } elseif ("${{ github.ref_name }}" -like "release/*") {
+            $releaseLabel = "release"
+          } else {
+            $releaseLabel = "xprivate"
+          }
+          Write-Host "event_name: ${{ github.event_name }}"
+          Write-Host "ref_name: ${{ github.ref_name }}"
+          Write-Host "default_branch: ${{ github.event.repository.default_branch }}"
+
+          Write-Host "Release label: $releaseLabel"
+          echo "RELEASE_LABEL=$releaseLabel" >> $env:GITHUB_ENV
+        shell: powershell
+
+      - name: Set BuildNumber
+        run: |
+          $runAttempt = "${{ github.run_attempt }}".PadLeft(2, '0')
+          $buildNumber = "${{ github.run_number }}$runAttempt"
+          Write-Host "buildNumber: $buildNumber"
+          echo "BUILD_NUMBER=$buildNumber" >> $env:GITHUB_ENV
+
+      - name: Set PackageVersion
+        run: |
+          $buildNumber = "${{ env.BUILD_NUMBER }}"
+          $releaseLabel = "${{ env.RELEASE_LABEL }}"
+
+          # Read version from config.props
+          $configPath = "build\config.props"
+          $configContent = Get-Content $configPath -Raw
+
+          $majorMatch = [regex]::Match($configContent, '<MajorNuGetVersion[^>]*>(\d+)</MajorNuGetVersion>')
+          $minorMatch = [regex]::Match($configContent, '<MinorNuGetVersion[^>]*>(\d+)</MinorNuGetVersion>')
+          $patchMatch = [regex]::Match($configContent, '<PatchNuGetVersion[^>]*>(\d+)</PatchNuGetVersion>')
+
+          $major = $majorMatch.Groups[1].Value
+          $minor = $minorMatch.Groups[1].Value
+          $patch = $patchMatch.Groups[1].Value
+          $baseVersion = "$major.$minor.$patch"
+          # This matches logic within the build that will take a 'final' and prepend 'octopus'
+          if ($releaseLabel -eq "final") {
+            $packageVersion = "$baseVersion-octopus.$buildNumber"
+          } else {
+            # E.g releaseLabel = (xprivate, release, nightly#####)
+            $packageVersion = "$baseVersion-$releaseLabel.$buildNumber"
+          }
+          Write-Host "packageVersion: $packageVersion"
+          # This needs to match the packages in the /artifacts/nupkgs/ folder after build
+          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
+
+      - name: Build NuGet Packages 📦
+        id: build
+        run: .\build.ps1 -Configuration Release -ReleaseLabel ${{ env.RELEASE_LABEL }} -BuildNumber ${{ env.BUILD_NUMBER }} -Fast -SkipUnitTest -CI
+
+      - name: Run NuGet.Core Unit Tests 🧪
+        run: |
+          Get-ChildItem -Path "test/NuGet.Core.Tests" -Filter "*.csproj" -Recurse | ForEach-Object {
+            dotnet test $_.FullName --configuration Release --no-build --logger trx --results-directory ./build/TestResults/ --verbosity minimal
+          }
+        shell: powershell
+
+      - name: Unit test report
+        uses: dorny/test-reporter@6e6a65b7a0bd2c9197df7d0ae36ac5cee784230c # v2.0.0
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: NuGet Core unit test results
+          path: ./build/TestResults/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Tag release (when release label is final) 🏷️
+        if: ${{ env.RELEASE_LABEL == 'final' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ env.PACKAGE_VERSION }}",
+              sha: context.sha
+            })
+
+      - name: Login to Octopus Deploy 🐙
+        if: env.DEPLOY_TO_OCTOPUS == 'True'
+        uses: OctopusDeploy/login@v1
+        with:
+          server: ${{ secrets.OCTOPUS_URL }}
+          service_account_id: cc09980f-9a73-46c3-8f3f-e3f673740c1f
+
+      - name: Push to Octopus 🐙
+        if: env.DEPLOY_TO_OCTOPUS == 'True'
+        uses: OctopusDeploy/push-package-action@v3
+        with:
+          packages: |
+            ./artifacts/nupkgs/NuGet.CommandLine.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Common.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Configuration.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Frameworks.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Packaging.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Protocol.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Versioning.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.PackageManagement.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Build.Tasks.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Commands.${{ env.PACKAGE_VERSION }}.nupkg
+            ./artifacts/nupkgs/NuGet.Resolver.${{ env.PACKAGE_VERSION }}.nupkg
+
+      - name: Create Release in Octopus 🐙
+        if: env.DEPLOY_TO_OCTOPUS == 'True'
+        uses: OctopusDeploy/create-release-action@v3
+        with:
+          project: Nuget.Client
+          packages: |
+            NuGet.CommandLine:${{ env.PACKAGE_VERSION }}
+            NuGet.Common:${{ env.PACKAGE_VERSION }}
+            NuGet.Configuration:${{ env.PACKAGE_VERSION }}
+            NuGet.Frameworks:${{ env.PACKAGE_VERSION }}
+            NuGet.Packaging:${{ env.PACKAGE_VERSION }}
+            NuGet.Protocol:${{ env.PACKAGE_VERSION }}
+            NuGet.Versioning:${{ env.PACKAGE_VERSION }}
+            NuGet.PackageManagement:${{ env.PACKAGE_VERSION }}
+            NuGet.Build.Tasks:${{ env.PACKAGE_VERSION }}
+            NuGet.Commands:${{ env.PACKAGE_VERSION }}
+            NuGet.Resolver:${{ env.PACKAGE_VERSION }}

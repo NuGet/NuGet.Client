@@ -203,3 +203,4 @@ launchSettings.json
 
 # Image manifests are generated at build-time for VSIX
 *.imagemanifest
+.claude/settings.local.json
