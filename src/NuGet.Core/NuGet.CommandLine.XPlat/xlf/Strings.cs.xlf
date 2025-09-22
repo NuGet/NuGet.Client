@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="new">Argument cannot be null or empty.</target>
+        <target state="translated">Argument nemůže být null ani prázdný.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigCommandKeyNotFound">
