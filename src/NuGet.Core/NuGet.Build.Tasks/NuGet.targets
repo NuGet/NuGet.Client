@@ -725,7 +725,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' == '' ">$(TargetFrameworks)</_TargetFrameworkToBeUsed>
     </PropertyGroup>
 
-    <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
       Condition=" '$(RestoreProjectStyle)' != 'ProjectJson'"
       ProjectPath="$(MSBuildProjectFullPath)"
@@ -959,23 +958,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
         <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
         <RestoreUseLegacyDependencyResolver>$(RestoreUseLegacyDependencyResolver)</RestoreUseLegacyDependencyResolver>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
-    <!-- Use project.json -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' ">
-      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
-        <Type>ProjectSpec</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <Sources>$(_OutputSources)</Sources>
-        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
-        <FallbackFolders>$(_OutputFallbackFolders)</FallbackFolders>
-        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
-        <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
-        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
       </_RestoreGraphEntry>
     </ItemGroup>
 
