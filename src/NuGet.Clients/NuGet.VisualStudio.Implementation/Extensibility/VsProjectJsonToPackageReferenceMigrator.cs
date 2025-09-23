@@ -1,5 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the projectAdapter root for license information.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsProjectJsonToPackageReferenceMigrator))]
     [Export(typeof(IProjectJsonToPackageReferenceMigratorExt))]
-    public class VsProjectJsonToPackageReferenceMigrator : IProjectJsonToPackageReferenceMigratorExt
+    internal class VsProjectJsonToPackageReferenceMigrator : IProjectJsonToPackageReferenceMigratorExt
     {
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGetProjectFactory> _projectFactory;
@@ -59,9 +59,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.Error_FileNotExists, projectFullPath));
                 }
 
-                (IVsProjectAdapter projectAdapter, NuGetProject nuGetProject) = await GetNuGetProjectAndVSAdapter(projectFullPath);
+                (NuGetProject nuGetProject, IVsProjectAdapter projectAdapter) = await GetNuGetProjectAndVSAdapter(projectFullPath);
 
-                return await MigrateProjectToPackageRefAsync(projectAdapter, nuGetProject);
+                return await MigrateProjectToPackageRefAsync(nuGetProject, projectAdapter);
             }
             catch (Exception ex)
             {
@@ -72,12 +72,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public async Task<object> MigrateProjectJsonToPackageReferenceAsync(NuGetProject nuGetProject, IVsProjectAdapter projectAdapter)
         {
-            const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);
-            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
-
             try
             {
-                return await MigrateProjectToPackageRefAsync(projectAdapter, nuGetProject);
+                return await MigrateProjectToPackageRefAsync(nuGetProject, projectAdapter);
             }
             catch (Exception ex)
             {
@@ -86,7 +83,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
         }
 
-        private async Task<object> MigrateProjectToPackageRefAsync(IVsProjectAdapter projectAdapter, NuGetProject nuGetProject)
+        private async Task<object> MigrateProjectToPackageRefAsync(NuGetProject nuGetProject, IVsProjectAdapter projectAdapter)
         {
             var startTime = DateTimeOffset.Now;
             var stopwatch = Stopwatch.StartNew();
@@ -123,7 +120,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
         }
 
-        private async Task<(IVsProjectAdapter projectAdapter, NuGetProject nuGetProject)> GetNuGetProjectAndVSAdapter(string projectUniqueName)
+        private async Task<(NuGetProject nuGetProject, IVsProjectAdapter projectAdapter)> GetNuGetProjectAndVSAdapter(string projectUniqueName)
         {
             var projectAdapter = await _solutionManager.Value.GetVsProjectAdapterAsync(projectUniqueName);
 
@@ -135,7 +132,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             var projectSafeName = projectAdapter.CustomUniqueName;
 
             var nuGetProject = await _solutionManager.Value.GetNuGetProjectAsync(projectSafeName);
-            return (projectAdapter, nuGetProject);
+            return (nuGetProject, projectAdapter);
         }
 
         private void EmitTelemetryEvent(DateTimeOffset startTime, Stopwatch stopwatch, NuGetProject nuGetProject, NuGetOperationStatus operationStatus)
