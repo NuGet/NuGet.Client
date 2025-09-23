@@ -1250,13 +1250,13 @@ namespace Dotnet.Integration.Test
 
             // Set up solution and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net7.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net8.0");
 
             const string version1 = "1.0.0";
             const string version2 = "2.0.0";
             const string packageX = "X";
 
-            var packageFrameworks = "net7.0";
+            var packageFrameworks = "net8.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version1, frameworkString: packageFrameworks);
             var packageX200 = XPlatTestUtils.CreatePackage(packageX, version2, frameworkString: packageFrameworks);
 
