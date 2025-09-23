@@ -1256,7 +1256,7 @@ namespace Dotnet.Integration.Test
             const string version2 = "2.0.0";
             const string packageX = "X";
 
-            var packageFrameworks = "net8.0";
+            var packageFrameworks = "net10.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version1, frameworkString: packageFrameworks);
             var packageX200 = XPlatTestUtils.CreatePackage(packageX, version2, frameworkString: packageFrameworks);
 
