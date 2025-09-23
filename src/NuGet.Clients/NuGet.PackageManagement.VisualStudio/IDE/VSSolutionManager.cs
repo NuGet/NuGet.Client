@@ -1127,12 +1127,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveVsProjectAdapterFromCache(projectName);
 
-            var context = new ProjectProviderContext(
-                EmptyNuGetProjectContext,
-                () => PackagesFolderPathUtility.GetPackagesFolderPath(this, _settings.Value));
-
             var nuGetProject = await _projectSystemFactory.CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
-                vsProjectAdapter, context);
+                vsProjectAdapter, optionalContext: null);
 
             var added = _projectSystemCache.AddProject(projectNames, vsProjectAdapter, nuGetProject);
 
