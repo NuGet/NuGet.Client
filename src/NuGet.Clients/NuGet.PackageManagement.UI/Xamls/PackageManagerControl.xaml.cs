@@ -1560,6 +1560,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public void ShowVulnerablePackages()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _topPanel.SelectFilter(ItemFilter.Installed);
+            _topPanel._checkboxVulnerabilities.IsChecked = true;
+        }
+
         private void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
