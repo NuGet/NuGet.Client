@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Build.Framework;
 using NuGet.ProjectModel;
 
@@ -34,6 +35,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// The path to a project.json file.
         /// </summary>
+        [Obsolete("This property is no longer used and will be removed in a future release.")]
         public string ProjectJsonPath { get; set; }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace NuGet.Build.Tasks
         {
             var log = new MSBuildLogger(Log);
 
-            var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
+            var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, MSBuildProjectDirectory, MSBuildProjectName, log);
 
             IsPackageReferenceCompatibleProjectStyle = result.ProjectStyle == ProjectStyle.PackageReference;
             ProjectStyle = result.ProjectStyle;

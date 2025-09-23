@@ -174,7 +174,7 @@ namespace NuGet.Commands.Restore.Utility
                     GetProjectRestoreStyle(
                         restoreProjectStyle: projectStyleOrNull,
                         hasPackageReferenceItems: hasPackageReferenceItems,
-                        projectJsonPath: project.OuterBuild.GetProperty("_CurrentProjectJsonPath"),
+                        projectJsonPath: null,
                         projectDirectory: project.Directory,
                         projectName: project.OuterBuild.GetProperty("MSBuildProjectName"));
 
@@ -323,7 +323,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
         private static (ProjectStyle ProjectStyle, string? PackagesConfigFilePath)
-            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName)
+            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string? projectJsonPath, string projectDirectory, string projectName)
         {
             ProjectStyle projectStyle;
             string? packagesConfigFilePath = null;
