@@ -115,13 +115,6 @@ steps:
     msbuildArguments: "/restore:false /target:BuildVSIX /property:ExcludeTestProjects=false /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\07.PackVSIX.binlog"
 
 - task: MSBuild@1
-  displayName: "Generate Build Tools package"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:SkipSbomExistsCheck=true /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.BuildToolsVSIX.binlog"
-
-- task: MSBuild@1
   displayName: "Sign"
   inputs:
     solution: "build\\sign.proj"
@@ -134,20 +127,6 @@ steps:
     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for NuGet Core VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /property:SkipSbomExistsCheck=true /binarylogger:$(Build.StagingDirectory)\\binlog\\10.GenerateVSManifestForVSIX.binlog"
-
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for Build Tools VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:IsVsixBuild=false /property:SkipSbomExistsCheck=true /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\11.GenerateVSManifestForToolsVSIX.binlog"
 
 - task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
