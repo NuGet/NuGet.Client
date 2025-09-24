@@ -21,8 +21,7 @@ on:
   workflow_dispatch:
 
 env:
-  CURRENT_BRANCH: ${{ github.head_ref || github.ref }}
-  NIGHTLY_LABEL: ""
+  # Required for deploying to octopus.
   OCTOPUS_SPACE: "Core Platform"
 
 jobs:
@@ -33,35 +32,13 @@ jobs:
       contents: write # Read Required to check out code, Write to create Git Tags
       checks: write # Required for test-reporter
     steps:
-      # Must clone the entire history for OctoVersion to work
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup .NET 9.0
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Configure NuGet Client (Fast) 🔧
-        run: |
-          # Create cli directory and symlink to system dotnet to skip .NET installation
-          New-Item -ItemType Directory -Force -Path "cli" | Out-Null
-          $systemDotnet = (Get-Command dotnet).Source
-          Copy-Item $systemDotnet -Destination "cli\dotnet.exe"
-        shell: powershell
 
       - name: Set Octopus Deploy Flag
         run: |
