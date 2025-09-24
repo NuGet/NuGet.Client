@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI
 
             List<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList();
 
-            var auditSourceRepositories = Model.Context.SourceService.GetAuditSources();
+            var auditSourceRepositories = Model.Context.SourceService.GetEnabledAuditSources();
             _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
 
             var solutionManager = Model.Context.SolutionManagerService;

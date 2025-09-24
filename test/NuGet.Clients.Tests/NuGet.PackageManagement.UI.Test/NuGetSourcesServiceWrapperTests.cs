@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.UI.Test
                 return new ValueTask<IReadOnlyList<PackageSourceContextInfo>>(PackageSources);
             }
 
-            public IReadOnlyList<SourceRepository> GetAuditSources()
+            public IReadOnlyList<SourceRepository> GetEnabledAuditSources()
             {
                 throw new NotImplementedException();
             }

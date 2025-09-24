@@ -79,9 +79,9 @@ namespace NuGet.PackageManagement.UI
             return Service.GetActivePackageSourceNameAsync(cancellationToken);
         }
 
-        public IReadOnlyList<SourceRepository> GetAuditSources()
+        public IReadOnlyList<SourceRepository> GetEnabledAuditSources()
         {
-            return Service.GetAuditSources();
+            return Service.GetEnabledAuditSources();
         }
 
         private sealed class NullNuGetSourcesService : INuGetSourcesService
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI
 
             public ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken) => new ValueTask<string?>();
 
-            public IReadOnlyList<SourceRepository> GetAuditSources() => Array.Empty<SourceRepository>();
+            public IReadOnlyList<SourceRepository> GetEnabledAuditSources() => Array.Empty<SourceRepository>();
         }
     }
 }

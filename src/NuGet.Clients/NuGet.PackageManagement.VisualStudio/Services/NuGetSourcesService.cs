@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList());
         }
 
-        public IReadOnlyList<SourceRepository> GetAuditSources()
+        public IReadOnlyList<SourceRepository> GetEnabledAuditSources()
         {
             IReadOnlyList<PackageSource> auditSources = _packageSourceProvider.LoadAuditSources();
 

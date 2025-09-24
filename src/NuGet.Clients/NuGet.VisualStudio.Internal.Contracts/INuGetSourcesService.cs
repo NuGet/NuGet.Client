@@ -22,6 +22,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken);
 
-        public IReadOnlyList<SourceRepository> GetAuditSources();
+        public IReadOnlyList<SourceRepository> GetEnabledAuditSources();
     }
 }
