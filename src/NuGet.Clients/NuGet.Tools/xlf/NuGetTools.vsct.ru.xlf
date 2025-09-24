@@ -2,26 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../NuGetTools.vsct">
     <body>
-      <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
-        <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Управление пакетами &amp;NuGet для решения…</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdidAddPackagesForSolution|CommandName">
-        <source>cmdidAddPackagesForSolution</source>
-        <target state="translated">cmdidAddPackagesForSolution</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdidAddPackages|ButtonText">
-        <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">Управление пакетами &amp;NuGet...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdidAddPackages|CommandName">
-        <source>cmdidAddPackages</source>
-        <target state="translated">cmdidAddPackages</target>
-        <note />
-      </trans-unit>
       <trans-unit id="cmdidClearHost|ButtonText">
         <source>&amp;Clear Console</source>
         <target state="translated">&amp;Очистить консоль</target>
