@@ -116,6 +116,11 @@ jobs:
           # This needs to match the packages in the /artifacts/nupkgs/ folder after build
           echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
 
+      # required for building the code see: https://github.com/NuGet/NuGet.Client/blob/dev/CONTRIBUTING.md#build
+      - name: Configure Build Environment
+        run: .\configure.ps1 -Force
+        shell: powershell
+
       - name: Build NuGet Packages 📦
         id: build
         run: .\build.ps1 -Configuration Release -ReleaseLabel ${{ env.RELEASE_LABEL }} -BuildNumber ${{ env.BUILD_NUMBER }} -Fast -SkipUnitTest -CI
