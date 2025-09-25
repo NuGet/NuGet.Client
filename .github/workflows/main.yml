@@ -161,6 +161,24 @@ jobs:
           server: ${{ secrets.OCTOPUS_URL }}
           service_account_id: cc09980f-9a73-46c3-8f3f-e3f673740c1f
 
+      - name: Push build information to Octopus Deploy 🐙
+        uses: OctopusDeploy/push-build-information-action@v3
+        if: (! contains(github.ref, '/merge')) && (! contains(github.ref, '/dependabot/')) && (! contains(github.ref, 'prettybot/'))
+        with:
+          packages: |
+            NuGet.CommandLine
+            NuGet.Common
+            NuGet.Configuration
+            NuGet.Frameworks
+            NuGet.Packaging
+            NuGet.Protocol
+            NuGet.Versioning
+            NuGet.PackageManagement
+            NuGet.Build.Tasks
+            NuGet.Commands
+            NuGet.Resolver
+          version: ${{ env.PACKAGE_VERSION }}
+
       - name: Push to Octopus 🐙
         if: env.DEPLOY_TO_OCTOPUS == 'True'
         uses: OctopusDeploy/push-package-action@v3
@@ -183,15 +201,5 @@ jobs:
         uses: OctopusDeploy/create-release-action@v3
         with:
           project: Nuget.Client
-          packages: |
-            NuGet.CommandLine:${{ env.PACKAGE_VERSION }}
-            NuGet.Common:${{ env.PACKAGE_VERSION }}
-            NuGet.Configuration:${{ env.PACKAGE_VERSION }}
-            NuGet.Frameworks:${{ env.PACKAGE_VERSION }}
-            NuGet.Packaging:${{ env.PACKAGE_VERSION }}
-            NuGet.Protocol:${{ env.PACKAGE_VERSION }}
-            NuGet.Versioning:${{ env.PACKAGE_VERSION }}
-            NuGet.PackageManagement:${{ env.PACKAGE_VERSION }}
-            NuGet.Build.Tasks:${{ env.PACKAGE_VERSION }}
-            NuGet.Commands:${{ env.PACKAGE_VERSION }}
-            NuGet.Resolver:${{ env.PACKAGE_VERSION }}
+          release_number: ${{ env.PACKAGE_VERSION }}
+          package_version: ${{ env.PACKAGE_VERSION }}
