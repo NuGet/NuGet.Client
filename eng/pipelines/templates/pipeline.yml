@@ -143,21 +143,21 @@ stages:
         displayName: 'Publish buildinfo.json as an artifact'
         condition: "succeeded()"
         targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
-        artifactName: 'BuildInfo  - Attempt $(System.JobAttempt)'
+        artifactName: 'BuildInfo'
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
         displayName: 'Publish NuGet.CommandLine.Test as artifact'
         condition: "and(succeeded(),ne(variables['RunMonoTestsOnMac'], 'false'))"
         targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
-        artifactName: "NuGet.CommandLine.Test - Attempt $(System.JobAttempt)"
+        artifactName: "NuGet.CommandLine.Test"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
-        artifactName: "nupkgs - $(RtmLabel) - Attempt $(System.JobAttempt)"
+        artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
@@ -201,7 +201,7 @@ stages:
         displayName: 'Publish symbols as pipeline artifacts'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-        artifactName: "symbols - $(RtmLabel)- Attempt $(System.JobAttempt)"
+        artifactName: "symbols - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: artifactsDrop
@@ -275,7 +275,7 @@ stages:
         displayName: 'Publish nupkgs'
         condition: "succeeded()"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
-        artifactName: "nupkgs - $(RtmLabel) - Attempt $(System.JobAttempt)"
+        artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
