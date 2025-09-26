@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
         public async override Task PopulateDataAsync(CancellationToken cancellationToken)
         {
             var packageMetadata = await _packageMetadataRetrievalAdapter.GetPackageMetadataAsync(cancellationToken);
-            Vulnerabilities = packageMetadata.Vulnerabilities?.ToList() ?? [];
+            Vulnerabilities = packageMetadata.Vulnerabilities?.ToList();
         }
     }
 }
