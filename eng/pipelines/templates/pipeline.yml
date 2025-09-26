@@ -288,7 +288,7 @@ stages:
         displayName: 'Publish symbols as pipeline artifacts'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-        artifactName: "symbols - $(RtmLabel) - Attempt $(System.JobAttempt)"
+        artifactName: "symbols - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
