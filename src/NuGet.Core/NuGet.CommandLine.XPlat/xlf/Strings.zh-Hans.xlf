@@ -1016,6 +1016,13 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
 1 - package version
 2 - package download location</note>
       </trans-unit>
+      <trans-unit id="PkgDownload_UnableToDownload">
+        <source>Package download failed for `{0} {1}` from source `{2}`.</source>
+        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
+        <note>0 package id
+1 package version
+2 package source</note>
+      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">没有可用的稳定版本，{0} 是可用的最佳版本。请考虑添加 --prerelease 选项</target>

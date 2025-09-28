@@ -1169,4 +1169,10 @@ Do not translate "PackageVersion"</comment>
     <comment>0 - verbosity level
 do not translate: quiet, normal, detailed.</comment>
   </data>
+  <data name="PkgDownload_UnableToDownload" xml:space="preserve">
+    <value>Package download failed for `{0} {1}` from source `{2}`.</value>
+    <comment>0 package id
+1 package version
+2 package source</comment>
+  </data>
 </root>

@@ -5,14 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
-using NuGet.CommandLine.XPlat.Commands;
-using NuGet.CommandLine.XPlat.Commands.PackageDownload;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 {
     internal class PackageDownloadCommand
     {
-        public static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger)
+        internal static void Register(Command packageCommand, Option<bool> interactiveOption)
+        {
+            Register(packageCommand, interactiveOption, PackageDownloadRunner.RunAsync);
+        }
+        public static void Register(Command packageCommand, Option<bool> interactiveOption, Func<PackageDownloadArgs, CancellationToken, Task<int>> action)
         {
             var downloadCommand = new DocumentedCommand(
                 "download",
@@ -20,10 +24,11 @@ namespace NuGet.CommandLine.XPlat
                 "https://aka.ms/dotnet/package/download");
 
             // Arguments
-            var packageId = new Argument<string>("PackageId")
+            var packagesArguments = new Argument<IReadOnlyList<Package>>("packages")
             {
-                Description = Strings.pkgDownload_packageIdDescription,
-                Arity = ArgumentArity.ExactlyOne,
+                Description = Strings.PackageUpdate_PackageArgumentDescription,
+                Arity = ArgumentArity.ZeroOrMore,
+                CustomParser = Package.Parse
             };
 
             // Options
@@ -50,12 +55,6 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
-            var interactive = new Option<bool>("--interactive")
-            {
-                Description = Strings.pkgDownload_interactiveDecription,
-                Arity = ArgumentArity.Zero
-            };
-
             var outputDirectory = new Option<string>("--output-directory")
             {
                 Description = Strings.pkgDownload_OutputDirectoryDescription,
@@ -74,59 +73,40 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.OneOrMore
             };
 
-            var verbosity = new Option<string>("--verbosity")
-            {
-                Description = Strings.pkgDownload_verbosityDescription,
-                Arity = ArgumentArity.ExactlyOne
-            };
-
-            var version = new Option<string>("--version")
-            {
-                Description = Strings.pkgDownload_versionDescription,
-                Arity = ArgumentArity.ExactlyOne
-            };
+            var verbosity = CommonOptions.GetVerbosityOption();
 
 
-            downloadCommand.Arguments.Add(packageId);
+            downloadCommand.Arguments.Add(packagesArguments);
             downloadCommand.Options.Add(allowInsecureConnections);
             downloadCommand.Options.Add(configFile);
             downloadCommand.Options.Add(downloadOnly);
             downloadCommand.Options.Add(help);
-            downloadCommand.Options.Add(interactive);
+            downloadCommand.Options.Add(interactiveOption);
             downloadCommand.Options.Add(outputDirectory);
             downloadCommand.Options.Add(prerelease);
             downloadCommand.Options.Add(sources);
             downloadCommand.Options.Add(verbosity);
-            downloadCommand.Options.Add(version);
 
             downloadCommand.SetAction(async (parserResult, cancellationToken) =>
             {
-                ILoggerWithColor logger = getLogger();
-
-                try
+                IReadOnlyList<Package> packages = parserResult.GetValue(packagesArguments) ?? [];
+                var args = new PackageDownloadArgs()
                 {
-                    var args = new PackageDownloadArgs(parserResult.GetValue(packageId), parserResult.GetValue(sources), parserResult.GetValue(outputDirectory), logger)
-                    {
-                        Version = parserResult.GetValue(version),
-                        IncludePrerelease = parserResult.GetValue(prerelease),
-                        DownloadOnly = parserResult.GetValue(downloadOnly),
-                        AllowInsecureConnections = parserResult.GetValue(allowInsecureConnections),
-                        Interactive = parserResult.GetValue(interactive),
-                        ConfigFile = parserResult.GetValue(configFile)
-                    };
+                    Packages = packages,
+                    Sources = parserResult.GetValue(sources),
+                    OutputDirectory = parserResult.GetValue(outputDirectory),
+                    IncludePrerelease = parserResult.GetValue(prerelease),
+                    DownloadOnly = parserResult.GetValue(downloadOnly),
+                    AllowInsecureConnections = parserResult.GetValue(allowInsecureConnections),
+                    Interactive = parserResult.GetValue(interactiveOption),
+                    ConfigFile = parserResult.GetValue(configFile),
+                    LogLevel = (parserResult.GetValue(verbosity) ?? VerbosityEnum.normal).ToLogLevel()
+                };
 
-                    args.SetVerbosity(parserResult.GetValue(verbosity));
-
-                    return await PackageDownloadRunner.RunAsync(args, cancellationToken);
-                }
-                catch (ArgumentException ex)
-                {
-                    logger.LogError(ex.Message);
-                    return ExitCodes.InvalidArguments;
-                }
+                return await action(args, cancellationToken);
             });
 
-            rootCommand.Subcommands.Add(downloadCommand);
+            packageCommand.Subcommands.Add(downloadCommand);
         }
     }
 }

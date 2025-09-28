@@ -1886,6 +1886,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package download failed for `{0} {1}` from source `{2}`..
+        /// </summary>
+        internal static string PkgDownload_UnableToDownload {
+            get {
+                return ResourceManager.GetString("PkgDownload_UnableToDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Set the verbosity level. Allowed values: quiet | normal | detailed..
         /// </summary>
         internal static string pkgDownload_verbosityDescription {

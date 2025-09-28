@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
-    <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
   </ItemGroup>
 
   <ItemGroup>

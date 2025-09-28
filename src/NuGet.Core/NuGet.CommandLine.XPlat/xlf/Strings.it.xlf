@@ -1016,6 +1016,13 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
 1 - package version
 2 - package download location</note>
       </trans-unit>
+      <trans-unit id="PkgDownload_UnableToDownload">
+        <source>Package download failed for `{0} {1}` from source `{2}`.</source>
+        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
+        <note>0 package id
+1 package version
+2 package source</note>
+      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">Non sono disponibili versioni stabili e {0} è la migliore versione disponibile. Provare ad aggiungere l'opzione --prerelease</target>
