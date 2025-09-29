@@ -194,12 +194,12 @@ namespace NuGet.Protocol.Plugins
             CancellationToken cancellationToken)
         {
             // This is a non cancellable task.
-            // We should only honor cancellation requests we can recover from. 
+            // We should only honor cancellation requests we can recover from.
             // Once we have reached this part of the code, we do the plugin initialization
-            // handshake, operation claims, and shut down set up. 
-            // If either one of these tasks fails then the plugin itself is not usable for the rest of the process. 
-            // We could consider handling each of this operations more cleverly, 
-            // but simplicity and readability is prioritized           
+            // handshake, operation claims, and shut down set up.
+            // If either one of these tasks fails then the plugin itself is not usable for the rest of the process.
+            // We could consider handling each of this operations more cleverly,
+            // but simplicity and readability is prioritized
             cancellationToken = CancellationToken.None;
             PluginCreationResult pluginCreationResult = null;
             var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectoryPath.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
@@ -283,7 +283,7 @@ namespace NuGet.Protocol.Plugins
             plugin.Closed += OnPluginClosed;
 
             await utilities.Value.DoOncePerPluginLifetimeAsync(
-                MessageMethod.MonitorNuGetProcessExit.ToString(),
+                nameof(MessageMethod.MonitorNuGetProcessExit),
                 () => plugin.Connection.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
                     MessageMethod.MonitorNuGetProcessExit,
                     new MonitorNuGetProcessExitRequest(_currentProcessId.Value),
@@ -291,7 +291,7 @@ namespace NuGet.Protocol.Plugins
                 cancellationToken);
 
             await utilities.Value.DoOncePerPluginLifetimeAsync(
-                MessageMethod.Initialize.ToString(),
+                nameof(MessageMethod.Initialize),
                 () => InitializePluginAsync(plugin, _connectionOptions.RequestTimeout, cancellationToken),
                 cancellationToken);
 
@@ -388,7 +388,7 @@ namespace NuGet.Protocol.Plugins
         /// Gets the current culture.
         /// An invariant culture's name will be "". Since InitializeRequest has a null or empty check, this can be a problem.
         /// Because the InitializeRequest message is part of a protocol, and the reason why we set the culture is allow the plugins to localize their messages,
-        /// we can safely default to en. 
+        /// we can safely default to en.
         /// </summary>
         /// <returns>CurrentCulture or an en default if the current culture is invariant</returns>
         private static string GetCurrentCultureName()

@@ -23,11 +23,11 @@ namespace NuGet.Packaging.PackageExtraction
                 if (_xmlDocFileSaveMode == null)
                 {
                     var xmlDocFileMode = environmentVariableReader.GetEnvironmentVariable(XmlDocFileSaveModeEnvironmentKey);
-                    if (string.Equals(xmlDocFileMode, XmlDocFileSaveMode.Compress.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(xmlDocFileMode, nameof(XmlDocFileSaveMode.Compress), StringComparison.OrdinalIgnoreCase))
                     {
                         _xmlDocFileSaveMode = XmlDocFileSaveMode.Compress;
                     }
-                    else if (string.Equals(xmlDocFileMode, XmlDocFileSaveMode.Skip.ToString(), StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(xmlDocFileMode, nameof(XmlDocFileSaveMode.Skip), StringComparison.OrdinalIgnoreCase))
                     {
                         _xmlDocFileSaveMode = XmlDocFileSaveMode.Skip;
                     }

@@ -83,7 +83,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.AddPropertyIfExists(properties, "ConfigFilePaths", RestoreConfigFilePaths);
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
                 properties.Add("TargetFrameworks", ToolFramework);
-                properties.Add("ProjectStyle", ProjectStyle.DotnetCliTool.ToString());
+                properties.Add("ProjectStyle", nameof(ProjectStyle.DotnetCliTool));
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 

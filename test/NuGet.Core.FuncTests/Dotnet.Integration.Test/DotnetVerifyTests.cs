@@ -21,10 +21,10 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetVerifyTests
     {
-        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
-        private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3018.ToString();
-        private readonly string _noMatchingCertErrorCode = NuGetLogCode.NU3034.ToString();
-        private readonly string _notSignedErrorCode = NuGetLogCode.NU3004.ToString();
+        private readonly string _noTimestamperWarningCode = nameof(NuGetLogCode.NU3027);
+        private readonly string _primarySignatureInvalidErrorCode = nameof(NuGetLogCode.NU3018);
+        private readonly string _noMatchingCertErrorCode = nameof(NuGetLogCode.NU3034);
+        private readonly string _notSignedErrorCode = nameof(NuGetLogCode.NU3004);
 
         private DotnetIntegrationTestFixture _dotnetFixture;
         private readonly SignCommandTestFixture _signFixture;

@@ -26,12 +26,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class SignCommandTests
     {
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private readonly string _invalidPasswordErrorCode = NuGetLogCode.NU3001.ToString();
-        private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
-        private readonly string _noCertFoundErrorCode = NuGetLogCode.NU3001.ToString();
-        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
-        private readonly string _timestampUnsupportedDigestAlgorithmCode = NuGetLogCode.NU3024.ToString();
-        private readonly string _insecureCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
+        private readonly string _invalidPasswordErrorCode = nameof(NuGetLogCode.NU3001);
+        private readonly string _chainBuildFailureErrorCode = nameof(NuGetLogCode.NU3018);
+        private readonly string _noCertFoundErrorCode = nameof(NuGetLogCode.NU3001);
+        private readonly string _noTimestamperWarningCode = nameof(NuGetLogCode.NU3002);
+        private readonly string _timestampUnsupportedDigestAlgorithmCode = nameof(NuGetLogCode.NU3024);
+        private readonly string _insecureCertificateFingerprintCode = nameof(NuGetLogCode.NU3043);
 
         private SignCommandTestFixture _testFixture;
         private readonly ITestOutputHelper _testOutputHelper;

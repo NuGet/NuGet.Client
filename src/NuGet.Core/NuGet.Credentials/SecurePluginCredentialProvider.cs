@@ -152,7 +152,7 @@ namespace NuGet.Credentials
             var logLevel = LogRequestHandler.GetLogLevel(logger);
 
             await plugin.PluginMulticlientUtilities.DoOncePerPluginLifetimeAsync(
-                MessageMethod.SetLogLevel.ToString(),
+                nameof(MessageMethod.SetLogLevel),
                 () => plugin.Plugin.Connection.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
                     MessageMethod.SetLogLevel,
                     new SetLogLevelRequest(logLevel),

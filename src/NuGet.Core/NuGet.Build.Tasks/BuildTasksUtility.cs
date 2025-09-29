@@ -291,7 +291,7 @@ namespace NuGet.Build.Tasks
             }
             finally
             {
-                // The CredentialService lifetime is for the duration of the process. We should not leave a potentially unavailable logger. 
+                // The CredentialService lifetime is for the duration of the process. We should not leave a potentially unavailable logger.
                 // We need to update the delegating logger with a null instance
                 // because the tear downs of the plugins and similar rely on idleness and process exit.
                 DefaultCredentialServiceUtility.UpdateCredentialServiceDelegatingLogger(NullLogger.Instance);
@@ -568,11 +568,11 @@ namespace NuGet.Build.Tasks
                 effectivePackageSaveMode = Packaging.PackageSaveMode.Files;
                 foreach (var v in packageSaveModeValue.Split(';'))
                 {
-                    if (v.Equals(Packaging.PackageSaveMode.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (v.Equals(nameof(Packaging.PackageSaveMode.Nupkg), StringComparison.OrdinalIgnoreCase))
                     {
                         effectivePackageSaveMode |= Packaging.PackageSaveMode.Nupkg;
                     }
-                    else if (v.Equals(Packaging.PackageSaveMode.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
+                    else if (v.Equals(nameof(Packaging.PackageSaveMode.Nuspec), StringComparison.OrdinalIgnoreCase))
                     {
                         effectivePackageSaveMode |= Packaging.PackageSaveMode.Nuspec;
                     }

@@ -204,7 +204,7 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.PropertyNotAllowedForProjectType,
                     nameof(spec.RestoreMetadata.ProjectJsonPath),
-                    ProjectStyle.PackageReference.ToString());
+                    nameof(ProjectStyle.PackageReference));
 
                 throw RestoreSpecException.Create(message, files);
             }
@@ -216,7 +216,7 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.MissingRequiredPropertyForProjectType,
                     nameof(spec.RestoreMetadata.OutputPath),
-                    ProjectStyle.PackageReference.ToString());
+                    nameof(ProjectStyle.PackageReference));
 
                 throw RestoreSpecException.Create(message, files);
             }
@@ -228,7 +228,7 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.MissingRequiredPropertyForProjectType,
                     nameof(spec.RestoreMetadata.OriginalTargetFrameworks),
-                    ProjectStyle.PackageReference.ToString());
+                    nameof(ProjectStyle.PackageReference));
 
                 throw RestoreSpecException.Create(message, files);
             }
@@ -270,7 +270,7 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.MissingRequiredPropertyForProjectType,
                     nameof(spec.RestoreMetadata.ProjectJsonPath),
-                    ProjectStyle.ProjectJson.ToString());
+                    nameof(ProjectStyle.ProjectJson));
 
                 throw RestoreSpecException.Create(message, files);
             }

@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Name(nameof(CpsPackageReferenceProjectProvider))]
     public class CpsPackageReferenceProjectProvider : INuGetProjectProvider
     {
-        private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
+        private static readonly string PackageReference = nameof(ProjectStyle.PackageReference);
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;

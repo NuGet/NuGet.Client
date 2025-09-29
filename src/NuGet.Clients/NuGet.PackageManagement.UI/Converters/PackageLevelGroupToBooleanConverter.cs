@@ -11,8 +11,8 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             CollectionViewGroup grp = (CollectionViewGroup)value;
-            if (grp.Name.ToString().Equals(PackageLevel.TopLevel.ToString(), StringComparison.OrdinalIgnoreCase)
-                || grp.Name.ToString().Equals(PackageLevel.Transitive.ToString(), StringComparison.OrdinalIgnoreCase))
+            if (grp.Name.ToString().Equals(nameof(PackageLevel.TopLevel), StringComparison.OrdinalIgnoreCase)
+                || grp.Name.ToString().Equals(nameof(PackageLevel.Transitive), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

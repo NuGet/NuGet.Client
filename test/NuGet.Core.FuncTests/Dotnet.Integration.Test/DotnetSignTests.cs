@@ -27,10 +27,10 @@ namespace Dotnet.Integration.Test
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
         private readonly string _invalidPasswordError = "NU3001: Invalid password was provided for the certificate file";
         private readonly string _noCertFoundError = "NU3001: No certificates were found that meet all the given criteria.";
-        private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
-        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
-        private readonly string _timestampUnsupportedDigestAlgorithmCode = NuGetLogCode.NU3024.ToString();
-        private readonly string _insecureCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
+        private readonly string _chainBuildFailureErrorCode = nameof(NuGetLogCode.NU3018);
+        private readonly string _noTimestamperWarningCode = nameof(NuGetLogCode.NU3002);
+        private readonly string _timestampUnsupportedDigestAlgorithmCode = nameof(NuGetLogCode.NU3024);
+        private readonly string _insecureCertificateFingerprintCode = nameof(NuGetLogCode.NU3043);
 
         public DotnetSignTests(DotnetIntegrationTestFixture dotnetFixture, SignCommandTestFixture signFixture, ITestOutputHelper testOutputHelper)
         {
@@ -239,7 +239,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.AllOutput.Should().Contain(_chainBuildFailureErrorCode);
-                result.AllOutput.Should().Contain(X509ChainStatusFlags.RevocationStatusUnknown.ToString());
+                result.AllOutput.Should().Contain(nameof(X509ChainStatusFlags.RevocationStatusUnknown));
             }
         }
 

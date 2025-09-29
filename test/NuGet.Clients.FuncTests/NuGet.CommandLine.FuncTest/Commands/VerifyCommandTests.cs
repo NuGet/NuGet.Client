@@ -24,10 +24,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class VerifyCommandTests
     {
-        private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3027.ToString();
-        private readonly string _primarySignatureInvalidErrorCode = NuGetLogCode.NU3018.ToString();
-        private readonly string _signingDefaultErrorCode = NuGetLogCode.NU3000.ToString();
-        private readonly string _noMatchingCertErrorCode = NuGetLogCode.NU3034.ToString();
+        private readonly string _noTimestamperWarningCode = nameof(NuGetLogCode.NU3027);
+        private readonly string _primarySignatureInvalidErrorCode = nameof(NuGetLogCode.NU3018);
+        private readonly string _signingDefaultErrorCode = nameof(NuGetLogCode.NU3000);
+        private readonly string _noMatchingCertErrorCode = nameof(NuGetLogCode.NU3034);
 
         private SignCommandTestFixture _testFixture;
         private readonly ITestOutputHelper _testOutputHelper;

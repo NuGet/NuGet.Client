@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.TopLevel.ToString(), StringComparison.OrdinalIgnoreCase));
+                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(nameof(PackageLevel.TopLevel), StringComparison.OrdinalIgnoreCase));
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.Transitive.ToString(), StringComparison.OrdinalIgnoreCase));
+                var group = ItemsView.Groups.FirstOrDefault(g => (g as CollectionViewGroup).Name.ToString().Equals(nameof(PackageLevel.Transitive), StringComparison.OrdinalIgnoreCase));
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }

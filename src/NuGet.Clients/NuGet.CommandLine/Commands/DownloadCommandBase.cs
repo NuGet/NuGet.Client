@@ -70,11 +70,11 @@ namespace NuGet.CommandLine
                 EffectivePackageSaveMode = Packaging.PackageSaveMode.Files;
                 foreach (var v in packageSaveModeValue.Split(';'))
                 {
-                    if (v.Equals(Packaging.PackageSaveMode.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (v.Equals(nameof(Packaging.PackageSaveMode.Nupkg), StringComparison.OrdinalIgnoreCase))
                     {
                         EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nupkg;
                     }
-                    else if (v.Equals(Packaging.PackageSaveMode.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
+                    else if (v.Equals(nameof(Packaging.PackageSaveMode.Nuspec), StringComparison.OrdinalIgnoreCase))
                     {
                         EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nuspec;
                     }

@@ -253,7 +253,7 @@ namespace NuGet.Commands.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentException>();
-            ex.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnsupportedTrustTarget, VerificationTarget.Unknown.ToString()));
+            ex.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnsupportedTrustTarget, nameof(VerificationTarget.Unknown)));
         }
 
         [Fact]
@@ -896,7 +896,7 @@ namespace NuGet.Commands.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentException>();
-            ex.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, HashAlgorithmName.Unknown.ToString()));
+            ex.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, nameof(HashAlgorithmName.Unknown)));
         }
 
 
