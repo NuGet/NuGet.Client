@@ -41,5 +41,23 @@ namespace NuGet.Common.Test
 
             Assert.Equal(expectedValue, actualValue);
         }
+
+        [Theory]
+        [InlineData("Foo", "Foo")]
+        [InlineData("Foo.Bar", "Foo_Bar")]
+        [InlineData("Foo-Bar", "Foo_Bar")]
+        [InlineData("Foo Bar!", "Foo_Bar_")]
+        [InlineData("^Foo@Bar#", "_Foo_Bar_")]
+        public void GetEnvironmentVariable_WhenVariableIsNotNormalized_NormalizeValue(string sourceName, string normalizedSourceName)
+        {
+            var expectedValue = Guid.NewGuid().ToString();
+            var instance = EnvironmentVariableWrapper.Instance;
+
+            Environment.SetEnvironmentVariable(normalizedSourceName, expectedValue);
+
+            var actualValue = instance.GetEnvironmentVariable(sourceName);
+
+            Assert.Equal(expectedValue, actualValue);
+        }
     }
 }

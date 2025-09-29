@@ -3,6 +3,7 @@
 
 using System;
 using System.Security;
+using System.Text.RegularExpressions;
 
 namespace NuGet.Common
 {
@@ -15,13 +16,19 @@ namespace NuGet.Common
             try
             {
 #pragma warning disable RS0030 // Do not use banned APIs
-                return Environment.GetEnvironmentVariable(variable);
+                return Environment.GetEnvironmentVariable(NormalizeSourceName(variable));
 #pragma warning restore RS0030 // Do not use banned APIs
             }
             catch (SecurityException)
             {
                 return null;
             }
+        }
+
+        private static string NormalizeSourceName(string sourceName)
+        {
+            // Replace invalid env var chars with underscore
+            return Regex.Replace(sourceName, @"[^A-Za-z0-9_]", "_");
         }
     }
 }
