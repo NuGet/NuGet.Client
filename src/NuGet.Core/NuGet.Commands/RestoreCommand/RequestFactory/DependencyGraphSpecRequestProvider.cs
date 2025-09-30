@@ -21,8 +21,6 @@ namespace NuGet.Commands
     /// </summary>
     public class DependencyGraphSpecRequestProvider : IPreLoadedRestoreRequestProvider
     {
-        private const bool DefaultRestoreLegacyPackagesDirectory = false;
-
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly LockFileBuilderCache _lockFileBuilderCache;
@@ -181,8 +179,6 @@ namespace NuGet.Commands
                 restoreArgs.Log,
                 updateLastAccess);
 
-            var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
-
             IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages = GetMessagesForProject(restoreArgs.AdditionalMessages, project.PackageSpec.FilePath);
 
             // Create request
@@ -197,17 +193,14 @@ namespace NuGet.Commands
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
-                //  Project.json is special cased to put assets file and generated .props and targets in the project folder
-                RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
+                RestoreOutputPath = project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
                 UpdatePackageLastAccessTime = updateLastAccess,
             };
 
-            var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
-                ?? DefaultRestoreLegacyPackagesDirectory;
-            request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
+            request.IsLowercasePackagesDirectory = true;
 
             // Standard properties
             restoreArgs.ApplyStandardProperties(request);
