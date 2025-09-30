@@ -58,7 +58,7 @@ namespace NuGet.CommandLine.XPlat
                         typeConstraint: LibraryDependencyTarget.Package)
                 };
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, !packageReferenceArgs.NoVersion);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
                 return 0;
             }
 
@@ -247,7 +247,7 @@ namespace NuGet.CommandLine.XPlat
                 // generate a library dependency with all the metadata like Include, Exclude and SuppressParent
                 var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, packageDependency, resolvedVersion);
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, !packageReferenceArgs.NoVersion);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
             }
             else
             {
@@ -268,7 +268,7 @@ namespace NuGet.CommandLine.XPlat
                 msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
                     libraryDependency,
                     compatibleOriginalFrameworks,
-                    !packageReferenceArgs.NoVersion);
+                    packageReferenceArgs.NoVersion);
             }
 
             // 6. Commit restore result

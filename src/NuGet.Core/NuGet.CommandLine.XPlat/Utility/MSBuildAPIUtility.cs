@@ -268,9 +268,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        /// <param name="allowPackageVersionUpdate">If the project has CPM enabled, and if there's already a
-        /// PackageVersion item for the package name, is the version allowed to be updated.</param>
-        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool allowPackageVersionUpdate)
+        /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
+        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool noVersion)
         {
             var project = GetProject(projectPath);
 
@@ -278,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
             // If the project has a conditional reference, then an unconditional reference is not added.
 
             var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, libraryDependency);
-            AddPackageReference(project, libraryDependency, existingPackageReferences, allowPackageVersionUpdate);
+            AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion);
             ProjectCollection.GlobalProjectCollection.UnloadProject(project);
         }
 
@@ -288,10 +287,9 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
-        /// <param name="allowPackageVersionUpdate">If the project has CPM enabled, and if there's already a
-        /// PackageVersion item for the package name, is the version allowed to be updated.</param>
+        /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
         public void AddPackageReferencePerTFM(string projectPath, LibraryDependency libraryDependency,
-            IEnumerable<string> frameworks, bool allowPackageVersionUpdate)
+            IEnumerable<string> frameworks, bool noVersion)
         {
             foreach (var framework in frameworks)
             {
@@ -299,7 +297,7 @@ namespace NuGet.CommandLine.XPlat
                 { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
                 var existingPackageReferences = GetPackageReferences(project, libraryDependency);
-                AddPackageReference(project, libraryDependency, existingPackageReferences, allowPackageVersionUpdate, framework);
+                AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
         }
@@ -310,13 +308,12 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project">Project that needs to be modified.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="existingPackageReferences">Package references that already exist in the project.</param>
-        /// <param name="allowPackageVersionUpdate">If the project has CPM enabled, and if there's already a
-        /// PackageVersion item for the package name, is the version allowed to be updated.</param>
+        /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
         /// <param name="framework">Target Framework for which the package reference should be added.</param>
         private void AddPackageReference(Project project,
             LibraryDependency libraryDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
-            bool allowPackageVersionUpdate,
+            bool noVersion,
             string framework = null)
         {
             // Add packageReference to the project file only if it does not exist.
@@ -367,7 +364,7 @@ namespace NuGet.CommandLine.XPlat
                     else
                     {
                         // Modify the Directory.Packages.props file with the version that is passed in.
-                        if (allowPackageVersionUpdate)
+                        if (!noVersion)
                         {
                             string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ?? libraryDependency.LibraryRange.VersionRange.ToShortString();
                             UpdatePackageVersion(project, packageVersionInProps, packageVersion);
