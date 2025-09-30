@@ -194,7 +194,7 @@ stages:
       - output: pipelineArtifact
         displayName: 'Publish NuGet.exe and VSIX as artifact'
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-        artifactName: "$(VsixPublishDir) - Attempt $(System.JobAttempt)"
+        artifactName: "$(VsixPublishDir)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
@@ -281,7 +281,7 @@ stages:
       - output: pipelineArtifact
         displayName: 'Publish NuGet.exe and VSIX as artifact'
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-        artifactName: "$(VsixPublishDir)  - Attempt $(System.JobAttempt)"
+        artifactName: "$(VsixPublishDir)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
