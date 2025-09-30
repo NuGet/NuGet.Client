@@ -248,7 +248,7 @@ internal static class PackageUpdateCommandRunner
                         {
                             Id = packageIdentity.Id,
                             CurrentVersion = new VersionRange(packageIdentity.Version),
-                            NewVersion = new VersionRange(nonVulnerableVersion)
+                            NewVersion = VersionRange.Parse(nonVulnerableVersion.OriginalVersion!)
                         },
                         TargetFrameworkAliases = tfmAliases
                     });
@@ -341,7 +341,7 @@ internal static class PackageUpdateCommandRunner
                     continue;
                 }
 
-                upgradeVersion = new VersionRange(latestVersion);
+                upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
                 if (upgradeVersion == existingVersion)
                 {
                     logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, latestVersion.OriginalVersion, project.FilePath), ConsoleColor.Yellow);
@@ -478,7 +478,7 @@ internal static class PackageUpdateCommandRunner
                 continue;
             }
 
-            var upgradeVersion = new VersionRange(latestVersion);
+            var upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
             if (upgradeVersion.ToString() == package.identity.VersionRange.ToString())
             {
                 // Already using the highest version.

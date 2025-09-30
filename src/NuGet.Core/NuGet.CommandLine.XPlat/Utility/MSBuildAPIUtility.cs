@@ -347,7 +347,7 @@ namespace NuGet.CommandLine.XPlat
                 if (versionOverrideExists != null)
                 {
                     // Update if VersionOverride instead of Directory.Packages.props file
-                    string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ?? libraryDependency.LibraryRange.VersionRange.ToShortString();
+                    string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString;
                     UpdateVersionOverride(project, packageReferenceInProps, packageVersion);
                 }
                 else
@@ -366,7 +366,7 @@ namespace NuGet.CommandLine.XPlat
                         // Modify the Directory.Packages.props file with the version that is passed in.
                         if (!noVersion)
                         {
-                            string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ?? libraryDependency.LibraryRange.VersionRange.ToShortString();
+                            string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString;
                             UpdatePackageVersion(project, packageVersionInProps, packageVersion);
                         }
 
