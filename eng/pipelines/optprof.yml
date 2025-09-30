@@ -10,6 +10,7 @@ resources:
       branches:
         include:
         - dev
+        - release-*
         - release/*
         exclude:
         - release-6.0.x
