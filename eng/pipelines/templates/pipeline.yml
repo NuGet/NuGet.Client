@@ -164,7 +164,7 @@ stages:
         displayName: 'Publish BootstrapperInfo.json as a build artifact'
         condition: "succeeded()"
         targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
-        artifactName: "MicroBuildOutputs - Attempt $(System.JobAttempt)"
+        artifactName: MicroBuildOutputs
         # need to make daily Apex test pipeline build its own bootstrapper, and remove this from official pipeline
         codeSignValidationEnabled: false
         sbomEnabled: false
@@ -230,7 +230,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: Publish SBOM manifest
-        artifactName: $(ARTIFACT_NAME) - Attempt $(System.JobAttempt)
+        artifactName: $(ARTIFACT_NAME)
         targetPath: "$(Build.SourcesDirectory)/artifacts/_manifest"
         sbomEnabled: false
 
