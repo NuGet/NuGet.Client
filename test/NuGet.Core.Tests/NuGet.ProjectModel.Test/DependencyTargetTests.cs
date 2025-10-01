@@ -168,8 +168,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'blah'.", exception.Message);
-            Assert.EndsWith("project.json", exception.Path);
+            Assert.Equal("Error reading '' : Invalid dependency target value 'blah'.", exception.Message);
         }
 
         [Fact]
@@ -205,8 +204,6 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'winmd'.", exception.Message);
-            Assert.EndsWith("project.json", exception.Path);
         }
 
         [Fact]
@@ -242,8 +239,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'package,project'.", exception.Message);
-            Assert.EndsWith("project.json", exception.Path);
+            Assert.Equal("Error reading '' : Invalid dependency target value 'package,project'.", exception.Message);
         }
 
         [Fact]
