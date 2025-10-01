@@ -151,11 +151,9 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-#pragma warning disable CS0612 // Type or member is obsolete
             var lockFileTrue = Parse(lockFileContentTrue, "In Memory");
             var lockFileFalse = Parse(lockFileContentFalse, "In Memory");
             var lockFileMissing = Parse(lockFileContentMissing, "In Memory");
-#pragma warning restore CS0612 // Type or member is obsolete
 
             var lockFileTrueString = lockFileFormat.Render(lockFileTrue);
             var lockFileFalseString = lockFileFormat.Render(lockFileFalse);
