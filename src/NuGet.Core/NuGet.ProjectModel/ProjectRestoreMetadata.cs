@@ -88,6 +88,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Whether or not to restore the packages directory using the legacy format, which write original case paths
         /// instead of lowercase.
+        /// TODO: project.json?
         /// </summary>
         public bool LegacyPackagesDirectory { get; set; }
 
