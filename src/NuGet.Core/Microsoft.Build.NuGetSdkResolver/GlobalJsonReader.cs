@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -45,10 +45,9 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// Occurs when a file is read.
         /// </summary>
-        public event EventHandler<string> FileRead;
+        public event EventHandler<string>? FileRead;
 
-        /// <inheritdoc cref="IGlobalJsonReader.GetMSBuildSdkVersions(SdkResolverContext, string)" />
-        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, out string globalJsonFullPath, string fileName = GlobalJsonFileName)
+        public Dictionary<string, string>? GetMSBuildSdkVersions(SdkResolverContext context, out string? globalJsonFullPath, string fileName = GlobalJsonFileName)
         {
             globalJsonFullPath = null;
 
@@ -63,11 +62,12 @@ namespace Microsoft.Build.NuGetSdkResolver
 
             FileInfo globalJsonPath;
 
+#pragma warning disable CA1031 // Do not catch general exception types.  Walking directory paths can fail for many reasons and we want to log a message for any of them.
             try
             {
-                DirectoryInfo projectDirectory = Directory.GetParent(startingPath);
+                DirectoryInfo? projectDirectory = Directory.GetParent(startingPath);
 
-                if (projectDirectory == null || !TryGetPathOfFileAbove(fileName, projectDirectory, out globalJsonPath))
+                if (projectDirectory is null || !TryGetPathOfFileAbove(fileName, projectDirectory, out globalJsonPath))
                 {
                     return null;
                 }
@@ -79,6 +79,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 return null;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             // Add a new file to the cache if it doesn't exist.  If the file is already in the cache, read it again if the file has changed
             (DateTime _, Lazy<Dictionary<string, string>> Lazy) cacheEntry = FileCache.AddOrUpdate(
@@ -131,16 +132,16 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="fullPath">Receives a <see cref="FileInfo" /> of the file if one is found, otherwise <see langword="null" />.</param>
         /// <returns><see langword="true" /> if the specified file was found in the directory or one of its parents, otherwise <see langword="false" />.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TryGetPathOfFileAbove(string file, DirectoryInfo startingDirectory, out FileInfo fullPath)
+        internal static bool TryGetPathOfFileAbove(string file, DirectoryInfo? startingDirectory, out FileInfo? fullPath)
         {
             fullPath = null;
 
-            if (string.IsNullOrWhiteSpace(file) || startingDirectory == null || !startingDirectory.Exists)
+            if (string.IsNullOrWhiteSpace(file) || startingDirectory is null || !startingDirectory.Exists)
             {
                 return false;
             }
 
-            DirectoryInfo currentDirectory = startingDirectory;
+            DirectoryInfo? currentDirectory = startingDirectory;
 
             FileInfo candidatePath;
 
@@ -168,53 +169,61 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="json">The JSON to parse as a string.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing MSBuild project SDK versions if any were found, otherwise <see langword="null" />.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Dictionary<string, string> ParseMSBuildSdkVersionsFromJson(string json)
+        private static Dictionary<string, string>? ParseMSBuildSdkVersionsFromJson(string json)
         {
-            using (var reader = new JsonTextReader(new StringReader(json)))
+
+            new System.Text.Json.Utf8JsonReader(json.AsSpan(),)
+            using var reader = new JsonTextReader(new StringReader(json));
+
+            // Read to the first {
+            while (reader.Read() && reader.TokenType != JsonToken.StartObject)
             {
-                // Read to the first {
-                while (reader.Read() && reader.TokenType != JsonToken.StartObject)
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                // Return null if no { was found
+                return null;
+            }
+
+            // Read through each top-level property
+            while (reader.Read())
+            {
+                // Look for the first "msbuild-sdks" section
+                if (reader.TokenType != JsonToken.PropertyName
+                    || reader.Value is not string objectName
+                    || !string.Equals(objectName, MSBuildSdksPropertyName, StringComparison.Ordinal)
+                    || !reader.Read()
+                    || reader.TokenType != JsonToken.StartObject)
                 {
-                }
-
-                if (reader.TokenType != JsonToken.StartObject)
-                {
-                    // Return null if no { was found
-                    return null;
-                }
-
-                // Read through each top-level property
-                while (reader.Read())
-                {
-                    // Look for the first "msbuild-sdks" section
-                    if (reader.TokenType == JsonToken.PropertyName && reader.Value is string objectName && string.Equals(objectName, MSBuildSdksPropertyName, StringComparison.Ordinal) && reader.Read() && reader.TokenType == JsonToken.StartObject)
-                    {
-                        Dictionary<string, string> versionsByName = null;
-
-                        // Read each token in the "msbuild-sdks" section until the end
-                        while (reader.Read() && reader.TokenType != JsonToken.EndObject)
-                        {
-                            // Only read properties of type string
-                            if (reader.TokenType == JsonToken.PropertyName && reader.Value is string name && reader.Read() && reader.TokenType == JsonToken.String && reader.Value is string value)
-                            {
-                                versionsByName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                                versionsByName[name] = value;
-
-                                continue;
-                            }
-
-                            // Skips anything under the "mbsuild-sdks" section that wasn't a property of type string
-                            reader.Skip();
-                        }
-
-                        // Stop reading the global.json once the entire "mbsuild-sdks" section is read
-                        return versionsByName;
-                    }
-
                     // Skip any top-level entry that's not a property
                     reader.Skip();
+
+                    continue;
                 }
+
+                Dictionary<string, string>? versionsByName = null;
+
+                // Read each token in the "msbuild-sdks" section until the end
+                while (reader.Read()
+                    && reader.TokenType != JsonToken.EndObject)
+                {
+                    // Only read properties of type string
+                    if (reader.TokenType != JsonToken.PropertyName || reader.Value is not string name || !reader.Read() || reader.TokenType != JsonToken.String || reader.Value is not string value)
+                    {
+                        // Skips anything under the "mbsuild-sdks" section that wasn't a property of type string
+                        reader.Skip();
+
+                        continue;
+                    }
+
+                    versionsByName ??= new Dictionary<string, string>(capacity: 4, StringComparer.OrdinalIgnoreCase);
+
+                    versionsByName[name] = value;
+                }
+
+                // Stop reading the global.json once the entire "mbsuild-sdks" section is read
+                return versionsByName;
             }
 
             // Return null if an "msbuild-sdks" section was not found
@@ -227,7 +236,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="filePath">The full path to file that was read.</param>
         private void OnFileRead(string filePath)
         {
-            EventHandler<string> fileReadEventHandler = FileRead;
+            EventHandler<string>? fileReadEventHandler = FileRead;
 
             fileReadEventHandler?.Invoke(this, filePath);
         }
