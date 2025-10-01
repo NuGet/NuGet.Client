@@ -207,12 +207,13 @@ namespace NuGet.Commands.FuncTest
             using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
-                  ""dependencies"": {
-                    ""System.Text.Encoding"": ""4.0.10"",
-                    ""System.Collections"": ""4.0.11-beta-23225""
-                  },
                   ""frameworks"": {
-                    ""uap10.0"": {}
+                    ""uap10.0"": {
+                      ""dependencies"": {
+                        ""System.Text.Encoding"": ""4.0.10"",
+                        ""System.Collections"": ""4.0.11-beta-23225""
+                      }
+                    }
                   }
                 }");
 
@@ -415,19 +416,20 @@ namespace NuGet.Commands.FuncTest
 
             using var pathContext = new SimpleTestPathContext();
             var configJson = JObject.Parse(@"{
-                ""dependencies"": {
-                ""Microsoft.ApplicationInsights"": ""1.0.0"",
-                ""Microsoft.ApplicationInsights.PersistenceChannel"": ""1.0.0"",
-                ""Microsoft.ApplicationInsights.WindowsApps"": ""1.0.0"",
-                ""Microsoft.Azure.ActiveDirectory.GraphClient"": ""2.0.6"",
-                ""Microsoft.IdentityModel.Clients.ActiveDirectory"": ""2.14.201151115"",
-                ""Microsoft.NETCore.UniversalWindowsPlatform"": ""5.0.0"",
-                ""Microsoft.Office365.Discovery"": ""1.0.22"",
-                ""Microsoft.Office365.OutlookServices"": ""1.0.35"",
-                ""Microsoft.Office365.SharePoint"": ""1.0.22""
-                },
                 ""frameworks"": {
-                ""uap10.0"": {}
+                ""uap10.0"": {
+                    ""dependencies"": {
+                        ""Microsoft.ApplicationInsights"": ""1.0.0"",
+                        ""Microsoft.ApplicationInsights.PersistenceChannel"": ""1.0.0"",
+                        ""Microsoft.ApplicationInsights.WindowsApps"": ""1.0.0"",
+                        ""Microsoft.Azure.ActiveDirectory.GraphClient"": ""2.0.6"",
+                        ""Microsoft.IdentityModel.Clients.ActiveDirectory"": ""2.14.201151115"",
+                        ""Microsoft.NETCore.UniversalWindowsPlatform"": ""5.0.0"",
+                        ""Microsoft.Office365.Discovery"": ""1.0.22"",
+                        ""Microsoft.Office365.OutlookServices"": ""1.0.35"",
+                        ""Microsoft.Office365.SharePoint"": ""1.0.22""
+                    }
+                }
                 },
                 ""runtimes"": {
                 ""win10-arm"": {},

@@ -194,12 +194,13 @@ namespace NuGet.Commands.Test
                     ""uwp.10.0.app"": {},
                     ""dnxcore50.app"": {}
                 },
-                ""dependencies"": {
-                    ""packageA"": ""1.0.0"",
-                    ""runtimes"": ""1.0.0""
-                },
                 ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
+                    ""_FRAMEWORK_"": {
+                        ""dependencies"": {
+                            ""packageA"": ""1.0.0"",
+                            ""runtimes"": ""1.0.0""
+                        }
+                    }
                 }
             }".Replace("_FRAMEWORK_", framework));
 

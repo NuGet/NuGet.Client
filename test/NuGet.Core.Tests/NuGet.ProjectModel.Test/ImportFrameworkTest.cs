@@ -61,13 +61,13 @@ namespace NuGet.ProjectModel.Test
         {
             JObject configJson = JObject.Parse(@"
                 {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
                     ""frameworks"": {
                         ""netstandard1.2"": {
                             ""imports"": [""dotnet5.3""],
-                            ""warn"": false
+                            ""warn"": false,
+                            ""dependencies"": {
+                                ""Newtonsoft.Json"": ""7.0.1""
+                            }
                         }
                     }
                 }");
