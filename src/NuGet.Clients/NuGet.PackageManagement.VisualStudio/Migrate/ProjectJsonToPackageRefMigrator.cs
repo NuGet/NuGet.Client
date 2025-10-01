@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotExists, projectJsonFilePath));
             }
 
-            PackageSpecProjectJsonMigrationCandidate packageSpec = JsonPackageSpecReader.GetPackageSpec(
+            PackageSpecProjectJsonMigrationCandidate packageSpec = ProjectJsonMigrationCandidatePackageSpecReader.GetPackageSpec(
                 Path.GetFileNameWithoutExtension(project.MSBuildProjectPath),
                 projectJsonFilePath);
 
