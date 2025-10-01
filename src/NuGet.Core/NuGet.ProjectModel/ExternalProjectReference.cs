@@ -69,22 +69,6 @@ namespace NuGet.ProjectModel
         public string UniqueName { get; }
 
         /// <summary>
-        /// The path to the project.json file representing the NuGet dependencies of the project
-        /// </summary>
-        public PackageSpec PackageSpec
-        {
-            get
-            {
-                if (_packageSpec == null && ProjectJsonPath != null && PackageSpecProjectName != null)
-                {
-                    _packageSpec = JsonPackageSpecReader.GetPackageSpec(PackageSpecProjectName, ProjectJsonPath);
-                }
-
-                return _packageSpec;
-            }
-        }
-
-        /// <summary>
         /// A list of other external projects this project references. Uses the UniqueName.
         /// </summary>
         public IReadOnlyList<string> ExternalProjectReferences { get; }
