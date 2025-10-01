@@ -37,6 +37,7 @@
     <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
+    <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
   </ItemGroup>
 
   <ItemGroup>

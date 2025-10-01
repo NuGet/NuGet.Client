@@ -350,6 +350,7 @@ namespace NuGet.PackageManagement.Test
                     new[] { node },
                     new TestRemoteWalkContext(),
                     NullLogger.Instance,
+                    FrameworkConstants.CommonFrameworks.NetStandard10.GetShortFolderName(),
                     FrameworkConstants.CommonFrameworks.NetStandard10);
 
                 return new RestoreResult(

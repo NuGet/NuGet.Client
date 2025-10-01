@@ -186,6 +186,15 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            if (lockFile.Version == 3)
+            {
+                // Populate the alias at read time. This allows readers to use the alias to find targets regardless of what the underlying assets file format is.
+                foreach (var target in lockFile.Targets)
+                {
+                    target.TargetAlias = lockFile.PackageSpec?.GetRestoreMetadataFramework(target.TargetFramework)?.TargetAlias;
+                }
+            }
+
             var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
             if (!string.IsNullOrEmpty(projectPath) && lockFile.LogMessages.Count > 0)
             {

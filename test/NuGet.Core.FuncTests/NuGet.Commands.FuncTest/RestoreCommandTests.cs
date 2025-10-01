@@ -4203,6 +4203,47 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpsSource));
         }
 
+        [Theory]
+        [InlineData("alias1")]
+        [InlineData("")]
+        public async Task RestoreCommand_WithTargetAlias_RestoreTargetGraphAndLockFileTargetContainsAlias(string alias)
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+
+            var spec = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""a"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        }
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec);
+            projectSpec.TargetFrameworks[0] = new TargetFrameworkInformation(projectSpec.TargetFrameworks[0]) { TargetAlias = alias };
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[0].TargetAlias.Should().Be(alias);
+            RestoreTargetGraph restoreTargetGraph = result.RestoreGraphs.First();
+            restoreTargetGraph.TargetAlias.Should().Be(alias);
+        }
+
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));

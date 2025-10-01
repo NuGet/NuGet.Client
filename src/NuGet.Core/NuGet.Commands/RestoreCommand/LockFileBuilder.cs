@@ -167,7 +167,8 @@ namespace NuGet.Commands
                 var target = new LockFileTarget
                 {
                     TargetFramework = targetGraph.Framework,
-                    RuntimeIdentifier = targetGraph.RuntimeIdentifier
+                    RuntimeIdentifier = targetGraph.RuntimeIdentifier,
+                    TargetAlias = targetGraph.TargetAlias,
                 };
 
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);

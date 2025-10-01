@@ -1,1 +1,5 @@
 #nullable enable
+~NuGet.Commands.IRestoreTargetGraph.TargetAlias.get -> string
+~NuGet.Commands.RestoreTargetGraph.TargetAlias.get -> string
+~static NuGet.Commands.RestoreTargetGraph.Create(NuGet.RuntimeModel.RuntimeGraph runtimeGraph, System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger log, string targetAlias, NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.Commands.RestoreTargetGraph
+~static NuGet.Commands.RestoreTargetGraph.Create(System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger logger, string targetAlias, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Commands.RestoreTargetGraph

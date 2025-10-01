@@ -612,7 +612,7 @@ namespace NuGet.Commands
                 var frameworkRuntimePair = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
                 graphs = frameworkRuntimePair.Select(e =>
                 {
-                    return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
+                    return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.TargetAlias, e.Framework, e.RuntimeIdentifier);
                 });
             }
 
@@ -1714,13 +1714,20 @@ namespace NuGet.Commands
 
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
             bool failed = false;
+
+            Dictionary<NuGetFramework, string> targetFrameworkToAlias = projectFrameworkRuntimePairs.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).ToDictionary(
+                        p => p.Framework,
+                        p => p.TargetAlias,
+                        NuGetFramework.Comparer);
+
             using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
             {
                 try
                 {
                     result = await projectRestoreCommand.TryRestoreAsync(
                         projectRange,
-                        projectFrameworkRuntimePairs,
+                        projectFrameworkRuntimePairs.Select(e => new FrameworkRuntimePair(e.Framework, e.RuntimeIdentifier)).ToList(),
+                        targetFrameworkToAlias,
                         userPackageFolder,
                         fallbackPackageFolders,
                         remoteWalker,
@@ -1746,9 +1753,9 @@ namespace NuGet.Commands
                 success = false;
                 // When we fail to create the graphs, we want to write a `target` for each target framework
                 // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
-                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
                 {
-                    allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                    allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.TargetAlias, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
                 }
             }
 
@@ -1788,6 +1795,7 @@ namespace NuGet.Commands
                     compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
                     _request.CompatibilityProfiles,
+                    targetFrameworkToAlias,
                     userPackageFolder,
                     fallbackPackageFolders,
                     remoteWalker,
@@ -1901,9 +1909,9 @@ namespace NuGet.Commands
 
                 // When we fail to create the graphs, we want to write a `target` for each target framework
                 // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
-                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
                 {
-                    graphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                    graphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.TargetAlias, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
                 }
             }
 
@@ -1999,22 +2007,22 @@ namespace NuGet.Commands
         /// <param name="packageSpec">The <see cref="PackageSpec" /> with information about the project.</param>
         /// <param name="runtimeIds">An <see cref="ISet{T}" /> containing the list of runtime identifiers.</param>
         /// <returns>A <see cref="List{T}" /> containing <see cref="FrameworkRuntimePair" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
-        internal static List<FrameworkRuntimePair> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
+        internal static List<FrameworkRuntimeDefinition> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
         {
             // Create a list with capacity for each framework with no runtime and each framework/runtime
-            List<FrameworkRuntimePair> projectFrameworkRuntimePairs = new(capacity: packageSpec.TargetFrameworks.Count * (runtimeIds.Count + 1));
+            List<FrameworkRuntimeDefinition> projectFrameworkRuntimePairs = new(capacity: packageSpec.TargetFrameworks.Count * (runtimeIds.Count + 1));
 
             foreach (TargetFrameworkInformation framework in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
                 // We care about TFM only and null RID for compilation purposes
-                projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
+                projectFrameworkRuntimePairs.Add(new FrameworkRuntimeDefinition(framework.TargetAlias, framework.FrameworkName, null));
             }
 
             foreach (TargetFrameworkInformation framework in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
                 foreach (string runtimeId in runtimeIds.NoAllocEnumerate())
                 {
-                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
+                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimeDefinition(framework.TargetAlias, framework.FrameworkName, runtimeId));
                 }
             }
 

@@ -126,8 +126,6 @@ NuGet.ProjectModel.LockFile
 ~NuGet.ProjectModel.LockFile.GetLibrary(string name, NuGet.Versioning.NuGetVersion version) -> NuGet.ProjectModel.LockFileLibrary
 ~NuGet.ProjectModel.LockFile.GetTarget(NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
 ~NuGet.ProjectModel.LockFile.GetTarget(string frameworkAlias, string runtimeIdentifier) -> NuGet.ProjectModel.LockFileTarget
-~NuGet.ProjectModel.LockFile.IsValidForPackageSpec(NuGet.ProjectModel.PackageSpec spec) -> bool
-~NuGet.ProjectModel.LockFile.IsValidForPackageSpec(NuGet.ProjectModel.PackageSpec spec, int requestLockFileVersion) -> bool
 ~NuGet.ProjectModel.LockFile.Libraries.get -> System.Collections.Generic.IList<NuGet.ProjectModel.LockFileLibrary>
 ~NuGet.ProjectModel.LockFile.Libraries.set -> void
 NuGet.ProjectModel.LockFile.LockFile() -> void

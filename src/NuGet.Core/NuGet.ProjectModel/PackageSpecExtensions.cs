@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using NuGet.Frameworks;
 
@@ -41,6 +42,30 @@ namespace NuGet.ProjectModel
             }
 
             return frameworkInfo ?? new ProjectRestoreMetadataFrameworkInfo();
+        }
+
+        /// <summary>
+        /// Get the <see cref="TargetFrameworkInformation"/> for the given target alias.
+        /// If there is not a match, null is returned.
+        /// </summary>
+        /// <param name="project">The project</param>
+        /// <param name="targetAlias">The target alias to search for</param>
+        /// <returns>The <see cref="TargetFrameworkInformation"/> if it exists, <see langword="null"/> otherwise. </returns>
+        public static TargetFrameworkInformation GetTargetFramework(this PackageSpec project, string targetAlias)
+        {
+            return project.TargetFrameworks.FirstOrDefault(f => StringComparer.Ordinal.Equals(targetAlias, f.TargetAlias));
+        }
+
+        /// <summary>
+        /// Get the <see cref="ProjectRestoreMetadataFrameworkInfo"/> for the given target alias.
+        /// If there is not a match, null is returned.
+        /// </summary>
+        /// <param name="project">The project</param>
+        /// <param name="targetAlias">The target alias to search for</param>
+        /// <returns>The <see cref="ProjectRestoreMetadataFrameworkInfo"/> if it exists, <see langword="null"/> otherwise. </returns>
+        public static ProjectRestoreMetadataFrameworkInfo GetRestoreMetadataFramework(this PackageSpec project, string targetAlias)
+        {
+            return project.RestoreMetadata.TargetFrameworks.FirstOrDefault(f => StringComparer.Ordinal.Equals(targetAlias, f.TargetAlias));
         }
     }
 }

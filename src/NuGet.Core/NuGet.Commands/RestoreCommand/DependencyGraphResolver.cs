@@ -134,8 +134,8 @@ namespace NuGet.Commands
             // Stores the list of all graphs
             List<RestoreTargetGraph> allGraphs = new();
 
-            // Stores the list of graphs without a runtime identifier by their target framework
-            Dictionary<NuGetFramework, RestoreTargetGraph> graphsByTargetFramework = new();
+            // Stores the list of graphs without a runtime identifier by their target alias
+            Dictionary<string, RestoreTargetGraph> graphsByTargetFramework = new();
 
             // Stores the list graphs that are runtime identifier specific
             List<RestoreTargetGraph> runtimeGraphs = new();
@@ -150,13 +150,13 @@ namespace NuGet.Commands
             DownloadDependencyResolutionResult[]? downloadDependencyResolutionResults = default;
 
             // Create the list of framework/runtime pairs to resolve graphs for.  This method returns the pairs in order with the target framework pairs without runtime identifiers come first
-            List<FrameworkRuntimePair> projectFrameworkRuntimePairs = RestoreCommand.CreateFrameworkRuntimePairs(_request.Project, runtimeIds: RequestRuntimeUtility.GetRestoreRuntimes(_request));
+            List<FrameworkRuntimeDefinition> projectFrameworkRuntimePairs = RestoreCommand.CreateFrameworkRuntimePairs(_request.Project, runtimeIds: RequestRuntimeUtility.GetRestoreRuntimes(_request));
 
             // Loop through the target framework and runtime identifier pairs to resolve each graph.
             // The pairs are sorted with all of the RID-less framework pairs first
-            foreach (FrameworkRuntimePair frameworkRuntimePair in projectFrameworkRuntimePairs.NoAllocEnumerate())
+            foreach (FrameworkRuntimeDefinition frameworkRuntimePair in projectFrameworkRuntimePairs.NoAllocEnumerate())
             {
-                // Since the FrameworkRuntimePair objects are sorted, the packages found so far need to be installed before resolving any runtime identifier specific graphs because
+                // Since the FrameworkRuntimeDefinition objects are sorted, the packages found so far need to be installed before resolving any runtime identifier specific graphs because
                 // the runtime.json is in the package which is used to determine what runtime packages to add
                 if (!string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) && !hasInstallBeenCalledAlready)
                 {
@@ -169,7 +169,7 @@ namespace NuGet.Commands
                 }
 
                 // Get the corresponding TargetFrameworkInformation from the restore request
-                TargetFrameworkInformation projectTargetFramework = _request.Project.GetTargetFramework(frameworkRuntimePair.Framework)!;
+                TargetFrameworkInformation projectTargetFramework = _request.Project.GetTargetFramework(frameworkRuntimePair.TargetAlias)!;
 
                 // Keeps track of the unresolved packages
                 HashSet<LibraryRange> unresolvedPackages = new();
@@ -240,7 +240,7 @@ namespace NuGet.Commands
                 else
                 {
                     // Track all of the RID-less graphs by their target framework
-                    graphsByTargetFramework.Add(frameworkRuntimePair.Framework, restoreTargetGraph);
+                    graphsByTargetFramework.Add(frameworkRuntimePair.TargetAlias, restoreTargetGraph);
                 }
             }
 
@@ -313,7 +313,7 @@ namespace NuGet.Commands
         ///   </list>
         /// </returns>
         private static async Task<(bool Success, RestoreTargetGraph RestoreTargetGraph)> CreateRestoreTargetGraphAsync(
-            FrameworkRuntimePair frameworkRuntimePair,
+            FrameworkRuntimeDefinition frameworkRuntimePair,
             RuntimeGraph? runtimeGraph,
             bool isCentralPackageTransitivePinningEnabled,
             HashSet<LibraryRange> unresolvedPackages,
@@ -737,6 +737,7 @@ namespace NuGet.Commands
             // Create a RestoreTargetGraph with all of the information
             RestoreTargetGraph restoreTargetGraph = new(
                 Array.Empty<ResolverConflict>(),
+                frameworkRuntimePair.TargetAlias,
                 frameworkRuntimePair.Framework,
                 string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) ? null : frameworkRuntimePair.RuntimeIdentifier,
                 runtimeGraph,
@@ -903,7 +904,7 @@ namespace NuGet.Commands
 
         private async Task<Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem>> ResolveDependencyGraphItemsAsync(
             bool isCentralPackageTransitivePinningEnabled,
-            FrameworkRuntimePair pair,
+            FrameworkRuntimeDefinition pair,
             TargetFrameworkInformation projectTargetFramework,
             RuntimeGraph? runtimeGraph,
             Dictionary<LibraryDependencyIndex,
@@ -936,7 +937,7 @@ namespace NuGet.Commands
             int totalQueuedItemCount = 0;
 
             // Used when logging package id specific messages, we need to know the target graph name
-            string targetGraphName = FrameworkRuntimePair.GetTargetGraphName(pair.Framework, pair.RuntimeIdentifier);
+            string targetGraphName = pair.Name;
 
         // Used to start over when a dependency has multiple descendants of an item to be evicted.
         //
@@ -1425,16 +1426,16 @@ namespace NuGet.Commands
         /// Attempts to get a runtime graph for the specified target framework.
         /// </summary>
         /// <param name="localRepositories">A <see cref="List{T}" /> containing <see cref="NuGetv3LocalRepository" /> objects to find local packages in.</param>
-        /// <param name="graphsByTargetFramework">A <see cref="Dictionary{TKey, TValue}" /> containing the dependency graphs by target framework.</param>
+        /// <param name="graphsByTargetAlias">A <see cref="Dictionary{TKey, TValue}" /> containing the dependency graphs by target alias.</param>
         /// <param name="frameworkRuntimePair">The <see cref="FrameworkRuntimePair" /> representing the current target framework and runtime identifier for which to get a runtime graph.</param>
         /// <param name="projectTargetFramework">The <see cref="TargetFrameworkInformation" /> containing target framework information for the project.</param>
         /// <param name="runtimeGraph">Receives the <see cref="RuntimeGraph" /> for the <see cref="FrameworkRuntimePair" /> if one was found, otherwise <see langword="null" />.</param>
         /// <returns><see langword="true" /> if a runtime was found, otherwise <see langword="false" />.</returns>
-        private bool TryGetRuntimeGraph(List<NuGetv3LocalRepository> localRepositories, Dictionary<NuGetFramework, RestoreTargetGraph> graphsByTargetFramework, FrameworkRuntimePair frameworkRuntimePair, TargetFrameworkInformation? projectTargetFramework, [NotNullWhen(true)] out RuntimeGraph? runtimeGraph)
+        private bool TryGetRuntimeGraph(List<NuGetv3LocalRepository> localRepositories, Dictionary<string, RestoreTargetGraph> graphsByTargetAlias, FrameworkRuntimeDefinition frameworkRuntimePair, TargetFrameworkInformation? projectTargetFramework, [NotNullWhen(true)] out RuntimeGraph? runtimeGraph)
         {
             runtimeGraph = null;
 
-            if (string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier) || !graphsByTargetFramework.TryGetValue(frameworkRuntimePair.Framework, out RestoreTargetGraph? restoreTargetGraphForTargetFramework))
+            if (string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier) || !graphsByTargetAlias.TryGetValue(frameworkRuntimePair.TargetAlias, out RestoreTargetGraph? restoreTargetGraphForTargetFramework))
             {
                 // If this pair has no runtime or there is no corresponding RID-less dependency graph for the target framework, there is no runtime graph
                 return false;
@@ -1457,7 +1458,7 @@ namespace NuGet.Commands
             private const string EventNameCreateRestoreTargetGraph = "DependencyGraphResolver/CreateRestoreTargetGraph";
             private const string EventNameResolveDependencyGraphItems = "DependencyGraphResolver/ResolveDependencyGraphItems";
 
-            public static void CreateRestoreTargetGraphStart(string projectFullPath, FrameworkRuntimePair frameworkRuntimePair)
+            public static void CreateRestoreTargetGraphStart(string projectFullPath, FrameworkRuntimeDefinition frameworkRuntimePair)
             {
                 EventSourceOptions eventOptions = new()
                 {
@@ -1470,7 +1471,7 @@ namespace NuGet.Commands
                 NuGetEventSource.Instance.Write(EventNameCreateRestoreTargetGraph, eventOptions, new CreateRestoreTargetGraphStartEventData(projectFullPath, frameworkRuntimePair.ToString()));
             }
 
-            public static void CreateRestoreTargetGraphStop(string projectFullPath, FrameworkRuntimePair frameworkRuntimePair, bool wasRestoreTargetGraphCreationSuccessful, int resolvedPackageCount, int unresolvedPackageCount)
+            public static void CreateRestoreTargetGraphStop(string projectFullPath, FrameworkRuntimeDefinition frameworkRuntimePair, bool wasRestoreTargetGraphCreationSuccessful, int resolvedPackageCount, int unresolvedPackageCount)
             {
                 EventSourceOptions eventOptions = new()
                 {
@@ -1482,7 +1483,7 @@ namespace NuGet.Commands
                 NuGetEventSource.Instance.Write(EventNameCreateRestoreTargetGraph, eventOptions, new CreateRestoreTargetGraphStopEventData(projectFullPath, frameworkRuntimePair.ToString(), wasRestoreTargetGraphCreationSuccessful, resolvedPackageCount, unresolvedPackageCount));
             }
 
-            public static void ResolveDependencyGraphItemsStart(string projectFullPath, FrameworkRuntimePair frameworkRuntimePair)
+            public static void ResolveDependencyGraphItemsStart(string projectFullPath, FrameworkRuntimeDefinition frameworkRuntimePair)
             {
                 EventSourceOptions eventOptions = new()
                 {
@@ -1495,7 +1496,7 @@ namespace NuGet.Commands
                 NuGetEventSource.Instance.Write(EventNameResolveDependencyGraphItems, eventOptions, new ResolveDependencyGraphItemsStartEventData(projectFullPath, frameworkRuntimePair.ToString()));
             }
 
-            public static void ResolveDependencyGraphItemsStop(string projectFullPath, FrameworkRuntimePair frameworkRuntimePair, int resolvedPackagesCount, int restartCount, int totalQueuedItemCount)
+            public static void ResolveDependencyGraphItemsStop(string projectFullPath, FrameworkRuntimeDefinition frameworkRuntimePair, int resolvedPackagesCount, int restartCount, int totalQueuedItemCount)
             {
                 EventSourceOptions eventOptions = new()
                 {
