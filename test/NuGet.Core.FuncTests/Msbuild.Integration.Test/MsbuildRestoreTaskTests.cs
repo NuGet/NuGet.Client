@@ -2169,7 +2169,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 project.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
 
                 solution.Projects.Add(project);
-                solution.Create(pathContext.SolutionRoot);
+                solution.Create();
 
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(project.ProjectPath), "project.json"), @"
                 {
