@@ -1715,10 +1715,16 @@ namespace NuGet.Commands
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
             bool failed = false;
 
-            Dictionary<NuGetFramework, string> targetFrameworkToAlias = projectFrameworkRuntimePairs.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).ToDictionary(
-                        p => p.Framework,
-                        p => p.TargetAlias,
-                        NuGetFramework.Comparer);
+            Dictionary<NuGetFramework, string> targetFrameworkToAlias = new(NuGetFramework.Comparer);
+            List<FrameworkRuntimePair> frameworkRuntimePairs = new();
+            foreach (var frameworkRuntimeDefinition in projectFrameworkRuntimePairs)
+            {
+                if (string.IsNullOrEmpty(frameworkRuntimeDefinition.RuntimeIdentifier))
+                {
+                    targetFrameworkToAlias.Add(frameworkRuntimeDefinition.Framework, frameworkRuntimeDefinition.TargetAlias);
+                }
+                frameworkRuntimePairs.Add(new FrameworkRuntimePair(frameworkRuntimeDefinition.Framework, frameworkRuntimeDefinition.RuntimeIdentifier));
+            }
 
             using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
             {
@@ -1726,7 +1732,7 @@ namespace NuGet.Commands
                 {
                     result = await projectRestoreCommand.TryRestoreAsync(
                         projectRange,
-                        projectFrameworkRuntimePairs.Select(e => new FrameworkRuntimePair(e.Framework, e.RuntimeIdentifier)).ToList(),
+                        frameworkRuntimePairs,
                         targetFrameworkToAlias,
                         userPackageFolder,
                         fallbackPackageFolders,

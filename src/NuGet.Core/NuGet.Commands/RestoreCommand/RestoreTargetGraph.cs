@@ -88,12 +88,12 @@ namespace NuGet.Commands
             ResolvedDependencies = resolvedDependencies;
         }
 
-        public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, string targetAlias, NuGetFramework framework)
+        internal static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, string targetAlias, NuGetFramework framework)
         {
             return Create(RuntimeGraph.Empty, graphs, context, logger, targetAlias, framework, runtimeIdentifier: null);
         }
 
-        public static RestoreTargetGraph Create(
+        internal static RestoreTargetGraph Create(
             RuntimeGraph runtimeGraph,
             IEnumerable<GraphNode<RemoteResolveResult>> graphs,
             RemoteWalkContext context,
