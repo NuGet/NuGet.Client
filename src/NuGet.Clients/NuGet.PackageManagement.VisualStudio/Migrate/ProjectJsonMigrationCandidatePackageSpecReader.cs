@@ -24,13 +24,9 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
     {
         private const char VersionSeparator = ';';
 
-        private static readonly byte[] ProjectJsonPathPropertyName = Encoding.UTF8.GetBytes("projectJsonPath");
-
         private static readonly byte[] DependenciesPropertyName = Encoding.UTF8.GetBytes("dependencies");
         private static readonly byte[] FrameworksPropertyName = Encoding.UTF8.GetBytes("frameworks");
-        private static readonly byte[] RestorePropertyName = Encoding.UTF8.GetBytes("restore");
         private static readonly byte[] RuntimesPropertyName = Encoding.UTF8.GetBytes("runtimes");
-        private static readonly byte[] SupportsPropertyName = Encoding.UTF8.GetBytes("supports");
         private static readonly byte[] VersionPropertyName = Encoding.UTF8.GetBytes("version");
         private static readonly byte[] AutoReferencedPropertyName = Encoding.UTF8.GetBytes("autoReferenced");
         private static readonly byte[] ExcludePropertyName = Encoding.UTF8.GetBytes("exclude");
@@ -44,42 +40,6 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         private static readonly byte[] AliasesPropertyName = Encoding.UTF8.GetBytes("aliases");
         private static readonly byte[] NamePropertyName = Encoding.UTF8.GetBytes("name");
         private static readonly byte[] PrivateAssetsPropertyName = Encoding.UTF8.GetBytes("privateAssets");
-        private static readonly byte[] ExcludeFilesPropertyName = Encoding.UTF8.GetBytes("excludeFiles");
-        private static readonly byte[] IncludeFilesPropertyName = Encoding.UTF8.GetBytes("includeFiles");
-        private static readonly byte[] CentralPackageVersionsManagementEnabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionsManagementEnabled");
-        private static readonly byte[] CentralPackageVersionOverrideDisabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionOverrideDisabled");
-        private static readonly byte[] CentralPackageTransitivePinningEnabledPropertyName = Encoding.UTF8.GetBytes("CentralPackageTransitivePinningEnabled");
-        private static readonly byte[] ConfigFilePathsPropertyName = Encoding.UTF8.GetBytes("configFilePaths");
-        private static readonly byte[] CrossTargetingPropertyName = Encoding.UTF8.GetBytes("crossTargeting");
-        private static readonly byte[] FallbackFoldersPropertyName = Encoding.UTF8.GetBytes("fallbackFolders");
-        private static readonly byte[] FilesPropertyName = Encoding.UTF8.GetBytes("files");
-        private static readonly byte[] LegacyPackagesDirectoryPropertyName = Encoding.UTF8.GetBytes("legacyPackagesDirectory");
-        private static readonly byte[] OriginalTargetFrameworksPropertyName = Encoding.UTF8.GetBytes("originalTargetFrameworks");
-        private static readonly byte[] OutputPathPropertyName = Encoding.UTF8.GetBytes("outputPath");
-        private static readonly byte[] PackagesConfigPathPropertyName = Encoding.UTF8.GetBytes("packagesConfigPath");
-        private static readonly byte[] PackagesPathPropertyName = Encoding.UTF8.GetBytes("packagesPath");
-        private static readonly byte[] ProjectNamePropertyName = Encoding.UTF8.GetBytes("projectName");
-        private static readonly byte[] ProjectPathPropertyName = Encoding.UTF8.GetBytes("projectPath");
-        private static readonly byte[] ProjectStylePropertyName = Encoding.UTF8.GetBytes("projectStyle");
-        private static readonly byte[] ProjectUniqueNamePropertyName = Encoding.UTF8.GetBytes("projectUniqueName");
-        private static readonly byte[] RestoreLockPropertiesPropertyName = Encoding.UTF8.GetBytes("restoreLockProperties");
-        private static readonly byte[] NuGetLockFilePathPropertyName = Encoding.UTF8.GetBytes("nuGetLockFilePath");
-        private static readonly byte[] RestoreLockedModePropertyName = Encoding.UTF8.GetBytes("restoreLockedMode");
-        private static readonly byte[] RestorePackagesWithLockFilePropertyName = Encoding.UTF8.GetBytes("restorePackagesWithLockFile");
-        private static readonly byte[] RestoreAuditPropertiesPropertyName = Encoding.UTF8.GetBytes("restoreAuditProperties");
-        private static readonly byte[] EnableAuditPropertyName = Encoding.UTF8.GetBytes("enableAudit");
-        private static readonly byte[] AuditLevelPropertyName = Encoding.UTF8.GetBytes("auditLevel");
-        private static readonly byte[] AuditModePropertyName = Encoding.UTF8.GetBytes("auditMode");
-        private static readonly byte[] AuditSuppressionsPropertyName = Encoding.UTF8.GetBytes("suppressedAdvisories");
-        private static readonly byte[] SkipContentFileWritePropertyName = Encoding.UTF8.GetBytes("skipContentFileWrite");
-        private static readonly byte[] SourcesPropertyName = Encoding.UTF8.GetBytes("sources");
-        private static readonly byte[] ValidateRuntimeAssetsPropertyName = Encoding.UTF8.GetBytes("validateRuntimeAssets");
-        private static readonly byte[] WarningPropertiesPropertyName = Encoding.UTF8.GetBytes("warningProperties");
-        private static readonly byte[] AllWarningsAsErrorsPropertyName = Encoding.UTF8.GetBytes("allWarningsAsErrors");
-        private static readonly byte[] WarnAsErrorPropertyName = Encoding.UTF8.GetBytes("warnAsError");
-        private static readonly byte[] WarnNotAsErrorPropertyName = Encoding.UTF8.GetBytes("warnNotAsError");
-        private static readonly byte[] ExcludeAssetsPropertyName = Encoding.UTF8.GetBytes("excludeAssets");
-        private static readonly byte[] IncludeAssetsPropertyName = Encoding.UTF8.GetBytes("includeAssets");
         private static readonly byte[] TargetAliasPropertyName = Encoding.UTF8.GetBytes("targetAlias");
         private static readonly byte[] AssetTargetFallbackPropertyName = Encoding.UTF8.GetBytes("assetTargetFallback");
         private static readonly byte[] SecondaryFrameworkPropertyName = Encoding.UTF8.GetBytes("secondaryFramework");
@@ -91,14 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         private static readonly byte[] RuntimeIdentifierGraphPathPropertyName = Encoding.UTF8.GetBytes("runtimeIdentifierGraphPath");
         private static readonly byte[] WarnPropertyName = Encoding.UTF8.GetBytes("warn");
         private static readonly byte[] HashTagImportPropertyName = Encoding.UTF8.GetBytes("#import");
-        private static readonly byte[] ProjectReferencesPropertyName = Encoding.UTF8.GetBytes("projectReferences");
         private static readonly byte[] EmptyStringPropertyName = Encoding.UTF8.GetBytes(string.Empty);
-        private static readonly byte[] SdkAnalysisLevel = Encoding.UTF8.GetBytes("SdkAnalysisLevel");
-        private static readonly byte[] UsingMicrosoftNETSdk = Encoding.UTF8.GetBytes("UsingMicrosoftNETSdk");
-        private static readonly byte[] UseLegacyDependencyResolverPropertyName = Encoding.UTF8.GetBytes("restoreUseLegacyDependencyResolver");
         private static readonly byte[] PackagesToPrunePropertyName = Encoding.UTF8.GetBytes("packagesToPrune");
-        private static readonly byte[] EnablePackagePruningPropertyName = Encoding.UTF8.GetBytes("enablePackagePruning");
-
 
         /// <summary>
         /// Load and parse a project.json file
@@ -171,18 +125,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     }
                 }
             }
-            //packageSpec.Name = name;
-            //packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
             RuntimeGraph runtimeGraph = new RuntimeGraph(
                 runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
                 compatibilityProfiles ?? Enumerable.Empty<CompatibilityProfile>());
-
-            //packageSpec.Name ??= packageSpec.RestoreMetadata?.ProjectName;
-
-            // Use the project.json path if one is set, otherwise use the project path
-            //packageSpec.FilePath ??= packageSpec.RestoreMetadata?.ProjectJsonPath
-            //        ?? packageSpec.RestoreMetadata?.ProjectPath;
 
             PackageSpecProjectJsonMigrationCandidate packageSpec = new(
                 dependencies,
