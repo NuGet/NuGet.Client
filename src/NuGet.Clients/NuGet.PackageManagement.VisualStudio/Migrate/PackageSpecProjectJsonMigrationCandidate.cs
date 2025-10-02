@@ -15,16 +15,18 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         /// <see cref="ProjectStyle.PackageReference"/> based projects must not use this list and instead use the one in
         /// the <see cref="PackageSpec.TargetFrameworks"/> property which is a list of the <see cref="TargetFrameworkInformation"/> type.
         /// </summary>
-        public IList<LibraryDependency> Dependencies { get; set; }
-        public ImmutableArray<LibraryDependency> TargetFrameworkDependencies { get; set; }
-        public RuntimeGraph RuntimeGraph { get; set; }
+        public IList<LibraryDependency> Dependencies { get; init; }
+        public ImmutableArray<LibraryDependency> TargetFrameworkDependencies { get; init; }
+        public RuntimeGraph RuntimeGraph { get; init; }
 
         public PackageSpecProjectJsonMigrationCandidate(
             IList<LibraryDependency> dependencies,
             ImmutableArray<LibraryDependency> targetFrameworkDependencies,
             RuntimeGraph runtimeGraph)
         {
-
+            Dependencies = dependencies;
+            TargetFrameworkDependencies = targetFrameworkDependencies;
+            RuntimeGraph = runtimeGraph;
         }
     }
 }
