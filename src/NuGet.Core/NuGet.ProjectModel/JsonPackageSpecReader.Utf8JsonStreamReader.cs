@@ -53,6 +53,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] OutputPathPropertyName = Encoding.UTF8.GetBytes("outputPath");
         private static readonly byte[] PackagesConfigPathPropertyName = Encoding.UTF8.GetBytes("packagesConfigPath");
         private static readonly byte[] PackagesPathPropertyName = Encoding.UTF8.GetBytes("packagesPath");
+        private static readonly byte[] ProjectJsonPathPropertyName = Encoding.UTF8.GetBytes("projectJsonPath");
         private static readonly byte[] ProjectNamePropertyName = Encoding.UTF8.GetBytes("projectName");
         private static readonly byte[] ProjectPathPropertyName = Encoding.UTF8.GetBytes("projectPath");
         private static readonly byte[] ProjectStylePropertyName = Encoding.UTF8.GetBytes("projectStyle");
@@ -850,6 +851,10 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(PackagesPathPropertyName))
                     {
                         packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
+                    }
+                    else if (jsonReader.ValueTextEquals(ProjectJsonPathPropertyName))
+                    {
+                        projectJsonPath = jsonReader.ReadNextTokenAsString();
                     }
                     else if (jsonReader.ValueTextEquals(ProjectNamePropertyName))
                     {
