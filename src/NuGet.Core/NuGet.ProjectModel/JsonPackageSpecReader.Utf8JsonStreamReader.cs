@@ -123,12 +123,11 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
                     {
-                        throw new ArgumentException("The dependencies section is not allowed at the root of the project.json file. Move it inside a framework section.");
-                        //ReadDependencies(
-                        //    ref jsonReader,
-                        //    packageSpec.Dependencies,
-                        //    filePath,
-                        //    isGacOrFrameworkReference: false);
+                        ReadDependencies(
+                            ref jsonReader,
+                            packageSpec.Dependencies,
+                            filePath,
+                            isGacOrFrameworkReference: false);
                     }
                     else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
                     {
