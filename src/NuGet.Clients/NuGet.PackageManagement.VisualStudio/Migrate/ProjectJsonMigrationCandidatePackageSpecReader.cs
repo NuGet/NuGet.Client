@@ -137,10 +137,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             return packageSpec;
         }
 
-        internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
+        internal static PackageSpecProjectJsonMigrationCandidate GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
-            var packageSpec = new PackageSpec();
-
+            List<LibraryDependency> dependencies = new List<LibraryDependency>();
+            List<LibraryDependency> targetFrameworkDependencies = new List<LibraryDependency>();
             List<CompatibilityProfile> compatibilityProfiles = null;
             List<RuntimeDescription> runtimeDescriptions = null;
             string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
@@ -157,7 +157,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     {
                         ReadDependencies(
                             ref jsonReader,
-                            packageSpec.Dependencies,
+                            dependencies,
                             filePath,
                             isGacOrFrameworkReference: false);
                     }
@@ -175,18 +175,23 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     }
                 }
             }
-            packageSpec.Name = name;
-            packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
+            //packageSpec.Name = name;
+            //packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            packageSpec.RuntimeGraph = new RuntimeGraph(
+            RuntimeGraph runtimeGraph = new RuntimeGraph(
                 runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
                 compatibilityProfiles ?? Enumerable.Empty<CompatibilityProfile>());
 
-            packageSpec.Name ??= packageSpec.RestoreMetadata?.ProjectName;
+            //packageSpec.Name ??= packageSpec.RestoreMetadata?.ProjectName;
 
             // Use the project.json path if one is set, otherwise use the project path
-            packageSpec.FilePath ??= packageSpec.RestoreMetadata?.ProjectJsonPath
-                    ?? packageSpec.RestoreMetadata?.ProjectPath;
+            //packageSpec.FilePath ??= packageSpec.RestoreMetadata?.ProjectJsonPath
+            //        ?? packageSpec.RestoreMetadata?.ProjectPath;
+
+            PackageSpecProjectJsonMigrationCandidate packageSpec = new(
+                dependencies,
+                targetFrameworkDependencies.ToImmutableArray(),
+                runtimeGraph);
 
             return packageSpec;
         }
