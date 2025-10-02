@@ -420,6 +420,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     {
                         packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                     }
+                    else if (jsonReader.ValueTextEquals(ProjectJsonPathPropertyName))
+                    {
+                        projectJsonPath = jsonReader.ReadNextTokenAsString();
+                    }
                     else if (jsonReader.ValueTextEquals(ProjectNamePropertyName))
                     {
                         projectName = jsonReader.ReadNextTokenAsString();
