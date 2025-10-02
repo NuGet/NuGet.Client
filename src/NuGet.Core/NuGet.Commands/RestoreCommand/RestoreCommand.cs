@@ -609,7 +609,7 @@ namespace NuGet.Commands
                 // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
                 // The other scenario is when the lock file is not up to date and we're running locked mode.
                 // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
-                var frameworkRuntimePair = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
+                var frameworkRuntimePair = CreateFrameworkRuntimeDefinitions(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
                 graphs = frameworkRuntimePair.Select(e =>
                 {
                     return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.TargetAlias, e.Framework, e.RuntimeIdentifier);
@@ -1702,7 +1702,7 @@ namespace NuGet.Commands
             // Resolve dependency graphs
             var allGraphs = new List<RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
-            var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
+            var projectFrameworkRuntimePairs = CreateFrameworkRuntimeDefinitions(_request.Project, runtimeIds);
             var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
 
             var projectRestoreRequest = new ProjectRestoreRequest(_request, _request.Project, _request.ExistingLockFile, _logger)
@@ -1759,7 +1759,7 @@ namespace NuGet.Commands
                 success = false;
                 // When we fail to create the graphs, we want to write a `target` for each target framework
                 // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
-                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimeDefinitions(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
                 {
                     allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.TargetAlias, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
                 }
@@ -1915,7 +1915,7 @@ namespace NuGet.Commands
 
                 // When we fail to create the graphs, we want to write a `target` for each target framework
                 // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
-                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                foreach (FrameworkRuntimeDefinition frameworkRuntimePair in CreateFrameworkRuntimeDefinitions(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
                 {
                     graphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.TargetAlias, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
                 }
@@ -2008,12 +2008,12 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Gets the list of framework/runtime pairs to restore for the project.  The list is sorted by frameworks first, then frameworks with runtimes.
+        /// Gets the list of framework runtime definition to restore for the project.  The list is sorted by frameworks first, then frameworks with runtimes.
         /// </summary>
         /// <param name="packageSpec">The <see cref="PackageSpec" /> with information about the project.</param>
         /// <param name="runtimeIds">An <see cref="ISet{T}" /> containing the list of runtime identifiers.</param>
-        /// <returns>A <see cref="List{T}" /> containing <see cref="FrameworkRuntimePair" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
-        internal static List<FrameworkRuntimeDefinition> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
+        /// <returns>A <see cref="List{T}" /> containing <see cref="FrameworkRuntimeDefinition" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
+        internal static List<FrameworkRuntimeDefinition> CreateFrameworkRuntimeDefinitions(PackageSpec packageSpec, ISet<string> runtimeIds)
         {
             // Create a list with capacity for each framework with no runtime and each framework/runtime
             List<FrameworkRuntimeDefinition> projectFrameworkRuntimePairs = new(capacity: packageSpec.TargetFrameworks.Count * (runtimeIds.Count + 1));
