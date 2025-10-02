@@ -976,6 +976,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(0, target.Libraries.Count(lib => lib.Type == LibraryType.Package));
                 Assert.Equal(0, result.LockFile.Libraries.Count(lib => lib.Type == LibraryType.Package));
+                Assert.Equal(1, result.LockFile.Libraries.Count);
             }
         }
 
@@ -1260,6 +1261,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
 
                 Assert.Equal(0, msbuildTargets["TestProject"].Count);
+                Assert.Equal(3, result.LockFile.Libraries.Count);
             }
         }
 

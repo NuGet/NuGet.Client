@@ -272,6 +272,7 @@ namespace NuGet.Commands.FuncTest
                 var graph = result.RestoreGraphs.First();
                 Assert.Equal(0, graph.Conflicts.Count());
                 Assert.True(result.Success, "The restore should have been successful.");
+                result.RestoreGraphs.First().Flattened.Should().HaveCountGreaterThan(2);
             }
         }
 
@@ -660,6 +661,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(0, result.GetAllInstalled().Count);
+                Assert.Equal(2, result.RestoreGraphs.First().Flattened.Count);
             }
         }
 
@@ -1730,6 +1732,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.True(result.Success);
+                result.LockFile.Libraries.Should().HaveCount(4);
             }
         }
 
@@ -2150,6 +2153,7 @@ namespace NuGet.Commands.FuncTest
 
                     // Assert
                     Assert.True(result.Success);
+                    result.LockFile.Libraries.Should().HaveCount(1);
                 }
             }
         }
@@ -2523,6 +2527,7 @@ namespace NuGet.Commands.FuncTest
 
                     // Assert
                     Assert.True(result.Success);
+                    result.LockFile.Libraries.Should().HaveCount(1);
                 }
             }
         }
@@ -2574,6 +2579,7 @@ namespace NuGet.Commands.FuncTest
 
                     // Assert
                     Assert.True(result.Success);
+                    result.LockFile.Libraries.Should().HaveCount(1);
                 }
             }
         }
@@ -2625,6 +2631,7 @@ namespace NuGet.Commands.FuncTest
 
                     // Assert
                     Assert.True(result.Success);
+                    result.LockFile.Libraries.Should().HaveCount(1);
                 }
             }
         }

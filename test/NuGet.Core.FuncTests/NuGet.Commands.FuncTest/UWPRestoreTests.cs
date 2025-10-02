@@ -237,6 +237,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
+                Assert.Equal(13, result.LockFile.Libraries.Count);
             }
         }
 
@@ -444,6 +445,7 @@ namespace NuGet.Commands.FuncTest
             spec.RestoreMetadata.Sources = sources;
 
             (var mainResult, var legacyResult) = await RestoreCommandTests.ValidateRestoreAlgorithmEquivalency(pathContext, spec);
+            mainResult.LockFile.Libraries.Should().HaveCount(124);
         }
 
         private Stream GetResource(string name)

@@ -218,6 +218,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success, logger.ShowMessages());
+                Assert.Equal(2, result.LockFile.Libraries.Count);
             }
         }
 

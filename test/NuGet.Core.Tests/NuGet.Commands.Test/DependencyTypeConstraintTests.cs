@@ -168,6 +168,7 @@ namespace NuGet.Commands.Test
                 var packageBLib = lockFile.GetLibrary("packageB", NuGetVersion.Parse("1.0.0"));
                 Assert.NotNull(packageBLib);
                 Assert.Equal(LibraryType.Project, packageBLib.Type);
+                Assert.Equal(2, lockFile.Libraries.Count);
             }
         }
 
