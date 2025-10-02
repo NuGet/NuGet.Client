@@ -121,14 +121,6 @@ namespace NuGet.ProjectModel
                     {
                         jsonReader.Skip();
                     }
-                    else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
-                    {
-                        ReadDependencies(
-                            ref jsonReader,
-                            packageSpec.Dependencies,
-                            filePath,
-                            isGacOrFrameworkReference: false);
-                    }
                     else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
                     {
                         ReadFrameworks(ref jsonReader, packageSpec);

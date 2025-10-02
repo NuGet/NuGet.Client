@@ -204,6 +204,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
+            Assert.Equal("Error reading '' : Invalid dependency target value 'winmd'.", exception.Message);
         }
 
         [Fact]
@@ -213,7 +214,7 @@ namespace NuGet.ProjectModel.Test
             var json = @"{
                             ""frameworks"": {
                                 ""net46"": {
-                                  ""dependencies"": {
+                                    ""dependencies"": {
                                         ""packageA"": {
                                             ""version"": ""1.0.0"",
                                             ""target"": ""package,project""

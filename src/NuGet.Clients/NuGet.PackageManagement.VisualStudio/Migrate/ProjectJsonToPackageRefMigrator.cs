@@ -76,7 +76,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+#pragma warning disable CS0612 // Type or member is obsolete
             dependencies.AddRange(packageSpec.Dependencies);
+#pragma warning restore CS0612 // Type or member is obsolete
             foreach (var dependency in dependencies)
             {
                 await project.ProjectServices.References.AddOrUpdatePackageReferenceAsync(dependency, CancellationToken.None);
