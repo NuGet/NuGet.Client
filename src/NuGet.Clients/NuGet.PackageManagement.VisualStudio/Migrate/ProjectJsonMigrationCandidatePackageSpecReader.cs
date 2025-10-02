@@ -165,33 +165,9 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     {
                         ReadFrameworks(ref jsonReader, packageSpec);
                     }
-                    else if (jsonReader.ValueTextEquals(RestorePropertyName))
-                    {
-                        ReadMSBuildMetadata(ref jsonReader, packageSpec, environmentVariableReader);
-                    }
                     else if (jsonReader.ValueTextEquals(RuntimesPropertyName))
                     {
                         runtimeDescriptions = ReadRuntimes(ref jsonReader);
-                    }
-                    else if (jsonReader.ValueTextEquals(SupportsPropertyName))
-                    {
-                        compatibilityProfiles = ReadSupports(ref jsonReader);
-                    }
-                    else if (jsonReader.ValueTextEquals(VersionPropertyName))
-                    {
-                        string version = jsonReader.ReadNextTokenAsString();
-                        if (version != null)
-                        {
-                            try
-                            {
-                                packageSpec.Version = PackageSpecUtility.SpecifySnapshot(version, snapshotValue);
-                            }
-                            catch (Exception ex)
-                            {
-                                //TODO?
-                                throw new FileFormatException(packageSpecPath + " Version " + version, ex);
-                            }
-                        }
                     }
                     else
                     {
