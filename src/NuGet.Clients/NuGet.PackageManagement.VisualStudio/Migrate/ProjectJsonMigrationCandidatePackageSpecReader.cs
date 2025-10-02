@@ -726,7 +726,6 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                         {
                             if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
                             {
-                                //TODO: Strings MissingVersionOnDependency
                                 throw new FileFormatException(packageSpecPath, new ArgumentException("Dependency version"));
                             }
                             else
@@ -779,11 +778,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                 // Verify that the value specified is package, project, or external project
                 if (!ValidateDependencyTarget(targetFlagsValue))
                 {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        "Strings.InvalidDependencyTarget", //TODO
-                        targetString);
-                    throw new FileFormatException(packageSpecPath, new ArgumentException("InvalidDependencyTarget"));
+                    throw new FileFormatException(packageSpecPath, new ArgumentException("Invalid dependency target"));
                 }
             }
 
