@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,11 +21,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
 {
     internal class ProjectJsonMigrationCandidatePackageSpecReader
     {
-        private const char VersionSeparator = ';';
-
         private static readonly byte[] DependenciesPropertyName = Encoding.UTF8.GetBytes("dependencies");
         private static readonly byte[] FrameworksPropertyName = Encoding.UTF8.GetBytes("frameworks");
         private static readonly byte[] RuntimesPropertyName = Encoding.UTF8.GetBytes("runtimes");
+        private static readonly byte[] SupportsPropertyName = Encoding.UTF8.GetBytes("supports");
         private static readonly byte[] VersionPropertyName = Encoding.UTF8.GetBytes("version");
         private static readonly byte[] AutoReferencedPropertyName = Encoding.UTF8.GetBytes("autoReferenced");
         private static readonly byte[] ExcludePropertyName = Encoding.UTF8.GetBytes("exclude");
@@ -38,21 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         private static readonly byte[] VersionOverridePropertyName = Encoding.UTF8.GetBytes("versionOverride");
         private static readonly byte[] VersionCentrallyManagedPropertyName = Encoding.UTF8.GetBytes("versionCentrallyManaged");
         private static readonly byte[] AliasesPropertyName = Encoding.UTF8.GetBytes("aliases");
-        private static readonly byte[] NamePropertyName = Encoding.UTF8.GetBytes("name");
-        private static readonly byte[] PrivateAssetsPropertyName = Encoding.UTF8.GetBytes("privateAssets");
-        private static readonly byte[] TargetAliasPropertyName = Encoding.UTF8.GetBytes("targetAlias");
-        private static readonly byte[] AssetTargetFallbackPropertyName = Encoding.UTF8.GetBytes("assetTargetFallback");
-        private static readonly byte[] SecondaryFrameworkPropertyName = Encoding.UTF8.GetBytes("secondaryFramework");
-        private static readonly byte[] CentralPackageVersionsPropertyName = Encoding.UTF8.GetBytes("centralPackageVersions");
-        private static readonly byte[] DownloadDependenciesPropertyName = Encoding.UTF8.GetBytes("downloadDependencies");
-        private static readonly byte[] FrameworkAssembliesPropertyName = Encoding.UTF8.GetBytes("frameworkAssemblies");
-        private static readonly byte[] FrameworkReferencesPropertyName = Encoding.UTF8.GetBytes("frameworkReferences");
-        private static readonly byte[] ImportsPropertyName = Encoding.UTF8.GetBytes("imports");
-        private static readonly byte[] RuntimeIdentifierGraphPathPropertyName = Encoding.UTF8.GetBytes("runtimeIdentifierGraphPath");
-        private static readonly byte[] WarnPropertyName = Encoding.UTF8.GetBytes("warn");
         private static readonly byte[] HashTagImportPropertyName = Encoding.UTF8.GetBytes("#import");
         private static readonly byte[] EmptyStringPropertyName = Encoding.UTF8.GetBytes(string.Empty);
-        private static readonly byte[] PackagesToPrunePropertyName = Encoding.UTF8.GetBytes("packagesToPrune");
 
         /// <summary>
         /// Load and parse a project.json file
@@ -118,6 +103,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     else if (jsonReader.ValueTextEquals(RuntimesPropertyName))
                     {
                         runtimeDescriptions = ReadRuntimes(ref jsonReader);
+                    }
+                    else if (jsonReader.ValueTextEquals(SupportsPropertyName))
+                    {
+                        compatibilityProfiles = ReadSupports(ref jsonReader);
                     }
                     else
                     {
@@ -213,45 +202,13 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         private static void ReadTargetFrameworks(List<LibraryDependency> targetFrameworkDependencies, string filePath, ref Utf8JsonStreamReader jsonReader)
         {
             var frameworkName = NuGetFramework.Parse(jsonReader.GetString());
-
-            bool assetTargetFallback = false;
-            Dictionary<string, CentralPackageVersion> centralPackageVersions = null;
             List<LibraryDependency> dependencies = null;
-            List<DownloadDependency> downloadDependencies = null;
-            HashSet<FrameworkDependency> frameworkReferences = null;
-            List<NuGetFramework> imports = null;
-            string runtimeIdentifierGraphPath = null;
-            string targetAlias = string.Empty;
-            bool warn = false;
-            Dictionary<string, PrunePackageReference> packagesToPrune = null;
-
-            NuGetFramework secondaryFramework = default;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(AssetTargetFallbackPropertyName))
-                    {
-                        assetTargetFallback = jsonReader.ReadNextTokenAsBoolOrFalse();
-                    }
-                    else if (jsonReader.ValueTextEquals(SecondaryFrameworkPropertyName))
-                    {
-                        var secondaryFrameworkString = jsonReader.ReadNextTokenAsString();
-                        if (!string.IsNullOrEmpty(secondaryFrameworkString))
-                        {
-                            secondaryFramework = NuGetFramework.Parse(secondaryFrameworkString);
-                        }
-                    }
-                    else if (jsonReader.ValueTextEquals(CentralPackageVersionsPropertyName))
-                    {
-                        centralPackageVersions ??= new Dictionary<string, CentralPackageVersion>();
-                        ReadCentralPackageVersions(
-                            ref jsonReader,
-                            centralPackageVersions,
-                            filePath);
-                    }
-                    else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
+                    if (jsonReader.ValueTextEquals(DependenciesPropertyName))
                     {
                         dependencies ??= new List<LibraryDependency>();
                         ReadDependencies(
@@ -259,56 +216,6 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                             dependencies,
                             filePath,
                             isGacOrFrameworkReference: false);
-                    }
-                    else if (jsonReader.ValueTextEquals(DownloadDependenciesPropertyName))
-                    {
-                        downloadDependencies ??= new List<DownloadDependency>();
-                        ReadDownloadDependencies(
-                            ref jsonReader,
-                            downloadDependencies,
-                            filePath);
-                    }
-                    else if (jsonReader.ValueTextEquals(FrameworkAssembliesPropertyName))
-                    {
-                        dependencies ??= new List<LibraryDependency>();
-                        ReadDependencies(
-                            ref jsonReader,
-                            dependencies,
-                            filePath,
-                            isGacOrFrameworkReference: true);
-                    }
-                    else if (jsonReader.ValueTextEquals(FrameworkReferencesPropertyName))
-                    {
-                        frameworkReferences ??= new HashSet<FrameworkDependency>();
-                        ReadFrameworkReferences(
-                            ref jsonReader,
-                            frameworkReferences,
-                            filePath);
-                    }
-                    else if (jsonReader.ValueTextEquals(ImportsPropertyName))
-                    {
-                        imports ??= new List<NuGetFramework>();
-                        ReadImports(filePath, ref jsonReader, imports);
-                    }
-                    else if (jsonReader.ValueTextEquals(RuntimeIdentifierGraphPathPropertyName))
-                    {
-                        runtimeIdentifierGraphPath = jsonReader.ReadNextTokenAsString();
-                    }
-                    else if (jsonReader.ValueTextEquals(TargetAliasPropertyName))
-                    {
-                        targetAlias = jsonReader.ReadNextTokenAsString();
-                    }
-                    else if (jsonReader.ValueTextEquals(WarnPropertyName))
-                    {
-                        warn = jsonReader.ReadNextTokenAsBoolOrFalse();
-                    }
-                    else if (jsonReader.ValueTextEquals(PackagesToPrunePropertyName))
-                    {
-                        packagesToPrune ??= new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase);
-                        ReadPackagesToPrune(
-                            ref jsonReader,
-                            packagesToPrune,
-                            filePath);
                     }
                     else
                     {
@@ -319,20 +226,11 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
 
             var targetFrameworkInformation = new TargetFrameworkInformation()
             {
-                AssetTargetFallback = assetTargetFallback,
-                CentralPackageVersions = centralPackageVersions,
                 Dependencies = dependencies != null ? dependencies.ToImmutableArray() : [],
-                DownloadDependencies = downloadDependencies != null ? downloadDependencies.ToImmutableArray() : [],
-                FrameworkReferences = frameworkReferences,
-                Imports = imports != null ? imports.ToImmutableArray() : [],
-                RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
-                PackagesToPrune = packagesToPrune,
-                TargetAlias = targetAlias,
-                Warn = warn
             };
 
 #pragma warning disable CS0612 // Type or member is obsolete
-            AddTargetFramework(targetFrameworkDependencies, frameworkName, secondaryFramework, targetFrameworkInformation);
+            AddTargetFramework(targetFrameworkDependencies, frameworkName, secondaryFramework: default, targetFrameworkInformation);
 #pragma warning restore CS0612 // Type or member is obsolete
         }
         private static void AddTargetFramework(List<LibraryDependency> targetFrameworkDependencies, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
@@ -372,206 +270,6 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             return frameworkName;
         }
 
-        private static void ReadDownloadDependencies(
-            ref Utf8JsonStreamReader jsonReader,
-            IList<DownloadDependency> downloadDependencies,
-            string packageSpecPath)
-        {
-            var seenIds = new HashSet<string>();
-
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartArray)
-            {
-                do
-                {
-                    string name = null;
-                    string versionValue = null;
-                    var isNameDefined = false;
-
-                    if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                    {
-                        while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                        {
-                            if (jsonReader.ValueTextEquals(NamePropertyName))
-                            {
-                                isNameDefined = true;
-                                name = jsonReader.ReadNextTokenAsString();
-                            }
-                            else if (jsonReader.ValueTextEquals(VersionPropertyName))
-                            {
-                                versionValue = jsonReader.ReadNextTokenAsString();
-                            }
-                            else
-                            {
-                                jsonReader.Skip();
-                            }
-                        }
-                    }
-
-                    if (jsonReader.TokenType == JsonTokenType.EndArray)
-                    {
-                        break;
-                    }
-
-                    if (!isNameDefined)
-                    {
-                        throw new FileFormatException(packageSpecPath, new ArgumentException("Unable to resolve downloadDependency"));
-                    }
-
-                    if (!seenIds.Add(name))
-                    {
-                        // package ID already seen, only use first definition.
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(versionValue))
-                    {
-                        throw new FileFormatException(packageSpecPath, new ArgumentException("The version cannot be null or empty"));
-                    }
-
-                    var versions = new LazyStringSplit(versionValue, VersionSeparator);
-
-                    foreach (string singleVersionValue in versions)
-                    {
-                        if (string.IsNullOrEmpty(singleVersionValue))
-                        {
-                            continue;
-                        }
-
-                        try
-                        {
-                            VersionRange version = VersionRange.Parse(singleVersionValue);
-
-                            downloadDependencies.Add(new DownloadDependency(name, version));
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new FileFormatException(packageSpecPath, ex);
-                        }
-                    }
-                } while (jsonReader.TokenType == JsonTokenType.EndObject);
-            }
-        }
-
-
-        private static void ReadFrameworkReferences(
-            ref Utf8JsonStreamReader jsonReader,
-            ISet<FrameworkDependency> frameworkReferences,
-            string packageSpecPath)
-        {
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var frameworkName = jsonReader.GetString();
-                    if (string.IsNullOrEmpty(frameworkName))
-                    {
-                        throw new FileFormatException(packageSpecPath, new ArgumentException("Unable to resolve frameworkReference."));
-                    }
-
-                    var privateAssets = FrameworkDependencyFlagsUtils.Default;
-
-                    if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                    {
-                        while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                        {
-                            if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
-                            {
-                                IEnumerable<string> strings = jsonReader.ReadDelimitedString();
-
-                                privateAssets = FrameworkDependencyFlagsUtils.GetFlags(strings);
-                            }
-                            else
-                            {
-                                jsonReader.Skip();
-                            }
-                        }
-                    }
-
-                    frameworkReferences.Add(new FrameworkDependency(frameworkName, privateAssets));
-                }
-            }
-        }
-
-
-        private static void ReadImports(string filePath, ref Utf8JsonStreamReader jsonReader, List<NuGetFramework> importFrameworks)
-        {
-            IReadOnlyList<string> imports = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
-
-            if (imports != null && imports.Count > 0)
-            {
-                foreach (string import in imports.Where(element => !string.IsNullOrEmpty(element)))
-                {
-                    NuGetFramework framework = NuGetFramework.Parse(import);
-
-                    if (!framework.IsSpecificFramework)
-                    {
-                        throw new FileFormatException(filePath, new ArgumentException("Invalid framework"));
-                    }
-
-                    importFrameworks.Add(framework);
-                }
-            }
-        }
-
-        private static void ReadCentralPackageVersions(
-            ref Utf8JsonStreamReader jsonReader,
-            IDictionary<string, CentralPackageVersion> centralPackageVersions,
-            string filePath)
-        {
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var propertyName = jsonReader.GetString();
-
-                    if (string.IsNullOrEmpty(propertyName))
-                    {
-                        throw new FileFormatException(filePath, new ArgumentException("Unable to resolve central version"));
-                    }
-
-                    string version = jsonReader.ReadNextTokenAsString();
-
-                    if (string.IsNullOrEmpty(version))
-                    {
-                        throw new FileFormatException(filePath, new ArgumentException("The version cannot be null or empty."));
-                    }
-
-                    centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
-                }
-            }
-        }
-
-
-        private static void ReadPackagesToPrune(
-            ref Utf8JsonStreamReader jsonReader,
-            IDictionary<string, PrunePackageReference> packagesToPrune,
-            string filePath)
-        {
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var propertyName = jsonReader.GetString();
-
-                    if (string.IsNullOrEmpty(propertyName))
-                    {
-                        throw new FileFormatException(filePath, new ArgumentException("Unable to resolve package to prune"));
-                    }
-
-                    string version = jsonReader.ReadNextTokenAsString();
-
-                    if (string.IsNullOrEmpty(version))
-                    {
-                        throw new FileFormatException(filePath, new ArgumentException("The version cannot be null or empty."));
-                    }
-
-                    packagesToPrune[propertyName] = new PrunePackageReference(propertyName, VersionRange.Parse(version));
-                }
-            }
-        }
-
-
-
         private static List<RuntimeDescription> ReadRuntimes(ref Utf8JsonStreamReader jsonReader)
         {
             List<RuntimeDescription> runtimeDescriptions = null;
@@ -587,6 +285,54 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             }
 
             return runtimeDescriptions;
+        }
+
+        private static List<CompatibilityProfile> ReadSupports(ref Utf8JsonStreamReader jsonReader)
+        {
+            List<CompatibilityProfile> compatibilityProfiles = null;
+
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = jsonReader.GetString();
+                    CompatibilityProfile compatibilityProfile = ReadCompatibilityProfile(ref jsonReader, propertyName);
+                    compatibilityProfiles ??= [];
+                    compatibilityProfiles.Add(compatibilityProfile);
+                }
+            }
+            return compatibilityProfiles;
+        }
+
+        private static CompatibilityProfile ReadCompatibilityProfile(ref Utf8JsonStreamReader jsonReader, string profileName)
+        {
+            List<FrameworkRuntimePair> sets = null;
+
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = jsonReader.GetString();
+                    sets ??= [];
+
+                    IReadOnlyList<string> values = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
+
+                    IEnumerable<FrameworkRuntimePair> profiles = ReadCompatibilitySets(values, propertyName);
+
+                    sets.AddRange(profiles);
+                }
+            }
+            return new CompatibilityProfile(profileName, sets ?? Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
+        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(IReadOnlyList<string> values, string compatibilitySetName)
+        {
+            NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
+
+            foreach (string value in values)
+            {
+                yield return new FrameworkRuntimePair(framework, value);
+            }
         }
 
         private static void ReadDependencies(
