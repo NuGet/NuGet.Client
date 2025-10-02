@@ -36,6 +36,7 @@ namespace NuGet.ProjectModel
                  string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))));
         }
 
+        // todo nk - project  file dependency group.
         public LockFileTarget GetTarget(string frameworkAlias, string runtimeIdentifier)
         {
             var framework = PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(frameworkAlias, StringComparison.OrdinalIgnoreCase))?.FrameworkName;

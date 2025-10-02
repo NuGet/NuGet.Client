@@ -752,7 +752,7 @@ namespace NuGet.Build.Tasks.Console
                     FrameworkReferences = GetFrameworkReferences(msBuildProjectInstance),
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
-                    TargetAlias = targetAlias,
+                    TargetAlias = string.IsNullOrEmpty(targetAlias) ? targetFramework.ToString() : targetAlias,
                     Warn = warn
                 };
 

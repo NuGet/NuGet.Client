@@ -479,6 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 FrameworkName = targetFramework,
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                TargetAlias = targetFramework.ToString(),
             };
 
             // Build up runtime information.

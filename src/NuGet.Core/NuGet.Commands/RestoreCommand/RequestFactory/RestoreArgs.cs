@@ -201,6 +201,8 @@ namespace NuGet.Commands
 
             request.RequestedRuntimes.UnionWith(Runtimes);
             request.FallbackRuntimes.UnionWith(FallbackRuntimes);
+
+            // TODO NK - set-up the lock file version here.
             request.LockFileVersion = LockFileFormat.Version;
 
             // Run runtime asset checks for project.json, and for other types if enabled.

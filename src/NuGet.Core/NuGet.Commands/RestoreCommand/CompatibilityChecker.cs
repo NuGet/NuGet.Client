@@ -230,7 +230,7 @@ namespace NuGet.Commands
         /// </summary>
         private static RestoreLogMessage GetErrorMessage(NuGetLogCode logCode, CompatibilityIssue issue, RestoreTargetGraph graph)
         {
-            return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphName);
+            return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphNameWithAlias);
         }
 
         private static IEnumerable<NuGetFramework> GetPackageFrameworks(

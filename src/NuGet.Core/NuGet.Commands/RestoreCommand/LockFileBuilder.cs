@@ -50,11 +50,7 @@ namespace NuGet.Commands
 
             if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
             {
-                AddProjectFileDependenciesForPackageReference(project, lockFile, targetGraphs);
-            }
-            else
-            {
-                AddProjectFileDependenciesForSpec(project, lockFile);
+                AddProjectFileDependenciesForPackageReference(project, lockFile, targetGraphs.AsList());
             }
 
             // Record all libraries used
@@ -164,12 +160,20 @@ namespace NuGet.Commands
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
                 .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
-                var target = new LockFileTarget
-                {
-                    TargetFramework = targetGraph.Framework,
-                    RuntimeIdentifier = targetGraph.RuntimeIdentifier,
-                    TargetAlias = targetGraph.TargetAlias,
-                };
+                var target = lockFile.Version >= 4 ?
+                    new LockFileTarget
+                    {
+                        TargetFramework = targetGraph.Framework,
+                        RuntimeIdentifier = targetGraph.RuntimeIdentifier,
+                        TargetAlias = targetGraph.TargetAlias,
+                        Name = targetGraph.TargetGraphNameWithAlias
+                    } :
+                    new LockFileTarget
+                    {
+                        TargetFramework = targetGraph.Framework,
+                        RuntimeIdentifier = targetGraph.RuntimeIdentifier,
+                        TargetAlias = targetGraph.TargetAlias,
+                    };
 
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
@@ -266,7 +270,7 @@ namespace NuGet.Commands
                                     NuGetLogCode.NU1701,
                                     message,
                                     library.Name,
-                                    targetGraph.TargetGraphName);
+                                    targetGraph.TargetGraphNameWithAlias);
 
                                 _logger.Log(logMessage);
 
@@ -391,42 +395,25 @@ namespace NuGet.Commands
             return string.Join(", ", frameworks);
         }
 
-        private static void AddProjectFileDependenciesForSpec(PackageSpec project, LockFile lockFile)
+        private static void AddProjectFileDependenciesForPackageReference(PackageSpec project, LockFile lockFile, List<RestoreTargetGraph> targetGraphs)
         {
-            // Use empty string as the key of dependencies shared by all frameworks
-            lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
-                string.Empty,
-                project.Dependencies
-                    .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
-                    .OrderBy(group => group, StringComparer.Ordinal)));
+            bool isV4LockFile = lockFile.Version >= 4;
 
             foreach (var frameworkInfo in project.TargetFrameworks
-                .OrderBy(framework => framework.FrameworkName.ToString(),
-                    StringComparer.Ordinal))
-            {
-                lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
-                    frameworkInfo.FrameworkName.ToString(),
-                    frameworkInfo.Dependencies
-                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
-            }
-        }
-
-        private static void AddProjectFileDependenciesForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
-        {
-            // For NETCore put everything under a TFM section
-            // Projects are included for NETCore
-            foreach (var frameworkInfo in project.TargetFrameworks
-                .OrderBy(framework => framework.FrameworkName.ToString(),
+                .OrderBy(framework => framework.TargetAlias,
                     StringComparer.Ordinal))
             {
                 var dependencies = new List<LibraryRange>();
                 dependencies.AddRange(project.Dependencies.Select(e => e.LibraryRange));
                 dependencies.AddRange(frameworkInfo.Dependencies.Select(e => e.LibraryRange));
 
-                var targetGraph = targetGraphs.SingleOrDefault(graph =>
-                    graph.Framework.Equals(frameworkInfo.FrameworkName)
-                    && string.IsNullOrEmpty(graph.RuntimeIdentifier));
+                RestoreTargetGraph targetGraph = !string.IsNullOrEmpty(frameworkInfo.TargetAlias) ?
+                    targetGraphs.SingleOrDefault(graph =>
+                        graph.TargetAlias.Equals(frameworkInfo.TargetAlias)
+                        && string.IsNullOrEmpty(graph.RuntimeIdentifier)) :
+                    targetGraphs.SingleOrDefault(graph =>
+                        graph.Framework.Equals(frameworkInfo.FrameworkName)
+                        && string.IsNullOrEmpty(graph.RuntimeIdentifier));
 
                 var resolvedEntry = targetGraph?
                     .Flattened
@@ -452,8 +439,9 @@ namespace NuGet.Commands
                 }
 
                 // Add entry
+                string framework = isV4LockFile && string.IsNullOrEmpty(frameworkInfo.TargetAlias) ? frameworkInfo.FrameworkName.ToString() : frameworkInfo.TargetAlias;
                 var dependencyGroup = new ProjectFileDependencyGroup(
-                    frameworkInfo.FrameworkName.ToString(),
+                    framework,
                     uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 

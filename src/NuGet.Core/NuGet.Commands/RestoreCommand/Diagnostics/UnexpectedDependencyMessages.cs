@@ -78,7 +78,7 @@ namespace NuGet.Commands
                                             .OrderBy(e => e.Child.Name, StringComparer.OrdinalIgnoreCase)
                                             .ThenBy(e => e.Child.Version)
                                             .ThenBy(e => e.Parent.Name, StringComparer.OrdinalIgnoreCase)
-                                            .Select(e => GetMissingLowerBoundMessage(e, graph.TargetGraphName)));
+                                            .Select(e => GetMissingLowerBoundMessage(e, graph.TargetGraphNameWithAlias)));
             }
 
             return messages;
@@ -159,7 +159,7 @@ namespace NuGet.Commands
                                     match.Key.Name,
                                     match.Key.Version);
 
-                                var graphName = indexedGraph.Graph.TargetGraphName;
+                                var graphName = indexedGraph.Graph.TargetGraphNameWithAlias;
 
                                 messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1601, message, match.Key.Name, graphName));
                             }
@@ -290,7 +290,7 @@ namespace NuGet.Commands
                                             child,
                                             actual);
 
-                                        messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1608, message, dependencyId, graph.TargetGraphName));
+                                        messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1608, message, dependencyId, graph.TargetGraphNameWithAlias));
                                     }
                                 }
                             }

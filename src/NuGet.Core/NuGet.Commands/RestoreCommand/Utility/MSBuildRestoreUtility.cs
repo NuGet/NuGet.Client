@@ -500,7 +500,7 @@ namespace NuGet.Commands
                     FrameworkName = targetFramework,
                     Imports = imports,
                     RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
-                    TargetAlias = targetAlias,
+                    TargetAlias = string.IsNullOrEmpty(targetAlias) ? targetFramework.ToString() : targetAlias,
                     Warn = warn
                 };
 

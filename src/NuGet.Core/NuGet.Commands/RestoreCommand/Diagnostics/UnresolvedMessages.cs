@@ -33,7 +33,7 @@ namespace NuGet.Commands
         {
             var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e =>
             GetMessageAsync(
-                graph.TargetGraphName,
+                graph.TargetGraphNameWithAlias,
                 e,
                 context.FilterDependencyProvidersForLibrary(e),
                 context.PackageSourceMapping.IsEnabled,

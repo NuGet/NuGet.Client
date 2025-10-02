@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using NuGet.Client;
 using NuGet.Common;
@@ -53,6 +55,8 @@ namespace NuGet.Commands
 
         public string TargetGraphName { get; }
 
+        public string TargetGraphNameWithAlias { get; }
+
         // TODO: Move conflicts to AnalyzeResult
         public IEnumerable<ResolverConflict> Conflicts { get; }
 
@@ -79,6 +83,7 @@ namespace NuGet.Commands
             Framework = framework;
             Graphs = graphs;
             TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(Framework, RuntimeIdentifier);
+            TargetGraphNameWithAlias = GetTargetGraphName(TargetAlias, RuntimeIdentifier);
             Conventions = new ManagedCodeConventions(runtimeGraph);
 
             Install = install;
@@ -86,6 +91,24 @@ namespace NuGet.Commands
             AnalyzeResult = analyzeResult;
             Unresolved = unresolved;
             ResolvedDependencies = resolvedDependencies;
+        }
+
+        internal static string GetTargetGraphName(string targetAlias, string runtimeIdentifier)
+        {
+            if (targetAlias is null) throw new ArgumentNullException(nameof(targetAlias));
+
+            if (string.IsNullOrEmpty(runtimeIdentifier))
+            {
+                return targetAlias;
+            }
+            else
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}/{1}",
+                    targetAlias,
+                    runtimeIdentifier);
+            }
         }
 
         internal static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, string targetAlias, NuGetFramework framework)

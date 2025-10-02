@@ -173,6 +173,7 @@ namespace NuGet.DependencyResolver
             if (cacheContext == null) throw new ArgumentNullException(nameof(cacheContext));
             if (logger == null) throw new ArgumentNullException(nameof(logger));
 
+            // TODO NK - This is where we might want to do things based on the alias, but this can be a second phase too.
             var projectMatch = await FindProjectMatchAsync(libraryRange, framework, projectProviders, cancellationToken);
 
             if (projectMatch != null)

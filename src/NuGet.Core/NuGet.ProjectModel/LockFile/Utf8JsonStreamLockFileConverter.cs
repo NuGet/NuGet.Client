@@ -84,7 +84,14 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets)
                     {
-                        lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
+                        if (lockFile.Version >= 4)
+                        {
+                            lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverterV4);
+                        }
+                        else
+                        {
+                            lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
+                        }
                     }
                     else
                     {
@@ -126,12 +133,25 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.PackageSpec) == LockFileReadFlags.PackageSpec)
                     {
-                        lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
+                        if (lockFile.Version >= 4)
+                        {
+                            // TODO NK
+                            lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
                             ref reader,
                             name: null,
                             packageSpecPath: null,
                             EnvironmentVariableWrapper.Instance,
                             snapshotValue: null);
+                        }
+                        else
+                        {
+                            lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
+                            ref reader,
+                            name: null,
+                            packageSpecPath: null,
+                            EnvironmentVariableWrapper.Instance,
+                            snapshotValue: null);
+                        }
                     }
                     else
                     {
@@ -192,6 +212,14 @@ namespace NuGet.ProjectModel
                 foreach (var target in lockFile.Targets)
                 {
                     target.TargetAlias = lockFile.PackageSpec?.GetRestoreMetadataFramework(target.TargetFramework)?.TargetAlias;
+                }
+            }
+
+            if (lockFile.Version >= 4)
+            {
+                foreach (var target in lockFile.Targets)
+                {
+                    target.TargetFramework = lockFile.PackageSpec.GetRestoreMetadataFramework(target.TargetAlias).FrameworkName;
                 }
             }
 

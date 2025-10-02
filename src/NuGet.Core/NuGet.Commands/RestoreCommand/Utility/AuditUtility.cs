@@ -425,9 +425,9 @@ namespace NuGet.Commands.Restore.Utility
                             }
 
                             // Multiple package sources might list the same known vulnerability, so de-dupe those too.
-                            if (!affectedGraphs.Contains(graph.TargetGraphName))
+                            if (!affectedGraphs.Contains(graph.TargetGraphNameWithAlias))
                             {
-                                affectedGraphs.Add(graph.TargetGraphName);
+                                affectedGraphs.Add(graph.TargetGraphNameWithAlias);
                             }
 
                             if (!auditInfo.IsDirect &&

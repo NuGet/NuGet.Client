@@ -1811,7 +1811,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var centralPackageName = "D";
             var centralPackageVersion = "2.0.0";
             var otherVersion = "3.0.0";
-            NuGetFramework framework = NuGetFramework.Parse("net45");
+            string targetAlias = "net45";
+            NuGetFramework framework = NuGetFramework.Parse(targetAlias);
             var logger = new TestLogger();
 
             var context = new TestRemoteWalkContext();

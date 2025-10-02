@@ -16,6 +16,7 @@ namespace NuGet.ProjectModel
     public class LockFileFormat
     {
         public static readonly int Version = 3;
+        public static readonly int LatestVersion = 4;
         // If this is ever renamed, you should also rename NoOpRestoreUtilities.NoOpCacheFileName to keep them in sync.
         public static readonly string AssetsFileName = "project.assets.json";
 
@@ -174,7 +175,10 @@ namespace NuGet.ProjectModel
             JsonUtility.WriteObject(writer, lockFile.Libraries, WriteLibrary);
 
             writer.WritePropertyName(ProjectFileDependencyGroupsProperty);
-            JsonUtility.WriteObject(writer, lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
+            if (lockFile.Version <= 3)
+            {
+                JsonUtility.WriteObject(writer, lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
+            }
 
             if (lockFile.PackageFolders?.Any() == true)
             {
@@ -187,11 +191,16 @@ namespace NuGet.ProjectModel
                 if (lockFile.PackageSpec != null)
                 {
                     writer.WritePropertyName(PackageSpecProperty);
-
                     jsonObjectWriter.WriteObjectStart();
-
-                    PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter);
-
+                    if (lockFile.Version >= 4)
+                    {
+                        // TODO NK
+                        PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter);
+                    }
+                    else
+                    {
+                        PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter);
+                    }
                     jsonObjectWriter.WriteObjectEnd();
                 }
             }

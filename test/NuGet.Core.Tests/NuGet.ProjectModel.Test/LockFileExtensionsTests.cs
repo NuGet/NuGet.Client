@@ -16,8 +16,10 @@ namespace NuGet.ProjectModel.Test
         public void GivenALogMessageVerifyTargetGraphIsReturned()
         {
             var assetsFile = new LockFile();
+            var expected = "net45";
             assetsFile.Targets.Add(new LockFileTarget()
             {
+                TargetAlias = expected,
                 TargetFramework = NuGetFramework.Parse("net45"),
             });
 
@@ -27,12 +29,11 @@ namespace NuGet.ProjectModel.Test
                 Version = NuGetVersion.Parse("1.0.0")
             });
 
-            var expected = NuGetFramework.Parse("net45").DotNetFrameworkName;
             var message = new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1103, "test", expected);
 
             var graphs = message.GetTargetGraphs(assetsFile);
 
-            graphs.Select(e => e.Name).Should().BeEquivalentTo(new[] { expected });
+            graphs.Select(e => e.Name).Should().BeEquivalentTo(new[] { expected }); // TODO NK - This makes an argument for tying all the changes together.
         }
 
         [Fact]
@@ -68,6 +69,7 @@ namespace NuGet.ProjectModel.Test
             var assetsFile = new LockFile();
             assetsFile.Targets.Add(new LockFileTarget()
             {
+                TargetAlias = "net45",
                 TargetFramework = NuGetFramework.Parse("net45"),
             });
 

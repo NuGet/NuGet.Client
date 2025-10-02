@@ -372,7 +372,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         // Verify that File > New Project > Class Library (Portable) can restore without errors or warnings.
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/3008")]
         public async Task UWPRestore_ModernPCL()
         {
             // Arrange

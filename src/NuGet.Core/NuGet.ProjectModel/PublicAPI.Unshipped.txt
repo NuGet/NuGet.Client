@@ -1,4 +1,5 @@
 #nullable enable
+static readonly NuGet.ProjectModel.LockFileFormat.LatestVersion -> int
 ~NuGet.ProjectModel.LockFileTarget.Name.init -> void
 ~NuGet.ProjectModel.LockFileTarget.TargetAlias.get -> string
 ~NuGet.ProjectModel.LockFileTarget.TargetAlias.set -> void

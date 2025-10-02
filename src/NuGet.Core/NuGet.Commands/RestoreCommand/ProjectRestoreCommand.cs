@@ -52,6 +52,8 @@ namespace NuGet.Commands
             TelemetryActivity telemetryActivity,
             string telemetryPrefix)
         {
+            // Aliasing should only be supported in new world.
+            // TODO NK - this is where we do the splitting
             var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
@@ -315,7 +317,7 @@ namespace NuGet.Commands
                             string.Join(", ", conflict.Requests),
                             graphName);
 
-                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message, conflict.Name, graph.TargetGraphName));
+                        _logger.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1106, message, conflict.Name, graph.TargetGraphNameWithAlias));
                     }
                 }
 
