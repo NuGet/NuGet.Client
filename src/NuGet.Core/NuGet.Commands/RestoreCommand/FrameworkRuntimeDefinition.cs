@@ -6,11 +6,10 @@
 using System;
 using System.Globalization;
 using NuGet.Frameworks;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
-    internal sealed record FrameworkRuntimeDefinition : IEquatable<FrameworkRuntimeDefinition>, IComparable<FrameworkRuntimeDefinition>
+    internal sealed record FrameworkRuntimeDefinition
     {
         public string TargetAlias { get; }
 
@@ -28,23 +27,6 @@ namespace NuGet.Commands
             Name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
         }
 
-        public bool Equals(FrameworkRuntimeDefinition? other)
-        {
-            return other != null &&
-                string.Equals(TargetAlias, other.TargetAlias, StringComparison.OrdinalIgnoreCase) &&
-                Equals(Framework, other.Framework) &&
-                string.Equals(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal);
-        }
-
-        public override int GetHashCode()
-        {
-            var combiner = new HashCodeCombiner();
-            combiner.AddStringIgnoreCase(TargetAlias);
-            combiner.AddObject(Framework);
-            combiner.AddObject(RuntimeIdentifier);
-            return combiner.CombinedHash;
-        }
-
         public override string ToString()
         {
             return string.Format(
@@ -53,25 +35,6 @@ namespace NuGet.Commands
                 TargetAlias,
                 Framework.GetShortFolderName(),
                 RuntimeIdentifier);
-        }
-
-        public int CompareTo(FrameworkRuntimeDefinition? other)
-        {
-            if (other == null) return 1;
-
-            var fxCompare = string.Compare(Framework.GetShortFolderName(), other.Framework.GetShortFolderName(), StringComparison.Ordinal);
-            if (fxCompare != 0)
-            {
-                return fxCompare;
-            }
-
-            fxCompare = string.Compare(TargetAlias, other.TargetAlias, StringComparison.OrdinalIgnoreCase);
-            if (fxCompare != 0)
-            {
-                return fxCompare;
-            }
-
-            return string.Compare(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal);
         }
     }
 }

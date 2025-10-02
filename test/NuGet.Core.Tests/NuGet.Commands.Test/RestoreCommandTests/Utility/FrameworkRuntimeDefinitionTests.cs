@@ -145,22 +145,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests.Utility
             definition.Equals(null).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData("net6.0", "NET6.0")] // Case sensitive
-        [InlineData("win-x64", "WIN-X64")] // Case sensitive
-        public void Equals_WithTargetAlias_CaseSensitiveComparison(string value1, string value2)
-        {
-            // Arrange
-            var framework = FrameworkConstants.CommonFrameworks.Net60;
-
-            var definition1 = new FrameworkRuntimeDefinition(value1, framework, "win-x64");
-            var definition2 = new FrameworkRuntimeDefinition(value2, framework, "win-x64");
-
-            // Act & Assert
-            definition1.Equals(definition2).Should().BeTrue();
-            definition1.Should().Be(definition2);
-        }
-
         [Fact]
         public void GetHashCode_WithSameValues_ReturnsSameHashCode()
         {
@@ -204,91 +188,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests.Utility
 
             // Assert
             result.Should().Be("net6.0~net6.0~win-x64");
-        }
-
-        [Theory]
-        [InlineData("net472", "net5.0", -1)] // Different framework versions
-        [InlineData("net5.0", "net472", 1)]
-        [InlineData("net6.0", "net6.0", 0)] // Same framework
-        public void CompareTo_ByFramework_ReturnsExpectedResult(string framework1, string framework2, int expected)
-        {
-            // Arrange
-            var fw1 = NuGetFramework.Parse(framework1);
-            var fw2 = NuGetFramework.Parse(framework2);
-            var definition1 = new FrameworkRuntimeDefinition("alias1", fw1, "win-x64");
-            var definition2 = new FrameworkRuntimeDefinition("alias1", fw2, "win-x64");
-
-            // Act
-            int result = definition1.CompareTo(definition2);
-
-            // Assert
-            result.Should().Be(expected);
-        }
-
-        [Theory]
-        [InlineData("alias1", "alias2", -1)]
-        [InlineData("alias2", "alias1", 1)]
-        [InlineData("alias1", "alias1", 0)]
-        public void CompareTo_ByTargetAlias_WhenFrameworksEqual_ReturnsExpectedResult(string alias1, string alias2, int expected)
-        {
-            // Arrange
-            var framework = FrameworkConstants.CommonFrameworks.Net60;
-            var definition1 = new FrameworkRuntimeDefinition(alias1, framework, "win-x64");
-            var definition2 = new FrameworkRuntimeDefinition(alias2, framework, "win-x64");
-
-            // Act
-            int result = definition1.CompareTo(definition2);
-
-            // Assert
-            result.Should().Be(expected);
-        }
-
-        [Theory]
-        [InlineData("linux-x64", "win-x64", -11)]
-        [InlineData("win-x64", "linux-x64", 11)]
-        [InlineData("win-x64", "win-x64", 0)]
-        public void CompareTo_ByRuntimeIdentifier_WhenFrameworkAndAliasEqual_ReturnsExpectedResult(string rid1, string rid2, int expected)
-        {
-            // Arrange
-            var framework = FrameworkConstants.CommonFrameworks.Net60;
-            string targetAlias = "net6.0";
-            var definition1 = new FrameworkRuntimeDefinition(targetAlias, framework, rid1);
-            var definition2 = new FrameworkRuntimeDefinition(targetAlias, framework, rid2);
-
-            // Act
-            int result = definition1.CompareTo(definition2);
-
-            // Assert
-            result.Should().Be(expected);
-        }
-
-        [Fact]
-        public void CompareTo_WithNull_ReturnsOne()
-        {
-            // Arrange
-            var definition = new FrameworkRuntimeDefinition("net6.0", FrameworkConstants.CommonFrameworks.Net60, "win-x64");
-
-            // Act
-            int result = definition.CompareTo(null);
-
-            // Assert
-            result.Should().Be(1);
-        }
-
-        [Fact]
-        public void CompareTo_ComparisonPriority_FrameworkThenAliasThenRuntimeIdentifier()
-        {
-            // Arrange
-            var definition1 = new FrameworkRuntimeDefinition("b", FrameworkConstants.CommonFrameworks.Net50, "z");
-            var definition2 = new FrameworkRuntimeDefinition("a", FrameworkConstants.CommonFrameworks.Net60, "a");
-
-            // Act
-            int result = definition1.CompareTo(definition2);
-
-            // Assert
-            // Even though definition2 has smaller alias and RID, framework comparison should take precedence
-            // net5.0 < net6.0, so result should be negative
-            result.Should().BeLessThan(0);
         }
 
         [Fact]
