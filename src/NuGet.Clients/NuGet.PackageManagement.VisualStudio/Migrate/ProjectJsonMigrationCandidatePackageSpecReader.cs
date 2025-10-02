@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         internal static PackageSpecProjectJsonMigrationCandidate GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             List<LibraryDependency> dependencies = new List<LibraryDependency>();
-            List<LibraryDependency> targetFrameworkDependencies = new List<LibraryDependency>();
+            List<TargetFrameworkInformation> targetFrameworks = new List<TargetFrameworkInformation>();
             List<CompatibilityProfile> compatibilityProfiles = null;
             List<RuntimeDescription> runtimeDescriptions = null;
             string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                     }
                     else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
                     {
-                        ReadFrameworks(ref jsonReader, targetFrameworkDependencies, filePath);
+                        ReadFrameworks(ref jsonReader, targetFrameworks, filePath);
                     }
                     else if (jsonReader.ValueTextEquals(RuntimesPropertyName))
                     {
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
 
             PackageSpecProjectJsonMigrationCandidate packageSpec = new(
                 dependencies,
-                targetFrameworkDependencies.ToImmutableArray(),
+                targetFrameworks,
                 runtimeGraph);
 
             return packageSpec;
@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                 dependencies);
         }
 
-        private static void ReadFrameworks(ref Utf8JsonStreamReader reader, List<LibraryDependency> targetFrameworkDependencies, string filePath)
+        private static void ReadFrameworks(ref Utf8JsonStreamReader reader, List<TargetFrameworkInformation> targetFrameworks, string filePath)
         {
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
             {
@@ -189,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                 {
                     try
                     {
-                        ReadTargetFrameworks(targetFrameworkDependencies, filePath, ref reader);
+                        ReadTargetFrameworks(targetFrameworks, filePath, ref reader);
                     }
                     catch (Exception ex)
                     {
@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             }
         }
 
-        private static void ReadTargetFrameworks(List<LibraryDependency> targetFrameworkDependencies, string filePath, ref Utf8JsonStreamReader jsonReader)
+        private static void ReadTargetFrameworks(List<TargetFrameworkInformation> targetFrameworks, string filePath, ref Utf8JsonStreamReader jsonReader)
         {
             var frameworkName = NuGetFramework.Parse(jsonReader.GetString());
             List<LibraryDependency> dependencies = null;
@@ -229,11 +229,10 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
                 Dependencies = dependencies != null ? dependencies.ToImmutableArray() : [],
             };
 
-#pragma warning disable CS0612 // Type or member is obsolete
-            AddTargetFramework(targetFrameworkDependencies, frameworkName, secondaryFramework: default, targetFrameworkInformation);
-#pragma warning restore CS0612 // Type or member is obsolete
+            AddTargetFramework(targetFrameworks, frameworkName, secondaryFramework: default, targetFrameworkInformation);
         }
-        private static void AddTargetFramework(List<LibraryDependency> targetFrameworkDependencies, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
+
+        private static void AddTargetFramework(List<TargetFrameworkInformation> targetFrameworks, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
         {
             NuGetFramework updatedFramework = frameworkName;
 
@@ -257,7 +256,7 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
 
             targetFrameworkInformation = new TargetFrameworkInformation(targetFrameworkInformation) { FrameworkName = updatedFramework };
 
-            targetFrameworkDependencies.AddRange(targetFrameworkInformation.Dependencies);
+            targetFrameworks.Add(targetFrameworkInformation);
         }
 
         private static NuGetFramework GetDualCompatibilityFrameworkIfNeeded(NuGetFramework frameworkName, NuGetFramework secondaryFramework)
