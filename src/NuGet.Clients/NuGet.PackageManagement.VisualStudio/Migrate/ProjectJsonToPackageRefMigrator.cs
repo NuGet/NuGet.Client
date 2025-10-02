@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpecProjectJsonMigrationCandidate packageSpec)
         {
-            if (packageSpec.TargetFrameworkDependencies.Length > 1)
+            if (packageSpec.TargetFrameworks.Count > 1)
             {
                 throw new InvalidOperationException(
                     string.Format(
@@ -69,9 +69,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var dependencies = new List<LibraryDependency>();
-            foreach (var targetFrameworkDependency in packageSpec.TargetFrameworkDependencies)
+            foreach (var targetFramework in packageSpec.TargetFrameworks)
             {
-                dependencies.Add(targetFrameworkDependency);
+                dependencies.AddRange(targetFramework.Dependencies);
             }
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

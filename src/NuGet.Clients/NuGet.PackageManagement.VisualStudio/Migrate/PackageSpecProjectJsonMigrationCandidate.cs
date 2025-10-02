@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using NuGet.LibraryModel;
+using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 
 namespace NuGet.PackageManagement.VisualStudio.Migrate
@@ -16,16 +16,16 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         /// the <see cref="PackageSpec.TargetFrameworks"/> property which is a list of the <see cref="TargetFrameworkInformation"/> type.
         /// </summary>
         public IList<LibraryDependency> Dependencies { get; init; }
-        public ImmutableArray<LibraryDependency> TargetFrameworkDependencies { get; init; }
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; init; }
         public RuntimeGraph RuntimeGraph { get; init; }
 
         public PackageSpecProjectJsonMigrationCandidate(
             IList<LibraryDependency> dependencies,
-            ImmutableArray<LibraryDependency> targetFrameworkDependencies,
+            IList<TargetFrameworkInformation> targetFrameworks,
             RuntimeGraph runtimeGraph)
         {
             Dependencies = dependencies;
-            TargetFrameworkDependencies = targetFrameworkDependencies;
+            TargetFrameworks = targetFrameworks;
             RuntimeGraph = runtimeGraph;
         }
     }
