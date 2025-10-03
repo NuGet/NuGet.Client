@@ -15,7 +15,7 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using FileFormatException = System.IO.FileFormatException;
+using FileFormatException = NuGet.ProjectModel.FileFormatException;
 
 namespace NuGet.PackageManagement.VisualStudio.Migrate
 {
