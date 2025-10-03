@@ -8,6 +8,7 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {

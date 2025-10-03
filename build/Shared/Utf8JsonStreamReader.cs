@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-namespace NuGet.ProjectModel
+namespace NuGet.Shared
 {
     /// <summary>
     /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
@@ -282,10 +282,9 @@ namespace NuGet.ProjectModel
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                    Strings.Invalid_AttributeValue,
-                    Encoding.UTF8.GetString(propertyName),
+                    "Invalid attribute value '{0}' for property '{1}'. Expected 'true' or 'false'.",
                     _reader.ReadTokenAsString(),
-                    "false"));
+                    Encoding.UTF8.GetString(propertyName)));
             }
         }
 

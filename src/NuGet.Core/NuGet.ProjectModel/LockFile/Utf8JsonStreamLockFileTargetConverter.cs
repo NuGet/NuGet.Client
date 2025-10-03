@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using NuGet.Frameworks;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
