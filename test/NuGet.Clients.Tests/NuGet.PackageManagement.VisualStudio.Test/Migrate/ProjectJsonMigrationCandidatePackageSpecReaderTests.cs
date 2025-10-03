@@ -12,6 +12,7 @@ using NuGet.Versioning;
 using NuGet.LibraryModel;
 using Xunit;
 using FileFormatException = NuGet.ProjectModel.FileFormatException;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Migrate
 {
