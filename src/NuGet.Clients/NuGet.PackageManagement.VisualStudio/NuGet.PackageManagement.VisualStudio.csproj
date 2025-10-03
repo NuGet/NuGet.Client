@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
@@ -52,6 +52,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CommonResources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Update="Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
 
     <EmbeddedResource Update="Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -75,6 +79,7 @@
     <Compile Include="$(SharedDirectory)\TaskResult.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonReaderExtensions.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonStreamReader.cs" />
+    <Compile Include="$(SharedDirectory)\Utf8JsonStreamReaderConverter.cs" />
     <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
   </ItemGroup>
 

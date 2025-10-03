@@ -4,12 +4,19 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace NuGet.Shared
 {
+    /// <summary>
+    /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
+    /// It functions as a wrapper around <see cref="System.Text.Json.Utf8JsonReader"/>, while maintaining a stream and a buffer to read from.
+    /// </summary>
     internal ref struct Utf8JsonStreamReader
     {
         private static readonly char[] DelimitedStringDelimiters = [' ', ','];
@@ -31,11 +38,6 @@ namespace NuGet.Shared
         private bool _disposed;
         private ArrayPool<byte> _bufferPool;
         private int _bufferUsed = 0;
-
-        internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
-        internal bool GetBoolean() => _reader.GetBoolean();
-        internal string GetString() => _reader.GetString();
-        internal JsonTokenType TokenType => _reader.TokenType;
 
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
@@ -72,6 +74,259 @@ namespace NuGet.Shared
 
             ReadStreamIntoBuffer(initialJsonReaderState);
             _reader.Read();
+        }
+
+        internal bool IsFinalBlock => _reader.IsFinalBlock;
+
+        internal JsonTokenType TokenType => _reader.TokenType;
+
+        internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
+
+        internal bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
+
+        internal string GetString() => _reader.GetString();
+
+        internal bool GetBoolean() => _reader.GetBoolean();
+
+        internal int GetInt32() => _reader.GetInt32();
+
+        internal int CurrentDepth => _reader.CurrentDepth;
+
+        internal bool Read()
+        {
+            ThrowExceptionIfDisposed();
+
+            bool wasRead;
+            while (!(wasRead = _reader.Read()) && !_reader.IsFinalBlock)
+            {
+                GetMoreBytesFromStream();
+            }
+            return wasRead;
+        }
+
+        internal void Skip()
+        {
+            ThrowExceptionIfDisposed();
+
+            bool wasSkipped;
+            while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)
+            {
+                GetMoreBytesFromStream();
+            }
+            if (!wasSkipped)
+            {
+                _reader.Skip();
+            }
+        }
+
+        internal IList<T> ReadObjectAsList<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
+        {
+            if (TokenType == JsonTokenType.Null)
+            {
+                return Array.Empty<T>();
+            }
+
+            if (TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException($"Expected start object token but instead found '{TokenType}'");
+            }
+            //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
+            Read();
+
+            if (TokenType == JsonTokenType.EndObject)
+            {
+                return Array.Empty<T>();
+            }
+
+            var listObjects = new List<T>();
+            do
+            {
+                listObjects.Add(streamReaderConverter.Read(ref this));
+                //At this point we're looking at the EndObject token for the object, need to advance.
+                Read();
+            }
+            while (TokenType != JsonTokenType.EndObject);
+            return listObjects;
+        }
+
+        internal IList<T> ReadListOfObjects<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
+        {
+            if (TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException($"Expected start array token but instead found '{TokenType}'");
+            }
+
+            IList<T> objectList = null;
+            if (TokenType == JsonTokenType.StartArray)
+            {
+                while (Read() && TokenType != JsonTokenType.EndArray)
+                {
+                    var convertedObject = streamReaderConverter.Read(ref this);
+                    if (convertedObject != null)
+                    {
+                        objectList ??= new List<T>();
+                        objectList.Add(convertedObject);
+                    }
+                }
+            }
+            return objectList ?? Array.Empty<T>();
+        }
+
+        internal string ReadNextTokenAsString()
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read())
+            {
+                return _reader.ReadTokenAsString();
+            }
+
+            return null;
+        }
+
+        internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
+        {
+            if (TokenType == JsonTokenType.StartArray)
+            {
+                while (Read() && TokenType != JsonTokenType.EndArray)
+                {
+                    string value = _reader.ReadTokenAsString();
+
+                    strings ??= new List<string>();
+
+                    strings.Add(value);
+                }
+            }
+            return strings;
+        }
+
+        internal ImmutableArray<string> ReadStringArrayAsImmutableArray()
+        {
+            string[] strings = null;
+            var index = 0;
+
+            if (TokenType == JsonTokenType.StartArray)
+            {
+                while (Read() && TokenType != JsonTokenType.EndArray)
+                {
+                    if (strings == null)
+                    {
+                        strings = ArrayPool<string>.Shared.Rent(16);
+                    }
+                    else if (strings.Length == index)
+                    {
+                        var oldStrings = strings;
+
+                        strings = ArrayPool<string>.Shared.Rent(strings.Length * 2);
+                        oldStrings.CopyTo(strings, index: 0);
+
+                        ArrayPool<string>.Shared.Return(oldStrings);
+                    }
+
+                    strings[index++] = _reader.ReadTokenAsString();
+                }
+            }
+
+            if (strings == null)
+            {
+                return [];
+            }
+
+            var retVal = strings.AsSpan(0, index).ToImmutableArray();
+            ArrayPool<string>.Shared.Return(strings);
+
+            return retVal;
+        }
+
+        internal IReadOnlyList<string> ReadDelimitedString()
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read())
+            {
+                switch (TokenType)
+                {
+                    case JsonTokenType.String:
+                        var value = GetString();
+
+                        return value.Split(DelimitedStringDelimiters, StringSplitOptions.RemoveEmptyEntries);
+
+                    default:
+                        throw new InvalidCastException();
+                }
+            }
+
+            return null;
+        }
+
+        internal bool ReadNextTokenAsBoolOrFalse()
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
+            {
+                return GetBoolean();
+            }
+            return false;
+        }
+
+        internal bool ReadNextTokenAsBoolOrThrowAnException(byte[] propertyName)
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
+            {
+                return GetBoolean();
+            }
+            else
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Invalid_AttributeValue,
+                    Encoding.UTF8.GetString(propertyName),
+                    _reader.ReadTokenAsString(),
+                    "false"));
+            }
+        }
+
+        internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read())
+            {
+                switch (_reader.TokenType)
+                {
+                    case JsonTokenType.String:
+                        return new[] { _reader.GetString() };
+
+                    case JsonTokenType.StartArray:
+                        return ReadStringArrayAsReadOnlyListFromArrayStart();
+
+                    case JsonTokenType.StartObject:
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
+        internal IReadOnlyList<string> ReadStringArrayAsReadOnlyListFromArrayStart()
+        {
+            ThrowExceptionIfDisposed();
+
+            List<string> strings = null;
+
+            while (Read() && _reader.TokenType != JsonTokenType.EndArray)
+            {
+                string value = _reader.ReadTokenAsString();
+
+                strings ??= new List<string>();
+
+                strings.Add(value);
+            }
+
+            return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
         }
 
         // This function is called when Read() returns false and we're not already in the final block
@@ -118,147 +373,6 @@ namespace NuGet.Shared
             }
             while (bytesRead != 0 && _bufferUsed != _buffer.Length);
             _reader = new Utf8JsonReader(_buffer.AsSpan(0, _bufferUsed), isFinalBlock: bytesRead == 0, jsonReaderState);
-        }
-
-        internal string ReadNextTokenAsString()
-        {
-            ThrowExceptionIfDisposed();
-
-            if (Read())
-            {
-                return _reader.ReadTokenAsString();
-            }
-
-            return null;
-        }
-
-        internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
-        {
-            if (TokenType == JsonTokenType.StartArray)
-            {
-                while (Read() && TokenType != JsonTokenType.EndArray)
-                {
-                    string value = _reader.ReadTokenAsString();
-
-                    strings ??= new List<string>();
-
-                    strings.Add(value);
-                }
-            }
-            return strings;
-        }
-
-        internal bool ReadNextTokenAsBoolOrFalse()
-        {
-            ThrowExceptionIfDisposed();
-
-            if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
-            {
-                return GetBoolean();
-            }
-            return false;
-        }
-
-        internal bool ReadNextTokenAsBoolOrThrowAnException(byte[] propertyName)
-        {
-            ThrowExceptionIfDisposed();
-
-            if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
-            {
-                return GetBoolean();
-            }
-            else
-            {
-                throw new ArgumentException("Invalid attribute", nameof(propertyName));
-            }
-        }
-
-        internal IReadOnlyList<string> ReadStringArrayAsReadOnlyListFromArrayStart()
-        {
-            ThrowExceptionIfDisposed();
-
-            List<string> strings = null;
-
-            while (Read() && _reader.TokenType != JsonTokenType.EndArray)
-            {
-                string value = _reader.ReadTokenAsString();
-
-                strings ??= new List<string>();
-
-                strings.Add(value);
-            }
-
-            return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
-        }
-
-        internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
-        {
-            ThrowExceptionIfDisposed();
-
-            if (Read())
-            {
-                switch (_reader.TokenType)
-                {
-                    case JsonTokenType.String:
-                        return new[] { _reader.GetString() };
-
-                    case JsonTokenType.StartArray:
-                        return ReadStringArrayAsReadOnlyListFromArrayStart();
-
-                    case JsonTokenType.StartObject:
-                        return null;
-                }
-            }
-
-            return null;
-        }
-
-        internal IReadOnlyList<string> ReadDelimitedString()
-        {
-            ThrowExceptionIfDisposed();
-
-            if (Read())
-            {
-                switch (TokenType)
-                {
-                    case JsonTokenType.String:
-                        var value = GetString();
-
-                        return value.Split(DelimitedStringDelimiters, StringSplitOptions.RemoveEmptyEntries);
-
-                    default:
-                        throw new InvalidCastException();
-                }
-            }
-
-            return null;
-        }
-
-        internal bool Read()
-        {
-            ThrowExceptionIfDisposed();
-
-            bool wasRead;
-            while (!(wasRead = _reader.Read()) && !_reader.IsFinalBlock)
-            {
-                GetMoreBytesFromStream();
-            }
-            return wasRead;
-        }
-
-        internal void Skip()
-        {
-            ThrowExceptionIfDisposed();
-
-            bool wasSkipped;
-            while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)
-            {
-                GetMoreBytesFromStream();
-            }
-            if (!wasSkipped)
-            {
-                _reader.Skip();
-            }
         }
 
         public void Dispose()
