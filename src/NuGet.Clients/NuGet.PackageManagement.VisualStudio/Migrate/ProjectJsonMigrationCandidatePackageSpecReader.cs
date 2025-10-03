@@ -14,6 +14,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 using FileFormatException = NuGet.ProjectModel.FileFormatException;
 

@@ -4,7 +4,7 @@
 using System;
 using System.Text.Json;
 
-namespace NuGet.PackageManagement.VisualStudio.Migrate
+namespace NuGet.Shared
 {
     internal static class Utf8JsonReaderExtensions
     {
