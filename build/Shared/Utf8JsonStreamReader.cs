@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace NuGet.PackageManagement.VisualStudio.Migrate
+namespace NuGet.Shared
 {
     internal ref struct Utf8JsonStreamReader
     {
