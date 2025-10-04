@@ -293,8 +293,6 @@ NuGet.ProjectModel.PackageDependencyType.Transitive = 1 -> NuGet.ProjectModel.Pa
 NuGet.ProjectModel.PackageSpec
 ~NuGet.ProjectModel.PackageSpec.BaseDirectory.get -> string
 ~NuGet.ProjectModel.PackageSpec.Clone() -> NuGet.ProjectModel.PackageSpec
-~NuGet.ProjectModel.PackageSpec.Dependencies.get -> System.Collections.Generic.IList<NuGet.LibraryModel.LibraryDependency>
-~NuGet.ProjectModel.PackageSpec.Dependencies.set -> void
 ~NuGet.ProjectModel.PackageSpec.Equals(NuGet.ProjectModel.PackageSpec other) -> bool
 ~NuGet.ProjectModel.PackageSpec.FilePath.get -> string
 ~NuGet.ProjectModel.PackageSpec.FilePath.set -> void

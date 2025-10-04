@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -58,13 +57,6 @@ namespace NuGet.ProjectModel
         }
 
         public bool IsDefaultVersion { get; private set; } = true;
-
-        /// <summary>
-        /// List of dependencies that apply to all frameworks.
-        /// <see cref="ProjectStyle.PackageReference"/> based projects must not use this list and instead use the one in the <see cref="TargetFrameworks"/> property which is a list of the <see cref="TargetFrameworkInformation"/> type.
-        /// </summary>
-        [Obsolete]
-        public IList<LibraryDependency> Dependencies { get; set; }
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 

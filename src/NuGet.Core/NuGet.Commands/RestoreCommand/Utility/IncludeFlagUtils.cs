@@ -38,8 +38,6 @@ namespace NuGet.Commands
             FlattenDependencyTypesUnified(targetGraph, result);
 
             // Override flags for direct dependencies
-
-            // Add dependencies defined under the framework node
             var specFramework = spec.GetTargetFramework(targetGraph.Framework);
 
             // Override the flags for direct dependencies. This lets the
