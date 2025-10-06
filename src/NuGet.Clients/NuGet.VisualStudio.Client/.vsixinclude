@@ -21,6 +21,10 @@ NuGet.VisualStudio.Internal.Contracts.resources.dll
 NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.dll
 NuGet.VisualStudio.resources.dll
+Google.Protobuf.dll
+Microsoft.ML.Tokenizers.dll
+Microsoft.VisualStudio.Copilot.dll
+Microsoft.Bcl.HashCode.dll
 
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll

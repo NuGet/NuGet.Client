@@ -35,6 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Update="Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -67,6 +72,13 @@
     <InternalsVisibleTo Include="NuGet.Tools.Test" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
   <Target Name="DetermineGenerateProductVersionAssemblyInfoOutputs">
     <ItemGroup>
       <_ProductVersionAssemblyInfoFile Include="$(IntermediateOutputPath)ProductVersion.g$(DefaultLanguageSourceExtension)">
@@ -97,14 +109,8 @@ namespace $(RootNamespace)
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateProductVersionAssemblyInfo" BeforeTargets="GenerateAdditionalSources"
-          DependsOnTargets="DetermineGenerateProductVersionAssemblyInfoOutputs"
-          Inputs="$(MSBuildAllProjects)"
-          Outputs="@(_ProductVersionAssemblyInfoFile)">
-    <WriteLinesToFile
-      File="%(_ProductVersionAssemblyInfoFile.Identity)"
-      Lines="%(_ProductVersionAssemblyInfoFile.Source)"
-      Overwrite="true" />
+  <Target Name="GenerateProductVersionAssemblyInfo" BeforeTargets="GenerateAdditionalSources" DependsOnTargets="DetermineGenerateProductVersionAssemblyInfoOutputs" Inputs="$(MSBuildAllProjects)" Outputs="@(_ProductVersionAssemblyInfoFile)">
+    <WriteLinesToFile File="%(_ProductVersionAssemblyInfoFile.Identity)" Lines="%(_ProductVersionAssemblyInfoFile.Source)" Overwrite="true" />
   </Target>
 
     <!--
