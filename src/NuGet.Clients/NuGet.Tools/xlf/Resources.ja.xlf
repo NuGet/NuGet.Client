@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration. Either the project is not packages.config based or doesn't support PackageReference yet.</source>
-        <target state="new">Project is not eligible for migration. Either the project is not packages.config based or doesn't support PackageReference yet.</target>
+        <target state="translated">プロジェクトは、移行の対象ではありません。プロジェクトは packages.config ベースではないか、PackageReference がまだサポートされていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
