@@ -3514,7 +3514,7 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
 
                 // Assert
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().Dependencies.Length);
                 Assert.Equal(3, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
@@ -3614,7 +3614,7 @@ namespace NuGet.Commands.Test
             var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
 
             // Assert
-            Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+            Assert.Equal(1, project1Spec.TargetFrameworks.Count);
             Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Length);
             Assert.Equal(1, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
@@ -3704,7 +3704,7 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
 
                 // Assert
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Length);
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
@@ -3800,7 +3800,7 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
 
                 // Assert
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Length);
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
@@ -3905,7 +3905,7 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
 
                 // Assert
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Length);
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
@@ -4038,7 +4038,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 // Dependency counts
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Length);
                 Assert.Equal(0, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
                 Assert.Equal("(, )", project1Spec.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
@@ -4130,7 +4130,7 @@ namespace NuGet.Commands.Test
                 var packSpec = MSBuildRestoreUtility.GetPackageSpec(wrappedItems);
 
                 // Assert
-                Assert.Equal(1, packSpec.TargetFrameworks.Count());
+                Assert.Equal(1, packSpec.TargetFrameworks.Count);
 
                 var dependencyX = packSpec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "x").First();
                 var dependencyY = packSpec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "y").First();
@@ -4293,7 +4293,7 @@ namespace NuGet.Commands.Test
                 TargetFrameworkInformation targetFrameworkInformation = project1Spec.TargetFrameworks.First();
 
                 // Assert
-                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count);
                 Assert.Equal(3, targetFrameworkInformation.Dependencies.Length);
                 Assert.Equal(isCentralPackageManagementEnabled ? 3 : 0, targetFrameworkInformation.CentralPackageVersions.Count);
 

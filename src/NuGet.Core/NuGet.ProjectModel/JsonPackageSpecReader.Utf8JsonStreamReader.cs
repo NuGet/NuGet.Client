@@ -1511,9 +1511,7 @@ namespace NuGet.ProjectModel
                 Warn = warn
             };
 
-#pragma warning disable CS0612 // Type or member is obsolete
             AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);
-#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         private static HashSet<string> ReadSuppressedAdvisories(ref Utf8JsonStreamReader jsonReader)
