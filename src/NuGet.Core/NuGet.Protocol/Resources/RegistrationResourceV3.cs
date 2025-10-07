@@ -53,8 +53,6 @@ namespace NuGet.Protocol
                 throw new InvalidOperationException();
             }
 
-            PackageIdValidator.Validate(packageId);
-
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/index.json",
                 BaseUri.AbsoluteUri.TrimEnd('/'), packageId.ToLowerInvariant()));
         }
@@ -88,8 +86,6 @@ namespace NuGet.Protocol
             {
                 throw new InvalidOperationException();
             }
-
-            PackageIdValidator.Validate(package.Id);
 
             return new Uri(string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.json", BaseUri.AbsoluteUri.TrimEnd('/'),
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
