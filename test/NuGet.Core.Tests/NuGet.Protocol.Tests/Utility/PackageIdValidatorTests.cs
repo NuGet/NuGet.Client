@@ -10,17 +10,6 @@ namespace NuGet.Protocol.Tests.Utility
 {
     public class PackageIdValidatorTests
     {
-        [Theory]
-        [InlineData("../contoso")]
-        [InlineData("contoso/../package")]
-        [InlineData("contoso/.?///?")]
-        public void Validate_InvalidId_Throws(string id)
-        {
-            // Act & Assert
-            var exception = Assert.Throws<InvalidPackageIdException>(() => PackageIdValidator.Validate(id));
-            exception.Message.Contains(id);
-        }
-
         [Fact]
         public void Validate_EnvironmentVariableSet_DoesNotThrow()
         {

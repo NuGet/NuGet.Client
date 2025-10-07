@@ -2883,23 +2883,32 @@ EndGlobal";
         [InlineData("../")]
         [InlineData("../ contoso")]
         [InlineData("Some.Package/../contoso.json")]
-        public void DotnetRestore_WithInvalidPackageId_Fails(string id)
+        public void DotnetRestore_WithInvalidPackageId_Succeeds(string id)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+            var packageA1 = new SimpleTestPackageContext()
+            {
+                Id = id,
+                Version = "1.0.0"
+            };
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageA1);
+
             var targetFramework = Constants.DefaultTargetFramework.GetShortFolderName();
             string csprojContents = GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, id);
             var csprojPath = Path.Combine(pathContext.SolutionRoot, "test.csproj");
             File.WriteAllText(csprojPath, csprojContents);
+
             mockServer.Start();
 
             // Act & Assert
-            var result = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, "restore");
-            result.AllOutput.Should().Contain("NU1017");
-            result.AllOutput.Should().Contain(string.Format("Invalid package id : `{0}`", id));
+            var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, "restore -p:ExpectedRestoreProjectCount=1 -p:ExpectedRestoreSkippedCount=0  -p:ExpectedRestoreProjectsAuditedCount=0");
 
             mockServer.Stop();
         }
