@@ -412,10 +412,7 @@ namespace NuGet.Commands
                 // All .NETCoreApp, .NET Standard >= 2.0 , and .NET Framework >= 4.6.1 projects are compatible with package pruning.
                 bool isPruningCompatibleFramework = isNetCoreAppFramework ||
                     (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) &&
-                        framework.FrameworkName.Version.Major >= 2) ||
-                    (project.RestoreMetadata.UsingMicrosoftNETSdk &&
-                        StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.Net) &&
-                        framework.FrameworkName.Version >= FrameworkConstants.CommonFrameworks.Net461.Version);
+                        framework.FrameworkName.Version.Major >= 2);
 
                 pruningDefault |= isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 10;
 
