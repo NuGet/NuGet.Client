@@ -4800,7 +4800,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                         "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
                       ],
                       "originalTargetFrameworks": [
-                        "banana"
+                        "net8.0"
                       ],
                       "sources": {
                         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -4810,7 +4810,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                       },
                       "frameworks": {
                         "net8.0": {
-                          "targetAlias": "banana",
+                          "targetAlias": "net8.0",
                           "projectReferences": {}
                         }
                       },
@@ -4827,7 +4827,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                     },
                     "frameworks": {
                       "net8.0": {
-                        "targetAlias": "banana",
+                        "targetAlias": "net8.0",
                         "dependencies": {
                           "Fluid.Core": {
                             "target": "Package",
