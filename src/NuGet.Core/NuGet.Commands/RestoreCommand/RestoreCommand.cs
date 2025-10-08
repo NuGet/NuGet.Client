@@ -410,7 +410,7 @@ namespace NuGet.Commands
                 bool isPruningEnabled = framework.PackagesToPrune.Count > 0;
                 bool isNetCoreAppFramework = StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
                 // .NETCoreApp >= 2.0, .NET Standard >= 2.0 are compatible with package pruning.
-                bool isPruningCompatibleFramework = (isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 2 ) ||
+                bool isPruningCompatibleFramework = (isNetCoreAppFramework && framework.FrameworkName.Version.Major >= 2) ||
                     (StringComparer.OrdinalIgnoreCase.Equals(framework.FrameworkName.Framework, FrameworkConstants.FrameworkIdentifiers.NetStandard) &&
                         framework.FrameworkName.Version.Major >= 2);
 
