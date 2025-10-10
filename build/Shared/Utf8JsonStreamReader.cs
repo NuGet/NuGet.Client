@@ -15,7 +15,7 @@ namespace NuGet.Shared
 {
     /// <summary>
     /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
-    /// It functions as a wrapper around <see cref="System.Text.Json.Utf8JsonReader"/>, while maintaining a stream and a buffer to read from.
+    /// It functions as a wrapper around <see cref="Utf8JsonStreamReader"/>, while maintaining a stream and a buffer to read from.
     /// </summary>
     internal ref struct Utf8JsonStreamReader
     {
@@ -270,7 +270,7 @@ namespace NuGet.Shared
             return false;
         }
 
-        internal bool ReadNextTokenAsBoolOrThrowAnException(byte[] propertyName)
+        internal bool ReadNextTokenAsBoolOrThrowAnException(byte[] propertyName, string invalidAttributeString)
         {
             ThrowExceptionIfDisposed();
 
@@ -282,7 +282,7 @@ namespace NuGet.Shared
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                    Strings.Invalid_AttributeValue,
+                    invalidAttributeString,
                     Encoding.UTF8.GetString(propertyName),
                     _reader.ReadTokenAsString(),
                     "false"));
