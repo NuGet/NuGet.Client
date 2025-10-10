@@ -353,6 +353,11 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="translated">指定的源“{0}”无效。请提供有效的源。</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value '{0}'. An exact NuGet version is required for this operation.</source>
+        <target state="new">Invalid version value '{0}'. An exact NuGet version is required for this operation.</target>
+        <note>0 - package version</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">版本范围“{0}”无效</target>

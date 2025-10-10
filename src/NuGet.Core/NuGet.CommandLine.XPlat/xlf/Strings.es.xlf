@@ -353,6 +353,11 @@ NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establece
         <target state="translated">El origen "{0}" especificado no es válido. Proporcione un origen válido.</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value '{0}'. An exact NuGet version is required for this operation.</source>
+        <target state="new">Invalid version value '{0}'. An exact NuGet version is required for this operation.</target>
+        <note>0 - package version</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">Intervalo de versiones no válido "{0}"</target>

@@ -353,6 +353,11 @@ Menedżer NuGet wymaga źródeł HTTPS. Aby użyć źródeł HTTP, musisz wyraź
         <target state="translated">Określone źródło „{0}” jest nieprawidłowe. Określ prawidłowe źródło.</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value '{0}'. An exact NuGet version is required for this operation.</source>
+        <target state="new">Invalid version value '{0}'. An exact NuGet version is required for this operation.</target>
+        <note>0 - package version</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">Nieprawidłowy zakres wersji „{0}”</target>
