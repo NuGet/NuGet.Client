@@ -7,6 +7,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel

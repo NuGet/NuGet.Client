@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
@@ -41,7 +42,9 @@ namespace NuGet.ProjectModel
             return Read(ref reader, LockFileReadFlags.All);
         }
 
+#pragma warning disable CA1822 // Mark members as static
         public LockFile Read(ref Utf8JsonStreamReader reader, LockFileReadFlags flags)
+#pragma warning restore CA1822 // Mark members as static
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -70,7 +73,7 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.Libraries) == LockFileReadFlags.Libraries)
                     {
-                        lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(Utf8JsonReaderExtensions.LockFileLibraryConverter);
+                        lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(Utf8JsonStreamLockFileConverters.LockFileLibraryConverter);
                     }
                     else
                     {
@@ -84,7 +87,7 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets)
                     {
-                        lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
+                        lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonStreamLockFileConverters.LockFileTargetConverter);
                     }
                     else
                     {
@@ -98,7 +101,7 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.ProjectFileDependencyGroups) == LockFileReadFlags.ProjectFileDependencyGroups)
                     {
-                        lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(Utf8JsonReaderExtensions.ProjectFileDepencencyGroupConverter);
+                        lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(Utf8JsonStreamLockFileConverters.ProjectFileDepencencyGroupConverter);
                     }
                     else
                     {
@@ -112,7 +115,7 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.PackageFolders) == LockFileReadFlags.PackageFolders)
                     {
-                        lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
+                        lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(Utf8JsonStreamLockFileConverters.LockFileItemConverter);
                     }
                     else
                     {
@@ -172,7 +175,7 @@ namespace NuGet.ProjectModel
                     reader.Read();
                     if ((flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages)
                     {
-                        lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonReaderExtensions.IAssetsLogMessageConverter);
+                        lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonStreamLockFileConverters.IAssetsLogMessageConverter);
                     }
                     else
                     {
