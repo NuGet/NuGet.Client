@@ -11,36 +11,24 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package
 {
-    internal record NuGetPackage : IEqualityComparer<NuGetPackage>
+    internal record NuGetPackageWithNuGetVersion : IEqualityComparer<NuGetPackageWithNuGetVersion>
     {
         public required string Id { get; init; }
-        public VersionRange? VersionRange { get; init; }
 
-        public NuGetVersion? ExactVersion { get; init; }
+        public NuGetVersion? NuGetVersion { get; init; }
 
-        internal static IReadOnlyList<NuGetPackage> ParsePackagesWithVersionRange(ArgumentResult result)
-        {
-            return ParsePackages(result, exactVersion: false);
-        }
-
-        internal static IReadOnlyList<NuGetPackage> ParsePackagesWithExactVersions(ArgumentResult result)
-        {
-            return ParsePackages(result, exactVersion: true);
-        }
-
-        private static IReadOnlyList<NuGetPackage> ParsePackages(ArgumentResult result, bool exactVersion)
+        internal static IReadOnlyList<NuGetPackageWithNuGetVersion> Parse(ArgumentResult result)
         {
             if (result.Tokens.Count == 0)
             {
                 return [];
             }
 
-            List<NuGetPackage> packages = new List<NuGetPackage>(result.Tokens.Count);
+            var packages = new List<NuGetPackageWithNuGetVersion>(result.Tokens.Count);
 
             foreach (var token in result.Tokens)
             {
                 string? packageId;
-                VersionRange? newVersionRange = null;
                 NuGetVersion? newExactVersion = null;
 
                 int separatorIndex = token.Value.IndexOf('@');
@@ -60,29 +48,17 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
                         return [];
                     }
 
-                    if (exactVersion)
+                    if (!NuGetVersion.TryParse(versionString, out newExactVersion))
                     {
-                        if (!NuGetVersion.TryParse(versionString, out newExactVersion))
-                        {
-                            result.AddError(Messages.Error_InvalidVersion(versionString));
-                            return [];
-                        }
-                    }
-                    else
-                    {
-                        if (!VersionRange.TryParse(versionString, out newVersionRange))
-                        {
-                            result.AddError(Messages.Error_InvalidVersionRange(versionString));
-                            return [];
-                        }
+                        result.AddError(Messages.Error_InvalidVersion(versionString));
+                        return [];
                     }
                 }
 
-                NuGetPackage package = new NuGetPackage
+                var package = new NuGetPackageWithNuGetVersion
                 {
                     Id = packageId,
-                    VersionRange = newVersionRange,
-                    ExactVersion = newExactVersion
+                    NuGetVersion = newExactVersion
                 };
 
                 packages.Add(package);
@@ -91,7 +67,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
             return packages;
         }
 
-        public bool Equals(NuGetPackage? x, NuGetPackage? y)
+        public bool Equals(NuGetPackageWithNuGetVersion? x, NuGetPackageWithNuGetVersion? y)
         {
             if (ReferenceEquals(x, y))
             {
@@ -108,16 +84,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
                 return false;
             }
 
-            return VersionRangeComparer.Default.Equals(x.VersionRange, y.VersionRange) &&
-                VersionComparer.Compare(x.ExactVersion, y.ExactVersion, VersionComparison.Default) == 0;
+            return VersionComparer.Compare(x.NuGetVersion, y.NuGetVersion, VersionComparison.Default) == 0;
         }
 
-        public int GetHashCode([DisallowNull] NuGetPackage obj)
+        public int GetHashCode([DisallowNull] NuGetPackageWithNuGetVersion obj)
         {
             HashCode hash = new HashCode();
             hash.Add(obj.Id, StringComparer.OrdinalIgnoreCase);
-            hash.Add(obj.VersionRange);
-            hash.Add(obj.ExactVersion);
+            hash.Add(obj.NuGetVersion);
             return hash.ToHashCode();
         }
     }

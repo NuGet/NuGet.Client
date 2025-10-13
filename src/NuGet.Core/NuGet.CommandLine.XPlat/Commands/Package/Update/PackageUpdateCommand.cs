@@ -24,11 +24,11 @@ internal static class PackageUpdateCommand
     {
         var command = new DocumentedCommand("update", Strings.PackageUpdateCommand_Description, "https://aka.ms/dotnet/package/update");
 
-        var packagesArguments = new Argument<IReadOnlyList<NuGetPackage>>("packages")
+        var packagesArguments = new Argument<IReadOnlyList<NuGetPackageWithVersionRange>>("packages")
         {
             Description = Strings.PackageUpdate_PackageArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore,
-            CustomParser = NuGetPackage.ParsePackagesWithVersionRange
+            CustomParser = NuGetPackageWithVersionRange.Parse
         };
         command.Arguments.Add(packagesArguments);
 
@@ -49,7 +49,7 @@ internal static class PackageUpdateCommand
         command.SetAction(async (args, cancellationToken) =>
         {
             FileSystemInfo? project = args.GetValue(projectOption);
-            IReadOnlyList<NuGetPackage> packages = args.GetValue(packagesArguments) ?? [];
+            IReadOnlyList<NuGetPackageWithVersionRange> packages = args.GetValue(packagesArguments) ?? [];
             bool interactive = args.GetValue(interactiveOption);
             VerbosityEnum verbosity = args.GetValue(verbosityOption) ?? VerbosityEnum.normal;
             LogLevel logLevel = verbosity.ToLogLevel();

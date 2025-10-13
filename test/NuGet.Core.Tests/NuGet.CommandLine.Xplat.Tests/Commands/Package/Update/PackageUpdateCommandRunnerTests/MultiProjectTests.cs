@@ -19,7 +19,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
-using Pkg = XPlat.Commands.Package.NuGetPackage;
+using Pkg = XPlat.Commands.Package.NuGetPackageWithVersionRange;
 
 public class MultiProjectTests
 {

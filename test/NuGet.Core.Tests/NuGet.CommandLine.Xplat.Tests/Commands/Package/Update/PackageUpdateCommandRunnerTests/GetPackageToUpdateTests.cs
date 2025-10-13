@@ -22,7 +22,7 @@ using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.NuGetPackage;
+using Pkg = NuGet.CommandLine.XPlat.Commands.Package.NuGetPackageWithVersionRange;
 
 public class GetPackageToUpdateTests
 {
