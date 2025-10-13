@@ -49,9 +49,6 @@ parameters:
   - Real
   - Test
 
-variables:
-  SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
-
 stages:
 - stage: Initialize
   jobs:
