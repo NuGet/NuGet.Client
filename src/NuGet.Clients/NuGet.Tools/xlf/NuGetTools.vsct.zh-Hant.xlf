@@ -37,16 +37,6 @@
         <target state="translated">cmdidClearNuGetLocalResources</target>
         <note />
       </trans-unit>
-      <trans-unit id="cmdidLaunchPackageManagerUI|ButtonText">
-        <source>Manage &amp;NuGet Packages...</source>
-        <target state="new">Manage &amp;NuGet Packages...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdidLaunchPackageManagerUI|CommandName">
-        <source>cmdidLaunchPackageManagerUI</source>
-        <target state="new">cmdidLaunchPackageManagerUI</target>
-        <note />
-      </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
         <target state="translated">套件管理器主控台(&amp;O)</target>

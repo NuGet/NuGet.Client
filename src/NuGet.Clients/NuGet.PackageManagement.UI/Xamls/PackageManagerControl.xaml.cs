@@ -1560,11 +1560,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void ShowVulnerablePackages()
+        public void SelectPackageFilterOptions(PackageFilterOptions filterOptions)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _topPanel.SelectFilter(ItemFilter.Installed);
-            _topPanel._checkboxVulnerabilities.IsChecked = true;
+            if (filterOptions == null)
+            {
+                return;
+            }
+
+            if (filterOptions.ShowPrerelease.HasValue)
+            {
+                _topPanel.CheckboxPrerelease.IsChecked = filterOptions.ShowPrerelease;
+            }
+
+            if (filterOptions.ShowOnlyVulnerable.HasValue)
+            {
+                _topPanel._checkboxVulnerabilities.IsChecked = filterOptions.ShowOnlyVulnerable;
+            }
         }
 
         private void CleanUp()

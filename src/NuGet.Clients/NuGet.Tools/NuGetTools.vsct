@@ -174,18 +174,6 @@
           <ButtonText>U&amp;pdate...</ButtonText>
         </Strings>
       </Button>
-      
-      <Button guid="guidDialogCmdSet" id="cmdidLaunchPackageManagerUI" priority="0x0200" type="Button">
-        <Parent guid="guidPackageManagementCmdSet" id="idPackageManagementGroup" />
-        <!--<CommandFlag>CommandWellOnly</CommandFlag>-->
-        <CommandFlag>AllowParams</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <CommandName>cmdidLaunchPackageManagerUI</CommandName>
-          <ButtonText>Manage &amp;NuGet Packages...</ButtonText>
-        </Strings>
-      </Button>
     </Buttons>
 
     <Combos>
@@ -316,7 +304,6 @@
       <IDSymbol name="cmdidUpgradePackagesConfig" value="0x0410" />
       <IDSymbol name="cmdidUpdatePackage" value="0x0500" />
       <IDSymbol name="cmdidUpdatePackages" value="0x0600" />
-      <IDSymbol name="cmdidLaunchPackageManagerUI" value="0x0700" />
     </GuidSymbol>
     <GuidSymbol name="guidClearNuGetLocalResourcesCmdSet" value="{54A0AC88-A025-4A62-8D48-6C1848E4F545}">
       <IDSymbol name="cmdidClearNuGetLocalResources" value="0x0100" />

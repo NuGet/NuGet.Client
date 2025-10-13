@@ -378,12 +378,6 @@ namespace NuGetVSExtension
                 var updatePackagesDialogCommand = new OleMenuCommand(ShowUpdatePackagesDialog, changeHandler: null, BeforeQueryStatusForAddPackageDialog, updatePackagesDialogCommandID);
                 updatePackageDialogCommand.ParametersDescription = "$";
                 _mcs.AddCommand(updatePackagesDialogCommand);
-
-                // menu command for launching the PM UI for the solution to show vulnerable packages
-                var launchPackageManagerUICommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidLaunchPackageManagerUI);
-                var launchPackageManagerUICommand = new OleMenuCommand(ShowVulnerablePackagesDialog, changeHandler: null, BeforeQueryStatusForAddPackageForSolutionDialog, launchPackageManagerUICommandID);
-                launchPackageManagerUICommand.ParametersDescription = "$";
-                _mcs.AddCommand(launchPackageManagerUICommand);
             }
         }
 
@@ -788,17 +782,6 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowUpdatePackagesDialog));
         }
 
-        private void ShowVulnerablePackagesDialog(object sender, EventArgs e)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            {
-                var windowFrame = await ShowManageLibraryPackageForSolutionDialogAsync(GetSearchText(parameterString));
-                ShowVulnerablePackages(windowFrame);
-            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowVulnerablePackagesDialog));
-        }
-
         private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1036,15 +1019,33 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
-            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            PackageManagerShowOptions options = null;
+            if (e is OleMenuCmdEventArgs eventArgs)
+            {
+                if (eventArgs?.InValue is string parameterString)
+                {
+                    options = new PackageManagerShowOptions() { SearchText = parameterString };
+                }
+                else if (eventArgs?.InValue is PackageManagerShowOptions parameterOptions)
+                {
+                    options = parameterOptions;
+                }
+                else
+                {
+                    options = new PackageManagerShowOptions();
+                }
+            }
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ShowManageLibraryPackageForSolutionDialogAsync(GetSearchText(parameterString));
+                await ShowManageLibraryPackageForSolutionDialogAsync(options);
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
-        private async Task<IVsWindowFrame> ShowManageLibraryPackageForSolutionDialogAsync(string searchText)
+        private async Task<IVsWindowFrame> ShowManageLibraryPackageForSolutionDialogAsync(PackageManagerShowOptions options)
         {
+            string searchText = GetSearchText(options.SearchText);
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (ShouldInitializeSolutionExperiences())
@@ -1058,6 +1059,8 @@ namespace NuGetVSExtension
 
             if (windowFrame != null)
             {
+                SelectActiveItemFilter(windowFrame, options.ItemFilter);
+                SelectFilterOptions(windowFrame, options.PackageFilterOptions);
                 Search(windowFrame, searchText);
                 windowFrame.Show();
             }
@@ -1103,12 +1106,29 @@ namespace NuGetVSExtension
             packageManagerControl?.ShowUpdatePackages(updatePackageOptions);
         }
 
-        private static void ShowVulnerablePackages(IVsWindowFrame windowFrame)
+        private static void SelectActiveItemFilter(IVsWindowFrame windowFrame, UI.ItemFilter? itemFilter)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-            packageManagerControl?.ShowVulnerablePackages();
+            if (itemFilter.HasValue)
+            {
+                var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+                if (packageManagerControl != null)
+                {
+                    packageManagerControl.ActiveFilter = itemFilter.Value;
+                }
+            }
+        }
+
+        private static void SelectFilterOptions(IVsWindowFrame windowFrame, PackageFilterOptions packageFilterOptions)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (packageFilterOptions != null)
+            {
+                var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+                packageManagerControl?.SelectPackageFilterOptions(packageFilterOptions);
+            }
         }
 
         // For PowerShell, it's okay to query from the worker thread.
