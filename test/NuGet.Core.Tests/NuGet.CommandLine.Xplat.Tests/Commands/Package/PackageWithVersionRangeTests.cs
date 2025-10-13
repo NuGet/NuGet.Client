@@ -7,35 +7,35 @@ using FluentAssertions;
 using NuGet.Versioning;
 using Xunit;
 
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.NuGetPackageWithVersionRange;
+using Pkg = NuGet.CommandLine.XPlat.Commands.Package.PackageWithVersionRange;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
 {
-    public class NuGetPackageWithVersionRangeTests
+    public class PackageWithVersionRangeTests
     {
-        private RootCommand _versionRangeCommand;
-        private Argument<IReadOnlyList<Pkg>> _versionRangePackagesArgument;
+        private RootCommand _command;
+        private Argument<IReadOnlyList<Pkg>> _packagesArgument;
 
-        public NuGetPackageWithVersionRangeTests()
+        public PackageWithVersionRangeTests()
         {
-            _versionRangeCommand = new RootCommand();
+            _command = new RootCommand();
 
-            _versionRangePackagesArgument = new Argument<IReadOnlyList<Pkg>>("packages")
+            _packagesArgument = new Argument<IReadOnlyList<Pkg>>("packages")
             {
                 Arity = ArgumentArity.ZeroOrMore,
                 CustomParser = Pkg.Parse
             };
-            _versionRangeCommand.Arguments.Add(_versionRangePackagesArgument);
+            _command.Arguments.Add(_packagesArgument);
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_OnePackage_ReturnsListOfOne()
+        public void Parse_OnePackage_ReturnsListOfOne()
         {
             // Arrange
-            var result = _versionRangeCommand.Parse("packageId");
+            var result = _command.Parse("packageId");
 
             // Act
-            var packages = result.GetValue(_versionRangePackagesArgument);
+            var packages = result.GetValue(_packagesArgument);
 
             // Assert
             IReadOnlyList<Pkg> expects = [new Pkg()
@@ -47,13 +47,13 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_TwoPackages_ReturnsListOfTwo()
+        public void Parse_TwoPackages_ReturnsListOfTwo()
         {
             // Arrange
-            var result = _versionRangeCommand.Parse("packageId1 packageId2");
+            var result = _command.Parse("packageId1 packageId2");
 
             // Act
-            var packages = result.GetValue(_versionRangePackagesArgument);
+            var packages = result.GetValue(_packagesArgument);
 
             // Assert
             IReadOnlyList<Pkg> expects = [
@@ -64,13 +64,13 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_PackageWithVersion_ReturnsPackageWithVersion()
+        public void Parse_PackageWithVersion_ReturnsPackageWithVersion()
         {
             // Arrange
-            var result = _versionRangeCommand.Parse("packageId@1.2.3");
+            var result = _command.Parse("packageId@1.2.3");
 
             // Act
-            var packages = result.GetValue(_versionRangePackagesArgument);
+            var packages = result.GetValue(_packagesArgument);
 
             // Assert
             IReadOnlyList<Pkg> expects = [new Pkg()
@@ -82,13 +82,13 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_PackageWithRangeSyntax_ReturnsPackageWithVersion()
+        public void Parse_PackageWithRangeSyntax_ReturnsPackageWithVersion()
         {
             // Arrange
-            var result = _versionRangeCommand.Parse("packageId@[1.2.3,2.0.0)");
+            var result = _command.Parse("packageId@[1.2.3,2.0.0)");
 
             // Act
-            var packages = result.GetValue(_versionRangePackagesArgument);
+            var packages = result.GetValue(_packagesArgument);
 
             // Assert
             IReadOnlyList<Pkg> expects = [new Pkg()
@@ -100,20 +100,20 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_VersionWithNoId_ReturnsError()
+        public void Parse_VersionWithNoId_ReturnsError()
         {
             // Arrange & Act
-            var result = _versionRangeCommand.Parse("@1.2.3");
+            var result = _command.Parse("@1.2.3");
 
             // Assert
             result.Errors.Should().ContainSingle();
         }
 
         [Fact]
-        public void ParsePackagesWithVersionRange_PackageWithInvalidVersion_ReturnsError()
+        public void Parse_PackageWithInvalidVersion_ReturnsError()
         {
             // Arrange & Act
-            var result = _versionRangeCommand.Parse("packageId@one");
+            var result = _command.Parse("packageId@one");
 
             // Assert
             result.Errors.Should().ContainSingle();

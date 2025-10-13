@@ -3,28 +3,26 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package
 {
-    internal record NuGetPackageWithNuGetVersion : IEqualityComparer<NuGetPackageWithNuGetVersion>
+    internal record PackageWithNuGetVersion
     {
         public required string Id { get; init; }
 
         public NuGetVersion? NuGetVersion { get; init; }
 
-        internal static IReadOnlyList<NuGetPackageWithNuGetVersion> Parse(ArgumentResult result)
+        internal static IReadOnlyList<PackageWithNuGetVersion> Parse(ArgumentResult result)
         {
             if (result.Tokens.Count == 0)
             {
                 return [];
             }
 
-            var packages = new List<NuGetPackageWithNuGetVersion>(result.Tokens.Count);
+            var packages = new List<PackageWithNuGetVersion>(result.Tokens.Count);
 
             foreach (var token in result.Tokens)
             {
@@ -55,7 +53,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
                     }
                 }
 
-                var package = new NuGetPackageWithNuGetVersion
+                var package = new PackageWithNuGetVersion
                 {
                     Id = packageId,
                     NuGetVersion = newExactVersion
@@ -65,34 +63,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
             }
 
             return packages;
-        }
-
-        public bool Equals(NuGetPackageWithNuGetVersion? x, NuGetPackageWithNuGetVersion? y)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return true;
-            }
-
-            if (x is null || y is null)
-            {
-                return false;
-            }
-
-            if (!x.Id.Equals(y.Id, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return VersionComparer.Compare(x.NuGetVersion, y.NuGetVersion, VersionComparison.Default) == 0;
-        }
-
-        public int GetHashCode([DisallowNull] NuGetPackageWithNuGetVersion obj)
-        {
-            HashCode hash = new HashCode();
-            hash.Add(obj.Id, StringComparer.OrdinalIgnoreCase);
-            hash.Add(obj.NuGetVersion);
-            return hash.ToHashCode();
         }
     }
 }

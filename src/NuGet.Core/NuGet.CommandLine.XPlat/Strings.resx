@@ -1105,7 +1105,7 @@ Do not translate "PackageVersion"</comment>
     <value>Argument cannot be null or empty.</value>
   </data>
   <data name="Error_InvalidVersion" xml:space="preserve">
-    <value>Invalid version value '{0}'. An exact NuGet version is required for this operation.</value>
+    <value>Invalid version value '{0}'.</value>
     <comment>0 - package version</comment>
   </data>
 </root>

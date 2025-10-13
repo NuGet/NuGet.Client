@@ -674,7 +674,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid version value &apos;{0}&apos;. An exact NuGet version is required for this operation..
+        ///   Looks up a localized string similar to Invalid version value &apos;{0}&apos;..
         /// </summary>
         internal static string Error_InvalidVersion {
             get {

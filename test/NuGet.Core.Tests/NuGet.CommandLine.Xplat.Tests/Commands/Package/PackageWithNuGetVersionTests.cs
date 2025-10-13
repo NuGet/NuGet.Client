@@ -7,16 +7,16 @@ using FluentAssertions;
 using NuGet.Versioning;
 using Xunit;
 
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.NuGetPackageWithNuGetVersion;
+using Pkg = NuGet.CommandLine.XPlat.Commands.Package.PackageWithNuGetVersion;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
 {
-    public class NuGetPackageWithNuGetVersionTests
+    public class PackageWithNuGetVersionTests
     {
         private RootCommand _exactVersionCommand;
         private Argument<IReadOnlyList<Pkg>> _exactVersionPackagesArgument;
 
-        public NuGetPackageWithNuGetVersionTests()
+        public PackageWithNuGetVersionTests()
         {
             _exactVersionCommand = new RootCommand();
             _exactVersionPackagesArgument = new Argument<IReadOnlyList<Pkg>>("packages")
@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_PackageWithExactVersion_ReturnsPackageWithExactVersion()
+        public void Parse_PackageWithExactVersion_ReturnsPackageWithExactVersion()
         {
             // Arrange
             var result = _exactVersionCommand.Parse("packageId@1.2.3");
@@ -46,7 +46,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_TwoPackagesWithExactVersions_ReturnsListOfTwo()
+        public void Parse_TwoPackagesWithExactVersions_ReturnsListOfTwo()
         {
             // Arrange
             var result = _exactVersionCommand.Parse("packageId1@1.0.0 packageId2@2.3.4");
@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_PackageWithoutVersion_ReturnsPackageWithNullVersion()
+        public void Parse_PackageWithoutVersion_ReturnsPackageWithNullVersion()
         {
             // Arrange & Act
             var result = _exactVersionCommand.Parse("packageId");
@@ -81,7 +81,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_VersionWithNoId_ReturnsError()
+        public void Parse_VersionWithNoId_ReturnsError()
         {
             // Arrange & Act
             var result = _exactVersionCommand.Parse("@1.2.3");
@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_PackageWithRangeSyntax_ReturnsError()
+        public void Parse_PackageWithRangeSyntax_ReturnsError()
         {
             // Arrange & Act
             var result = _exactVersionCommand.Parse("packageId@[1.2.3,2.0.0)");
@@ -101,13 +101,85 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         }
 
         [Fact]
-        public void ParsePackagesWithExactVersions_PackageWithInvalidVersion_ReturnsError()
+        public void Parse_PackageWithInvalidVersion_ReturnsError()
         {
             // Arrange & Act
             var result = _exactVersionCommand.Parse("packageId@one");
 
             // Assert
             result.Errors.Should().ContainSingle();
+        }
+
+        [Fact]
+        public void Equals_SameIdAndVersion_ReturnsTrue()
+        {
+            // Arrange
+            var package1 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = new NuGetVersion("1.2.3"),
+            };
+            var package2 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = new NuGetVersion("1.2.3"),
+            };
+            // Act & Assert
+            package1.Should().Be(package2);
+        }
+
+        [Fact]
+        public void Equals_DifferentId_ReturnsFalse()
+        {
+            // Arrange
+            var package1 = new Pkg()
+            {
+                Id = "packageId1",
+                NuGetVersion = new NuGetVersion("1.2.3"),
+            };
+            var package2 = new Pkg()
+            {
+                Id = "packageId2",
+                NuGetVersion = new NuGetVersion("1.2.3"),
+            };
+            // Act & Assert
+            package1.Should().NotBe(package2);
+        }
+
+        [Fact]
+        public void Equals_DifferentVersion_ReturnsFalse()
+        {
+            // Arrange
+            var package1 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = new NuGetVersion("1.2.3"),
+            };
+            var package2 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = new NuGetVersion("2.0.0"),
+            };
+            // Act & Assert
+            package1.Should().NotBe(package2);
+        }
+
+        [Fact]
+        public void Equals_NullVersionAndNonNullVersion_ReturnsFalse()
+        {
+            // Arrange
+            var package1 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = null,
+            };
+            var package2 = new Pkg()
+            {
+                Id = "packageId",
+                NuGetVersion = new NuGetVersion("1.0.0"),
+            };
+            // Act & Assert
+            package1.Should().NotBe(package2);
         }
     }
 }
