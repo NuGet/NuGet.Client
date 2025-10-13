@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
         internal const string MonikerPackageSources = "packageSources";
+        internal const string MonikerAuditSources = "auditSources";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
         internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
@@ -48,6 +49,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return filteredPackageSources;
         }
 
+        private List<PackageSource> LoadAuditSources()
+        {
+            IEnumerable<PackageSource> auditSources = _packageSourceProvider.LoadAuditSources();
+            return auditSources.ToList();
+        }
+
         public override async Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
             switch (moniker)
@@ -58,7 +65,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         cancellationToken);
 
                     return GetValuePackageSources<T>(packageSources);
+                case MonikerAuditSources:
+                    var auditSources = await Task.Run(
+                        () => LoadAuditSources(),
+                        cancellationToken);
 
+                    return GetValuePackageSources<T>(auditSources);
                 case MonikerMachineWideSources:
                     var machineWidePackageSources = await Task.Run(
                         () => LoadPackageSources(isMachineWide: true),
