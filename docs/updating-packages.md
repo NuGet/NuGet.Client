@@ -39,6 +39,6 @@ For packages/assemblies that we include in the vsix (see the `.vsixinclude` file
 ## Ingesting packages from the dotnet-public mirror
 
 The client build uses the dotnet-public mirror for ingesting nuget.org packages. 
-To ingest new packages or new package versions to the dotnet-public, you can use https://github.com/dotnet/arcade/blob/main/Documentation/MirroringPackages.md. 
-Note that certain packages are automatically mirrored.
+The [mirroring packages](https://github.com/dotnet/arcade/blob/main/Documentation/MirroringPackages.md) document has details about how this ingestion happens and when and how to ingest new packages or package versions.
+
 
