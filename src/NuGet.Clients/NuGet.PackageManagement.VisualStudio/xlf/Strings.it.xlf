@@ -177,13 +177,6 @@
         <target state="translated">Installazione del pacchetto NuGet {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Invalid_AttributeValue">
-        <source>The {0} value: `{1}` is invalid. Valid example: `{2}`</source>
-        <target state="new">The {0} value: `{1}` is invalid. Valid example: `{2}`</target>
-        <note>{0} - is the attribute
-{1} is the invalid value of the attribute.
-{2} a valid attriibute value example</note>
-      </trans-unit>
       <trans-unit id="MSBuildPropertyNotFound">
         <source>The {0} MSBuild property could not be found for project '{1}'.</source>
         <target state="translated">La proprietà MSBuild {0} non è stata trovata per il progetto '{1}'.</target>

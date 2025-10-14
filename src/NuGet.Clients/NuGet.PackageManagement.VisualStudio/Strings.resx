@@ -310,10 +310,4 @@
   <data name="Migrating_ProjectJson_Succeeded" xml:space="preserve">
     <value>Migration Succeeded</value>
   </data>
-  <data name="Invalid_AttributeValue" xml:space="preserve">
-    <value>The {0} value: `{1}` is invalid. Valid example: `{2}`</value>
-    <comment>{0} - is the attribute
-{1} is the invalid value of the attribute.
-{2} a valid attriibute value example</comment>
-  </data>
 </root>

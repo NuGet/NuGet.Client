@@ -177,13 +177,6 @@
         <target state="translated">NuGet 패키지 {0}을(를) 설치하고 있습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Invalid_AttributeValue">
-        <source>The {0} value: `{1}` is invalid. Valid example: `{2}`</source>
-        <target state="new">The {0} value: `{1}` is invalid. Valid example: `{2}`</target>
-        <note>{0} - is the attribute
-{1} is the invalid value of the attribute.
-{2} a valid attriibute value example</note>
-      </trans-unit>
       <trans-unit id="MSBuildPropertyNotFound">
         <source>The {0} MSBuild property could not be found for project '{1}'.</source>
         <target state="translated">'{1}' 프로젝트에 대한 {0} MSBuild 속성을 찾을 수 없습니다.</target>
