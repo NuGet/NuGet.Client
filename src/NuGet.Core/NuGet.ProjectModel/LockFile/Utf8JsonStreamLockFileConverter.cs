@@ -42,9 +42,7 @@ namespace NuGet.ProjectModel
             return Read(ref reader, LockFileReadFlags.All);
         }
 
-#pragma warning disable CA1822 // Mark members as static
-        public LockFile Read(ref Utf8JsonStreamReader reader, LockFileReadFlags flags)
-#pragma warning restore CA1822 // Mark members as static
+        public static LockFile Read(ref Utf8JsonStreamReader reader, LockFileReadFlags flags)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
