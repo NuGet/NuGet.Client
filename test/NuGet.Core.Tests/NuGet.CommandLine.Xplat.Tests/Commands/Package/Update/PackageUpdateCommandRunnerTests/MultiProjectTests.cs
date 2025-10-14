@@ -16,11 +16,11 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using NuGet.CommandLine.XPlat.Utility;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
 using Pkg = XPlat.Commands.Package.PackageArgument<VersionRange>;
-using Comparer = XPlat.Utility.VersionRangeEqualityComparer;
 
 public class MultiProjectTests
 {
@@ -52,7 +52,7 @@ public class MultiProjectTests
 
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Test.Package", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", new VersionRange(new NuGetVersion("1.2.3")))
         };
 
         TestData testData = InitTest(project1Path, packagesToUpdate, dgSpec);

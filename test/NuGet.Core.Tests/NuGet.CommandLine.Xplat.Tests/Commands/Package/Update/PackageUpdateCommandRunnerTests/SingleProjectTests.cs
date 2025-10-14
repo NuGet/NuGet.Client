@@ -15,10 +15,10 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using NuGet.CommandLine.XPlat.Utility;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
-using Comparer = NuGet.CommandLine.XPlat.Utility.VersionRangeEqualityComparer;
 using Pkg = XPlat.Commands.Package.PackageArgument<VersionRange>;
 
 public class SingleProjectTests
@@ -35,7 +35,7 @@ public class SingleProjectTests
 
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Test.Package", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", new VersionRange(new NuGetVersion("1.2.3")))
         };
 
         TestData testData = InitTest(packagesToUpdate, packageSpec);
@@ -73,8 +73,8 @@ public class SingleProjectTests
 
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Test.Package1", Version = new VersionRange(new NuGetVersion("1.2.3")) },
-            new Pkg(new Comparer()) { Id = "Test.Package2", Version = new VersionRange(new NuGetVersion("2.1.0")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package1", new VersionRange(new NuGetVersion("1.2.3"))),
+            PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package2", new VersionRange(new NuGetVersion("2.1.0")))
         };
 
         TestData testData = InitTest(packagesToUpdate, packageSpec);
@@ -128,7 +128,7 @@ public class SingleProjectTests
 
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Contoso.Polyfill", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Contoso.Polyfill", new VersionRange(new NuGetVersion("1.2.3")))
         };
 
         TestData testData = InitTest(packagesToUpdate, packageSpec);
@@ -175,7 +175,7 @@ public class SingleProjectTests
 
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Contoso.Polyfill", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Contoso.Polyfill", new VersionRange(new NuGetVersion("1.2.3")))
         };
 
         TestData testData = InitTest(packagesToUpdate, packageSpec);
@@ -205,7 +205,7 @@ public class SingleProjectTests
         }).Build();
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Non.Existent.Package", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Non.Existent.Package", new VersionRange(new NuGetVersion("1.2.3")))
         };
         TestData testData = InitTest(packagesToUpdate, packageSpec);
 
@@ -239,7 +239,7 @@ public class SingleProjectTests
         }).Build();
         var packagesToUpdate = new List<Pkg>
         {
-            new Pkg(new Comparer()) { Id = "Test.Package", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+            PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", new VersionRange(new NuGetVersion("1.2.3")))
         };
         TestData testData = InitTest(packagesToUpdate, packageSpec, restoreSuccessful: false);
 
@@ -271,7 +271,7 @@ public class SingleProjectTests
             Project = "nonexistent.csproj",
             Packages = new List<Pkg>
             {
-                new Pkg(new Comparer()) { Id = "Test.Package", Version = new VersionRange(new NuGetVersion("1.2.3")) }
+                PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", new VersionRange(new NuGetVersion("1.2.3")))
             },
             Interactive = false,
             LogLevel = LogLevel.Information,
@@ -345,7 +345,7 @@ public class SingleProjectTests
                 {
                     Packages = new List<Pkg>
                     {
-                        new Pkg(new Comparer()) { Id = "Test.Package", Version = null }
+                        PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", null)
                     }
                 }
             };
@@ -395,7 +395,7 @@ public class SingleProjectTests
                 {
                     Packages = new List<Pkg>
                     {
-                        new Pkg(new Comparer()) { Id = "Test.Package", Version = null }
+                        PackageArgumentFactoryUtility.CreateForVersionRange("Test.Package", null)
                     }
                 }
             };

@@ -546,7 +546,7 @@ internal static class PackageUpdateCommandRunner
         List<(PackageArgument<VersionRange> package, List<string> tfms)> result = new(allPackages.Count);
         foreach (var kvp in allPackages)
         {
-            var package = new PackageArgument<VersionRange>(new VersionRangeEqualityComparer()) { Id = kvp.Key, Version = kvp.Value.version };
+            var package = PackageArgumentFactoryUtility.CreateForVersionRange(kvp.Key, kvp.Value.version);
             result.Add((package, kvp.Value.tfms));
         }
 
