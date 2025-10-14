@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Update
 {
@@ -12,7 +13,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
     {
         public required string Project { get; init; }
 
-        public required IReadOnlyList<Package> Packages { get; init; }
+        public required IReadOnlyList<PackageArgument<VersionRange>> Packages { get; init; }
 
         public required bool Interactive { get; init; }
 

@@ -182,7 +182,7 @@ internal static class PackageUpdateCommandRunner
     }
 
     private static async Task<(List<PackageUpdateResult> vulnerablePackages, int packagesScanned)> SelectVulnerablePackagesToUpdateAsync(
-        IReadOnlyList<Package>? packages,
+        IReadOnlyList<PackageArgument<VersionRange>>? packages,
         DependencyGraphSpec dgSpec,
         ILoggerWithColor logger,
         IPackageUpdateIO packageUpdateIO,
@@ -283,7 +283,7 @@ internal static class PackageUpdateCommandRunner
     }
 
     internal static async Task<List<PackageUpdateResult>> SelectPackagesToUpdateAsync(
-        IReadOnlyList<Package> packages,
+        IReadOnlyList<PackageArgument<VersionRange>> packages,
         PackageSpec project,
         ILoggerWithColor logger,
         IPackageUpdateIO packageUpdateIO,
@@ -319,9 +319,9 @@ internal static class PackageUpdateCommandRunner
             }
 
             VersionRange upgradeVersion;
-            if (package.VersionRange is not null)
+            if (package.Version is not null)
             {
-                upgradeVersion = package.VersionRange;
+                upgradeVersion = package.Version;
                 if (upgradeVersion == existingVersion)
                 {
                     logger.LogMinimal(Messages.Warning_AlreadyUsingSameVersion(package.Id, upgradeVersion.OriginalString), ConsoleColor.Yellow);
@@ -465,8 +465,8 @@ internal static class PackageUpdateCommandRunner
             }
 
             // package.identity.VersionRange is the project's referenced version.
-            Debug.Assert(package.identity.VersionRange != null);
-            bool usePrerelease = package.identity.VersionRange.HasLowerBound && package.identity.VersionRange.MinVersion.IsPrerelease;
+            Debug.Assert(package.identity.Version != null);
+            bool usePrerelease = package.identity.Version.HasLowerBound && package.identity.Version.MinVersion.IsPrerelease;
             var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
 
             if (latestVersion is null)
@@ -477,7 +477,7 @@ internal static class PackageUpdateCommandRunner
             }
 
             var upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
-            if (upgradeVersion.ToString() == package.identity.VersionRange.ToString())
+            if (upgradeVersion.ToString() == package.identity.Version.ToString())
             {
                 // Already using the highest version.
                 continue;
@@ -488,7 +488,7 @@ internal static class PackageUpdateCommandRunner
                 Package = new PackageToUpdate
                 {
                     Id = package.identity.Id,
-                    CurrentVersion = package.identity.VersionRange,
+                    CurrentVersion = package.identity.Version,
                     NewVersion = upgradeVersion
                 },
                 TargetFrameworkAliases = package.tfms
@@ -499,7 +499,7 @@ internal static class PackageUpdateCommandRunner
         return successful ? (packagesToUpdate, allProjectPackages.Count) : (null, allProjectPackages.Count);
     }
 
-    private static List<(Package identity, List<string> tfms)>? GetAllPackagesReferencedByProject(PackageSpec project, ILoggerWithColor logger)
+    private static List<(PackageArgument<VersionRange> identity, List<string> tfms)>? GetAllPackagesReferencedByProject(PackageSpec project, ILoggerWithColor logger)
     {
         var allPackages = new Dictionary<string, (VersionRange version, List<string> tfms, bool hasError)>(StringComparer.OrdinalIgnoreCase);
         bool hasErrors = false;
@@ -543,10 +543,10 @@ internal static class PackageUpdateCommandRunner
             return null;
         }
 
-        List<(Package package, List<string> tfms)> result = new(allPackages.Count);
+        List<(PackageArgument<VersionRange> package, List<string> tfms)> result = new(allPackages.Count);
         foreach (var kvp in allPackages)
         {
-            var package = new Package { Id = kvp.Key, VersionRange = kvp.Value.version };
+            var package = new PackageArgument<VersionRange>(new VersionRangeEqualityComparer()) { Id = kvp.Key, Version = kvp.Value.version };
             result.Add((package, kvp.Value.tfms));
         }
 

@@ -22,7 +22,8 @@ using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.Update.Package;
+using Pkg = NuGet.CommandLine.XPlat.Commands.Package.PackageArgument<VersionRange>;
+using Comparer = XPlat.Utility.VersionRangeEqualityComparer;
 
 public class GetPackageToUpdateTests
 {
@@ -40,10 +41,10 @@ public class GetPackageToUpdateTests
     public async Task RequestSinglePackage_GetsRequestedVersion()
     {
         // Arrange
-        Pkg package = new()
+        Pkg package = new(new Comparer())
         {
             Id = "Contoso.Utils",
-            VersionRange = new VersionRange(new NuGetVersion("1.2.3"))
+            Version = new VersionRange(new NuGetVersion("1.2.3"))
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
@@ -80,10 +81,10 @@ public class GetPackageToUpdateTests
     public async Task RequestPackageWithoutVersion_GetsLatestVersion()
     {
         // Arrange
-        Pkg package = new()
+        Pkg package = new(new Comparer())
         {
             Id = "Contoso.Utils",
-            VersionRange = null
+            Version = null
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
@@ -124,10 +125,10 @@ public class GetPackageToUpdateTests
     public async Task RequestSinglePackageWithRangeSyntax_GetsRequestedVersion()
     {
         // Arrange
-        Pkg package = new()
+        Pkg package = new(new Comparer())
         {
             Id = "Contoso.Utils",
-            VersionRange = VersionRange.Parse("[1.2.3,2.0.0)")
+            Version = VersionRange.Parse("[1.2.3,2.0.0)")
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
@@ -164,10 +165,10 @@ public class GetPackageToUpdateTests
     public async Task RequestPackageNotOnSource_LogsError()
     {
         // Arrange
-        Pkg package = new()
+        Pkg package = new(new Comparer())
         {
             Id = "Contoso.Utils",
-            VersionRange = null
+            Version = null
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
@@ -202,16 +203,16 @@ public class GetPackageToUpdateTests
     public async Task RequestMultiplePackages_GetsAllRequested()
     {
         // Arrange
-        Pkg package1 = new()
+        Pkg package1 = new(new Comparer())
         {
             Id = "Contoso.Utils",
-            VersionRange = new VersionRange(new NuGetVersion("1.2.3"))
+            Version = new VersionRange(new NuGetVersion("1.2.3"))
         };
 
-        Pkg package2 = new()
+        Pkg package2 = new(new Comparer())
         {
             Id = "Fabrikam.Tools",
-            VersionRange = null // Should get latest version
+            Version = null // Should get latest version
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
@@ -256,10 +257,10 @@ public class GetPackageToUpdateTests
     public async Task RequestPackageUpdateNotReferencedByProject_ReturnsEmpty()
     {
         // Arrange
-        Pkg package = new()
+        Pkg package = new(new Comparer())
         {
             Id = "NotReferenced.Package",
-            VersionRange = new VersionRange(new NuGetVersion("1.0.0"))
+            Version = new VersionRange(new NuGetVersion("1.0.0"))
         };
 
         PackageSpec packageSpec = new TestPackageSpecFactory(builder =>

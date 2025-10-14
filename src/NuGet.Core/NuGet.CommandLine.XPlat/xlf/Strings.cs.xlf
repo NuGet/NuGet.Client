@@ -353,6 +353,11 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
         <target state="translated">Zadaný zdroj {0} není platný. Zadejte platný zdroj.</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value `{0}`.</source>
+        <target state="new">Invalid version value `{0}`.</target>
+        <note>0 - An invalid NuGet package version.</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">Neplatný rozsah verzí {0}</target>

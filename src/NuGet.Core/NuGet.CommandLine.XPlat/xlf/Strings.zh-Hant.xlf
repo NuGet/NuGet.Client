@@ -353,6 +353,11 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <target state="translated">指定的來源 '{0}' 無效。請提供有效的來源。</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value `{0}`.</source>
+        <target state="new">Invalid version value `{0}`.</target>
+        <note>0 - An invalid NuGet package version.</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">不正確版本範圍 '{0}'</target>

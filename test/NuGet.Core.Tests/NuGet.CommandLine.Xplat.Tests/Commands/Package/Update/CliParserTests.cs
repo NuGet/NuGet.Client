@@ -48,7 +48,7 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(1);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().BeNull();
+        result.Packages[0].Version.Should().BeNull();
     }
 
     [Fact]
@@ -64,9 +64,9 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(2);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().BeNull();
+        result.Packages[0].Version.Should().BeNull();
         result.Packages[1].Id.Should().Be("Contoso.Framework");
-        result.Packages[1].VersionRange.Should().BeNull();
+        result.Packages[1].Version.Should().BeNull();
     }
 
     [Fact]
@@ -82,8 +82,8 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(1);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().NotBeNull();
-        result.Packages[0].VersionRange!.ToString().Should().Be("[2.1.0, )");
+        result.Packages[0].Version.Should().NotBeNull();
+        result.Packages[0].Version!.ToString().Should().Be("[2.1.0, )");
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(1);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().NotBeNull();
-        result.Packages[0].VersionRange!.ToString().Should().Be("[2.0.0, 3.0.0)");
+        result.Packages[0].Version.Should().NotBeNull();
+        result.Packages[0].Version!.ToString().Should().Be("[2.0.0, 3.0.0)");
     }
 
     [Fact]
@@ -116,9 +116,9 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(2);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Packages[0].Version.Should().NotBeNull();
         result.Packages[1].Id.Should().Be("Contoso.Framework");
-        result.Packages[1].VersionRange.Should().BeNull();
+        result.Packages[1].Version.Should().BeNull();
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class CliParserTests
         result.Should().NotBeNull();
         result.Packages.Should().HaveCount(1);
         result.Packages[0].Id.Should().Be("Contoso.Utils");
-        result.Packages[0].VersionRange.Should().NotBeNull();
+        result.Packages[0].Version.Should().NotBeNull();
         result.Project.Should().Be(projectPath);
         result.Interactive.Should().BeTrue();
         result.LogLevel.Should().Be(LogLevel.Verbose);

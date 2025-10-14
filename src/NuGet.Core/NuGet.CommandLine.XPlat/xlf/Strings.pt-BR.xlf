@@ -353,6 +353,11 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">A origem especificada '{0}' é inválida. Forneça uma origem válida.</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value `{0}`.</source>
+        <target state="new">Invalid version value `{0}`.</target>
+        <note>0 - An invalid NuGet package version.</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">Intervalo de versão "{0}" inválido</target>
