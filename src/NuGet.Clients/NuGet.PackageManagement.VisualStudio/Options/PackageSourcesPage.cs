@@ -17,8 +17,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     [Guid("15C605EC-4FD7-446B-BA4A-75ECF0C0B2D0")]
     public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
+        internal const string DefaultNuGetAudit = "package-sources";
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerAuditSources = "auditSources";
+        internal const string MonikerNuGetAudit = "nuGetAudit";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
         internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
@@ -61,10 +63,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 case MonikerPackageSources:
                     var packageSources = await Task.Run(
-                        () => LoadPackageSources(isMachineWide: false),
+                             () => LoadPackageSources(isMachineWide: false),
                         cancellationToken);
 
                     return GetValuePackageSources<T>(packageSources);
+                case MonikerNuGetAudit:
+                    return await ConvertValueOrThrow<T>(DefaultNuGetAudit);
                 case MonikerAuditSources:
                     var auditSources = await Task.Run(
                         () => LoadAuditSources(),
