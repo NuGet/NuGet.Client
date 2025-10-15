@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.CommandLine.Parsing;
 using NuGet.CommandLine.XPlat.Commands.Package;
@@ -15,8 +17,8 @@ namespace NuGet.CommandLine.XPlat.Utility
             return PackageArgument<NuGetVersion>.Parse(
                 result,
                 NuGetVersion.TryParse,
-                versionString => Messages.Error_InvalidVersion(versionString),
-                versionComparer: new NuGetVersionEqualityComparer());
+                Messages.Error_InvalidVersion,
+                (IEqualityComparer<NuGetVersion?>)VersionComparer.Default);
         }
 
         public static IReadOnlyList<PackageArgument<VersionRange>> ParseWithVersionRange(ArgumentResult result)
@@ -24,36 +26,8 @@ namespace NuGet.CommandLine.XPlat.Utility
             return PackageArgument<VersionRange>.Parse(
                 result,
                 VersionRange.TryParse,
-                versionString => Messages.Error_InvalidVersionRange(versionString),
-                versionComparer: new VersionRangeEqualityComparer());
-        }
-    }
-
-#nullable enable
-
-    internal sealed class NuGetVersionEqualityComparer : IEqualityComparer<NuGetVersion?>
-    {
-        public bool Equals(NuGetVersion? x, NuGetVersion? y)
-        {
-            return VersionComparer.Compare(x, y, VersionComparison.Default) == 0;
-        }
-
-        public int GetHashCode(NuGetVersion? obj)
-        {
-            return obj != null ? new VersionComparer().GetHashCode(obj) : 0;
-        }
-    }
-
-    internal sealed class VersionRangeEqualityComparer : IEqualityComparer<VersionRange?>
-    {
-        public bool Equals(VersionRange? x, VersionRange? y)
-        {
-            return VersionRangeComparer.Default.Equals(x, y);
-        }
-
-        public int GetHashCode(VersionRange? obj)
-        {
-            return obj != null ? VersionRangeComparer.Default.GetHashCode(obj) : 0;
+                Messages.Error_InvalidVersionRange,
+                (IEqualityComparer<VersionRange?>)VersionRangeComparer.Default);
         }
     }
 }

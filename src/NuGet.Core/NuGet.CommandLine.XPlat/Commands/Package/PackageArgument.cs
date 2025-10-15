@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
     {
         public required string Id { get; init; }
         public required TVersion? Version { get; init; }
-        internal delegate bool TryParseVersion(string value, out TVersion version);
+        internal delegate bool TryParseVersion(string value, out TVersion? version);
         private readonly IEqualityComparer<TVersion?> _versionComparer;
 
         public PackageArgument(IEqualityComparer<TVersion?> versionComparer)

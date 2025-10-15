@@ -12,14 +12,14 @@ using PackageWithVersionRange = NuGet.CommandLine.XPlat.Commands.Package.Package
 
 namespace NuGet.CommandLine.Xplat.Tests.Utility
 {
-    public class PackageArgumentParserUtility
+    public class PackageArgumentParserUtilityTest
     {
         private readonly RootCommand _versionRangeCommand;
         private readonly Argument<IReadOnlyList<PackageWithVersionRange>> _versionRangePackagesArgument;
         private readonly RootCommand _versionCommand;
         private readonly Argument<IReadOnlyList<PackageWithVersion>> _versionPackagesArgument;
 
-        public PackageArgumentParserUtility()
+        public PackageArgumentParserUtilityTest()
         {
             _versionRangeCommand = new RootCommand();
 
