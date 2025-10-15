@@ -84,7 +84,7 @@ stages:
         LclSource: lclFilesfromPackage
         LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
         MirrorRepo: 'NuGet.Client'
-        MirrorBranch: $[ variables['SourceBranch'] ]
+        MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
         GitHubOrg: 'NuGet'
 
 - stage: StaticSourceAnalysis
