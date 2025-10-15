@@ -209,8 +209,8 @@
         },
         "nuGetAudit": {
           "type": "string",
-          "title": "Choose how to NuGet Audit retrieves vulnerability data.",
-          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format",
+          "title": "Choose how NuGet Audit retrieves vulnerability data.",
+          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
           "default": "package-sources",
 
           // Invariant monikers

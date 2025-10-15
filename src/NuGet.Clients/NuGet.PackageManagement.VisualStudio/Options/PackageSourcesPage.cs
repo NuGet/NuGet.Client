@@ -91,12 +91,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
-            if (packageSourcesList is null)
-            {
-                throw new InvalidOperationException();
-            }
-
             bool hasAnyHiddenPropertyChanged = false;
 
             try
@@ -106,7 +100,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 switch (moniker)
                 {
+                    case MonikerNuGetAudit:
+                        return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
                     case MonikerPackageSources:
+                        var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
+                        if (packageSourcesList is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
                         return await Task.Run(
                             () =>
                             {
@@ -117,8 +118,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             cancellationToken);
 
                     case MonikerMachineWideSources:
+                        var machineWidePackageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
+                        if (machineWidePackageSourcesList is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
                         return await Task.Run(
-                            () => SetIsEnabledOnMachineWidePackageSources(packageSourcesList, cancellationToken),
+                            () => SetIsEnabledOnMachineWidePackageSources(machineWidePackageSourcesList, cancellationToken),
                             cancellationToken);
 
                     default:
