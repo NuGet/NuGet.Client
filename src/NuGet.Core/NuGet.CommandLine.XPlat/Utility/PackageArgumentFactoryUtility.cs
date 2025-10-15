@@ -11,7 +11,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     internal static class PackageArgumentFactoryUtility
     {
-        public static PackageArgument<NuGetVersion> CreateForVersion(string id, NuGetVersion version)
+        public static PackageArgument<NuGetVersion> CreateForVersion(string id, NuGetVersion? version)
         {
             return new PackageArgument<NuGetVersion>((IEqualityComparer<NuGetVersion?>)VersionComparer.Default)
             {
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             };
         }
 
-        public static PackageArgument<VersionRange> CreateForVersionRange(string id, VersionRange version)
+        public static PackageArgument<VersionRange> CreateForVersionRange(string id, VersionRange? version)
         {
             return new PackageArgument<VersionRange>((IEqualityComparer<VersionRange?>)VersionRangeComparer.Default)
             {
