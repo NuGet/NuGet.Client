@@ -15,6 +15,7 @@ using NuGet.CommandLine.XPlat.Commands.Package;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -41,7 +42,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = VersionRange.Parse(version) }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(version) }],
             OutputDirectory = outputDir,
         };
 
@@ -82,7 +83,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = null }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
             OutputDirectory = outputDir,
         };
 
@@ -123,7 +124,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = null }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
             OutputDirectory = outputDir,
             IncludePrerelease = true
         };
@@ -165,7 +166,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = null }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
             OutputDirectory = outputDir,
         };
 
@@ -205,7 +206,7 @@ public class PackageDownloadRunnerTests
         // First run: install explicit version
         var args1 = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = VersionRange.Parse(v) }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
             LogLevel = LogLevel.Verbose,
             OutputDirectory = outputDir,
         };
@@ -221,7 +222,7 @@ public class PackageDownloadRunnerTests
         // Second run: should short-circuit because already installed
         var args2 = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = VersionRange.Parse(v) }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
             OutputDirectory = outputDir,
         };
 
@@ -256,7 +257,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = "Contoso.Lib", VersionRange = null }],
+            Packages = [new PackageWithNuGetVersion { Id = "Contoso.Lib", NuGetVersion = null }],
             OutputDirectory = outputDir,
         };
 
@@ -293,7 +294,7 @@ public class PackageDownloadRunnerTests
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new Package { Id = id, VersionRange = VersionRange.Parse(v) }],
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
             OutputDirectory = outputDir,
         };
 
@@ -319,11 +320,11 @@ public class PackageDownloadRunnerTests
         // Arrange
         using var context = new SimpleTestPathContext();
         var v123 = new NuGetVersion("1.2.3");
-        var package = new Package { Id = "Contoso", VersionRange = VersionRange.Parse(v123.OriginalVersion) };
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = NuGetVersion.Parse(v123.OriginalVersion) };
         var sourceDir = Path.Combine(context.WorkingDirectory, "src");
         Directory.CreateDirectory(sourceDir);
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, package.VersionRange.OriginalString);
-        var sources = new[] { new PackageSource(sourceDir) };
+        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, package.NuGetVersion.ToNormalizedString());
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceDir)) };
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
 
@@ -348,7 +349,7 @@ public class PackageDownloadRunnerTests
         using var context = new SimpleTestPathContext();
         var v123 = new NuGetVersion("1.2.3");
         var v100 = new NuGetVersion("1.0.0");
-        var package = new Package { Id = "Contoso", VersionRange = VersionRange.Parse(v123.OriginalVersion) };
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = NuGetVersion.Parse(v123.OriginalVersion) };
 
         var sourceA = Path.Combine(context.WorkingDirectory, "srcA");
         var sourceB = Path.Combine(context.WorkingDirectory, "srcB");
@@ -358,7 +359,7 @@ public class PackageDownloadRunnerTests
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, v100.OriginalVersion);
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceB, package.Id, v123.OriginalVersion);
 
-        var sources = new[] { new PackageSource(sourceA), new PackageSource(sourceB) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceA)), Repository.Factory.GetCoreV3(new PackageSource(sourceB)) };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
 
         // Act
@@ -375,7 +376,7 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var package = new Package { Id = "Contoso", VersionRange = null };
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = null };
         var sourceA = Path.Combine(context.WorkingDirectory, "srcA");
         var sourceB = Path.Combine(context.WorkingDirectory, "srcB");
         Directory.CreateDirectory(sourceA);
@@ -385,7 +386,7 @@ public class PackageDownloadRunnerTests
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "1.5.0-alpha"); // prerelease; should be ignored
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceB, package.Id, "2.0.0");       // highest stable
 
-        var sources = new[] { new PackageSource(sourceA), new PackageSource(sourceB) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceA)), Repository.Factory.GetCoreV3(new PackageSource(sourceB)) };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
 
         // Act
@@ -402,7 +403,7 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var package = new Package { Id = "Contoso", VersionRange = null }; // pickLatest
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = null }; // pickLatest
         var sourceA = Path.Combine(context.WorkingDirectory, "srcA");
         var sourceB = Path.Combine(context.WorkingDirectory, "srcB");
         Directory.CreateDirectory(sourceA);
@@ -411,7 +412,7 @@ public class PackageDownloadRunnerTests
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "2.0.0");          // stable
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceB, package.Id, "2.1.0-rc.1");     // higher (prerelease)
 
-        var sources = new[] { new PackageSource(sourceA), new PackageSource(sourceB) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceA)), Repository.Factory.GetCoreV3(new PackageSource(sourceB)) };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
 
         // Act
@@ -424,75 +425,17 @@ public class PackageDownloadRunnerTests
     }
 
     [Fact]
-    public async Task ResolvePackageDownloadVersion_MinInclusiveVersionRange_PicksLowestSatisfyingAcrossSources()
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        var min = new NuGetVersion("1.0.0");
-        var max = new NuGetVersion("2.0.0");
-        var range = VersionRange.Parse($"[{min.OriginalVersion}, {max.OriginalVersion})");
-
-        var package = new Package { Id = "Contoso", VersionRange = range };
-
-        var sourceA = Path.Combine(context.WorkingDirectory, "srcA");
-        var sourceB = Path.Combine(context.WorkingDirectory, "srcB");
-        Directory.CreateDirectory(sourceA);
-        Directory.CreateDirectory(sourceB);
-
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "1.0.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "1.5.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceB, package.Id, "1.8.0");
-
-        var sources = new[] { new PackageSource(sourceA), new PackageSource(sourceB) };
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-
-        // Act
-        (NuGetVersion resolved, SourceRepository resolvedRepo) = await PackageDownloadRunner.ResolvePackageDownloadVersion(
-            package, sources, new SourceCacheContext(), logger.Object, includePrerelease: false, CancellationToken.None);
-
-        // Assert
-        resolved.Should().Be(min);
-        resolvedRepo.PackageSource.Source.Should().Be(sourceA);
-    }
-
-    [Fact]
-    public async Task ResolvePackageDownloadVersion_MinAndMaxInclusiveRange_UsesMinVersionIfPresent()
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        var rangeText = "[1.0.0,2.0.0]";
-        var package = new Package { Id = "Contoso", VersionRange = VersionRange.Parse(rangeText) };
-
-        var sourceA = Path.Combine(context.WorkingDirectory, "srcA");
-        Directory.CreateDirectory(sourceA);
-
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "1.0.0"); // MinVersion present
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceA, package.Id, "2.0.0");
-
-        var sources = new[] { new PackageSource(sourceA) };
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-
-        // Act
-        (NuGetVersion resolved, SourceRepository resolvedRepo) = await PackageDownloadRunner.ResolvePackageDownloadVersion(
-            package, sources, new SourceCacheContext(), logger.Object, includePrerelease: false, CancellationToken.None);
-
-        // Assert (pins current behavior)
-        resolved.Should().Be(new NuGetVersion("1.0.0"));
-        resolvedRepo.PackageSource.Source.Should().Be(sourceA);
-    }
-
-    [Fact]
     public async Task ResolvePackageDownloadVersion_NoMatchesAnywhere_ReturnsNull()
     {
         using var context = new SimpleTestPathContext();
 
         // Arrange
-        var package = new Package { Id = "Contoso", VersionRange = null }; // pickLatest
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = null }; // pickLatest
         var sourceA = Path.Combine(context.WorkingDirectory, "emptyA");
         var sourceB = Path.Combine(context.WorkingDirectory, "emptyB");
         Directory.CreateDirectory(sourceA);
         Directory.CreateDirectory(sourceB);
-        var sources = new[] { new PackageSource(sourceA), new PackageSource(sourceB) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceA)), Repository.Factory.GetCoreV3(new PackageSource(sourceB)) };
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         logger.Setup(l => l.LogError(It.IsAny<string>()));
@@ -512,13 +455,13 @@ public class PackageDownloadRunnerTests
         // Arrange
         using var context = new SimpleTestPathContext();
         var v123 = new NuGetVersion("1.2.3");
-        var package = new Package { Id = "Contoso", VersionRange = VersionRange.Parse(v123.OriginalVersion) };
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = NuGetVersion.Parse(v123.OriginalVersion) };
         var sourceDir = Path.Combine(context.WorkingDirectory, "src");
         Directory.CreateDirectory(sourceDir);
 
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, "1.0.0");
 
-        var sources = new[] { new PackageSource(sourceDir) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceDir)) };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         logger.Setup(l => l.LogError(It.IsAny<string>()));
 
@@ -542,13 +485,13 @@ public class PackageDownloadRunnerTests
         using var context = new SimpleTestPathContext();
 
         // Arrange
-        var package = new Package { Id = "Contoso", VersionRange = null }; // pickLatest = true
+        var package = new PackageWithNuGetVersion { Id = "Contoso", NuGetVersion = null }; // pickLatest = true
         var sourceDir = Path.Combine(context.WorkingDirectory, "src");
         Directory.CreateDirectory(sourceDir);
 
         await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, "3.0.0-beta.1"); // prerelease only
 
-        var sources = new[] { new PackageSource(sourceDir) };
+        var sources = new[] { Repository.Factory.GetCoreV3(new PackageSource(sourceDir)) };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         logger.Setup(l => l.LogError(It.IsAny<string>()));
 
@@ -564,37 +507,5 @@ public class PackageDownloadRunnerTests
         // Assert
         Assert.Null(resolved);
         Assert.Null(resolvedRepo);
-    }
-
-    [Fact]
-    public async Task ResolvePackageDownloadVersion_VersionRangeMinNotAvailable_PicksNextLowestSatisfying()
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        var min = new NuGetVersion("1.0.0");
-        var max = new NuGetVersion("3.0.0");
-
-        var package = new Package { Id = "Contoso", VersionRange = VersionRange.Parse($"[{min.OriginalVersion}, {max.OriginalVersion}]") };
-
-        var sourceDir = Path.Combine(context.WorkingDirectory, "src");
-        Directory.CreateDirectory(sourceDir);
-
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, "1.5.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, "2.0.0");
-
-        var sources = new[] { new PackageSource(sourceDir) };
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-
-        // Act
-        (NuGetVersion resolved, SourceRepository resolvedRepo) = await PackageDownloadRunner.ResolvePackageDownloadVersion(
-            package,
-            sources,
-            new SourceCacheContext(),
-            logger.Object,
-            includePrerelease: false,
-            CancellationToken.None);
-
-        Assert.Equal(new NuGetVersion("1.5.0"), resolved);
-        Assert.Equal(sourceDir, resolvedRepo.PackageSource.Source);
     }
 }

@@ -47,11 +47,6 @@
         <target state="translated">要新增的套件之識別碼。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPkg_PackagePrerelease">
-        <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">允許安裝發行前版本套件。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddPkg_PackageVersionDescription">
         <source>Version of the package to be added.</source>
         <target state="translated">要新增的套件版本。</target>
@@ -358,12 +353,6 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <target state="new">Invalid version value '{0}'.</target>
         <note>0 - package version</note>
       </trans-unit>
-      <trans-unit id="Error_InvalidVerbosity">
-        <source>Invalid verbosity level '{0}'. Allowed values are: quiet, normal, detailed.</source>
-        <target state="new">Invalid verbosity level '{0}'. Allowed values are: quiet, normal, detailed.</target>
-        <note>0 - verbosity level
-do not translate: quiet, normal, detailed.</note>
-      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">不正確版本範圍 '{0}'</target>
@@ -407,6 +396,11 @@ do not translate: quiet, normal, detailed.</note>
       <trans-unit id="Error_NotPRProject">
         <source>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</source>
         <target state="translated">專案 `{0}` 會使用 NuGet 套件的 package.config，且命令僅能搭配套件參考專案使用。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_PackageDownload_VersionNotFound">
+        <source>Unable to find a valid package version</source>
+        <target state="new">Unable to find a valid package version</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
@@ -897,6 +891,69 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <note>{0}: App full name
 {1}: App version</note>
       </trans-unit>
+      <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescritption">
+        <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
+        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_AlreadyInstalled">
+        <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
+        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
+        <note>0 - package id
+1 - version
+2 - directory path where the package was downloaded</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_Failed">
+        <source>Package '{0}' ({1}) failed to download.</source>
+        <target state="new">Package '{0}' ({1}) failed to download.</target>
+        <note>0 - package id
+1 - package version</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_LatestVersion">
+        <source>latest version</source>
+        <target state="new">latest version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_OutputDirectoryDescription">
+        <source>Directory where the package will be placed. Defaults to the current working directory.</source>
+        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_PackageIdDescription">
+        <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
+        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_SourcesDescription">
+        <source>Specifies one or more NuGet package sources to use.</source>
+        <target state="new">Specifies one or more NuGet package sources to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_Starting">
+        <source>Downloading package {0}, version {1}.</source>
+        <target state="new">Downloading package {0}, version {1}.</target>
+        <note>0- package id
+1- package version</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_Succeeded">
+        <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
+        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
+        <note>0 - package id
+1 - package version
+2 - package download location</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_UnableToDownload">
+        <source>Package download failed for `{0} {1}` from source `{2}`.</source>
+        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
+        <note>0 package id
+1 package version
+2 package source</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_descritpion">
+        <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
+        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdateCommand_Description">
         <source>Update referenced packages in a project or solution.</source>
         <target state="translated">更新專案或解決方案中參照的套件。</target>
@@ -990,43 +1047,15 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">正在更新 {0} 中含有安全性建議的套件</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
-      <trans-unit id="PkgDownload_AlreadyInstalled">
-        <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
-        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
-        <note>0 - package id
-1 - version
-2 - directory path where the package was downloaded</note>
-      </trans-unit>
-      <trans-unit id="PkgDownload_Failed">
-        <source>Package '{0}' ({1}) failed to download.</source>
-        <target state="new">Package '{0}' ({1}) failed to download.</target>
-        <note>0 - package id
-1 - package version</note>
-      </trans-unit>
-      <trans-unit id="PkgDownload_Starting">
-        <source>Downloading package {0}, version {1}.</source>
-        <target state="new">Downloading package {0}, version {1}.</target>
-        <note>0- package id
-1- package version</note>
-      </trans-unit>
-      <trans-unit id="PkgDownload_Succeeded">
-        <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
-        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
-        <note>0 - package id
-1 - package version
-2 - package download location</note>
-      </trans-unit>
-      <trans-unit id="PkgDownload_UnableToDownload">
-        <source>Package download failed for `{0} {1}` from source `{2}`.</source>
-        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
-        <note>0 package id
-1 package version
-2 package source</note>
-      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">沒有可用的穩定版本，{0} 是最適用的版本。請考慮新增 --prerelease 選項</target>
         <note>{0} - Package Version</note>
+      </trans-unit>
+      <trans-unit id="Prerelease_Description">
+        <source>Allows prerelease packages to be installed.</source>
+        <target state="new">Allows prerelease packages to be installed.</target>
+        <note />
       </trans-unit>
       <trans-unit id="PushCommandSkipDuplicateDescription">
         <source>If a package and version already exists, skip it and continue with the next package in the push, if any.</source>
@@ -1489,61 +1518,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <source>The assets file '{0}' for project '{1}' does not contain a target for the specified input framework '{2}'.</source>
         <target state="translated">專案 '{1}' 的資產檔案 '{0}' 未包含指定輸入架構 '{2}' 的目標。</target>
         <note>{0} - Assets file path, {1} - Project name, {2} - Framework</note>
-      </trans-unit>
-      <trans-unit id="pkgDownload_AllowInsecureConnectionsDescritption">
-        <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
-        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_OutputDirectoryDescription">
-        <source>Directory where the package will be placed. Defaults to the current working directory.</source>
-        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_configFileDesciption">
-        <source>Path to a NuGet.config file to use for settings and sources.</source>
-        <target state="new">Path to a NuGet.config file to use for settings and sources.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_descritpion">
-        <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
-        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_downloadOnlyDeciption">
-        <source>Download only the .nupkg file without extracting it.</source>
-        <target state="new">Download only the .nupkg file without extracting it.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_interactiveDecription">
-        <source>Allows interactive authentication if required.</source>
-        <target state="new">Allows interactive authentication if required.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_packageIdDescription">
-        <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
-        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_prereleaseDescription">
-        <source>Allows downloading prerelease versions.</source>
-        <target state="new">Allows downloading prerelease versions.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_sourcesDescription">
-        <source>Specifies one or more NuGet package sources to use.</source>
-        <target state="new">Specifies one or more NuGet package sources to use.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="pkgDownload_verbosityDescription">
-        <source>Set the verbosity level. Allowed values: quiet | normal | detailed.</source>
-        <target state="new">Set the verbosity level. Allowed values: quiet | normal | detailed.</target>
-        <note>Please do not translate `quiet`, `normal`, `detailed`</note>
-      </trans-unit>
-      <trans-unit id="pkgDownload_versionDescription">
-        <source>Specific package version to download</source>
-        <target state="new">Specific package version to download</target>
-        <note />
       </trans-unit>
       <trans-unit id="pkgSearch_Description">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>

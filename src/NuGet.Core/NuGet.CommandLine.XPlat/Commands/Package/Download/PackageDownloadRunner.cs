@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -34,16 +35,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 HidePrefixForInfoAndMinimal = true
             };
 
-            // Custom logger for package downloads.
-            // It wraps the provided logger and uses verbosity levels to determine which messages to log.
             XPlatUtility.ConfigureProtocol();
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !args.Interactive);
             ISettings settings = Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
                 args.ConfigFile,
                 new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var packageSources = GetPackageSources(args.Sources, sourceProvider);
+            IEnumerable<PackageSource> packageSources = GetPackageSources(args.Sources, new PackageSourceProvider(settings));
 
             return await RunAsync(args, logger, packageSources, settings, token);
         }
@@ -51,53 +49,34 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IEnumerable<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
             // Check for insecure sources
-            if (!args.AllowInsecureConnections)
+            if (DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
             {
-                var insecureSources = packageSources.Where(source => source.SourceUri.AbsoluteUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
-
-                if (insecureSources.Any())
-                {
-                    if (insecureSources.Count() == 1)
-                    {
-                        logger.LogError(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_HttpServerUsage,
-                            "download",
-                           insecureSources.First()));
-                    }
-                    else
-                    {
-                        logger.LogError(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_HttpServerUsage_MultipleSources,
-                            "download",
-                            string.Join(", ", insecureSources)));
-                    }
-
-                    return ExitCodeError;
-                }
+                return ExitCodeError;
             }
 
-            var cache = new SourceCacheContext()
-            {
-                NoCache = true,
-                DirectDownload = true
-            };
-
+            string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
+            var cache = new SourceCacheContext();
+            IEnumerable<SourceRepository> sourceRepositories = GetSourceRepositories(packageSources);
             bool downloadedAllSuccessfully = true;
 
             foreach (var package in args.Packages)
             {
                 logger.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.PkgDownload_Starting,
+                    Strings.PackageDownloadCommand_Starting,
                     package.Id,
-                    string.IsNullOrEmpty(package.VersionRange?.ToNormalizedString()) ? "latest version" : package.VersionRange.ToNormalizedString()));
+                    string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString()) ? Strings.PackageDownloadCommand_LatestVersion : package.NuGetVersion.ToNormalizedString()));
 
-#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
-                    (NuGetVersion version, SourceRepository downloadRepository) = await ResolvePackageDownloadVersion(package, packageSources, cache, logger, args.IncludePrerelease, token);
+                    (NuGetVersion version, SourceRepository downloadRepository) =
+                        await ResolvePackageDownloadVersion(
+                            package,
+                            sourceRepositories,
+                            cache,
+                            logger,
+                            args.IncludePrerelease,
+                            token);
 
                     if (version == null)
                     {
@@ -106,13 +85,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                         continue;
                     }
 
-                    bool download = await InstallPackageAsync(
+                    bool download = await DownloadPackageAsync(
                                         package.Id,
                                         version,
                                         downloadRepository,
                                         cache,
                                         settings,
-                                        args.OutputDirectory,
+                                        outputDirectory,
                                         logger,
                                         token);
 
@@ -120,22 +99,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     {
                         logger.LogMinimal(string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.PkgDownload_Succeeded,
+                            Strings.PackageDownloadCommand_Succeeded,
                             package.Id,
                             version,
-                            args.OutputDirectory));
+                            outputDirectory));
                     }
                     else
                     {
                         logger.LogError(string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.PkgDownload_Failed,
+                            Strings.PackageDownloadCommand_Failed,
                             package.Id,
                             version));
 
                         downloadedAllSuccessfully &= false;
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
                 {
                     logger.LogError(ex.ToString());
@@ -148,77 +128,67 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         }
 
         internal static async Task<(NuGetVersion, SourceRepository)> ResolvePackageDownloadVersion(
-            Package package,
-            IEnumerable<PackageSource> packageSources,
+            PackageWithNuGetVersion package,
+            IEnumerable<SourceRepository> sourceRepositories,
             SourceCacheContext cache,
             ILoggerWithColor logger,
             bool includePrerelease,
             CancellationToken token)
         {
-            // Determine if an exact version is requested.
-            // If the original string contains a comma, it's a range.
-            bool isExactVersionRequested =
-                package.VersionRange != null &&
-                !string.IsNullOrEmpty(package.VersionRange.OriginalString) &&
-                !package.VersionRange.OriginalString.Contains(",");
-            NuGetVersion requestedExactVersion = package.VersionRange?.MinVersion;
-
             NuGetVersion versionToDownload = null;
             SourceRepository downloadSourceRepository = null;
+            bool versionSpecified = package.NuGetVersion != null;
 
-            bool pickLatest = false;
-
-            if (package.VersionRange == null)
+            foreach (var repo in sourceRepositories)
             {
-                // If the version is not defined, pick the latest
-                pickLatest = true;
-            }
+                var finder = await repo.GetResourceAsync<PackageMetadataResource>(token);
+                var packages = await finder.GetMetadataAsync(
+                    package.Id,
+                    includePrerelease,
+                    includeUnlisted: false,
+                    sourceCacheContext: cache,
+                    logger,
+                    token);
 
-            foreach (var source in packageSources)
-            {
-                var repo = Repository.Factory.GetCoreV3(source);
-                var finder = await repo.GetResourceAsync<FindPackageByIdResource>(token);
-                var versions = await finder.GetAllVersionsAsync(package.Id, cache, logger, token);
-
-                if (isExactVersionRequested)
+                if (packages == null)
                 {
-                    // If an exact version is requested, check if the version exists at this source
-                    if (versions != null && versions.Contains(requestedExactVersion))
-                    {
-                        versionToDownload = requestedExactVersion;
-                        downloadSourceRepository = repo;
-                        return (versionToDownload, downloadSourceRepository);
-                    }
-                    else
-                    {
-                        // continue to the next source
-                        continue;
-                    }
+                    continue;
                 }
 
-                // If a version range is specified, find the best match at this source
-                var candidates = versions?
-                    .Where(v => (package.VersionRange == null || package.VersionRange.Satisfies(v)) && (includePrerelease || !v.IsPrerelease))
-                    .OrderByDescending(v => v);
-
-                var candidate = pickLatest ? candidates?.FirstOrDefault() : candidates?.LastOrDefault();
-
-                if (candidate != null && (versionToDownload == null || pickLatest ? candidate > versionToDownload : candidate < versionToDownload))
+                var versions = packages?.Select(p => p.Identity.Version);
+                if (versionSpecified)
                 {
-                    versionToDownload = candidate;
-                    downloadSourceRepository = repo;
+                    // If an exact version is specified, check if it exists at this source
+                    foreach (var p in packages)
+                    {
+                        if (p?.Identity?.Version == package.NuGetVersion)
+                        {
+                            return (package.NuGetVersion, repo);
+                        }
+                    }
+
+                    continue;
+                }
+
+                foreach (var p in packages)
+                {
+                    var v = p.Identity.Version;
+                    if (versionToDownload is null || v > versionToDownload)
+                    {
+                        versionToDownload = v;
+                    }
                 }
             }
 
             if (versionToDownload == null)
             {
-                logger.LogError("Unable to find a valid package version");
+                logger.LogError(Strings.Error_PackageDownload_VersionNotFound);
             }
 
             return (versionToDownload, downloadSourceRepository);
         }
 
-        private static async Task<bool> InstallPackageAsync(
+        private static async Task<bool> DownloadPackageAsync(
             string id,
             NuGetVersion version,
             SourceRepository repo,
@@ -242,7 +212,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             {
                 logger.LogMinimal(string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.PkgDownload_AlreadyInstalled,
+                        Strings.PackageDownloadCommand_AlreadyInstalled,
                         id,
                         version.ToNormalizedString(),
                         outputDirectory));
@@ -281,7 +251,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 // Unable to download the package
                 logger.LogError(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.PkgDownload_UnableToDownload,
+                    Strings.PackageDownloadCommand_UnableToDownload,
                     id,
                     version.ToNormalizedString(),
                     repo.PackageSource.Source));
@@ -311,6 +281,36 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             }
 
             return packageSources;
+        }
+
+        private static bool DetectAndReportInsecureSources(
+            bool allowInsecureConnections,
+            IEnumerable<PackageSource> packageSources,
+            ILoggerWithColor logger)
+        {
+            if (!allowInsecureConnections)
+            {
+                var insecureSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources([.. packageSources]);
+                if (insecureSources.Any())
+                {
+                    logger.LogError(HttpSourcesUtility.BuildHttpSourceErrorMessage(insecureSources, "package download"));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<SourceRepository> GetSourceRepositories(IEnumerable<PackageSource> packageSources)
+        {
+            IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
+            List<SourceRepository> sourceRepositories = [];
+            foreach (var source in packageSources)
+            {
+                sourceRepositories.Add(Repository.CreateSource(providers, source, FeedType.Undefined));
+            }
+
+            return sourceRepositories;
         }
     }
 }

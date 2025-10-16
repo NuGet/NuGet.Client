@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,60 +15,50 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         {
             Register(packageCommand, interactiveOption, PackageDownloadRunner.RunAsync);
         }
+
         public static void Register(Command packageCommand, Option<bool> interactiveOption, Func<PackageDownloadArgs, CancellationToken, Task<int>> action)
         {
             var downloadCommand = new DocumentedCommand(
                 "download",
-                Strings.pkgDownload_descritpion,
+                Strings.PackageDownloadCommand_descritpion,
                 "https://aka.ms/dotnet/package/download");
 
             // Arguments
-            var packagesArguments = new Argument<IReadOnlyList<Package>>("packages")
+            var packagesArguments = new Argument<IReadOnlyList<PackageWithNuGetVersion>>("packages")
             {
                 Description = Strings.PackageUpdate_PackageArgumentDescription,
-                Arity = ArgumentArity.ZeroOrMore,
-                CustomParser = Package.Parse
+                Arity = ArgumentArity.OneOrMore,
+                CustomParser = PackageWithNuGetVersion.Parse
             };
 
             // Options
             var allowInsecureConnections = new Option<bool>("--allow-insecure-connections")
             {
-                Description = Strings.pkgDownload_AllowInsecureConnectionsDescritption,
+                Description = Strings.PackageDownloadCommand_AllowInsecureConnectionsDescritption,
                 Arity = ArgumentArity.Zero
             };
 
             var configFile = new Option<string>("--configfile")
             {
-                Description = Strings.pkgDownload_configFileDesciption,
+                Description = Strings.Option_ConfigFile,
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var downloadOnly = new Option<bool>("--download-only")
+            var outputDirectory = new Option<string>("--output", "-o")
             {
-                Description = Strings.pkgDownload_downloadOnlyDeciption,
-                Arity = ArgumentArity.Zero
-            };
-
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-
-            var outputDirectory = new Option<string>("--output-directory")
-            {
-                Description = Strings.pkgDownload_OutputDirectoryDescription,
+                Description = Strings.PackageDownloadCommand_OutputDirectoryDescription,
                 Arity = ArgumentArity.ExactlyOne
             };
 
             var prerelease = new Option<bool>("--prerelease")
             {
-                Description = Strings.pkgDownload_prereleaseDescription,
+                Description = Strings.Prerelease_Description,
                 Arity = ArgumentArity.Zero
             };
 
-            var sources = new Option<List<string>>("--source")
+            var sources = new Option<List<string>>("--source", "-s")
             {
-                Description = Strings.pkgDownload_sourcesDescription,
+                Description = Strings.PackageDownloadCommand_SourcesDescription,
                 Arity = ArgumentArity.OneOrMore
             };
 
@@ -79,8 +68,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             downloadCommand.Arguments.Add(packagesArguments);
             downloadCommand.Options.Add(allowInsecureConnections);
             downloadCommand.Options.Add(configFile);
-            downloadCommand.Options.Add(downloadOnly);
-            downloadCommand.Options.Add(help);
             downloadCommand.Options.Add(interactiveOption);
             downloadCommand.Options.Add(outputDirectory);
             downloadCommand.Options.Add(prerelease);
@@ -89,14 +76,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
             downloadCommand.SetAction(async (parserResult, cancellationToken) =>
             {
-                IReadOnlyList<Package> packages = parserResult.GetValue(packagesArguments) ?? [];
+                IReadOnlyList<PackageWithNuGetVersion> packages = parserResult.GetValue(packagesArguments) ?? [];
                 var args = new PackageDownloadArgs()
                 {
                     Packages = packages,
                     Sources = parserResult.GetValue(sources),
                     OutputDirectory = parserResult.GetValue(outputDirectory),
                     IncludePrerelease = parserResult.GetValue(prerelease),
-                    DownloadOnly = parserResult.GetValue(downloadOnly),
                     AllowInsecureConnections = parserResult.GetValue(allowInsecureConnections),
                     Interactive = parserResult.GetValue(interactiveOption),
                     ConfigFile = parserResult.GetValue(configFile),

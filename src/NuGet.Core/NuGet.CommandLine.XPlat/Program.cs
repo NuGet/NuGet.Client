@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Commands;
 using NuGet.Common;
@@ -100,6 +101,9 @@ namespace NuGet.CommandLine.XPlat
 
                     PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
                     PackageUpdateCommand.Register(packageCommand, interactiveOption);
+#if DEBUG
+                    PackageDownloadCommand.Register(packageCommand, interactiveOption);
+#endif
                 }
                 else
                 {
@@ -246,7 +250,7 @@ namespace NuGet.CommandLine.XPlat
             if (args.Length >= 2 && arg0 == "package")
             {
                 string arg1 = args[1];
-                if (arg1 == "search" || arg1 == "update")
+                if (arg1 == "search" || arg1 == "update" || arg1 == "download")
                 {
                     return true;
                 }
