@@ -173,9 +173,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 foreach (var p in packages)
                 {
                     var v = p.Identity.Version;
-                    if (versionToDownload is null || v > versionToDownload)
+                    if (versionToDownload == null || v > versionToDownload)
                     {
                         versionToDownload = v;
+                        downloadSourceRepository = repo;
                     }
                 }
             }
