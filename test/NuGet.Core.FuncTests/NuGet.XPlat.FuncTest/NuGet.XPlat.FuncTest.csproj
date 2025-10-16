@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   
   <ItemGroup>
