@@ -66,6 +66,7 @@ variables:
   RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
   RunStaticAnalysis: ${{ parameters.RunStaticAnalysis }}
   OneLocBranch: 'dev'
+  SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
 
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
