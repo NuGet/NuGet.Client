@@ -36,11 +36,3 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set build number"
         exit 1
       }
-
-- task: PowerShell@1
-  displayName: "Add Build Tags"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEVERSIONAUTHOR}"
-      Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEBRANCHNAME}"

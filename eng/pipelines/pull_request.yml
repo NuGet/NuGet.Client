@@ -45,6 +45,7 @@ resources:
       type: git
       name: 1ESPipelineTemplates/MicroBuildTemplate
       ref: refs/tags/release
+
 variables:
   BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
   DOTNET_NOLOGO: 1
@@ -58,6 +59,8 @@ variables:
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
   RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
+  SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+
 extends:
   template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
