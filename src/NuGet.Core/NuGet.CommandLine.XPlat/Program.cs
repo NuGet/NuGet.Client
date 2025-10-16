@@ -8,10 +8,12 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Commands;
 using NuGet.Common;
+#if DEBUG
+using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
+#endif
 
 namespace NuGet.CommandLine.XPlat
 {

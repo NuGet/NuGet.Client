@@ -155,7 +155,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     continue;
                 }
 
-                var versions = packages?.Select(p => p.Identity.Version);
                 if (versionSpecified)
                 {
                     // If an exact version is specified, check if it exists at this source

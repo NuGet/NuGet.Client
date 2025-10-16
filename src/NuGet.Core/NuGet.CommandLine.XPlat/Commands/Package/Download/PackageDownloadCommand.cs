@@ -64,7 +64,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
             var verbosity = CommonOptions.GetVerbosityOption();
 
-
             downloadCommand.Arguments.Add(packagesArguments);
             downloadCommand.Options.Add(allowInsecureConnections);
             downloadCommand.Options.Add(configFile);
