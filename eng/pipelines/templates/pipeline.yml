@@ -162,15 +162,6 @@ stages:
         artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
-      - output: pipelineArtifact
-        displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: "succeeded()"
-        targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
-        artifactName: MicroBuildOutputs
-        # need to make daily Apex test pipeline build its own bootstrapper, and remove this from official pipeline
-        codeSignValidationEnabled: false
-        sbomEnabled: false
-
       - output: artifactsDrop
         displayName: 'Publish the .runsettings files to artifact services'
         condition: "succeeded()"
