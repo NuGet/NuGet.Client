@@ -91,6 +91,7 @@ stages:
       artifact: BuildInfo
       displayName: 'Download buildinfo.json'
     - task: DownloadPipelineArtifact@2
+      displayName: 'Download RunSettings drop metadata'
       inputs:
         buildType: 'specific'
         artifactName: 'DropMetadata-RunSettings'
@@ -99,9 +100,6 @@ stages:
         definition: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
         pipelineId: $(resources.pipeline.ComponentBuildUnderTest.runId)
-    - download: ComponentBuildUnderTest
-      artifact: 'DropMetadata-RunSettings'
-      displayName: 'Download RunSettings VSDrop.json'
     - powershell: |
         try {
           Write-Host "Set VSBranch, VsTargetChannel &  VsTargetMajorVersion variables"
