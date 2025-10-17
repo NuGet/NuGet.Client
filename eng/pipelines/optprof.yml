@@ -148,6 +148,7 @@ stages:
           $dropUri = $dropMetadata.VstsDropBuildArtifact.VstsDropUrl
           if ($dropUri)
           {
+            $dropUri = $dropUri -replace '^(.*?)/RunSettings/', 'https://vsdrop.microsoft.com/file/v1/RunSettings/'
             $RunSettingsURI = "$dropUri;NuGet.OptProfV2.runsettings"
             Write-Host "RunSettingsURI: $RunSettingsURI"
             # non-output variable for VS config in the configure machine job
