@@ -10,12 +10,15 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.Protocol;
 
 namespace NuGet.Commands.FuncTest
 {
@@ -2751,6 +2754,111 @@ namespace NuGet.Commands.FuncTest
             testEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(2);
             testEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
         }
+
+        [Fact]
+        public async Task PruneDataRunner()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.AddSource("nuget.org", NuGetConstants.V3FeedUrl);
+            // Setup
+            HashSet<string> selfContainedPackages = new(StringComparer.OrdinalIgnoreCase)
+                {
+                    "Microsoft.NETCore.Targets",
+                    "Microsoft.NETCore.Platforms",
+                    "runtime.native.System",
+                    "runtime.native.System.Net.Http",
+                    "runtime.native.System.IO.Compression",
+                    "runtime.native.System.Net.Security"
+                };
+
+            var dgspec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec.json");
+            Dictionary<string, IReadOnlyDictionary<string, PrunePackageReference>> specs = new(StringComparer.OrdinalIgnoreCase);
+            foreach (var frameworks in dgspec.Projects[0].TargetFrameworks)
+            {
+                specs.Add(frameworks.FrameworkName.GetShortFolderName(), frameworks.PackagesToPrune);
+            }
+
+            SourceRepository sourceRepository = Repository.Factory.GetCoreV3(new PackageSource(NuGetConstants.V3FeedUrl));
+            PackageMetadataResource packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+
+            List<string> failed = new();
+            // Run
+
+            int processed = 0;
+            foreach (var framework in specs)
+            {
+                var sample = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: framework.Key);
+                sample.WithSettingsBasedRestoreMetadata(Settings.LoadDefaultSettings(pathContext.SolutionRoot));
+                foreach (KeyValuePair<string, PrunePackageReference> packageToProcess in framework.Value)
+                {
+                    if (packageToProcess.Key.Equals("Microsoft.NETCore.App") || packageToProcess.Key.StartsWith("runtime."))
+                    {
+                        continue;
+                    }
+
+                    var packageVersions = await packageMetadataResource.GetMetadataAsync(packageToProcess.Key, includePrerelease: false, includeUnlisted: false, new SourceCacheContext(), NullLogger.Instance, CancellationToken.None);
+
+                    foreach (var packageVersion in packageVersions.Reverse())
+                    {
+                        if (packageVersion.Identity.Version <= packageToProcess.Value.VersionRange.MaxVersion)
+                        {
+                            processed++;
+                            var libraryToProcess = new LibraryRange(packageToProcess.Key, new VersionRange(packageVersion.Identity.Version), LibraryDependencyTarget.All);
+                            await RunTest(pathContext, failed, framework, sample, libraryToProcess, selfContainedPackages);
+                        }
+                    }
+                }
+            }
+
+            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\TotalRun.txt", [processed.ToString()]);
+            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\Failures.txt", failed);
+            failed.Should().BeEmpty();
+        }
+
+        private static async Task RunTest(SimpleTestPathContext pathContext, List<string> failed, KeyValuePair<string, IReadOnlyDictionary<string, PrunePackageReference>> framework, PackageSpec sample, LibraryRange packageToProcess, HashSet<string> selfContainedPackages)
+        {
+            var testLibDep = new LibraryDependency(packageToProcess);
+            var projectSpec = sample.Clone().WithDependency(testLibDep);
+
+            try
+            {
+                var result = await RunRestoreAsync(pathContext, projectSpec);
+
+                if (result.Success != true)
+                {
+                    if (!result.LogMessages.Any(e => e.Code == NuGetLogCode.NU1202))
+                    {
+                        failed.Add($"{framework.Key} - {packageToProcess}");
+                    }
+                }
+                else
+                {
+                    foreach (LockFileTargetLibrary library in result.LockFile.Targets[0].Libraries)
+                    {
+                        if (!IsLibrarySelfContained(library, selfContainedPackages)
+                            && (framework.Value.TryGetValue(library.Name, out PrunePackageReference pruneInfo) == false ||
+                            library.Version > pruneInfo?.VersionRange?.MaxVersion))
+                        {
+                            // Stop at first error.
+                            failed.Add($"{framework.Key} - {packageToProcess} - Missing {library.Name}.{library.Version}");
+                            break;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                failed.Add($"{framework.Key} - {packageToProcess} - {ex.Message}");
+
+            }
+
+            static bool IsLibrarySelfContained(LockFileTargetLibrary library, HashSet<string> selfContainedPackages)
+            {
+                return selfContainedPackages.Contains(library.Name);
+            }
+        }
+
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
