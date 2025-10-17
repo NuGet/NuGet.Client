@@ -209,7 +209,7 @@ steps:
     inputs:
       solution: "build\\sign.proj"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/restore /p:DryRunSigning=false /p:DotNetSignType=$(SigningType) /p:SigningLogDirectory=$(Build.StagingDirectory)\\binlog /binarylogger:$(Build.StagingDirectory)\\binlog\\15.Sign.binlog"
+      msbuildArguments: "/restore /p:DryRunSigning=false /p:DotNetSignType=${{parameters.SigningType}} /p:SigningLogDirectory=$(Build.StagingDirectory)\\binlog /binarylogger:$(Build.StagingDirectory)\\binlog\\15.Sign.binlog"
 
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 6.x
