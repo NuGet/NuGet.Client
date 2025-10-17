@@ -98,9 +98,9 @@ stages:
         project: '$(System.TeamProjectId)'
         definition: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
-        pipelineId: $(resources.pipeline.ComponentBuildUnderTest.pipelineId)
+        pipelineId: $(resources.pipeline.ComponentBuildUnderTest.runId)
     - download: ComponentBuildUnderTest
-      artifact: DropMetadata-RunSettings
+      artifact: 'DropMetadata-RunSettings'
       displayName: 'Download RunSettings VSDrop.json'
     - powershell: |
         try {
