@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="translated">プロジェクトは project.json ベースではないため、移行に対し適格ではありません。</target>
+        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
