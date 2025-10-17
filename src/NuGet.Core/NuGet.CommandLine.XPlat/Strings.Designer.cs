@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -228,6 +228,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string App_FullName {
             get {
                 return ResourceManager.GetString("App_FullName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty..
+        /// </summary>
+        internal static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
             }
         }
         
@@ -547,6 +556,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}: Package {1} is implicitly added by the SDK and cannot be upgraded independently.
+        /// </summary>
+        internal static string Error_CannotUpgradeAutoReferencedPackage {
+            get {
+                return ResourceManager.GetString("Error_CannotUpgradeAutoReferencedPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs.
         /// </summary>
         internal static string Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed {
@@ -656,6 +674,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid version value &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_InvalidVersion {
+            get {
+                return ResourceManager.GetString("Error_InvalidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid version range &apos;{0}&apos;.
         /// </summary>
         internal static string Error_InvalidVersionRange {
@@ -737,11 +764,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} is not referenced by project {1}.
+        ///   Looks up a localized string similar to Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information..
         /// </summary>
-        internal static string Error_PackageNotReferenced {
+        internal static string Error_PackageSourceMappingNotFound {
             get {
-                return ResourceManager.GetString("Error_PackageNotReferenced", resourceCulture);
+                return ResourceManager.GetString("Error_PackageSourceMappingNotFound", resourceCulture);
             }
         }
         
@@ -2391,15 +2418,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string TrustSyncCommandDescription {
             get {
                 return ResourceManager.GetString("TrustSyncCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unsupported: Projects using Package Source Mapping are not yet supported.
-        /// </summary>
-        internal static string Unsupported_PackageSourceMapping {
-            get {
-                return ResourceManager.GetString("Unsupported_PackageSourceMapping", resourceCulture);
             }
         }
         

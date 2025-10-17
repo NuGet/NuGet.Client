@@ -97,6 +97,11 @@
         <target state="translated">NuGet Command Line</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArgumentNullOrEmpty">
+        <source>Argument cannot be null or empty.</source>
+        <target state="translated">인수는 null이거나 비워 둘 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ConfigCommandKeyNotFound">
         <source>Key '{0}' not found.</source>
         <target state="translated">키 '{0}'을(를) 찾을 수 없습니다.</target>
@@ -279,6 +284,12 @@
         <target state="translated">검색 리소스를 가져오지 못했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_CannotUpgradeAutoReferencedPackage">
+        <source>{0}: Package {1} is implicitly added by the SDK and cannot be upgraded independently</source>
+        <target state="translated">{0}: 패키지 {1}은(는) SDK에 의해 암시적으로 추가되며 독립적으로 업그레이드할 수 없습니다.</target>
+        <note>{0} - project referencing the package
+{1} - package id</note>
+      </trans-unit>
       <trans-unit id="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed">
         <source>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</source>
         <target state="translated">{0} 패키지는 암시적으로 참조됩니다. 일반적으로 프로젝트나 중앙 패키지 버전 관리 파일에서 해당 패키지를 참조할 필요가 없습니다. 자세한 내용은 https://aka.ms/sdkimplicitrefs를 참조하세요.</target>
@@ -342,6 +353,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">지정된 소스 '{0}'이(가) 올바르지 않습니다. 유효한 소스를 제공하세요.</target>
         <note>0 - The invalid source.</note>
       </trans-unit>
+      <trans-unit id="Error_InvalidVersion">
+        <source>Invalid version value '{0}'.</source>
+        <target state="new">Invalid version value '{0}'.</target>
+        <note>0 - package version</note>
+      </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
         <source>Invalid version range '{0}'</source>
         <target state="translated">잘못된 버전 범위 '{0}'</target>
@@ -387,11 +403,10 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">`{0}` 프로젝트는 NuGet 패키지에 대한 package.config를 사용합니다. 명령은 패키지 참조 프로젝트에서만 작동합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Error_PackageNotReferenced">
-        <source>The package {0} is not referenced by project {1}</source>
-        <target state="translated">프로젝트 {0}에서 패키지 {1}을(를) 참조하지 않습니다.</target>
-        <note>0 - The package ID
-1 - The project path</note>
+      <trans-unit id="Error_PackageSourceMappingNotFound">
+        <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
+        <target state="translated">패키지 원본 매핑이 사용하도록 설정되어 있지만 패키지 {0}에 대한 매핑을 찾을 수 없습니다. 자세한 내용은 https://aka.ms/nuget/psm을 참조하세요.</target>
+        <note>{0} - package id</note>
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
@@ -888,7 +903,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
         <source>Upgrade packages with known vulnerabilities.</source>
-        <target state="new">Upgrade packages with known vulnerabilities.</target>
+        <target state="translated">알려진 취약점이 있는 패키지를 업그레이드하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_AllPackagesAlreadyUpToDate">
@@ -898,22 +913,22 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_AllVersionsHaveAdvisories">
         <source>All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</source>
-        <target state="new">All versions of package {0} have security advisories. Unable to find a non-vulnerable version to update to.</target>
+        <target state="translated">패키지 {0}의 모든 버전에는 보안 권고가 있습니다. 업데이트할 취약하지 않은 버전을 찾을 수 없습니다.</target>
         <note>{0}: package id</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_AlreadyUpToDate">
         <source>All packages are up to date</source>
-        <target state="new">All packages are up to date</target>
+        <target state="translated">모든 패키지가 최신 상태입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditDisabled">
         <source>This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</source>
-        <target state="new">This command requires NuGetAudit to be enabled at this time. See https://aka.ms/nuget/audit for more information.</target>
+        <target state="translated">이 명령을 사용하려면 현재 NuGetAudit을 사용하도록 설정해야 합니다. 자세한 내용은 https://aka.ms/nuget/audit를 참조하세요.</target>
         <note>{Locked="NuGetAudit"}{Locked="dotnet package update"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_AuditModeIsDirect">
         <source>NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</source>
-        <target state="new">NuGetAuditMode is set to direct, which means that transitive packages with known vulnerabilities will not be updated. See https://aka.ms/nuget/audit for more information.</target>
+        <target state="translated">NuGetAuditMode가 direct로 설정되어 있어, 알려진 취약점이 있는 전이적 패키지는 업데이트되지 않습니다. 자세한 내용은 https://aka.ms/nuget/audit를 참조하세요.</target>
         <note>{Locked="NuGetAuditMode"}</note>
       </trans-unit>
       <trans-unit id="PackageUpdate_FinalSummary">
@@ -934,7 +949,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_NoVulnerablePackages">
         <source>No upgradable packages have known vulnerabilities.</source>
-        <target state="new">No upgradable packages have known vulnerabilities.</target>
+        <target state="translated">알려진 취약성이 있는 업그레이드 가능한 패키지가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
@@ -954,7 +969,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatedMessage">
         <source>Updating {0} {1} to {2}.</source>
-        <target state="new">Updating {0} {1} to {2}.</target>
+        <target state="translated">{0} {1}을(를) {2}(으)로 업데이트하는 중입니다.</target>
         <note>{0}: package id
 {1}: existing version
 {2}: new version</note>
@@ -966,7 +981,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageUpdate_UpdatingVulnerablePackages">
         <source>Updating packages with security advisories in {0}</source>
-        <target state="new">Updating packages with security advisories in {0}</target>
+        <target state="translated">{0}에서 보안 권고가 있는 패키지를 업데이트하는 중</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
@@ -1291,11 +1306,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
       <trans-unit id="TrustedSignerNameToRemove">
         <source>The name of the existing trusted signer to remove.</source>
         <target state="translated">제거할 기존 신뢰할 수 있는 서명자의 이름입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Unsupported_PackageSourceMapping">
-        <source>Unsupported: Projects using Package Source Mapping are not yet supported</source>
-        <target state="translated">지원되지 않음: 패키지 원본 매핑을 사용하는 프로젝트는 아직 지원되지 않음</target>
         <note />
       </trans-unit>
       <trans-unit id="Unsupported_UpdatePackageWithDifferentPerTfmVersions">
