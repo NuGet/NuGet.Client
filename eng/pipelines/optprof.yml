@@ -90,6 +90,15 @@ stages:
     - download: ComponentBuildUnderTest
       artifact: BuildInfo
       displayName: 'Download buildinfo.json'
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        artifactName: 'DropMetadata-RunSettings'
+        targetPath: $(Pipeline.Workspace)\ComponentBuildUnderTest\DropMetadata-RunSettings
+        project: '$(System.TeamProjectId)'
+        definition: $(System.DefinitionId)
+        buildVersionToDownload: 'specific'
+        pipelineId: $(resources.pipeline.ComponentBuildUnderTest.pipelineId)
     - download: ComponentBuildUnderTest
       artifact: DropMetadata-RunSettings
       displayName: 'Download RunSettings VSDrop.json'
