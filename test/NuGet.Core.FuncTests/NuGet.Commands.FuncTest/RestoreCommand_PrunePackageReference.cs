@@ -2761,6 +2761,7 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             pathContext.Settings.AddSource("nuget.org", NuGetConstants.V3FeedUrl);
             // Setup
+            // These are packages that basically 
             HashSet<string> selfContainedPackages = new(StringComparer.OrdinalIgnoreCase)
                 {
                     "Microsoft.NETCore.Targets",
@@ -2768,48 +2769,57 @@ namespace NuGet.Commands.FuncTest
                     "runtime.native.System",
                     "runtime.native.System.Net.Http",
                     "runtime.native.System.IO.Compression",
-                    "runtime.native.System.Net.Security"
+                    "runtime.native.System.Net.Security",
                 };
 
-            var dgspec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec.json");
-            Dictionary<string, IReadOnlyDictionary<string, PrunePackageReference>> specs = new(StringComparer.OrdinalIgnoreCase);
-            foreach (var frameworks in dgspec.Projects[0].TargetFrameworks)
-            {
-                specs.Add(frameworks.FrameworkName.GetShortFolderName(), frameworks.PackagesToPrune);
-            }
-
-            SourceRepository sourceRepository = Repository.Factory.GetCoreV3(new PackageSource(NuGetConstants.V3FeedUrl));
-            PackageMetadataResource packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
-
             List<string> failed = new();
-            // Run
-
             int processed = 0;
-            foreach (var framework in specs)
+
+            DependencyGraphSpec defaultSpec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec.json");
+            DependencyGraphSpec baseDgSpec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-base.json");
+            DependencyGraphSpec aspnet = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-aspnet.json");
+            DependencyGraphSpec winforms = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-useWindowsForms");
+            DependencyGraphSpec wpf = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-usewpf");
+
+            List<DependencyGraphSpec> dgSpecs = new() { baseDgSpec, aspnet, winforms, wpf };
+            dgSpecs = new() { defaultSpec };
+            foreach (var dgspec in dgSpecs)
             {
-                var sample = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: framework.Key);
-                sample.WithSettingsBasedRestoreMetadata(Settings.LoadDefaultSettings(pathContext.SolutionRoot));
-                foreach (KeyValuePair<string, PrunePackageReference> packageToProcess in framework.Value)
+                Dictionary<string, IReadOnlyDictionary<string, PrunePackageReference>> specs = new(StringComparer.OrdinalIgnoreCase);
+                foreach (var frameworks in dgspec.Projects[0].TargetFrameworks)
                 {
-                    if (packageToProcess.Key.Equals("Microsoft.NETCore.App") || packageToProcess.Key.StartsWith("runtime."))
-                    {
-                        continue;
-                    }
+                    specs.Add(frameworks.FrameworkName.GetShortFolderName(), frameworks.PackagesToPrune);
+                }
 
-                    var packageVersions = await packageMetadataResource.GetMetadataAsync(packageToProcess.Key, includePrerelease: false, includeUnlisted: false, new SourceCacheContext(), NullLogger.Instance, CancellationToken.None);
+                SourceRepository sourceRepository = Repository.Factory.GetCoreV3(new PackageSource(NuGetConstants.V3FeedUrl));
+                PackageMetadataResource packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
 
-                    foreach (var packageVersion in packageVersions.Reverse())
+                // Run
+                foreach (var framework in specs)
+                {
+                    var sample = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: framework.Key);
+                    sample.WithSettingsBasedRestoreMetadata(Settings.LoadDefaultSettings(pathContext.SolutionRoot));
+                    foreach (KeyValuePair<string, PrunePackageReference> packageToProcess in framework.Value)
                     {
-                        if (packageVersion.Identity.Version <= packageToProcess.Value.VersionRange.MaxVersion)
+                        if (packageToProcess.Key.Equals("Microsoft.NETCore.App") || packageToProcess.Key.StartsWith("runtime."))
                         {
-                            processed++;
-                            var libraryToProcess = new LibraryRange(packageToProcess.Key, new VersionRange(packageVersion.Identity.Version), LibraryDependencyTarget.All);
-                            await RunTest(pathContext, failed, framework, sample, libraryToProcess, selfContainedPackages);
+                            continue;
+                        }
+
+                        var packageVersions = await packageMetadataResource.GetMetadataAsync(packageToProcess.Key, includePrerelease: false, includeUnlisted: false, new SourceCacheContext(), NullLogger.Instance, CancellationToken.None);
+
+                        foreach (var packageVersion in packageVersions.Reverse())
+                        {
+                            if (packageVersion.Identity.Version <= packageToProcess.Value.VersionRange.MaxVersion)
+                            {
+                                processed++;
+                                var libraryToProcess = new LibraryRange(packageToProcess.Key, new VersionRange(packageVersion.Identity.Version), LibraryDependencyTarget.All);
+                                await RunTest(pathContext, failed, framework, sample, libraryToProcess, selfContainedPackages);
+                            }
                         }
                     }
                 }
             }
-
             File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\TotalRun.txt", [processed.ToString()]);
             File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\Failures.txt", failed);
             failed.Should().BeEmpty();
@@ -2828,19 +2838,19 @@ namespace NuGet.Commands.FuncTest
                 {
                     if (!result.LogMessages.Any(e => e.Code == NuGetLogCode.NU1202))
                     {
-                        failed.Add($"{framework.Key} - {packageToProcess}");
+                        failed.Add($"| {framework.Key} | {packageToProcess} | Failed restore. | |");
                     }
                 }
                 else
                 {
                     foreach (LockFileTargetLibrary library in result.LockFile.Targets[0].Libraries)
                     {
-                        if (!IsLibrarySelfContained(library, selfContainedPackages)
+                        if (!IsPrivate(library) && !IsLibrarySelfContained(library, selfContainedPackages)
                             && (framework.Value.TryGetValue(library.Name, out PrunePackageReference pruneInfo) == false ||
                             library.Version > pruneInfo?.VersionRange?.MaxVersion))
                         {
                             // Stop at first error.
-                            failed.Add($"{framework.Key} - {packageToProcess} - Missing {library.Name}.{library.Version}");
+                            failed.Add($"|{framework.Key} | {packageToProcess} | {library.Name}.{library.Version} | |");
                             break;
                         }
                     }
@@ -2849,7 +2859,7 @@ namespace NuGet.Commands.FuncTest
             }
             catch (Exception ex)
             {
-                failed.Add($"{framework.Key} - {packageToProcess} - {ex.Message}");
+                failed.Add($"| {framework.Key} | {packageToProcess} | {ex.Message} | |");
 
             }
 
@@ -2859,6 +2869,10 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        private static bool IsPrivate(LockFileTargetLibrary library)
+        {
+            return library.CompileTimeAssemblies.All(e => e.Path.EndsWith("_._"));
+        }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
