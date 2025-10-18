@@ -32,7 +32,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -84,7 +84,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("A", "1.0.0")
             {
                 Dependencies = [
@@ -148,7 +148,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             await SetupCommonPackagesAsync(pathContext);
 
             var rootProject = @"
@@ -224,7 +224,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
             var packageB = new SimpleTestPackageContext("packageB", "1.0.0")
             {
@@ -300,7 +300,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -404,7 +404,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -475,7 +475,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -542,7 +542,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -606,7 +606,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -672,7 +672,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "(, 2.0.0]")]
@@ -958,7 +958,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("ProjectAndPackage", "1.0.0")]
@@ -1459,7 +1459,7 @@ namespace NuGet.Commands.FuncTest
         // C 1.0.0
         private static async Task SetupCommonPackagesAsync(SimpleTestPathContext pathContext)
         {
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("A", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("B", "1.0.0")]
@@ -1479,7 +1479,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1535,7 +1535,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1593,7 +1593,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1672,7 +1672,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1764,7 +1764,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1864,7 +1864,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -1954,7 +1954,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2054,7 +2054,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2133,7 +2133,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2224,7 +2224,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2341,7 +2341,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
@@ -2390,7 +2390,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2481,7 +2481,7 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
-            // Setup packages
+            // Setup byPackageId
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
                 Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
@@ -2761,7 +2761,7 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             pathContext.Settings.AddSource("nuget.org", NuGetConstants.V3FeedUrl);
             // Setup
-            // These are packages that basically 
+            // These are byPackageId that basically 
             HashSet<string> selfContainedPackages = new(StringComparer.OrdinalIgnoreCase)
                 {
                     "Microsoft.NETCore.Targets",
@@ -2772,17 +2772,19 @@ namespace NuGet.Commands.FuncTest
                     "runtime.native.System.Net.Security",
                 };
 
-            List<string> failed = new();
+            List<(string, List<(string, string)>)> failed = new();
+            List<(string, HashSet<string>)> AllFailedRestores = new();
+
             int processed = 0;
 
             DependencyGraphSpec defaultSpec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec.json");
             DependencyGraphSpec baseDgSpec = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-base.json");
             DependencyGraphSpec aspnet = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-aspnet.json");
-            DependencyGraphSpec winforms = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-useWindowsForms");
-            DependencyGraphSpec wpf = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-usewpf");
+            DependencyGraphSpec winforms = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-useWindowsForms.json");
+            DependencyGraphSpec wpf = DependencyGraphSpec.Load("E:\\Code\\Temp\\AllPruneData\\obj\\AllPruneData.csproj.nuget.dgspec-windows-only-usewpf.json");
 
             List<DependencyGraphSpec> dgSpecs = new() { baseDgSpec, aspnet, winforms, wpf };
-            dgSpecs = new() { defaultSpec };
+            //dgSpecs = new() { defaultSpec };
             foreach (var dgspec in dgSpecs)
             {
                 Dictionary<string, IReadOnlyDictionary<string, PrunePackageReference>> specs = new(StringComparer.OrdinalIgnoreCase);
@@ -2797,6 +2799,10 @@ namespace NuGet.Commands.FuncTest
                 // Run
                 foreach (var framework in specs)
                 {
+                    // Original package to failed package
+                    var results = new List<(string, string)>();
+                    var failedRestores = new HashSet<string>();
+
                     var sample = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: framework.Key);
                     sample.WithSettingsBasedRestoreMetadata(Settings.LoadDefaultSettings(pathContext.SolutionRoot));
                     foreach (KeyValuePair<string, PrunePackageReference> packageToProcess in framework.Value)
@@ -2814,18 +2820,111 @@ namespace NuGet.Commands.FuncTest
                             {
                                 processed++;
                                 var libraryToProcess = new LibraryRange(packageToProcess.Key, new VersionRange(packageVersion.Identity.Version), LibraryDependencyTarget.All);
-                                await RunTest(pathContext, failed, framework, sample, libraryToProcess, selfContainedPackages);
+                                await RunTest(pathContext, results, failedRestores, framework, sample, libraryToProcess, selfContainedPackages);
                             }
                         }
                     }
+
+                    if (failedRestores.Any())
+                    {
+                        AllFailedRestores.Add((framework.Key, failedRestores));
+                    }
+                    failed.Add((framework.Key, results));
                 }
             }
+
+            var lines = new List<string>();
+            foreach ((string, List<(string, string)>) failedFrameworks in failed)
+            {
+                foreach (var failedPackage in failedFrameworks.Item2)
+                {
+                    lines.Add($"| {failedFrameworks.Item1} | {failedPackage.Item1} | {failedPackage.Item2} | |");
+                }
+            }
+
+            List<string> byPackageIdAndFramework = GetByPackageIdAndFramework(failed);
+            List<string> byFrameworkAndPackageId = ByFrameworkAndPackageId(failed);
+
             File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\TotalRun.txt", [processed.ToString()]);
-            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\Failures.txt", failed);
+            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\Failures.txt", lines);
+            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\ByPackageIdAndFramework.txt", byPackageIdAndFramework);
+            File.WriteAllLines("E:\\Code\\Temp\\AllPruneData\\ByFrameworkAndPackageId.txt", byFrameworkAndPackageId);
+            AllFailedRestores.Should().BeEmpty();
             failed.Should().BeEmpty();
         }
 
-        private static async Task RunTest(SimpleTestPathContext pathContext, List<string> failed, KeyValuePair<string, IReadOnlyDictionary<string, PrunePackageReference>> framework, PackageSpec sample, LibraryRange packageToProcess, HashSet<string> selfContainedPackages)
+        private static List<string> GetByPackageIdAndFramework(List<(string, List<(string, string)>)> failed)
+        {
+            var byPackageIdAndFramework = new List<string>();
+            Dictionary<string, Dictionary<string, List<string>>> failuresByPackageIdVersion = new();
+
+            foreach ((string, List<(string, string)>) failedFrameworks in failed)
+            {
+                foreach (var failedPackage in failedFrameworks.Item2)
+                {
+
+                    if (!failuresByPackageIdVersion.TryGetValue(failedPackage.Item2, out Dictionary<string, List<string>> perFrameworkResults))
+                    {
+                        perFrameworkResults = new();
+                        failuresByPackageIdVersion.Add(failedPackage.Item2, perFrameworkResults);
+                    }
+
+                    if (!perFrameworkResults.TryGetValue(failedFrameworks.Item1, out List<string> rootPackages))
+                    {
+                        rootPackages = new();
+                        perFrameworkResults.Add(failedFrameworks.Item1, rootPackages);
+                    }
+                    rootPackages.Add(failedPackage.Item1);
+                }
+            }
+
+            foreach (KeyValuePair<string, Dictionary<string, List<string>>> byPackage in failuresByPackageIdVersion)
+            {
+                foreach (KeyValuePair<string, List<string>> byFramework in byPackage.Value)
+                {
+                    byPackageIdAndFramework.Add($"| {byPackage.Key} | {byFramework.Key} | {string.Join(", ", byFramework.Value)} | |");
+                }
+
+            }
+
+            return byPackageIdAndFramework;
+        }
+
+        private static List<string> ByFrameworkAndPackageId(List<(string, List<(string, string)>)> failed)
+        {
+            var byPackageIdAndFramework = new List<string>();
+            List<(string, Dictionary<string, List<string>>)> failuresByFrameworkAndPackageId = new();
+
+            foreach ((string, List<(string, string)>) failedFrameworks in failed)
+            {
+
+                Dictionary<string, List<string>> byPackageId = new();
+                failuresByFrameworkAndPackageId.Add((failedFrameworks.Item1, byPackageId));
+
+                foreach (var failedPackage in failedFrameworks.Item2)
+                {
+                    if (!byPackageId.TryGetValue(failedPackage.Item2, out List<string> rootPackages))
+                    {
+                        rootPackages = new();
+                        byPackageId.Add(failedPackage.Item2, rootPackages);
+                    }
+                    rootPackages.Add(failedPackage.Item1);
+                }
+            }
+
+            foreach ((string, Dictionary<string, List<string>>) byFramework in failuresByFrameworkAndPackageId)
+            {
+                foreach (var byPackageId in byFramework.Item2)
+                {
+                    byPackageIdAndFramework.Add($"| {byFramework.Item1} | {byPackageId.Key} | {string.Join(", ", byPackageId.Value)} | |");
+                }
+
+            }
+
+            return byPackageIdAndFramework;
+        }
+
+        private static async Task RunTest(SimpleTestPathContext pathContext, List<(string, string)> results, HashSet<string> failedRestores, KeyValuePair<string, IReadOnlyDictionary<string, PrunePackageReference>> framework, PackageSpec sample, LibraryRange packageToProcess, HashSet<string> selfContainedPackages)
         {
             var testLibDep = new LibraryDependency(packageToProcess);
             var projectSpec = sample.Clone().WithDependency(testLibDep);
@@ -2838,7 +2937,7 @@ namespace NuGet.Commands.FuncTest
                 {
                     if (!result.LogMessages.Any(e => e.Code == NuGetLogCode.NU1202))
                     {
-                        failed.Add($"| {framework.Key} | {packageToProcess} | Failed restore. | |");
+                        failedRestores.Add(packageToProcess.ToString());
                     }
                 }
                 else
@@ -2849,18 +2948,17 @@ namespace NuGet.Commands.FuncTest
                             && (framework.Value.TryGetValue(library.Name, out PrunePackageReference pruneInfo) == false ||
                             library.Version > pruneInfo?.VersionRange?.MaxVersion))
                         {
-                            // Stop at first error.
-                            failed.Add($"|{framework.Key} | {packageToProcess} | {library.Name}.{library.Version} | |");
+                            results.Add((packageToProcess.ToString(), $"{library.Name}.{library.Version}"));
+                            // Stop at first error. - TODO NK - Should we?
                             break;
                         }
                     }
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                failed.Add($"| {framework.Key} | {packageToProcess} | {ex.Message} | |");
-
+                failedRestores.Add(packageToProcess.ToString());
             }
 
             static bool IsLibrarySelfContained(LockFileTargetLibrary library, HashSet<string> selfContainedPackages)
