@@ -3341,7 +3341,7 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(null, "all")]
+        [InlineData(null, "direct")]
         [InlineData("direct", "direct")]
         [InlineData("all", "all")]
         public void DotnetRestore_WritesExpectedAuditModeInAssetsFile(string userAuditMode, string expectedAuditMode)

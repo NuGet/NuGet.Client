@@ -72,17 +72,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NuGetAudit Condition=" '$(NuGetAudit)' == '' ">true</NuGetAudit>
     <!-- Report all severity vulnerabilities (low severity and higher). Allowed values are: low, moderate, high, critical -->
     <NuGetAuditLevel Condition=" '$(NuGetAuditLevel)' == '' ">low</NuGetAuditLevel>
-    <!-- Report known vulnerabilities on direct and transitive dependencies for .NET 10 and higher, direct only otherwise -->
-    <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == ''
-                    AND '$(NuGetExeSkipSdkAnalysisLevelCheck)' != 'true'
-                    AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-                    AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">all</NuGetAuditMode>
+    <!-- Report known vulnerabilities on direct dependencies -->
     <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == '' ">direct</NuGetAuditMode>
   </PropertyGroup>
 
   <!-- Package pruning is enabled for all projects targeting .NET 10 or greater, including multi-targeted projects. -->
   <PropertyGroup>
-    <!-- We only set the RestoreEnablePackagePruning default for single TFM projects. 
+    <!-- We only set the RestoreEnablePackagePruning default for single TFM projects.
     For multi-targeted projects that requires knowing the other inner builds, so we rely on RestorePackagePruningDefault. -->
     <RestoreEnablePackagePruning Condition="'$(RestoreEnablePackagePruning)' == ''
                     AND '$(UsingMicrosoftNETSdk)' == 'true'
