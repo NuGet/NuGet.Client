@@ -355,7 +355,7 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
       </trans-unit>
       <trans-unit id="Error_InvalidVersion">
         <source>Invalid version value '{0}'.</source>
-        <target state="new">Invalid version value '{0}'.</target>
+        <target state="translated">버전 값 '{0}'이(가) 잘못되었습니다.</target>
         <note>0 - package version</note>
       </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">

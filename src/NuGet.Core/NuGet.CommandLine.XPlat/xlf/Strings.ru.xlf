@@ -355,7 +355,7 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       </trans-unit>
       <trans-unit id="Error_InvalidVersion">
         <source>Invalid version value '{0}'.</source>
-        <target state="new">Invalid version value '{0}'.</target>
+        <target state="translated">Недопустимое значение версии "{0}".</target>
         <note>0 - package version</note>
       </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">

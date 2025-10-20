@@ -355,7 +355,7 @@ NuGet nécessite des sources HTTPS. Pour utiliser des sources HTTP, vous devez d
       </trans-unit>
       <trans-unit id="Error_InvalidVersion">
         <source>Invalid version value '{0}'.</source>
-        <target state="new">Invalid version value '{0}'.</target>
+        <target state="translated">Valeur de version non valide '{0}'.</target>
         <note>0 - package version</note>
       </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
