@@ -2883,7 +2883,7 @@ EndGlobal";
         [InlineData("../")]
         [InlineData("../ contoso")]
         [InlineData("Some.Package/../contoso.json")]
-        public void DotnetRestore_WithInvalidPackageId_Succeeds(string id)
+        public async Task DotnetRestore_WithInvalidPackageId_SucceedsAsync(string id)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
