@@ -18,7 +18,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
@@ -26,15 +25,8 @@ using Pkg = NuGet.CommandLine.XPlat.Commands.Package.PackageWithVersionRange;
 
 public class GetPackageToUpdateTests
 {
-    private readonly ITestOutputHelper _output;
-
     private readonly IReadOnlyList<string> _anyPackageSourceMapping = It.IsAny<IReadOnlyList<string>>();
     private static PackageSourceMapping DisabledPackageSourceMapping => new(new Dictionary<string, IReadOnlyList<string>>());
-
-    public GetPackageToUpdateTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
 
     [Fact]
     public async Task RequestSinglePackage_GetsRequestedVersion()

@@ -52,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private CommandEvents _solutionSaveEvent;
         private CommandEvents _solutionSaveAsEvent;
         private IVsMonitorSelection _vsMonitorSelection;
-        private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
         private uint _selectionEventsCookie;
         private uint _solutionEventsCookie;
@@ -218,7 +217,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
-            _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
+            _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _);
 
             _isSolutionOpen = false;
             _solutionDirectory = null;

@@ -16,17 +16,15 @@ namespace NuGet.PackageManagement.UI
         private FlowDocument _licenseText;
         private string _licenseHeader;
         private string _packagePath;
-        private readonly string _licenseFileLocation;
 
         private int _initialized;
 
-        internal LicenseFileText(string text, string licenseFileHeader, string packagePath, string licenseFileLocation, PackageIdentity packageIdentity)
+        internal LicenseFileText(string text, string licenseFileHeader, string packagePath, PackageIdentity packageIdentity)
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
             _licenseText = new FlowDocument(new Paragraph(new Run(Resources.LicenseFile_Loading)));
             _packagePath = packagePath;
-            _licenseFileLocation = licenseFileLocation;
             PackageIdentity = packageIdentity;
         }
 

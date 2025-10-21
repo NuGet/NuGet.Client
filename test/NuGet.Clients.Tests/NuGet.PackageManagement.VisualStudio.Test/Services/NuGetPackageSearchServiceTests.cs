@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -30,7 +29,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
-using Test.Utility.VisualStudio;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -44,8 +42,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly IEnumerable<ITransitivePackageReferenceContextInfo> _transitivePackages;
         private readonly IReadOnlyCollection<IProjectContextInfo> _projects;
         private readonly Mock<IComponentModel> _componentModel;
-        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
-        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         public NuGetPackageSearchServiceTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
@@ -71,9 +67,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
             _componentModel = new Mock<IComponentModel>();
-            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
-            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
-            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
 
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
 

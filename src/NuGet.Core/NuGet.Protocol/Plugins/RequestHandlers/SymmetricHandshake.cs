@@ -15,7 +15,6 @@ namespace NuGet.Protocol.Plugins
     {
         private readonly IConnection _connection;
         private readonly HandshakeResponse _handshakeFailedResponse;
-        private readonly TimeSpan _handshakeTimeout;
         private bool _isDisposed;
         private readonly SemanticVersion _minimumProtocolVersion;
         private HandshakeRequest _outboundHandshakeRequest;
@@ -65,7 +64,6 @@ namespace NuGet.Protocol.Plugins
             }
 
             _connection = connection;
-            _handshakeTimeout = handshakeTimeout;
             _protocolVersion = protocolVersion;
             _minimumProtocolVersion = minimumProtocolVersion;
             _handshakeFailedResponse = new HandshakeResponse(MessageResponseCode.Error, protocolVersion: null);

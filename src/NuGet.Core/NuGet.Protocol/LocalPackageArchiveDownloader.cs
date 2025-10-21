@@ -21,9 +21,7 @@ namespace NuGet.Protocol
     {
         private Func<Exception, Task<bool>> _handleExceptionAsync;
         private bool _isDisposed;
-        private readonly ILogger _logger;
         private readonly string _packageFilePath;
-        private readonly PackageIdentity _packageIdentity;
         private Lazy<PackageArchiveReader> _packageReader;
         private Lazy<FileStream> _sourceStream;
         private SemaphoreSlim _throttle;
@@ -105,8 +103,6 @@ namespace NuGet.Protocol
             }
 
             _packageFilePath = packageFilePath;
-            _packageIdentity = packageIdentity;
-            _logger = logger;
             _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
             _sourceStream = new Lazy<FileStream>(GetSourceStream);
             _handleExceptionAsync = exception => TaskResult.False;

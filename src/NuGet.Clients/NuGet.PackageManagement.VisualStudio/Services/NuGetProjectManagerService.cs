@@ -32,8 +32,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetProjectManagerService : INuGetProjectManagerService
     {
-        private readonly ServiceActivationOptions _options;
-        private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private readonly INuGetProjectManagerServiceState _state;
         private readonly ISharedServiceState _sharedState;
@@ -54,8 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(telemetryProvider);
             Assumes.NotNull(sharedServiceState);
 
-            _options = options;
-            _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
             _state = state;
             _telemetryProvider = telemetryProvider;

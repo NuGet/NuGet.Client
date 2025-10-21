@@ -44,37 +44,6 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullLogger()
-        {
-            using (var sourceCacheContext = new SourceCacheContext())
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => new SourceRepositoryDependencyProvider(
-                        Mock.Of<SourceRepository>(),
-                        logger: null,
-                        cacheContext: sourceCacheContext,
-                        ignoreFailedSources: true,
-                        ignoreWarning: true));
-
-                Assert.Equal("logger", exception.ParamName);
-            }
-        }
-
-        [Fact]
-        public void Constructor_ThrowsForNullSourceCacheContext()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SourceRepositoryDependencyProvider(
-                    Mock.Of<SourceRepository>(),
-                    NullLogger.Instance,
-                    cacheContext: null,
-                    ignoreFailedSources: true,
-                    ignoreWarning: true));
-
-            Assert.Equal("cacheContext", exception.ParamName);
-        }
-
-        [Fact]
         public void Constructor_InitializesProperties()
         {
             using (var test = SourceRepositoryDependencyProviderTest.Create())
@@ -859,8 +828,6 @@ namespace NuGet.Commands.Test
 
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
-                testLogger,
-                cacheContext,
                 ignoreFailedSources: true,
                 ignoreWarning: true,
                 fileCache: null,
@@ -921,8 +888,6 @@ namespace NuGet.Commands.Test
 
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
-                testLogger,
-                cacheContext,
                 ignoreFailedSources: true,
                 ignoreWarning: true,
                 fileCache: null,

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.UI.Test.Models.Package;
@@ -23,15 +22,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
     [Collection(MockedVS.Collection)]
     public abstract class LocalDetailControlModelTestBase : IClassFixture<LocalPackageSearchMetadataFixture>
     {
-        protected readonly LocalPackageSearchMetadataFixture _testData;
         protected readonly PackageItemViewModel _testViewModel;
-        protected readonly JoinableTaskContext _joinableTaskContext;
         protected bool disposedValue = false;
 
-        public LocalDetailControlModelTestBase(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
+        public LocalDetailControlModelTestBase(GlobalServiceProvider sp)
         {
             sp.Reset();
-            _testData = testData;
             var testVersion = new NuGetVersion(0, 0, 1);
             var searchService = new Mock<INuGetSearchService>();
 
@@ -54,7 +50,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private readonly PackageDetailControlModel _testInstance;
 
         public LocalPackageDetailControlModelTests(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
-            : base(sp, testData)
+            : base(sp)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             _testInstance = new PackageDetailControlModel(
@@ -217,7 +213,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private PackageSolutionDetailControlModel _testInstance;
 
         public LocalPackageSolutionDetailControlModelTests(GlobalServiceProvider sp, LocalPackageSearchMetadataFixture testData)
-            : base(sp, testData)
+            : base(sp)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
             var serviceBroker = new Mock<IServiceBroker>();

@@ -29,8 +29,6 @@ namespace NuGet.ProjectManagement
 
         private readonly PackagePathResolver _packagePathResolver;
 
-        private readonly NuGetFramework _framework;
-
         /// <summary>
         /// Initializes a new <see cref="FolderNuGetProject" /> class.
         /// </summary>
@@ -75,7 +73,6 @@ namespace NuGet.ProjectManagement
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, root);
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
-            _framework = targetFramework;
         }
 
         /// <summary>

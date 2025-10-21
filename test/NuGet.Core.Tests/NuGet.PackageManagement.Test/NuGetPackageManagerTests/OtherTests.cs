@@ -21,7 +21,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 {
@@ -54,14 +53,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 new PackageIdentity("Microsoft.Data.Services.Client", new NuGetVersion("5.6.2")),
                 new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.0"))
             };
-
-
-        private readonly XunitLogger _logger;
-
-        public OtherTests(ITestOutputHelper output)
-        {
-            _logger = new XunitLogger(output);
-        }
 
         [Fact]
         public async Task PackagesConfigNuGetProjectGetInstalledPackagesListInvalidXml()

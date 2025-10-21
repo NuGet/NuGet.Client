@@ -15,7 +15,6 @@ namespace NuGet.Common
     internal sealed class MSBuildAssemblyResolver : IDisposable
     {
         private readonly Lazy<Assembly> _microsoftBuildAssemblyLazy;
-        private readonly Lazy<Assembly> _microsoftBuildFrameworkAssemblyLazy;
         private readonly Lazy<Type> _projectCollectionTypeLazy;
         private readonly Lazy<Type> _projectTypeLazy;
 
@@ -62,7 +61,6 @@ namespace NuGet.Common
             AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
             _microsoftBuildAssemblyLazy = new Lazy<Assembly>(() => LoadMSBuildAssembly("Microsoft.Build"));
-            _microsoftBuildFrameworkAssemblyLazy = new Lazy<Assembly>(() => LoadMSBuildAssembly("Microsoft.Build.Framework"));
 
             _projectTypeLazy = new Lazy<Type>(() => _microsoftBuildAssemblyLazy.Value.GetType("Microsoft.Build.Evaluation.Project", throwOnError: true));
             _projectCollectionTypeLazy = new Lazy<Type>(() => _microsoftBuildAssemblyLazy.Value.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true));

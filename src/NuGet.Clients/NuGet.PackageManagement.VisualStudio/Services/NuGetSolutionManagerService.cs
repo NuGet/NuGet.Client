@@ -19,8 +19,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class NuGetSolutionManagerService : INuGetSolutionManagerService
     {
-        private readonly ServiceActivationOptions _options;
-        private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
 
         [Import]
@@ -34,7 +32,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public event EventHandler<IProjectContextInfo>? ProjectUpdated;
 
         private NuGetSolutionManagerService(
-            ServiceActivationOptions options,
             IServiceBroker sb,
             AuthorizationServiceClient ac,
             IComponentModel componentModel)
@@ -42,8 +39,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(sb);
             Assumes.NotNull(ac);
 
-            _options = options;
-            _serviceBroker = sb;
             _authorizationServiceClient = ac;
 
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
@@ -68,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Assumes.NotNull(componentModel);
 
-            return new NuGetSolutionManagerService(options, sb, ac, componentModel);
+            return new NuGetSolutionManagerService(sb, ac, componentModel);
         }
 
         public void Dispose()

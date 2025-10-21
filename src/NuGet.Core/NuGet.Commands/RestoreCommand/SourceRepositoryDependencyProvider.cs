@@ -26,8 +26,6 @@ namespace NuGet.Commands
     {
         private readonly object _lock = new object();
         private readonly SourceRepository _sourceRepository;
-        private readonly ILogger _logger;
-        private readonly SourceCacheContext _cacheContext;
         private readonly LocalPackageFileCache _packageFileCache;
         private FindPackageByIdResource _findPackagesByIdResource;
         private bool _ignoreFailedSources;
@@ -108,8 +106,6 @@ namespace NuGet.Commands
             LocalPackageFileCache fileCache,
             bool isFallbackFolderSource) :
             this(sourceRepository,
-                logger,
-                cacheContext,
                 ignoreFailedSources,
                 ignoreWarning,
                 fileCache,
@@ -120,8 +116,6 @@ namespace NuGet.Commands
 
         internal SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
-            ILogger logger,
-            SourceCacheContext cacheContext,
             bool ignoreFailedSources,
             bool ignoreWarning,
             LocalPackageFileCache fileCache,
@@ -129,8 +123,6 @@ namespace NuGet.Commands
             IEnvironmentVariableReader environmentVariableReader)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
             _ignoreFailedSources = ignoreFailedSources;
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;

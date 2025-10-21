@@ -28,7 +28,6 @@ namespace NuGet.Protocol
 
         private readonly TaskResultCache<string, IEnumerable<RemoteSourceDependencyInfo>> _packageVersionsCache = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly HttpSource _httpSource;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
         private DependencyInfoResource _dependencyInfoResource;
@@ -58,7 +57,6 @@ namespace NuGet.Protocol
             }
 
             SourceRepository = sourceRepository;
-            _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 

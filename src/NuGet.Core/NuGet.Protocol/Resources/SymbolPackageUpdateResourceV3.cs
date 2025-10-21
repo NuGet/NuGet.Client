@@ -11,22 +11,14 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public class SymbolPackageUpdateResourceV3 : INuGetResource
     {
-
-        private HttpSource _httpSource;
         private string _source;
 
         public SymbolPackageUpdateResourceV3(string source,
             HttpSource httpSource)
         {
             _source = source;
-            _httpSource = httpSource;
         }
 
-        public Uri SourceUri
-        {
-            get { return UriUtility.CreateSourceUri(_source); }
-        }
-
-
+        public Uri SourceUri => UriUtility.CreateSourceUri(_source);
     }
 }

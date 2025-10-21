@@ -281,9 +281,7 @@ namespace Commands.Test
                     // Act
                     using (var packageDownloader = new ThrowingPackageArchiveDownloader(
                         null,
-                        package.File.FullName,
-                        identity,
-                        logger))
+                        package.File.FullName))
                     {
                         await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
                            await PackageExtractor.InstallFromSourceAsync(
@@ -809,9 +807,7 @@ namespace Commands.Test
         private sealed class ThrowingPackageArchiveDownloader : IPackageDownloader
         {
             private bool _isDisposed;
-            private readonly ILogger _logger;
             private readonly string _packageFilePath;
-            private readonly PackageIdentity _packageIdentity;
             private Lazy<PackageArchiveReader> _packageReader;
             private Lazy<FileStream> _sourceStream;
 
@@ -824,13 +820,9 @@ namespace Commands.Test
 
             internal ThrowingPackageArchiveDownloader(
                 string source,
-                string packageFilePath,
-                PackageIdentity packageIdentity,
-                ILogger logger)
+                string packageFilePath)
             {
                 _packageFilePath = packageFilePath;
-                _packageIdentity = packageIdentity;
-                _logger = logger;
                 _packageReader = new Lazy<PackageArchiveReader>(GetPackageReader);
                 _sourceStream = new Lazy<FileStream>(GetSourceStream);
                 Source = source;

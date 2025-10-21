@@ -16,7 +16,6 @@ namespace NuGet.PackageManagement.VisualStudio
     internal sealed class VsSourceControlManagerProvider : ISourceControlManagerProvider
     {
         private const string TfsProviderName = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
-        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly Configuration.ISettings _settings;
         private readonly AsyncLazy<EnvDTE.DTE> _dte;
 
@@ -27,7 +26,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Configuration.ISettings vsSettings)
         {
             Assumes.NotNull(asyncServiceProvider);
-            _asyncServiceProvider = asyncServiceProvider;
             Assumes.Present(vsSettings);
 
             _settings = vsSettings;

@@ -16,8 +16,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Commands.Test;
@@ -38,7 +36,6 @@ using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using StreamJsonRpc;
 using Test.Utility;
-using Test.Utility.VisualStudio;
 using Xunit;
 using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
@@ -53,7 +50,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private NuGetPackageManager _packageManager;
         private NuGetProjectManagerService _projectManager;
-        private readonly TestNuGetProjectContext _projectContext;
         private TestSharedServiceState _sharedState;
         private TestVsSolutionManager _solutionManager;
         private NuGetProjectManagerServiceState _state;
@@ -61,22 +57,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private ConcurrentQueue<TelemetryEvent> _telemetryEvents;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly TestLogger _logger;
-        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
-        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider, ITestOutputHelper output)
             : base(globalServiceProvider)
         {
-            _projectContext = new TestNuGetProjectContext();
+            var projectContext = new TestNuGetProjectContext();
             _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
 
             var componentModel = new Mock<IComponentModel>();
-            componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(_projectContext);
+            componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(projectContext);
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
-
-            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
-            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
-            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
 
             _logger = new TestLogger(output);
         }

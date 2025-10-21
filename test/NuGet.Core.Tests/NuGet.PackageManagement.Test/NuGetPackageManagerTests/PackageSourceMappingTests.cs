@@ -20,7 +20,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 {
@@ -34,13 +33,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 new PackageIdentity("jQuery.Validation", new NuGetVersion("1.13.1")),
                 new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2"))
             };
-
-        private readonly XunitLogger _logger;
-
-        public PackageSourceMappingTests(ITestOutputHelper output)
-        {
-            _logger = new XunitLogger(output);
-        }
 
         [Theory]
         [InlineData(false, false)]
