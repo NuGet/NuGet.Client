@@ -2949,8 +2949,6 @@ namespace NuGet.Commands.FuncTest
                             library.Version > pruneInfo?.VersionRange?.MaxVersion))
                         {
                             results.Add((packageToProcess.ToString(), $"{library.Name}.{library.Version}"));
-                            // Stop at first error. - TODO NK - Should we?
-                            break;
                         }
                     }
                 }
