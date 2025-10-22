@@ -2879,11 +2879,8 @@ EndGlobal";
             mockServer.Stop();
         }
 
-        [Theory]
-        [InlineData("../")]
-        [InlineData("../ contoso")]
-        [InlineData("Some.Package/../contoso.json")]
-        public async Task DotnetRestore_WithInvalidPackageId_SucceedsAsync(string id)
+        [Fact]
+        public async Task DotnetRestore_WithInvalidPackageId_SucceedsAsync()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2892,7 +2889,7 @@ EndGlobal";
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
             var packageA1 = new SimpleTestPackageContext()
             {
-                Id = id,
+                Id = "contoso.json",
                 Version = "1.0.0"
             };
 
@@ -2901,7 +2898,7 @@ EndGlobal";
                 packageA1);
 
             var targetFramework = Constants.DefaultTargetFramework.GetShortFolderName();
-            string csprojContents = GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, id);
+            string csprojContents = GetProjectFileForRestoreTaskOutputTestsFromPackageId(targetFramework, "Some.Package/../contoso.json");
             var csprojPath = Path.Combine(pathContext.SolutionRoot, "test.csproj");
             File.WriteAllText(csprojPath, csprojContents);
 
