@@ -14,7 +14,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Download
 {
-    public class PackageDownloadCommandTests
+    public class PackageDownloadCommandArgsTest
     {
         [Fact]
         public async Task NoArguments_ThrowsAnExceptionForMissingArg()

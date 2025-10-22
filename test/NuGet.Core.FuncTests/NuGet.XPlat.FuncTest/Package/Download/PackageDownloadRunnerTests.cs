@@ -4,6 +4,7 @@
 namespace NuGet.CommandLine.Xplat.Tests;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,27 +22,94 @@ using Xunit;
 
 public class PackageDownloadRunnerTests
 {
-    [Fact]
-    public async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsync()
+    public static IEnumerable<object[]> PackageTestData()
+    {
+        // Basic stable explicit version
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.0.0"),
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "2.0.0-beta")
+            },
+            "Contoso.Core",                       // downloadId argument
+            "1.1.0",                              // downloadVersion argument
+            false,                               // enablePrerelease
+            ("Contoso.Core", "1.1.0")            // expected
+        };
+
+        // Mixed casing on the ID in the *download* argument 
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0")
+            },
+            "contoso.core",                 // downloadId argument
+            "1.1.0",                        // downloadVersion argument
+            false,                          // enablePrerelease
+            ("Contoso.Core", "1.1.0")        // expected
+        };
+
+        // prerelease with IncludePrerelease == true
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "1.3.0"),
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },
+            "Contoso.Preview",        // downloadId argument
+            null,                   // downloadVersion argument
+            true,                   // enablePrerelease
+            ("Contoso.Preview", "2.0.0-beta.2")  // expected
+        };
+
+        // chose stable with IncludePrerelease == false
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "1.3.2"),
+                ("Contoso.Preview", "1.3.0"),
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },
+            "Contoso.Preview",        // downloadId argument
+            null,                   // downloadVersion argument
+            false,                   // enablePrerelease
+            ("Contoso.Preview", "1.3.2")  // expected
+        };
+    }
+
+
+    [Theory]
+    [MemberData(nameof(PackageTestData))]
+    public async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsync(
+        IReadOnlyList<(string, string)> sourcePackages,
+        string downloadId,
+        string downloadVersion,
+        bool enablePrerelease,
+        (string, string) expectedPackage)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var sourceDir = Path.Combine(context.WorkingDirectory, "src");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(sourceDir);
-        Directory.CreateDirectory(outputDir);
+        var sourceDir = context.PackageSource;
+        var outputDir = context.WorkingDirectory;
 
-        var id = "Contoso.Lib";
-        var version = "1.2.3";
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, version);
+        foreach (var (id, version) in sourcePackages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, version);
+        }
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(version) }],
+            Packages = [new PackageWithNuGetVersion { Id = downloadId, NuGetVersion = downloadVersion == null ? null : NuGetVersion.Parse(downloadVersion) }],
             OutputDirectory = outputDir,
+            IncludePrerelease = enablePrerelease
         };
 
 
@@ -55,105 +123,21 @@ public class PackageDownloadRunnerTests
 
         // Assert
         result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-        var installDir = Path.Combine(outputDir, id.ToLowerInvariant(), version);
+        var installDir = Path.Combine(outputDir, expectedPackage.Item1.ToLowerInvariant(), expectedPackage.Item2);
         Directory.Exists(installDir).Should().BeTrue();
         Directory.EnumerateFiles(installDir, "*.nupkg").Any().Should().BeTrue();
-        File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task RunAsync_NoVersionWhenPrereleaseNotIncluded_PicksLatestStable()
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        var sourceDir = Path.Combine(context.WorkingDirectory, "src");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(sourceDir);
-        Directory.CreateDirectory(outputDir);
-
-        var id = "Contoso.Core";
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, "1.0.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, "1.1.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, "2.0.0-beta");
-
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-        var settings = new Mock<ISettings>(MockBehavior.Loose);
-
-        var args = new PackageDownloadArgs()
-        {
-            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
-            OutputDirectory = outputDir,
-        };
-
-        // Act
-        var result = await PackageDownloadRunner.RunAsync(
-            args,
-            logger.Object,
-            [new PackageSource(sourceDir)],
-            settings.Object,
-            CancellationToken.None);
-
-        // Assert
-        result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-
-        var chosen = Path.Combine(outputDir, id.ToLowerInvariant(), "1.1.0");
-        var notChosen = Path.Combine(outputDir, id.ToLowerInvariant(), "2.0.0-beta");
-        Directory.Exists(chosen).Should().BeTrue("latest stable (1.1.0) should be chosen");
-        Directory.Exists(notChosen).Should().BeFalse("prerelease (2.0.0-beta) should not be chosen");
-        File.Exists(Path.Combine(chosen, $"{id.ToLowerInvariant()}.1.1.0.nupkg")).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task RunAsync_NoVersionWithPrereleaseTrue_PicksHighestIncludingPrerelease()
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        var sourceDir = Path.Combine(context.WorkingDirectory, "src");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(sourceDir);
-        Directory.CreateDirectory(outputDir);
-
-        var id = "Contoso.Preview";
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, "1.3.0");
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, "2.0.0-beta.2");
-
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-        var settings = new Mock<ISettings>(MockBehavior.Loose);
-
-        var args = new PackageDownloadArgs()
-        {
-            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
-            OutputDirectory = outputDir,
-            IncludePrerelease = true
-        };
-
-        // Act
-        var result = await PackageDownloadRunner.RunAsync(
-            args,
-            logger.Object,
-            [new PackageSource(sourceDir)],
-            settings.Object,
-            CancellationToken.None);
-
-        // Assert
-        result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-
-        var chosen = Path.Combine(outputDir, id.ToLowerInvariant(), "2.0.0-beta.2");
-        Directory.Exists(chosen).Should().BeTrue("IncludePrerelease should allow picking 2.0.0-beta.2");
-        File.Exists(Path.Combine(chosen, $"{id.ToLowerInvariant()}.2.0.0-beta.2.nupkg")).Should().BeTrue();
+        File.Exists(Path.Combine(installDir, $"{expectedPackage.Item1.ToLowerInvariant()}.{expectedPackage.Item2}.nupkg")).Should().BeTrue();
     }
 
     [Fact]
     public async Task RunAsync_NoVersion_PicksHighestAcrossMultipleSources()
     {
         // Arrange
-        using var context = new SimpleTestPathContext();
-        var srcA = Path.Combine(context.WorkingDirectory, "srcA");
-        var srcB = Path.Combine(context.WorkingDirectory, "srcB");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(srcA);
-        Directory.CreateDirectory(srcB);
-        Directory.CreateDirectory(outputDir);
+        using var contextA = new SimpleTestPathContext();
+        using var contextB = new SimpleTestPathContext();
+        var srcA = contextA.PackageSource;
+        var srcB = contextB.PackageSource;
+        var outputDir = contextA.WorkingDirectory;
 
         var id = "Contoso.Toolkit";
         await SimpleTestPackageUtility.CreateFullPackageAsync(srcA, id, "1.1.0");
@@ -189,10 +173,8 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var sourceDir = Path.Combine(context.WorkingDirectory, "src");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(sourceDir);
-        Directory.CreateDirectory(outputDir);
+        var sourceDir = context.PackageSource;
+        var outputDir = context.WorkingDirectory;
 
         var id = "Contoso.Utils";
         var v = "3.4.5";
@@ -245,10 +227,6 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(outputDir);
-
         var httpSource = "http://contoso/v3/index.json";
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
@@ -256,7 +234,6 @@ public class PackageDownloadRunnerTests
         var args = new PackageDownloadArgs()
         {
             Packages = [new PackageWithNuGetVersion { Id = "Contoso.Lib", NuGetVersion = null }],
-            OutputDirectory = outputDir,
         };
 
         // Act
@@ -277,30 +254,22 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var srcA = Path.Combine(context.WorkingDirectory, "emptyA");
-        var srcB = Path.Combine(context.WorkingDirectory, "emptyB");
-        var outputDir = Path.Combine(context.WorkingDirectory, "packages");
-        Directory.CreateDirectory(srcA);
-        Directory.CreateDirectory(srcB);
-        Directory.CreateDirectory(outputDir);
-
         var id = "Missing.Package";
         var v = "9.9.9";
-
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
 
         var args = new PackageDownloadArgs()
         {
             Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
-            OutputDirectory = outputDir,
+            OutputDirectory = context.WorkingDirectory,
         };
 
         // Act
         var result = await PackageDownloadRunner.RunAsync(
             args,
             logger.Object,
-            [new PackageSource(srcA), new PackageSource(srcB)],
+            [new PackageSource(context.PackageSource)],
             settings.Object,
             CancellationToken.None);
 
@@ -308,7 +277,7 @@ public class PackageDownloadRunnerTests
         result.Should().Be(PackageDownloadRunner.ExitCodeError);
         logger.Verify(l => l.LogError(It.IsAny<string>()), Times.AtLeastOnce);
 
-        File.Exists(Path.Combine(outputDir, $"{id.ToLowerInvariant()}.{v}.nupkg"))
+        File.Exists(Path.Combine(context.WorkingDirectory, $"{id.ToLowerInvariant()}.{v}.nupkg"))
             .Should().BeFalse("Package does not exist in sources");
     }
 }

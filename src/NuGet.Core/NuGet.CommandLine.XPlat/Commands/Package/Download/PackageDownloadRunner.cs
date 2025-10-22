@@ -41,12 +41,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 Directory.GetCurrentDirectory(),
                 args.ConfigFile,
                 new XPlatMachineWideSetting());
-            IEnumerable<PackageSource> packageSources = GetPackageSources(args.Sources, new PackageSourceProvider(settings));
+            IReadOnlyList<PackageSource> packageSources = GetPackageSources(args.Sources, new PackageSourceProvider(settings));
 
             return await RunAsync(args, logger, packageSources, settings, token);
         }
 
-        public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IEnumerable<PackageSource> packageSources, ISettings settings, CancellationToken token)
+        public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IReadOnlyList<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
             // Check for insecure sources
             if (DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
             string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
             var cache = new SourceCacheContext();
-            IEnumerable<SourceRepository> sourceRepositories = GetSourceRepositories(packageSources);
+            IReadOnlyList<SourceRepository> sourceRepositories = GetSourceRepositories(packageSources);
             bool downloadedAllSuccessfully = true;
 
             foreach (var package in args.Packages)
@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                         continue;
                     }
 
-                    bool download = await DownloadPackageAsync(
+                    bool success = await DownloadPackageAsync(
                                         package.Id,
                                         version,
                                         downloadRepository,
@@ -95,7 +95,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                                         logger,
                                         token);
 
-                    if (download)
+                    if (success)
                     {
                         logger.LogMinimal(string.Format(
                             CultureInfo.CurrentCulture,
@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         }
 
         internal static async Task<(NuGetVersion, SourceRepository)> ResolvePackageDownloadVersion(
-            PackageWithNuGetVersion package,
+            PackageWithNuGetVersion packageWithNuGetVersion,
             IEnumerable<SourceRepository> sourceRepositories,
             SourceCacheContext cache,
             ILoggerWithColor logger,
@@ -137,13 +137,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         {
             NuGetVersion versionToDownload = null;
             SourceRepository downloadSourceRepository = null;
-            bool versionSpecified = package.NuGetVersion != null;
+            bool versionSpecified = packageWithNuGetVersion.NuGetVersion != null;
 
             foreach (var repo in sourceRepositories)
             {
                 var finder = await repo.GetResourceAsync<PackageMetadataResource>(token);
                 var packages = await finder.GetMetadataAsync(
-                    package.Id,
+                    packageWithNuGetVersion.Id,
                     includePrerelease,
                     includeUnlisted: false,
                     sourceCacheContext: cache,
@@ -158,23 +158,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 if (versionSpecified)
                 {
                     // If an exact version is specified, check if it exists at this source
-                    foreach (var p in packages)
+                    foreach (var package in packages)
                     {
-                        if (p?.Identity?.Version == package.NuGetVersion)
+                        if (package?.Identity?.Version == packageWithNuGetVersion.NuGetVersion)
                         {
-                            return (package.NuGetVersion, repo);
+                            return (packageWithNuGetVersion.NuGetVersion, repo);
                         }
                     }
 
                     continue;
                 }
 
-                foreach (var p in packages)
+                foreach (var package in packages)
                 {
-                    var v = p.Identity.Version;
-                    if (versionToDownload == null || v > versionToDownload)
+                    var version = package.Identity.Version;
+                    if (versionToDownload == null || version > versionToDownload)
                     {
-                        versionToDownload = v;
+                        versionToDownload = version;
                         downloadSourceRepository = repo;
                     }
                 }
@@ -220,67 +220,36 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 return true;
             }
 
-            try
+            var packageIdentity = new PackageIdentity(id, version);
+            var provider = new SourceRepositoryDependencyProvider(sourceRepository: repo, logger: logger, cacheContext: cache, ignoreFailedSources: false, ignoreWarning: false);
+            using var downloader = await provider.GetPackageDownloaderAsync(packageIdentity, cache, logger, token);
+            bool success = await PackageExtractor.InstallFromSourceAsync(packageIdentity, downloader, resolver, extractionContext, token);
+            if (!success)
             {
-                var finder = await repo.GetResourceAsync<FindPackageByIdResource>(token);
-                bool installed = await PackageExtractor.InstallFromSourceAsync(
-                repo.PackageSource.Source,
-                new PackageIdentity(id, version),
-                async (destination) =>
-                {
-                    using var nupkg = new MemoryStream();
-                    bool ok = await finder.CopyNupkgToStreamAsync(
-                        id, version, nupkg, cache, logger, token);
-
-                    if (!ok) throw new InvalidOperationException("Package not found.");
-
-                    nupkg.Position = 0;
-                    await nupkg.CopyToAsync(destination, 81920);
-                },
-                resolver,
-                extractionContext,
-                token);
-
-                if (installed)
-                {
-                    return true;
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // Unable to download the package
                 logger.LogError(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.PackageDownloadCommand_UnableToDownload,
-                    id,
-                    version.ToNormalizedString(),
-                    repo.PackageSource.Source));
+                CultureInfo.CurrentCulture,
+                Strings.PackageDownloadCommand_UnableToDownload,
+                id,
+                version.ToNormalizedString(),
+                repo.PackageSource.Source));
                 return false;
             }
 
-            return false;
+            return success;
         }
 
-        private static IEnumerable<PackageSource> GetPackageSources(IList<string> sources, IPackageSourceProvider sourceProvider)
+        private static IReadOnlyList<PackageSource> GetPackageSources(IList<string> sources, IPackageSourceProvider sourceProvider)
         {
             IEnumerable<PackageSource> configuredSources = sourceProvider.LoadPackageSources()
                 .Where(s => s.IsEnabled);
 
-            IEnumerable<PackageSource> packageSources;
-
             if (sources != null && sources.Count > 0)
             {
                 // Use sources specified on command line
-                packageSources = sources
-                    .Select(s => PackageSourceProviderExtensions.ResolveSource(configuredSources, s));
-            }
-            else
-            {
-                // Use all configured sources
-                packageSources = configuredSources;
+                return [.. sources.Select(s => PackageSourceProviderExtensions.ResolveSource(configuredSources, s))];
             }
 
-            return packageSources;
+            return [.. configuredSources];
         }
 
         private static bool DetectAndReportInsecureSources(
@@ -301,7 +270,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return false;
         }
 
-        private static IEnumerable<SourceRepository> GetSourceRepositories(IEnumerable<PackageSource> packageSources)
+        private static IReadOnlyList<SourceRepository> GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
         {
             IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
             List<SourceRepository> sourceRepositories = [];
