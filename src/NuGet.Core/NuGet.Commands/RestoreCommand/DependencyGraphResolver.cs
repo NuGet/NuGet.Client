@@ -1254,11 +1254,7 @@ namespace NuGet.Commands
                 if (isRootProject)
                 {
 
-#if NETSTANDARD
-                    directPackageReferences = new HashSet<LibraryDependencyIndex>();
-#else
                     directPackageReferences = new HashSet<LibraryDependencyIndex>(capacity: chosenResolvedItem.Item.Data.Dependencies.Count);
-#endif
 
                     for (int i = 0; i < chosenResolvedItem.Item.Data.Dependencies.Count; i++)
                     {
@@ -1292,7 +1288,7 @@ namespace NuGet.Commands
                         // Suppress this dependency if PrivateAssets is set to "All"
                         if (dependency.SuppressParent == LibraryIncludeFlags.All)
                         {
-                            suppressions ??= new HashSet<LibraryDependencyIndex>();
+                            suppressions ??= new HashSet<LibraryDependencyIndex>(capacity: chosenResolvedItem.Item.Data.Dependencies.Count);
 
                             suppressions.Add(chosenResolvedItemChildLibraryDependencyIndex);
                         }
