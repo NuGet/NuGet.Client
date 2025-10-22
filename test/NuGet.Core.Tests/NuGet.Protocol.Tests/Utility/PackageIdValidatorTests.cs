@@ -3,7 +3,6 @@
 
 using Moq;
 using NuGet.Common;
-using NuGet.Packaging;
 using Xunit;
 
 namespace NuGet.Protocol.Tests.Utility
