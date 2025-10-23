@@ -1288,7 +1288,7 @@ namespace NuGet.Commands
                         // Suppress this dependency if PrivateAssets is set to "All"
                         if (dependency.SuppressParent == LibraryIncludeFlags.All)
                         {
-                            suppressions ??= new HashSet<LibraryDependencyIndex>(capacity: chosenResolvedItem.Item.Data.Dependencies.Count);
+                            suppressions ??= new HashSet<LibraryDependencyIndex>(capacity: chosenResolvedItem.Item.Data.Dependencies.Count - i);
 
                             suppressions.Add(chosenResolvedItemChildLibraryDependencyIndex);
                         }
