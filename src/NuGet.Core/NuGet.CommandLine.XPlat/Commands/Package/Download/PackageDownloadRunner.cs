@@ -145,7 +145,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 var packages = await finder.GetMetadataAsync(
                     packageWithNuGetVersion.Id,
                     includePrerelease,
-                    includeUnlisted: false,
+                    includeUnlisted: versionSpecified, // only load unlisted if an exact version is specified
                     sourceCacheContext: cache,
                     logger,
                     token);

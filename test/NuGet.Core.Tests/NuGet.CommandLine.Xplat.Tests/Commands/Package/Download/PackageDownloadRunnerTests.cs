@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace NuGet.CommandLine.Xplat.Tests;
-
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package;
@@ -16,7 +15,10 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
+
+namespace NuGet.CommandLine.Xplat.Tests;
 
 public class PackageDownloadRunnerTests
 {
@@ -142,4 +144,61 @@ public class PackageDownloadRunnerTests
         var expectedPath = Path.Combine(context.WorkingDirectory, scenario.ExpectedSource!);
         Assert.Equal(expectedPath, resolvedRepo.PackageSource.Source);
     }
+
+    [Theory]
+    [InlineData("1.0.0", true)]  // exact version specified -> should find even if unlisted
+    [InlineData(null, false)]     // no exact version -> should return null when unlisted
+    public async Task ResolvePackageDownloadVersion_UnlistedPackage_BehavesAsExpected(string requestedVersion, bool expectFound)
+    {
+        // Arrange
+        using var pathContext = new SimpleTestPathContext();
+        using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+
+        var cache = new SourceCacheContext();
+        var logger = new Mock<ILoggerWithColor>();
+        var token = CancellationToken.None;
+
+        var sourceRepo = Repository.Factory.GetCoreV3(mockServer.ServiceIndexUri);
+
+        // Create the package and unlist it on the mock server.
+        var id = "Contoso.unlisted";
+        var createdVersion = "1.0.0";
+        var pkg = new SimpleTestPackageContext(id, createdVersion);
+        await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkg);
+        mockServer.UnlistedPackages.Add(pkg.Identity);
+
+        mockServer.Start();
+
+        var packageWithNuGetVersion = new PackageWithNuGetVersion
+        {
+            Id = id,
+            NuGetVersion = requestedVersion is null ? null : NuGetVersion.Parse(requestedVersion)
+        };
+
+        // Act
+        (NuGetVersion foundVersion, SourceRepository foundRepo) = await PackageDownloadRunner.ResolvePackageDownloadVersion(
+            packageWithNuGetVersion,
+            [sourceRepo],
+            cache,
+            logger.Object,
+            includePrerelease: false,
+            token);
+
+        mockServer.Stop();
+
+        // Assert
+        if (expectFound)
+        {
+            foundVersion.Should().NotBeNull();
+            foundVersion.OriginalVersion.Should().Be(requestedVersion);
+            foundRepo.Should().NotBeNull();
+            foundRepo.PackageSource.Name.Should().Be(sourceRepo.PackageSource.Name);
+        }
+        else
+        {
+            foundVersion.Should().BeNull();
+            foundRepo.Should().BeNull();
+        }
+    }
+
 }
