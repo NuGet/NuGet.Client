@@ -119,6 +119,8 @@ stages:
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+      RunSettingsDropName: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
+      ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
@@ -160,20 +162,11 @@ stages:
         artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
-      - output: pipelineArtifact
-        displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: "succeeded()"
-        targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
-        artifactName: MicroBuildOutputs
-        # need to make daily Apex test pipeline build its own bootstrapper, and remove this from official pipeline
-        codeSignValidationEnabled: false
-        sbomEnabled: false
-
       - output: artifactsDrop
         displayName: 'Publish the .runsettings files to artifact services'
         condition: "succeeded()"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
+        buildNumber: '$(RunSettingsDropName)'
         sourcePath: 'artifacts\RunSettings'
         toLowerCase: false
         usePat: true
@@ -185,7 +178,7 @@ stages:
         displayName: 'OptProfV2:  publish profiling inputs to artifact services'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
+        buildNumber: '$(ProfilingInputsDropName)'
         sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
         toLowerCase: false
         usePat: true
@@ -208,7 +201,7 @@ stages:
         displayName: 'Upload VSTS Drop'
         condition: "succeeded()"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildNumber)'
+        buildNumber: '$(MicroBuild.ManifestDropName)'
         sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
         toLowerCase: false
         usePat: true
