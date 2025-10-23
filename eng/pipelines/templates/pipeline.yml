@@ -82,7 +82,10 @@ stages:
     - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
         LclSource: lclFilesfromPackage
-        LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
+        ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
+          LclPackageId: 'LCL-MAIN-PROD-NuGetClient'
+        ${{ else }}:
+          LclPackageId: 'LCL-JUNO-PROD-NuGetClientRel'
         MirrorRepo: 'NuGet.Client'
         MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
         GitHubOrg: 'NuGet'
