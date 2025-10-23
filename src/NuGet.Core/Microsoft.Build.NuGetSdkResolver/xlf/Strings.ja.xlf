@@ -7,6 +7,11 @@
         <target state="translated">SDK '{0}' を解決できませんでした。パッケージは正常に復元されましたが、そのパッケージが見つかりませんでした。</target>
         <note>{0} is the name of an MSBuild project SDK.</note>
       </trans-unit>
+      <trans-unit id="DownloadingPackage">
+        <source>Downloading MSBuild project SDK package "{0}" version "{1}"...</source>
+        <target state="new">Downloading MSBuild project SDK package "{0}" version "{1}"...</target>
+        <note>{0} is the name of the SDK, {1} is the version</note>
+      </trans-unit>
       <trans-unit id="Error_DisabledSdkResolver">
         <source>The NuGetSdkResolver did not resolve this SDK because it was disabled by the MSBUILDDISABLENUGETSDKRESOLVER environment variable.</source>
         <target state="translated">NuGetSdkResolver は、MSBUILDDISABLENUGETSDKRESOLVER 環境変数によって無効になっているため、この SDK を解決できませんでした。</target>
@@ -20,6 +25,21 @@
       <trans-unit id="Error_NoSdkVersion">
         <source>The NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json.</source>
         <target state="translated">プロジェクトまたは global.json でバージョンが指定されていなかったため、NuGetSdkResolver でこの SDK を解決できませんでした。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NoSdkVersionSpecified">
+        <source>The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or global.json.</source>
+        <target state="new">The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or global.json.</target>
+        <note>{0} is the user specified SDK name.</note>
+      </trans-unit>
+      <trans-unit id="Error_NoSdkVersionSpecifiedInGlobalJson">
+        <source>The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or the file "{1}".</source>
+        <target state="new">The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or the file "{1}".</target>
+        <note>{0} is the user specified SDK name and {1} is the full path to a global.json file.</note>
+      </trans-unit>
+      <trans-unit id="Error_UnhandledException">
+        <source>Unhandled exception in NuGet-based MSBuild project SDK resolver.</source>
+        <target state="new">Unhandled exception in NuGet-based MSBuild project SDK resolver.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToFindPathToGlobalJson">
@@ -37,10 +57,25 @@
         <target state="translated">ファイル "{0}" を読み取れませんでした: {1}</target>
         <note>{0} is the path to the global.json file that was attempted to be read and {1} is the exception message that occurred.</note>
       </trans-unit>
+      <trans-unit id="LocatingSdk">
+        <source>Locating MSBuild project SDK "{0}" version "{1}"...</source>
+        <target state="new">Locating MSBuild project SDK "{0}" version "{1}"...</target>
+        <note>{0} is the nae of the SDK, {1} is the version</note>
+      </trans-unit>
       <trans-unit id="PackageWasNotInstalled">
         <source>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</source>
         <target state="translated">SDK '{0}' を解決できませんでした。パッケージの復元は成功しましたが、ID が "{1}" のパッケージはインストールされませんでした。</target>
         <note>{0} is name of an MSBuild project SDK and {1} is package ID that was installed.</note>
+      </trans-unit>
+      <trans-unit id="SuccessfullyDownloadedPackage">
+        <source>Successfully downloaded MSBuild project SDK package "{0}" version "{1}" to "{2}".</source>
+        <target state="new">Successfully downloaded MSBuild project SDK package "{0}" version "{1}" to "{2}".</target>
+        <note>{0} is the name of the MSBuild project SDK, {1} is the version, and {2} is the path to where the package was downloaded to.</note>
+      </trans-unit>
+      <trans-unit id="Warning_SdkVersionIsNotValidNuGetVersion">
+        <source>The NuGet-based MSBuild project SDK resolver did not resolve SDK "{0}" because the specified version "{1}" is not a valid NuGet version.</source>
+        <target state="new">The NuGet-based MSBuild project SDK resolver did not resolve SDK "{0}" because the specified version "{1}" is not a valid NuGet version.</target>
+        <note>{0} is the user specified SDK name and {1} is the full path to a global.json file.</note>
       </trans-unit>
     </body>
   </file>

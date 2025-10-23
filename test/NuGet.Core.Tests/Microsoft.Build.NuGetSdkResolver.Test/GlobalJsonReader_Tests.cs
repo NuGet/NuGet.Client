@@ -140,7 +140,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Message.Should().Be(
-                    $"Failed to parse \"{expectedGlobalJsonPath}\". Invalid character after parsing property name. Expected ':' but got: J. Path 'msbuild-sdks.Sdk2', line 5, position 10.");
+                    $"Failed to parse \"{expectedGlobalJsonPath}\". 'i' is an invalid start of a property name. Expected a '\"'. LineNumber: 4 | BytePositionInLine: 2.");
 
                 actualGlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             }
@@ -437,7 +437,9 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
             var context = new MockSdkResolverContext(projectPath, solutionPath);
 
-            GlobalJsonReader.GetStartingPath(context).Should().Be(projectPath);
+            GlobalJsonReader.TryGetStartingPath(context, out string result).Should().BeTrue();
+
+            result.Should().Be(projectPath);
         }
 
         /// <summary>
@@ -451,7 +453,9 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
             var context = new MockSdkResolverContext(projectPath: null, solutionPath);
 
-            GlobalJsonReader.GetStartingPath(context).Should().Be(solutionPath);
+            GlobalJsonReader.TryGetStartingPath(context, out string result).Should().BeTrue();
+
+            result.Should().Be(solutionPath);
         }
 
         /// <summary>
@@ -468,7 +472,9 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         {
             var context = new MockSdkResolverContext(projectPath, solutionPath);
 
-            GlobalJsonReader.GetStartingPath(context).Should().BeNull();
+            GlobalJsonReader.TryGetStartingPath(context, out string result).Should().BeFalse();
+
+            result.Should().BeNull();
         }
 
         /// <summary>

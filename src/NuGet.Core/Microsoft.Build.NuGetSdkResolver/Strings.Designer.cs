@@ -115,7 +115,7 @@ namespace Microsoft.Build.NuGetSdkResolver {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve the SDK &quot;{0}&quot; because there was no version specified the file &quot;{1}&quot;..
+        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve the SDK &quot;{0}&quot; because there was no version specified in the project or the file &quot;{1}&quot;..
         /// </summary>
         internal static string Error_NoSdkVersionSpecifiedInGlobalJson {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.Build.NuGetSdkResolver {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve SDK &quot;{0}&quot; because the version specified &quot;{1}&quot; is not a valid NuGet version..
+        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve SDK &quot;{0}&quot; because the specified version &quot;{1}&quot; is not a valid NuGet version..
         /// </summary>
         internal static string Warning_SdkVersionIsNotValidNuGetVersion {
             get {

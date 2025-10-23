@@ -1,19 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksExe)</TargetFrameworks>
     <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
     <Description>MSBuild SDK resolver for NuGet packages.</Description>
     <XPLATProject>true</XPLATProject>
-    <NoWarn>$(NoWarn);RS0041</NoWarn>
+    <NoWarn>$(NoWarn);RS0041;CA1031</NoWarn>
     <SkipShared>true</SkipShared>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" VersionOverride="17.14.40264" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.GraphModel" VersionOverride="17.14.40260" IncludeAssets="None" NoWarn="NU1701" />
+    <PackageReference Include="ILRepack" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +30,9 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\TaskResultCache.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,4 +44,32 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Build.NuGetSdkResolver.Test" />
   </ItemGroup>
+
+  <Target Name="DetermineILRepackInputsOutputs">
+    <PropertyGroup>
+      <PathToBuiltAssembly>$(OutputPath)$(TargetName)$(TargetExt)</PathToBuiltAssembly>
+      <PathToMergedAssembly>$(ArtifactsDirectory)$(MSBuildProjectName)\bin\$(Configuration)\$(TargetFramework)\merged\$(TargetName)$(TargetExt)</PathToMergedAssembly>
+    </PropertyGroup>
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)\*.dll" />
+    </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedAssembly)" Importance="High" />
+  </Target>
+
+  <Target Name="ILRepack" AfterTargets="Build" DependsOnTargets="DetermineILRepackInputsOutputs" Inputs="$(PathToBuiltAssembly);@(BuildArtifacts)" Outputs="$(PathToMergedAssembly)" Condition="'$(TargetFramework)' != '' And '$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILRepack)' != 'true'">
+    <Error Condition="'$(ILRepack)' == ''" Text="ILRepack not found" />
+    
+    <PropertyGroup>
+      <ILRepackCommand>$(ILRepack) /lib:$(OutputPath) /out:$(PathToMergedAssembly) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)ILRepack.log /allowduplicateresources</ILRepackCommand>
+      <ILRepackCommand Condition="'$(SkipSigning)' != 'true' And Exists($(AssemblyOriginatorKeyFile))">$(ILRepackCommand) /delaysign /keyfile:$(AssemblyOriginatorKeyFile)</ILRepackCommand>
+      <ILRepackCommand>$(ILRepackCommand) $(PathToBuiltAssembly) @(BuildArtifacts->'%(fullpath)', ' ')</ILRepackCommand>
+      <ILRepackCommand>$(ILRepackCommand) @(LocResource->'%(fullpath)', ' ')</ILRepackCommand>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedAssembly)))" />
+
+    <Exec Command="$(ILRepackCommand)"
+          StandardOutputImportance="Normal"
+          ContinueOnError="false" />
+  </Target>
 </Project>

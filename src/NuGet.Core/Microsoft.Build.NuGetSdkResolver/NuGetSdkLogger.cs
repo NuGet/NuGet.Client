@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// A collection of errors that have been logged.
         /// </summary>
-        private readonly List<string> _errors = new List<string>();
+        private List<string>? _errors = default;
 
         /// <summary>
         /// A <see cref="SdkLogger"/> to forward events to.
@@ -31,7 +32,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// A collection of warnings that have been logged.
         /// </summary>
-        private readonly List<string> _warnings = new List<string>();
+        private List<string>? _warnings = default;
 
         /// <summary>
         /// Initializes a new instance of the NuGetLogger class.
@@ -46,12 +47,12 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// Gets a <see cref="IReadOnlyCollection{T}" /> of error messages that have been logged.
         /// </summary>
-        public IReadOnlyCollection<string> Errors => _errors;
+        public IReadOnlyCollection<string> Errors => _errors == null ? Array.Empty<string>() : _errors;
 
         /// <summary>
         /// Gets a <see cref="IReadOnlyCollection{T}" /> of warning messages that have been logged.
         /// </summary>
-        public IReadOnlyCollection<string> Warnings => _warnings;
+        public IReadOnlyCollection<string> Warnings => _warnings == null ? Array.Empty<string>() : _warnings;
 
         /// <inheritdoc cref="ILogger.Log(NuGet.Common.LogLevel, string)" />
         public void Log(LogLevel level, string data)
@@ -83,12 +84,14 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
 
                 case LogLevel.Warning:
+                    _warnings ??= new List<string>();
                     _warnings.Add(data);
 
                     eventLevel = EventLevel.Warning;
                     break;
 
                 case LogLevel.Error:
+                    _errors ??= new List<string>();
                     _errors.Add(data);
 
                     eventLevel = EventLevel.Error;

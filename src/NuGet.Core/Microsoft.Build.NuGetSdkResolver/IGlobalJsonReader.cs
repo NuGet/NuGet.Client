@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#nullable enable
 
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
@@ -18,6 +19,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="globalJsonFullPath">Receives the full path to the global.json that was read if one was found, otherwise <see langword="null" />.</param>
         /// <param name="fileName">An optional file name to search for, the default is global.json.</param>
         /// <returns>A <see cref="Dictionary{String,String}" /> of MSBuild SDK versions from a global.json if found, otherwise <see langword="null" />.</returns>
-        Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, out string globalJsonFullPath, string fileName = GlobalJsonReader.GlobalJsonFileName);
+        Dictionary<string, string>? GetMSBuildSdkVersions(SdkResolverContext? context, out string? globalJsonFullPath, string fileName = GlobalJsonReader.GlobalJsonFileName);
     }
 }

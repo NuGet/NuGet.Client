@@ -17,7 +17,7 @@ using NuGet.Credentials;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 #if !NETFRAMEWORK
-using NuGet.Packaging.Signing;
+//using NuGet.Packaging.Signing;
 #endif
 using NuGet.Versioning;
 
@@ -211,7 +211,9 @@ namespace Microsoft.Build.NuGetSdkResolver
                                 settings,
                                 logger));
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                             var results = restoreTask.Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
                             if (NuGetEventSource.IsEnabled) TraceEvents.RestorePackageStop(libraryIdentity);
 

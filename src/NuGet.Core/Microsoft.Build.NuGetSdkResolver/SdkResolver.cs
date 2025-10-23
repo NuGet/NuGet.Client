@@ -3,10 +3,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
@@ -24,12 +23,12 @@ using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 using ILogger = NuGet.Common.ILogger;
 using SdkResolverBase = Microsoft.Build.Framework.SdkResolver;
 using SdkResultBase = Microsoft.Build.Framework.SdkResult;
+using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -51,12 +50,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// Stores a cache that stores results for by a <see cref="LibraryIdentity" />.
         /// </summary>
-        internal static readonly ConcurrentDictionary<LibraryIdentity, Lazy<SdkResultBase>> ResultCache = new ConcurrentDictionary<LibraryIdentity, Lazy<SdkResultBase>>();
-
-        /// <summary>
-        /// Stores a <see cref="LocalPackageFileCache" /> instance for cache package file look ups.
-        /// </summary>
-        private static readonly LocalPackageFileCache LocalPackageFileCache = new LocalPackageFileCache();
+        internal static readonly ConcurrentDictionary<LibraryIdentity, AsyncLazy<SdkResultBase>> ResultCache = new();
 
         /// <summary>
         /// Stores an <see cref="IMachineWideSettings" /> instance used for reading machine-wide settings.
@@ -67,11 +61,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// Stores a <see cref="SettingsLoadingContext" /> instance used to cache the loading of settings.
         /// </summary>
         private static readonly SettingsLoadingContext SettingsLoadContext = new SettingsLoadingContext();
-
-        /// <summary>
-        /// Stores a <see cref="SemaphoreSlim" /> instance used to ensure that this SDK resolver is only ever resolving one SDK at a time.
-        /// </summary>
-        private static readonly SemaphoreSlim SingleResolutionSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         /// <summary>
         /// Stores a value indicating whether or not this SDK resolver has been disabled.
@@ -117,12 +106,22 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 ResultCache.Clear();
             }
+
+            bool IsFeatureFlagEnabled(IEnvironmentVariableReader environmentVariableReader, string name)
+            {
+                string value = environmentVariableReader.GetEnvironmentVariable(name);
+
+                return string.Equals(value, "1", StringComparison.Ordinal) || string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
+        /// <inherdoc />
         public override string Name => "NuGet-based MSBuild project SDK resolver";
 
+        /// <inherdoc />
         public override int Priority => 5999;
 
+        /// <inherdoc />
         public override SdkResultBase Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory resultFactory)
         {
             try
@@ -140,12 +139,13 @@ namespace Microsoft.Build.NuGetSdkResolver
                     return resultFactory.IndicateFailure(new List<string>(1) { string.Format(CultureInfo.CurrentCulture, Strings.Error_DisabledSdkResolver, sdkReference.Name, MSBuildDisableNuGetSdkResolver) });
                 }
 
-                if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.ResolveStart(sdkReference);
+                if (NuGetEventSource.IsEnabled)
+                    NuGetSdkResolver.TraceEvents.ResolveStart(sdkReference);
 
                 try
                 {
                     // The main logger which logs messages back to MSBuild
-                    var logger = new NuGetSdkLogger(resolverContext.Logger);
+                    NuGetSdkLogger logger = new(resolverContext.Logger);
 
                     // Try to see if a version is specified in the project or in a global.json. The method will log a reason why a version wasn't found
                     if (!TryGetLibraryIdentityFromSdkReference(sdkReference, resolverContext, logger, out LibraryIdentity libraryIdentity))
@@ -153,36 +153,31 @@ namespace Microsoft.Build.NuGetSdkResolver
                         return resultFactory.IndicateFailure(logger.Errors, logger.Warnings);
                     }
 
-                    Lazy<SdkResultBase> resultLazy = ResultCache.GetOrAdd(
-                        libraryIdentity,
-                        (key) => new Lazy<SdkResultBase>(() => GetResult(key, resolverContext, resultFactory, logger)));
+                    IMachineWideSettings machineWideSettings = MachineWideSettingsLazy.Value;
 
-                    SdkResultBase result = resultLazy.Value;
+                    AsyncLazy<SdkResultBase> resultLazy = ResultCache.GetOrAdd(
+                            libraryIdentity,
+                            static (key, state) => new AsyncLazy<SdkResultBase>(() => GetResultAsync(key, state.ResolverContext, state.ResultFactory, state.MachineWideSettings, state.Logger)),
+                            (ResolverContext: resolverContext, ResultFactory: resultFactory, MachineWideSettings: machineWideSettings, Logger: logger));
+
+                    SdkResultBase result = resolverContext.IsRunningInVisualStudio
+                        ? GetResultWithJoinableTaskFactory(resultLazy)
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                        : resultLazy.GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
                     return result;
                 }
                 finally
                 {
-                    if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.ResolveStop(sdkReference);
+                    if (NuGetEventSource.IsEnabled)
+                        NuGetSdkResolver.TraceEvents.ResolveStop(sdkReference);
                 }
             }
             catch (Exception e)
             {
-                return resultFactory.IndicateFailure(errors: new[] { Strings.Error_UnhandledException, e.ToString() });
+                return resultFactory.IndicateFailure(errors: [Strings.Error_UnhandledException, e.ToString()]);
             }
-        }
-
-        /// <summary>
-        /// Determines if a feature flag is enabled by reading the environment variable with the specified name.
-        /// </summary>
-        /// <param name="environmentVariableReader">The <see cref="IEnvironmentVariableReader" /> to use when reading environment variables.</param>
-        /// <param name="name">The name of the environment variable to read.</param>
-        /// <returns><see langword="true" /> if the specified feature flag has a value of "1" or "true", otherwise <see langword="false" />.</returns>
-        internal static bool IsFeatureFlagEnabled(IEnvironmentVariableReader environmentVariableReader, string name)
-        {
-            string value = environmentVariableReader.GetEnvironmentVariable(name);
-
-            return string.Equals(value, "1", StringComparison.Ordinal) || string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -191,13 +186,15 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="libraryIdentity">The <see cref="LibraryIdentity" /> of the MSBuild project SDK to resolve.</param>
         /// <param name="resolverContext">An <see cref="SdkResolverContext" /> representing the context under which the MSBuild project SDK is being resolved.</param>
         /// <param name="resultFactory">An <see cref="SdkResultFactory" /> to use when creating an <see cref="SdkResultBase" /> object.</param>
+        /// <param name="machineWideSettings">An instance of <see cref="IMachineWideSettings" /> representing the machine-wide settings.</param>
         /// <param name="sdkLogger">An <see cref="NuGetSdkLogger" /> to use for logging information back .</param>
         /// <returns></returns>
-        internal SdkResultBase GetResult(LibraryIdentity libraryIdentity, SdkResolverContext resolverContext, SdkResultFactory resultFactory, NuGetSdkLogger sdkLogger)
+        internal static async Task<SdkResultBase> GetResultAsync(LibraryIdentity libraryIdentity, SdkResolverContext resolverContext, SdkResultFactory resultFactory, IMachineWideSettings machineWideSettings, NuGetSdkLogger sdkLogger)
         {
             sdkLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.LocatingSdk, libraryIdentity.Name, libraryIdentity.Version.OriginalVersion));
 
-            if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.GetResultStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+            if (NuGetEventSource.IsEnabled)
+                NuGetSdkResolver.TraceEvents.GetResultStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
 
             SdkResultBase result = null;
 
@@ -205,12 +202,13 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 MigrationRunner.Run();
 
-                if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.LoadSettingsStart();
+                if (NuGetEventSource.IsEnabled)
+                    NuGetSdkResolver.TraceEvents.LoadSettingsStart();
 
                 ISettings settings;
                 try
                 {
-                    settings = Settings.LoadDefaultSettings(resolverContext.ProjectFilePath, configFileName: null, MachineWideSettingsLazy.Value, SettingsLoadContext);
+                    settings = Settings.LoadDefaultSettings(resolverContext.ProjectFilePath, configFileName: null, machineWideSettings, SettingsLoadContext);
                 }
                 catch (Exception e)
                 {
@@ -220,7 +218,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 finally
                 {
-                    if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.LoadSettingsStop();
+                    if (NuGetEventSource.IsEnabled)
+                        NuGetSdkResolver.TraceEvents.LoadSettingsStop();
                 }
 
                 var versionFolderPathResolver = new VersionFolderPathResolver(SettingsUtility.GetGlobalPackagesFolder(settings));
@@ -234,20 +233,14 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 else
                 {
-                    if (resolverContext.IsRunningInVisualStudio)
-                    {
-                        // TODO: Use JTF
-                    }
-                    else
-                    {
-                        // Restore the package from the configured feeds and return the path to the package on disk
-                        result = RestorePackageAsync(libraryIdentity, resolverContext, resultFactory, settings, versionFolderPathResolver, sdkLogger).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
-                    }
+                    // Restore the package from the configured feeds and return the path to the package on disk
+                    result = await RestorePackageAsync(libraryIdentity, resolverContext, resultFactory, settings, versionFolderPathResolver, sdkLogger);
                 }
             }
             finally
             {
-                if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.GetResultStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion, result);
+                if (NuGetEventSource.IsEnabled)
+                    NuGetSdkResolver.TraceEvents.GetResultStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion, result);
             }
 
             return result;
@@ -263,7 +256,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns><see langword="true" /> if a version was found for the specified MSBuild project SDK, otherwise <see langword="false" />.</returns>
         internal bool TryGetLibraryIdentityFromSdkReference(SdkReference sdkReference, SdkResolverContext resolverContext, ILogger logger, out LibraryIdentity libraryIdentity)
         {
-            // This resolver only works if the user specifies a version in a project or a global.json.
             string sdkVersion = sdkReference.Version;
 
             libraryIdentity = null;
@@ -282,7 +274,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 if (!msbuildSdkVersions.TryGetValue(sdkReference.Name, out sdkVersion))
                 {
-                    // The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified the file "{1}".
+                    // The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or the file "{1}".
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoSdkVersionSpecifiedInGlobalJson, sdkReference.Name, globalJsonFullPath));
 
                     return false;
@@ -292,7 +284,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Ignore invalid versions, there may be another resolver that can handle the version specified
             if (!NuGetVersion.TryParse(sdkVersion, out NuGetVersion nuGetVersion))
             {
-                // The NuGet-based MSBuild project SDK resolver did not resolve SDK "{0}" because the version specified "{1}" is not a valid NuGet version.
+                // The NuGet-based MSBuild project SDK resolver did not resolve SDK "{0}" because the specified version "{1}" is not a valid NuGet version.
                 logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_SdkVersionIsNotValidNuGetVersion, sdkReference.Name, sdkVersion));
 
                 return false;
@@ -301,6 +293,19 @@ namespace Microsoft.Build.NuGetSdkResolver
             libraryIdentity = new LibraryIdentity(sdkReference.Name, nuGetVersion, LibraryType.Package);
 
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static SdkResultBase GetResultWithJoinableTaskFactory(AsyncLazy<SdkResultBase> resultLazy)
+        {
+            SdkResultBase result = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                SdkResultBase result = await resultLazy;
+
+                return result;
+            });
+
+            return result;
         }
 
         /// <summary>
@@ -346,18 +351,12 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="versionFolderPathResolver">A <see cref="VersionFolderPathResolver" /> to use when locating the package.</param>
         /// <param name="sdkLogger">A <see cref="NuGetSdkLogger" /> to use for logging..</param>
         /// <returns>An <see cref="Task{SdkResultBase}" /> representing the details of the package if it was found or errors if any occurred.</returns>
-        private async Task<SdkResultBase> RestorePackageAsync(LibraryIdentity libraryIdentity, SdkResolverContext context, SdkResultFactory factory, ISettings settings, VersionFolderPathResolver versionFolderPathResolver, NuGetSdkLogger sdkLogger)
+        private static async Task<SdkResultBase> RestorePackageAsync(LibraryIdentity libraryIdentity, SdkResolverContext context, SdkResultFactory factory, ISettings settings, VersionFolderPathResolver versionFolderPathResolver, NuGetSdkLogger sdkLogger)
         {
-            if (NuGetEventSource.IsEnabled) TraceEvents.WaitForRestoreSemaphoreStart(libraryIdentity);
-
-            // Only ever resolve one package at a time to reduce the possibility of thread starvation
-            await SingleResolutionSemaphore.WaitAsync().ConfigureAwait(continueOnCapturedContext: false);
-
             try
             {
-                if (NuGetEventSource.IsEnabled) TraceEvents.WaitForRestoreSemaphoreStop(libraryIdentity);
-
-                if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.RestorePackageStart(libraryIdentity);
+                if (NuGetEventSource.IsEnabled)
+                    NuGetSdkResolver.TraceEvents.RestorePackageStart(libraryIdentity);
 
                 // Downloading SDK package "{0}" version "{1}"...
                 sdkLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.DownloadingPackage, libraryIdentity.Name, libraryIdentity.Version.OriginalVersion));
@@ -374,56 +373,58 @@ namespace Microsoft.Build.NuGetSdkResolver
                     IgnoreFailedSources = true,
                 })
                 {
-                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    LibraryRange libraryRange = new(
+                        libraryIdentity.Name,
+                        new VersionRange(libraryIdentity.Version, includeMinVersion: true, maxVersion: libraryIdentity.Version, includeMaxVersion: true),
+                        LibraryDependencyTarget.Package);
 
-                    var cachingSourceProvider = new CachingSourceProvider(packageSourceProvider);
+                    PackageSourceProvider packageSourceProvider = new(settings);
 
-                    var remoteWalkContext = new RemoteWalkContext(cacheContext: sourceCacheContext, packageSourceMapping: PackageSourceMapping.GetPackageSourceMapping(settings), sdkLogger);
+                    CachingSourceProvider cachingSourceProvider = new(packageSourceProvider);
 
-                    foreach (SourceRepository source in SettingsUtility.GetEnabledSources(settings).Select(i => cachingSourceProvider.CreateRepository(i)))
+                    PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+
+                    RemoteWalkContext remoteWalkContext = new RemoteWalkContext(sourceCacheContext, packageSourceMapping, sdkLogger);
+
+                    foreach (SourceRepository sourceRepository in cachingSourceProvider.GetRepositories())
                     {
-                        SourceRepositoryDependencyProvider remoteProvider = new SourceRepositoryDependencyProvider(
-                            source,
-                            sdkLogger,
-                            sourceCacheContext,
-                            sourceCacheContext.IgnoreFailedSources,
-                            ignoreWarning: false,
-                            fileCache: LocalPackageFileCache,
-                            isFallbackFolderSource: false);
-
-                        remoteWalkContext.RemoteLibraryProviders.Add(remoteProvider);
+                        remoteWalkContext.RemoteLibraryProviders.Add(new SourceRepositoryDependencyProvider(sourceRepository, sdkLogger, sourceCacheContext, sourceCacheContext.IgnoreFailedSources, ignoreWarning: false));
                     }
 
-                    var walker = new RemoteDependencyWalker(remoteWalkContext);
+                    IList<IRemoteDependencyProvider> remoteProviders = remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange);
 
-                    var libraryRange = new LibraryRange(libraryIdentity.Name, new VersionRange(minVersion: libraryIdentity.Version, includeMinVersion: true, libraryIdentity.Version, includeMaxVersion: true), LibraryDependencyTarget.Package);
+                    if (remoteProviders.Count == 0)
+                    {
+                        return factory.IndicateFailure(sdkLogger.Errors, sdkLogger.Warnings);
+                    }
 
-                    GraphNode<RemoteResolveResult> result = await walker.WalkAsync(libraryRange, FrameworkConstants.CommonFrameworks.Net45, null, RuntimeGraph.Empty, recursive: false).ConfigureAwait(continueOnCapturedContext: false);
+                    GraphItem<RemoteResolveResult> result = await ResolverUtility.FindLibraryCachedAsync(libraryRange, NuGetFramework.AnyFramework, runtimeIdentifier: null, remoteWalkContext, CancellationToken.None);
 
-                    RemoteMatch match = result.Item.Data.Match;
+                    RemoteMatch match = result.Data.Match;
 
                     if (match == null || match.Library.Type == LibraryType.Unresolved)
                     {
-                        RestoreLogMessage message = await UnresolvedMessages.GetMessageAsync(
-                            "any/any",
-                            libraryRange,
-                            remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange),
-                            remoteWalkContext.PackageSourceMapping.IsEnabled,
-                            remoteWalkContext.RemoteLibraryProviders,
-                            remoteWalkContext.CacheContext,
-                            remoteWalkContext.Logger,
-                            CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
+                        // TODO: Log an error that the package wasn't found, preferably reuse UnresolvedMessages.GetMessageAsync which handles PSM.
+                        //RestoreLogMessage message = await UnresolvedMessages.GetMessageAsync(
+                        //    "any/any",
+                        //    libraryRange,
+                        //    remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange),
+                        //    remoteWalkContext.PackageSourceMapping.IsEnabled,
+                        //    remoteWalkContext.RemoteLibraryProviders,
+                        //    remoteWalkContext.CacheContext,
+                        //    remoteWalkContext.Logger,
+                        //    CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
 
-                        sdkLogger.Log(message);
+                        //sdkLogger.Log(message);
 
                         return factory.IndicateFailure(sdkLogger.Errors, sdkLogger.Warnings);
                     }
 
-                    var packageIdentity = new PackageIdentity(match.Library.Name, match.Library.Version);
+                    PackageIdentity packageIdentity = new(match.Library.Name, match.Library.Version);
 
                     ClientPolicyContext clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, sdkLogger);
 
-                    var packageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, PackageExtractionBehavior.XmlDocFileSaveMode, clientPolicyContext, sdkLogger);
+                    PackageExtractionContext packageExtractionContext = new(PackageSaveMode.Defaultv3, PackageExtractionBehavior.XmlDocFileSaveMode, clientPolicyContext, sdkLogger);
 
                     using (IPackageDownloader downloader = await match.Provider.GetPackageDownloaderAsync(packageIdentity, sourceCacheContext, sdkLogger, CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false))
                     {
@@ -435,63 +436,33 @@ namespace Microsoft.Build.NuGetSdkResolver
                             CancellationToken.None,
                             parentId: default).ConfigureAwait(continueOnCapturedContext: false);
 
-                        if (installed)
+                        if (!installed)
                         {
-                            string installPath = GetSdkPackageInstallPath(packageIdentity.Id, packageIdentity.Version, versionFolderPathResolver);
-
-                            if (!string.IsNullOrWhiteSpace(installPath))
-                            {
-                                // Successfully downloaded SDK package "{0}" version "{1}" to "{2}".
-                                sdkLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyDownloadedPackage, libraryIdentity.Name, libraryIdentity.Version.OriginalVersion, installPath));
-
-                                return factory.IndicateSuccess(installPath, packageIdentity.Version.ToNormalizedString(), sdkLogger.Warnings);
-                            }
+                            return factory.IndicateFailure(sdkLogger.Errors, sdkLogger.Warnings);
                         }
+
+                        string installPath = GetSdkPackageInstallPath(packageIdentity.Id, packageIdentity.Version, versionFolderPathResolver);
+
+                        if (string.IsNullOrWhiteSpace(installPath))
+                        {
+                            // TODO: Log an error that the SDK package didn't contain an Sdk folder so it must be malformed.
+                            return factory.IndicateFailure(sdkLogger.Errors, sdkLogger.Warnings);
+                        }
+
+                        // Successfully downloaded SDK package "{0}" version "{1}" to "{2}".
+                        sdkLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyDownloadedPackage, libraryIdentity.Name, libraryIdentity.Version.OriginalVersion, installPath));
+
+                        return factory.IndicateSuccess(installPath, packageIdentity.Version.ToNormalizedString(), sdkLogger.Warnings);
                     }
                 }
-
-                return factory.IndicateFailure(sdkLogger.Errors, sdkLogger.Warnings);
             }
             finally
             {
                 DefaultCredentialServiceUtility.UpdateCredentialServiceDelegatingLogger(NullLogger.Instance);
 
-                if (NuGetEventSource.IsEnabled) NuGetSdkResolver.TraceEvents.RestorePackageStop(libraryIdentity);
-
-                SingleResolutionSemaphore.Release();
+                if (NuGetEventSource.IsEnabled)
+                    NuGetSdkResolver.TraceEvents.RestorePackageStop(libraryIdentity);
             }
-        }
-
-        internal static class TraceEvents
-        {
-            private const string EventNameWaitForRestoreSemaphore = "SdkResolver/WaitForRestoreSemaphore";
-
-            public static void WaitForRestoreSemaphoreStart(LibraryIdentity libraryIdentity)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
-                    Opcode = EventOpcode.Start
-                };
-
-                NuGetEventSource.Instance.Write(EventNameWaitForRestoreSemaphore, eventOptions, new WaitForRestoreSemaphoreEventData(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion));
-            }
-
-            public static void WaitForRestoreSemaphoreStop(LibraryIdentity libraryIdentity)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
-                    Opcode = EventOpcode.Stop
-                };
-
-                NuGetEventSource.Instance.Write(EventNameWaitForRestoreSemaphore, eventOptions, new WaitForRestoreSemaphoreEventData(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion));
-            }
-
-            [EventData]
-            private record struct WaitForRestoreSemaphoreEventData(string Id, string Version);
         }
     }
 }
