@@ -21,6 +21,11 @@ namespace NuGet.Common.Test
         {
             foreach (NuGetFolderPath folderPath in (NuGetFolderPath[])System.Enum.GetValues(typeof(NuGetFolderPath)))
             {
+                if (folderPath == NuGetFolderPath.DefaultMsBuildPath)
+                {
+                    // Skip DefaultMsBuildPath as it throws on Mac and Linux
+                    continue;
+                }
                 yield return new object[] { folderPath };
             }
         }
