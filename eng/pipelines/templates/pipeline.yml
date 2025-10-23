@@ -110,6 +110,8 @@ stages:
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+      RunSettingsDropName: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
+      ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
@@ -205,7 +207,7 @@ stages:
         displayName: 'Upload VSTS Drop'
         condition: "succeeded()"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildNumber)'
+        buildNumber: '$(MicroBuild.ManifestDropName)'
         sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
         toLowerCase: false
         usePat: true
