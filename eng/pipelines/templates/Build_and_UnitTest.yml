@@ -306,7 +306,7 @@ steps:
     displayName: "Generate .runsettings files"
     inputs:
       solution: 'build\runsettings.proj'
-      msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
+      msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="$(RunSettingsDropName)" /property:ProfilingInputsDrop="$(ProfilingInputsDropName)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
