@@ -208,28 +208,15 @@
           "allowAdditionsAndRemovals": true
         },
         "nuGetAudit": {
-          "type": "string",
-          "title": "Choose how NuGet Audit retrieves vulnerability data.",
-          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
-          "default": "package-sources",
-
-          // Invariant monikers
-          "enum": [
-            "package-sources",
-            "audit-sources"
-          ],
-
-          // Localizable titles
-          "enumItemLabels": [
-            "Read vulnerabilities from my package sources",
-            "Configure sources to read vulnerabilities"
-          ]
+          "type": "boolean",
+          "title": "Configure Audit Sources from which NuGet Audit retrieves vulnerability data.",
+          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages"
         },
         "auditSources": {
           "type": "array",
           "title": "Audit Sources",
           "description": "Configure the sources NuGet Audit will use for retrieving Package Vulnerability data. If none are configured, any configured package sources that support Vulnerability data will be used by NuGet Audit.",
-          "visibleWhen": "${config:nuGetAudit}=='audit-sources'",
+          "visibleWhen": "${config:nuGetAudit}",
 
           // Metadata about items in this array
           "items": {
