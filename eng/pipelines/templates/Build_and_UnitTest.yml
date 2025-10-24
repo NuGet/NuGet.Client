@@ -28,12 +28,6 @@ steps:
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
 
-  - task: MicroBuildSigningPlugin@1
-    inputs:
-      signType: "$(SigningType)"
-      esrpSigning: "true"
-    displayName: "Install Signing Plugin"
-
   - task: MicroBuildSwixPlugin@1
     displayName: "Install Swix Plugin"
 
