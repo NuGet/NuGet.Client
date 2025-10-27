@@ -47,6 +47,29 @@ public class PackageDownloadRunnerTests
             }                                    // expected
         };
 
+        // Basic stable explicit versions with different ids
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.0.0"),
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "2.0.0-beta")
+            },                                      // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "1.0.0"),
+            },                                      // argument packages
+            false,                               // enablePrerelease
+            "myOutput",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "1.0.0")
+            }                                    // expected
+        };
+
         // Mixed casing on the ID in the *download* argument 
         yield return new object[]
         {
