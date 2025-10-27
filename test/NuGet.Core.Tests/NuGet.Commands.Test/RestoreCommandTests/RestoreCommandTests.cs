@@ -2751,6 +2751,113 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_AssetsFile_UnresolvedPackage()
+        {
+            // Arrange
+            var framework = new NuGetFramework("net46");
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectInfo = new
+                {
+                    Name = "ProjectA",
+                    Directory = Directory.CreateDirectory(Path.Combine(pathContext.SolutionRoot, "ProjectA")),
+                    Path = new FileInfo(Path.Combine(pathContext.SolutionRoot, "ProjectA", "Project1.csproj")).FullName
+                };
+
+                var logger = new TestLogger();
+
+                // PackageA 1.0.0 -> PackageB 1.0.0 -> PackageC 1.0.0 -> PackageD 1.0.0
+                var packageA = new PackageIdentity("PackageA", new NuGetVersion("1.0.0"));
+                var packageB = new PackageIdentity("PackageB", new NuGetVersion("1.0.0"));
+                var packageC = new PackageIdentity("PackageC", new NuGetVersion("1.0.0"));
+                var packageD = new PackageIdentity("PackageD", new NuGetVersion("1.0.0"));
+
+                var packageDContext = new SimpleTestPackageContext(packageD);
+                packageDContext.AddFile("lib/net46/PackageD.dll");
+                //await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageDContext);
+
+                var packageCContext = new SimpleTestPackageContext(packageC);
+                packageCContext.AddFile("lib/net46/PackageC.dll");
+                packageCContext.Dependencies.Add(packageDContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageCContext);
+
+                var packageBContext = new SimpleTestPackageContext(packageB);
+                packageBContext.AddFile("lib/net46/PackageB.dll");
+                packageBContext.Dependencies.Add(packageCContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageBContext);
+
+                var packageAContext = new SimpleTestPackageContext(packageA);
+                packageAContext.AddFile("lib/net46/PackageA.dll");
+                packageAContext.Dependencies.Add(packageBContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
+
+                var tfi = CreateTargetFrameworkInformation(
+                    [
+                        new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange()
+                            {
+                                Name = packageA.Id,
+                                TypeConstraint = LibraryDependencyTarget.Package,
+                            },
+                            VersionCentrallyManaged = true,
+                            SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile
+                        },
+                    ],
+                    new List<CentralPackageVersion>
+                    {
+                        new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
+                        new CentralPackageVersion(packageB.Id, new VersionRange(packageB.Version)),
+                        new CentralPackageVersion(packageD.Id, new VersionRange(packageD.Version))
+                    },
+                    framework);
+
+                PackageSpec packageSpec = CreatePackageSpec(
+                    new List<TargetFrameworkInformation>() { tfi },
+                    framework,
+                    projectInfo.Name,
+                    projectInfo.Path,
+                    centralPackageManagementEnabled: true,
+                    centralPackageTransitivePinningEnabled: true);
+
+
+                var dgspec = new DependencyGraphSpec();
+                dgspec.AddProject(packageSpec);
+
+                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectInfo.Name), new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger)
+                {
+                    LockFilePath = Path.Combine(projectInfo.Directory.FullName, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var restoreCommand = new RestoreCommand(request);
+                var result = await restoreCommand.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                var targetLib = lockFile.Targets.First().Libraries.FirstOrDefault(l => l.Name == packageA.Id);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
+
+                List<LibraryDependency> transitiveDependencies = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.ToList();
+
+                Assert.Equal(2, transitiveDependencies.Count);
+
+                LibraryDependency transitiveDependencyB = transitiveDependencies.Single(i => i.Name.Equals(packageB.Id));
+
+                Assert.Equal(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile, transitiveDependencyB.SuppressParent);
+
+                LibraryDependency transitiveDependencyD = transitiveDependencies.Single(i => i.Name.Equals(packageD.Id));
+
+                Assert.Equal(LibraryIncludeFlags.All, transitiveDependencyD.IncludeType);
+
+                Assert.Equal(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile, transitiveDependencyD.SuppressParent);
+            }
+        }
+
         /// <summary>
         /// Verifies an error is logged when a user attempts to specify a VersionOverride but the feature is disabled and that restore succeeds if the feature is enabled.
         /// </summary>
