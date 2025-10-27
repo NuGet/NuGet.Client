@@ -206,34 +206,86 @@ public class PackageDownloadRunnerTests
 
     public static IEnumerable<object[]> ShortCircuitsPackageData =>
         [
-            [
-                new[] {
-                    new PackageWithNuGetVersion()
-                    {
-                        Id = "Contoso.Utils",
-                        NuGetVersion = NuGetVersion.Parse("3.4.5")
-                    }
+        // single package already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5")          // source packages
+            },
+            new[]
+            {
+                new PackageWithNuGetVersion              // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("3.4.5")
                 }
-            ],
-            [
-                new[] {
-                    new PackageWithNuGetVersion()
-                    {
-                        Id = "Contoso.Utils",
-                        NuGetVersion = NuGetVersion.Parse("3.4.5")
-                    },
-                    new PackageWithNuGetVersion()
-                    {
-                        Id = "Contoso.Core",
-                        NuGetVersion = NuGetVersion.Parse("3.0.5")
-                    }
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5")               // expected packages
+            }
+        ],
+
+        // multiple packages already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),            // source packages
+                ("Contoso.Core", "3.0.5")
+            },
+            new []
+            {
+                new PackageWithNuGetVersion            // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("3.4.5")
+                },
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Core",
+                    NuGetVersion = NuGetVersion.Parse("3.0.5")
                 }
-            ],
-        ];
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),             // expected packages
+                ("Contoso.Core", "3.0.5")
+            }
+        ],
+
+        // no version specified, but latest version already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),            // source packages
+                ("Contoso.Core", "3.0.5")
+            },
+            new []
+            {
+                new PackageWithNuGetVersion             // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = null
+            },
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Core",
+                    NuGetVersion = null
+                }
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),              // expected packages
+                ("Contoso.Core", "3.0.5")
+            }
+        ]];
 
     [Theory]
     [MemberData(nameof(ShortCircuitsPackageData))]
-    internal async Task RunAsync_ExplicitVersionAlreadyInstalled_ShortCircuitsAndSucceeds(PackageWithNuGetVersion[] packages)
+    internal async Task RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceeds(
+        IReadOnlyList<(string, string)> sourcePackages,
+        PackageWithNuGetVersion[] packageDownloadArgs,
+        IReadOnlyList<(string, string)> expectedPackages)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -242,9 +294,9 @@ public class PackageDownloadRunnerTests
 
         List<PackageWithNuGetVersion> packagesToInstall = [];
 
-        foreach (var package in packages)
+        foreach (var (id, version) in sourcePackages)
         {
-            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, package.NuGetVersion.OriginalVersion);
+            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, version);
         }
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
@@ -253,7 +305,7 @@ public class PackageDownloadRunnerTests
         // First run: install explicit version
         var args1 = new PackageDownloadArgs()
         {
-            Packages = packages,
+            Packages = packageDownloadArgs,
             LogLevel = LogLevel.Verbose,
             OutputDirectory = outputDir,
         };
@@ -269,7 +321,7 @@ public class PackageDownloadRunnerTests
         // Second run: should short-circuit because already installed
         var args2 = new PackageDownloadArgs()
         {
-            Packages = packages,
+            Packages = packageDownloadArgs,
             OutputDirectory = outputDir,
         };
 
@@ -282,12 +334,12 @@ public class PackageDownloadRunnerTests
             CancellationToken.None);
 
         // Assert
-        foreach (var package in packages)
+        foreach (var (id, version) in expectedPackages)
         {
             second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-            var installDir = Path.Combine(outputDir, package.Id.ToLowerInvariant(), package.NuGetVersion.OriginalVersion);
+            var installDir = Path.Combine(outputDir, id, version);
             Directory.Exists(installDir).Should().BeTrue();
-            File.Exists(Path.Combine(installDir, $"{package.Id.ToLowerInvariant()}.{package.NuGetVersion.OriginalVersion}.nupkg")).Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
         }
 
         logger.Verify(l => l.LogMinimal(It.Is<string>(s => s.Contains("Skipping", StringComparison.OrdinalIgnoreCase))), Times.AtLeastOnce);
