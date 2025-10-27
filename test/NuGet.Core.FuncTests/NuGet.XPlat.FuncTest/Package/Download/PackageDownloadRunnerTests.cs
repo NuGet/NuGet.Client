@@ -204,17 +204,48 @@ public class PackageDownloadRunnerTests
         File.Exists(Path.Combine(chosen, $"{id.ToLowerInvariant()}.1.2.0.nupkg")).Should().BeTrue();
     }
 
-    [Fact]
-    public async Task RunAsync_ExplicitVersionAlreadyInstalled_ShortCircuitsAndSucceeds()
+    public static IEnumerable<object[]> ShortCircuitsPackageData =>
+        [
+            [
+                new[] {
+                    new PackageWithNuGetVersion()
+                    {
+                        Id = "Contoso.Utils",
+                        NuGetVersion = NuGetVersion.Parse("3.4.5")
+                    }
+                }
+            ],
+            [
+                new[] {
+                    new PackageWithNuGetVersion()
+                    {
+                        Id = "Contoso.Utils",
+                        NuGetVersion = NuGetVersion.Parse("3.4.5")
+                    },
+                    new PackageWithNuGetVersion()
+                    {
+                        Id = "Contoso.Core",
+                        NuGetVersion = NuGetVersion.Parse("3.0.5")
+                    }
+                }
+            ],
+        ];
+
+    [Theory]
+    [MemberData(nameof(ShortCircuitsPackageData))]
+    internal async Task RunAsync_ExplicitVersionAlreadyInstalled_ShortCircuitsAndSucceeds(PackageWithNuGetVersion[] packages)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
         var sourceDir = context.PackageSource;
         var outputDir = context.WorkingDirectory;
 
-        var id = "Contoso.Utils";
-        var v = "3.4.5";
-        await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, v);
+        List<PackageWithNuGetVersion> packagesToInstall = [];
+
+        foreach (var package in packages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, package.Id, package.NuGetVersion.OriginalVersion);
+        }
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
@@ -222,7 +253,7 @@ public class PackageDownloadRunnerTests
         // First run: install explicit version
         var args1 = new PackageDownloadArgs()
         {
-            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
+            Packages = packages,
             LogLevel = LogLevel.Verbose,
             OutputDirectory = outputDir,
         };
@@ -238,7 +269,7 @@ public class PackageDownloadRunnerTests
         // Second run: should short-circuit because already installed
         var args2 = new PackageDownloadArgs()
         {
-            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
+            Packages = packages,
             OutputDirectory = outputDir,
         };
 
@@ -251,10 +282,14 @@ public class PackageDownloadRunnerTests
             CancellationToken.None);
 
         // Assert
-        second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-        var installDir = Path.Combine(outputDir, id.ToLowerInvariant(), v);
-        Directory.Exists(installDir).Should().BeTrue();
-        File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{v}.nupkg")).Should().BeTrue();
+        foreach (var package in packages)
+        {
+            second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+            var installDir = Path.Combine(outputDir, package.Id.ToLowerInvariant(), package.NuGetVersion.OriginalVersion);
+            Directory.Exists(installDir).Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{package.Id.ToLowerInvariant()}.{package.NuGetVersion.OriginalVersion}.nupkg")).Should().BeTrue();
+        }
+
         logger.Verify(l => l.LogMinimal(It.Is<string>(s => s.Contains("Skipping", StringComparison.OrdinalIgnoreCase))), Times.AtLeastOnce);
     }
 
