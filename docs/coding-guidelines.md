@@ -44,6 +44,25 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. Avoid more than one empty line at any time. For example, do not have two blank lines between members of a type.
 
+1. Add a blank line before control statements such as `if`, `for`, and `while` loops.  
+   For readability, ensure there is a space ahead of these statements. For example:
+
+    ```csharp
+    statement1
+    statement2
+
+    if (...)
+    {
+    }
+
+    // Not:
+    statement1
+    statement2
+    if (...)
+    {
+    }
+    ```
+
 1. Avoid lines of code longer than 120 characters.
 
 1. Avoid spurious free spaces. For example avoid `if (someVar == 0)...`, where the dots mark the spurious free spaces. Consider enabling "View White Space (Ctrl+R, Ctrl+W)" or "Edit -> Advanced -> View White Space" if using Visual Studio to aid detection.
