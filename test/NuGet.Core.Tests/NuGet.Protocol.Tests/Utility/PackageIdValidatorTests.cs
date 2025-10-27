@@ -3,12 +3,44 @@
 
 using Moq;
 using NuGet.Common;
+using NuGet.Packaging;
 using Xunit;
 
 namespace NuGet.Protocol.Tests.Utility
 {
     public class PackageIdValidatorTests
     {
+        [Theory]
+        [InlineData("../contoso")]
+        [InlineData("contoso/../package")]
+        [InlineData("contoso/.?///?")]
+        public void Validate_InvalidIdWithEscapeHatchFalse_Throws(string id)
+        {
+            // Arrange
+            var environment = new Mock<IEnvironmentVariableReader>();
+            environment.Setup(e => e.GetEnvironmentVariable("NUGET_DISABLE_PACKAGEID_VALIDATION"))
+                       .Returns("false");
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidPackageIdException>(() => PackageIdValidator.Validate(id, environment.Object));
+            exception.Message.Contains(id);
+        }
+
+        [Theory]
+        [InlineData("../contoso")]
+        [InlineData("contoso/../package")]
+        [InlineData("contoso/.?///?")]
+        public void Validate_InvalidIdWithEscapeHatchNotSet_Succeeds(string id)
+        {
+            // Arrange
+            var environment = new Mock<IEnvironmentVariableReader>();
+
+            // Act & Assert
+            // This should not throw for an invalid package ID
+            PackageIdValidator.Validate(id, environment.Object);
+            Assert.True(true);
+        }
+
         [Fact]
         public void Validate_EnvironmentVariableSet_DoesNotThrow()
         {
