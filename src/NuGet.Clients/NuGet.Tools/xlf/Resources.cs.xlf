@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="ErrorDialogBoxTitle">
         <source>Operation failed</source>
-        <target state="translated">Operace se nepovedla</target>
+        <target state="translated">Operace neproběhla úspěšně</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
+        <target state="translated">Projekt není způsobilý k migraci, protože není založen na souboru project.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">

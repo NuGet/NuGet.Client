@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
         <source>Can not create tool window.</source>
-        <target state="translated">Impossible de créer la fenêtre d'outil.</target>
+        <target state="translated">Impossible de créer la fenêtre Outil.</target>
         <note />
       </trans-unit>
       <trans-unit id="DTE_ProjectUnsupported">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration as it's not project.json based.</source>
-        <target state="new">Project is not eligible for migration as it's not project.json based.</target>
+        <target state="translated">Le projet n’est pas éligible à la migration, car il n’est pas basé sur project.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
