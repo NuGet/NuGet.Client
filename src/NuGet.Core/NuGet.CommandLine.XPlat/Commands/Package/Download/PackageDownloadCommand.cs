@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         {
             var downloadCommand = new DocumentedCommand(
                 "download",
-                Strings.PackageDownloadCommand_descritpion,
+                Strings.PackageDownloadCommand_Description,
                 "https://aka.ms/dotnet/package/download");
 
             // Arguments
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             // Options
             var allowInsecureConnections = new Option<bool>("--allow-insecure-connections")
             {
-                Description = Strings.PackageDownloadCommand_AllowInsecureConnectionsDescritption,
+                Description = Strings.PackageDownloadCommand_AllowInsecureConnectionsDescription,
                 Arity = ArgumentArity.Zero
             };
 

@@ -1601,9 +1601,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Allows downloading from HTTP (non-HTTPS) package sources..
         /// </summary>
-        internal static string PackageDownloadCommand_AllowInsecureConnectionsDescritption {
+        internal static string PackageDownloadCommand_AllowInsecureConnectionsDescription {
             get {
-                return ResourceManager.GetString("PackageDownloadCommand_AllowInsecureConnectionsDescritption", resourceCulture);
+                return ResourceManager.GetString("PackageDownloadCommand_AllowInsecureConnectionsDescription", resourceCulture);
             }
         }
         
@@ -1619,9 +1619,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Downloads a NuGet package to a local folder without requiring a project file..
         /// </summary>
-        internal static string PackageDownloadCommand_descritpion {
+        internal static string PackageDownloadCommand_Description {
             get {
-                return ResourceManager.GetString("PackageDownloadCommand_descritpion", resourceCulture);
+                return ResourceManager.GetString("PackageDownloadCommand_Description", resourceCulture);
             }
         }
         

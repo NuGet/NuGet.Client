@@ -891,7 +891,7 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
         <note>{0}: App full name
 {1}: App version</note>
       </trans-unit>
-      <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescritption">
+      <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescription">
         <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
         <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
         <note />
@@ -902,6 +902,11 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
         <note>0 - package id
 1 - version
 2 - directory path where the package was downloaded</note>
+      </trans-unit>
+      <trans-unit id="PackageDownloadCommand_Description">
+        <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
+        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
+        <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Failed">
         <source>Package '{0}' ({1}) failed to download.</source>
@@ -948,11 +953,6 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
         <note>0 package id
 1 package version
 2 package source</note>
-      </trans-unit>
-      <trans-unit id="PackageDownloadCommand_descritpion">
-        <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
-        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
-        <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_Description">
         <source>Update referenced packages in a project or solution.</source>

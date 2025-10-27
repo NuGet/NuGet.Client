@@ -1108,13 +1108,13 @@ Do not translate "PackageVersion"</comment>
     <value>Invalid version value '{0}'.</value>
     <comment>0 - package version</comment>
   </data>
-  <data name="PackageDownloadCommand_descritpion" xml:space="preserve">
+  <data name="PackageDownloadCommand_Description" xml:space="preserve">
     <value>Downloads a NuGet package to a local folder without requiring a project file.</value>
   </data>
   <data name="PackageDownloadCommand_PackageIdDescription" xml:space="preserve">
     <value>Package identifier (e.g. 'Newtonsoft.Json').</value>
   </data>
-  <data name="PackageDownloadCommand_AllowInsecureConnectionsDescritption" xml:space="preserve">
+  <data name="PackageDownloadCommand_AllowInsecureConnectionsDescription" xml:space="preserve">
     <value>Allows downloading from HTTP (non-HTTPS) package sources.</value>
   </data>
   <data name="PackageDownloadCommand_OutputDirectoryDescription" xml:space="preserve">

@@ -86,14 +86,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     }
 
                     bool success = await DownloadPackageAsync(
-                                        package.Id,
-                                        version,
-                                        downloadRepository,
-                                        cache,
-                                        settings,
-                                        outputDirectory,
-                                        logger,
-                                        token);
+                        package.Id,
+                        version,
+                        downloadRepository,
+                        cache,
+                        settings,
+                        outputDirectory,
+                        logger,
+                        token);
 
                     if (success)
                     {
@@ -211,11 +211,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             if (userPackageFolder.Exists(id, version))
             {
                 logger.LogMinimal(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.PackageDownloadCommand_AlreadyInstalled,
-                        id,
-                        version.ToNormalizedString(),
-                        outputDirectory));
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageDownloadCommand_AlreadyInstalled,
+                    id,
+                    version.ToNormalizedString(),
+                    outputDirectory));
 
                 return true;
             }
@@ -224,14 +224,15 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             var provider = new SourceRepositoryDependencyProvider(sourceRepository: repo, logger: logger, cacheContext: cache, ignoreFailedSources: false, ignoreWarning: false);
             using var downloader = await provider.GetPackageDownloaderAsync(packageIdentity, cache, logger, token);
             bool success = await PackageExtractor.InstallFromSourceAsync(packageIdentity, downloader, resolver, extractionContext, token);
+
             if (!success)
             {
                 logger.LogError(string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.PackageDownloadCommand_UnableToDownload,
-                id,
-                version.ToNormalizedString(),
-                repo.PackageSource.Source));
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageDownloadCommand_UnableToDownload,
+                    id,
+                    version.ToNormalizedString(),
+                    repo.PackageSource.Source));
                 return false;
             }
 

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace NuGet.CommandLine.Xplat.Tests;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,11 +18,13 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
+namespace NuGet.CommandLine.Xplat.Tests;
+
 public class PackageDownloadRunnerTests
 {
     public static IEnumerable<object[]> PackageTestData()
     {
-        // Basic stable explicit version
+        // Basic stable explicit versions
         yield return new object[]
         {
             new List<(string, string)>
@@ -32,11 +32,19 @@ public class PackageDownloadRunnerTests
                 ("Contoso.Core", "1.0.0"),
                 ("Contoso.Core", "1.1.0"),
                 ("Contoso.Core", "2.0.0-beta")
-            },
-            "Contoso.Core",                       // downloadId argument
-            "1.1.0",                              // downloadVersion argument
+            },                                      // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "1.0.0"),
+            },                                      // argument packages
             false,                               // enablePrerelease
-            ("Contoso.Core", "1.1.0")            // expected
+            "myOutput",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "1.0.0")
+            }                                    // expected
         };
 
         // Mixed casing on the ID in the *download* argument 
@@ -45,11 +53,17 @@ public class PackageDownloadRunnerTests
             new List<(string, string)>
             {
                 ("Contoso.Core", "1.1.0")
-            },
-            "contoso.core",                 // downloadId argument
-            "1.1.0",                        // downloadVersion argument
-            false,                          // enablePrerelease
-            ("Contoso.Core", "1.1.0")        // expected
+            },                                       // source packages      
+            new List<(string, string)>
+            {
+                ("contoso.core", "1.1.0")
+            },                                      // download argument
+            false,                                  // enablePrerelease
+            "",                                     // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0")
+            },                                      // expected
         };
 
         // prerelease with IncludePrerelease == true
@@ -59,11 +73,17 @@ public class PackageDownloadRunnerTests
             {
                 ("Contoso.Preview", "1.3.0"),
                 ("Contoso.Preview", "2.0.0-beta.2")
-            },
-            "Contoso.Preview",        // downloadId argument
-            null,                   // downloadVersion argument
-            true,                   // enablePrerelease
-            ("Contoso.Preview", "2.0.0-beta.2")  // expected
+            },                                          // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", null),
+            },                                          // download argument
+            true,                                    // enablePrerelease
+            "AnotherSubPath",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },                                          // expected
         };
 
         // chose stable with IncludePrerelease == false
@@ -74,28 +94,32 @@ public class PackageDownloadRunnerTests
                 ("Contoso.Preview", "1.3.2"),
                 ("Contoso.Preview", "1.3.0"),
                 ("Contoso.Preview", "2.0.0-beta.2")
-            },
-            "Contoso.Preview",        // downloadId argument
-            null,                   // downloadVersion argument
-            false,                   // enablePrerelease
-            ("Contoso.Preview", "1.3.2")  // expected
+            },                                                // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", null)
+            },                                              // download argument
+            false,                                           // enablePrerelease
+            "SubPath",                                       // output directory subpath
+            new List <(string, string) > {
+                ("Contoso.Preview", "1.3.2")
+            }                                                // expected
         };
     }
-
 
     [Theory]
     [MemberData(nameof(PackageTestData))]
     public async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsync(
         IReadOnlyList<(string, string)> sourcePackages,
-        string downloadId,
-        string downloadVersion,
+        IReadOnlyList<(string, string)> argumentPackages,
         bool enablePrerelease,
-        (string, string) expectedPackage)
+        string outputDirectorySubPath,
+        IReadOnlyList<(string, string)> expectedPackages)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
         var sourceDir = context.PackageSource;
-        var outputDir = context.WorkingDirectory;
+        var outputDir = Path.Combine(context.WorkingDirectory, outputDirectorySubPath);
 
         foreach (var (id, version) in sourcePackages)
         {
@@ -104,14 +128,23 @@ public class PackageDownloadRunnerTests
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
+        List<PackageWithNuGetVersion> packages = [];
+
+        foreach (var (id, version) in argumentPackages)
+        {
+            packages.Add(new PackageWithNuGetVersion
+            {
+                Id = id,
+                NuGetVersion = version == null ? null : NuGetVersion.Parse(version)
+            });
+        }
 
         var args = new PackageDownloadArgs()
         {
-            Packages = [new PackageWithNuGetVersion { Id = downloadId, NuGetVersion = downloadVersion == null ? null : NuGetVersion.Parse(downloadVersion) }],
+            Packages = packages,
             OutputDirectory = outputDir,
-            IncludePrerelease = enablePrerelease
+            IncludePrerelease = enablePrerelease,
         };
-
 
         // Act
         var result = await PackageDownloadRunner.RunAsync(
@@ -122,11 +155,14 @@ public class PackageDownloadRunnerTests
             CancellationToken.None);
 
         // Assert
-        result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-        var installDir = Path.Combine(outputDir, expectedPackage.Item1.ToLowerInvariant(), expectedPackage.Item2);
-        Directory.Exists(installDir).Should().BeTrue();
-        Directory.EnumerateFiles(installDir, "*.nupkg").Any().Should().BeTrue();
-        File.Exists(Path.Combine(installDir, $"{expectedPackage.Item1.ToLowerInvariant()}.{expectedPackage.Item2}.nupkg")).Should().BeTrue();
+        foreach (var (expectedId, expectedVersion) in expectedPackages)
+        {
+            result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+            var installDir = Path.Combine(outputDir, expectedId.ToLowerInvariant(), expectedVersion);
+            Directory.Exists(installDir).Should().BeTrue();
+            Directory.EnumerateFiles(installDir, "*.nupkg").Any().Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{expectedId.ToLowerInvariant()}.{expectedVersion}.nupkg")).Should().BeTrue();
+        }
     }
 
     [Fact]
