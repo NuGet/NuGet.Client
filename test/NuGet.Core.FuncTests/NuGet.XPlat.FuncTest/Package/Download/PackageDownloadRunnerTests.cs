@@ -337,7 +337,7 @@ public class PackageDownloadRunnerTests
         foreach (var (id, version) in expectedPackages)
         {
             second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-            var installDir = Path.Combine(outputDir, id, version);
+            var installDir = Path.Combine(outputDir, id.ToLowerInvariant(), version);
             Directory.Exists(installDir).Should().BeTrue();
             File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
         }
