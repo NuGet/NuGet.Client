@@ -528,14 +528,9 @@ namespace NuGet.Commands
                     }
 
                     // If all assets are suppressed then the dependency should not be added
-                    if (suppressParent != LibraryIncludeFlags.All)
+                    if (suppressParent != LibraryIncludeFlags.All
+                        && dependenciesIncludeFlags.TryGetValue(centralPackageVersion.Name, out LibraryIncludeFlags includeType)) // Check if an include type was calculated, a value can be missing when during dependency resolution a package was not found
                     {
-                        if (!dependenciesIncludeFlags.TryGetValue(centralPackageVersion.Name, out LibraryIncludeFlags includeType))
-                        {
-                            // This can happen when during dependency resolution a package was not found, so there will be no way to calculate its include type
-                            includeType = LibraryIncludeFlags.All;
-                        }
-
                         yield return new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
