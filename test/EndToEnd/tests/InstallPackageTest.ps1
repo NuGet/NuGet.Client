@@ -2784,9 +2784,8 @@ function Test-InstallPackagesConfigLocal
     $p | Install-Package $pathToPackagesConfig
 
     # Assert
-    Assert-Package $p jQuery.validation 1.13.1
-    Assert-Package $p jQuery 2.1.3
-    Assert-Package $p EntityFramework 6.1.3-beta1
+    Assert-Package $p A 1.0.0
+    Assert-Package $p B 1.0.0
 }
 
 # Tests that passing in online path to a .nupkg file to
