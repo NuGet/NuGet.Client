@@ -44,25 +44,81 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. Avoid more than one empty line at any time. For example, do not have two blank lines between members of a type.
 
-1. Add a blank line before control statements such as `if`, `for`, and `while` loops.  
-   For readability, ensure there is a space ahead of these statements. For example:
+1. When it helps readability, add a blank line before control flow statements such as `if`, `for`, or `while` loops to make the code’s structure easier to follow.
+
+    For example:
 
     ```csharp
-    statement1
-    statement2
-
-    if (...)
-    {
+    // Less readable
+    int score = 85;
+    int highScore = 90;
+    bool isNewRecord = false;
+    if (score > highScore){
+        Console.WriteLine("New high score!");
+        isNewRecord = true;
+    }
+    if (isNewRecord){
+        Console.WriteLine("Congratulations!");
+    }else{
+        Console.WriteLine("Try again to beat the high score.");
     }
 
-    // Not:
-    statement1
-    statement2
-    if (...)
+    ```
+
+    Blank lines make it easier for readers to see where one group of statements ends and another begins.
+
+    ```csharp
+    // more readable
+    int score = 85;
+    int highScore = 90;
+    bool isNewRecord = false;
+
+    if (score > highScore)
     {
+        Console.WriteLine("New high score!");
+        isNewRecord = true;
+    }
+
+    if (isNewRecord)
+    {
+        Console.WriteLine("Congratulations!");
+    }
+    else
+    {
+        Console.WriteLine("Try again to beat the high score.");
+    }
+    ```
+    Use blank lines only when they clarify structure, not automatically before every statement. 
+    
+    For example:
+    
+    Don't
+    ```csharp
+    // Blank spaces do not help readability
+    for (int i = 0; i < 5; i++)
+    {
+
+        if (i % 2 == 0)
+        {
+
+            Console.WriteLine($"{i} is even.");
+
+        }
+
     }
     ```
 
+    Do
+    ```csharp
+    for (int i = 0; i < 5; i++)
+    {
+        if (i % 2 == 0)
+        {
+            Console.WriteLine($"{i} is even.");
+        }
+    }
+    ```
+    
 1. Avoid lines of code longer than 120 characters.
 
 1. Avoid spurious free spaces. For example avoid `if (someVar == 0)...`, where the dots mark the spurious free spaces. Consider enabling "View White Space (Ctrl+R, Ctrl+W)" or "Edit -> Advanced -> View White Space" if using Visual Studio to aid detection.
