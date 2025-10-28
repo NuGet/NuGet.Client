@@ -1,0 +1,429 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Moq;
+using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Package;
+using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
+using Xunit;
+
+namespace NuGet.CommandLine.Xplat.Tests;
+
+public class PackageDownloadRunnerTests
+{
+    public static IEnumerable<object[]> PackageTestData()
+    {
+        // Basic stable explicit versions
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.0.0"),
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "2.0.0-beta")
+            },                                      // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "1.0.0"),
+            },                                      // argument packages
+            false,                               // enablePrerelease
+            "myOutput",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0"),
+                ("Contoso.Core", "1.0.0")
+            }                                    // expected
+        };
+
+        // Basic stable explicit versions with different ids
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.0.0"),
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "2.0.0-beta")
+            },                                      // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "1.0.0"),
+            },                                      // argument packages
+            false,                               // enablePrerelease
+            "myOutput",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core.Utils", "1.1.0"),
+                ("Contoso.Core", "1.0.0")
+            }                                    // expected
+        };
+
+        // Mixed casing on the ID in the *download* argument 
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0")
+            },                                       // source packages      
+            new List<(string, string)>
+            {
+                ("contoso.core", "1.1.0")
+            },                                      // download argument
+            false,                                  // enablePrerelease
+            "",                                     // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Core", "1.1.0")
+            },                                      // expected
+        };
+
+        // prerelease with IncludePrerelease == true
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "1.3.0"),
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },                                          // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", null),
+            },                                          // download argument
+            true,                                    // enablePrerelease
+            "AnotherSubPath",                          // output directory subpath
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },                                          // expected
+        };
+
+        // chose stable with IncludePrerelease == false
+        yield return new object[]
+        {
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", "1.3.2"),
+                ("Contoso.Preview", "1.3.0"),
+                ("Contoso.Preview", "2.0.0-beta.2")
+            },                                                // source packages
+            new List<(string, string)>
+            {
+                ("Contoso.Preview", null)
+            },                                              // download argument
+            false,                                           // enablePrerelease
+            "SubPath",                                       // output directory subpath
+            new List <(string, string) > {
+                ("Contoso.Preview", "1.3.2")
+            }                                                // expected
+        };
+    }
+
+    [Theory]
+    [MemberData(nameof(PackageTestData))]
+    public async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsync(
+        IReadOnlyList<(string, string)> sourcePackages,
+        IReadOnlyList<(string, string)> argumentPackages,
+        bool enablePrerelease,
+        string outputDirectorySubPath,
+        IReadOnlyList<(string, string)> expectedPackages)
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var sourceDir = context.PackageSource;
+        var outputDir = Path.Combine(context.WorkingDirectory, outputDirectorySubPath);
+
+        foreach (var (id, version) in sourcePackages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, version);
+        }
+
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var settings = new Mock<ISettings>(MockBehavior.Loose);
+        List<PackageWithNuGetVersion> packages = [];
+
+        foreach (var (id, version) in argumentPackages)
+        {
+            packages.Add(new PackageWithNuGetVersion
+            {
+                Id = id,
+                NuGetVersion = version == null ? null : NuGetVersion.Parse(version)
+            });
+        }
+
+        var args = new PackageDownloadArgs()
+        {
+            Packages = packages,
+            OutputDirectory = outputDir,
+            IncludePrerelease = enablePrerelease,
+        };
+
+        // Act
+        var result = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new(sourceDir)],
+            settings.Object,
+            CancellationToken.None);
+
+        // Assert
+        foreach (var (expectedId, expectedVersion) in expectedPackages)
+        {
+            result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+            var installDir = Path.Combine(outputDir, expectedId.ToLowerInvariant(), expectedVersion);
+            Directory.Exists(installDir).Should().BeTrue();
+            Directory.EnumerateFiles(installDir, "*.nupkg").Any().Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{expectedId.ToLowerInvariant()}.{expectedVersion}.nupkg")).Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_NoVersion_PicksHighestAcrossMultipleSources()
+    {
+        // Arrange
+        using var contextA = new SimpleTestPathContext();
+        using var contextB = new SimpleTestPathContext();
+        var srcA = contextA.PackageSource;
+        var srcB = contextB.PackageSource;
+        var outputDir = contextA.WorkingDirectory;
+
+        var id = "Contoso.Toolkit";
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcA, id, "1.1.0");
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcB, id, "1.2.0");
+
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var settings = new Mock<ISettings>(MockBehavior.Loose);
+
+        var args = new PackageDownloadArgs()
+        {
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = null }],
+            OutputDirectory = outputDir,
+        };
+
+        // Act
+        var result = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new PackageSource(srcA), new PackageSource(srcB)],
+            settings.Object,
+            CancellationToken.None);
+
+        // Assert
+        result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+
+        var chosen = Path.Combine(outputDir, id.ToLowerInvariant(), "1.2.0");
+        Directory.Exists(chosen).Should().BeTrue("should choose the highest version found across all sources");
+        File.Exists(Path.Combine(chosen, $"{id.ToLowerInvariant()}.1.2.0.nupkg")).Should().BeTrue();
+    }
+
+    public static IEnumerable<object[]> ShortCircuitsPackageData =>
+        [
+        // single package already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5")          // source packages
+            },
+            new[]
+            {
+                new PackageWithNuGetVersion              // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("3.4.5")
+                }
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5")               // expected packages
+            }
+        ],
+
+        // multiple packages already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),            // source packages
+                ("Contoso.Core", "3.0.5")
+            },
+            new []
+            {
+                new PackageWithNuGetVersion            // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("3.4.5")
+                },
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Core",
+                    NuGetVersion = NuGetVersion.Parse("3.0.5")
+                }
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),             // expected packages
+                ("Contoso.Core", "3.0.5")
+            }
+        ],
+
+        // no version specified, but latest version already installed
+        [
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),            // source packages
+                ("Contoso.Core", "3.0.5")
+            },
+            new []
+            {
+                new PackageWithNuGetVersion             // argument packages
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = null
+            },
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Core",
+                    NuGetVersion = null
+                }
+            },
+            new []
+            {
+                ("Contoso.Utils", "3.4.5"),              // expected packages
+                ("Contoso.Core", "3.0.5")
+            }
+        ]];
+
+    [Theory]
+    [MemberData(nameof(ShortCircuitsPackageData))]
+    internal async Task RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceeds(
+        IReadOnlyList<(string, string)> sourcePackages,
+        PackageWithNuGetVersion[] packageDownloadArgs,
+        IReadOnlyList<(string, string)> expectedPackages)
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var sourceDir = context.PackageSource;
+        var outputDir = context.WorkingDirectory;
+
+        List<PackageWithNuGetVersion> packagesToInstall = [];
+
+        foreach (var (id, version) in sourcePackages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(sourceDir, id, version);
+        }
+
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var settings = new Mock<ISettings>(MockBehavior.Loose);
+
+        // First run: install explicit version
+        var args1 = new PackageDownloadArgs()
+        {
+            Packages = packageDownloadArgs,
+            LogLevel = LogLevel.Verbose,
+            OutputDirectory = outputDir,
+        };
+
+        var first = await PackageDownloadRunner.RunAsync(
+            args1,
+            logger.Object,
+            [new PackageSource(sourceDir)],
+            settings.Object,
+            CancellationToken.None);
+        first.Should().Be(ExitCodes.Success);
+
+        // Second run: should short-circuit because already installed
+        var args2 = new PackageDownloadArgs()
+        {
+            Packages = packageDownloadArgs,
+            OutputDirectory = outputDir,
+        };
+
+        // Act
+        var second = await PackageDownloadRunner.RunAsync(
+            args2,
+            logger.Object,
+            [new PackageSource(sourceDir)],
+            settings.Object,
+            CancellationToken.None);
+
+        // Assert
+        foreach (var (id, version) in expectedPackages)
+        {
+            second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+            var installDir = Path.Combine(outputDir, id.ToLowerInvariant(), version);
+            Directory.Exists(installDir).Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
+        }
+
+        logger.Verify(l => l.LogMinimal(It.Is<string>(s => s.Contains("Skipping", StringComparison.OrdinalIgnoreCase))), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenAllowInsecureConnectionsFalse_RejectsHttpSource()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var httpSource = "http://contoso/v3/index.json";
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var settings = new Mock<ISettings>(MockBehavior.Loose);
+
+        var args = new PackageDownloadArgs()
+        {
+            Packages = [new PackageWithNuGetVersion { Id = "Contoso.Lib", NuGetVersion = null }],
+        };
+
+        // Act
+        var result = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new PackageSource(httpSource)],
+            settings.Object,
+            CancellationToken.None);
+
+        // Assert
+        result.Should().Be(PackageDownloadRunner.ExitCodeError);
+        logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains(httpSource, StringComparison.OrdinalIgnoreCase))), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task RunAsync_PackageDoesNotExist_ReturnsError()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var id = "Missing.Package";
+        var v = "9.9.9";
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var settings = new Mock<ISettings>(MockBehavior.Loose);
+
+        var args = new PackageDownloadArgs()
+        {
+            Packages = [new PackageWithNuGetVersion { Id = id, NuGetVersion = NuGetVersion.Parse(v) }],
+            OutputDirectory = context.WorkingDirectory,
+        };
+
+        // Act
+        var result = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new PackageSource(context.PackageSource)],
+            settings.Object,
+            CancellationToken.None);
+
+        // Assert
+        result.Should().Be(PackageDownloadRunner.ExitCodeError);
+        logger.Verify(l => l.LogError(It.IsAny<string>()), Times.AtLeastOnce);
+
+        File.Exists(Path.Combine(context.WorkingDirectory, $"{id.ToLowerInvariant()}.{v}.nupkg"))
+            .Should().BeFalse("Package does not exist in sources");
+    }
+}
