@@ -2759,65 +2759,51 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectInfo = new
-                {
-                    Name = "ProjectA",
-                    Directory = Directory.CreateDirectory(Path.Combine(pathContext.SolutionRoot, "ProjectA")),
-                    Path = new FileInfo(Path.Combine(pathContext.SolutionRoot, "ProjectA", "Project1.csproj")).FullName
-                };
-
-                var logger = new TestLogger();
+                var projectDirectory = new DirectoryInfo(Path.Combine(pathContext.SolutionRoot, "Project1"));
 
                 // PackageA 1.0.0 -> PackageB 1.0.0
-                var packageA = new PackageIdentity("PackageA", new NuGetVersion("1.0.0"));
-                var packageB = new PackageIdentity("PackageB", new NuGetVersion("1.0.0"));
+                var packageA = new SimpleTestPackageContext { Id = "PackageA", Version = "1.0.0", };
+                var packageB = new SimpleTestPackageContext { Id = "PackageB", Version = "1.0.0", };
 
-                var packageBContext = new SimpleTestPackageContext(packageB);
-                packageBContext.AddFile("lib/net46/PackageB.dll");
+                packageA.Dependencies.Add(packageB);
 
-                var packageAContext = new SimpleTestPackageContext(packageA);
-                packageAContext.AddFile("lib/net46/PackageA.dll");
-                packageAContext.Dependencies.Add(packageBContext);
-                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageA);
 
-                var tfi = CreateTargetFrameworkInformation(
+                var projectSpec = PackageReferenceSpecBuilder.Create("Project1", projectDirectory.FullName)
+                    .WithTargetFrameworks(
                     [
-                        new LibraryDependency()
+                        new TargetFrameworkInformation
                         {
-                            LibraryRange = new LibraryRange()
+                            FrameworkName = NuGetFramework.Parse("net46"),
+                            Dependencies =
+                            [
+                                new LibraryDependency
+                                {
+                                    LibraryRange = new LibraryRange(packageA.PackageName, VersionRange.Parse(packageA.Version), LibraryDependencyTarget.All),
+                                    VersionCentrallyManaged = true,
+                                },
+                            ],
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
                             {
-                                Name = packageA.Id,
-                                TypeConstraint = LibraryDependencyTarget.Package,
-                            },
-                            VersionCentrallyManaged = true,
-                            SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile
-                        },
-                    ],
-                    new List<CentralPackageVersion>
-                    {
-                        new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
-                        new CentralPackageVersion(packageB.Id, new VersionRange(packageB.Version)),
-                    },
-                    framework);
+                                { packageA.PackageName, new CentralPackageVersion(packageA.PackageName, VersionRange.Parse(packageA.Version)) },
+                                { packageB.PackageName, new CentralPackageVersion(packageB.PackageName, VersionRange.Parse(packageB.Version)) }
+                            }
+                        }
+                    ])
+                    .WithCentralPackageVersionsEnabled()
+                    .WithCentralPackageTransitivePinningEnabled()
+                    .Build()
+                    .WithTestRestoreMetadata();
 
-                PackageSpec packageSpec = CreatePackageSpec(
-                    new List<TargetFrameworkInformation>() { tfi },
-                    framework,
-                    projectInfo.Name,
-                    projectInfo.Path,
-                    centralPackageManagementEnabled: true,
-                    centralPackageTransitivePinningEnabled: true);
-
-
-                var dgspec = new DependencyGraphSpec();
-                dgspec.AddProject(packageSpec);
-
-                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectInfo.Name), new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger)
+                // Act
+                var restoreContext = new RestoreArgs()
                 {
-                    LockFilePath = Path.Combine(projectInfo.Directory.FullName, "project.assets.json"),
-                    ProjectStyle = ProjectStyle.PackageReference
+                    Sources = new List<string> { pathContext.PackageSource },
+                    GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                    Log = NullLogger.Instance,
+                    CacheContext = new TestSourceCacheContext(),
                 };
-
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, projectSpec);
                 var restoreCommand = new RestoreCommand(request);
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
