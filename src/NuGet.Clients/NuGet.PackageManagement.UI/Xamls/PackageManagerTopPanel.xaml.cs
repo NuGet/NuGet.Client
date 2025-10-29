@@ -43,6 +43,51 @@ namespace NuGet.PackageManagement.UI
             var cvs = Resources["cvsPackageSources"] as CollectionViewSource;
             cvs.Culture = CultureInfo.DefaultThreadCurrentUICulture;
             cvs.Source = PackageSources;
+
+            // Hook Loaded so we can measure hidden text measurers and set column MaxWidth.
+            Loaded += PackageManagerTopPanel_Loaded;
+        }
+
+        private void PackageManagerTopPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Perform an immediate measurement to initialize column widths.
+            UpdateMeasuredColumnWidths();
+        }
+
+        private void UpdateMeasuredColumnWidths()
+        {
+            try
+            {
+                if (_measurerPrerelease == null || _measurerVulnerabilities == null || _checkboxPrerelease == null)
+                {
+                    return;
+                }
+
+                // Measure the hidden TextBlocks with infinite available width so they compute their natural width.
+                _measurerPrerelease.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                _measurerVulnerabilities.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+                double w1 = _measurerPrerelease.DesiredSize.Width;
+                double w2 = _measurerVulnerabilities.DesiredSize.Width;
+
+                // Add some slack to account for the checkbox glyph and margins.
+                const double extra = 28.0;
+
+                var parentGrid = _checkboxPrerelease.Parent as Grid;
+                if (parentGrid != null && parentGrid.ColumnDefinitions.Count > 3)
+                {
+                    parentGrid.ColumnDefinitions[2].MaxWidth = w1 + extra;
+                    parentGrid.ColumnDefinitions[3].MaxWidth = w2 + extra;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Swallow exceptions from layout/measure to avoid breaking UI initialization.
+            }
+            catch (ArgumentException)
+            {
+                // Swallow exceptions from layout/measure to avoid breaking UI initialization.
+            }
         }
 
         public void CreateAndAddConsolidateTab()
