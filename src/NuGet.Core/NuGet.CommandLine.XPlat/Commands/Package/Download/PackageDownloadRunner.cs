@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
             string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
             var cache = new SourceCacheContext();
-            (IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap, List<SourceRepository> allRepositories) = GetSourceRepositories(packageSources);
+            IReadOnlyList<SourceRepository> allRepositories = GetSourceRepositories(packageSources);
             bool downloadedAllSuccessfully = true;
 
             foreach (var package in args.Packages ?? [])
@@ -84,7 +84,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString()) ? Strings.PackageDownloadCommand_LatestVersion : package.NuGetVersion.ToNormalizedString()));
 
                 // Resolve which repositories to use for this package
-                List<SourceRepository> sourceRepositories;
+                IReadOnlyList<SourceRepository> sourceRepositories;
                 if (ignorePackageSourceMapping)
                 {
                     sourceRepositories = allRepositories;
@@ -95,7 +95,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                         package.Id,
                         args,
                         packageSourceMapping!,
-                        sourceRepositoriesMap,
                         allRepositories,
                         logger,
                         out sourceRepositories))
@@ -166,7 +165,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
         internal static async Task<(NuGetVersion?, SourceRepository?)> ResolvePackageDownloadVersion(
             PackageWithNuGetVersion packageWithNuGetVersion,
-            IEnumerable<SourceRepository> sourceRepositories,
+            IReadOnlyList<SourceRepository> sourceRepositories,
             SourceCacheContext cache,
             ILoggerWithColor logger,
             bool includePrerelease,
@@ -234,10 +233,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             string packageId,
             PackageDownloadArgs args,
             PackageSourceMapping packageSourceMapping,
-            IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap,
-            List<SourceRepository> allRepos,
+            IReadOnlyList<SourceRepository> allRepos,
             ILoggerWithColor logger,
-            out List<SourceRepository> repositories)
+            out IReadOnlyList<SourceRepository> repositories)
         {
             var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
 
@@ -247,9 +245,19 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 var mappedRepos = new List<SourceRepository>(mappedNames.Count);
                 foreach (var mappedName in mappedNames)
                 {
-                    if (sourceRepositoriesMap.TryGetValue(mappedName, out SourceRepository? sourceRepository))
+                    SourceRepository? repo = null;
+                    for (int i = 0; i < allRepos.Count; i++)
                     {
-                        mappedRepos.Add(sourceRepository);
+                        if (string.Equals(allRepos[i].PackageSource.Name, mappedName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            repo = allRepos[i];
+                            break;
+                        }
+                    }
+
+                    if (repo != null)
+                    {
+                        mappedRepos.Add(repo);
                     }
                     else
                     {
@@ -362,18 +370,16 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return false;
         }
 
-        private static (IReadOnlyDictionary<string, SourceRepository>, List<SourceRepository>) GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
+        private static IReadOnlyList<SourceRepository> GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
         {
             IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
-            Dictionary<string, SourceRepository> sourceRepositories = new Dictionary<string, SourceRepository>(packageSources?.Count ?? 0);
-            List<SourceRepository> allRepositories = new List<SourceRepository>(packageSources?.Count ?? 0);
-            foreach (var source in packageSources ?? [])
+            List<SourceRepository> sourceRepositories = [];
+            foreach (var source in packageSources)
             {
-                sourceRepositories[source.Name] = Repository.CreateSource(providers, source, FeedType.Undefined);
-                allRepositories.Add(sourceRepositories[source.Name]);
+                sourceRepositories.Add(Repository.CreateSource(providers, source, FeedType.Undefined));
             }
 
-            return (sourceRepositories, allRepositories);
+            return sourceRepositories;
         }
     }
 }
