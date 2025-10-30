@@ -50,10 +50,17 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
         public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IReadOnlyList<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
-            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-            var hasSourcesArg = args.Sources?.Count > 0;
-            var mappingDisabled = (packageSourceMapping != null && !packageSourceMapping.IsEnabled) || packageSourceMapping == null;
-            bool ignorePackageSourceMapping = hasSourcesArg || mappingDisabled;
+            bool hasSourcesArg = args.Sources?.Count > 0;
+            PackageSourceMapping? packageSourceMapping = null;
+            if (!hasSourcesArg)
+            {
+                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            }
+
+            bool ignorePackageSourceMapping =
+                hasSourcesArg
+                || packageSourceMapping is null
+                || !packageSourceMapping.IsEnabled;
 
             // When package source mapping is disabled, validate all configured sources upfront.
             // When mapping is enabled, source validation is deferred to the per-package resolution step,
