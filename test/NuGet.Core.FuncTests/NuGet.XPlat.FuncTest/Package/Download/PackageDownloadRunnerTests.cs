@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Test.Utility;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package;
@@ -17,6 +17,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests;
@@ -600,5 +601,61 @@ public class PackageDownloadRunnerTests
         {
             exit.Should().Be(PackageDownloadRunner.ExitCodeError);
         }
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenMappedSourceMissing_LogsVerbose()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
+        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
+
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcADirectory, "Contoso.Utils", "1.0.0");
+        context.Settings.AddSource("A", serverA.ServiceIndexUri);
+
+        // Map the package to a NON-EXISTING source name "MissingSource"
+        context.Settings.AddPackageSourceMapping("MissingSource", "Contoso.*");
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("1.0.0")
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = true,
+            Sources = []
+        };
+        string capturedVerbose = string.Empty;
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        logger.Setup(l => l.LogVerbose(It.IsAny<string>()))
+              .Callback<string>(msg => capturedVerbose += msg + Environment.NewLine);
+
+        // Act
+        serverA.Start();
+
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new(serverA.ServiceIndexUri, "A")],
+            settings,
+            CancellationToken.None);
+
+        serverA.Stop();
+
+        // Assert
+        var expected = string.Format(
+            CultureInfo.CurrentCulture,
+            Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
+            "MissingSource",
+            "Contoso.Utils");
+
+        capturedVerbose.Should().Contain(expected, because: "a package mapped to a non-existing source name must log a verbose diagnostic");
     }
 }

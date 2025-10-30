@@ -51,11 +51,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IReadOnlyList<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-            var hasSourcesArg = args.Sources != null && args.Sources.Count > 0;
+            var hasSourcesArg = args.Sources?.Count > 0;
             var mappingDisabled = (packageSourceMapping != null && !packageSourceMapping.IsEnabled) || packageSourceMapping == null;
             bool ignorePackageSourceMapping = hasSourcesArg || mappingDisabled;
 
-            // Validate all configured sources only when mapping is disabled
+            // When package source mapping is disabled, validate all configured sources upfront.
+            // When mapping is enabled, source validation is deferred to the per-package resolution step,
+            // since each package may map to a different subset of sources.
             if (ignorePackageSourceMapping && DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
             {
                 return ExitCodeError;
@@ -231,14 +233,29 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             out List<SourceRepository> repositories)
         {
             var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
-            var mappedRepos = mappedNames
-                .Select(name => sourceRepositoriesMap[name])
-                .ToList();
 
             // Only validate insecure sources when mapping produced something
-            if (mappedRepos.Count > 0)
+            if (mappedNames.Count > 0)
             {
-                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mappedRepos.Select(sourceRepo => sourceRepo.PackageSource), logger))
+                var mappedRepos = new List<SourceRepository>(mappedNames.Count);
+                foreach (var mappedName in mappedNames)
+                {
+                    if (sourceRepositoriesMap.TryGetValue(mappedName, out SourceRepository? sourceRepository))
+                    {
+                        mappedRepos.Add(sourceRepository);
+                    }
+                    else
+                    {
+                        logger.LogVerbose(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
+                                mappedName,
+                                packageId));
+                    }
+                }
+
+                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mappedRepos.Select(repo => repo.PackageSource), logger))
                 {
                     repositories = [];
                     return false;
@@ -341,9 +358,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
         private static (IReadOnlyDictionary<string, SourceRepository>, List<SourceRepository>) GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
         {
             IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
-            Dictionary<string, SourceRepository> sourceRepositories = [];
-            List<SourceRepository> allRepositories = [];
-            foreach (var source in packageSources)
+            Dictionary<string, SourceRepository> sourceRepositories = new Dictionary<string, SourceRepository>(packageSources?.Count ?? 0);
+            List<SourceRepository> allRepositories = new List<SourceRepository>(packageSources?.Count ?? 0);
+            foreach (var source in packageSources ?? [])
             {
                 sourceRepositories[source.Name] = Repository.CreateSource(providers, source, FeedType.Undefined);
                 allRepositories.Add(sourceRepositories[source.Name]);

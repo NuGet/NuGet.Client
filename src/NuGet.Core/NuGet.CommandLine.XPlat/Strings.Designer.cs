@@ -1662,6 +1662,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The mapped source &apos;{0}&apos; for package &apos;{1}&apos; was not found among the configured sources..
+        /// </summary>
+        internal static string PackageDownloadCommand_PackageSourceMapping_NoSuchSource {
+            get {
+                return ResourceManager.GetString("PackageDownloadCommand_PackageSourceMapping_NoSuchSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies one or more NuGet package sources to use..
         /// </summary>
         internal static string PackageDownloadCommand_SourcesDescription {

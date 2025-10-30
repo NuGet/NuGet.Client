@@ -929,6 +929,12 @@ Para obter mais informações, acesse https://docs.nuget.org/docs/reference/comm
         <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
+        <source>The mapped source '{0}' for package '{1}' was not found among the configured sources.</source>
+        <target state="new">The mapped source '{0}' for package '{1}' was not found among the configured sources.</target>
+        <note>0 - package source name
+1 - package name</note>
+      </trans-unit>
       <trans-unit id="PackageDownloadCommand_SourcesDescription">
         <source>Specifies one or more NuGet package sources to use.</source>
         <target state="new">Specifies one or more NuGet package sources to use.</target>
