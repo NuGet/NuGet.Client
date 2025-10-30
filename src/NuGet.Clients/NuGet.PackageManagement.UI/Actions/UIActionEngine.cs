@@ -649,7 +649,7 @@ namespace NuGet.PackageManagement.UI
 
             // log the single top level package the user is installing or removing
             if (userAction != null)
-            {      
+            {
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty, userAction.VersionRange?.OriginalString);
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
