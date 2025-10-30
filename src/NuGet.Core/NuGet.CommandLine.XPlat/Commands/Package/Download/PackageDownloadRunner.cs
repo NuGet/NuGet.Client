@@ -63,9 +63,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
             string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
             var cache = new SourceCacheContext();
-
-            IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap = GetSourceRepositories(packageSources);
-
+            (IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap, List<SourceRepository> allRepositories) = GetSourceRepositories(packageSources);
             bool downloadedAllSuccessfully = true;
 
             foreach (var package in args.Packages ?? [])
@@ -80,7 +78,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 List<SourceRepository> sourceRepositories;
                 if (ignorePackageSourceMapping)
                 {
-                    sourceRepositories = [.. sourceRepositoriesMap.Values];
+                    sourceRepositories = allRepositories;
                 }
                 else
                 {
@@ -89,6 +87,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                         args,
                         packageSourceMapping!,
                         sourceRepositoriesMap,
+                        allRepositories,
                         logger,
                         out sourceRepositories))
                     {
@@ -227,6 +226,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             PackageDownloadArgs args,
             PackageSourceMapping packageSourceMapping,
             IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap,
+            List<SourceRepository> allRepos,
             ILoggerWithColor logger,
             out List<SourceRepository> repositories)
         {
@@ -250,7 +250,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             else
             {
                 // No mapping for this package: fall back to all sources
-                repositories = [.. sourceRepositoriesMap.Values];
+                repositories = allRepos;
                 return true;
             }
         }
@@ -338,16 +338,18 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return false;
         }
 
-        private static IReadOnlyDictionary<string, SourceRepository> GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
+        private static (IReadOnlyDictionary<string, SourceRepository>, List<SourceRepository>) GetSourceRepositories(IReadOnlyList<PackageSource> packageSources)
         {
             IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
             Dictionary<string, SourceRepository> sourceRepositories = [];
+            List<SourceRepository> allRepositories = [];
             foreach (var source in packageSources)
             {
                 sourceRepositories[source.Name] = Repository.CreateSource(providers, source, FeedType.Undefined);
+                allRepositories.Add(sourceRepositories[source.Name]);
             }
 
-            return sourceRepositories;
+            return (sourceRepositories, allRepositories);
         }
     }
 }
