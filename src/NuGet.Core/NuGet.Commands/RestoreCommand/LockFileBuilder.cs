@@ -543,12 +543,14 @@ namespace NuGet.Commands
                         // This should never happen, if the package was resolved there should be a calculated include type for it
                         // There have been bugs in the past where getting a value from the dictionary was throwing a KeyNotFoundException
                         // Log an error with the info needed asking the user to file an issue
-                        logger.LogError(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType,
-                                centralPackageVersion.Name,
-                                node.Item.Key));
+                        logger.Log(
+                            LogMessage.CreateError(
+                                NuGetLogCode.NU1000,
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType,
+                                    centralPackageVersion.Name,
+                                    node.Item.Key)));
 
                         continue;
                     }
