@@ -502,7 +502,7 @@ public class PackageDownloadRunnerTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public async Task RunAsync_WithSourceMapping_ListDriven_UsingCleanSetup(
+    public async Task RunAsync_WithSourceMapping(
         IReadOnlyList<(string id, string version)> sourceAPackages,
         IReadOnlyList<(string id, string version)> sourceBPackages,
         IReadOnlyList<(string source, string pattern)> sourceMappings,

@@ -53,7 +53,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
             var hasSourcesArg = args.Sources != null && args.Sources.Count > 0;
             var mappingDisabled = (packageSourceMapping != null && !packageSourceMapping.IsEnabled) || packageSourceMapping == null;
-            if ((mappingDisabled || hasSourcesArg) && DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
+            bool ignorePackageSourceMapping = hasSourcesArg || mappingDisabled;
+
+            // Validate all configured sources only when mapping is disabled
+            if (ignorePackageSourceMapping && DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
             {
                 return ExitCodeError;
             }
@@ -74,16 +77,23 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString()) ? Strings.PackageDownloadCommand_LatestVersion : package.NuGetVersion.ToNormalizedString()));
 
                 // Resolve which repositories to use for this package
-                if (!TryGetRepositoriesForPackage(
+                List<SourceRepository> sourceRepositories;
+                if (ignorePackageSourceMapping)
+                {
+                    sourceRepositories = [.. sourceRepositoriesMap.Values];
+                }
+                else
+                {
+                    if (!TryGetRepositoriesForPackage(
                         package.Id,
                         args,
-                        packageSources,
-                        packageSourceMapping,
+                        packageSourceMapping!,
                         sourceRepositoriesMap,
                         logger,
-                        out List<SourceRepository> sourceRepositories))
-                {
-                    return ExitCodeError;
+                        out sourceRepositories))
+                    {
+                        return ExitCodeError;
+                    }
                 }
 
                 try
@@ -209,63 +219,40 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
         /// <summary>
         /// Builds the set of SourceRepository objects to use for a given package,
-        /// applying package source mapping (when --source is not provided) and
+        /// applying package source mapping
         /// validating HTTP usage only on the *effective* sources.
         /// </summary>
         private static bool TryGetRepositoriesForPackage(
             string packageId,
             PackageDownloadArgs args,
-            IReadOnlyList<PackageSource> allPackageSources,
-            PackageSourceMapping? packageSourceMapping,
+            PackageSourceMapping packageSourceMapping,
             IReadOnlyDictionary<string, SourceRepository> sourceRepositoriesMap,
             ILoggerWithColor logger,
             out List<SourceRepository> repositories)
         {
-            List<PackageSource> effectiveSources;
+            var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
+            var mappedRepos = mappedNames
+                .Select(name => sourceRepositoriesMap[name])
+                .ToList();
 
-            var sourceExplicitlyProvided = args.Sources?.Count > 0;
-            if (sourceExplicitlyProvided || (packageSourceMapping != null && !packageSourceMapping.IsEnabled))
+            // Only validate insecure sources when mapping produced something
+            if (mappedRepos.Count > 0)
             {
-                // --source given OR mapping disabled: use all provided sources as-is
-                effectiveSources = [.. allPackageSources];
+                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mappedRepos.Select(sourceRepo => sourceRepo.PackageSource), logger))
+                {
+                    repositories = [];
+                    return false;
+                }
+
+                repositories = mappedRepos;
+                return true;
             }
             else
             {
-                // Mapping enabled, no --source: try mapped names first
-                var mappedNames = packageSourceMapping == null ? [] : packageSourceMapping.GetConfiguredPackageSources(packageId);
-
-                // Build effective sources in the same order as mappedNames
-                var mapped = mappedNames
-                    .Select(n => allPackageSources.FirstOrDefault(ps =>
-                        string.Equals(ps.Name, n, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-
-                // Only validate insecure sources when mapping produced something
-                if (mapped.Count > 0)
-                {
-                    if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mapped!, logger))
-                    {
-                        repositories = [];
-                        return false;
-                    }
-
-                    effectiveSources = mapped!;
-                }
-                else
-                {
-                    // No mapping for this package: fall back to all sources
-                    effectiveSources = [.. allPackageSources];
-                }
+                // No mapping for this package: fall back to all sources
+                repositories = [.. sourceRepositoriesMap.Values];
+                return true;
             }
-
-            // Convert effective sources to repositories
-            repositories = new List<SourceRepository>(effectiveSources.Count);
-            foreach (var src in effectiveSources)
-            {
-                repositories.Add(sourceRepositoriesMap[src.Name]);
-            }
-
-            return true;
         }
 
         private static async Task<bool> DownloadPackageAsync(
