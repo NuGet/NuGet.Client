@@ -9,10 +9,6 @@
   "sdk": {
     "allowPrerelease": true
   },
-  "tools": {
-    "dotnet": "9.0.300",
-    "pinned": true
-  },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25479.115",
     "Microsoft.Build.NoTargets": "3.7.0"

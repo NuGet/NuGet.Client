@@ -88,19 +88,7 @@ function ReadGlobalVersion {
 if [[ "$DOTNET" == "" && "$DOTNET_PATH" != "" ]]; then
   export DOTNET="$DOTNET_PATH/dotnet"
 else
-  ReadGlobalVersion dotnet
-  export SDK_VERSION=$_ReadGlobalVersion
-
-  mkdir -p "${repo_root}cli"
-  curl -o "${repo_root}cli/dotnet-install.sh" -L https://dot.net/v1/dotnet-install.sh
-
-  if (( $? )); then
-    echo "Could not download 'dotnet-install.sh' script. Please check your network and try again!"
-    exit 1
-  fi
-  chmod +x "${repo_root}cli/dotnet-install.sh"
-
-  "${repo_root}cli/dotnet-install.sh" -v $SDK_VERSION -i "${repo_root}cli"
+  "${repo_root}configure.sh"
   export DOTNET=${repo_root}cli/dotnet
 fi
 
