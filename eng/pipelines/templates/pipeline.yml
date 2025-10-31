@@ -83,7 +83,7 @@ stages:
       parameters:
         LclSource: lclFilesfromPackage
         ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
-          LclPackageId: 'LCL-MAIN-PROD-NuGetClient'
+          LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
         ${{ else }}:
           LclPackageId: 'LCL-JUNO-PROD-NuGetClientRel'
         MirrorRepo: 'NuGet.Client'
