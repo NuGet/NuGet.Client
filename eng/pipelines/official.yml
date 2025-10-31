@@ -55,6 +55,7 @@ variables:
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
   RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
+  SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
 
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
