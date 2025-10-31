@@ -113,6 +113,8 @@ stages:
           LocalizedLanguageCount: "13"
           BuildRTM: "false"
           SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+          RunSettingsDropName: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
+          ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
         pool:
           name: VSEngSS-MicroBuild2019-1ES
           os: windows
@@ -170,7 +172,7 @@ stages:
               displayName: "Publish the .runsettings files to artifact services"
               condition: "succeeded()"
               dropServiceURI: "https://devdiv.artifacts.visualstudio.com"
-              buildNumber: "RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"
+              buildNumber: "$(RunSettingsDropName)"
               sourcePath: 'artifacts\RunSettings'
               toLowerCase: false
               usePat: true
@@ -180,7 +182,7 @@ stages:
               displayName: "OptProfV2:  publish profiling inputs to artifact services"
               condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
               dropServiceURI: "https://devdiv.artifacts.visualstudio.com"
-              buildNumber: "ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"
+              buildNumber: "$(ProfilingInputsDropName)"
               sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
               toLowerCase: false
               usePat: true
@@ -210,7 +212,7 @@ stages:
               displayName: "Upload VSTS Drop"
               condition: "succeeded()"
               dropServiceURI: "https://devdiv.artifacts.visualstudio.com"
-              buildNumber: "Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)"
+              buildNumber: "$(MicroBuild.ManifestDropName)"
               sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
               toLowerCase: false
               usePat: true

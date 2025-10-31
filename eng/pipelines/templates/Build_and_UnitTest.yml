@@ -15,7 +15,7 @@ steps:
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-      arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
+      arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(SourceBranch) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
     displayName: "Configure VSTS CI Environment"
 
   - task: PowerShell@1
@@ -306,7 +306,7 @@ steps:
     displayName: "Generate .runsettings files"
     inputs:
       solution: 'build\runsettings.proj'
-      msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
+      msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="$(RunSettingsDropName)" /property:ProfilingInputsDrop="$(ProfilingInputsDropName)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
