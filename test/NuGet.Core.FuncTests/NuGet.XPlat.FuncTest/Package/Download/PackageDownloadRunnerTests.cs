@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests;
@@ -425,5 +427,235 @@ public class PackageDownloadRunnerTests
 
         File.Exists(Path.Combine(context.WorkingDirectory, $"{id.ToLowerInvariant()}.{v}.nupkg"))
             .Should().BeFalse("Package does not exist in sources");
+    }
+
+    public static IEnumerable<object[]> Cases()
+    {
+        // Parameters:
+        // A-packages, B-packages, sourceMappings, sourcesArgs, downloadId, downloadVersion,
+        // allowInsecureConnections, expectSuccess, expectedInstalled
+
+        // --source specified, mapping ignored, package only in A -> success
+        yield return new object[]
+        {
+            new List<(string,string)> { ("Contoso.Lib", "1.0.0") }, // A
+            new List<(string,string)>(),                            // B
+            new List<(string,string)> { ("B", "Contoso.*") },       // mapping ignored
+            new List<string> { "A" },                               // --source A
+            "Contoso.Lib", "1.0.0",                                  // downloadId, downloadVersion
+            true,                                                   // allow insecure
+            true,                                                   // expect success
+            ("Contoso.Lib", "1.0.0")                                // expectedInstalled
+        };
+
+        // no --source, mapping -> B, package only in B -> success
+        yield return new object[]
+        {
+            new List<(string,string)>(),                            // A
+            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") }, // B
+            new List<(string,string)> { ("B", "Contoso.*") },       // mapping -> B
+            null,                                                   // no --source
+            "Contoso.Mapped", "2.0.0",                              // downloadId, downloadVersion
+            true,                                                   // allow insecure
+            true,                                                   // expect success
+            ("Contoso.Mapped", "2.0.0")                             // expectedInstalled
+        };
+
+        // no --source, mapping -> A, package only in B -> fail
+        yield return new object[]
+        {
+            new List<(string,string)>(),                            // A
+            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },
+            new List<(string,string)> { ("A", "Contoso.*") },       // mapped to A
+            null,
+            "Contoso.Mapped", "2.0.0",
+            true,
+            false,
+            null!
+        };
+
+        // --source specified, no source mapping with an insecure source
+        yield return new object[]
+        {
+            new List<(string,string)> { ("Contoso.Lib", "1.0.0") }, // A
+            new List<(string,string)>(),
+            new List<(string,string)> { ("A", "Contoso.*") },
+            new List<string> { "A" },                               // --source
+            "Contoso.Lib", "1.0.0",
+            false,                                                  // allow insecure connections false / not set to true
+            false,
+            null!
+        };
+
+        // no --source, mapping -> B, allow insecure not enabled -> fail
+        yield return new object[]
+        {
+            new List<(string,string)>(),                            // A
+            new List<(string,string)> { ("Contoso.Mapped", "1.0.0") },
+            new List<(string,string)> { ("B", "Contoso.*") },
+            null,
+            "Contoso.Mapped", "1.0.0",
+            false,                                                   // allow insecure connections false / not set to true
+            false,
+            null!
+        };
+    }
+
+    [Theory]
+    [MemberData(nameof(Cases))]
+    public async Task RunAsync_WithSourceMapping(
+        IReadOnlyList<(string id, string version)> sourceAPackages,
+        IReadOnlyList<(string id, string version)> sourceBPackages,
+        IReadOnlyList<(string source, string pattern)> sourceMappings,
+        IReadOnlyList<string> sourcesArgs,
+        string downloadId,
+        string downloadVersion,
+        bool allowInsecureConnections,
+        bool expectSuccess,
+        (string id, string version)? expectedInstalled)
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
+        string srcBDirectory = Path.Combine(context.PackageSource, "SourceB");
+
+        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
+        using var serverB = new FileSystemBackedV3MockServer(srcBDirectory);
+
+        foreach (var (id, ver) in sourceAPackages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(srcADirectory, id, ver);
+        }
+
+        foreach (var (id, ver) in sourceBPackages)
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(srcBDirectory, id, ver);
+        }
+
+        serverA.Start();
+        serverB.Start();
+
+        // sources
+        context.Settings.AddSource("A", serverA.ServiceIndexUri);
+        context.Settings.AddSource("B", serverB.ServiceIndexUri);
+
+        // mapping
+        foreach (var (src, pattern) in sourceMappings)
+        {
+            context.Settings.AddPackageSourceMapping(src, pattern);
+        }
+
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var packageSources = new List<PackageSource>
+        {
+            new(serverA.ServiceIndexUri, "A"),
+            new(serverB.ServiceIndexUri, "B")
+        };
+
+        // args
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = downloadId,
+                    NuGetVersion = downloadVersion is null ? null : NuGetVersion.Parse(downloadVersion)
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = allowInsecureConnections,
+            Sources = sourcesArgs == null ? [] : sourcesArgs.ToList()
+        };
+
+        string capturedLogs = string.Empty;
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        logger
+            .Setup(l => l.LogError(It.IsAny<string>()))
+            .Callback<string>(msg => capturedLogs += msg + Environment.NewLine);
+
+        // Act
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            packageSources,
+            settings,
+            CancellationToken.None);
+
+        serverA.Stop();
+        serverB.Stop();
+
+        // Assert
+        if (expectSuccess)
+        {
+            exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess, because: capturedLogs);
+            expectedInstalled.Should().NotBeNull();
+
+            var (expId, expVer) = expectedInstalled!.Value;
+            var installDir = Path.Combine(context.WorkingDirectory, expId.ToLowerInvariant(), expVer);
+            Directory.Exists(installDir).Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{expId.ToLowerInvariant()}.{expVer}.nupkg")).Should().BeTrue();
+        }
+        else
+        {
+            exit.Should().Be(PackageDownloadRunner.ExitCodeError);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenMappedSourceMissing_LogsVerbose()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
+        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
+
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcADirectory, "Contoso.Utils", "1.0.0");
+        context.Settings.AddSource("A", serverA.ServiceIndexUri);
+
+        // Map the package to a NON-EXISTING source name "MissingSource"
+        context.Settings.AddPackageSourceMapping("MissingSource", "Contoso.*");
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Utils",
+                    NuGetVersion = NuGetVersion.Parse("1.0.0")
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = true,
+            Sources = []
+        };
+        string capturedVerbose = string.Empty;
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        logger.Setup(l => l.LogVerbose(It.IsAny<string>()))
+              .Callback<string>(msg => capturedVerbose += msg + Environment.NewLine);
+
+        // Act
+        serverA.Start();
+
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            [new(serverA.ServiceIndexUri, "A")],
+            settings,
+            CancellationToken.None);
+
+        serverA.Stop();
+
+        // Assert
+        var expected = string.Format(
+            CultureInfo.CurrentCulture,
+            Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
+            "MissingSource",
+            "Contoso.Utils");
+
+        capturedVerbose.Should().Contain(expected, because: "a package mapped to a non-existing source name must log a verbose diagnostic");
     }
 }

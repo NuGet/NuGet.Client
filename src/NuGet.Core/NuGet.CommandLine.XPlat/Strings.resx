@@ -1157,4 +1157,9 @@ Do not translate "PackageVersion"</comment>
   <data name="Error_PackageDownload_VersionNotFound" xml:space="preserve">
     <value>Unable to find a valid package version</value>
   </data>
+  <data name="PackageDownloadCommand_PackageSourceMapping_NoSuchSource" xml:space="preserve">
+    <value>The mapped source '{0}' for package '{1}' was not found among the configured sources.</value>
+    <comment>0 - package source name
+1 - package name</comment>
+  </data>
 </root>

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,18 +50,32 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
         public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IReadOnlyList<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
-            // Check for insecure sources
-            if (DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
+            bool hasSourcesArg = args.Sources?.Count > 0;
+            PackageSourceMapping? packageSourceMapping = null;
+            if (!hasSourcesArg)
+            {
+                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            }
+
+            bool ignorePackageSourceMapping =
+                hasSourcesArg
+                || packageSourceMapping is null
+                || !packageSourceMapping.IsEnabled;
+
+            // When package source mapping is disabled, validate all configured sources upfront.
+            // When mapping is enabled, source validation is deferred to the per-package resolution step,
+            // since each package may map to a different subset of sources.
+            if (ignorePackageSourceMapping && DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
             {
                 return ExitCodeError;
             }
 
             string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
             var cache = new SourceCacheContext();
-            IReadOnlyList<SourceRepository> sourceRepositories = GetSourceRepositories(packageSources);
+            IReadOnlyList<SourceRepository> allRepositories = GetSourceRepositories(packageSources);
             bool downloadedAllSuccessfully = true;
 
-            foreach (var package in args.Packages)
+            foreach (var package in args.Packages ?? [])
             {
                 logger.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
@@ -67,9 +83,29 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     package.Id,
                     string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString()) ? Strings.PackageDownloadCommand_LatestVersion : package.NuGetVersion.ToNormalizedString()));
 
+                // Resolve which repositories to use for this package
+                IReadOnlyList<SourceRepository> sourceRepositories;
+                if (ignorePackageSourceMapping)
+                {
+                    sourceRepositories = allRepositories;
+                }
+                else
+                {
+                    if (!TryGetRepositoriesForPackage(
+                        package.Id,
+                        args,
+                        packageSourceMapping!,
+                        allRepositories,
+                        logger,
+                        out sourceRepositories))
+                    {
+                        return ExitCodeError;
+                    }
+                }
+
                 try
                 {
-                    (NuGetVersion version, SourceRepository downloadRepository) =
+                    (NuGetVersion? version, SourceRepository? downloadRepository) =
                         await ResolvePackageDownloadVersion(
                             package,
                             sourceRepositories,
@@ -88,7 +124,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                     bool success = await DownloadPackageAsync(
                         package.Id,
                         version,
-                        downloadRepository,
+                        downloadRepository!,
                         cache,
                         settings,
                         outputDirectory,
@@ -127,16 +163,16 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return downloadedAllSuccessfully ? ExitCodeSuccess : ExitCodeError;
         }
 
-        internal static async Task<(NuGetVersion, SourceRepository)> ResolvePackageDownloadVersion(
+        internal static async Task<(NuGetVersion?, SourceRepository?)> ResolvePackageDownloadVersion(
             PackageWithNuGetVersion packageWithNuGetVersion,
-            IEnumerable<SourceRepository> sourceRepositories,
+            IReadOnlyList<SourceRepository> sourceRepositories,
             SourceCacheContext cache,
             ILoggerWithColor logger,
             bool includePrerelease,
             CancellationToken token)
         {
-            NuGetVersion versionToDownload = null;
-            SourceRepository downloadSourceRepository = null;
+            NuGetVersion? versionToDownload = null;
+            SourceRepository? downloadSourceRepository = null;
             bool versionSpecified = packageWithNuGetVersion.NuGetVersion != null;
 
             foreach (var repo in sourceRepositories)
@@ -186,6 +222,69 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             }
 
             return (versionToDownload, downloadSourceRepository);
+        }
+
+        /// <summary>
+        /// Builds the set of SourceRepository objects to use for a given package,
+        /// applying package source mapping
+        /// validating HTTP usage only on the *effective* sources.
+        /// </summary>
+        private static bool TryGetRepositoriesForPackage(
+            string packageId,
+            PackageDownloadArgs args,
+            PackageSourceMapping packageSourceMapping,
+            IReadOnlyList<SourceRepository> allRepos,
+            ILoggerWithColor logger,
+            out IReadOnlyList<SourceRepository> repositories)
+        {
+            var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
+
+            // Only validate insecure sources when mapping produced something
+            if (mappedNames.Count > 0)
+            {
+                var mappedRepos = new List<SourceRepository>(mappedNames.Count);
+                foreach (var mappedName in mappedNames)
+                {
+                    SourceRepository? repo = null;
+                    for (int i = 0; i < allRepos.Count; i++)
+                    {
+                        if (string.Equals(allRepos[i].PackageSource.Name, mappedName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            repo = allRepos[i];
+                            break;
+                        }
+                    }
+
+                    if (repo != null)
+                    {
+                        mappedRepos.Add(repo);
+                    }
+                    else
+                    {
+                        logger.LogVerbose(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
+                                mappedName,
+                                packageId));
+                    }
+                }
+
+                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mappedRepos.Select(repo => repo.PackageSource), logger))
+                {
+                    repositories = [];
+                    return false;
+                }
+
+                repositories = mappedRepos;
+                return true;
+            }
+            else
+            {
+                // No mapping for this package: fall back to all sources
+                repositories = allRepos;
+                return true;
+            }
         }
 
         private static async Task<bool> DownloadPackageAsync(
@@ -239,7 +338,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return success;
         }
 
-        private static IReadOnlyList<PackageSource> GetPackageSources(IList<string> sources, IPackageSourceProvider sourceProvider)
+        private static IReadOnlyList<PackageSource> GetPackageSources(IList<string>? sources, IPackageSourceProvider sourceProvider)
         {
             IEnumerable<PackageSource> configuredSources = sourceProvider.LoadPackageSources()
                 .Where(s => s.IsEnabled);
