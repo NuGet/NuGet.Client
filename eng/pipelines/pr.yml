@@ -268,7 +268,14 @@ stages:
           inputs:
             targetType: "inline"
             script: |
-              ./eng/dotnet-build/build.sh --source-build
+              ./eng/dotnet-build/build.sh --source-build -bl
+        - task: PublishBuildArtifacts@1
+          displayName: "Publish binlog"
+          inputs:
+            PathtoPublish: "$(Build.SourcesDirectory)/artifacts/log"
+            ArtifactName: "binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)"
+            publishLocation: "Container"
+          condition: "always()"
     - ${{ if eq(parameters.RunStaticAnalysis, true) }}:
       - job:
         displayName: Run Static Analysis
