@@ -74,7 +74,7 @@ function ReadGlobalVersion {
   local global_json_file="$repo_root/global.json"
 
   if command -v jq &> /dev/null; then
-    _ReadGlobalVersion="$(jq -r ".[] | select(has(\"$key\")) | .\"$key\"" "$global_json_file")"
+    _ReadGlobalVersion="$(cat "$global_json_file" | sed 's|//.*||' | jq -r ".[] | select(has(\"$key\")) | .\"$key\"")"
   elif [[ "$(cat "$global_json_file")" =~ \"$key\"[[:space:]\:]*\"([^\"]+) ]]; then
     _ReadGlobalVersion=${BASH_REMATCH[1]}
   fi
