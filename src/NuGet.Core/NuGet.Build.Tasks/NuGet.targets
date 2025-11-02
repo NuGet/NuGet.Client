@@ -770,16 +770,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_GetRestoreSettings"
           Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' OR '$(RestoreProjectStyle)' == 'PackagesConfig'"
-          DependsOnTargets="_GetRestoreSettingsOverrides;_GetRestoreSettingsCurrentProject;_GetRestoreSettingsAllFrameworks"
+          DependsOnTargets="_GetRestoreSourcesAsItems;_GetRestoreSettingsOverrides;_GetRestoreSettingsCurrentProject;_GetRestoreSettingsAllFrameworks"
           Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputRepositoryPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
 
     <PropertyGroup Condition=" '$(RestoreSolutionDirectory)' == '' AND '$(RestoreProjectStyle)' == 'PackagesConfig' AND '$(SolutionDir)' != '*Undefined*'">
       <RestoreSolutionDirectory>$(SolutionDir)</RestoreSolutionDirectory>
     </PropertyGroup>
+
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask
       ProjectUniqueName="$(MSBuildProjectFullPath)"
-      RestoreSources="$(RestoreSources)"
+      RestoreSources="@(_RestoreSourcesItems)"
       RestorePackagesPath="$(RestorePackagesPath)"
       RestoreRepositoryPath="$(RestoreRepositoryPath)"
       RestoreFallbackFolders="$(RestoreFallbackFolders)"
@@ -789,7 +790,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
       RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
       RestoreRepositoryPathOverride="$(_RestoreRepositoryPathOverride)"
-      RestoreSourcesOverride="$(_RestoreSourcesOverride)"
+      RestoreSourcesOverride="@(_RestoreSourcesOverride)"
       RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
       RestoreProjectStyle="$(RestoreProjectStyle)"
       MSBuildStartupDirectory="$(MSBuildStartupDirectory)">
@@ -1422,7 +1423,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsOverrides"
-          Returns="$(_RestorePackagesPathOverride);$(_RestoreRepositoryPathOverride);$(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
+          Returns="$(_RestorePackagesPathOverride);$(_RestoreRepositoryPathOverride);@(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
 
     <!-- RestorePackagesPathOverride -->
     <MSBuild
@@ -1457,7 +1458,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output
           TaskParameter="TargetOutputs"
-          PropertyName="_RestoreSourcesOverride" />
+          ItemName="_RestoreSourcesOverride" />
     </MSBuild>
 
     <!-- RestoreFallbackFoldersOverride -->
@@ -1499,14 +1500,29 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _GetRestoreSourcesAsItems
+    Read $(RestoreSources) from the project as items.
+    Projects that do not have $(RestoreSources) will noop.
+    ============================================================
+  -->
+  <Target Name="_GetRestoreSourcesAsItems"
+    Returns="@(_RestoreSourcesItems)">
+    <ItemGroup Condition=" '$(RestoreSources)' != ''">
+      <_RestoreSourcesItems Include="$(RestoreSources.Split(';'))" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
     _GetRestoreSourcesOverride
     ============================================================
   -->
   <Target Name="_GetRestoreSourcesOverride"
-          Returns="$(_RestoreSourcesOverride)">
-    <PropertyGroup>
-      <_RestoreSourcesOverride>$(RestoreSources)</_RestoreSourcesOverride>
-    </PropertyGroup>
+          DependsOnTargets="_GetRestoreSourcesAsItems"
+          Returns="@(_RestoreSourcesOverride)">
+    <ItemGroup>
+      <_RestoreSourcesOverride Include="@(_RestoreSourcesItems)"/>
+    </ItemGroup>
   </Target>
 
   <!--
