@@ -131,7 +131,7 @@
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType">
         <source>The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="new">The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</target>
+        <target state="translated">La dépendance épinglée de manière centralisée « {0} » est introuvable de manière inattendue dans le graphique résolu pour le nœud « {1} ». Veuillez soumettre un problème au https://github.com/NuGet/Home</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed">

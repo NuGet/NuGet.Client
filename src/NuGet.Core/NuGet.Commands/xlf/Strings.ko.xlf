@@ -131,7 +131,7 @@
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType">
         <source>The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="new">The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</target>
+        <target state="translated">'{1}' 노드에 대해 확인된 그래프에서 중앙에서 고정된 종속성 '{0}'을(를) 예기치 않게 찾을 수 없었습니다. https://github.com/NuGet/Home에 문제를 신고하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed">
