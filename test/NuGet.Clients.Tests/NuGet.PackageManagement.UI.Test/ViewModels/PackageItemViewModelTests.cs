@@ -632,5 +632,68 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
             }
         }
+
+        [Fact]
+        public async Task GetVersionsAsync_AfterDispose_DoesNotThrowObjectDisposedException()
+        {
+            // Arrange
+            var packageModel = CreateLocalPackageModel();
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
+
+            // Act
+            packageItemViewModel.Dispose();
+
+            // Assert - should not throw ObjectDisposedException
+            var versions = await packageItemViewModel.GetVersionsAsync();
+            Assert.NotNull(versions);
+            Assert.Empty(versions); // Should return empty collection when disposed
+        }
+
+        [Fact]
+        public async Task GetVersionsAsync_WithProjects_AfterDispose_DoesNotThrowObjectDisposedException()
+        {
+            // Arrange
+            var packageModel = CreateLocalPackageModel();
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
+            var projects = new List<IProjectContextInfo>();
+
+            // Act
+            packageItemViewModel.Dispose();
+
+            // Assert - should not throw ObjectDisposedException
+            var versions = await packageItemViewModel.GetVersionsAsync(projects);
+            Assert.NotNull(versions);
+            Assert.Empty(versions); // Should return empty collection when disposed
+        }
+
+        [Fact]
+        public void UpdateInstalledPackagesVulnerabilities_AfterDispose_DoesNotThrowObjectDisposedException()
+        {
+            // Arrange
+            var packageModel = CreateLocalPackageModel();
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
+            var packageIdentity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+
+            // Act
+            packageItemViewModel.Dispose();
+
+            // Assert - should not throw ObjectDisposedException
+            packageItemViewModel.UpdateInstalledPackagesVulnerabilities(packageIdentity);
+        }
+
+        [Fact]
+        public async Task GetDetailedPackageSearchMetadataAsync_AfterDispose_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var packageModel = CreateLocalPackageModel();
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel: packageModel);
+
+            // Act
+            packageItemViewModel.Dispose();
+
+            // Assert - should throw OperationCanceledException (not ObjectDisposedException)
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                async () => await packageItemViewModel.GetDetailedPackageSearchMetadataAsync());
+        }
     }
 }

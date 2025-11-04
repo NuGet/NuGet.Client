@@ -494,14 +494,38 @@ namespace NuGet.PackageManagement.UI
         {
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
+
+            CancellationToken cancellationToken;
+            try
+            {
+                cancellationToken = _cancellationTokenSource.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the CancellationTokenSource is disposed, return empty collection
+                return Array.Empty<VersionInfoContextInfo>();
+            }
+
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, cancellationToken);
         }
 
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+
+            CancellationToken cancellationToken;
+            try
+            {
+                cancellationToken = _cancellationTokenSource.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the CancellationTokenSource is disposed, return empty collection
+                return Array.Empty<VersionInfoContextInfo>();
+            }
+
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, cancellationToken);
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -513,7 +537,19 @@ namespace NuGet.PackageManagement.UI
             new Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>(async () =>
             {
                 var identity = new PackageIdentity(Id, Version);
-                return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
+
+                CancellationToken cancellationToken;
+                try
+                {
+                    cancellationToken = _cancellationTokenSource.Token;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // If the CancellationTokenSource is disposed, throw OperationCanceledException
+                    throw new OperationCanceledException();
+                }
+
+                return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
             });
         public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync()
         {
@@ -687,7 +723,17 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ReloadPackageVersionsAsync()
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken;
+            try
+            {
+                cancellationToken = _cancellationTokenSource.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the CancellationTokenSource is disposed, treat it as cancellation
+                return;
+            }
+
             try
             {
                 IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
@@ -744,7 +790,17 @@ namespace NuGet.PackageManagement.UI
 
         private async Task RunOperationAsync(Func<CancellationToken, Task> func)
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken;
+            try
+            {
+                cancellationToken = _cancellationTokenSource.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the CancellationTokenSource is disposed, treat it as cancellation
+                return;
+            }
+
             try
             {
                 await func(cancellationToken);
@@ -823,7 +879,16 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken;
+            try
+            {
+                cancellationToken = _cancellationTokenSource.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the CancellationTokenSource is disposed, don't start the operation
+                return;
+            }
 
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, cancellationToken))
