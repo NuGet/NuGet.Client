@@ -41,6 +41,11 @@ jobs:
         value: $(Agent.TempDirectory)/binlogs/
     - name: VSTestVerbosity
       value: ${{ parameters.testVerbosity }}
+    - name: TestResultsDir
+      ${{ if eq(parameters.osName, 'Windows') }}:
+        value: $(Agent.TempDirectory)\TestResults\
+      ${{ else }}:
+        value: $(Agent.TempDirectory)/TestResults/
 
   pool:
     name: ${{ parameters.agentPool }}
@@ -90,14 +95,43 @@ jobs:
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     env:
       VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1000
+      VSTEST_CONNECTION_TIMEOUT: 120
     inputs:
       command: test
-      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
+      arguments: >
+       --no-restore 
+       --restore:false 
+       --no-build 
+       --framework $(TestTargetFramework)
+       --results-directory "$(TestResultsDir)"
+       --logger "trx;LogFileName=$(TestType)-$(TestTargetFramework).trx"
+       --blame-hang --blame-hang-timeout 5m
+       --blame-crash
+       --collect:"Dump;HangDumpType=mini;CrashDumpType=mini"
+       --diag "$(TestResultsDir)/vstest.diagnostics.log"
+       --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
       ${{ if ne(parameters.testProjectName, '') }}:
         testRunTitle: ${{ parameters.osName }} $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
       ${{ else }}:
         testRunTitle: ${{ parameters.osName }} $(TestType) Tests ($(TestTargetFramework))
-
+        
+  - task: PublishTestResults@2
+    displayName: Publish TRX (VSTest)
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      searchFolder: '$(TestResultsDir)'
+      testResultsFiles: '**/*.trx'
+      mergeTestResults: true
+      failTaskOnFailedTests: false
+      
+  - task: PublishPipelineArtifact@1
+    displayName: Publish TestResults & blame dumps
+    condition: always()
+    inputs:
+      targetPath: '$(TestResultsDir)'
+      artifact: 'TestResults - $(System.JobDisplayName) - Attempt $(System.JobAttempt)'
+      
   - ${{ if eq(parameters.osName, 'Windows') }}:
     - script: taskkill /im dotnet.exe /f
       displayName: Terminate dotnet.exe processes on cancellation or failure
