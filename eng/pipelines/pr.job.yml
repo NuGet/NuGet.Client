@@ -98,7 +98,7 @@ jobs:
       VSTEST_CONNECTION_TIMEOUT: 120
     inputs:
       command: test
-      arguments: >
+      arguments: |
        --no-restore 
        --restore:false 
        --no-build 
