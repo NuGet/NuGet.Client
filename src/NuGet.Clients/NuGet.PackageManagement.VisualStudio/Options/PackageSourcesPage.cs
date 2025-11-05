@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     [Guid("15C605EC-4FD7-446B-BA4A-75ECF0C0B2D0")]
     public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
-        internal const string DefaultNuGetAudit = "package-sources";
+        internal const bool DefaultNuGetAudit = false;
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerAuditSources = "auditSources";
         internal const string MonikerNuGetAudit = "nuGetAudit";
