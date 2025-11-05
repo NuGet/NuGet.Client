@@ -98,18 +98,7 @@ jobs:
       VSTEST_CONNECTION_TIMEOUT: 120
     inputs:
       command: test
-      arguments: |
-       --no-restore 
-       --restore:false 
-       --no-build 
-       --framework $(TestTargetFramework)
-       "--results-directory=$(TestResultsDir)"
-       "--logger=trx;LogFileName=$(TestType)-$(TestTargetFramework).trx"
-       --blame-hang --blame-hang-timeout 5m
-       --blame-crash
-       --collect:"Dump;HangDumpType=mini;CrashDumpType=mini"
-       "--diag=$(TestResultsDir)/vstest.diagnostics.log"
-       --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
+      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) "--results-directory=$(TestResultsDir)" "--logger=trx;LogFileName=$(TestType)-$(TestTargetFramework).trx" --blame-hang --blame-hang-timeout 5m --blame-crash --collect:"Dump;HangDumpType=mini;CrashDumpType=mini" "--diag=$(TestResultsDir)/vstest.diagnostics.log" --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
       ${{ if ne(parameters.testProjectName, '') }}:
         testRunTitle: ${{ parameters.osName }} $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
       ${{ else }}:
