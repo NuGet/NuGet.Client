@@ -189,23 +189,9 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition MaxWidth="320" MinWidth="118"/>
           <ColumnDefinition Width="auto" />
-          <ColumnDefinition MaxWidth="{Binding ActualWidth, ElementName=_measurerPrerelease}" />
-          <ColumnDefinition MaxWidth="{Binding ActualWidth, ElementName=_measurerVulnerabilities}" />
+          <ColumnDefinition MaxWidth="{Binding ActualWidth, ElementName=_checkboxPrerelease}" />
+          <ColumnDefinition MaxWidth="{Binding ActualWidth, ElementName=_checkboxVulnerabilities}" />
         </Grid.ColumnDefinitions>
-
-        <!-- hidden text measurers mirror the checkbox labels so we can bind MaxWidth -->
-        <TextBlock
-          x:Name="_measurerPrerelease"
-          Visibility="Hidden"
-          Text="{x:Static nuget:Resources.Checkbox_IncludePrerelease}"
-          FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
-          FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-        <TextBlock
-          x:Name="_measurerVulnerabilities"
-          Visibility="Hidden"
-          Text="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}"
-          FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
-          FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
         <!-- container of the search control -->
         <Border

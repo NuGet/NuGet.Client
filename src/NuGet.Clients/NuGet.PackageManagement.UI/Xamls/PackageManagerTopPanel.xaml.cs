@@ -58,26 +58,23 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
-                if (_measurerPrerelease == null || _measurerVulnerabilities == null || _checkboxPrerelease == null)
+                if (_checkboxPrerelease == null || _checkboxVulnerabilities == null)
                 {
                     return;
                 }
 
                 // Measure the hidden TextBlocks with infinite available width so they compute their natural width.
-                _measurerPrerelease.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                _measurerVulnerabilities.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                _checkboxPrerelease.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                _checkboxVulnerabilities.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-                double w1 = _measurerPrerelease.DesiredSize.Width;
-                double w2 = _measurerVulnerabilities.DesiredSize.Width;
-
-                // Add some slack to account for the checkbox glyph and margins.
-                const double extra = 28.0;
+                double w1 = _checkboxPrerelease.DesiredSize.Width;
+                double w2 = _checkboxVulnerabilities.DesiredSize.Width;
 
                 var parentGrid = _checkboxPrerelease.Parent as Grid;
                 if (parentGrid != null && parentGrid.ColumnDefinitions.Count > 3)
                 {
-                    parentGrid.ColumnDefinitions[2].MaxWidth = w1 + extra;
-                    parentGrid.ColumnDefinitions[3].MaxWidth = w2 + extra;
+                    parentGrid.ColumnDefinitions[2].MaxWidth = w1;
+                    parentGrid.ColumnDefinitions[3].MaxWidth = w2;
                 }
             }
             catch (InvalidOperationException)
