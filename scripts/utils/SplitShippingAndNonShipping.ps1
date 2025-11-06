@@ -1,9 +1,8 @@
 # Ensure all packages are created before publishing
-
 [CmdletBinding(SupportsShouldProcess=$True)]
 Param (
     [string]$NupkgOutputPath,
-    [switch]$BuildRTM
+    [string]$AdditionalExcludeRules
 )
 # Determine destination (sibling of the source folder)
 $ShippingFolder = Join-Path -Path $(Split-Path -Path $NupkgOutputPath -Parent) -ChildPath "shipping"
@@ -18,52 +17,45 @@ $searchParams = @{
 
 $allPkgs = Get-ChildItem @searchParams
 
-
 [System.Collections.ArrayList]$ExclusionRules = @(
-"*.symbols.nupkg",
-"NuGet.CommandLine.[0-9]*.nupkg",
-"*Test*.nupkg",
+".*.symbols.nupkg",
+"NuGet.CommandLine.*.nupkg",
+".*Test.*.nupkg",
 "Microsoft.Build.NuGetSdkResolver.*.nupkg",
 "NuGet.Packaging.Extraction.*.nupkg",
-"NuGet.Packaging.Core.*.nupkg")
+"NuGet.Build.Tasks.*.nupkg",
+"NuGet.Packaging.Core.*.nupkg",
+"NuGet.VisualStudio.*.nupkg"
+)
 
-
-
-
-# Exclusion rules (case-insensitive)
-$excludeContainsTest     = { $_.Name -match '(?i)Test' }
-$excludePrefixExtraction = { $_.Name -match '*.symbols.nupkg' }
-$excludePrefixCore       = { $_.Name -match '^(?i)NuGet\.Packaging\.Core\.' }
-
-$filtered = $allPkgs | Where-Object {
-    -not (& $excludeContainsTest) -and
-    -not (& $excludePrefixExtraction) -and
-    -not (& $excludePrefixCore)
+if($AdditionalExcludeRules)
+{
+    Write-Host "Add more rules"
+    $ExclusionRules.Add($AdditionalExcludeRules)
+} else {
+    Write-Host "no more rules $AdditionalExcludeRules"
 }
 
 
-ForEach ($PackageIDShouldExist in $PackageIDListShouldExist)
+$filtered = New-Object System.Collections.ArrayList
+
+ForEach ($package in $allPkgs)
 {
-    $PackageIDShouldExist = $PackageIDShouldExist.trim()
+    $packageFullName = $package.FullName
 
-    $PackagesName = Get-ChildItem $NupkgOutputPath -Filter *.nupkg -Name
-
-    $FoundNupkg = $false
-
-    $FoundSymbols = $false
-
-    Foreach ($PackageName in $PackagesName)
+    $ViolatesRule = $false
+    Foreach ($Rule in $ExclusionRules)
     {
-        $FoundNupkg = ( ($PackageName -match "${PackageIDShouldExist}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") )
-
-        if ($FoundNupkg)
+        if ($packageFullName -match $Rule)
         {
-            Write-Host "$PackageName is found." -ForegroundColor Cyan
-            break
+            $ViolatesRule = $True
         }
     }
+    if (-not $ViolatesRule)
+    {
+        $filtered.Add($package)
+    }
 }
-
 
 # Report and copy
 Write-Host "Source:      $NupkgOutputPath"
