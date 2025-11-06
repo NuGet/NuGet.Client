@@ -18,9 +18,21 @@ $searchParams = @{
 
 $allPkgs = Get-ChildItem @searchParams
 
+
+[System.Collections.ArrayList]$ExclusionRules = @(
+"*.symbols.nupkg",
+"NuGet.CommandLine.[0-9]*.nupkg",
+"*Test*.nupkg",
+"Microsoft.Build.NuGetSdkResolver.*.nupkg",
+"NuGet.Packaging.Extraction.*.nupkg",
+"NuGet.Packaging.Core.*.nupkg")
+
+
+
+
 # Exclusion rules (case-insensitive)
 $excludeContainsTest     = { $_.Name -match '(?i)Test' }
-$excludePrefixExtraction = { $_.Name -match '^(?i)NuGet\.Packaging\.Extraction\.' }
+$excludePrefixExtraction = { $_.Name -match '*.symbols.nupkg' }
 $excludePrefixCore       = { $_.Name -match '^(?i)NuGet\.Packaging\.Core\.' }
 
 $filtered = $allPkgs | Where-Object {
@@ -28,6 +40,30 @@ $filtered = $allPkgs | Where-Object {
     -not (& $excludePrefixExtraction) -and
     -not (& $excludePrefixCore)
 }
+
+
+ForEach ($PackageIDShouldExist in $PackageIDListShouldExist)
+{
+    $PackageIDShouldExist = $PackageIDShouldExist.trim()
+
+    $PackagesName = Get-ChildItem $NupkgOutputPath -Filter *.nupkg -Name
+
+    $FoundNupkg = $false
+
+    $FoundSymbols = $false
+
+    Foreach ($PackageName in $PackagesName)
+    {
+        $FoundNupkg = ( ($PackageName -match "${PackageIDShouldExist}.[0-9][0-9a-zA-Z.-]*.nupkg") -and -not($PackageName -match "${ProjectShouldPack}.[0-9][0-9a-zA-Z.-]*.symbols.nupkg") )
+
+        if ($FoundNupkg)
+        {
+            Write-Host "$PackageName is found." -ForegroundColor Cyan
+            break
+        }
+    }
+}
+
 
 # Report and copy
 Write-Host "Source:      $NupkgOutputPath"
