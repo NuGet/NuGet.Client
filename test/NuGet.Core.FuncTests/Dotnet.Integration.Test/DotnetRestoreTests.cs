@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -804,7 +805,7 @@ EndGlobal";
 
                 Dictionary<string, string> environmentVariables = new Dictionary<string, string>
                 {
-                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                    { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
                 };
 
                 // Act
@@ -1412,7 +1413,7 @@ EndGlobal";
 
                 var environmentVariables = new Dictionary<string, string>
                 {
-                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                    { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
                 };
 
                 // Preconditions
@@ -1447,7 +1448,7 @@ EndGlobal";
 
                 var environmentVariables = new Dictionary<string, string>
                 {
-                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                    { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
                 };
 
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib", testOutputHelper: _testOutputHelper);
@@ -1485,7 +1486,7 @@ EndGlobal";
 
                 var environmentVariables = new Dictionary<string, string>
                 {
-                    { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                    { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
                 };
 
                 string directoryBuildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
@@ -3046,7 +3047,7 @@ EndGlobal";
 
             var environmentVariables = new Dictionary<string, string>()
             {
-                { "NUGET_USE_NEW_PACKAGESPEC_FACTORY", usePackageSpecFactory.ToString() }
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
             };
 
             var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}" + (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty), environmentVariables, testOutputHelper: _testOutputHelper);

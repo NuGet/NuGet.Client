@@ -7,12 +7,14 @@ using System.Threading;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Projects;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
+using VSLangProj150;
 
 namespace Test.Utility
 {
-    public class TestProjectSystemServices : INuGetProjectServices
+    public class TestProjectSystemServices : ILegacyPackageReferenceProjectServices
     {
         public TestProjectSystemServices()
         {
@@ -36,6 +38,8 @@ namespace Test.Utility
         public IProjectSystemReferencesService References { get; } = Mock.Of<IProjectSystemReferencesService>();
 
         public IProjectScriptHostService ScriptService { get; } = Mock.Of<IProjectScriptHostService>();
+
+        public VSProject4 Project4 { get; } = Mock.Of<VSProject4>();
 
         public T GetGlobalService<T>() where T : class
         {

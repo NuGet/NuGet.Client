@@ -11,10 +11,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Commands;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Projects;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -43,8 +45,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_Success()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_Success(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -90,11 +94,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         projectNames.ProjectId,
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -132,8 +137,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_GenerateLockFile()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_GenerateLockFile(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -180,11 +187,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "Project1.csproj");
@@ -217,11 +225,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathB
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -275,8 +284,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_ReadLockFile()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_ReadLockFile(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -322,11 +333,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -403,8 +415,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_UpdateLockFile()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_UpdateLockFile(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -455,11 +469,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -558,8 +573,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_RestorePackagesWithLockFile_False()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_RestorePackagesWithLockFile_False(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -609,11 +626,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -649,8 +667,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_LockedMode()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_LockedMode(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -699,11 +719,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -784,8 +805,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackageShaValidationFailed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackageShaValidationFailed(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -831,11 +854,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -910,8 +934,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task LegacyPackageReference_Restore_PackageShaValidationFailed_LogsAllPackageIds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task LegacyPackageReference_Restore_PackageShaValidationFailed_LogsAllPackageIds(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -962,11 +988,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -1066,8 +1093,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task InstallPackageAsync_LegacyPackageRefProjects_Duality()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task InstallPackageAsync_LegacyPackageRefProjects_Duality(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1105,11 +1134,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var projectServicesB = new TestProjectSystemServices();
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1133,11 +1163,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathB
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -1166,8 +1197,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task InstallPackageAsync_LegacyPackageRefProjects_developmentDependency()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task InstallPackageAsync_LegacyPackageRefProjects_developmentDependency(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1206,11 +1239,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var projectServicesA = new TestProjectSystemServices();
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
                     var testLogger = new TestLogger();
@@ -1261,8 +1295,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1312,11 +1348,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             SuppressParent = LibraryIncludeFlags.None
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
                     var testLogger = new TestLogger();
@@ -1368,8 +1405,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_MissingProjectsInSolution()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_MissingProjectsInSolution(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1416,11 +1455,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1444,11 +1484,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathB
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -1520,8 +1561,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         /// Unload projectB & projectC. Ensure the full restore graph is loaded
         /// </summary>
         /// <returns></returns>
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_WithMissingMultiLevelProjectClosure_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_WithMissingMultiLevelProjectClosure_Succeeds(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1567,11 +1610,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProjectC = new LegacyPackageReferenceProject(
+                    var legacyPRProjectC = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterC,
                         Guid.NewGuid().ToString(),
                         projectServicesC,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
                     var projectNamesB = new ProjectNames(
@@ -1603,11 +1647,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathC
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1631,11 +1676,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathB
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectC);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
@@ -1706,8 +1752,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1756,11 +1804,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectAServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     //projectB
                     var projectBPath = Path.Combine(testSolutionManager.TestDirectory, "projectB");
@@ -1788,11 +1837,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package)
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectBServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
 
@@ -1874,8 +1924,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_P2PReference()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_P2PReference(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1923,11 +1975,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             SuppressParent = LibraryIncludeFlags.All
                         });
 
-                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                    var legacyPRProjectB = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     projectTargetFrameworkStr = "net461";
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
@@ -1962,11 +2015,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPathB
                         });
 
-                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                    var legacyPRProjectA = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -2042,8 +2096,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive(bool usePackageSpecFactory)
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -2091,11 +2147,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package),
                         });
 
-                    var legacyPRProject2 = new LegacyPackageReferenceProject(
+                    var legacyPRProject2 = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter2,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
 
                     var projectPath1 = Path.Combine(testSolutionManager.TestDirectory, "Project1");
                     var fullProjectPath1 = Path.Combine(projectPath1, "project1.csproj");
@@ -2118,11 +2175,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ProjectPath = fullProjectPath2
                         });
 
-                    var legacyPRProject1 = new LegacyPackageReferenceProject(
+                    var legacyPRProject1 = CreateLegacyPackageReferenceProject(
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServices1,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject1);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject2);
 
@@ -2181,8 +2239,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_CPVM_Restore()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_CPVM_Restore(bool usePackageSpecFactory)
         {
             var packageA = (PackageId: "packageA", Version: "1.2.3");
             var packageB = (PackageId: "packageB", Version: "3.4.5");
@@ -2237,11 +2297,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                                 LibraryDependencyTarget.Package),
                         });
 
-                    var legacyPRProject = new LegacyPackageReferenceProject(
+                    var legacyPRProject = CreateLegacyPackageReferenceProject(
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        usePackageSpecFactory);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var packageContextB = new SimpleTestPackageContext(packageB.PackageId, packageB.Version);
@@ -2348,6 +2409,28 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             settings.SaveToDisk();
 
             return settings;
+        }
+
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(
+            IVsProjectAdapter projectAdapter,
+            string projectId,
+            ILegacyPackageReferenceProjectServices projectServices,
+            IVsProjectThreadingService threadingService,
+            bool usePackageSpecFactory)
+        {
+            var environmentVariables = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            });
+
+            var testProject = new LegacyPackageReferenceProject(
+                projectAdapter,
+                projectId,
+                projectServices,
+                threadingService,
+                environmentVariables);
+
+            return testProject;
         }
     }
 }

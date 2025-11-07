@@ -394,6 +394,16 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(envDTEProject);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var hierarchy = await envDTEProject.ToVsHierarchyAsync();
+            return IsSupported(envDTEProject, hierarchy);
+        }
+
+        public static bool IsSupported(EnvDTE.Project envDTEProject, IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Assumes.Present(envDTEProject);
+            Assumes.Present(hierarchy);
+
             if (VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy))
             {
                 return true;

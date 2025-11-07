@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Is this project a non-CPS package reference based csproj?
         /// </summary>
-        private INuGetProjectServices TryCreateProjectServices(
+        private VsManagedLanguagesProjectSystemServices TryCreateProjectServices(
             IVsProjectAdapter vsProjectAdapter, bool forceCreate)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

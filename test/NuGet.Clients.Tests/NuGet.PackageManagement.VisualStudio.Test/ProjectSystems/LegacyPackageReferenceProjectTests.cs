@@ -15,11 +15,13 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Projects;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -49,8 +51,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
         }
 
-        [Fact]
-        public async Task GetAssetsFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetAssetsFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -64,11 +68,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Setup(x => x.GetMSBuildProjectExtensionsPath())
                     .Returns(testMSBuildProjectExtensionsPath);
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act
                 var assetsPath = await testProject.GetAssetsFilePathAsync();
@@ -82,19 +87,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetAssetsFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetAssetsFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Arrange
             using (TestDirectory.Create())
             {
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     Mock.Of<IVsProjectAdapter>(),
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -102,8 +110,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetCacheFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetCacheFilePathAsync_WithValidMSBuildProjectExtensionsPath_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -122,11 +132,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .SetupGet(x => x.FullProjectPath)
                     .Returns(Path.Combine(testDirectory, testProj));
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act
                 var cachePath = await testProject.GetCacheFilePathAsync();
@@ -140,19 +151,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetCacheFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetCacheFilePathAsync_WithNoMSBuildProjectExtensionsPath_Throws(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Arrange
             using (TestDirectory.Create())
             {
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     Mock.Of<IVsProjectAdapter>(),
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -160,8 +174,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetCacheFilePathAsync_SwitchesToMainThread_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetCacheFilePathAsync_SwitchesToMainThread_Succeeds(bool usePackageSpecFactory)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -178,11 +194,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .SetupGet(x => x.FullProjectPath)
                     .Returns(Path.Combine(testDirectory, testProj));
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act
                 var assetsPath = await testProject.GetCacheFilePathAsync();
@@ -196,8 +213,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_WithDefaultVersion_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_WithDefaultVersion_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -207,11 +226,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var projectAdapter = CreateProjectAdapter(testDirectory);
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -238,8 +258,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_WithVersion_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_WithVersion_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -253,11 +275,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -279,12 +302,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("RestorePackagesPath", "Source1;Source2", "Fallback1,Fallback2")]
-        [InlineData("RestorePackagesPath", "Source2", "Fallback2")]
-        [InlineData(null, "Source2", "Fallback2")]
-        [InlineData("RestorePackagesPath", null, "Fallback2")]
-        [InlineData("RestorePackagesPath", "Source1;Source2", null)]
-        public async Task GetPackageSpecsAsync_ReadSettingsWithRelativePaths(string? restorePackagesPath, string? sources, string? fallbackFolders)
+        [InlineData("RestorePackagesPath", "Source1;Source2", "Fallback1,Fallback2", false)]
+        [InlineData("RestorePackagesPath", "Source2", "Fallback2", false)]
+        [InlineData(null, "Source2", "Fallback2", false)]
+        [InlineData("RestorePackagesPath", null, "Fallback2", false)]
+        [InlineData("RestorePackagesPath", "Source1;Source2", null, false)]
+        [InlineData("RestorePackagesPath", "Source1;Source2", "Fallback1,Fallback2", true)]
+        [InlineData("RestorePackagesPath", "Source2", "Fallback2", true)]
+        [InlineData(null, "Source2", "Fallback2", true)]
+        [InlineData("RestorePackagesPath", null, "Fallback2", true)]
+        [InlineData("RestorePackagesPath", "Source1;Source2", null, true)]
+        public async Task GetPackageSpecsAsync_ReadSettingsWithRelativePaths(string? restorePackagesPath, string? sources, string? fallbackFolders, bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Arrange
@@ -309,11 +337,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -345,11 +374,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", null, @"C:\Fallback1;C:\Fallback2")]
-        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null)]
-        public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string? restorePackagesPath, string sources, string fallbackFolders)
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2", false)]
+        [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2", false)]
+        [InlineData(@"C:\RestorePackagesPath", null, @"C:\Fallback1;C:\Fallback2", false)]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null, false)]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2", true)]
+        [InlineData(null, @"C:\Source1;C:\Source2", @"C:\Fallback1;C:\Fallback2", true)]
+        [InlineData(@"C:\RestorePackagesPath", null, @"C:\Fallback1;C:\Fallback2", true)]
+        [InlineData(@"C:\RestorePackagesPath", @"C:\Source1;C:\Source2", null, true)]
+        public async Task GetPackageSpecsAsync_ReadSettingsWithFullPaths(string? restorePackagesPath, string sources, string fallbackFolders, bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -375,11 +408,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -410,8 +444,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_WithPackageTargetFallback_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_WithPackageTargetFallback_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -427,11 +463,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Returns("portable-net45+win8;dnxcore50");
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -467,8 +504,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_WithPackageReference_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_WithPackageReference_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -490,11 +529,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             LibraryDependencyTarget.Package)
                     });
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -520,8 +560,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_WithProjectReference_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_WithProjectReference_Succeeds(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -540,11 +582,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         ProjectPath = Path.Combine(randomTestFolder, "TestProjectA")
                     });
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -569,8 +612,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledPackagesAsync_WhenValid_ReturnsPackageReferences()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledPackagesAsync_WhenValid_ReturnsPackageReferences(bool usePackageSpecFactory)
         {
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
@@ -590,11 +635,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             LibraryDependencyTarget.Package)
                     });
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act
                 var packageReferences = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -614,8 +660,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task InstallPackageAsync_AddsPackageReference()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task InstallPackageAsync_AddsPackageReference(bool usePackageSpecFactory)
         {
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
@@ -631,11 +679,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Callback<LibraryDependency, CancellationToken>((d, _) => actualDependency = d)
                     .Returns(Task.CompletedTask);
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var buildIntegratedInstallationContext = new BuildIntegratedInstallationContext()
                 {
@@ -667,8 +716,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task UninstallPackageAsync_Always_RemovesPackageReference()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task UninstallPackageAsync_Always_RemovesPackageReference(bool usePackageSpecFactory)
         {
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
@@ -683,11 +734,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Callback<string>(p => actualPackageId = p)
                     .Returns(Task.CompletedTask);
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 // Act
                 var result = await testProject.UninstallPackageAsync(
@@ -707,8 +759,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecsAsync_SkipContentFilesAlwaysTrue(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -730,11 +784,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             LibraryDependencyTarget.Package)
                     });
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -752,14 +807,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("true", null, false)]
-        [InlineData(null, "packages.A.lock.json", false)]
-        [InlineData("true", null, true)]
-        [InlineData("false", null, false)]
+        [InlineData("true", null, false, false)]
+        [InlineData(null, "packages.A.lock.json", false, false)]
+        [InlineData("true", null, true, false)]
+        [InlineData("false", null, false, false)]
+        [InlineData("true", null, false, true)]
+        [InlineData(null, "packages.A.lock.json", false, true)]
+        [InlineData("true", null, true, true)]
+        [InlineData("false", null, false, true)]
         public async Task GetPackageSpecsAsync_ReadLockFileSettings(
             string? restorePackagesWithLockFile,
             string? lockFilePath,
-            bool restoreLockedMode)
+            bool restoreLockedMode,
+            bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -785,11 +845,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -813,8 +874,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpecAsync_CentralPackageVersionsRemovedDuplicates()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecAsync_CentralPackageVersionsRemovedDuplicates(bool usePackageSpecFactory)
         {
             // Arrange
             var packageAv1 = (PackageId: "packageA", Version: "1.2.3");
@@ -837,11 +900,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         restoreLockedMode: false,
                         projectPackageVersions: new List<(string Id, string Version)>() { packageAv1, packageB, packageAv5 });
 
-            var legacyPRProject = new LegacyPackageReferenceProject(
+            var legacyPRProject = CreateLegacyPackageReferenceProject(
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -858,15 +922,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(null, true)]
-        [InlineData("", true)]
-        [InlineData("                     ", true)]
-        [InlineData("true", true)]
-        [InlineData("invalid", true)]
-        [InlineData("false", false)]
-        [InlineData("           false    ", false)]
-        [InlineData("FaLsE", false)]
-        public async Task GetPackageSpecAsync_CentralPackageVersionOverride_DisabedWhenSpecified(string? isCentralPackageVersionOverrideEnabled, bool expected)
+        [InlineData(null, true, false)]
+        [InlineData("", true, false)]
+        [InlineData("                     ", true, false)]
+        [InlineData("true", true, false)]
+        [InlineData("invalid", true, false)]
+        [InlineData("false", false, false)]
+        [InlineData("           false    ", false, false)]
+        [InlineData("FaLsE", false, false)]
+        [InlineData(null, true, true)]
+        [InlineData("", true, true)]
+        [InlineData("                     ", true, true)]
+        [InlineData("true", true, true)]
+        [InlineData("invalid", true, true)]
+        [InlineData("false", false, true)]
+        [InlineData("           false    ", false, true)]
+        [InlineData("FaLsE", false, true)]
+        public async Task GetPackageSpecAsync_CentralPackageVersionOverride_DisabedWhenSpecified(string? isCentralPackageVersionOverrideEnabled, bool expected, bool usePackageSpecFactory)
         {
             // Arrange
             var packageAv1 = (PackageId: "packageA", Version: "1.2.3");
@@ -890,11 +962,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectPackageVersions: new List<(string Id, string Version)>() { packageAv1, packageB, packageAv5 },
                         isCentralPackageVersionOverrideEnabled: isCentralPackageVersionOverrideEnabled);
 
-            var legacyPRProject = new LegacyPackageReferenceProject(
+            var legacyPRProject = CreateLegacyPackageReferenceProject(
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -914,16 +987,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("  ", false)]
-        [InlineData("invalid", false)]
-        [InlineData("false", false)]
-        [InlineData("           false    ", false)]
-        [InlineData("FaLsE", false)]
-        [InlineData("true", true)]
-        [InlineData("  true  ", true)]
-        public async Task GetPackageSpecAsync_TransitiveDependencyPinning_CanBeEnabled(string? transitiveDependencyPinning, bool expected)
+        [InlineData(null, false, false)]
+        [InlineData("", false, false)]
+        [InlineData("  ", false, false)]
+        [InlineData("invalid", false, false)]
+        [InlineData("false", false, false)]
+        [InlineData("           false    ", false, false)]
+        [InlineData("FaLsE", false, false)]
+        [InlineData("true", true, false)]
+        [InlineData("  true  ", true, false)]
+        [InlineData(null, false, true)]
+        [InlineData("", false, true)]
+        [InlineData("  ", false, true)]
+        [InlineData("invalid", false, true)]
+        [InlineData("false", false, true)]
+        [InlineData("           false    ", false, true)]
+        [InlineData("FaLsE", false, true)]
+        [InlineData("true", true, true)]
+        [InlineData("  true  ", true, true)]
+        public async Task GetPackageSpecAsync_TransitiveDependencyPinning_CanBeEnabled(string? transitiveDependencyPinning, bool expected, bool usePackageSpecFactory)
         {
             // Arrange
             var projectNames = new ProjectNames(
@@ -943,11 +1025,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectPackageVersions: new List<(string Id, string Version)>() { },
                         CentralPackageTransitivePinningEnabled: transitiveDependencyPinning);
 
-            var legacyPRProject = new LegacyPackageReferenceProject(
+            var legacyPRProject = CreateLegacyPackageReferenceProject(
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -966,13 +1049,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1008,13 +1093,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs_ValidateCache()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs_ValidateCache(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1053,13 +1140,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithFloating_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithFloating_WithAssetsFile_ReturnsVersionsFromAssetsSpecs(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.*, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.*, )", usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1098,13 +1187,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithoutAssetsFile_ReturnsVersionsFromPackageSpecs()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithoutAssetsFile_ReturnsVersionsFromPackageSpecs(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )", usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1134,13 +1225,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithoutPackages_ReturnsEmpty()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithoutPackages_ReturnsEmpty(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory);
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory, usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1169,13 +1262,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVsersionsFromAssets()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithAssetsFile_ReturnsVsersionsFromAssets(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[2.0.0, )", usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1211,13 +1306,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetInstalledVersion_WithoutPackages_WithAssets_ReturnsEmpty()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetInstalledVersion_WithoutPackages_WithAssets_ReturnsEmpty(bool usePackageSpecFactory)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory);
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProjectNoPackages(testDirectory, usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1252,13 +1349,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentities()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentities(bool usePackageSpecFactory)
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1303,13 +1402,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetTransitivePackagesAsync_WithNestedTransitivePackageReferences_ReturnsPackageIdentities()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetTransitivePackagesAsync_WithNestedTransitivePackageReferences_ReturnsPackageIdentities(bool usePackageSpecFactory)
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1363,13 +1464,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetTransitivePackagesAsync_WithNoTransitivePackageReferences_ReturnsOnlyInstalledPackageIdentities()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetTransitivePackagesAsync_WithNoTransitivePackageReferences_ReturnsOnlyInstalledPackageIdentities(bool usePackageSpecFactory)
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1406,13 +1509,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentitiesFromCache()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetTransitivePackagesAsync_WithTransitivePackageReferences_ReturnsPackageIdentitiesFromCache(bool usePackageSpecFactory)
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )");
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, "[1.0.0, )", usePackageSpecFactory);
 
                 NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1463,12 +1568,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(null, null, null, 0, 0)]
-        [InlineData("win-x64", null, null, 1, 0)]
-        [InlineData("win-x64", "win-x86", null, 2, 0)]
-        [InlineData("win-x64", "win-x86;win-x64", null, 2, 0)]
-        [InlineData("win-x64", "win-x86;win-x64", "win", 2, 1)]
-        public async Task GetPackageSpecsAsync_WithRuntimeIdentifiers_GeneratesRuntimeGraph(string? runtimeIdentifier, string? runtimeIdentifiers, string? runtimeSupports, int runtimeCount, int supportsCount)
+        [InlineData(null, null, null, 0, 0, false)]
+        [InlineData("win-x64", null, null, 1, 0, false)]
+        [InlineData("win-x64", "win-x86", null, 2, 0, false)]
+        [InlineData("win-x64", "win-x86;win-x64", null, 2, 0, false)]
+        [InlineData("win-x64", "win-x86;win-x64", "win", 2, 1, false)]
+        [InlineData(null, null, null, 0, 0, true)]
+        [InlineData("win-x64", null, null, 1, 0, true)]
+        [InlineData("win-x64", "win-x86", null, 2, 0, true)]
+        [InlineData("win-x64", "win-x86;win-x64", null, 2, 0, true)]
+        [InlineData("win-x64", "win-x86;win-x64", "win", 2, 1, true)]
+        public async Task GetPackageSpecsAsync_WithRuntimeIdentifiers_GeneratesRuntimeGraph(
+            string? runtimeIdentifier,
+            string? runtimeIdentifiers,
+            string? runtimeSupports,
+            int runtimeCount,
+            int supportsCount,
+            bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Arrange
@@ -1493,11 +1609,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 var projectServices = new TestProjectSystemServices();
 
-                var testProject = new LegacyPackageReferenceProject(
+                var testProject = CreateLegacyPackageReferenceProject(
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    usePackageSpecFactory);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1541,8 +1658,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected, string.Join(";", actual.Select(e => e.Name.ToString())));
         }
 
-        [Fact]
-        public async Task GetPackageSpecs_WithWarningProperties()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecs_WithWarningProperties(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             // Arrange
@@ -1568,11 +1687,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectServices = new TestProjectSystemServices();
 
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1597,8 +1717,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             projectBuildProperties.VerifyAll();
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithNuGetAuditSuppress()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpec_WithNuGetAuditSuppress(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1613,11 +1735,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Returns([("https://cve.test/1", Array.Empty<string>())]);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1635,8 +1758,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             auditProperties.SuppressedAdvisories.Should().BeEquivalentTo(["https://cve.test/1"]);
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithValidSdkAnalysisLevel_ReadsSdkAnalysisLevelValue()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpec_WithValidSdkAnalysisLevel_ReadsSdkAnalysisLevelValue(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1652,11 +1777,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1672,10 +1798,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("False")]
-        [InlineData("FaLse")]
-        [InlineData("false")]
-        public async Task GetPackageSpec_WithFalseUsingMicrosoftNetSdk_ReadsFalse(string usingSdk)
+        [InlineData("False", false)]
+        [InlineData("FaLse", false)]
+        [InlineData("false", false)]
+        [InlineData("False", true)]
+        [InlineData("FaLse", true)]
+        [InlineData("false", true)]
+        public async Task GetPackageSpec_WithFalseUsingMicrosoftNetSdk_ReadsFalse(string usingSdk, bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1689,11 +1818,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1710,10 +1840,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("True")]
-        [InlineData("true")]
-        [InlineData("TrUe")]
-        public async Task GetPackageSpec_WithTrueUsingMicrosoftNetSdk_ReadsTrue(string usingSdk)
+        [InlineData("True", false)]
+        [InlineData("true", false)]
+        [InlineData("TrUe", false)]
+        [InlineData("True", true)]
+        [InlineData("true", true)]
+        [InlineData("TrUe", true)]
+        public async Task GetPackageSpec_WithTrueUsingMicrosoftNetSdk_ReadsTrue(string usingSdk, bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1727,11 +1860,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1747,8 +1881,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(actualRestoreSpec.RestoreMetadata.UsingMicrosoftNETSdk);
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithInvalidSdkAnalysisLevel_ThrowsAnException()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpec_WithInvalidSdkAnalysisLevel_ThrowsAnException(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1762,11 +1898,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1775,8 +1912,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             await Assert.ThrowsAsync<ArgumentException>(async () => await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext));
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithInvalidUsingMicrosoftNetSdk_ThrowsAnException()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpec_WithInvalidUsingMicrosoftNetSdk_ThrowsAnException(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1790,11 +1929,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock<IVsProjectAdapter> projectAdapterMock = Mock.Get(projectAdapter);
 
             var projectServices = new TestProjectSystemServices();
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1804,10 +1944,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("False", false)]
-        [InlineData("true", true)]
-        [InlineData(null, false)]
-        public async Task GetPackageSpec_WithUseLegacyDependencyResolver(string? restoreUseLegacyDependencyResolver, bool expected)
+        [InlineData("False", false, false)]
+        [InlineData("true", true, false)]
+        [InlineData(null, false, false)]
+        [InlineData("False", false, true)]
+        [InlineData("true", true, true)]
+        [InlineData(null, false, true)]
+        public async Task GetPackageSpec_WithUseLegacyDependencyResolver(string? restoreUseLegacyDependencyResolver, bool expected, bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1818,11 +1961,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Returns(restoreUseLegacyDependencyResolver);
             var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 new TestProjectSystemServices(),
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             // Act
             var packageSpecs = await testProject.GetPackageSpecsAsync(new DependencyGraphCacheContext(NullLogger.Instance, NullSettings.Instance));
@@ -1835,8 +1979,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             actualRestoreSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().Be(expected);
         }
 
-        [Fact]
-        public async Task GetPackageSpecAsync_WithVariousCentralPackageVersions_AppliesFlagsCorreclty()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecAsync_WithVariousCentralPackageVersions_AppliesFlagsCorreclty(bool usePackageSpecFactory)
         {
             // Arrange
             var tfm = NuGetFramework.Parse("net472");
@@ -1896,11 +2042,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectPackageVersions: new List<(string Id, string Version)>() { packageA, packageB, packageC, packageD },
                         isCentralPackageVersionOverrideEnabled: "true");
 
-            var legacyPRProject = new LegacyPackageReferenceProject(
+            var legacyPRProject = CreateLegacyPackageReferenceProject(
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        projectServices,
-                       _threadingService);
+                       _threadingService,
+                       usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1940,8 +2087,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             tfi.Dependencies[3].VersionOverride.Should().Be(VersionRange.Parse("3.0.0"));
         }
 
-        [Fact]
-        public async Task GetPackageSpecAsync_WithDifferentCasingPackageVersionAndPackageReference_CombinesCorrectly()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpecAsync_WithDifferentCasingPackageVersionAndPackageReference_CombinesCorrectly(bool usePackageSpecFactory)
         {
             // Arrange
             var tfm = NuGetFramework.Parse("net472");
@@ -1976,11 +2125,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectPackageVersions: new List<(string Id, string Version)>() { packageAUpperCase },
                         isCentralPackageVersionOverrideEnabled: "true");
 
-            var legacyPRProject = new LegacyPackageReferenceProject(
+            var legacyPRProject = CreateLegacyPackageReferenceProject(
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        projectServices,
-                       _threadingService);
+                       _threadingService,
+                       usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -2004,17 +2154,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public static readonly List<object[]> PrunePackageReferenceData
             = new List<object[]>
             {
-                new object[] { "true", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, true },
-                new object[] { "false", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, false },
+                new object[] { "true", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, true, true },
+                new object[] { "false", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, false, true },
+                new object[] { "true", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, true, false },
+                new object[] { "false", new (string, string[])[] { ("PackageA", ["1.0.0"]) }, false, false },
             };
 
         [Theory]
         [MemberData(nameof(PrunePackageReferenceData))]
-        public async Task GetPackageSpec_WithPrunePackageReferences(string restoreEnablePackagePruning, IEnumerable<(string ItemId, string[] ItemMetadata)> buildIteminfo, bool hasPrunedReferences)
+        public async Task GetPackageSpec_WithPrunePackageReferences(
+            string restoreEnablePackagePruning,
+            IEnumerable<(string ItemId, string[] ItemMetadata)> buildIteminfo,
+            bool hasPrunedReferences,
+            bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             using var testDirectory = TestDirectory.Create();
-            IReadOnlyList<PackageSpec> packageSpecs = await SetupPrunePackageReferenceDataAndAct(restoreEnablePackagePruning, buildIteminfo, testDirectory);
+            IReadOnlyList<PackageSpec> packageSpecs = await SetupPrunePackageReferenceDataAndAct(restoreEnablePackagePruning, buildIteminfo, testDirectory, usePackageSpecFactory);
 
             // Assert
             Assert.NotNull(packageSpecs);
@@ -2036,16 +2192,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithPrunePackageReferenceAndMissingVersion_Throws()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetPackageSpec_WithPrunePackageReferenceAndMissingVersion_Throws(bool usePackageSpecFactory)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             using var testDirectory = TestDirectory.Create();
-            var exception = await Assert.ThrowsAsync<ArgumentException>(() => SetupPrunePackageReferenceDataAndAct("true", new (string, string[])[] { ("PackageA", [null!]) }, testDirectory));
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => SetupPrunePackageReferenceDataAndAct("true", new (string, string[])[] { ("PackageA", [null!]) }, testDirectory, usePackageSpecFactory));
             exception.Message.Should().Contain("PrunePackageReference");
         }
 
-        private async Task<IReadOnlyList<PackageSpec>> SetupPrunePackageReferenceDataAndAct(string restoreEnablePackagePruning, IEnumerable<(string ItemId, string[] ItemMetadata)> buildIteminfo, TestDirectory testDirectory)
+        private async Task<IReadOnlyList<PackageSpec>> SetupPrunePackageReferenceDataAndAct(
+            string restoreEnablePackagePruning,
+            IEnumerable<(string ItemId, string[] ItemMetadata)> buildIteminfo,
+            TestDirectory testDirectory,
+            bool usePackageSpecFactory)
         {
             // Arrange
             var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
@@ -2057,11 +2219,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             projectAdapterMock.Setup(m => m.GetBuildItemInformation(ProjectItems.PrunePackageReference, It.IsAny<string[]>()))
                 .Returns(buildIteminfo);
 
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 new TestProjectSystemServices(),
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -2070,22 +2233,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
         }
 
-        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range, bool usePackageSpecFactory)
         {
-            return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);
+            return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService, usePackageSpecFactory);
         }
 
-        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProjectNoPackages(TestDirectory testDirectory)
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProjectNoPackages(TestDirectory testDirectory, bool usePackageSpecFactory)
         {
             var projectAdapter = CreateProjectAdapter(testDirectory);
 
             var projectServices = new TestProjectSystemServices();
 
-            var testProject = new LegacyPackageReferenceProject(
+            var testProject = CreateLegacyPackageReferenceProject(
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                usePackageSpecFactory);
+            return testProject;
+        }
+
+        private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(
+            IVsProjectAdapter projectAdapter,
+            string projectId,
+            ILegacyPackageReferenceProjectServices projectServices,
+            IVsProjectThreadingService threadingService,
+            bool usePackageSpecFactory)
+        {
+            var environmentVariables = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            });
+
+            var testProject = new LegacyPackageReferenceProject(
+                projectAdapter,
+                projectId,
+                projectServices,
+                threadingService,
+                environmentVariables);
+
             return testProject;
         }
     }
