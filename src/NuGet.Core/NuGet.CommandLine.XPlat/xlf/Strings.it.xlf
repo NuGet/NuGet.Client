@@ -400,7 +400,7 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
         <source>Unable to find a valid package version</source>
-        <target state="new">Unable to find a valid package version</target>
+        <target state="translated">Non è possibile trovare una versione valida del pacchetto</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
@@ -893,69 +893,69 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescription">
         <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
-        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
+        <target state="translated">Consente il download da origini di pacchetti HTTP (non HTTPS).</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AlreadyInstalled">
         <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
-        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
+        <target state="translated">Il download verrà ignorato. La versione '{0}' del pacchetto '{1}' esiste già in '{2}'.</target>
         <note>0 - package id
 1 - version
 2 - directory path where the package was downloaded</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Description">
         <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
-        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
+        <target state="translated">Scarica un pacchetto NuGet in una cartella locale senza richiedere un file di progetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Failed">
         <source>Package '{0}' ({1}) failed to download.</source>
-        <target state="new">Package '{0}' ({1}) failed to download.</target>
+        <target state="translated">Non è possibile scaricare il pacchetto '{0}' ({1}).</target>
         <note>0 - package id
 1 - package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">ultima versione</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_OutputDirectoryDescription">
         <source>Directory where the package will be placed. Defaults to the current working directory.</source>
-        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
+        <target state="translated">Directory in cui verrà inserito il pacchetto. Il valore predefinito è la directory di lavoro corrente.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageIdDescription">
         <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
-        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
+        <target state="translated">Identificatore del pacchetto ,ad esempio 'Newtonsoft.Json'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
         <source>The mapped source '{0}' for package '{1}' was not found among the configured sources.</source>
-        <target state="new">The mapped source '{0}' for package '{1}' was not found among the configured sources.</target>
+        <target state="translated">L'origine mappata '{0}' per il pacchetto '{1}' non è stata trovata tra le origini configurate.</target>
         <note>0 - package source name
 1 - package name</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_SourcesDescription">
         <source>Specifies one or more NuGet package sources to use.</source>
-        <target state="new">Specifies one or more NuGet package sources to use.</target>
+        <target state="translated">Specifica una o più origini pacchetto NuGet da usare.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Starting">
         <source>Downloading package {0}, version {1}.</source>
-        <target state="new">Downloading package {0}, version {1}.</target>
+        <target state="translated">Download del pacchetto {0}, versione {1}.</target>
         <note>0- package id
 1- package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Succeeded">
         <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
-        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
+        <target state="translated">Il pacchetto '{0}' ({1}) è stato scaricato in '{2}'.</target>
         <note>0 - package id
 1 - package version
 2 - package download location</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_UnableToDownload">
         <source>Package download failed for `{0} {1}` from source `{2}`.</source>
-        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
+        <target state="translated">Il download del pacchetto non è riuscito per '{0}{1}' dall'origine '{2}'.</target>
         <note>0 package id
 1 package version
 2 package source</note>
