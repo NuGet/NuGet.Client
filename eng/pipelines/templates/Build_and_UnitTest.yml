@@ -133,7 +133,7 @@ steps:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\07.RunUnitTests.binlog"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')), not(eq(variables['RunUnitTestsOnWindows'], 'false')))"
 
 - task: MSBuild@1
   displayName: "Run unit tests (continue on error)"
@@ -142,7 +142,7 @@ steps:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.RunUnitTests.binlog"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'), not(eq(variables['RunUnitTestsOnWindows'], 'false')))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
@@ -152,7 +152,7 @@ steps:
     testRunTitle: "NuGet.Client Unit Tests On Windows"
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
     publishRunAttachments: "false"
-  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'), not(eq(variables['RunUnitTestsOnWindows'], 'false')))"
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
