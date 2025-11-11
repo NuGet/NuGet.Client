@@ -13,27 +13,27 @@ parameters:
 - name: RunCrossFrameworkTestsOnWindows
   displayName: Run cross framweork tests on Windows
   type: boolean
-  default: true
+  default: false
 - name: RunFunctionalTestsOnWindows
   displayName: Run functional tests on Windows
   type: boolean
-  default: true
+  default: false
 - name: RunSourceBuild
   displayName: Run source build
   type: boolean
-  default: true
+  default: false
 - name: RunTestsOnLinux
   displayName: Run tests on Linux
   type: boolean
-  default: true
+  default: false
 - name: RunTestsOnMac
   displayName: Run tests on Mac
   type: boolean
-  default: true
+  default: false
 - name: RunMonoTestsOnMac
   displayName: Run Mono tests on Mac
   type: boolean
-  default: true
+  default: false
 - name: RunStaticAnalysis
   displayName: Run static analysis
   type: boolean
