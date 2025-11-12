@@ -12,7 +12,7 @@
     <ItemGroup>
         <PackageDownload Include="ILMerge" version="[3.0.21]" />
         <PackageDownload Include="Lucene.Net" version="[3.0.3]" />
-        <PackageDownload Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="[0.4.1]" />
+        <PackageDownload Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="[1.0.0]" />
         <PackageDownload Include="Microsoft.Web.Xdt" version="[3.0.0]" />
         <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
         <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[5.8.0]" />
