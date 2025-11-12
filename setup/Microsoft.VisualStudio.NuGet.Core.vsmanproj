@@ -9,10 +9,13 @@
       <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
       <TargetName>$(MSBuildProjectName)</TargetName>
       <OutputPath>$(VsixPublishDestination)</OutputPath>
+      <SBOMFileLocation>$(ManifestDirPath)\$(ARTIFACT_NAME)\_manifest\spdx_2.2\manifest.spdx.json</SBOMFileLocation>
   </PropertyGroup>
 
   <ItemGroup>
-    <MergeManifest Include="$(VsixPublishDestination)Microsoft.VisualStudio.NuGet.Core.json" />
+    <MergeManifest Include="$(VsixPublishDestination)Microsoft.VisualStudio.NuGet.Core.json"
+                   SBOMFileLocation="$(SBOMFileLocation)" />
+
   </ItemGroup>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets"/>
