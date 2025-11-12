@@ -4,5 +4,6 @@ NuGet.Protocol.Core.Types.QuotaExceededException.QuotaExceededException(string! 
 NuGet.Protocol.Core.Types.QuotaExceededException.QuotaExceededException(string! message, System.Exception! innerException) -> void
 NuGet.Protocol.Core.Types.QuotaExceededException.QuotaExceededException(string! message, System.TimeSpan? retryAfter) -> void
 NuGet.Protocol.Core.Types.QuotaExceededException.QuotaExceededException(string! message, System.TimeSpan? retryAfter, System.Exception! innerException) -> void
+~NuGet.Protocol.Core.Types.QuotaExceededException.GetObjectData(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.QuotaExceededException.RetryAfter.get -> System.TimeSpan?
 ~NuGet.Protocol.Core.Types.QuotaExceededException.QuotaExceededException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
