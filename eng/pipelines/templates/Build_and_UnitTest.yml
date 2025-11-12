@@ -25,18 +25,6 @@ steps:
       inlineScript: |
         Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-  - task: MicroBuildLocalizationPlugin@1
-    displayName: "Install Localization Plugin"
-
-  - task: MicroBuildSigningPlugin@1
-    inputs:
-      signType: "$(SigningType)"
-      esrpSigning: "true"
-    displayName: "Install Signing Plugin"
-
-  - task: MicroBuildSwixPlugin@1
-    displayName: "Install Swix Plugin"
-
   # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
   # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
   # won't be able to determine the URL to embed in the pdbs.
