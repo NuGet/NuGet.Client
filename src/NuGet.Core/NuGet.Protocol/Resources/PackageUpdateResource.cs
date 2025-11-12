@@ -546,8 +546,8 @@ namespace NuGet.Protocol.Core.Types
             {
                 TimeSpan? retryAfter = GetRetryAfter(response.Headers.RetryAfter);
                 string message = retryAfter.HasValue
-                    ? string.Format(CultureInfo.CurrentCulture, "Quota exceeded. Retry after {0} seconds.", retryAfter.Value.TotalSeconds)
-                    : "Quota exceeded. Retry after the time specified in the Retry-After header.";
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.QuotaExceeded_RetryAfterSeconds, retryAfter.Value.TotalSeconds)
+                    : Strings.QuotaExceeded_RetryAfterHeader;
                 throw new QuotaExceededException(message, retryAfter);
             }
 

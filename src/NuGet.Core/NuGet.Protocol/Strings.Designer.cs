@@ -1076,5 +1076,23 @@ namespace NuGet.Protocol {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quota exceeded. Retry after {0} seconds..
+        /// </summary>
+        internal static string QuotaExceeded_RetryAfterSeconds {
+            get {
+                return ResourceManager.GetString("QuotaExceeded_RetryAfterSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quota exceeded. Retry after the time specified in the Retry-After header..
+        /// </summary>
+        internal static string QuotaExceeded_RetryAfterHeader {
+            get {
+                return ResourceManager.GetString("QuotaExceeded_RetryAfterHeader", resourceCulture);
+            }
+        }
     }
 }

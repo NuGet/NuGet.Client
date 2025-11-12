@@ -539,4 +539,11 @@ The "s" should be localized to the abbreviation for seconds.</comment>
     <value>Invalid package id : `{0}`.</value>
     <comment>0 - package id.</comment>
   </data>
+  <data name="QuotaExceeded_RetryAfterSeconds" xml:space="preserve">
+    <value>Quota exceeded. Retry after {0} seconds.</value>
+    <comment>{0} - number of seconds to wait before retrying.</comment>
+  </data>
+  <data name="QuotaExceeded_RetryAfterHeader" xml:space="preserve">
+    <value>Quota exceeded. Retry after the time specified in the Retry-After header.</value>
+  </data>
 </root>
