@@ -600,6 +600,16 @@ The "ms" should be localized to the abbreviation for milliseconds.</note>
         <target state="translated">シンボル パッケージ '{0}' が見つかりましたが、シンボル サーバーで API キーが指定されていません。API キーを保存するには、'NuGet.exe setApiKey [http://www.NuGet.org の API キー]' を実行します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuotaExceeded_RetryAfterHeader">
+        <source>Quota exceeded. Retry after the time specified in the Retry-After header.</source>
+        <target state="new">Quota exceeded. Retry after the time specified in the Retry-After header.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="QuotaExceeded_RetryAfterSeconds">
+        <source>Quota exceeded. Retry after {0} seconds.</source>
+        <target state="new">Quota exceeded. Retry after {0} seconds.</target>
+        <note>{0} - number of seconds to wait before retrying.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
