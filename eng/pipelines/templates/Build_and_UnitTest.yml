@@ -187,6 +187,14 @@ steps:
           PackageName: "NuGet.Client"
           PackageVersion: "$(SemanticVersion)"
 
+  - task: PowerShell@1
+    displayName: "List vs15 directory"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci artifacts\VS15
+    condition: always()
+
   - task: MSBuild@1
     displayName: "Generate Build Tools package"
     inputs:
@@ -194,6 +202,14 @@ steps:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.GenerateBuildToolsPackage.binlog"
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: PowerShell@1
+    displayName: "List vs15 directory 2"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci artifacts\VS15
+    condition: always()
 
   - task: MSBuild@1
     displayName: "Sign Nupkgs and VSIX"
@@ -224,6 +240,14 @@ steps:
       WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
 
+  - task: PowerShell@1
+    displayName: "List vs15 directory 3"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci artifacts\VS15
+    condition: always()
+
   - task: MSBuild@1
     displayName: "Generate VSMAN file for NuGet Core VSIX"
     inputs:
@@ -232,6 +256,14 @@ steps:
       msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateVSManifestForVSIX.binlog"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
+  - task: PowerShell@1
+    displayName: "List vs15 directory 4"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci artifacts\VS15
+    condition: always()
+
   - task: MSBuild@1
     displayName: "Generate VSMAN file for Build Tools VSIX"
     inputs:
@@ -239,6 +271,14 @@ steps:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: PowerShell@1
+    displayName: "List vs15 directory 5"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        gci artifacts\VS15
+    condition: always()
 
   - task: PowerShell@1
     displayName: "Create EndToEnd Test Package"
