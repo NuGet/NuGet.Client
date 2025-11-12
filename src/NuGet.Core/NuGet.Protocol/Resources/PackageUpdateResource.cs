@@ -541,6 +541,16 @@ namespace NuGet.Protocol.Core.Types
                 AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
             }
 
+            // Check for quota exceeded (403 with Retry-After header)
+            if (response.StatusCode == HttpStatusCode.Forbidden && response.Headers.RetryAfter != null)
+            {
+                TimeSpan? retryAfter = GetRetryAfter(response.Headers.RetryAfter);
+                string message = retryAfter.HasValue
+                    ? string.Format(CultureInfo.CurrentCulture, "Quota exceeded. Retry after {0} seconds.", retryAfter.Value.TotalSeconds)
+                    : "Quota exceeded. Retry after the time specified in the Retry-After header.";
+                throw new QuotaExceededException(message, retryAfter);
+            }
+
             //No exception to the rule specified.
             response.EnsureSuccessStatusCode();
             return null;
@@ -962,6 +972,23 @@ namespace NuGet.Protocol.Core.Types
             var sourceUri = UriUtility.CreateSourceUri(source);
 
             return sourceUri.Host.Equals(NuGetConstants.NuGetSymbolHostName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static TimeSpan? GetRetryAfter(RetryConditionHeaderValue retryAfter)
+        {
+            if (retryAfter?.Delta != null)
+            {
+                return retryAfter.Delta;
+            }
+
+            if (retryAfter?.Date != null)
+            {
+                DateTimeOffset retryAfterDate = retryAfter.Date.Value.ToUniversalTime();
+                var now = DateTimeOffset.UtcNow;
+                return retryAfterDate - now;
+            }
+
+            return null;
         }
     }
 }

@@ -1063,5 +1063,144 @@ namespace NuGet.Protocol.Tests
                 logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "delete", source));
             }
         }
+
+        [Fact]
+        public async Task PackageUpdateResource_ThrowsQuotaExceededException_WhenForbiddenWithRetryAfter()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.nuget.org/api/v2";
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+                            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(60));
+                            return Task.FromResult(response);
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+                var apiKey = "SomeApiKey";
+
+                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<QuotaExceededException>(async () =>
+                    await resource.Push(
+                        packagePaths: new[] { packageInfo.FullName },
+                        symbolSource: null,
+                        timeoutInSecond: 5,
+                        disableBuffering: false,
+                        getApiKey: _ => apiKey,
+                        getSymbolApiKey: _ => null,
+                        noServiceEndpoint: false,
+                        skipDuplicate: false,
+                        symbolPackageUpdateResource: null,
+                        log: NullLogger.Instance));
+
+                Assert.NotNull(exception.RetryAfter);
+                Assert.Equal(60, exception.RetryAfter.Value.TotalSeconds);
+                Assert.Contains("Quota exceeded", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_ThrowsQuotaExceededException_WhenForbiddenWithRetryAfterDate()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.nuget.org/api/v2";
+                var retryAfterDate = DateTimeOffset.UtcNow.AddMinutes(5);
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+                            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(retryAfterDate);
+                            return Task.FromResult(response);
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+                var apiKey = "SomeApiKey";
+
+                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<QuotaExceededException>(async () =>
+                    await resource.Push(
+                        packagePaths: new[] { packageInfo.FullName },
+                        symbolSource: null,
+                        timeoutInSecond: 5,
+                        disableBuffering: false,
+                        getApiKey: _ => apiKey,
+                        getSymbolApiKey: _ => null,
+                        noServiceEndpoint: false,
+                        skipDuplicate: false,
+                        symbolPackageUpdateResource: null,
+                        log: NullLogger.Instance));
+
+                Assert.NotNull(exception.RetryAfter);
+                // Allow for some time variance (test may take a few seconds)
+                Assert.True(exception.RetryAfter.Value.TotalMinutes >= 4.5 && exception.RetryAfter.Value.TotalMinutes <= 5.5);
+                Assert.Contains("Quota exceeded", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_ThrowsHttpRequestException_WhenForbiddenWithoutRetryAfter()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "https://www.nuget.org/api/v2";
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+                            // No Retry-After header
+                            return Task.FromResult(response);
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+                var apiKey = "SomeApiKey";
+
+                var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+                // Act & Assert
+                // Should throw HttpRequestException (not QuotaExceededException) when no Retry-After header
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                    await resource.Push(
+                        packagePaths: new[] { packageInfo.FullName },
+                        symbolSource: null,
+                        timeoutInSecond: 5,
+                        disableBuffering: false,
+                        getApiKey: _ => apiKey,
+                        getSymbolApiKey: _ => null,
+                        noServiceEndpoint: false,
+                        skipDuplicate: false,
+                        symbolPackageUpdateResource: null,
+                        log: NullLogger.Instance));
+
+                Assert.NotNull(exception);
+            }
+        }
     }
 }
