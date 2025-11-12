@@ -13,12 +13,7 @@ parameters:
     displayName: Build bits for publishing
     type: boolean
     default: true
-  # Disable on this branch.
-  # - name: RunCrossFrameworkTestsOnWindows
-  #   displayName: Run cross framweork tests on Windows
-  #   type: boolean
-  #   default: true
-  - name: RunFunctionalTestsOnWindows
+  - name: RunTestsOnWindows
     displayName: Run functional tests on Windows
     type: boolean
     default: true
@@ -48,7 +43,7 @@ parameters:
     values:
       - Real
       - Test
-
+  
 stages:
   - stage: Initialize
     jobs:
@@ -109,7 +104,6 @@ stages:
           VsTargetChannelForTests: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetChannelForTests']]
           VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
           isOfficialBuild: ${{ parameters.isOfficialBuild }}
-          ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
           LocalizedLanguageCount: "13"
           BuildRTM: "false"
           SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
@@ -135,7 +129,7 @@ stages:
               enabled: ${{ variables['isOfficialBuild'] }}
               OptimizationInputsLookupMethod: DropPrefix
               DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-              ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
+              ShouldSkipOptimize: $(ShouldSkipOptimize)
               AccessToken: $(System.AccessToken)
           outputs:
             - output: pipelineArtifact
@@ -323,7 +317,7 @@ stages:
             $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
             # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
           MSBuildEnableWorkloadResolver: false
-        condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
+        condition: "and(succeeded(), ne(variables['RunTestsOnWindows'], 'false'))"
         pool:
           name: VSEngSS-MicroBuild2019-1ES
           os: windows
@@ -437,36 +431,6 @@ stages:
               sbomEnabled: false
         steps:
           - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
-
-    # Disable on this branch.
-    # - job: CrossFramework_Tests_On_Windows
-    #   displayName: "Windows CrossFrameworkTests"
-    #   condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
-    #   timeoutInMinutes: 30
-    #   variables:
-    #     BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    #     FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    #   pool:
-    #     name: AzurePipelines-EO
-    #     image: 1ESPT-Windows2022
-    #     os: windows
-    #   templateContext:
-    #     outputs:
-    #     - output: pipelineArtifact
-    #       displayName: 'Publish Test Freeze Dump'
-    #       condition: "or(failed(), canceled())"
-    #       targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-    #       artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
-    #       sbomEnabled: false
-
-    #     - output: pipelineArtifact
-    #       displayName: 'Publish binlogs'
-    #       condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-    #       artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    #       targetPath: $(Build.StagingDirectory)\binlog
-    #       sbomEnabled: false
-    #   steps:
-    #   - template: /eng/pipelines/templates/CrossFramework_Tests_On_Windows.yml@self
 
   - stage: MacTests
     displayName: "Mac Mono Tests"

@@ -3,31 +3,26 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
-# Disable on this branch.
-# - name: RunCrossFrameworkTestsOnWindows
-#   displayName: Run cross framweork tests on Windows
-#   type: boolean
-#   default: true
-- name: RunFunctionalTestsOnWindows
-  displayName: Run functional tests on Windows
+- name: RunTestsOnWindows
+  displayName: Run tests on Windows
   type: boolean
-  default: true
+  default: false
 - name: RunSourceBuild
   displayName: Run source build
   type: boolean
-  default: true
+  default: false
 - name: RunTestsOnLinux
   displayName: Run tests on Linux
   type: boolean
-  default: true
+  default: false
 - name: RunTestsOnMac
   displayName: Run tests on Mac
   type: boolean
-  default: true
+  default: false
 - name: RunMonoTestsOnMac
   displayName: Run Mono tests on Mac
   type: boolean
-  default: true
+  default: false
 - name: SigningType
   displayName: Type of signing to use
   type: string
@@ -50,8 +45,7 @@ variables:
   Codeql.Enabled: false
   Codeql.TSAEnabled: false
   RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
-  # Disable on this branch. RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
-  RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
+  RunTestsOnWindows: ${{ parameters.RunTestsOnWindows }}
   RunSourceBuild: ${{ parameters.RunSourceBuild }}
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
@@ -85,8 +79,7 @@ extends:
         isOfficialBuild: true
         NuGetLocalizationType: Full
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-        # Disable on this branch. RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-        RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+        RunTestsOnWindows: ${{parameters.RunTestsOnWindows}}
         RunSourceBuild: ${{parameters.RunSourceBuild}}
         RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
         RunTestsOnMac: ${{parameters.RunTestsOnMac}}

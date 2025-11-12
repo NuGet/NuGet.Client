@@ -128,7 +128,7 @@ steps:
       solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), not(eq(variables['RunMonoTestsOnMac'], 'false')))"
 
   - task: MSBuild@1
     displayName: "Run unit tests (stop on error)"
@@ -137,7 +137,7 @@ steps:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: MSBuild@1
     displayName: "Run unit tests (continue on error)"
@@ -146,7 +146,7 @@ steps:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -157,7 +157,7 @@ steps:
       searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       mergeTestResults: "true"
       publishRunAttachments: "false"
-    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')))"
 
   - task: MSBuild@1
     displayName: "Sign Assemblies"

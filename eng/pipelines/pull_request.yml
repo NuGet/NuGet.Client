@@ -10,12 +10,7 @@ parameters:
     displayName: Build bits for publishing
     type: boolean
     default: true
-  # Disable on this branch.
-  # - name: RunCrossFrameworkTestsOnWindows
-  #   displayName: Run cross framweork tests on Windows
-  #   type: boolean
-  #   default: true
-  - name: RunFunctionalTestsOnWindows
+  - name: RunTestsOnWindows
     displayName: Run functional tests on Windows
     type: boolean
     default: true
@@ -39,6 +34,7 @@ parameters:
     displayName: Type of signing to use
     type: string
     default: Test
+
 resources:
   repositories:
     - repository: MicroBuildTemplate
@@ -53,8 +49,7 @@ variables:
   Codeql.Enabled: false
   Codeql.TSAEnabled: false
   RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
-  # Disable on this branch. RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
-  RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
+  RunTestsOnWindows: ${{ parameters.RunTestsOnWindows }}
   RunSourceBuild: ${{ parameters.RunSourceBuild }}
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
@@ -87,8 +82,7 @@ extends:
         parameters:
           NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
           RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-          # Disable on this branch. RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-          RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+          RunTestsOnWindows: ${{parameters.RunTestsOnWindows}}
           RunSourceBuild: ${{parameters.RunSourceBuild}}
           RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
           RunTestsOnMac: ${{parameters.RunTestsOnMac}}
