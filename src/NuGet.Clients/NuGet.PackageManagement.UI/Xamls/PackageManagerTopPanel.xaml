@@ -239,7 +239,8 @@
             VerticalContentAlignment="Center"
             Checked="_checkboxPrerelease_Checked"
             Unchecked="_checkboxPrerelease_Unchecked"
-            IsChecked="True">
+            IsChecked="True"
+            ToolTip="{x:Static nuget:Resources.Checkbox_IncludePrerelease}">
               <TextBlock TextTrimming="CharacterEllipsis" Text="{x:Static nuget:Resources.Checkbox_IncludePrerelease}" />
             </CheckBox>
 
@@ -255,8 +256,9 @@
             Checked="_checkboxVulnerabilities_Checked"
             Unchecked="_checkboxVulnerabilities_Unchecked"
             Visibility="Hidden"
-            IsChecked="False">
-            <TextBlock TextTrimming="CharacterEllipsis" Text="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}" />
+            IsChecked="False"
+            ToolTip="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}">
+              <TextBlock TextTrimming="CharacterEllipsis" Text="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}" />
           </CheckBox>
         </Grid>
       </Grid>
