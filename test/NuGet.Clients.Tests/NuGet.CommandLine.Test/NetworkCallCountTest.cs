@@ -137,13 +137,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [SkipMono(Skip = "https://github.com/NuGet/Home/issues/7878")]
-        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
+        public async Task NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
         {
             // Arrange
             var testCount = 100;
 
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -275,13 +275,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [SkipMono(Skip = "https://github.com/NuGet/Home/issues/8594")]
-        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
+        public async Task NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
         {
             // Arrange
             var testCount = 100;
 
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -405,13 +405,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
+        public async Task NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
         {
             // Arrange
             var testCount = 100;
 
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -537,8 +537,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_CancelPackageDownloadForV3()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -636,8 +636,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_CancelPackageDownloadForV2()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -731,8 +731,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionMultipleSourcesV2V3AndLocal()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -813,7 +813,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_InstallVersionFromV2()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -885,7 +885,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_InstallVersionFromV3()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -959,7 +959,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_InstallLatestFromV2()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1029,7 +1029,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_InstallLatestFromV3()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1101,8 +1101,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionMultipleSourcesV2V3()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1168,8 +1168,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionMultipleSourcesTwoV2()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1244,8 +1244,8 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionMultipleSourcesTwoV3()
         {
             // Arrange
-            using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            await using (var server2 = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1325,7 +1325,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionV3WithoutFlatContainer()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1390,7 +1390,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionWithPackagesConfigAndPackageReferenceV3()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
@@ -1454,7 +1454,7 @@ namespace NuGet.CommandLine.Test
         public async Task NetworkCallCount_RestoreSolutionWithPackagesConfigAndPackageReferenceV2()
         {
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;

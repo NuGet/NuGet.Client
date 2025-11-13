@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.Test;
 using NuGet.Configuration;
@@ -25,12 +26,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_TargetEndpointTest()
+        public async Task SearchCommand_TargetEndpointTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using (MockServer server = new MockServer())
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -124,7 +125,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -133,12 +134,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_VerbosityDetailedTest()
+        public async Task SearchCommand_VerbosityDetailedTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using (MockServer server = new MockServer())
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -234,7 +235,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -247,12 +248,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_VerbosityNormalTest()
+        public async Task SearchCommand_VerbosityNormalTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using (MockServer server = new MockServer())
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -348,7 +349,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -361,12 +362,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_VerbosityQuietTest()
+        public async Task SearchCommand_VerbosityQuietTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using (MockServer server = new MockServer())
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -462,7 +463,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -475,12 +476,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_TakeOptionTest()
+        public async Task SearchCommand_TakeOptionTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using var server = new MockServer();
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -628,7 +629,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -637,12 +638,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_SourceOptionTest()
+        public async Task SearchCommand_SourceOptionTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using var server = new MockServer();
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -738,7 +739,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -747,12 +748,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_MultipleSearchTermsTest()
+        public async Task SearchCommand_MultipleSearchTermsTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using var server = new MockServer();
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -848,7 +849,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -857,12 +858,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_NoResultsFoundTest()
+        public async Task SearchCommand_NoResultsFoundTest()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using (MockServer server = new MockServer())
+            await using var server = new MockServer();
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
@@ -917,7 +918,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-                server.Stop();
+                await server.StopAsync();
 
                 // Assert
                 Assert.True(result.Success, $"{result.AllOutput}");
@@ -927,12 +928,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void SearchCommand_WhenSearchWithHttpSource_DisplaysAnErrorMessage()
+        public async Task SearchCommand_WhenSearchWithHttpSource_DisplaysAnErrorMessage()
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using MockServer server = new MockServer();
+            await using var server = new MockServer();
             PackageSource source = new PackageSource(server.Uri + "v3/index.json", "mockSource");
             using SimpleTestPathContext config = new SimpleTestPathContext();
             config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json");
@@ -985,7 +986,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-            server.Stop();
+            await server.StopAsync();
 
             // Assert
             Assert.False(result.Success);
@@ -995,14 +996,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [Theory]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public void SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_DisplaysErrorCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
+        public async Task SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_DisplaysErrorCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
 
-            using MockServer server1 = new MockServer();
+            await using var server1 = new MockServer();
             PackageSource source1 = new PackageSource(server1.Uri + "v3/index.json", "http-feed1");
-            using MockServer server2 = new MockServer();
+            await using var server2 = new MockServer();
             PackageSource source2 = new PackageSource(server2.Uri + "v3/index.json", "http-feed2");
             List<PackageSource> sources = new List<PackageSource>() { source1, source2 };
             using SimpleTestPathContext config = new SimpleTestPathContext();
@@ -1096,8 +1097,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string.Join(" ", args),
                     testOutputHelper: _testOutputHelper);
 
-            server1.Stop();
-            server2.Stop();
+            await server1.StopAsync();
+            await server2.StopAsync();
 
             // Assert
             string expectedError = string.Format(CultureInfo.CurrentCulture, NuGetResources.Error_HttpSources_Multiple, "search", Environment.NewLine + string.Join(Environment.NewLine, sources.Select(e => e.Name)));

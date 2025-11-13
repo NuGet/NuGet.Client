@@ -1316,7 +1316,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var advisoryUrl2 = "https://contoso.com/advisories/12346";
 
             // set up vulnerability server
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
 
             mockServer.Vulnerabilities.Add(
                 "packageA",
@@ -1392,7 +1392,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             var result = RunRestore(pathContext, _successExitCode);
 
-            mockServer.Stop();
+            await mockServer.StopAsync();
 
             // Assert
             result.Success.Should().BeTrue();

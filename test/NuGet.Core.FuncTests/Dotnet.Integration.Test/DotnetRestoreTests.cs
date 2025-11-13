@@ -2841,7 +2841,7 @@ EndGlobal";
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
 
             mockServer.Vulnerabilities.Add(
                 "Insecure.Package",
@@ -2876,18 +2876,18 @@ EndGlobal";
             // Second restore is no-op, so should be skipped, and audit not run
             _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, "restore -p:ExpectedRestoreProjectCount=1 -p:ExpectedRestoreSkippedCount=1 -p:ExpectedRestoreProjectsAuditedCount=0");
 
-            mockServer.Stop();
+            await mockServer.StopAsync();
         }
 
         [Theory]
         [InlineData("../")]
         [InlineData("../ contoso")]
         [InlineData("Some.Package/../contoso.json")]
-        public void DotnetRestore_WithInvalidPackageId_Fails(string id)
+        public async Task DotnetRestore_WithInvalidPackageId_Fails(string id)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
             var targetFramework = Constants.DefaultTargetFramework.GetShortFolderName();
@@ -2901,7 +2901,7 @@ EndGlobal";
             result.AllOutput.Should().Contain("NU1017");
             result.AllOutput.Should().Contain(string.Format("Invalid package id : `{0}`", id));
 
-            mockServer.Stop();
+            await mockServer.StopAsync();
         }
 
         [Fact]
@@ -2909,7 +2909,7 @@ EndGlobal";
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
             string packageid = new string('a', 200);
@@ -2933,7 +2933,7 @@ EndGlobal";
             // Act & Assert
             var result = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, "restore -p:ExpectedRestoreProjectCount=1 -p:ExpectedRestoreSkippedCount=0  -p:ExpectedRestoreProjectsAuditedCount=0");
 
-            mockServer.Stop();
+            await mockServer.StopAsync();
         }
 
         [Fact]

@@ -152,7 +152,7 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var pathContext = new SimpleTestPathContext();
-        using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+        await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
 
         var cache = new SourceCacheContext();
         var logger = new Mock<ILoggerWithColor>();
@@ -184,7 +184,7 @@ public class PackageDownloadRunnerTests
             includePrerelease: false,
             token);
 
-        mockServer.Stop();
+        await mockServer.StopAsync();
 
         // Assert
         if (expectFound)

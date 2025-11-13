@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests list command, with no other switches
         [Fact]
-        public void ListCommand_Simple()
+        public async Task ListCommand_Simple()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -193,7 +193,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using var server = new MockServer();
                 {
                     string searchRequest = string.Empty;
 
@@ -218,7 +218,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         config.WorkingDirectory,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.Equal(0, result.ExitCode);
@@ -237,7 +237,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that list command only show listed packages
         [Fact]
-        public void ListCommand_OnlyShowListed()
+        public async Task ListCommand_OnlyShowListed()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -250,7 +250,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -275,7 +275,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         config.WorkingDirectory,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.True(r1.ExitCode == 0, r1.Output + " " + r1.Errors);
@@ -298,7 +298,7 @@ namespace NuGet.CommandLine.Test
         // Tests that list command show delisted packages
         // when IncludeDelisted is specified.
         [Fact]
-        public void ListCommand_IncludeDelisted()
+        public async Task ListCommand_IncludeDelisted()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -311,7 +311,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -336,7 +336,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         config.WorkingDirectory,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.True(r1.ExitCode == 0, r1.Output + " " + r1.Errors);
@@ -356,7 +356,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that list command displays detailed package info when -Verbosity is detailed.
         [Fact]
-        public void ListCommand_VerboseOutput()
+        public async Task ListCommand_VerboseOutput()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -369,7 +369,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -394,7 +394,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         config.WorkingDirectory,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.Equal(0, r1.ExitCode);
@@ -413,7 +413,7 @@ namespace NuGet.CommandLine.Test
         // Tests that when -AllVersions is specified, list command sends request
         // without $filter
         [Fact]
-        public void ListCommand_AllVersions()
+        public async Task ListCommand_AllVersions()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -426,7 +426,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -451,7 +451,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         config.WorkingDirectory,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.Equal(0, r1.ExitCode);
@@ -470,7 +470,7 @@ namespace NuGet.CommandLine.Test
 
         // Test case when switch -Prerelease is specified
         [Fact]
-        public void ListCommand_Prerelease()
+        public async Task ListCommand_Prerelease()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -486,7 +486,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -511,7 +511,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         solutionFolder,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.Equal(0, r1.ExitCode);
@@ -530,7 +530,7 @@ namespace NuGet.CommandLine.Test
 
         // Test case when both switches -Prerelease and -AllVersions are specified
         [Fact]
-        public void ListCommand_AllVersionsPrerelease()
+        public async Task ListCommand_AllVersionsPrerelease()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -546,7 +546,7 @@ namespace NuGet.CommandLine.Test
                 var package1 = new FileInfo(packageFileName1);
                 var package2 = new FileInfo(packageFileName2);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     string searchRequest = string.Empty;
 
@@ -571,7 +571,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         solutionFolder,
                         args);
-                    server.Stop();
+                    await server.StopAsync();
 
                     // Assert
                     Assert.Equal(0, r1.ExitCode);
@@ -1141,13 +1141,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
+        public async Task ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var server = new MockServer();
+            await using var server = new MockServer();
             var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.WorkingDirectory);
 
             server.Get.Add("/nuget/$metadata", r =>
@@ -1176,7 +1176,7 @@ namespace NuGet.CommandLine.Test
                 nugetexe,
                 pathContext.WorkingDirectory,
                 args);
-            server.Stop();
+            await server.StopAsync();
 
             // Assert
             Assert.False(result.Success);
@@ -1184,13 +1184,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        public async Task ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var server = new MockServer();
+            await using var server = new MockServer();
             var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.WorkingDirectory);
 
             server.Get.Add("/nuget/$metadata", r =>
@@ -1219,7 +1219,7 @@ namespace NuGet.CommandLine.Test
                 nugetexe,
                 pathContext.WorkingDirectory,
                 args);
-            server.Stop();
+            await server.StopAsync();
 
             // Assert
             Assert.Equal(0, result.ExitCode);
@@ -1230,14 +1230,14 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void ListCommand_WhenListWithHttpSources_DisplaysAnError()
+        public async Task ListCommand_WhenListWithHttpSources_DisplaysAnError()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
             using var packageDirectory = TestDirectory.Create();
-            using var server1 = new MockServer();
-            using var server2 = new MockServer();
+            await using var server1 = new MockServer();
+            await using var server2 = new MockServer();
             var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
 
             server1.Get.Add("/nuget/$metadata", r =>
@@ -1277,8 +1277,8 @@ namespace NuGet.CommandLine.Test
                 nugetexe,
                 packageDirectory,
                 args);
-            server1.Stop();
-            server2.Stop();
+            await server1.StopAsync();
+            await server2.StopAsync();
 
             // Assert
             Assert.Equal(1, result.ExitCode);

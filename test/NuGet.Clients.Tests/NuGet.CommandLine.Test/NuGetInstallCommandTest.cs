@@ -1054,7 +1054,7 @@ namespace NuGet.CommandLine.Test
         // Tests that when no version is specified, nuget will query the server to get
         // the latest version number first.
         [Fact]
-        public void InstallCommand_GetLastestReleaseVersion()
+        public async Task InstallCommand_GetLastestReleaseVersion()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1074,7 +1074,7 @@ namespace NuGet.CommandLine.Test
                 var package2 = new FileInfo(packageFileName);
                 var nugetexe = Util.GetNuGetExePath();
 
-                using (var server = Util.CreateMockServer(new[] { package1, package2 }))
+                await using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
                     server.Start();
 
@@ -1097,7 +1097,7 @@ namespace NuGet.CommandLine.Test
         // Tests that when no version is specified, and -Prerelease is specified,
         // nuget will query the server to get the latest prerelease version number first.
         [Fact]
-        public void InstallCommand_GetLastestPrereleaseVersion()
+        public async Task InstallCommand_GetLastestPrereleaseVersion()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1111,7 +1111,7 @@ namespace NuGet.CommandLine.Test
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0-beta1", packageDirectory);
                 var package2 = new FileInfo(packageFileName);
 
-                using (var server = Util.CreateMockServer(new[] { package1, package2 }))
+                await using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
                     server.Start();
 
@@ -1133,7 +1133,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that when prerelease version is specified, and -Prerelease is not specified,
         [Fact]
-        public void InstallCommand_WithPrereleaseVersionSpecified()
+        public async Task InstallCommand_WithPrereleaseVersionSpecified()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1147,7 +1147,7 @@ namespace NuGet.CommandLine.Test
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0-beta1", packageDirectory);
                 var package2 = new FileInfo(packageFileName);
 
-                using (var server = Util.CreateMockServer(new[] { package1, package2 }))
+                await using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
                     server.Start();
 
@@ -1170,7 +1170,7 @@ namespace NuGet.CommandLine.Test
         // Tests that when -Version is specified, nuget will use request
         // Packages(Id='id',Version='version') to get the specified version
         [Fact]
-        public void InstallCommand_WithVersionSpecified()
+        public async Task InstallCommand_WithVersionSpecified()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1178,7 +1178,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.PackageSource);
                 var package = new FileInfo(packageFileName);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     var getPackageByVersionIsCalled = false;
                     var packageDownloadIsCalled = false;
@@ -1227,7 +1227,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_RunTwiceWithVersionSpecifiedVerifyExitCode()
+        public async Task InstallCommand_RunTwiceWithVersionSpecifiedVerifyExitCode()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -1238,7 +1238,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new FileInfo(packageFileName);
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     server.Get.Add("/nuget/$metadata", r =>
                        Util.GetMockServerResource());
@@ -1332,7 +1332,7 @@ namespace NuGet.CommandLine.Test
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, new PackageIdentity("testPackage1", NuGetVersion.Parse("1.1.0")));
 
-                using (var server = new MockServer())
+                await using (var server = new MockServer())
                 {
                     var findPackagesByIdRequest = string.Empty;
                     var packageDownloadIsCalled = false;
@@ -1764,7 +1764,7 @@ namespace NuGet.CommandLine.Test
         public async Task InstallCommand_DoNotSpecifyVersion_IgnoresUnlistedPackagesAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
-            using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
+            await using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
             {
                 //Replace the default package source of folder to ServiceIndexUri
                 var settings = pathContext.Settings;
@@ -1814,7 +1814,7 @@ namespace NuGet.CommandLine.Test
         public async Task InstallCommand_SpecifyUnlistedVersion_InstallUnlistedPackagesAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
-            using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
+            await using (var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource))
             {
                 //Replace the default package source of folder to ServiceIndexUri
                 var settings = pathContext.Settings;

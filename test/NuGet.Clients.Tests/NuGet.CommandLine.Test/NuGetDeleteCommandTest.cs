@@ -167,12 +167,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void DeleteCommand_DeleteFromHttpSource()
+        public async Task DeleteCommand_DeleteFromHttpSource()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Start();
                 bool deleteRequestIsCalled = false;
@@ -204,12 +204,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void DeleteCommand_WithApiKeyAsThirdArgument()
+        public async Task DeleteCommand_WithApiKeyAsThirdArgument()
         {
             // Arrange
             var testApiKey = Guid.NewGuid().ToString();
 
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Delete.Add("/nuget/testPackage1/1.1", r =>
                 {
@@ -254,12 +254,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void DeleteCommand_WithApiKeyAsNamedArgument()
+        public async Task DeleteCommand_WithApiKeyAsNamedArgument()
         {
             // Arrange
             var testApiKey = Guid.NewGuid().ToString();
 
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Delete.Add("/nuget/testPackage1/1.1", r =>
                 {
@@ -309,13 +309,13 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("{0}index.json")] // package source url
         [InlineData("{0}push")] // delete package endpoint
-        public void DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
+        public async Task DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
         {
             // Arrange
             var testApiKey = Guid.NewGuid().ToString();
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -386,13 +386,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory, MemberData(nameof(ServerWarningData))]
-        public void DeleteCommand_ShowsServerWarnings(string firstServerWarning, string secondServerWarning)
+        public async Task DeleteCommand_ShowsServerWarnings(string firstServerWarning, string secondServerWarning)
         {
             var serverWarnings = new[] { firstServerWarning, secondServerWarning };
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Start();
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
@@ -433,12 +433,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
+        public async Task DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Start();
 
@@ -477,12 +477,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        public async Task DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using (var server = new MockServer())
+            await using (var server = new MockServer())
             {
                 server.Start();
                 bool deleteRequestIsCalled = false;
