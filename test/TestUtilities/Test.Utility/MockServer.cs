@@ -106,12 +106,9 @@ namespace Test.Utility
             try
             {
                 _listener?.Abort();
-
-                Task task = _listenerTask;
-
+                _listener?.Close();
+                _listener = null;
                 _listenerTask = null;
-
-                task?.Wait();
             }
             catch (Exception ex)
             {
