@@ -3,10 +3,6 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
-- name: SigningType
-  displayName: Type of signing to use
-  type: string
-  default: Test
 
 resources:
   repositories:
@@ -50,4 +46,4 @@ extends:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-        SigningType: ${{ parameters.SigningType }}
+        SigningType: Test

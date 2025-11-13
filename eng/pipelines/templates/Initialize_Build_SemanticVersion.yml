@@ -1,4 +1,7 @@
 steps:
+- checkout: self
+  fetchDepth: 1
+  fetchTags: false
 
 - task: PowerShell@1
   displayName: "Set Semantic Version"
