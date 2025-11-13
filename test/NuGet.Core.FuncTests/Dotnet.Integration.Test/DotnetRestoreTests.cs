@@ -2924,7 +2924,6 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData("10.0.100", null, "netstandard2.1")]
         [InlineData("9.0.100", "true", "netstandard2.1")]
         public async Task DotnetRestore_WithNETStandardFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, string tfm)
         {
@@ -2932,7 +2931,6 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData("10.0.100", null)]
         [InlineData("9.0.100", "true")]
         public async Task DotnetRestore_WithCoreFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_EnablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning)
         {
@@ -2995,6 +2993,8 @@ EndGlobal";
         [Theory]
         [InlineData("9.0.100", null, "netstandard2.1")]
         [InlineData("10.0.100", "false", "netstandard2.1")]
+        [InlineData("10.0.100", null, "net9.0")]
+        [InlineData("10.0.100", null, "netstandard2.1")]
         public async Task DotnetRestore_WithNETStandard_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(string sdkAnalysisLevel, string restoreEnablePackagePruning, string tfm)
         {
             await DotnetRestore_WithFramework_SDKAnalysisLevelAndRestoreEnablePackagePruning_DisablesPruning(sdkAnalysisLevel, restoreEnablePackagePruning, tfm);
