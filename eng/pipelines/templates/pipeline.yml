@@ -6,6 +6,10 @@ parameters:
   displayName: Run OneLocBuild
   type: boolean
   default: false
+- name: RunBuildForPublishing
+  displayName: Build bits for publishing
+  type: boolean
+  default: true
 - name: SigningType
   displayName: Type of signing to use
   type: string
