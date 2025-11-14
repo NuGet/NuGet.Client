@@ -1780,6 +1780,7 @@ namespace NuGet.Commands.Test
                     zip.AddEntry("contentFiles/any/any/wildcard1.txt", new byte[] { 0 });
                     zip.AddEntry("contentFiles/any/any/wildcard2.txt", new byte[] { 0 });
                     zip.AddEntry("contentFiles/any/any/excluded.txt", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/any/any/other.txt", new byte[] { 0 });
 
                     zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
@@ -1793,7 +1794,7 @@ namespace NuGet.Commands.Test
                                 <!-- Wildcard pattern - should use globbing -->
                                 <files include=""any/any/wildcard*.txt"" buildAction=""None"" />
                                 <!-- Wildcard with exclude - should use globbing -->
-                                <files include=""any/any/*.txt"" exclude=""any/any/excluded.txt"" buildAction=""Compile"" />
+                                <files include=""any/any/other*.txt"" exclude=""any/any/excluded.txt"" buildAction=""Compile"" />
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
@@ -1823,7 +1824,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, contentFiles.Count);
+                Assert.Equal(5, contentFiles.Count);
 
                 // Verify exact match file (fast path)
                 var exactFile = contentFiles.Single(item => item.Path == "contentFiles/any/any/exact.txt");
@@ -1837,10 +1838,14 @@ namespace NuGet.Commands.Test
                 var wildcard2File = contentFiles.Single(item => item.Path == "contentFiles/any/any/wildcard2.txt");
                 Assert.Equal("None", wildcard2File.Properties["buildAction"]);
 
-                // Verify excluded file is not matched but appears with the last matching rule
+                // Verify file matched by wildcard with exclude (slow path)
+                var otherFile = contentFiles.Single(item => item.Path == "contentFiles/any/any/other.txt");
+                Assert.Equal("Compile", otherFile.Properties["buildAction"]);
+
+                // Verify excluded file doesn't match the exclude pattern but matches wildcard pattern
                 var excludedFile = contentFiles.Single(item => item.Path == "contentFiles/any/any/excluded.txt");
-                // This file matches the wildcard pattern "wildcard*.txt" is None, not excluded by the last rule
-                Assert.Equal("None", excludedFile.Properties["buildAction"]);
+                // This file doesn't match any pattern, so it gets default behavior
+                Assert.Equal("Compile", excludedFile.Properties["buildAction"]);
             }
         }
 
