@@ -520,7 +520,6 @@ public class PackageDownloadRunnerTests
         string srcBDirectory = Path.Combine(context.PackageSource, "SourceB");
 
         using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
-        using var serverB = new FileSystemBackedV3MockServer(srcBDirectory);
 
         foreach (var (id, ver) in sourceAPackages)
         {
@@ -533,11 +532,10 @@ public class PackageDownloadRunnerTests
         }
 
         serverA.Start();
-        serverB.Start();
 
         // sources
         context.Settings.AddSource("A", serverA.ServiceIndexUri);
-        context.Settings.AddSource("B", serverB.ServiceIndexUri);
+        context.Settings.AddSource("B", srcBDirectory);
 
         // mapping
         foreach (var (src, pattern) in sourceMappings)
@@ -550,7 +548,7 @@ public class PackageDownloadRunnerTests
         var packageSources = new List<PackageSource>
         {
             new(serverA.ServiceIndexUri, "A"),
-            new(serverB.ServiceIndexUri, "B")
+            new(srcBDirectory, "B")
         };
 
         // args
@@ -582,9 +580,6 @@ public class PackageDownloadRunnerTests
             packageSources,
             settings,
             CancellationToken.None);
-
-        serverA.Stop();
-        serverB.Stop();
 
         // Assert
         if (expectSuccess)
