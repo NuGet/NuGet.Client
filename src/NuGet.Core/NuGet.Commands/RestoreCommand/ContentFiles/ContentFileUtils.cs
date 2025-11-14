@@ -119,7 +119,7 @@ namespace NuGet.Commands
                 // When there are no wildcards and no exclude, use simple string comparison
                 bool useSimpleMatch = !ContainsGlobWildcards(filesEntry.Include) && filesEntry.Exclude == null;
 
-                Matcher? matcher = null;
+                Matcher matcher = null;
                 if (!useSimpleMatch)
                 {
                     // Create a filesystem matcher for globbing patterns
@@ -160,7 +160,7 @@ namespace NuGet.Commands
 
                             // Currently Matcher only returns the file name not the full path, each file must be
                             // check individually.
-                            var matchResults = matcher!.Execute(globbingDirectory);
+                            var matchResults = matcher.Execute(globbingDirectory);
                             isMatch = matchResults.HasMatches;
                         }
 
