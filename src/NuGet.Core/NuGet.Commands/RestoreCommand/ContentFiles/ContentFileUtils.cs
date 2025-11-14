@@ -22,6 +22,14 @@ namespace NuGet.Commands
         private const string ContentFilesFolderName = "contentFiles/";
 
         /// <summary>
+        /// Checks if a pattern contains glob wildcards (* or ?)
+        /// </summary>
+        private static bool ContainsGlobWildcards(string pattern)
+        {
+            return pattern.IndexOfAny(new[] { '*', '?' }) != -1;
+        }
+
+        /// <summary>
         /// Get all content groups that have the nearest TxM
         /// </summary>
         internal static List<ContentItemGroup> GetContentGroupsForFramework(
@@ -107,13 +115,21 @@ namespace NuGet.Commands
                 // this is validated in the nuspec reader
                 Debug.Assert(filesEntry.Include != null, "invalid contentFiles entry");
 
-                // Create a filesystem matcher for globbing patterns
-                var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-                matcher.AddInclude(filesEntry.Include);
+                // Optimize for the common case: exact file path without wildcards
+                // When there are no wildcards and no exclude, use simple string comparison
+                bool useSimpleMatch = !ContainsGlobWildcards(filesEntry.Include) && filesEntry.Exclude == null;
 
-                if (filesEntry.Exclude != null)
+                Matcher? matcher = null;
+                if (!useSimpleMatch)
                 {
-                    matcher.AddExclude(filesEntry.Exclude);
+                    // Create a filesystem matcher for globbing patterns
+                    matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+                    matcher.AddInclude(filesEntry.Include);
+
+                    if (filesEntry.Exclude != null)
+                    {
+                        matcher.AddExclude(filesEntry.Exclude);
+                    }
                 }
 
                 // Check each file against the patterns
@@ -128,17 +144,27 @@ namespace NuGet.Commands
                     {
                         var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
 
-                        // Check if the nuspec group include/exclude patterns apply to the file
-                        var globbingDirectory = new FileProviderGlobbingDirectory(
-                            fileProvider: new SingleFileProvider(relativePath),
-                            fileInfo: rootDirectory,
-                            parent: null);
+                        bool isMatch;
+                        if (useSimpleMatch)
+                        {
+                            // Fast path: simple case-insensitive string comparison
+                            isMatch = string.Equals(relativePath, filesEntry.Include, StringComparison.OrdinalIgnoreCase);
+                        }
+                        else
+                        {
+                            // Check if the nuspec group include/exclude patterns apply to the file
+                            var globbingDirectory = new FileProviderGlobbingDirectory(
+                                fileProvider: new SingleFileProvider(relativePath),
+                                fileInfo: rootDirectory,
+                                parent: null);
 
-                        // Currently Matcher only returns the file name not the full path, each file must be
-                        // check individually.
-                        var matchResults = matcher.Execute(globbingDirectory);
+                            // Currently Matcher only returns the file name not the full path, each file must be
+                            // check individually.
+                            var matchResults = matcher!.Execute(globbingDirectory);
+                            isMatch = matchResults.HasMatches;
+                        }
 
-                        if (matchResults.HasMatches)
+                        if (isMatch)
                         {
                             entries.Add(filesEntry);
                         }
