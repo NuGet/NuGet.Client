@@ -1,4 +1,5 @@
-# Disable Dependabot in Azure DevOps since our Trusted repository is just a mirror of GitHub
 version: 2
-enable-security-updates: false
+
+# Disabling dependabot on Azure DevOps as this is a mirrored repo. Updates should go through github.
 enable-campaigned-updates: false
+enable-security-updates: false
