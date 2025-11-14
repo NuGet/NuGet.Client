@@ -107,9 +107,8 @@ namespace Test.Utility
             {
                 _listener?.Abort();
 
-                var task = _listenerTask;
+                Task task = _listenerTask;
                 _listenerTask = null;
-        
                 if (task != null)
                 {
                     if (!task.Wait(TimeSpan.FromMinutes(2)))
