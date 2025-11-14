@@ -106,9 +106,17 @@ namespace Test.Utility
             try
             {
                 _listener?.Abort();
-                _listener?.Close();
-                _listener = null;
+
+                var task = _listenerTask;
                 _listenerTask = null;
+        
+                if (task != null)
+                {
+                    if (!task.Wait(TimeSpan.FromMinutes(2)))
+                    {
+                        Debug.WriteLine("MockServer Stop timed out waiting for listenerTask");
+                    }
+                }
             }
             catch (Exception ex)
             {
