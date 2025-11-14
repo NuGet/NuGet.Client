@@ -1754,6 +1754,96 @@ namespace NuGet.Commands.Test
             Assert.Equal("False", helperCsItem.Properties["copyToOutput"]);
         }
 
+        [Fact]
+        public async Task ContentFiles_ExactMatchAndWildcardPatterns()
+        {
+            // Arrange
+            // This test verifies the optimization for exact matches (no wildcards) and wildcards work correctly
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var repository = Path.Combine(workingDir, "repository");
+                Directory.CreateDirectory(repository);
+                var projectDir = Path.Combine(workingDir, "project");
+                Directory.CreateDirectory(projectDir);
+                var packagesDir = Path.Combine(workingDir, "packages");
+                Directory.CreateDirectory(packagesDir);
+
+                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+                {
+                    // Add multiple content files
+                    zip.AddEntry("contentFiles/any/any/exact.txt", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/any/any/wildcard1.txt", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/any/any/wildcard2.txt", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/any/any/excluded.txt", new byte[] { 0 });
+
+                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <contentFiles>
+                                <!-- Exact match - should use fast path -->
+                                <files include=""any/any/exact.txt"" buildAction=""Content"" copyToOutput=""true"" />
+                                <!-- Wildcard pattern - should use globbing -->
+                                <files include=""any/any/wildcard*.txt"" buildAction=""None"" />
+                                <!-- Wildcard with exclude - should use globbing -->
+                                <files include=""any/any/*.txt"" exclude=""any/any/excluded.txt"" buildAction=""Compile"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>", Encoding.UTF8);
+                }
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(repository));
+
+                var configJson = GetConfigWithFrameworkAndDependency(framework);
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var contentFiles = target.Libraries.Single().ContentFiles;
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(4, contentFiles.Count);
+
+                // Verify exact match file (fast path)
+                var exactFile = contentFiles.Single(item => item.Path == "contentFiles/any/any/exact.txt");
+                Assert.Equal("Content", exactFile.Properties["buildAction"]);
+                Assert.Equal("True", exactFile.Properties["copyToOutput"]);
+
+                // Verify wildcard matched files (slow path)
+                var wildcard1File = contentFiles.Single(item => item.Path == "contentFiles/any/any/wildcard1.txt");
+                Assert.Equal("None", wildcard1File.Properties["buildAction"]);
+
+                var wildcard2File = contentFiles.Single(item => item.Path == "contentFiles/any/any/wildcard2.txt");
+                Assert.Equal("None", wildcard2File.Properties["buildAction"]);
+
+                // Verify excluded file is not matched but appears with the last matching rule
+                var excludedFile = contentFiles.Single(item => item.Path == "contentFiles/any/any/excluded.txt");
+                // This file matches the wildcard pattern "wildcard*.txt" is None, not excluded by the last rule
+                Assert.Equal("None", excludedFile.Properties["buildAction"]);
+            }
+        }
+
         private async Task<RestoreResult> StandardSetup(
             string framework,
             NuGet.Common.ILogger logger)
