@@ -837,7 +837,7 @@ namespace Dotnet.Integration.Test
             var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
@@ -865,7 +865,7 @@ namespace Dotnet.Integration.Test
             var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
@@ -891,7 +891,7 @@ namespace Dotnet.Integration.Test
             var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageA200);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
 
             var projectDirectory = Directory.GetParent(project.ProjectPath)!.FullName;
@@ -931,7 +931,7 @@ namespace Dotnet.Integration.Test
             var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             var packageSource = new PackageSource(mockServer.ServiceIndexUri, "source");
             pathContext.Settings.RemoveSource(packageSource.Name);
             pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "true");
@@ -971,7 +971,7 @@ namespace Dotnet.Integration.Test
 
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             var packageSource = new PackageSource(mockServer.ServiceIndexUri, "source");
             pathContext.Settings.RemoveSource(packageSource.Name);
             pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "true");
@@ -1022,7 +1022,7 @@ namespace Dotnet.Integration.Test
 
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA100, packageB100);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             var packageSource = new PackageSource(mockServer.ServiceIndexUri, "source");
             pathContext.Settings.RemoveSource(packageSource.Name);
             pathContext.Settings.AddSource(packageSource.Name, packageSource.Source, allowInsecureConnectionsValue: "true");

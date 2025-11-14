@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
-                await using (var mockServer = new FileSystemBackedV3MockServer(tc.SourceDirectory))
+                using (var mockServer = new FileSystemBackedV3MockServer(tc.SourceDirectory))
                 {
                     var expectedPackage = GetNuGetCommandLinePackage(tc, "6.0.0", isExpected: true);
                     // This package is unlisted, so we expect 6.0.0 to be chosen.
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine.Test
             using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
-                await using (var mockServer = new FileSystemBackedV3MockServer(tc.SourceDirectory))
+                using (var mockServer = new FileSystemBackedV3MockServer(tc.SourceDirectory))
                 {
                     await SimpleTestPackageUtility.CreatePackagesAsync(tc.SourceDirectory,
                         GetNuGetCommandLinePackage(tc, "6.0.0", isExpected: false),

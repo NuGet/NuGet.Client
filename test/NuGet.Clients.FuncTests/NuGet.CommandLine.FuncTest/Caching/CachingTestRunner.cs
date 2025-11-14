@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.Test.Caching
         public static async Task<IEnumerable<CachingValidations>> ExecuteAsync(ICachingTest test, ICachingCommand command, INuGetExe nuGetExe, CachingType caching, ServerType server)
         {
             using (var testFolder = TestDirectory.Create())
-            await using (var mockServer = new MockServer())
+            using (var mockServer = new MockServer())
             {
                 var tc = new CachingTestContext(testFolder, mockServer, nuGetExe);
 

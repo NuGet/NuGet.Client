@@ -203,7 +203,7 @@ namespace NuGet.XPlat.FuncTest
 
             SimpleTestSettingsContext.RemoveSource(pathContext.Settings.XML, "source");
 
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
             mockServer.Start();
             pathContext.Settings.AddSource(sourceName: "private-source", sourceUri: mockServer.ServiceIndexUri, allowInsecureConnectionsValue: bool.TrueString);
 
@@ -353,7 +353,7 @@ namespace NuGet.XPlat.FuncTest
         public async Task GetReportDataAsync_WhenReportTypeIsVulnerable_ShouldUseAuditSources()
         {
             // Arrange
-            await using var mockServer = SetupMockServer();
+            using var mockServer = SetupMockServer();
             var auditSource = new PackageSource(mockServer.Uri + "v3/index.json") { AllowInsecureConnections = true };
 
             var mockRenderer = new Mock<IReportRenderer>();
@@ -399,7 +399,7 @@ namespace NuGet.XPlat.FuncTest
         public async Task GetReportDataAsync_WithSolutionFilePassed_ShouldList()
         {
             // Arrange
-            await using var mockServer = SetupMockServer();
+            using var mockServer = SetupMockServer();
             var auditSource = new PackageSource(mockServer.Uri + "v3/index.json") { AllowInsecureConnections = true };
 
             var mockRenderer = new Mock<IReportRenderer>();
@@ -451,7 +451,7 @@ namespace NuGet.XPlat.FuncTest
     }
     """;
 
-            await using var mockServer = new MockServer();
+            using var mockServer = new MockServer();
             mockServer.Get.Add("/v3/index.json", _ => indexJson);
             mockServer.Start();
 

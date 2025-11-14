@@ -340,14 +340,14 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task PushCommand_PushToServerNoSymbols()
+        public void PushCommand_PushToServerNoSymbols()
         {
             // Test pushing to an http source, but leaving out the symbols package (-NoSymbols).
             // The symbols package would try to get pushed to a public symbols server if
             // the -NoSymbols switch wasn't set.
 
             using (TestDirectory packageDirectory = TestDirectory.Create())
-            await using (MockServer server = new MockServer())
+            using (MockServer server = new MockServer())
             {
                 // Arrange
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
@@ -492,10 +492,10 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact(Skip = "https://github.com/NuGet/Home/issues/13864")]
-        public async Task PushCommand_PushTimeoutErrorMessage()
+        public void PushCommand_PushTimeoutErrorMessage()
         {
             using (TestDirectory packageDirectory = TestDirectory.Create())
-            await using (MockServer server = new MockServer())
+            using (MockServer server = new MockServer())
             {
                 // Arrange
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();

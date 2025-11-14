@@ -629,7 +629,7 @@ namespace NuGet.PackageManagement
         {
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
-            await using FileSystemBackedV3MockServer server = new FileSystemBackedV3MockServer(testDirectory.Path);
+            using FileSystemBackedV3MockServer server = new FileSystemBackedV3MockServer(testDirectory.Path);
             server.Start();
             PackageSource packageSource = new PackageSource(server.ServiceIndexUri, "http-source")
             {
@@ -646,7 +646,7 @@ namespace NuGet.PackageManagement
                 "",
                 NullLogger.Instance,
                 CancellationToken.None));
-            await server.StopAsync();
+            server.Stop();
             exception.Message.Should().Contain(string.Format("Invalid package id : `{0}`", id));
         }
 

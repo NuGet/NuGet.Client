@@ -1528,7 +1528,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             var pathContext = new SimpleTestPathContext();
 
             // set up vulnerability server
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
 
             mockServer.Vulnerabilities.Add(
                 "packageA",
@@ -1606,7 +1606,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true";
             var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true, testOutputHelper: _testOutputHelper);
 
-            await mockServer.StopAsync();
+            mockServer.Stop();
 
             // Assert
             Assert.True(result.ExitCode == 0, result.AllOutput);
@@ -1620,7 +1620,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
 
             mockServer.Vulnerabilities.Add(
                 "packageA",
@@ -1687,7 +1687,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true";
             CommandRunnerResult r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true, testOutputHelper: _testOutputHelper);
 
-            await mockServer.StopAsync();
+            mockServer.Stop();
 
             // Assert
             r.Success.Should().BeTrue(because: r.AllOutput);
@@ -1720,7 +1720,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             var advisoryUrl2 = "https://contoso.com/advisories/12346";
 
             // set up vulnerability server
-            await using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
 
             mockServer.Vulnerabilities.Add(
                 "packageA",
@@ -1797,7 +1797,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true";
             var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true, testOutputHelper: _testOutputHelper);
 
-            await mockServer.StopAsync();
+            mockServer.Stop();
 
             // Assert
             Assert.True(result.ExitCode == 0, result.AllOutput);

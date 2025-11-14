@@ -519,8 +519,8 @@ public class PackageDownloadRunnerTests
         string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
         string srcBDirectory = Path.Combine(context.PackageSource, "SourceB");
 
-        await using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
-        await using var serverB = new FileSystemBackedV3MockServer(srcBDirectory);
+        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
+        using var serverB = new FileSystemBackedV3MockServer(srcBDirectory);
 
         foreach (var (id, ver) in sourceAPackages)
         {
@@ -583,8 +583,8 @@ public class PackageDownloadRunnerTests
             settings,
             CancellationToken.None);
 
-        await serverA.StopAsync();
-        await serverB.StopAsync();
+        serverA.Stop();
+        serverB.Stop();
 
         // Assert
         if (expectSuccess)
@@ -609,7 +609,7 @@ public class PackageDownloadRunnerTests
         // Arrange
         using var context = new SimpleTestPathContext();
         string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
-        await using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
+        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
 
         await SimpleTestPackageUtility.CreateFullPackageAsync(srcADirectory, "Contoso.Utils", "1.0.0");
         context.Settings.AddSource("A", serverA.ServiceIndexUri);
@@ -647,7 +647,7 @@ public class PackageDownloadRunnerTests
             settings,
             CancellationToken.None);
 
-        await serverA.StopAsync();
+        serverA.Stop();
 
         // Assert
         var expected = string.Format(

@@ -24,7 +24,7 @@ namespace Test.Utility
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
-    public class MockServer : IAsyncDisposable
+    public class MockServer : IDisposable
     {
         private Task _listenerTask;
         private bool _disposed = false;
@@ -101,20 +101,14 @@ namespace Test.Utility
         /// <summary>
         /// Stops the mock server.
         /// </summary>
-        public async Task StopAsync()
+        public void Stop()
         {
             try
             {
-                var listener = _listener;
-                var task = _listenerTask;
-
-                _listenerTask = null;
+                _listener?.Abort();
+                _listener?.Close();
                 _listener = null;
-
-                listener?.Abort();
-                listener?.Close();
-
-                await task;
+                _listenerTask = null;
             }
             catch (Exception ex)
             {
@@ -503,12 +497,12 @@ namespace Test.Utility
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             if (!_disposed)
             {
                 // Closing the http listener
-                await StopAsync();
+                Stop();
 
                 try
                 {

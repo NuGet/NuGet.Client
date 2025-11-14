@@ -72,7 +72,7 @@ namespace NuGet.Commands.Test
             await pkgA.CreateAsFileAsync(packageDirectory, "pkgA.1.0.0.nupkg");
             var outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-            await using var server = new MockServer();
+            using var server = new MockServer();
             server.Get.Add("/push", r => "OK");
             server.Put.Add("/push", r =>
             {
@@ -116,7 +116,7 @@ namespace NuGet.Commands.Test
             var outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
             File.WriteAllText(outputFileName, "This is a test package content");
 
-            await using var server = new MockServer();
+            using var server = new MockServer();
             server.Get.Add("/push", r => "OK");
             server.Put.Add("/push", r =>
             {

@@ -43,7 +43,7 @@ namespace NuGet.Tests.Apex.NuGetEndToEndTests
 </Project>";
             File.WriteAllText(Path.Combine(testPathContext.SolutionRoot, "Directory.Build.props"), dbpContents);
 
-            await using var mockServer = new FileSystemBackedV3MockServer(testPathContext.PackageSource, sourceReportsVulnerabilities: true);
+            using var mockServer = new FileSystemBackedV3MockServer(testPathContext.PackageSource, sourceReportsVulnerabilities: true);
             mockServer.Vulnerabilities.Add("contoso.a", new System.Collections.Generic.List<(Uri, PackageVulnerabilitySeverity, VersionRange)>
             {
                 (new Uri("https://cve.test/1"), PackageVulnerabilitySeverity.High, VersionRange.Parse("(, 2.0.0)")),
