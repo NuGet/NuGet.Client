@@ -433,7 +433,7 @@ public class PackageDownloadRunnerTests
     {
         // Parameters:
         // A-packages, B-packages, sourceMappings, sourcesArgs, downloadId, downloadVersion,
-        // allowInsecureConnections, expectSuccess, expectedInstalled
+        //expectSuccess, expectedInstalled
 
         // --source specified, mapping ignored, package only in A -> success
         yield return new object[]
@@ -443,7 +443,6 @@ public class PackageDownloadRunnerTests
             new List<(string,string)> { ("B", "Contoso.*") },       // mapping ignored
             new List<string> { "A" },                               // --source A
             "Contoso.Lib", "1.0.0",                                  // downloadId, downloadVersion
-            true,                                                   // allow insecure
             true,                                                   // expect success
             ("Contoso.Lib", "1.0.0")                                // expectedInstalled
         };
@@ -456,7 +455,6 @@ public class PackageDownloadRunnerTests
             new List<(string,string)> { ("B", "Contoso.*") },       // mapping -> B
             null,                                                   // no --source
             "Contoso.Mapped", "2.0.0",                              // downloadId, downloadVersion
-            true,                                                   // allow insecure
             true,                                                   // expect success
             ("Contoso.Mapped", "2.0.0")                             // expectedInstalled
         };
@@ -469,33 +467,6 @@ public class PackageDownloadRunnerTests
             new List<(string,string)> { ("A", "Contoso.*") },       // mapped to A
             null,
             "Contoso.Mapped", "2.0.0",
-            true,
-            false,
-            null!
-        };
-
-        // --source specified, no source mapping with an insecure source
-        yield return new object[]
-        {
-            new List<(string,string)> { ("Contoso.Lib", "1.0.0") }, // A
-            new List<(string,string)>(),
-            new List<(string,string)> { ("A", "Contoso.*") },
-            new List<string> { "A" },                               // --source
-            "Contoso.Lib", "1.0.0",
-            false,                                                  // allow insecure connections false / not set to true
-            false,
-            null!
-        };
-
-        // no --source, mapping -> A, allow insecure not enabled -> fail
-        yield return new object[]
-        {
-            new List<(string,string)>(),                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "1.0.0") },
-            new List<(string,string)> { ("A", "Contoso.*") },
-            null,
-            "Contoso.Mapped", "1.0.0",
-            false,                                                   // allow insecure connections false / not set to true
             false,
             null!
         };
@@ -510,7 +481,6 @@ public class PackageDownloadRunnerTests
         IReadOnlyList<string> sourcesArgs,
         string downloadId,
         string downloadVersion,
-        bool allowInsecureConnections,
         bool expectSuccess,
         (string id, string version)? expectedInstalled)
     {
@@ -518,8 +488,6 @@ public class PackageDownloadRunnerTests
         using var context = new SimpleTestPathContext();
         string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
         string srcBDirectory = Path.Combine(context.PackageSource, "SourceB");
-
-        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
 
         foreach (var (id, ver) in sourceAPackages)
         {
@@ -531,10 +499,8 @@ public class PackageDownloadRunnerTests
             await SimpleTestPackageUtility.CreateFullPackageAsync(srcBDirectory, id, ver);
         }
 
-        serverA.Start();
-
         // sources
-        context.Settings.AddSource("A", serverA.ServiceIndexUri);
+        context.Settings.AddSource("A", srcADirectory);
         context.Settings.AddSource("B", srcBDirectory);
 
         // mapping
@@ -547,7 +513,7 @@ public class PackageDownloadRunnerTests
 
         var packageSources = new List<PackageSource>
         {
-            new(serverA.ServiceIndexUri, "A"),
+            new(srcADirectory, "A"),
             new(srcBDirectory, "B")
         };
 
@@ -563,7 +529,6 @@ public class PackageDownloadRunnerTests
                 }
             ],
             OutputDirectory = context.WorkingDirectory,
-            AllowInsecureConnections = allowInsecureConnections,
             Sources = sourcesArgs == null ? [] : sourcesArgs.ToList()
         };
 
@@ -597,6 +562,168 @@ public class PackageDownloadRunnerTests
             exit.Should().Be(PackageDownloadRunner.ExitCodeError);
         }
     }
+
+    [Fact]
+    public async Task RunAsync_WhenPsmMapsToInsecureSource_AndAllowInsecureConnectionsFalse_LogsErrorForMappedSource()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var insecureSourceUrl = "http://contoso.local/v3/index.json";
+
+        context.Settings.AddSource("InsecureMapped", insecureSourceUrl);
+        context.Settings.AddPackageSourceMapping("InsecureMapped", "Contoso.*");
+
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = "Contoso.Insecure",
+                    NuGetVersion = NuGetVersion.Parse("1.0.0")
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = false,
+        };
+
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var packageSources = new List<PackageSource>
+        {
+            new(insecureSourceUrl, "InsecureMapped")
+        };
+
+        // Act
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            packageSources,
+            settings,
+            CancellationToken.None);
+
+        // Assert
+        exit.Should().Be(PackageDownloadRunner.ExitCodeError);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenPsmMapsToSecureLocalSource_DoesNotLogErrorEvenWhenOtherSourceIsHttp()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var localSourcePath = context.PackageSource;
+        var insecureSourceUrl = "http://contoso.other/v3/index.json";
+        var id = "Contoso.LocalOnly";
+        var version = "1.0.0";
+        await SimpleTestPackageUtility.CreateFullPackageAsync(localSourcePath, id, version);
+        context.Settings.AddSource("LocalSecure", localSourcePath);
+        context.Settings.AddSource("InsecureOther", insecureSourceUrl);
+
+        // map package to the secure local source only
+        context.Settings.AddPackageSourceMapping("LocalSecure", "Contoso.*");
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = id,
+                    NuGetVersion = NuGetVersion.Parse(version)
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = false,
+        };
+
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+
+        var packageSources = new List<PackageSource>
+        {
+            new(localSourcePath, "LocalSecure"),
+            new(insecureSourceUrl, "InsecureOther"),
+        };
+
+        // Act
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            packageSources,
+            settings,
+            CancellationToken.None);
+
+        // Assert
+        exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+        var installDir = Path.Combine(context.WorkingDirectory, id.ToLowerInvariant(), version);
+        Directory.Exists(installDir).Should().BeTrue();
+        File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenPsmMapsToInsecureSource_AndAllowInsecureConnectionsTrue_DownloadsWithoutError()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        string srcDirectory = Path.Combine(context.PackageSource, "HttpSource");
+        Directory.CreateDirectory(srcDirectory);
+
+        var id = "Contoso.HttpMapped";
+        var version = "1.0.0";
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcDirectory, id, version);
+        using var server = new FileSystemBackedV3MockServer(srcDirectory);
+        server.Start();
+
+        var mappedHttpSource = server.ServiceIndexUri;
+        context.Settings.AddSource("MappedHttp", mappedHttpSource);
+
+        context.Settings.AddPackageSourceMapping("MappedHttp", "Contoso.*");
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = id,
+                    NuGetVersion = NuGetVersion.Parse(version)
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = true,
+        };
+
+        string capturedErrors = string.Empty;
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        logger
+            .Setup(l => l.LogError(It.IsAny<string>()))
+            .Callback<string>(msg => capturedErrors += msg + Environment.NewLine);
+
+        var packageSources = new List<PackageSource>
+        {
+            new(mappedHttpSource, "MappedHttp"),
+        };
+
+        // Act
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            packageSources,
+            settings,
+            CancellationToken.None);
+
+        server.Stop();
+
+        // Assert
+        exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess, because: capturedErrors);
+
+        var installDir = Path.Combine(context.WorkingDirectory, id.ToLowerInvariant(), version);
+        Directory.Exists(installDir).Should().BeTrue();
+        File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
+    }
+
 
     [Fact]
     public async Task RunAsync_WhenMappedSourceMissing_LogsVerbose()
