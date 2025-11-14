@@ -487,12 +487,12 @@ public class PackageDownloadRunnerTests
             null!
         };
 
-        // no --source, mapping -> B, allow insecure not enabled -> fail
+        // no --source, mapping -> A, allow insecure not enabled -> fail
         yield return new object[]
         {
             new List<(string,string)>(),                            // A
             new List<(string,string)> { ("Contoso.Mapped", "1.0.0") },
-            new List<(string,string)> { ("B", "Contoso.*") },
+            new List<(string,string)> { ("A", "Contoso.*") },
             null,
             "Contoso.Mapped", "1.0.0",
             false,                                                   // allow insecure connections false / not set to true
