@@ -568,7 +568,7 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var insecureSourceUrl = "http://contoso.local/v3/index.json";
+        var insecureSourceUrl = "http://contoso.test/v3/index.json";
 
         context.Settings.AddSource("InsecureMapped", insecureSourceUrl);
         context.Settings.AddPackageSourceMapping("InsecureMapped", "Contoso.*");
@@ -613,7 +613,7 @@ public class PackageDownloadRunnerTests
         // Arrange
         using var context = new SimpleTestPathContext();
         var localSourcePath = context.PackageSource;
-        var insecureSourceUrl = "http://contoso.other/v3/index.json";
+        var insecureSourceUrl = "http://contoso.test/v3/index.json";
         var id = "Contoso.LocalOnly";
         var version = "1.0.0";
         await SimpleTestPackageUtility.CreateFullPackageAsync(localSourcePath, id, version);
@@ -723,7 +723,6 @@ public class PackageDownloadRunnerTests
         Directory.Exists(installDir).Should().BeTrue();
         File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
     }
-
 
     [Fact]
     public async Task RunAsync_WhenMappedSourceMissing_LogsVerbose()
