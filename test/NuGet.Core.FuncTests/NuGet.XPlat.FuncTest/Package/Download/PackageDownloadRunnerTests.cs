@@ -564,7 +564,7 @@ public class PackageDownloadRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenPsmMapsToInsecureSource_AndAllowInsecureConnectionsFalse_LogsErrorForMappedSource()
+    public async Task RunAsync_WhenSourceMappingMapsToInsecureSource_AndAllowInsecureConnectionsFalse_LogsErrorForMappedSource()
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -608,7 +608,7 @@ public class PackageDownloadRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenPsmMapsToSecureLocalSource_DoesNotLogErrorEvenWhenOtherSourceIsHttp()
+    public async Task RunAsync_WhenSourceMappingMapsToSecureLocalSource_DoesNotLogErrorEvenWhenOtherSourceIsHttp()
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -662,7 +662,7 @@ public class PackageDownloadRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenPsmMapsToInsecureSource_AndAllowInsecureConnectionsTrue_DownloadsWithoutError()
+    public async Task RunAsync_WhenSourceMappingMapsToInsecureSource_AndAllowInsecureConnectionsTrue_DownloadsWithoutError()
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -730,10 +730,9 @@ public class PackageDownloadRunnerTests
         // Arrange
         using var context = new SimpleTestPathContext();
         string srcADirectory = Path.Combine(context.PackageSource, "SourceA");
-        using var serverA = new FileSystemBackedV3MockServer(srcADirectory);
 
         await SimpleTestPackageUtility.CreateFullPackageAsync(srcADirectory, "Contoso.Utils", "1.0.0");
-        context.Settings.AddSource("A", serverA.ServiceIndexUri);
+        context.Settings.AddSource("A", srcADirectory);
 
         // Map the package to a NON-EXISTING source name "MissingSource"
         context.Settings.AddPackageSourceMapping("MissingSource", "Contoso.*");
@@ -759,16 +758,12 @@ public class PackageDownloadRunnerTests
               .Callback<string>(msg => capturedVerbose += msg + Environment.NewLine);
 
         // Act
-        serverA.Start();
-
         var exit = await PackageDownloadRunner.RunAsync(
             args,
             logger.Object,
-            [new(serverA.ServiceIndexUri, "A")],
+            [new(srcADirectory, "A")],
             settings,
             CancellationToken.None);
-
-        serverA.Stop();
 
         // Assert
         var expected = string.Format(
