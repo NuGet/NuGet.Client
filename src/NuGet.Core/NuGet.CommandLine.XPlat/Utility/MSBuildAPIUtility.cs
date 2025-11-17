@@ -85,7 +85,8 @@ namespace NuGet.CommandLine.XPlat
         {
             var sln = SolutionFile.Parse(solutionPath);
 
-            if (XPlatUtility.IsSolutionFile(solutionPath))
+            var extension = Path.GetExtension(solutionPath);
+            if (!".slnf".Equals(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
             }

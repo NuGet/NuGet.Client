@@ -132,7 +132,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 var extension = System.IO.Path.GetExtension(fileName);
 
-                return string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".slnx", StringComparison.OrdinalIgnoreCase);
+                return string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(extension, ".slnx", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(extension, ".slnf", StringComparison.OrdinalIgnoreCase);
             }
 
             return false;

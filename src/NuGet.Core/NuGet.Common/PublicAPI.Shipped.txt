@@ -576,7 +576,7 @@ static NuGet.Common.LoggingExtensions.GetName(this NuGet.Common.NuGetLogCode cod
 static NuGet.Common.LoggingExtensions.TryGetName(this NuGet.Common.NuGetLogCode code, out string? codeString) -> bool
 static NuGet.Common.MSBuildStringUtility.Convert(string? value) -> string?
 static NuGet.Common.MSBuildStringUtility.GetBooleanOrNull(string? value) -> bool?
-static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string! s) -> System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>
+static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string? s) -> System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>
 static NuGet.Common.MSBuildStringUtility.IsTrue(string? value) -> bool
 static NuGet.Common.MSBuildStringUtility.IsTrueOrEmpty(string? value) -> bool
 static NuGet.Common.MSBuildStringUtility.Split(string? s) -> string![]!
