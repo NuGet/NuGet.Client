@@ -33,8 +33,8 @@ function Test-UninstallPackageWhatIf {
 
 function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
     # Arrange
-    $p1 = New-WebApplication
-    $p2 = New-WebApplication
+    $p1 = New-ConsoleApplication
+    $p2 = New-ConsoleApplication
 
     $p1 | Install-Package jquery.Validation
     Assert-Package $p1 jquery.Validation
@@ -106,7 +106,7 @@ function Test-UninstallPackageWithNestedContentFiles {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     Install-Package NestedFolders -ProjectName $p.Name -Source $context.RepositoryPath
 
     # Act
@@ -302,7 +302,7 @@ function Test-UninstallPackageWithXmlTransformAndTokenReplacement {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     $p | Install-Package PackageWithXmlTransformAndTokenReplacement -Source $context.RepositoryRoot
 
     # Assert
@@ -504,7 +504,7 @@ function Test-WebSiteUninstallPackageWithNestedSourceFilesAndAnotherProject {
     )
     # Arrange
     $p1 = New-WebSite
-    $p2 = New-WebApplication
+    $p2 = New-ConsoleApplication
 
     # Act
     $p1 | Install-Package netfx-Guard -Source $context.RepositoryRoot
@@ -927,7 +927,7 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
 function Test-UnInstallPackageWithXdtTransformUnTransformsTheFile
 {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     $p | Install-Package XdtPackage -Source $context.RepositoryPath

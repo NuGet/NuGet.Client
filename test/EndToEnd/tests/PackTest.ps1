@@ -34,7 +34,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
 
     # Arrange 
 
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # install packages from the Basic web app manually
 

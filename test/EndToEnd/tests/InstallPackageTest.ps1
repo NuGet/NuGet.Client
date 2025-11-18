@@ -303,7 +303,7 @@ function Test-PackageWithIncompatibleAssembliesRollsInstallBack {
         $context
     )
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act & Assert
     Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.7.2', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
@@ -411,7 +411,7 @@ function Test-InstallPackageWithWebConfigDebugChanges {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package PackageWithWebDebugConfig -Project $p.Name -Source $context.RepositoryRoot
@@ -473,7 +473,7 @@ function Test-InstallCanPipeToFSharpProjects {
 
 function Test-PipingMultipleProjectsToInstall {
     # Arrange
-    $projects = @((New-WebSite), (New-ClassLibrary), (New-WebApplication))
+    $projects = @((New-WebSite), (New-ClassLibrary), (New-ConsoleApplication))
 
 Write-Host 'proejct creation successful'
     # Act
@@ -509,7 +509,7 @@ function Test-InstallPackageWithNestedAspxContentFiles {
         $context
     )
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     $files = @('Global.asax', 'Site.master', 'About.aspx')
 
@@ -533,7 +533,7 @@ function Test-InstallPackageWithNestedReferences {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package PackageWithNestedReferenceFolders -Source $context.RepositoryRoot
@@ -700,7 +700,7 @@ function Test-SimpleBindingRedirects {
         $context
     )
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-WebSite
 
     $projects = @($a, $b)
@@ -727,7 +727,7 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
         $context
     )
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
 
     # Add a another web.config under directory test
     $testDirectory = Join-Path (Get-ProjectDir $a) "test"
@@ -775,7 +775,7 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
         $context
     )
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-WebSite
     $d = New-ClassLibraryNET46
     $e = New-ClassLibraryNET46
@@ -807,7 +807,7 @@ function Test-SimpleBindingRedirectsIndirectReference {
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ClassLibraryNET46
     $c = New-ClassLibraryNET46
 
@@ -852,7 +852,7 @@ function Test-BindingRedirectComplex {
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
@@ -896,7 +896,7 @@ function Test-BindingRedirectInstallLargeProject {
 
     $numProjects = 25
     $projects = 0..$numProjects | %{ New-ClassLibraryNET46 $_ }
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     for($i = 0; $i -lt $numProjects; $i++) {
         Add-ProjectReference $projects[$i] $projects[$i+1]
@@ -914,7 +914,7 @@ function Test-BindingRedirectDuplicateReferences {
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
@@ -939,7 +939,7 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
@@ -964,7 +964,7 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
@@ -1017,7 +1017,7 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
     param($context)
 
     # Arrange
-    $a = New-WebApplication
+    $a = New-ConsoleApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
@@ -1170,7 +1170,7 @@ function Test-InstallingPackageDoesNotOverwriteFileIfExistsOnDiskButNotInProject
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     $projectPath = Get-ProjectDir $p
     $fooPath = Join-Path $projectPath foo
     "file content" > $fooPath
@@ -1188,7 +1188,7 @@ function Test-InstallPackageWithXmlTransformAndTokenReplacement {
     )
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     $p | Install-Package PackageWithXmlTransformAndTokenReplacement -Source $context.RepositoryRoot
@@ -1229,7 +1229,7 @@ function Test-InstallingPackageWithDependencyThatFailsShouldRollbackSuccessfully
         $context
     )
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Assert-Throws { $p | Install-Package GoodPackageWithBadDependency -Source $context.RepositoryPath } "NOT #WINNING"
@@ -1461,7 +1461,7 @@ function Test-InstallPackageTargetingNetClientAndNet {
         $context
     )
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     $p | Install-Package PackageTargetingNetClientAndNet -Source $context.RepositoryRoot
@@ -1479,7 +1479,7 @@ function Test-InstallWithFailingInitPs1RollsBack {
         $context
     )
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Assert-Throws { $p | Install-Package PackageWithFailingInitPs1 -Source $context.RepositoryRoot } "This is an exception"
@@ -1496,7 +1496,7 @@ function Test-InstallPackageWithBadFileInMachineCache {
     "foo" > "$($env:LocalAppData)\NuGet\Cache\Ninject.2.2.1.0.nupkg"
 
     # Act
-    $p = New-WebApplication
+    $p = ConsoleApplication
     $p | Install-Package Ninject -Version 2.2.1.0
 
     # Assert
@@ -1507,7 +1507,7 @@ function Test-InstallPackageWithBadFileInMachineCache {
 
 function Test-InstallPackageThrowsWhenSourceIsInvalid {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act & Assert
     Assert-Throws { Install-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
@@ -2231,7 +2231,7 @@ function FileTransformWorksOnDependentFile
     param($context)
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
     Install-Package TTFile -Source $context.RepositoryPath
 
     # Act
@@ -2356,7 +2356,7 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
 function Test-InstallPackageWithXdtTransformTransformsTheFile
 {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     $p | Install-Package XdtPackage -Source $context.RepositoryPath
@@ -2393,7 +2393,7 @@ function Test-InstallSolutionLevelPackageAddPackagesConfigToProject
     param($context)
 
     # Arrange
-    $p = new-ConsoleApplication
+    $p = New-ConsoleApplication
     $p | Install-Package SolutionLevelPkg -Source $context.RepositoryRoot
 
     # Assert
@@ -2464,7 +2464,7 @@ function Test-SpecifyDifferentVersionThenServerVersion
     # checks for all variations of "2.0" (2.0, 2.0.0 and 2.0.0.0)
 
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package jQuery -version 2.0
@@ -2476,7 +2476,7 @@ function Test-SpecifyDifferentVersionThenServerVersion
 function Test-InstallLatestVersionWorksCorrectly
 {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package A -ProjectName $p.Name -Source $context.RepositoryPath
@@ -2488,7 +2488,7 @@ function Test-InstallLatestVersionWorksCorrectly
 function Test-InstallLatestVersionWorksCorrectlyWithPrerelease
 {
     # Arrange
-    $p = New-WebApplication
+    $p = New-ConsoleApplication
 
     # Act
     Install-Package A -IncludePrerelease -ProjectName $p.Name -Source $context.RepositoryPath
