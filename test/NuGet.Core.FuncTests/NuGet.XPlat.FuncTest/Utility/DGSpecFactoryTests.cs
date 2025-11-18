@@ -13,7 +13,8 @@ using Xunit;
 
 namespace NuGet.XPlat.FuncTest.Utility;
 
-public class DGSpecFactoryTests : IClassFixture<XPlatMsbuildTestFixture>
+[Collection("NuGet XPlat Test Collection")]
+public class DGSpecFactoryTests
 {
     [Fact]
     public void SingleTargetingProject()
