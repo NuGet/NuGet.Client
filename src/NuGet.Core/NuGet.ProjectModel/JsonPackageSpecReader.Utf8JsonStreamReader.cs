@@ -45,6 +45,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] CentralPackageVersionsManagementEnabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionsManagementEnabled");
         private static readonly byte[] CentralPackageVersionOverrideDisabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionOverrideDisabled");
         private static readonly byte[] CentralPackageTransitivePinningEnabledPropertyName = Encoding.UTF8.GetBytes("CentralPackageTransitivePinningEnabled");
+        private static readonly byte[] CentralPackageFloatingVersionsEnabledPropertyName = Encoding.UTF8.GetBytes("centralPackageFloatingVersionsEnabled");
         private static readonly byte[] ConfigFilePathsPropertyName = Encoding.UTF8.GetBytes("configFilePaths");
         private static readonly byte[] CrossTargetingPropertyName = Encoding.UTF8.GetBytes("crossTargeting");
         private static readonly byte[] FallbackFoldersPropertyName = Encoding.UTF8.GetBytes("fallbackFolders");
@@ -748,6 +749,7 @@ namespace NuGet.ProjectModel
             var centralPackageVersionsManagementEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
             var CentralPackageTransitivePinningEnabled = false;
+            var centralPackageFloatingVersionsEnabled = false;
             List<string> configFilePaths = null;
             var crossTargeting = false;
             List<string> fallbackFolders = null;
@@ -790,6 +792,10 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(CentralPackageTransitivePinningEnabledPropertyName))
                     {
                         CentralPackageTransitivePinningEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
+                    }
+                    else if (jsonReader.ValueTextEquals(CentralPackageFloatingVersionsEnabledPropertyName))
+                    {
+                        centralPackageFloatingVersionsEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
                     else if (jsonReader.ValueTextEquals(ConfigFilePathsPropertyName))
                     {
@@ -1051,6 +1057,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
+            msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.RestoreAuditProperties = auditProperties;
             msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
