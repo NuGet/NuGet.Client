@@ -238,53 +238,71 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             out IReadOnlyList<SourceRepository> repositories)
         {
             var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
+            IReadOnlyList<SourceRepository> resultRepositories;
 
-            // Only validate insecure sources when mapping produced something
             if (mappedNames.Count > 0)
             {
-                var mappedRepos = new List<SourceRepository>(mappedNames.Count);
-                foreach (var mappedName in mappedNames)
-                {
-                    SourceRepository? repo = null;
-                    for (int i = 0; i < allRepos.Count; i++)
-                    {
-                        if (string.Equals(allRepos[i].PackageSource.Name, mappedName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            repo = allRepos[i];
-                            break;
-                        }
-                    }
+                resultRepositories = GetMappedRepositories(mappedNames, allRepos, packageId, logger);
 
-                    if (repo != null)
-                    {
-                        mappedRepos.Add(repo);
-                    }
-                    else
-                    {
-                        logger.LogVerbose(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
-                                mappedName,
-                                packageId));
-                    }
-                }
-
-                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, mappedRepos.Select(repo => repo.PackageSource), logger))
+                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, resultRepositories.Select(repo => repo.PackageSource), logger))
                 {
                     repositories = [];
                     return false;
                 }
-
-                repositories = mappedRepos;
-                return true;
             }
             else
             {
-                // No mapping for this package: fall back to all sources
-                repositories = allRepos;
-                return true;
+                // No mapping for this package
+                resultRepositories = allRepos;
             }
+
+            repositories = resultRepositories;
+            return true;
+        }
+
+        private static IReadOnlyList<SourceRepository> GetMappedRepositories(
+            IReadOnlyList<string> mappedNames,
+            IReadOnlyList<SourceRepository> allRepos,
+            string packageId,
+            ILoggerWithColor logger)
+        {
+            var mappedRepos = new List<SourceRepository>(mappedNames.Count);
+
+            foreach (var mappedName in mappedNames)
+            {
+                SourceRepository? repo = FindRepositoryByName(mappedName, allRepos);
+
+                if (repo != null)
+                {
+                    mappedRepos.Add(repo);
+                }
+                else
+                {
+                    logger.LogVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.PackageDownloadCommand_PackageSourceMapping_NoSuchSource,
+                            mappedName,
+                            packageId));
+                }
+            }
+
+            return mappedRepos;
+        }
+
+        private static SourceRepository? FindRepositoryByName(
+            string mappedName,
+            IReadOnlyList<SourceRepository> allRepos)
+        {
+            for (int i = 0; i < allRepos.Count; i++)
+            {
+                if (string.Equals(allRepos[i].PackageSource.Name, mappedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return allRepos[i];
+                }
+            }
+
+            return null;
         }
 
         private static async Task<bool> DownloadPackageAsync(
