@@ -455,6 +455,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">신뢰할 수 있는 서명자 '{0}'이(가) 이미 있습니다.</target>
         <note>0 - trusted signer name</note>
       </trans-unit>
+      <trans-unit id="Error_UnableToLoadProjects">
+        <source>Error while loading project(s).</source>
+        <target state="new">Error while loading project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_UnsupportedProject">
         <source>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</source>
         <target state="translated">패키지 '{0}'을(를) 프로젝트 '{1}'(으)로 추가하는 중 오류가 발생했습니다. add package 명령을 통한 패키지 참조 추가는 프로젝트에서 지원되지 않습니다.</target>

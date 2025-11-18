@@ -455,6 +455,11 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">Já existe um signatário confiável '{0}'.</target>
         <note>0 - trusted signer name</note>
       </trans-unit>
+      <trans-unit id="Error_UnableToLoadProjects">
+        <source>Error while loading project(s).</source>
+        <target state="new">Error while loading project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_UnsupportedProject">
         <source>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</source>
         <target state="translated">Erro ao adicionar o pacote '{0}' ao projeto '{1}'. O projeto não oferece suporte a adição de referências de pacote por meio do comando adicionar pacote.</target>

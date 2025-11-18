@@ -455,6 +455,11 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
         <target state="translated">Доверенное подписывающее лицо "{0}" уже существует.</target>
         <note>0 - trusted signer name</note>
       </trans-unit>
+      <trans-unit id="Error_UnableToLoadProjects">
+        <source>Error while loading project(s).</source>
+        <target state="new">Error while loading project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_UnsupportedProject">
         <source>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</source>
         <target state="translated">Ошибка при добавлении пакета "{0}" в проект "{1}". Проект не поддерживает добавление ссылок на пакеты при помощи команды "Добавить пакет".</target>

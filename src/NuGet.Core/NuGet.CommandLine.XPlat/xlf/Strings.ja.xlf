@@ -455,6 +455,11 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <target state="translated">信頼された署名者 '{0}' が既に存在します。</target>
         <note>0 - trusted signer name</note>
       </trans-unit>
+      <trans-unit id="Error_UnableToLoadProjects">
+        <source>Error while loading project(s).</source>
+        <target state="new">Error while loading project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_UnsupportedProject">
         <source>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</source>
         <target state="translated">プロジェクト '{1}' にパッケージ '{0}' を追加するときにエラーが発生しました。プロジェクトでは、追加パッケージ コマンドによるパッケージ参照の追加はサポートされていません。</target>

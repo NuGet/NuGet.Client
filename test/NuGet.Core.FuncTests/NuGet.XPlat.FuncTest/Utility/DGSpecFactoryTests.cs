@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -204,5 +205,43 @@ public class DGSpecFactoryTests : IClassFixture<XPlatMsbuildTestFixture>
         project2Result.TargetFrameworks.Should().HaveCount(1);
 
         dgSpec.Restore.Should().BeEquivalentTo([project2.ProjectPath]);
+    }
+
+    [Fact]
+    public void NonExistentProject_Throws()
+    {
+        // Arrange
+        var projectPath = Path.Combine(Path.GetTempPath(), "nonexistent.csproj");
+
+        // Act
+        var act = () => DGSpecFactory.Create(projectPath);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*" + projectPath + "*");
+    }
+
+    [Fact]
+    public void InvalidProject_Throws()
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        var projectPath = Path.Combine(context.SolutionRoot, "invalid.csproj");
+        var projectContents = $"""
+            <Project>
+              <Import Project="DoesNotExist.props" />
+              <PropertyGroup>
+                <TargetFramework>netstandard2.0</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """;
+        File.WriteAllText(projectPath, projectContents);
+
+        // Act
+        var act = () => DGSpecFactory.Create(projectPath);
+
+        // Assert
+        act.Should().Throw<AggregateException>()
+            .WithMessage("*" + projectPath + "*");
     }
 }

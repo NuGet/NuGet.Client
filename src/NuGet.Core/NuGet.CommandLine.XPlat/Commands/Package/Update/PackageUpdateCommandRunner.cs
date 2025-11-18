@@ -56,7 +56,19 @@ internal static class PackageUpdateCommandRunner
 
         // 1. Get DGSpec for project/solution
         logger.LogVerbose(Strings.PackageUpdate_LoadingDGSpec);
-        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project);
+        DependencyGraphSpec? dgSpec;
+        try
+        {
+            dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project);
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+        {
+            logger.LogMinimal(Strings.Error_UnableToLoadProjects);
+            logger.LogError(ex.Message);
+            return ExitCodes.Error;
+        }
 
         if (dgSpec is null || dgSpec.Restore is null || dgSpec.Restore.Count == 0)
         {

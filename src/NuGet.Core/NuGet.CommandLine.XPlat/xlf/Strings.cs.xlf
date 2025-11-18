@@ -455,6 +455,11 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
         <target state="translated">Důvěryhodná podepisující osoba {0} už existuje.</target>
         <note>0 - trusted signer name</note>
       </trans-unit>
+      <trans-unit id="Error_UnableToLoadProjects">
+        <source>Error while loading project(s).</source>
+        <target state="new">Error while loading project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_UnsupportedProject">
         <source>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</source>
         <target state="translated">Při přidávání balíčku {0} do projektu {1} došlo k chybě. Projekt nepodporuje přidávání odkazů na balíčky pomocí příkazu Přidat balíček.</target>

@@ -1162,4 +1162,7 @@ Do not translate "PackageVersion"</comment>
     <comment>0 - package source name
 1 - package name</comment>
   </data>
+  <data name="Error_UnableToLoadProjects" xml:space="preserve">
+    <value>Error while loading project(s).</value>
+  </data>
 </root>

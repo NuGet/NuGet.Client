@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using FluentAssertions;
 using NuGet.CommandLine.Xplat.Tests;
+using NuGet.CommandLine.XPlat;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -298,7 +299,7 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _envVars);
 
             // Assert
-            result.Output.Should().Contain("MSB4025").And.Contain(csprojPath);
+            result.Output.Should().Contain(Strings.Error_UnableToLoadProjects).And.Contain(csprojPath);
         }
     }
 }
