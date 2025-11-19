@@ -1,56 +1,17 @@
 # Nuget specific assert helpers
 
-# Set the locked state of the lock file
-function Set-LockFileLocked {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [Boolean]$State
-    )
-
-    $lockFile = Get-ProjectJsonLockFile $Project
-
-    $lockFile.IsLocked = $State
-
-    Set-ProjectJsonLockFile $Project $LockFile
-}
-
-# True if the lock file is locked
-function Get-LockFileLocked {
+function Assert-AssetsFileDoesNotExist {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
 
-    $lockFile = Get-ProjectJsonLockFile $Project
+    $assetsFilepath = Get-NetCoreLockFilePath $Project
 
-    return $lockFile.IsLocked
+    Assert-PathNotExists $assetsFilepath "project.assets.json file exists"
 }
 
-function Assert-ProjectJsonLockFileExists {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project
-    )
-
-    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
-
-    Assert-PathExists $projectJsonLockFilePath "project.lock.json file does not exist"
-}
-
-function Assert-ProjectJsonLockFileDoesNotExist {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project
-    )
-
-    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
-
-    Assert-PathNotExists $projectJsonLockFilePath "project.lock.json file exists"
-}
-
-function Assert-ProjectJsonLockFileRuntimeAssembly {
+function Assert-PackageReferenceAssetsFileRuntimeAssembly {
     param(
         [parameter(Mandatory = $true)]
         $Project,
@@ -58,7 +19,7 @@ function Assert-ProjectJsonLockFileRuntimeAssembly {
         [string]$assembly
     )
 
-    $lockFile = Get-ProjectJsonLockFile $Project
+    $lockFile = Get-NetCoreLockFile $Project
 
     Assert-NotNull $lockFile
 
@@ -81,42 +42,6 @@ function Assert-ProjectJsonLockFileRuntimeAssembly {
     Assert-True $found "Runtime assembly $assembly was not found in the lock file for $($Project.Name)"    
 }
 
-function Assert-ProjectJsonLockFilePackage {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [string]$Id,
-        [string]$Version
-    )
-
-    $lockFile = Get-ProjectJsonLockFile $Project
-
-    Assert-NotNull $lockFile
-
-    $found = $false
-
-    foreach ($library in $lockFile.Libraries) {
-        
-        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
-        {
-            if ($Version)
-            {
-                if ($library.Version.Equals([NuGet.Versioning.NuGetVersion]::Parse($Version)))
-                {
-                    $found = $true
-                }
-            }
-            else
-            {
-                $found = $true
-            }
-        }
-    }
-
-    Assert-True $found "Package $Id $Version was not found in the lock file for $($Project.Name)"    
-}
-
 function Assert-ProjectCacheFileExists {
     param(
         [parameter(Mandatory = $true)]
@@ -137,31 +62,6 @@ function Assert-ProjectCacheFileNotExists {
     $cacheFile = Get-ProjectCacheFilePath $Project
 
     Assert-PathNotExists $cacheFile
-}
-
-function Assert-ProjectJsonLockFilePackageNotFound {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [string]$Id
-    )
-
-    $lockFile = Get-ProjectJsonLockFile $Project
-
-    Assert-NotNull $lockFile
-
-    $found = $false
-
-    foreach ($library in $lockFile.Libraries) {
-        
-        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
-        {
-            $found = $true
-        }
-    }
-
-    Assert-False $found "Package $Id was found in the lock file for $($Project.Name)"    
 }
 
 function Assert-ProjectJsonDependency {
@@ -202,74 +102,6 @@ function Assert-ProjectJsonDependency {
     Assert-True $found "Package $Id $Range is not referenced in $($Project.Name)"    
 }
 
-function Assert-ProjectJsonDependencyWithinTargetFramework {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [string]$Id,
-        [string]$Range
-    )
-
-    $projectJson = Get-ProjectJsonPackageSpec $Project
-
-    Assert-NotNull $projectJson
-
-    $found = $false
-
-    foreach ($targetFrameworkInfo in $projectJson.TargetFrameworks) {
-
-        foreach ($dependency in $targetFrameworkInfo.Dependencies) {
-
-			$library = $dependency.LibraryRange
-
-			if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
-			{
-				if ($Range)
-				{
-					if ($library.VersionRange.OriginalString.ToUpperInvariant().Equals($Range.ToUpperInvariant()))
-					{
-						$found = $true
-					}
-				}
-				else
-				{
-					$found = $true
-				}
-			}
-		}
-    }
-
-    Assert-True $found "Package $Id $Range is not referenced in $($Project.Name)"    
-}
-
-function Assert-ProjectJsonDependencyNotFound {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [string]$Id
-    )
-
-    $projectJson = Get-ProjectJsonPackageSpec $Project
-
-    Assert-NotNull $projectJson
-
-    $found = $false
-
-    foreach ($dependency in $projectJson.Dependencies) {
-        
-        $library = $dependency.LibraryRange
-
-        if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
-        {
-            $found = $true
-        }
-    }
-
-    Assert-False $found "Package $Id is referenced in $($Project.Name)"    
-}
-
 function Get-ProjectJsonPackageSpec {
     param(
         [parameter(Mandatory = $true)]
@@ -285,36 +117,6 @@ function Get-ProjectJsonPackageSpec {
     $stream = [IO.File]::ReadAllText($projectJsonPath)
 
     return [NuGet.ProjectModel.JsonPackageSpecReader]::GetPackageSpec($stream, $Project.Name, $projectJsonPath)
-}
-
-function Get-ProjectJsonLockFile {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project
-    )
-    
-    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
-
-    Assert-PathExists $projectJsonLockFilePath "project.lock.json file does not exist"
-
-    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
-
-    return $lockFileFormat.Read($projectJsonLockFilePath)
-}
-
-function Set-ProjectJsonLockFile {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true)]
-        [NuGet.ProjectModel.LockFile]$LockFile
-    )
-    
-    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
-
-    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
-
-    return $lockFileFormat.Write($projectJsonLockFilePath, $LockFile)
 }
 
 function Get-ProjectToolsCacheFilePath {
@@ -364,36 +166,19 @@ function Get-ProjectCacheFilePath {
         return CacheFilePathFromProjectPath $Project.FullName
 }
 
-
-
-function Get-ProjectJsonLockFilePath {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project
-    )
-    
-    $dir = Split-Path -parent $Project.FullName
-
-    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
-
-    return $projectJsonLockFilePath
-}
-
-function Remove-ProjectJsonLockFile {
+function Remove-AssetsFile {
     param(
         [parameter(Mandatory = $true)]
         $Project
     )
 
-    $dir = Split-Path -parent $Project.FullName
+    $assetsFilePath = Get-NetCoreLockFilePath $Project
 
-    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
+    Assert-PathExists $assetsFilePath
 
-    Assert-PathExists $projectJsonLockFilePath
+    Remove-Item $assetsFilePath
 
-    Remove-Item $projectJsonLockFilePath
-
-    Assert-PathNotExists $projectJsonLockFilePath
+    Assert-PathNotExists $assetsFilePath
 }
 
 function Get-SolutionPackage {
