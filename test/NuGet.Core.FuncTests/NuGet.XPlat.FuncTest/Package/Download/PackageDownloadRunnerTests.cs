@@ -429,52 +429,67 @@ public class PackageDownloadRunnerTests
             .Should().BeFalse("Package does not exist in sources");
     }
 
-    public static IEnumerable<object[]> Cases()
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_SourceArgOverridesMapping_PackageOnlyInA_Succeeds()
     {
-        // Parameters:
-        // A-packages, B-packages, sourceMappings, sourcesArgs, downloadId, downloadVersion,
-        //expectSuccess, expectedInstalled
-
-        // --source specified, mapping ignored, package only in A -> success
-        yield return new object[]
-        {
-            new List<(string,string)> { ("Contoso.Lib", "1.0.0") }, // A
-            new List<(string,string)>(),                            // B
-            new List<(string,string)> { ("B", "Contoso.*") },       // mapping ignored
-            new List<string> { "A" },                               // --source A
-            "Contoso.Lib", "1.0.0",                                  // downloadId, downloadVersion
-            true,                                                   // expect success
-            ("Contoso.Lib", "1.0.0")                                // expectedInstalled
-        };
-
-        // no --source, mapping -> B, package only in B -> success
-        yield return new object[]
-        {
-            new List<(string,string)>(),                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") }, // B
-            new List<(string,string)> { ("B", "Contoso.*") },       // mapping -> B
-            null,                                                   // no --source
-            "Contoso.Mapped", "2.0.0",                              // downloadId, downloadVersion
-            true,                                                   // expect success
-            ("Contoso.Mapped", "2.0.0")                             // expectedInstalled
-        };
-
-        // no --source, mapping -> A, package only in B -> fail
-        yield return new object[]
-        {
-            new List<(string,string)>(),                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },
-            new List<(string,string)> { ("A", "Contoso.*") },       // mapped to A
-            null,
-            "Contoso.Mapped", "2.0.0",
-            false,
-            null!
-        };
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Lib", "1.0.0")       // package only in A
+            },
+            sourceBPackages: new List<(string id, string version)>(), // B empty
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("B", "Contoso.*")             // mapping ignored because --source A is provided
+            },
+            sourcesArgs: new List<string> { "A" },                    // --source A
+            downloadId: "Contoso.Lib",
+            downloadVersion: "1.0.0",
+            expectSuccess: true,
+            expectedInstalled: ("Contoso.Lib", "1.0.0"));
     }
 
-    [Theory]
-    [MemberData(nameof(Cases))]
-    public async Task RunAsync_WithSourceMapping(
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_NoSource_MappedToB_PackageOnlyInB_Succeeds()
+    {
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>(), // A empty
+            sourceBPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Mapped", "2.0.0")    // package only in B
+            },
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("B", "Contoso.*")             // mapping -> B
+            },
+            sourcesArgs: null,                 // no --source
+            downloadId: "Contoso.Mapped",
+            downloadVersion: "2.0.0",
+            expectSuccess: true,
+            expectedInstalled: ("Contoso.Mapped", "2.0.0"));
+    }
+
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_NoSource_MappedToA_PackageOnlyInB_Fails()
+    {
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>(), // A empty
+            sourceBPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Mapped", "2.0.0")    // package only in B
+            },
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("A", "Contoso.*")             // mapped to A (wrong source)
+            },
+            sourcesArgs: null,                 // no --source
+            downloadId: "Contoso.Mapped",
+            downloadVersion: "2.0.0",
+            expectSuccess: false,
+            expectedInstalled: null);
+    }
+
+    private async Task RunAsync_WithSourceMappingCore(
         IReadOnlyList<(string id, string version)> sourceAPackages,
         IReadOnlyList<(string id, string version)> sourceBPackages,
         IReadOnlyList<(string source, string pattern)> sourceMappings,
@@ -482,7 +497,7 @@ public class PackageDownloadRunnerTests
         string downloadId,
         string downloadVersion,
         bool expectSuccess,
-        (string id, string version)? expectedInstalled)
+        (string, string)? expectedInstalled)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -523,10 +538,10 @@ public class PackageDownloadRunnerTests
             Packages =
             [
                 new PackageWithNuGetVersion
-                {
-                    Id = downloadId,
-                    NuGetVersion = downloadVersion is null ? null : NuGetVersion.Parse(downloadVersion)
-                }
+            {
+                Id = downloadId,
+                NuGetVersion = downloadVersion is null ? null : NuGetVersion.Parse(downloadVersion)
+            }
             ],
             OutputDirectory = context.WorkingDirectory,
             Sources = sourcesArgs == null ? [] : sourcesArgs.ToList()
@@ -551,7 +566,6 @@ public class PackageDownloadRunnerTests
         {
             exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess, because: capturedLogs);
             expectedInstalled.Should().NotBeNull();
-
             var (expId, expVer) = expectedInstalled!.Value;
             var installDir = Path.Combine(context.WorkingDirectory, expId.ToLowerInvariant(), expVer);
             Directory.Exists(installDir).Should().BeTrue();
