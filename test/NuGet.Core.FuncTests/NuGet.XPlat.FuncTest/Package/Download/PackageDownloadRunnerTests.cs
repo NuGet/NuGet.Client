@@ -484,6 +484,18 @@ public class PackageDownloadRunnerTests
             true,
             ("Contoso.Mapped", "3.0.0")
         };
+
+        // no --source, mapping -> A&B, package in both A and B. Latest version from B installed
+        yield return new object[]
+        {
+            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },                            // A
+            new List<(string,string)> { ("Contoso.Mapped", "3.0.0") },                           // B
+            new List<(string,string)> { ("A", "Contoso.*"), ("B", "Contoso.*") }, // mapped to A&B
+            null,
+            "Contoso.Mapped", null,
+            true,
+            ("Contoso.Mapped", "3.0.0")
+        };
     }
 
     [Theory]
