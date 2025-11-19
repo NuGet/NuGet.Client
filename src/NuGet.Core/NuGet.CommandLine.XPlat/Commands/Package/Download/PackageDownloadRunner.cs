@@ -91,15 +91,15 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 }
                 else
                 {
-                    if (!TryGetRepositoriesForPackage(
-                        package.Id,
-                        args,
-                        packageSourceMapping!,
-                        allRepositories,
-                        logger,
-                        out sourceRepositories))
+                    var mappedNames = packageSourceMapping!.GetConfiguredPackageSources(package.Id);
+                    sourceRepositories = mappedNames.Count > 0
+                        ? GetMappedRepositories(mappedNames, allRepositories, package.Id, logger)
+                        : allRepositories;
+
+                    if (DetectAndReportInsecureSources(args.AllowInsecureConnections, sourceRepositories.Select(r => r.PackageSource), logger))
                     {
-                        return ExitCodeError;
+                        downloadedAllSuccessfully &= false;
+                        continue;
                     }
                 }
 
@@ -222,42 +222,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             }
 
             return (versionToDownload, downloadSourceRepository);
-        }
-
-        /// <summary>
-        /// Builds the set of SourceRepository objects to use for a given package,
-        /// applying package source mapping
-        /// validating HTTP usage only on the *effective* sources.
-        /// </summary>
-        private static bool TryGetRepositoriesForPackage(
-            string packageId,
-            PackageDownloadArgs args,
-            PackageSourceMapping packageSourceMapping,
-            IReadOnlyList<SourceRepository> allRepos,
-            ILoggerWithColor logger,
-            out IReadOnlyList<SourceRepository> repositories)
-        {
-            var mappedNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
-            IReadOnlyList<SourceRepository> resultRepositories;
-
-            if (mappedNames.Count > 0)
-            {
-                resultRepositories = GetMappedRepositories(mappedNames, allRepos, packageId, logger);
-
-                if (DetectAndReportInsecureSources(args.AllowInsecureConnections, resultRepositories.Select(repo => repo.PackageSource), logger))
-                {
-                    repositories = [];
-                    return false;
-                }
-            }
-            else
-            {
-                // No mapping for this package
-                resultRepositories = allRepos;
-            }
-
-            repositories = resultRepositories;
-            return true;
         }
 
         private static IReadOnlyList<SourceRepository> GetMappedRepositories(

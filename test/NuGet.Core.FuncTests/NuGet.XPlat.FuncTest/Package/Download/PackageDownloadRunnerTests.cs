@@ -582,10 +582,9 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        var insecureSourceUrl = "http://contoso.test/v3/index.json";
-
-        context.Settings.AddSource("InsecureMapped", insecureSourceUrl);
-        context.Settings.AddPackageSourceMapping("InsecureMapped", "Contoso.*");
+        PackageSource source = new("http://contoso.test/v3/index.json", "InsecureMapped");
+        context.Settings.AddSource(source.Name, source.SourceUri.OriginalString);
+        context.Settings.AddPackageSourceMapping(source.Name, "Contoso.*");
 
         var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
 
@@ -606,7 +605,7 @@ public class PackageDownloadRunnerTests
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var packageSources = new List<PackageSource>
         {
-            new(insecureSourceUrl, "InsecureMapped")
+            source
         };
 
         // Act
@@ -619,6 +618,15 @@ public class PackageDownloadRunnerTests
 
         // Assert
         exit.Should().Be(PackageDownloadRunner.ExitCodeError);
+        string expectedError = string.Format(
+            CultureInfo.CurrentCulture,
+            Strings.Error_HttpServerUsage,
+            "package download",
+            source);
+        logger.Verify(
+            l => l.LogError(expectedError),
+            Times.AtLeastOnce);
+
     }
 
     [Fact]
@@ -673,6 +681,80 @@ public class PackageDownloadRunnerTests
         var installDir = Path.Combine(context.WorkingDirectory, id.ToLowerInvariant(), version);
         Directory.Exists(installDir).Should().BeTrue();
         File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RunAsync_WhenSourceMappingEnabled_PackageMapsToNoSource(bool allowInsecureConnections)
+    {
+        // Arrange
+        using var context = new SimpleTestPathContext();
+        string srcDirectory = Path.Combine(context.PackageSource, "HttpSource");
+        using var server = new FileSystemBackedV3MockServer(srcDirectory);
+        PackageSource source = new(server.ServiceIndexUri, "Insecure");
+        context.Settings.AddSource(source.Name, source.SourceUri.OriginalString);
+        context.Settings.AddPackageSourceMapping(source.Name, "Contoso.Not.*");
+        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
+
+        // package in source
+        var id = "Contoso.Package";
+        var version = "1.0.0";
+        await SimpleTestPackageUtility.CreateFullPackageAsync(srcDirectory, id, version);
+
+        // arguments
+        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
+        var packageSources = new List<PackageSource>
+        {
+            source
+        };
+        var args = new PackageDownloadArgs
+        {
+            Packages =
+            [
+                new PackageWithNuGetVersion
+                {
+                    Id = id,
+                    NuGetVersion = NuGetVersion.Parse(version)
+                }
+            ],
+            OutputDirectory = context.WorkingDirectory,
+            AllowInsecureConnections = allowInsecureConnections,
+        };
+
+        if (allowInsecureConnections)
+        {
+            server.Start();
+        }
+
+        // Act
+        var exit = await PackageDownloadRunner.RunAsync(
+            args,
+            logger.Object,
+            packageSources,
+            settings,
+            CancellationToken.None);
+
+        // Assert
+        if (allowInsecureConnections)
+        {
+            exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+            var installDir = Path.Combine(context.WorkingDirectory, id.ToLowerInvariant(), version);
+            Directory.Exists(installDir).Should().BeTrue();
+            File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
+        }
+        else
+        {
+            exit.Should().Be(PackageDownloadRunner.ExitCodeError);
+            string expectedError = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Error_HttpServerUsage,
+                "package download",
+                source);
+            logger.Verify(
+                l => l.LogError(expectedError),
+                Times.AtLeastOnce);
+        }
     }
 
     [Fact]
