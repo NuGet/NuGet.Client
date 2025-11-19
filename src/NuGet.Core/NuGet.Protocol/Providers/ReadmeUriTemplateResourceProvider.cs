@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 #nullable enable
 
 using System;
@@ -30,7 +31,7 @@ namespace NuGet.Protocol
                 var uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.ReadmeFileUrl)?.OriginalString;
 
                 // construct a new resource
-                resource = string.IsNullOrWhiteSpace(uriTemplate) ? null : new ReadmeUriTemplateResource(uriTemplate);
+                resource = string.IsNullOrWhiteSpace(uriTemplate) ? null : new ReadmeUriTemplateResource(uriTemplate!);
             }
 
             return new Tuple<bool, INuGetResource?>(resource != null, resource);
