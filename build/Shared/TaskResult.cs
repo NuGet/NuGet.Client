@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 
 namespace NuGet;
 
-#nullable enable
-
 internal static class TaskResult
 {
     /// <summary>
