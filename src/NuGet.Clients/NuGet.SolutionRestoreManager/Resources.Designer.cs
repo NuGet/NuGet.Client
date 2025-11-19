@@ -97,7 +97,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fix with Copilot.
+        ///   Looks up a localized string similar to Learn how to fix with Copilot.
         /// </summary>
         internal static string InfoBar_HyperlinkCopilot {
             get {

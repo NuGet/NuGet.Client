@@ -193,7 +193,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 new InfoBarTextSpan(Resources.InfoBar_TextMessage + " "),
                 _hyperlinkPmui,
-                new InfoBarTextSpan(" | "),
+                new InfoBarTextSpan("  "),
                 _hyperlinkCopilot
             };
 
