@@ -538,10 +538,10 @@ public class PackageDownloadRunnerTests
             Packages =
             [
                 new PackageWithNuGetVersion
-            {
-                Id = downloadId,
-                NuGetVersion = downloadVersion is null ? null : NuGetVersion.Parse(downloadVersion)
-            }
+                {
+                    Id = downloadId,
+                    NuGetVersion = downloadVersion is null ? null : NuGetVersion.Parse(downloadVersion)
+                }
             ],
             OutputDirectory = context.WorkingDirectory,
             Sources = sourcesArgs == null ? [] : sourcesArgs.ToList()
