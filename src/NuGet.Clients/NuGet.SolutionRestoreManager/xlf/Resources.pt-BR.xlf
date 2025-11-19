@@ -22,6 +22,11 @@
         <target state="translated">O pacote '{0} {1}' não possui uma versão exata como '[1.0.0]'. Somente versões exatas são permitidas com PackageDownload.</target>
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</note>
       </trans-unit>
+      <trans-unit id="InfoBar_HyperlinkCopilot">
+        <source>Fix with Copilot</source>
+        <target state="new">Fix with Copilot</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
         <source>Manage NuGet Packages</source>
         <target state="translated">Gerenciar Pacotes do NuGet...</target>

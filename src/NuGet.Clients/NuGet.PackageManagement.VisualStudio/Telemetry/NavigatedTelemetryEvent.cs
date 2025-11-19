@@ -73,6 +73,19 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         /// <summary>
+        /// Navigating an External hyperlink from VS.
+        /// </summary>
+        /// <param name="hyperlinkType">Hyperlink origin</param>
+        public static NavigatedTelemetryEvent CreateWithExternalLink(HyperlinkType hyperlinkType)
+        {
+            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Hyperlink, NavigationOrigin.PMUI_ExternalLink);
+
+            navigatedTelemetryEvent[HyperLinkTypePropertyName] = hyperlinkType;
+
+            return navigatedTelemetryEvent;
+        }
+
+        /// <summary>
         /// Navigating an External hyperlink from the PM UI.
         /// </summary>
         /// <param name="hyperlinkType">Hyperlink origin</param>

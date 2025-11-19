@@ -11,7 +11,9 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -21,12 +23,16 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VulnerablePackagesInfoBar : IVulnerabilitiesNotificationService, IVsInfoBarUIEvents
     {
+        private const string LogEntrySource = "NuGet Package Manager";
+
         private IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         internal IVsInfoBarUIElement? _infoBarUIElement;
         internal bool _infoBarVisible = false; // InfoBar is currently being displayed in the Solution Explorer
         internal bool _wasInfoBarClosed = false; // InfoBar was closed by the user, using the 'x'(close) in the InfoBar
         internal bool _wasInfoBarHidden = false; // InfoBar was hid, this is caused because there are no more vulnerabilities to address
         private uint? _eventCookie; // To hold the connection cookie
+        private InfoBarHyperlink _hyperlinkPmui;
+        private InfoBarHyperlink _hyperlinkCopilot;
 
         private Lazy<IPackageManagerLaunchService>? PackageManagerLaunchService { get; }
         private ISolutionManager? SolutionManager { get; }
@@ -34,6 +40,8 @@ namespace NuGet.SolutionRestoreManager
         [ImportingConstructor]
         public VulnerablePackagesInfoBar(ISolutionManager solutionManager, Lazy<IPackageManagerLaunchService> packageManagerLaunchService)
         {
+            _hyperlinkPmui = new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage);
+            _hyperlinkCopilot = new InfoBarHyperlink(Resources.InfoBar_HyperlinkCopilot, "https://aka.ms/nugetmcp/auditFix");
             SolutionManager = solutionManager;
             PackageManagerLaunchService = packageManagerLaunchService;
             SolutionManager.SolutionClosed += OnSolutionClosed;
@@ -155,7 +163,28 @@ namespace NuGet.SolutionRestoreManager
         public void OnActionItemClicked(IVsInfoBarUIElement infoBarUIElement, IVsInfoBarActionItem actionItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            PackageManagerLaunchService?.Value.LaunchSolutionPackageManager();
+            if (actionItem != null)
+            {
+                if (actionItem.ActionContext == _hyperlinkCopilot.ActionContext)
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(_hyperlinkCopilot.ActionContext);
+                        var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisoryFixWithCopilot);
+                        TelemetryActivity.EmitTelemetryEvent(evt);
+                    }
+                    catch (System.ComponentModel.Win32Exception ex)
+                    {
+                        ActivityLog.LogError(LogEntrySource, ex.ToString());
+                    }
+                }
+                else
+                {
+                    PackageManagerLaunchService?.Value.LaunchSolutionPackageManager();
+                    var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisory);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
+            }
         }
 
         protected InfoBarModel GetInfoBarModel()
@@ -163,7 +192,9 @@ namespace NuGet.SolutionRestoreManager
             IEnumerable<IVsInfoBarTextSpan> textSpans = new IVsInfoBarTextSpan[]
             {
                 new InfoBarTextSpan(Resources.InfoBar_TextMessage + " "),
-                new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage)
+                _hyperlinkPmui,
+                new InfoBarTextSpan(" | "),
+                _hyperlinkCopilot
             };
 
             return new InfoBarModel(
