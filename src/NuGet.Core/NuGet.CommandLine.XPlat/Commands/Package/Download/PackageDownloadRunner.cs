@@ -92,9 +92,25 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
                 else
                 {
                     var mappedNames = packageSourceMapping!.GetConfiguredPackageSources(package.Id);
-                    sourceRepositories = mappedNames.Count > 0
-                        ? GetMappedRepositories(mappedNames, allRepositories, package.Id, logger)
-                        : allRepositories;
+
+                    if (mappedNames.Count == 0)
+                    {
+                        // fail, no sources mapped for this package
+                        var notConsideredSources = string.Join(
+                            ", ",
+                            allRepositories.Select(repository => repository.PackageSource));
+
+                        logger.LogError(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
+                            package.Id,
+                            notConsideredSources));
+
+                        downloadedAllSuccessfully &= false;
+                        continue;
+                    }
+
+                    sourceRepositories = GetMappedRepositories(mappedNames, allRepositories, package.Id, logger);
 
                     if (DetectAndReportInsecureSources(args.AllowInsecureConnections, sourceRepositories.Select(r => r.PackageSource), logger))
                     {

@@ -620,6 +620,12 @@ public class PackageDownloadRunnerTests
             source
         };
 
+        string expectedError = string.Format(
+            CultureInfo.CurrentCulture,
+            Strings.Error_HttpServerUsage,
+            "package download",
+            source);
+
         // Act
         var exit = await PackageDownloadRunner.RunAsync(
             args,
@@ -630,11 +636,6 @@ public class PackageDownloadRunnerTests
 
         // Assert
         exit.Should().Be(PackageDownloadRunner.ExitCodeError);
-        string expectedError = string.Format(
-            CultureInfo.CurrentCulture,
-            Strings.Error_HttpServerUsage,
-            "package download",
-            source);
         logger.Verify(
             l => l.LogError(expectedError),
             Times.AtLeastOnce);
@@ -695,10 +696,8 @@ public class PackageDownloadRunnerTests
         File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RunAsync_WhenSourceMappingEnabled_PackageMapsToNoSource(bool allowInsecureConnections)
+    [Fact]
+    public async Task RunAsync_WhenSourceMappingEnabled_PackageMapsToNoSource_Fails()
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -707,14 +706,14 @@ public class PackageDownloadRunnerTests
         context.Settings.AddPackageSourceMapping(source.Name, "Contoso.Not.*");
         var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
 
-        // package in source
+        // package
         var id = "Contoso.Package";
         var version = "1.0.0";
 
         string expectedError = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings.Error_HttpServerUsage,
-                "package download",
+                Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
+                id,
                 source);
 
         // arguments
@@ -734,7 +733,6 @@ public class PackageDownloadRunnerTests
                 }
             ],
             OutputDirectory = context.WorkingDirectory,
-            AllowInsecureConnections = allowInsecureConnections,
         };
 
         // Act
@@ -746,19 +744,10 @@ public class PackageDownloadRunnerTests
             CancellationToken.None);
 
         // Assert
-        if (allowInsecureConnections)
-        {
-            logger.Verify(
-                l => l.LogError(expectedError),
-                Times.Never);
-        }
-        else
-        {
-            exit.Should().Be(PackageDownloadRunner.ExitCodeError);
-            logger.Verify(
-                l => l.LogError(expectedError),
-                Times.Once);
-        }
+        exit.Should().Be(PackageDownloadRunner.ExitCodeError);
+        logger.Verify(
+            l => l.LogError(expectedError),
+            Times.Once);
     }
 
     [Fact]
