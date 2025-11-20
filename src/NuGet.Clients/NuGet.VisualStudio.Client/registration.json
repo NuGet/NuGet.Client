@@ -140,7 +140,7 @@
         "packageSources": {
           "type": "array",
           "title": "@Text_PackageSources_NotMachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "description": "Configure the sources NuGet will use to for displaying and downloading packages. NuGet Audit will also reference vulnerability data from sources that support it. Alternatively, dedicated Audit Source(s) can be configured below.",
+          "description": "@Text_PackageSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
           // Metadata about items in this array
           "items": {
@@ -209,13 +209,18 @@
         },
         "nuGetAudit": {
           "type": "boolean",
-          "title": "Configure Audit Sources from which NuGet Audit retrieves vulnerability data.",
-          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages"
+          "title": "@Text_AuditSources_Checkbox;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
+          "messages": [
+            {
+              "text": "@Text_AuditSources_HowToRemove;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+            }
+          ]
         },
         "auditSources": {
           "type": "array",
           "title": "Audit Sources",
-          "description": "Configure the sources NuGet Audit will use for retrieving Package Vulnerability data. If none are configured, any configured package sources that support Vulnerability data will be used by NuGet Audit.",
+          "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "visibleWhen": "${config:nuGetAudit}",
 
           // Metadata about items in this array
