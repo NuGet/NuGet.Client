@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.Telemetry
         DeprecationAlternativeDetails,
         DeprecationAlternativePackageItem,
         VulnerabilityAdvisory,
-        VulnerabilityAdvisoryFixWithCopilot,
+        VulnerabilityAdvisoryGHCopilotDocs,
         OptionsBlocked,
         OwnerProfile,
         OwnerProfileDetailsPane

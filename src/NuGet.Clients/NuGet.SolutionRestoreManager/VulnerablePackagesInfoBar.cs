@@ -170,7 +170,7 @@ namespace NuGet.SolutionRestoreManager
                     try
                     {
                         System.Diagnostics.Process.Start(_hyperlinkCopilot.ActionContext);
-                        var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisoryFixWithCopilot);
+                        var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisoryGHCopilotDocs);
                         TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                     catch (System.ComponentModel.Win32Exception ex)
