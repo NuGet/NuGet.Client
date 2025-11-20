@@ -173,7 +173,7 @@ function Test-BuildIntegratedInstallPackageJsonNet701Beta3 {
     Install-Package newtonsoft.json -ProjectName $project.Name -version 7.0.1-beta3
 
     # Assert
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project "lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll"
+    Assert-PackageReferenceAssetsFileRuntimeAssembly $project "lib/net45/Newtonsoft.Json.dll"
 }
 
 function Test-BuildIntegratedProjectClosure {
