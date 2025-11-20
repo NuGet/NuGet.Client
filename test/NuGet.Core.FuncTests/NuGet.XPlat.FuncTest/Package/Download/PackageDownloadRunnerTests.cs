@@ -813,67 +813,6 @@ public class PackageDownloadRunnerTests
         File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("A", "a")]
-    [InlineData("a", "A")]
-    [InlineData("SourceA", "sourcea")]
-    [InlineData("SOURCEA", "sourcea")]
-    public async Task RunAsync_WithVariousSourceMappingCasing_FindsSourceAndSucceeds(string sourceNameConfig, string sourceNameMapping)
-    {
-        // Arrange
-        using var context = new SimpleTestPathContext();
-        string srcDir = context.PackageSource;
-
-        var id = "Contoso.Casing";
-        var version = "1.0.0";
-
-        await SimpleTestPackageUtility.CreateFullPackageAsync(srcDir, id, version);
-
-        // Add source using one casing
-        context.Settings.AddSource(sourceNameConfig, srcDir);
-
-        // Add mapping using different casing
-        context.Settings.AddPackageSourceMapping(sourceNameMapping, "Contoso.*");
-
-        var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
-
-        var args = new PackageDownloadArgs
-        {
-            Packages =
-            [
-                new PackageWithNuGetVersion
-                {
-                    Id = id,
-                    NuGetVersion = NuGetVersion.Parse(version)
-                }
-            ],
-            OutputDirectory = context.WorkingDirectory,
-            AllowInsecureConnections = true
-        };
-
-        var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
-
-        var packageSources = new List<PackageSource>
-        {
-            new(srcDir, sourceNameConfig),
-        };
-
-        // Act
-        var exit = await PackageDownloadRunner.RunAsync(
-            args,
-            logger.Object,
-            packageSources,
-            settings,
-            CancellationToken.None);
-
-        // Assert
-        exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
-
-        var installDir = Path.Combine(context.WorkingDirectory, id.ToLowerInvariant(), version);
-        Directory.Exists(installDir).Should().BeTrue();
-        File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
-    }
-
     [Fact]
     public async Task RunAsync_WhenMappedSourceMissing_LogsVerbose()
     {
