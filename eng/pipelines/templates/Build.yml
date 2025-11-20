@@ -299,3 +299,21 @@ steps:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_MULTILEVEL_LOOKUP: true
     condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+
+  - task: PowerShell@2
+    displayName: "Generate SBOM manifest for drop metadata"
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Create a manifest directory for the drop metadata SBOM
+        $manifestDir = "$(Build.Repository.LocalPath)\artifacts\VS15\_manifest"
+        New-Item -ItemType Directory -Force -Path $manifestDir | Out-Null
+        
+        # Copy the main SBOM manifest if it exists
+        if (Test-Path "$(Build.SourcesDirectory)\artifacts\_manifest") {
+          Copy-Item "$(Build.SourcesDirectory)\artifacts\_manifest\*" -Destination $manifestDir -Recurse -Force
+          Write-Host "SBOM manifest copied to VS15 artifacts for drop metadata"
+        } else {
+          Write-Host "##vso[task.logissue type=warning]SBOM manifest not found at $(Build.SourcesDirectory)\artifacts\_manifest"
+        }
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
