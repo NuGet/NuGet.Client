@@ -240,7 +240,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             return (versionToDownload, downloadSourceRepository);
         }
 
-        private static IReadOnlyList<SourceRepository> GetMappedRepositories(
+        internal static IReadOnlyList<SourceRepository> GetMappedRepositories(
             IReadOnlyList<string> mappedNames,
             IReadOnlyList<SourceRepository> allRepos,
             string packageId,

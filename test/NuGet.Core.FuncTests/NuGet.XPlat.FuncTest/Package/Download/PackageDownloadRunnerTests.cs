@@ -638,7 +638,7 @@ public class PackageDownloadRunnerTests
         exit.Should().Be(PackageDownloadRunner.ExitCodeError);
         logger.Verify(
             l => l.LogError(expectedError),
-            Times.AtLeastOnce);
+            Times.Once);
 
     }
 
@@ -701,7 +701,7 @@ public class PackageDownloadRunnerTests
     {
         // Arrange
         using var context = new SimpleTestPathContext();
-        PackageSource source = new("http://contoso.test/v3/index.json", "Insecure");
+        PackageSource source = new(context.PackageSource, "source");
         context.Settings.AddSource(source.Name, source.SourceUri.OriginalString);
         context.Settings.AddPackageSourceMapping(source.Name, "Contoso.Not.*");
         var settings = Settings.LoadSettingsGivenConfigPaths([context.Settings.ConfigPath]);
@@ -711,10 +711,10 @@ public class PackageDownloadRunnerTests
         var version = "1.0.0";
 
         string expectedError = string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
-                id,
-                source);
+            CultureInfo.CurrentCulture,
+            Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
+            id,
+            source);
 
         // arguments
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
