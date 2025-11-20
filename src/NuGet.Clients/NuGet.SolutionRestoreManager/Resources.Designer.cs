@@ -97,11 +97,11 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Learn how to fix with Copilot.
+        ///   Looks up a localized string similar to How to fix with GitHub Copilot.
         /// </summary>
-        internal static string InfoBar_HyperlinkCopilot {
+        internal static string InfoBar_HyperlinkGHCopilotDocs {
             get {
-                return ResourceManager.GetString("InfoBar_HyperlinkCopilot", resourceCulture);
+                return ResourceManager.GetString("InfoBar_HyperlinkGHCopilotDocs", resourceCulture);
             }
         }
         

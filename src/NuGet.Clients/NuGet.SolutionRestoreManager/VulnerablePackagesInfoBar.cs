@@ -32,7 +32,7 @@ namespace NuGet.SolutionRestoreManager
         internal bool _wasInfoBarHidden = false; // InfoBar was hid, this is caused because there are no more vulnerabilities to address
         private uint? _eventCookie; // To hold the connection cookie
         private InfoBarHyperlink _hyperlinkPmui;
-        private InfoBarHyperlink _hyperlinkCopilot;
+        private InfoBarHyperlink _hyperlinkGHCopilotDocs;
 
         private Lazy<IPackageManagerLaunchService>? PackageManagerLaunchService { get; }
         private ISolutionManager? SolutionManager { get; }
@@ -41,7 +41,7 @@ namespace NuGet.SolutionRestoreManager
         public VulnerablePackagesInfoBar(ISolutionManager solutionManager, Lazy<IPackageManagerLaunchService> packageManagerLaunchService)
         {
             _hyperlinkPmui = new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage);
-            _hyperlinkCopilot = new InfoBarHyperlink(Resources.InfoBar_HyperlinkCopilot, "https://aka.ms/nugetmcp/auditFix");
+            _hyperlinkGHCopilotDocs = new InfoBarHyperlink(Resources.InfoBar_HyperlinkGHCopilotDocs, "https://aka.ms/nugetmcp/auditFix");
             SolutionManager = solutionManager;
             PackageManagerLaunchService = packageManagerLaunchService;
             SolutionManager.SolutionClosed += OnSolutionClosed;
@@ -165,18 +165,9 @@ namespace NuGet.SolutionRestoreManager
             ThreadHelper.ThrowIfNotOnUIThread();
             if (actionItem != null)
             {
-                if (actionItem.ActionContext == _hyperlinkCopilot.ActionContext)
+                if (actionItem.ActionContext == _hyperlinkGHCopilotDocs.ActionContext)
                 {
-                    try
-                    {
-                        System.Diagnostics.Process.Start(_hyperlinkCopilot.ActionContext);
-                        var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisoryGHCopilotDocs);
-                        TelemetryActivity.EmitTelemetryEvent(evt);
-                    }
-                    catch (System.ComponentModel.Win32Exception ex)
-                    {
-                        ActivityLog.LogError(LogEntrySource, ex.ToString());
-                    }
+                    LaunchGitHubCopilotDocs();
                 }
                 else
                 {
@@ -187,14 +178,28 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
+        private void LaunchGitHubCopilotDocs()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(_hyperlinkGHCopilotDocs.ActionContext);
+                var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisoryGHCopilotDocs);
+                TelemetryActivity.EmitTelemetryEvent(evt);
+            }
+            catch (System.ComponentModel.Win32Exception ex)
+            {
+                ActivityLog.LogError(LogEntrySource, ex.ToString());
+            }
+        }
+
         protected InfoBarModel GetInfoBarModel()
         {
             IEnumerable<IVsInfoBarTextSpan> textSpans = new IVsInfoBarTextSpan[]
             {
                 new InfoBarTextSpan(Resources.InfoBar_TextMessage + " "),
                 _hyperlinkPmui,
-                new InfoBarTextSpan("  "),
-                _hyperlinkCopilot
+                new InfoBarTextSpan(" | "),
+                _hyperlinkGHCopilotDocs
             };
 
             return new InfoBarModel(
