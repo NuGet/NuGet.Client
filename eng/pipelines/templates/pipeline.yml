@@ -157,6 +157,13 @@ stages:
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
+        displayName: 'Upload VSTSDrop metadata'
+        condition: "succeeded()"
+        artifactName: VSTSDrop - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+        targetPath: "$(Build.ArtifactStagingDirectory)/DropMetadata"      
+        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+
+      - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
         condition: "succeededOrFailed()"
         artifactName: LocValidationLogs - Attempt $(System.JobAttempt)
