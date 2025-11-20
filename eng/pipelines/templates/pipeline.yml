@@ -153,6 +153,8 @@ stages:
         toLowerCase: false
         usePat: true
         dropMetadataContainerName: "DropMetadata-Product"
+        sbomEnabled: true
+        sbomBuildDropPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
 
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
