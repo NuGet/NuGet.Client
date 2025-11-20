@@ -154,7 +154,7 @@ stages:
         usePat: true
         dropMetadataContainerName: "DropMetadata-Product"
         sbomEnabled: true
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: "$(Build.SourcesDirectory)\\DropMetadata-Product"
 
       - output: pipelineArtifact
         displayName: 'Upload VSTSDrop metadata'
