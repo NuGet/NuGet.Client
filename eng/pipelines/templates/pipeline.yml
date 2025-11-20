@@ -161,7 +161,6 @@ stages:
         condition: "succeeded()"
         artifactName: VSTSDrop - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: "$(Build.ArtifactStagingDirectory)\\DropMetadata-Product"      
-        sbomBuildDropPath: "$(Build.SourcesDirectory)\\artifacts"
         sbomEnabled: true
 
       - output: pipelineArtifact
