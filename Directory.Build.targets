@@ -59,9 +59,10 @@
       does it.
     -->
     <ItemGroup>
-      <_BuildOutputInPackage Remove="$(IntermediateOutputPath)%(_TargetFramework.Identity)\**\$(AssemblyName).resources.dll" />
+      <_BuildOutputInPackage Remove="@(_BuildOutputInPackage)"
+                             Condition="'%(Filename)%(Extension)' == '*.resources.dll'" />
     </ItemGroup>
   </Target>
-  
+
   <Import Project="eng\dotnet-build\ExcludeFromDotNetBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuild)' == 'true'" />
 </Project>
