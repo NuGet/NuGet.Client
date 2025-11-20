@@ -18,7 +18,7 @@ namespace NuGet.Commands.Test
         public void GetTargetGraphName_WithNullTargetAlias_ThrowsArgumentNullException()
         {
             // Arrange
-            string targetAlias = null;
+            string? targetAlias = null;
             string runtimeIdentifier = "win-x64";
 
             // Act & Assert
@@ -49,7 +49,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var framework = NuGetFramework.Parse("netcoreapp3.0");
-            string targetAlias = null;
+            string? targetAlias = null;
             var context = CreateRemoteWalkContext();
             var logger = new TestLogger();
 
@@ -75,7 +75,7 @@ namespace NuGet.Commands.Test
             // Arrange
             var framework = NuGetFramework.Parse("netcoreapp3.0");
             string runtimeIdentifier = "win-x64";
-            string targetAlias = null;
+            string? targetAlias = null;
             var context = CreateRemoteWalkContext();
             var logger = new TestLogger();
 
@@ -129,7 +129,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var framework = NuGetFramework.Parse("net5.0");
-            string runtimeIdentifier = null;
+            string? runtimeIdentifier = null;
             string targetAlias = "net5.0";
             var context = CreateRemoteWalkContext();
             var logger = new TestLogger();
