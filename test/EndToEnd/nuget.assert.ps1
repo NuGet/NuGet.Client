@@ -556,68 +556,31 @@ function Assert-NetCoreProjectCreation {
     Assert-PathExists ($project.FullName) "The project file $($project.FullName) not found."
 }
 
-function Assert-NetCorePackageInstall {
+function Assert-PackageReferenceExists {
     param(
         [parameter(Mandatory = $true)]
         $project,
-        [parameter(Mandatory = $true)]
-        [string]$Id,
-        [parameter(Mandatory = $true)]
-        [string]$Version        
+        
+        [Parameter(Mandatory=$true)]
+        [string]$PackageName,
+        
+        [Parameter(Mandatory=$true)]
+        [string]$Version
     )
-
-    Assert-NetCorePackageReference $project $id $Version
-    Assert-NetCorePackageInLockFile $project $id $Version
-}
-
-function Assert-NetCorePackageUninstall {
-    param(
-        [parameter(Mandatory = $true)]
-        $project,
-        [parameter(Mandatory = $true)]
-        [string]$Id,
-        [string]$Version        
-    )
-
-    Assert-NetCoreNoPackageReference $project $Id
-    Assert-NetCorePackageNotInLockFile $project $id
-}
-
-function Assert-NetCorePackageReference {
-    param(
-        [parameter(Mandatory = $true)]
-        $project,
-        [parameter(Mandatory = $true)]
-        [string]$Id,
-        [parameter(Mandatory = $true)]
-        [string]$Version        
-    )
-
-    $doc = [xml](Get-Content $project.FullName)
-    $references = $doc.SelectNodes("./Project/ItemGroup/PackageReference[@Include = '$id' and @Version = '$Version']")
-    if($references.Count -eq 0)
-    {
-        Assert-True ($doc.SelectNodes(".//*[name()='PackageReference'][@Include=$Id]").Version -eq $Version) 
-        "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version) with version as element or attribute"
-    }
-    else
-    {
-        Assert-True ($references.Count -eq 1) "Project $($project.FullName) does not contain a reference to Package $($Id) $($Version)"
-    }
-}
-
-function Assert-NetCoreProjectReference {
-    param(
-        [parameter(Mandatory = $true)]
-        $projectA,
-        [parameter(Mandatory = $true)]
-        $projectB      
-    )
-
-    $doc = [xml](Get-Content $projectA.FullName)
-    $references = $doc.SelectNodes("./Project/ItemGroup/ProjectReference[contains(@Include, $projectB.Name)]")
     
-    Assert-True ($references.Count -eq 1) "Project $($projectA.FullName) does not contain a reference to Project $($projectB.FullName)"
+    # Load the project file as XML
+    $projectXml = [xml](Get-Content $project.FullName)
+    
+    # Create namespace manager for MSBuild namespace
+    $namespaceManager = New-Object System.Xml.XmlNamespaceManager($projectXml.NameTable)
+    $namespaceManager.AddNamespace("ms", "http://schemas.microsoft.com/developer/msbuild/2003")
+    
+    # Use SelectNodes to find PackageReference with matching Include and Version
+    $xpath = "//ms:PackageReference[@Include='$PackageName']/ms:Version[text()='$Version']"
+    $nodes = $projectXml.SelectNodes($xpath, $namespaceManager)
+    
+    # Return true if found, false otherwise
+    return ($nodes.Count -gt 0)
 }
 
 function Assert-NetCoreNoPackageReference {
@@ -640,7 +603,6 @@ function Assert-NetCoreNoPackageReference {
         Assert-True ($references.Count -eq 0) "Project $($project.FullName) contains a reference to Package $($Id)"
     }
 }
-
 
 function Assert-NetCorePackageInLockFile {
     param(

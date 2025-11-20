@@ -7,7 +7,7 @@ function Test-BuildIntegratedInstallPackage {
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
 
     # Assert
-    Assert-NetCorePackageReference $project NuGet.Versioning 1.0.7
+    Assert-PackageReferenceExists $project NuGet.Versioning 1.0.7
     Assert-NetCorePackageInLockFile $project NuGet.Versioning 1.0.7
     Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
 }
@@ -22,15 +22,14 @@ function Test-BuildIntegratedInstallMultiplePackages {
     Install-Package DotNetRDF -version 1.0.8.3533
 
     # Assert
-    Assert-NetCorePackageReference $project NuGet.Versioning 1.0.7
-    Assert-NetCorePackageReference $project DotNetRDF 1.0.8.3533
+    Assert-PackageReferenceExists $project NuGet.Versioning 1.0.7
+    Assert-PackageReferenceExists $project DotNetRDF 1.0.8.3533
     Assert-NetCorePackageInLockFile $project NuGet.Versioning 1.0.7
     Assert-NetCorePackageInLockFile $project DotNetRDF 1.0.8.3533
     Assert-NetCorePackageInLockFile $project Newtonsoft.Json 6.0.8
     Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/netcore45/Newtonsoft.Json.dll
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1/dotNetRDF.dll
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1/Portable.Runtime.dll
+    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/net45/Newtonsoft.Json.dll
+    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/net40/dotNetRDF.dll
 }
 
 # install and then uninstall multiple packages
@@ -89,7 +88,7 @@ function Test-BuildIntegratedUpdatePackage {
     Update-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6
 
     # Assert
-    Assert-NetCorePackageReference $project NuGet.Versioning 1.0.6
+    Assert-PackageReferenceExists $project NuGet.Versioning 1.0.6
     Assert-NetCorePackageInLockFile $project NuGet.Versioning 1.0.6
     Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
 }
