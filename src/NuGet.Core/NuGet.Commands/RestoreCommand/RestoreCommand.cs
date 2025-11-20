@@ -613,7 +613,7 @@ namespace NuGet.Commands
                 for (var i = 0; i < frameworkRuntimePairs.Count; i++)
                 {
                     var restoreTargetGraph = RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, frameworkRuntimePairs[i].TargetAlias, frameworkRuntimePairs[i].Framework, frameworkRuntimePairs[i].RuntimeIdentifier);
-                    graphs[i] = restoreTargetGraph;
+                    graphs.Add(restoreTargetGraph);
                 }
             }
 
