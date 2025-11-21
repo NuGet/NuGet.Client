@@ -33,6 +33,7 @@ stages:
       name: VS_Apex_Tests
       displayName: Apex Tests On Windows
       owner: "nugetclienteng"
+      testMachineLab: "VSIDE"
       condition: ${{parameters.condition}}
       dependsOn: ${{parameters.dependsOn}}
       variables:
@@ -48,13 +49,9 @@ stages:
       - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
         value: "main"
       testMachineConfigurationJobTimeoutInMinutes: 30
-      testMachineDeploymentJobTimeoutInMinutes: 240
       testMachineConfigurationJobDisplayName: 'Apex Test Machine Configuration'
-      testMachineDeploymentJobDisplayName: 'Apex Test Machine Deployment'
       testExecutionJobDisplayName: 'Apex Test Execution'
-      testMachineCleanUpJobDisplayName: 'Apex Test Machine Clean Up'
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
-      testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       preTestMachineConfigurationSteps:
       - download: ComponentBuildUnderTest
         artifact: MicroBuildOutputs
@@ -118,26 +115,21 @@ stages:
             $buildDrop = "${{parameters.baseBuildDrop}}" -split "/"
             $dropName = "Products/DevDiv/VS/$($buildDrop[-2])/$($buildDrop[-1])"
             Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
+      - task: PowerShell@1
+        displayName: "Print Environment Variables"
+        inputs:
+          scriptType: "inlineScript"
+          inlineScript: |
+            Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-##############################
-## preDeployAndRunTestsStepList
-##############################
-      preDeployAndRunTestsStepList:
-        - task: PowerShell@1
-          displayName: "Print Environment Variables"
-          inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
-              Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download scripts"
+        inputs:
+          artifactName: "scripts"
+          downloadPath: "$(Build.StagingDirectory)/scripts"
 
-        - task: DownloadPipelineArtifact@2
-          displayName: "Download scripts"
-          inputs:
-            artifactName: "scripts"
-            downloadPath: "$(Build.StagingDirectory)/scripts"
-
-        - task: PowerShell@1
-          displayName: "SetupFunctionalTests.ps1"
-          inputs:
-            scriptName: "$(Build.StagingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
+      - task: PowerShell@1
+        displayName: "SetupFunctionalTests.ps1"
+        inputs:
+          scriptName: "$(Build.StagingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
 
