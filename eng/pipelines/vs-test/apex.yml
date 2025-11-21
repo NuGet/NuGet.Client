@@ -42,9 +42,6 @@ stages:
           - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: $(bootstrapperUrl)
-      baseVisualStudioBootstrapperURI: https://vsdrop.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
-      candidateBaselineBuilds: $(BaselineBuildCommitIds)
-      testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
       testMachineConfigurationJobVariables:
@@ -56,10 +53,8 @@ stages:
       testMachineDeploymentJobDisplayName: 'Apex Test Machine Deployment'
       testExecutionJobDisplayName: 'Apex Test Execution'
       testMachineCleanUpJobDisplayName: 'Apex Test Machine Clean Up'
-      testRunContinueOnError: ${{ parameters.isOfficialBuild }}
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
-      testAgentElevated: true
       preTestMachineConfigurationSteps:
       - download: ComponentBuildUnderTest
         artifact: MicroBuildOutputs
