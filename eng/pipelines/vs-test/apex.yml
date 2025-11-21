@@ -51,6 +51,7 @@ stages:
           displayName: "Print Environment Variables"
           scriptBlock: |
             Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+          timeout: "0:0:5:0"
 
         - operation: downloadAzureArtifactsDrop
           displayName: "Download scripts"
@@ -61,3 +62,4 @@ stages:
         - operation: executePowerShellScript
           displayName: "SetupFunctionalTests.ps1"
           scriptPath: "c:\\nuget\\RunSettings\\scripts\\e2etests\\SetupFunctionalTests.ps1"
+          timeout: "0:0:10:0"
