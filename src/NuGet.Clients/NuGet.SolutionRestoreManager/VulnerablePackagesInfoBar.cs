@@ -172,7 +172,7 @@ namespace NuGet.SolutionRestoreManager
                 else
                 {
                     PackageManagerLaunchService?.Value.LaunchSolutionPackageManager();
-                    var evt = NavigatedTelemetryEvent.CreateWithExternalLink(HyperlinkType.VulnerabilityAdvisory);
+                    var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarManagePackages();
                     TelemetryActivity.EmitTelemetryEvent(evt);
                 }
             }
