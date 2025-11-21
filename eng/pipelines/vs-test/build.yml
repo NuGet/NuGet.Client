@@ -167,6 +167,12 @@ steps:
       Contents: "NuGet.exe"
       TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
 
+  - task: CopyFiles@2
+    displayName: "Copy scripts for cloudbuild machines"
+    inputs:
+      SourceFolder: "$(Build.Repository.LocalPath)\\scripts"
+      TargetFolder: "$(Build.StagingDirectory)\\RunSettings\\scripts"
+
   - task: NuGetToolInstaller@1
 
   - task: NuGetCommand@2

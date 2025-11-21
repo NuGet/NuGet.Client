@@ -47,21 +47,17 @@ stages:
 ## preDeployAndRunTestsOperations
 ##############################
       preDeployAndRunTestsOperations:
-        - task: PowerShell@1
+        - operation: executePowerShellInline
           displayName: "Print Environment Variables"
-          inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
-              Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+          scriptBlock: |
+            Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-        - task: DownloadPipelineArtifact@2
+        - operation: downloadAzureArtifactsDrop
           displayName: "Download scripts"
-          inputs:
-            artifactName: "scripts"
-            downloadPath: "$(Build.StagingDirectory)/scripts"
+          dropName: "$(RunSettingsDrop)"
+          destinationDirectory: "c:\\nuget\\RunSettings"
+          timeout: "0:0:10:0"
 
-        - task: PowerShell@1
+        - operation: executePowerShellScript
           displayName: "SetupFunctionalTests.ps1"
-          inputs:
-            scriptName: "$(Build.StagingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
-
+          scriptPath: "c:\\nuget\\RunSettings\\scripts\\e2etests\\SetupFunctionalTests.ps1"
