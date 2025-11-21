@@ -30,7 +30,7 @@ stages:
         - ${{if gt(length(parameters.variables), 0)}}:
           - ${{parameters.variables}}
       owner: nugetclienteng
-      testMachineLab: "VSIDE"
+      testMachineLab: "NuGet"
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: ${{parameters.bootstrapperUrl}}
       visualStudioSigning: Test
