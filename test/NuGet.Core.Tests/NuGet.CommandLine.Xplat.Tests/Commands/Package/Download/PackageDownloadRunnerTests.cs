@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -214,9 +215,8 @@ public class PackageDownloadRunnerTests
         // Arrange
         var packageId = "Contoso.Package";
         var packageSource = new PackageSource(sourceNameConfig, sourceNameConfig);
-        var repository = new Mock<SourceRepository>();
-        repository.Setup(r => r.PackageSource).Returns(packageSource);
-        var allRepos = new List<SourceRepository> { repository.Object };
+        var repository = new SourceRepository(packageSource, Array.Empty<INuGetResourceProvider>());
+        var allRepos = new List<SourceRepository> { repository };
         var mappedNames = new List<string> { sourceNameMapped };
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
 
@@ -238,10 +238,9 @@ public class PackageDownloadRunnerTests
         // Arrange
         var packageId = "Contoso.Package";
 
-        var existingRepo = new Mock<SourceRepository>();
-        existingRepo.Setup(r => r.PackageSource).Returns(new PackageSource("A", "A"));
+        var existingRepo = new SourceRepository(new PackageSource("A", "A"), Array.Empty<INuGetResourceProvider>());
 
-        var allRepos = new List<SourceRepository> { existingRepo.Object };
+        var allRepos = new List<SourceRepository> { existingRepo };
         string mappedName = "MissingSource";
         var mappedNames = new List<string> { mappedName };
 
@@ -277,13 +276,10 @@ public class PackageDownloadRunnerTests
         var packageSourceA = new PackageSource("Source1", "Source1");
         var packageSourceB = new PackageSource("Source2", "Source2");
 
-        var repoA = new Mock<SourceRepository>();
-        repoA.Setup(r => r.PackageSource).Returns(packageSourceA);
+        var repoA = new SourceRepository(packageSourceA, Array.Empty<INuGetResourceProvider>());
+        var repoB = new SourceRepository(packageSourceB, Array.Empty<INuGetResourceProvider>());
 
-        var repoB = new Mock<SourceRepository>();
-        repoB.Setup(r => r.PackageSource).Returns(packageSourceB);
-
-        var allRepos = new List<SourceRepository> { repoA.Object, repoB.Object };
+        var allRepos = new List<SourceRepository> { repoA, repoB };
         var mappedNames = new List<string> { "Source1", "source2" };
 
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
