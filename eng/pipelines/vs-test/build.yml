@@ -218,6 +218,10 @@ steps:
           Write-Host "Run Settings Drop: $runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
+
+          $vsBootstrapperBranch = dotnet msbuild -getProperty:VsTargetBranch build\config.props
+          Write-Host "VS Bootstrapper Branch: $vsBootstrapperBranch"
+          Write-Host "##vso[task.setvariable variable=VsBootstrapperBranch;isOutput=true]$vsBootstrapperBranch"
         } catch {
           Write-Host "##vso[task.LogIssue type=error;]Unable to set variables for DartLab: $_"
           exit 1
