@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
         private INuGetUILogger _logger;
         private Task<SearchResultContextInfo> _initialSearchResultTask;
         private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
-        private readonly FixVulnerabilitiesViewModel _fixVulnerabilitiesViewModel;
+        private FixVulnerabilitiesViewModel _fixVulnerabilitiesViewModel;
         private bool _checkBoxesEnabled;
 
         private const string LogEntrySource = "NuGet Package Manager";
@@ -172,7 +172,7 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
-                
+                _fixVulnerabilitiesViewModel = value;
             }
         }
 
@@ -866,6 +866,11 @@ namespace NuGet.PackageManagement.UI
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
         {
             GroupExpansionChanged?.Invoke(sender, e);
+        }
+
+        private void SettingsButtonClicked(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

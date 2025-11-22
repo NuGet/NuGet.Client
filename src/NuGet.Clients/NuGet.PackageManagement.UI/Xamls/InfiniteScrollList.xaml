@@ -446,13 +446,13 @@
     <Grid DockPanel.Dock="Top" DataContext="{Binding FixVulnerabilitiesViewModel}">
       <TextBlock Grid.Column="1" x:Name="_textStatus" Margin="0,0,9,0" TextWrapping="Wrap">
         <Run Text="{Binding MappingStatus, Mode=OneWay}" />
-        <Control Margin="6,0,0,0" IsTabStop="False" />
-        <controls:ButtonHyperlink Click="SettingsButtonClicked"
-                   Style="{StaticResource HyperlinkStyleNoUri}"
-                   AutomationProperties.Name="{x:Static nuget:Resources.Button_FixVulnerablities}">
-          <TextBlock TextWrapping="Wrap" Text="{x:Static nuget:Resources.Button_FixVulnerablities}" />
+        <Control Margin="6,0,0,0" IsTabStop="True" />
+        <controls:ButtonHyperlink Click="SettingsButtonClicked">
+          <TextBlock TextWrapping="Wrap" Text="Fix Vulnerabilities with Copilot" />
         </controls:ButtonHyperlink>
       </TextBlock>
+      <!--Style="{StaticResource HyperlinkStyleNoUri}"
+                   AutomationProperties.Name="{x:Static nuget:Resources.Button_FixVulnerablities}">-->
     </Grid>
     <Grid
       DockPanel.Dock="Top"

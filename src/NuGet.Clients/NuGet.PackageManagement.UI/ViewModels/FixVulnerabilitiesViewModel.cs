@@ -8,13 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
-using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
     public class FixVulnerabilitiesViewModel : ViewModelBase, IDisposable
     {
-        private readonly UIContext _copilotReadyContext;
+        //private readonly UIContext _copilotReadyContext;
         private readonly IServiceBroker _serviceBroker;
         private bool _hasVulnerabilities;
         private bool _isCopilotReady;
@@ -23,9 +22,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public FixVulnerabilitiesViewModel(IServiceBroker serviceBroker)
         {
             _serviceBroker = serviceBroker ?? throw new ArgumentNullException(nameof(serviceBroker));
-            _copilotReadyContext = UIContext.FromUIContextGuid(CopilotUIContexts.CompletionsPackageAvailable);
-            _copilotReadyContext.UIContextChanged += CopilotContextChangedHandler;
-            CopilotContextChanged();
+            //_copilotReadyContext = UIContext.FromUIContextGuid(CopilotUIContexts.CompletionsPackageAvailable);
+            //_copilotReadyContext.UIContextChanged += CopilotContextChangedHandler;
+            //ThreadHelper.ThrowIfNotOnUIThread();
+            //CopilotContextChanged();
         }
 
         public bool IsCopilotReady
@@ -85,16 +85,17 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        private void CopilotContextChangedHandler(object? sender, EventArgs e)
-        {
-            CopilotContextChanged();
-        }
+        //private void CopilotContextChangedHandler(object? sender, EventArgs e)
+        //{
+        //    ThreadHelper.ThrowIfNotOnUIThread();
+        //    CopilotContextChanged();
+        //}
 
-        private void CopilotContextChanged()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            IsCopilotReady = _copilotReadyContext.IsActive;
-        }
+        //private void CopilotContextChanged()
+        //{
+        //    ThreadHelper.ThrowIfNotOnUIThread();
+        //    //IsCopilotReady = _copilotReadyContext.IsActive;
+        //}
 
         protected virtual void Dispose(bool disposing)
         {
@@ -102,7 +103,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 if (disposing)
                 {
-                    _copilotReadyContext.UIContextChanged -= CopilotContextChangedHandler;
+                    //_copilotReadyContext.UIContextChanged -= CopilotContextChangedHandler;
                 }
                 _disposed = true;
             }
@@ -113,13 +114,5 @@ namespace NuGet.PackageManagement.UI.ViewModels
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-    }
-
-    internal static class CopilotUIContexts
-    {
-        public static readonly Guid ChatUiPackageLoaded = new("871c3e1c-e58c-4ce9-b6a7-26600555739a");
-        public static readonly Guid ChatUiPackageAvailable = new("a8984974-3a2f-4e50-810a-4cc51f6c1a04");
-        public static readonly Guid CompletionsPackageAvailable = new("a7f179b8-a8e8-4729-86e1-414bb0a103c8");
-        public static readonly Guid AuthStatusDetermined = new("c936efcc-6baa-4ad3-9c2b-7ba750acf18f");
     }
 }
