@@ -5,6 +5,8 @@ parameters:
     type: string
   - name: runSettingsURI
     type: string
+  - name: VsBootstrapperBranch
+    type: string
   - name: condition
     type: string
   - name: variables
@@ -41,7 +43,7 @@ stages:
       testDeploymentCleanupMode: ${{parameters.testDeploymentCleanupMode}}
       testMachineConfigurationJobVariables:
       - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
-        value: # The branch in the VS repo the bootstrapper was based on, e.g. "main"
+        value: ${{parameters.VsBootstrapperBranch}}
 
 ##############################
 ## preDeployAndRunTestsOperations

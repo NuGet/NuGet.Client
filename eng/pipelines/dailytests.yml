@@ -51,19 +51,11 @@ stages:
     dependsOn:
     - Build
     variables:
-    - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: VsBaseBuildDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.BaseBuildDrop']]
-    - name: QBuildSessionId
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.QBuildSessionId']]
     - name: RunSettingsDrop
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    - name: VsBootstrapperBranch
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
-    bootstrapperUrl: $(VsBootstrapperUrl)
+    bootstrapperUrl: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
     isOfficialBuild: false
-    QBuildSessionId: $(QBuildSessionId)
     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.Daily.runsettings
     testExecutionJobTimeoutInMinutes: 150
     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
+    VsBootstrapperBranch: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
