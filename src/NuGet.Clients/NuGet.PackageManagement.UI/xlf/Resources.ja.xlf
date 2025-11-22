@@ -157,6 +157,11 @@
         <target state="translated">無視</target>
         <note />
       </trans-unit>
+      <trans-unit id="Button_FixVulnerablities">
+        <source>Fix Vulnerabilities with Copilot</source>
+        <target state="new">Fix Vulnerabilities with Copilot</target>
+        <note>Copilot should not be translated</note>
+      </trans-unit>
       <trans-unit id="Button_IAccept">
         <source>I _Accept</source>
         <target state="translated">同意する(_A)</target>

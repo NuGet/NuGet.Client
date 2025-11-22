@@ -1015,4 +1015,8 @@ Error: {1}</value>
   <data name="ShowMessage_LocalsCommandMoreInformation" xml:space="preserve">
     <value>For more information, see</value>
   </data>
+  <data name="Button_FixVulnerablities" xml:space="preserve">
+    <value>Fix Vulnerabilities with Copilot</value>
+    <comment>Copilot should not be translated</comment>
+  </data>
 </root>

@@ -340,6 +340,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fix Vulnerabilities with Copilot.
+        /// </summary>
+        public static string Button_FixVulnerablities {
+            get {
+                return ResourceManager.GetString("Button_FixVulnerablities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to I _Accept.
         /// </summary>
         public static string Button_IAccept {
