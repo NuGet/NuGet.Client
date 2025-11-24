@@ -62,26 +62,40 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             switch (moniker)
             {
                 case MonikerPackageSources:
-                    var packageSources = await Task.Run(
-                             () => LoadPackageSources(isMachineWide: false),
-                        cancellationToken);
+                    {
+                        var packageSources = await Task.Run(
+                            () => LoadPackageSources(isMachineWide: false),
+                            cancellationToken);
 
-                    return GetValuePackageSources<T>(packageSources);
+                        return GetValuePackageSources<T>(packageSources);
+                    }
                 case MonikerNuGetAudit:
-                    return await ConvertValueOrThrow<T>(DefaultNuGetAudit);
+                    {
+                        var auditSources = await Task.Run(
+                            () => LoadAuditSources(),
+                            cancellationToken);
+                        if (auditSources.Count > 0)
+                        {
+                            return await ConvertValueOrThrow<T>(true);
+                        }
+                        return await ConvertValueOrThrow<T>(DefaultNuGetAudit);
+                    }
                 case MonikerAuditSources:
-                    var auditSources = await Task.Run(
-                        () => LoadAuditSources(),
-                        cancellationToken);
+                    {
+                        var auditSources = await Task.Run(
+                            () => LoadAuditSources(),
+                            cancellationToken);
 
-                    return GetValuePackageSources<T>(auditSources);
+                        return GetValuePackageSources<T>(auditSources);
+                    }
                 case MonikerMachineWideSources:
-                    var machineWidePackageSources = await Task.Run(
-                        () => LoadPackageSources(isMachineWide: true),
-                        cancellationToken);
+                    {
+                        var machineWidePackageSources = await Task.Run(
+                            () => LoadPackageSources(isMachineWide: true),
+                            cancellationToken);
 
-                    return GetValuePackageSources<T>(machineWidePackageSources);
-
+                        return GetValuePackageSources<T>(machineWidePackageSources);
+                    }
                 default: break;
             }
 
