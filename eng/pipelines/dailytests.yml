@@ -53,8 +53,12 @@ stages:
     variables:
     - name: RunSettingsDrop
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    bootstrapperUrl: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+    - name: bootstrapperUrl
+      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+    - name: VsBootstrapperBranch
+      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
+    bootstrapperUrl: $(bootstrapperUrl)
     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.Daily.runsettings
     testExecutionJobTimeoutInMinutes: 150
     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
-    VsBootstrapperBranch: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
+    VsBootstrapperBranch: $(VsBootstrapperBranch)

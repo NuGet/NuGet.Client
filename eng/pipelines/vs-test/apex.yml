@@ -41,9 +41,9 @@ stages:
       testExecutionJobDisplayName: 'Apex Test Execution'
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testDeploymentCleanupMode: ${{parameters.testDeploymentCleanupMode}}
-      #testMachineConfigurationJobVariables:
-      #- name: VisualStudio.InstallationUnderTest.BootstrapperBranch
-      #  value: ${{parameters.VsBootstrapperBranch}}
+      testMachineConfigurationJobVariables:
+      - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
+        value: ${{parameters.VsBootstrapperBranch}}
 
 ##############################
 ## preDeployAndRunTestsOperations
