@@ -1,1 +1,2 @@
 #nullable enable
+NuGet.Configuration.IPackageSourceProvider.IPackageSourceProvider(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>! sources) -> void

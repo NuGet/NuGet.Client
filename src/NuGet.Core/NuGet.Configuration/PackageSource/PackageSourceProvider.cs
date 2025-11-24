@@ -830,9 +830,76 @@ namespace NuGet.Configuration
             }
         }
 
+        public void SaveAuditSources(IEnumerable<PackageSource> sources)
+        {
+            SaveAuditSources(sources, EnvironmentVariableWrapper.Instance);
+        }
+
+        internal void SaveAuditSources(IEnumerable<PackageSource> sources, IEnvironmentVariableReader environmentVariableReader)
+        {
+            //return LoadPackageSources(Settings, ConfigurationConstants.AuditSources, _configurationDefaultAuditSources, environmentVariableReader);
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            var isDirty = false;
+            var existingSettingsLookup = GetExistingSettingsLookup(ConfigurationConstants.AuditSources);
+
+            foreach (var source in sources)
+            {
+                SourceItem? existingSourceItem = null;
+
+                if (existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem))
+                {
+                    var oldPackageSource = ReadPackageSource(existingSourceItem, isEnabled: true, Settings, environmentVariableReader);
+
+                    UpdatePackageSource(
+                        source,
+                        oldPackageSource,
+                        existingDisabledSourceItem: null,
+                        existingCredentialsItem: null,
+                        updateEnabled: false,
+                        updateCredentials: false,
+                        shouldSkipSave: true,
+                        isDirty: ref isDirty);
+                }
+                else
+                {
+                    AddPackageSource(source, shouldSkipSave: true, isDirty: ref isDirty);
+                }
+
+                if (existingSourceItem != null)
+                {
+                    existingSettingsLookup.Remove(source.Name);
+                }
+            }
+
+            if (existingSettingsLookup != null)
+            {
+                foreach (var sourceItem in existingSettingsLookup)
+                {
+                    Settings.Remove(ConfigurationConstants.PackageSources, sourceItem.Value);
+                    isDirty = true;
+                }
+            }
+
+            if (isDirty)
+            {
+                Settings.SaveToDisk();
+                OnPackageSourcesChanged();
+                isDirty = false;
+            }
+        }
+
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
         {
-            SettingSection? sourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
+            return GetExistingSettingsLookup(ConfigurationConstants.PackageSources);
+        }
+
+        private Dictionary<string, SourceItem> GetExistingSettingsLookup(string sectionName)
+        {
+            SettingSection? sourcesSection = Settings.GetSection(sectionName);
             List<SourceItem>? existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(
                 c => !(c.Origin == null || c.Origin.IsReadOnly || c.Origin.IsMachineWide))
                 .ToList();

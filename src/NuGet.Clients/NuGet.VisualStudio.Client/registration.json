@@ -229,11 +229,6 @@
 
             // The properties of items in this array
             "properties": {
-              "isEnabled": {
-                "type": "boolean",
-                "title": "@Text_PackageSourceEnabled_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                "default": true
-              },
               "sourceName": {
                 "type": "string",
                 "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
