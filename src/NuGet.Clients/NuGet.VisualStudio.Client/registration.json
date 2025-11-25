@@ -211,6 +211,7 @@
           "type": "boolean",
           "title": "@Text_AuditSources_Checkbox;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
+          "enableWhen": "${config:auditSources} != '[]'",
           "messages": [
             {
               "text": "@Text_AuditSources_HowToRemove;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
