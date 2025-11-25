@@ -17,7 +17,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     [Guid("15C605EC-4FD7-446B-BA4A-75ECF0C0B2D0")]
     public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
+        internal const bool DefaultNuGetAudit = false;
         internal const string MonikerPackageSources = "packageSources";
+        internal const string MonikerAuditSources = "auditSources";
+        internal const string MonikerNuGetAudit = "nuGetAudit";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
         internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
@@ -48,24 +51,51 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return filteredPackageSources;
         }
 
+        private List<PackageSource> LoadAuditSources()
+        {
+            IEnumerable<PackageSource> auditSources = _packageSourceProvider.LoadAuditSources();
+            return auditSources.ToList();
+        }
+
         public override async Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
             switch (moniker)
             {
                 case MonikerPackageSources:
-                    var packageSources = await Task.Run(
-                        () => LoadPackageSources(isMachineWide: false),
-                        cancellationToken);
+                    {
+                        var packageSources = await Task.Run(
+                            () => LoadPackageSources(isMachineWide: false),
+                            cancellationToken);
 
-                    return GetValuePackageSources<T>(packageSources);
+                        return GetValuePackageSources<T>(packageSources);
+                    }
+                case MonikerNuGetAudit:
+                    {
+                        var auditSources = await Task.Run(
+                            () => LoadAuditSources(),
+                            cancellationToken);
+                        if (auditSources.Count > 0)
+                        {
+                            return await ConvertValueOrThrow<T>(true);
+                        }
+                        return await ConvertValueOrThrow<T>(DefaultNuGetAudit);
+                    }
+                case MonikerAuditSources:
+                    {
+                        var auditSources = await Task.Run(
+                            () => LoadAuditSources(),
+                            cancellationToken);
 
+                        return GetValuePackageSources<T>(auditSources);
+                    }
                 case MonikerMachineWideSources:
-                    var machineWidePackageSources = await Task.Run(
-                        () => LoadPackageSources(isMachineWide: true),
-                        cancellationToken);
+                    {
+                        var machineWidePackageSources = await Task.Run(
+                            () => LoadPackageSources(isMachineWide: true),
+                            cancellationToken);
 
-                    return GetValuePackageSources<T>(machineWidePackageSources);
-
+                        return GetValuePackageSources<T>(machineWidePackageSources);
+                    }
                 default: break;
             }
 
@@ -75,12 +105,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
-            if (packageSourcesList is null)
-            {
-                throw new InvalidOperationException();
-            }
-
             bool hasAnyHiddenPropertyChanged = false;
 
             try
@@ -90,7 +114,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 switch (moniker)
                 {
+                    case MonikerNuGetAudit:
+                        return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
                     case MonikerPackageSources:
+                        var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
+                        if (packageSourcesList is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
                         return await Task.Run(
                             () =>
                             {
@@ -99,10 +130,28 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                                 return savePackageSourcesResult.result;
                             },
                             cancellationToken);
-
-                    case MonikerMachineWideSources:
+                    case MonikerAuditSources:
+                        var auditSourceList = value as IReadOnlyList<IDictionary<string, object>>;
+                        if (auditSourceList is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
                         return await Task.Run(
-                            () => SetIsEnabledOnMachineWidePackageSources(packageSourcesList, cancellationToken),
+                            () =>
+                            {
+                                (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) saveAuditSourcesResult = SaveAuditSources(auditSourceList, cancellationToken);
+                                hasAnyHiddenPropertyChanged = saveAuditSourcesResult.hasAnyHiddenPropertyChanged;
+                                return saveAuditSourcesResult.result;
+                            },
+                            cancellationToken);
+                    case MonikerMachineWideSources:
+                        var machineWidePackageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
+                        if (machineWidePackageSourcesList is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
+                        return await Task.Run(
+                            () => SetIsEnabledOnMachineWidePackageSources(machineWidePackageSourcesList, cancellationToken),
                             cancellationToken);
 
                     default:
@@ -237,6 +286,74 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return (result, hasAnyHiddenPropertyChanged);
         }
 
+        private (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) SaveAuditSources(
+            IReadOnlyList<IDictionary<string, object>> auditSourceDictionaryList,
+            CancellationToken cancellationToken)
+        {
+            bool hasAnyHiddenPropertyChanged = false;
+            ExternalSettingOperationResult result;
+
+            try
+            {
+                List<PackageSource> auditSources = new List<PackageSource>(capacity: auditSourceDictionaryList.Count);
+                List<PackageSource> existingAuditSources = LoadAuditSources();
+                bool hasAnyPackageSourceNameChanged = false;
+
+                foreach (Dictionary<string, object> packageSourceDictionary in auditSourceDictionaryList)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    string name = packageSourceDictionary[MonikerSourceName].ToString();
+                    string lookupName;
+
+                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+                    {
+                        lookupName = packageSourceIdObj.ToString();
+
+                        if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
+                            hasAnyPackageSourceNameChanged = true;
+                        }
+                    }
+                    else // Newly added Package Sources will not have a Package ID yet.
+                    {
+                        lookupName = name;
+                    }
+
+                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
+
+                    PackageSource packageSource =
+                        PackageSourceValidator.FindExistingOrCreate(
+                            lookupName,
+                            source,
+                            name,
+                            isEnabled: true,
+                            allowInsecureConnections: false,
+                            existingAuditSources);
+
+                    auditSources.Add(packageSource);
+                }
+
+                _packageSourceProvider.SaveAuditSources(auditSources);
+
+                hasAnyHiddenPropertyChanged = hasAnyPackageSourceNameChanged;
+
+                result = ExternalSettingOperationResult.Success.Instance;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                result = CreateSettingErrorResult(ex.Message, isTransient: true);
+                ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
+            }
+
+            return (result, hasAnyHiddenPropertyChanged);
+        }
+
+
         private static PackageSource ParsePackageSource(IReadOnlyDictionary<string, object> packageSourceDictionary)
         {
             string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
@@ -260,6 +377,28 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 AllowInsecureConnections = allowInsecureConnections,
             };
+
+            return packageSource;
+        }
+
+        private static PackageSource ParseAuditSource(IReadOnlyDictionary<string, object> auditSourceDictionary)
+        {
+            string name = auditSourceDictionary[MonikerSourceName].ToString().Trim();
+            string? lookupName;
+
+            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+            if (auditSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+            {
+                lookupName = packageSourceIdObj.ToString().Trim();
+            }
+            else // Newly added Package Sources will not have a Package ID yet.
+            {
+                lookupName = name;
+            }
+
+            string source = auditSourceDictionary[MonikerSourceUrl].ToString().Trim();
+
+            var packageSource = new PackageSource(source, lookupName, isEnabled: true);
 
             return packageSource;
         }
@@ -317,7 +456,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             var settingMessages = new OneOrMany<SettingMessage>();
 
-            if (arraySettingMoniker != MonikerPackageSources)
+            bool isAuditSources = arraySettingMoniker == MonikerAuditSources;
+            bool isPackageSources = arraySettingMoniker == MonikerPackageSources;
+            if (!isPackageSources && !isAuditSources)
             {
                 return settingMessages;
             }
@@ -336,7 +477,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     case MonikerSourceUrl:
                         {
                             var packageSourceDictionary = arraySettingContent[arrayItemIndex];
-                            var result = ParsePackageSource(packageSourceDictionary);
+                            PackageSource result = isPackageSources
+                                ? ParsePackageSource(packageSourceDictionary)
+                                : ParseAuditSource(packageSourceDictionary);
 
                             var isValidSource = PackageSourceValidator.IsValidSource(result);
                             if (!isValidSource)
