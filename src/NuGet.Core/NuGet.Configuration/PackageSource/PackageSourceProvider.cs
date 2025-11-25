@@ -227,6 +227,9 @@ namespace NuGet.Configuration
             loadedPackageSources.InsertRange(defaultSourcesInsertIndex, defaultPackageSourcesToBeAdded);
         }
 
+        /// <summary>
+        /// Create a package source from the package source or audit source setting.
+        /// </summary>
         internal static PackageSource ReadPackageSource(SourceItem setting, bool isEnabled, ISettings settings, IEnvironmentVariableReader environmentVariableReader)
         {
             var name = setting.Key;
@@ -613,6 +616,31 @@ namespace NuGet.Configuration
                     isDirty: ref isDirty);
             }
         }
+        private void UpdateAuditSource(
+            PackageSource newSource,
+            PackageSource existingSource,
+            bool shouldSkipSave,
+            ref bool isDirty)
+        {
+            if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
+                    newSource.ProtocolVersion != existingSource.ProtocolVersion ||
+                    newSource.AllowInsecureConnections != existingSource.AllowInsecureConnections ||
+                    newSource.DisableTLSCertificateValidation != existingSource.DisableTLSCertificateValidation) && newSource.IsPersistable)
+                {
+                    Settings.AddOrUpdate(ConfigurationConstants.AuditSources, newSource.AsSourceItem());
+                    isDirty = true;
+                }
+
+                if (!shouldSkipSave && isDirty)
+                {
+                    Settings.SaveToDisk();
+                    OnPackageSourcesChanged();
+                    isDirty = false;
+                }
+            }
+        }
 
         private void UpdatePackageSource(
             PackageSource newSource,
@@ -689,6 +717,22 @@ namespace NuGet.Configuration
 
             var isDirty = false;
             AddPackageSource(source, shouldSkipSave: false, isDirty: ref isDirty);
+        }
+
+        private void AddAuditSource(PackageSource source, bool shouldSkipSave, ref bool isDirty)
+        {
+            if (source.IsPersistable)
+            {
+                Settings.AddOrUpdate(ConfigurationConstants.AuditSources, source.AsSourceItem());
+                isDirty = true;
+            }
+
+            if (!shouldSkipSave && isDirty)
+            {
+                Settings.SaveToDisk();
+                OnPackageSourcesChanged();
+                isDirty = false;
+            }
         }
 
         private void AddPackageSource(PackageSource source, bool shouldSkipSave, ref bool isDirty)
@@ -837,7 +881,6 @@ namespace NuGet.Configuration
 
         internal void SaveAuditSources(IEnumerable<PackageSource> sources, IEnvironmentVariableReader environmentVariableReader)
         {
-            //return LoadPackageSources(Settings, ConfigurationConstants.AuditSources, _configurationDefaultAuditSources, environmentVariableReader);
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
@@ -854,19 +897,15 @@ namespace NuGet.Configuration
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, isEnabled: true, Settings, environmentVariableReader);
 
-                    UpdatePackageSource(
+                    UpdateAuditSource(
                         source,
                         oldPackageSource,
-                        existingDisabledSourceItem: null,
-                        existingCredentialsItem: null,
-                        updateEnabled: false,
-                        updateCredentials: false,
                         shouldSkipSave: true,
                         isDirty: ref isDirty);
                 }
                 else
                 {
-                    AddPackageSource(source, shouldSkipSave: true, isDirty: ref isDirty);
+                    AddAuditSource(source, shouldSkipSave: true, isDirty: ref isDirty);
                 }
 
                 if (existingSourceItem != null)
@@ -879,7 +918,7 @@ namespace NuGet.Configuration
             {
                 foreach (var sourceItem in existingSettingsLookup)
                 {
-                    Settings.Remove(ConfigurationConstants.PackageSources, sourceItem.Value);
+                    Settings.Remove(ConfigurationConstants.AuditSources, sourceItem.Value);
                     isDirty = true;
                 }
             }

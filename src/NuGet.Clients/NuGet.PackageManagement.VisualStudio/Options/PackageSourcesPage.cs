@@ -323,16 +323,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     }
 
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
-                    bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
-                    bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
 
                     PackageSource packageSource =
                         PackageSourceValidator.FindExistingOrCreate(
                             lookupName,
                             source,
                             name,
-                            isEnabled,
-                            allowInsecureConnections,
+                            isEnabled: true,
+                            allowInsecureConnections: false,
                             existingAuditSources);
 
                     auditSources.Add(packageSource);
@@ -379,6 +377,28 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 AllowInsecureConnections = allowInsecureConnections,
             };
+
+            return packageSource;
+        }
+
+        private static PackageSource ParseAuditSource(IReadOnlyDictionary<string, object> auditSourceDictionary)
+        {
+            string name = auditSourceDictionary[MonikerSourceName].ToString().Trim();
+            string? lookupName;
+
+            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+            if (auditSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+            {
+                lookupName = packageSourceIdObj.ToString().Trim();
+            }
+            else // Newly added Package Sources will not have a Package ID yet.
+            {
+                lookupName = name;
+            }
+
+            string source = auditSourceDictionary[MonikerSourceUrl].ToString().Trim();
+
+            var packageSource = new PackageSource(source, lookupName, isEnabled: true);
 
             return packageSource;
         }
@@ -436,7 +456,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             var settingMessages = new OneOrMany<SettingMessage>();
 
-            if (arraySettingMoniker != MonikerPackageSources)
+            bool isAuditSources = arraySettingMoniker == MonikerAuditSources;
+            bool isPackageSources = arraySettingMoniker == MonikerPackageSources;
+            if (!isPackageSources && !isAuditSources)
             {
                 return settingMessages;
             }
@@ -455,7 +477,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     case MonikerSourceUrl:
                         {
                             var packageSourceDictionary = arraySettingContent[arrayItemIndex];
-                            var result = ParsePackageSource(packageSourceDictionary);
+                            PackageSource result = isPackageSources
+                                ? ParsePackageSource(packageSourceDictionary)
+                                : ParseAuditSource(packageSourceDictionary);
 
                             var isValidSource = PackageSourceValidator.IsValidSource(result);
                             if (!isValidSource)
