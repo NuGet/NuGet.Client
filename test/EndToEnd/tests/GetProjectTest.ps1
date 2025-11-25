@@ -207,6 +207,8 @@ function Test-RenamingSolutionFolderWithDeeplyNestedProjectsDoesNotAffectGetProj
 }
 
 function Test-AmbiguousStartupProject {
+   [SkipTest("https://github.com/NuGet/Home/issues/14660"]
+   param($context)
    # Arrange
    New-SolutionFolder foo
    $p1 = New-ClassLibrary A foo
