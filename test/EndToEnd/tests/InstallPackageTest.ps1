@@ -406,6 +406,7 @@ function Test-InstallComplexPackageStructure {
 }
 
 function Test-InstallPackageWithWebConfigDebugChanges {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
     param(
         $context
     )
@@ -505,6 +506,7 @@ function Test-InstallPackageWithNestedContentFile {
 }
 
 function Test-InstallPackageWithNestedAspxContentFiles {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
     param(
         $context
     )
@@ -1183,6 +1185,7 @@ function Test-InstallingPackageDoesNotOverwriteFileIfExistsOnDiskButNotInProject
 }
 
 function Test-InstallPackageWithXmlTransformAndTokenReplacement {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
     param(
         $context
     )
@@ -2318,6 +2321,8 @@ function Test-InstallPackageThrowsIfMinClientVersionIsNotSatisfied
 
 function Test-InstallPackageWithXdtTransformTransformsTheFile
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
+    param ($context)
     # Arrange
     $p = New-WebApplication
 
@@ -2737,6 +2742,7 @@ function Test-InstallPackagesConfigOnline
 # Install-Package works.
 function Test-InstallPackagesConfigLocal
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/14658')]
     param($context)
 
     # Arrange

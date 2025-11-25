@@ -297,6 +297,7 @@ function Test-UninstallPackageWorksWithPackagesHavingSameNames {
 }
 
 function Test-UninstallPackageWithXmlTransformAndTokenReplacement {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
     param(
         $context
     )
@@ -499,6 +500,7 @@ function Test-WebsiteUninstallPackageWithNestedAspxFiles {
 }
 
 function Test-WebSiteUninstallPackageWithNestedSourceFilesAndAnotherProject {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
     param(
         $context
     )
@@ -926,6 +928,8 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
 
 function Test-UnInstallPackageWithXdtTransformUnTransformsTheFile
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/14659')]
+    param($context)
     # Arrange
     $p = New-WebApplication
 
