@@ -252,9 +252,6 @@
   <data name="Text_PackageSources_Description" xml:space="preserve">
     <value>Package sources define where NuGet retrieves packages for install, restore, audit, and update operations. [Learn more about package sources](https://learn.microsoft.com/nuget/reference/nuget-config-file#packagesources)</value>
   </data>
-  <data name="Text_AuditSources_Checkbox" xml:space="preserve">
-    <value>Use separate sources for vulnerability audit</value>
-  </data>
   <data name="Text_AuditSources_HowToRemove" xml:space="preserve">
     <value>Remove all audit sources to revert to using package sources for vulnerability data.</value>
   </data>

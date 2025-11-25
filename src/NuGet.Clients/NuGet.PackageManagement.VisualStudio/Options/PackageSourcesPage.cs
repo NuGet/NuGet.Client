@@ -20,7 +20,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const bool DefaultNuGetAudit = false;
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerAuditSources = "auditSources";
-        internal const string MonikerNuGetAudit = "nuGetAudit";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
         internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
@@ -69,17 +68,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                         return GetValuePackageSources<T>(packageSources);
                     }
-                case MonikerNuGetAudit:
-                    {
-                        var auditSources = await Task.Run(
-                            () => LoadAuditSources(),
-                            cancellationToken);
-                        if (auditSources.Count > 0)
-                        {
-                            return await ConvertValueOrThrow<T>(true);
-                        }
-                        return await ConvertValueOrThrow<T>(DefaultNuGetAudit);
-                    }
                 case MonikerAuditSources:
                     {
                         var auditSources = await Task.Run(
@@ -114,8 +102,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 switch (moniker)
                 {
-                    case MonikerNuGetAudit:
-                        return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
                     case MonikerPackageSources:
                         var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
                         if (packageSourcesList is null)
