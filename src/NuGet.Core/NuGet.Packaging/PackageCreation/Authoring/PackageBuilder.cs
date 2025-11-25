@@ -1052,7 +1052,7 @@ namespace NuGet.Packaging
             var warningMessage = new StringBuilder();
 
             // Add files that might not come from expanding files on disk
-            foreach (IPackageFile file in new SortedSet<IPackageFile>(Files, new DirectorySeparatorAmbivalentComparer()))
+            foreach (IPackageFile file in new SortedSet<IPackageFile>(Files, new NormalizedPathComparer()))
             {
                 using (Stream stream = file.GetStream())
                 {
@@ -1379,7 +1379,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private class DirectorySeparatorAmbivalentComparer : IComparer<IPackageFile>
+        private class NormalizedPathComparer : IComparer<IPackageFile>
         {
             public int Compare(IPackageFile x, IPackageFile y)
             {
