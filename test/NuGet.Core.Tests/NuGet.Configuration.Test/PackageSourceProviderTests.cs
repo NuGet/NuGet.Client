@@ -2572,7 +2572,7 @@ namespace NuGet.Configuration.Test
             var auditSources = new[]
             {
                 new PackageSource("https://contoso.test/nuget/v3/index.json", "contoso"),
-                new PackageSource("https://fabrikam.test/nuget/v3/index.json", "fabrikam")
+                new PackageSource("https://test2.test/nuget/v3/index.json", "test2")
             };
 
             // Act
@@ -2583,8 +2583,8 @@ namespace NuGet.Configuration.Test
             loadedSources.Should().HaveCount(2);
             loadedSources[0].Name.Should().Be("contoso");
             loadedSources[0].Source.Should().Be("https://contoso.test/nuget/v3/index.json");
-            loadedSources[1].Name.Should().Be("fabrikam");
-            loadedSources[1].Source.Should().Be("https://fabrikam.test/nuget/v3/index.json");
+            loadedSources[1].Name.Should().Be("test2");
+            loadedSources[1].Source.Should().Be("https://test2.test/nuget/v3/index.json");
         }
 
         [Fact]
@@ -2629,7 +2629,7 @@ namespace NuGet.Configuration.Test
             const string contents = @"<configuration>
     <auditSources>
         <add key=""contoso"" value=""https://contoso.test/nuget/v3/index.json"" />
-        <add key=""fabrikam"" value=""https://fabrikam.test/nuget/v3/index.json"" />
+        <add key=""test2"" value=""https://test2.test/nuget/v3/index.json"" />
     </auditSources>
 </configuration>";
             var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
@@ -2638,7 +2638,7 @@ namespace NuGet.Configuration.Test
             Settings settings = new Settings(testDirectory.Path);
             PackageSourceProvider psp = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
 
-            // Only include contoso, fabrikam should be removed
+            // Only include contoso, test2 should be removed
             var auditSources = new[]
             {
                 new PackageSource("https://contoso.test/nuget/v3/index.json", "contoso")
@@ -2699,7 +2699,7 @@ namespace NuGet.Configuration.Test
             var auditSources = new[]
             {
                 new PackageSource("https://contoso.test/nuget/v3/index.json", "contoso"),
-                new PackageSource("https://fabrikam.test/nuget/v3/index.json", "fabrikam")
+                new PackageSource("https://test2.test/nuget/v3/index.json", "test2")
             };
 
             // Act
@@ -2757,7 +2757,7 @@ namespace NuGet.Configuration.Test
             var auditSources = new[]
             {
                 new PackageSource("https://contoso.test/nuget/v3/index.json", "contoso", isEnabled: true, isOfficial: false, isPersistable: true),
-                new PackageSource("https://fabrikam.test/nuget/v3/index.json", "fabrikam", isEnabled: true, isOfficial: false, isPersistable: false)
+                new PackageSource("https://test2.test/nuget/v3/index.json", "test2", isEnabled: true, isOfficial: false, isPersistable: false)
             };
 
             // Act
@@ -2783,7 +2783,7 @@ namespace NuGet.Configuration.Test
             PackageSourceProvider psp = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => psp.SaveAuditSources(null));
+            Assert.Throws<ArgumentNullException>(() => psp.SaveAuditSources(null!));
         }
 
         [Fact]
