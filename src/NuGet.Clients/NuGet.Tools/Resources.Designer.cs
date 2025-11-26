@@ -358,6 +358,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Audit sources.
+        /// </summary>
+        internal static string Text_AuditSources_Title {
+            get {
+                return ResourceManager.GetString("Text_AuditSources_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/).
         /// </summary>
         internal static string Text_ConfigurationFiles_CommonLink {
