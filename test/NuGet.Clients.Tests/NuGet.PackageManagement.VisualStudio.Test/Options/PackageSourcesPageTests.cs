@@ -23,7 +23,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         private IEnumerable<PackageSource> _packageSources;
         private IEnumerable<PackageSource> _savedPackageSources;
         private IEnumerable<PackageSource> _auditSources;
-        private IEnumerable<PackageSource> _savedAuditSources;
         private int _countEnablePackageSourceCalled = 0;
         private int _countDisablePackageSourceCalled = 0;
 
@@ -34,7 +33,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             _packageSources = Enumerable.Empty<PackageSource>();
             _auditSources = Enumerable.Empty<PackageSource>();
             _savedPackageSources = Enumerable.Empty<PackageSource>();
-            _savedAuditSources = Enumerable.Empty<PackageSource>();
         }
 
         protected override PackageSourcesPage CreateInstance(VSSettings? vsSettings)
@@ -51,13 +49,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
                     .Callback<IEnumerable<PackageSource>>(sources =>
                     {
                         _savedPackageSources = sources;
-                    });
-
-            mockedPackageSourceProvider.Setup(packageSourceProvider =>
-                packageSourceProvider.SaveAuditSources(It.IsAny<IEnumerable<PackageSource>>()))
-                    .Callback<IEnumerable<PackageSource>>(sources =>
-                    {
-                        _savedAuditSources = sources;
                     });
 
             mockedPackageSourceProvider.Setup(packageSourceProvider =>
@@ -89,11 +80,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             string newSourceUrl = isNameChanging ? originalSourceUrl : "https://auditTestingSourceEdited";
 
             bool wasVsSettingsSettingsChangedCalled = false;
-
-            _savedAuditSources =
-            [
-                new PackageSource(originalSourceUrl, originalSourceName)
-            ];
 
             PackageSourcesPage instance = CreateInstance(_vsSettings);
             instance.SettingValuesChanged += (sender, e) =>
