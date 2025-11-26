@@ -142,6 +142,11 @@
         <target state="new">Remove all audit sources to revert to using package sources for vulnerability data.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AuditSources_Title">
+        <source>Audit sources</source>
+        <target state="new">Audit sources</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
         <target state="translated">Configuraciones comunes de NuGet: [cómo se aplican las opciones](https://aka.ms/nuget/how-settings-are-applied/)</target>
