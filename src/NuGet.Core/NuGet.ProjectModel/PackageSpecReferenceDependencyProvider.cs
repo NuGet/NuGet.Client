@@ -235,15 +235,6 @@ namespace NuGet.ProjectModel
             // Get the nearest framework
             var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
 
-            if (!_useLegacyAssetTargetFallbackBehavior)
-            {
-                if (referencesForFramework.FrameworkName == null &&
-                      targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
-                {
-                    referencesForFramework = packageSpec.GetRestoreMetadataFramework(assetTargetFallbackFramework.AsFallbackFramework());
-                }
-            }
-
             // Ensure that this project is compatible
             if (referencesForFramework?.FrameworkName?.IsSpecificFramework == true)
             {
