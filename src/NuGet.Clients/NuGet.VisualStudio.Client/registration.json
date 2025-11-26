@@ -209,7 +209,7 @@
         },
         "auditSources": {
           "type": "array",
-          "title": "Audit Sources",
+          "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
 
