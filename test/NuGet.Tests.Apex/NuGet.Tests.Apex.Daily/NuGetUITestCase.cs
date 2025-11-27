@@ -733,7 +733,7 @@ namespace NuGet.Tests.Apex.Daily
             // Arrange
             SolutionService solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
-            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.MauiClassLibrary, "TestProject");
+            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
