@@ -59,6 +59,6 @@ stages:
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
     bootstrapperUrl: $(bootstrapperUrl)
     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.Daily.runsettings
-    testExecutionJobTimeoutInMinutes: 150
+    testExecutionJobTimeoutInMinutes: 380 # cloud test minimum
     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
     VsBootstrapperBranch: $(VsBootstrapperBranch)
