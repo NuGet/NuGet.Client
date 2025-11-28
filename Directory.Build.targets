@@ -54,7 +54,8 @@
   <Target Name="RemoveSatelliteDllsFromBuildOutputInPackage"
           BeforeTargets="GenerateNuspec"
           Condition="'$(IncludeSatelliteOutputInPack)' != 'true'">
-    <Message Text="Build Output before: %(_BuildOutputInPackage)" Importance="high" />
+    <Message Text="Build Output before: %(_BuildOutputInPackage.Identity)" Importance="high" />
+    <Message Text="_TargetFramework: %(_TargetFramework.Identity)" Importance="high" />
 
     <!--
       Could not find a way to tell NuGet to exclude the satellite assemblies from the NuGet package so this target
@@ -64,7 +65,7 @@
       <_BuildOutputInPackage Remove="$(IntermediateOutputPath)%(_TargetFramework.Identity)\**\$(AssemblyName).resources.dll" />
     </ItemGroup>
 
-    <Message Text="Build Output after: %(_BuildOutputInPackage)" Importance="high" />
+    <Message Text="Build Output after: %(_BuildOutputInPackage.Identity)" Importance="high" />
   </Target>
 
   <Import Project="eng\dotnet-build\ExcludeFromDotNetBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuild)' == 'true'" />
