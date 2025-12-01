@@ -88,24 +88,6 @@
           </Trigger>
         </Style.Triggers>
       </Style>
-
-      <Style x:Key="PackageDescriptionToolTipStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TooltipStyle}">
-        <Setter Property="Visibility" Value="Collapsed" />
-        <Style.Triggers>
-          <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
-            <Setter Property="Visibility" Value="Visible" />
-          </DataTrigger>
-        </Style.Triggers>
-      </Style>
-
-      <Style x:Key="TransitiveInfoToolTipStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TooltipStyle}">
-        <Setter Property="Visibility" Value="Visible" />
-        <Style.Triggers>
-          <DataTrigger Binding="{Binding Path=TransitiveToolTipMessage, Converter={StaticResource NullToBooleanConverter}}" Value="True">
-            <Setter Property="Visibility" Value="Collapsed" />
-          </DataTrigger>
-        </Style.Triggers>
-      </Style>
     </ResourceDictionary>
   </UserControl.Resources>
 
@@ -259,10 +241,10 @@
                 Text="{Binding Id, Mode=OneTime}"
                 FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
             </TextBlock>
-            <TextBlock Style="{StaticResource PackageDescriptionToolTipStyle}">
+            <TextBlock>
               <Run Text="{Binding Summary, Mode=OneTime}" />
             </TextBlock>
-            <TextBlock Style="{StaticResource TransitiveInfoToolTipStyle}">
+            <TextBlock>
               <Run
                 Text="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"
                 FontWeight="Bold" />
