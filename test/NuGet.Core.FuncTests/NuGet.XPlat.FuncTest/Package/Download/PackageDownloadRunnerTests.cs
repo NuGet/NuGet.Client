@@ -26,122 +26,153 @@ namespace NuGet.CommandLine.Xplat.Tests;
 
 public class PackageDownloadRunnerTests
 {
-    public static IEnumerable<object[]> PackageTestData()
+    [Fact]
+    public async Task RunAsync_WhenExplicitStableVersionsRequestedFromLocalFolder_Succeeds()
     {
-        // Basic stable explicit versions
-        yield return new object[]
-        {
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.0.0"),
-                ("Contoso.Core", "1.1.0"),
-                ("Contoso.Core", "2.0.0-beta")
-            },                                      // source packages
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.1.0"),
-                ("Contoso.Core", "1.0.0"),
-            },                                      // argument packages
-            false,                               // enablePrerelease
-            "myOutput",                          // output directory subpath
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.1.0"),
-                ("Contoso.Core", "1.0.0")
-            }                                    // expected
-        };
+        var sourcePackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.0.0"),
+        ("Contoso.Core", "1.1.0"),
+        ("Contoso.Core", "2.0.0-beta")
+    };
 
-        // Basic stable explicit versions with different ids
-        yield return new object[]
-        {
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.0.0"),
-                ("Contoso.Core.Utils", "1.1.0"),
-                ("Contoso.Core", "2.0.0-beta")
-            },                                      // source packages
-            new List<(string, string)>
-            {
-                ("Contoso.Core.Utils", "1.1.0"),
-                ("Contoso.Core", "1.0.0"),
-            },                                      // argument packages
-            false,                               // enablePrerelease
-            "myOutput",                          // output directory subpath
-            new List<(string, string)>
-            {
-                ("Contoso.Core.Utils", "1.1.0"),
-                ("Contoso.Core", "1.0.0")
-            }                                    // expected
-        };
+        var argumentPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.1.0"),
+        ("Contoso.Core", "1.0.0"),
+    };
 
-        // Mixed casing on the ID in the *download* argument 
-        yield return new object[]
-        {
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.1.0")
-            },                                       // source packages      
-            new List<(string, string)>
-            {
-                ("contoso.core", "1.1.0")
-            },                                      // download argument
-            false,                                  // enablePrerelease
-            "",                                     // output directory subpath
-            new List<(string, string)>
-            {
-                ("Contoso.Core", "1.1.0")
-            },                                      // expected
-        };
+        var expectedPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.1.0"),
+        ("Contoso.Core", "1.0.0")
+    };
 
-        // prerelease with IncludePrerelease == true
-        yield return new object[]
-        {
-            new List<(string, string)>
-            {
-                ("Contoso.Preview", "1.3.0"),
-                ("Contoso.Preview", "2.0.0-beta.2")
-            },                                          // source packages
-            new List<(string, string)>
-            {
-                ("Contoso.Preview", null),
-            },                                          // download argument
-            true,                                    // enablePrerelease
-            "AnotherSubPath",                          // output directory subpath
-            new List<(string, string)>
-            {
-                ("Contoso.Preview", "2.0.0-beta.2")
-            },                                          // expected
-        };
-
-        // chose stable with IncludePrerelease == false
-        yield return new object[]
-        {
-            new List<(string, string)>
-            {
-                ("Contoso.Preview", "1.3.2"),
-                ("Contoso.Preview", "1.3.0"),
-                ("Contoso.Preview", "2.0.0-beta.2")
-            },                                                // source packages
-            new List<(string, string)>
-            {
-                ("Contoso.Preview", null)
-            },                                              // download argument
-            false,                                           // enablePrerelease
-            "SubPath",                                       // output directory subpath
-            new List <(string, string) > {
-                ("Contoso.Preview", "1.3.2")
-            }                                                // expected
-        };
+        await RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+            sourcePackages,
+            argumentPackages,
+            enablePrerelease: false,
+            outputDirectorySubPath: "myOutput",
+            expectedPackages);
     }
 
-    [Theory]
-    [MemberData(nameof(PackageTestData))]
-    public async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsync(
-        IReadOnlyList<(string, string)> sourcePackages,
-        IReadOnlyList<(string, string)> argumentPackages,
+    [Fact]
+    public async Task RunAsync_WhenExplicitStableVersionsWithDifferentIdsRequestedFromLocalFolder_Succeeds()
+    {
+        var sourcePackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.0.0"),
+        ("Contoso.Core.Utils", "1.1.0"),
+        ("Contoso.Core", "2.0.0-beta")
+    };
+
+        var argumentPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core.Utils", "1.1.0"),
+        ("Contoso.Core", "1.0.0"),
+    };
+
+        var expectedPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core.Utils", "1.1.0"),
+        ("Contoso.Core", "1.0.0")
+    };
+
+        await RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+            sourcePackages,
+            argumentPackages,
+            enablePrerelease: false,
+            outputDirectorySubPath: "myOutput",
+            expectedPackages);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenMixedCasingInDownloadArgument_Succeeds()
+    {
+        var sourcePackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.1.0")
+    };
+
+        var argumentPackages = new List<(string Id, string Version)>
+    {
+        ("contoso.core", "1.1.0")
+    };
+
+        var expectedPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Core", "1.1.0")
+    };
+
+        await RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+            sourcePackages,
+            argumentPackages,
+            enablePrerelease: false,
+            outputDirectorySubPath: "",
+            expectedPackages);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenPrereleaseRequestedAndIncludePrereleaseTrue_PicksPrerelease()
+    {
+        var sourcePackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", "1.3.0"),
+        ("Contoso.Preview", "2.0.0-beta.2")
+    };
+
+        var argumentPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", null),
+    };
+
+        var expectedPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", "2.0.0-beta.2")
+    };
+
+        await RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+            sourcePackages,
+            argumentPackages,
+            enablePrerelease: true,
+            outputDirectorySubPath: "AnotherSubPath",
+            expectedPackages);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenIncludePrereleaseFalse_PicksLatestStable()
+    {
+        var sourcePackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", "1.3.2"),
+        ("Contoso.Preview", "1.3.0"),
+        ("Contoso.Preview", "2.0.0-beta.2")
+    };
+
+        var argumentPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", null)
+    };
+
+        var expectedPackages = new List<(string Id, string Version)>
+    {
+        ("Contoso.Preview", "1.3.2")
+    };
+
+        await RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+            sourcePackages,
+            argumentPackages,
+            enablePrerelease: false,
+            outputDirectorySubPath: "SubPath",
+            expectedPackages);
+    }
+
+    private static async Task RunAsync_ExplicitVersionFromLocalFolderSource_SucceedsAsyncCore(
+        IReadOnlyList<(string Id, string Version)> sourcePackages,
+        IReadOnlyList<(string Id, string Version)> argumentPackages,
         bool enablePrerelease,
         string outputDirectorySubPath,
-        IReadOnlyList<(string, string)> expectedPackages)
+        IReadOnlyList<(string Id, string Version)> expectedPackages)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -162,11 +193,11 @@ public class PackageDownloadRunnerTests
             packages.Add(new PackageWithNuGetVersion
             {
                 Id = id,
-                NuGetVersion = version == null ? null : NuGetVersion.Parse(version)
+                NuGetVersion = version is null ? null : NuGetVersion.Parse(version)
             });
         }
 
-        var args = new PackageDownloadArgs()
+        var args = new PackageDownloadArgs
         {
             Packages = packages,
             OutputDirectory = outputDir,
@@ -177,14 +208,15 @@ public class PackageDownloadRunnerTests
         var result = await PackageDownloadRunner.RunAsync(
             args,
             logger.Object,
-            [new(sourceDir)],
+            [new PackageSource(sourceDir)],
             settings.Object,
             CancellationToken.None);
 
         // Assert
+        result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+
         foreach (var (expectedId, expectedVersion) in expectedPackages)
         {
-            result.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
             var installDir = Path.Combine(outputDir, expectedId.ToLowerInvariant(), expectedVersion);
             Directory.Exists(installDir).Should().BeTrue();
             Directory.EnumerateFiles(installDir, "*.nupkg").Any().Should().BeTrue();
@@ -231,95 +263,113 @@ public class PackageDownloadRunnerTests
         File.Exists(Path.Combine(chosen, $"{id.ToLowerInvariant()}.1.2.0.nupkg")).Should().BeTrue();
     }
 
-    public static IEnumerable<object[]> ShortCircuitsPackageData =>
-        [
-        // single package already installed
-        [
-            new []
-            {
-                ("Contoso.Utils", "3.4.5")          // source packages
-            },
-            new[]
-            {
-                new PackageWithNuGetVersion              // argument packages
-                {
-                    Id = "Contoso.Utils",
-                    NuGetVersion = NuGetVersion.Parse("3.4.5")
-                }
-            },
-            new []
-            {
-                ("Contoso.Utils", "3.4.5")               // expected packages
-            }
-        ],
+    [Fact]
+    public async Task RunAsync_WhenSinglePackageAlreadyInstalled_ShortCircuitsAndSucceeds()
+    {
+        var sourcePackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5")          // source packages
+        };
 
-        // multiple packages already installed
-        [
-            new []
+        var packageDownloadArgs = new[]
+        {
+            new PackageWithNuGetVersion         // argument packages
             {
-                ("Contoso.Utils", "3.4.5"),            // source packages
-                ("Contoso.Core", "3.0.5")
-            },
-            new []
-            {
-                new PackageWithNuGetVersion            // argument packages
-                {
-                    Id = "Contoso.Utils",
-                    NuGetVersion = NuGetVersion.Parse("3.4.5")
-                },
-                new PackageWithNuGetVersion
-                {
-                    Id = "Contoso.Core",
-                    NuGetVersion = NuGetVersion.Parse("3.0.5")
-                }
-            },
-            new []
-            {
-                ("Contoso.Utils", "3.4.5"),             // expected packages
-                ("Contoso.Core", "3.0.5")
+                Id = "Contoso.Utils",
+                NuGetVersion = NuGetVersion.Parse("3.4.5")
             }
-        ],
+        };
 
-        // no version specified, but latest version already installed
-        [
-            new []
+        var expectedPackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5")          // expected packages
+        };
+
+        await RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceedsCore(
+            sourcePackages,
+            packageDownloadArgs,
+            expectedPackages);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenMultiplePackagesAlreadyInstalled_ShortCircuitsAndSucceeds()
+    {
+        var sourcePackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5"),
+            ("Contoso.Core", "3.0.5")
+        };
+
+        var packageDownloadArgs = new[]
+        {
+            new PackageWithNuGetVersion
             {
-                ("Contoso.Utils", "3.4.5"),            // source packages
-                ("Contoso.Core", "3.0.5")
+                Id = "Contoso.Utils",
+                NuGetVersion = NuGetVersion.Parse("3.4.5")
             },
-            new []
+            new PackageWithNuGetVersion
             {
-                new PackageWithNuGetVersion             // argument packages
-                {
-                    Id = "Contoso.Utils",
-                    NuGetVersion = null
-            },
-                new PackageWithNuGetVersion
-                {
-                    Id = "Contoso.Core",
-                    NuGetVersion = null
-                }
-            },
-            new []
-            {
-                ("Contoso.Utils", "3.4.5"),              // expected packages
-                ("Contoso.Core", "3.0.5")
+                Id = "Contoso.Core",
+                NuGetVersion = NuGetVersion.Parse("3.0.5")
             }
-        ]];
+        };
 
-    [Theory]
-    [MemberData(nameof(ShortCircuitsPackageData))]
-    internal async Task RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceeds(
-        IReadOnlyList<(string, string)> sourcePackages,
+        var expectedPackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5"),
+            ("Contoso.Core", "3.0.5")
+        };
+
+        await RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceedsCore(
+            sourcePackages,
+            packageDownloadArgs,
+            expectedPackages);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenLatestVersionAlreadyInstalledAndNoVersionSpecified_ShortCircuitsAndSucceeds()
+    {
+        var sourcePackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5"),
+            ("Contoso.Core", "3.0.5")
+        };
+
+        var packageDownloadArgs = new[]
+        {
+            new PackageWithNuGetVersion
+            {
+                Id = "Contoso.Utils",
+                NuGetVersion = null
+            },
+            new PackageWithNuGetVersion
+            {
+                Id = "Contoso.Core",
+                NuGetVersion = null
+            }
+        };
+
+        var expectedPackages = new[]
+        {
+            ("Contoso.Utils", "3.4.5"),
+            ("Contoso.Core", "3.0.5")
+        };
+
+        await RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceedsCore(
+            sourcePackages,
+            packageDownloadArgs,
+            expectedPackages);
+    }
+
+    private static async Task RunAsync_VersionAlreadyInstalled_ShortCircuitsAndSucceedsCore(
+        IReadOnlyList<(string Id, string Version)> sourcePackages,
         PackageWithNuGetVersion[] packageDownloadArgs,
-        IReadOnlyList<(string, string)> expectedPackages)
+        IReadOnlyList<(string Id, string Version)> expectedPackages)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
         var sourceDir = context.PackageSource;
         var outputDir = context.WorkingDirectory;
-
-        List<PackageWithNuGetVersion> packagesToInstall = [];
 
         foreach (var (id, version) in sourcePackages)
         {
@@ -329,8 +379,8 @@ public class PackageDownloadRunnerTests
         var logger = new Mock<ILoggerWithColor>(MockBehavior.Loose);
         var settings = new Mock<ISettings>(MockBehavior.Loose);
 
-        // First run: install explicit version
-        var args1 = new PackageDownloadArgs()
+        // First run: install explicit version (or latest, depending on args)
+        var args1 = new PackageDownloadArgs
         {
             Packages = packageDownloadArgs,
             LogLevel = LogLevel.Verbose,
@@ -343,10 +393,11 @@ public class PackageDownloadRunnerTests
             [new PackageSource(sourceDir)],
             settings.Object,
             CancellationToken.None);
+
         first.Should().Be(ExitCodes.Success);
 
         // Second run: should short-circuit because already installed
-        var args2 = new PackageDownloadArgs()
+        var args2 = new PackageDownloadArgs
         {
             Packages = packageDownloadArgs,
             OutputDirectory = outputDir,
@@ -361,15 +412,19 @@ public class PackageDownloadRunnerTests
             CancellationToken.None);
 
         // Assert
+        second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
+
         foreach (var (id, version) in expectedPackages)
         {
-            second.Should().Be(PackageDownloadRunner.ExitCodeSuccess);
             var installDir = Path.Combine(outputDir, id.ToLowerInvariant(), version);
             Directory.Exists(installDir).Should().BeTrue();
             File.Exists(Path.Combine(installDir, $"{id.ToLowerInvariant()}.{version}.nupkg")).Should().BeTrue();
         }
 
-        logger.Verify(l => l.LogMinimal(It.Is<string>(s => s.Contains("Skipping", StringComparison.OrdinalIgnoreCase))), Times.AtLeastOnce);
+        logger.Verify(
+            l => l.LogMinimal(It.Is<string>(s =>
+                s.Contains("Skipping", StringComparison.OrdinalIgnoreCase))),
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -431,84 +486,91 @@ public class PackageDownloadRunnerTests
             .Should().BeFalse("Package does not exist in sources");
     }
 
-    public static IEnumerable<object[]> Cases()
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_SourceArgOverridesMapping_PackageOnlyInA_Succeeds()
     {
-        // Parameters:
-        // A-packages, B-packages, sourceMappings, sourcesArgs, downloadId, downloadVersion,
-        //expectSuccess, expectedInstalled
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Lib", "1.0.0")       // package only in A
+            },
+            sourceBPackages: new List<(string id, string version)>(), // B empty
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("B", "Contoso.*")             // mapping ignored because --source A is provided
+            },
+            sourcesArgs: new List<string> { "A" },                    // --source A
+            downloadId: "Contoso.Lib",
+            downloadVersion: "1.0.0",
+            expectSuccess: true,
+            expectedInstalled: ("Contoso.Lib", "1.0.0"));
+    }
 
-        // --source specified, mapping ignored, package only in A -> success
-        yield return new object[]
-        {
-            new List<(string,string)> { ("Contoso.Lib", "1.0.0") }, // A
-            new List<(string,string)>(),                            // B
-            new List<(string,string)> { ("B", "Contoso.*") },       // mapping ignored
-            new List<string> { "A" },                               // --source A
-            "Contoso.Lib", "1.0.0",                                  // downloadId, downloadVersion
-            true,                                                   // expect success
-            ("Contoso.Lib", "1.0.0")                                // expectedInstalled
-        };
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_NoSource_MappedToB_PackageOnlyInB_Succeeds()
+    {
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>(), // A empty
+            sourceBPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Mapped", "2.0.0")    // package only in B
+            },
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("B", "Contoso.*")             // mapping -> B
+            },
+            sourcesArgs: null,                 // no --source
+            downloadId: "Contoso.Mapped",
+            downloadVersion: "2.0.0",
+            expectSuccess: true,
+            expectedInstalled: ("Contoso.Mapped", "2.0.0"));
+    }
 
-        // no --source, mapping -> B, package only in B -> success
-        yield return new object[]
-        {
-            new List<(string,string)>(),                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") }, // B
-            new List<(string,string)> { ("B", "Contoso.*") },       // mapping -> B
-            null,                                                   // no --source
-            "Contoso.Mapped", "2.0.0",                              // downloadId, downloadVersion
-            true,                                                   // expect success
-            ("Contoso.Mapped", "2.0.0")                             // expectedInstalled
-        };
-
-        // no --source, mapping -> A, package only in B -> fail
-        yield return new object[]
-        {
-            new List<(string,string)>(),                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },
-            new List<(string,string)> { ("A", "Contoso.*") },       // mapped to A
-            null,
-            "Contoso.Mapped", "2.0.0",
-            false,
-            null!
-        };
-
-        // no --source, mapping -> A&B, package in both A and B. Latest version from A installed
-        yield return new object[]
-        {
-            new List<(string,string)> { ("Contoso.Mapped", "3.0.0") },                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },                           // B
-            new List<(string,string)> { ("A", "Contoso.*"), ("B", "Contoso.*") }, // mapped to A&B
-            null,
-            "Contoso.Mapped", null,
-            true,
-            ("Contoso.Mapped", "3.0.0")
-        };
-
-        // no --source, mapping -> A&B, package in both A and B. Latest version from B installed
-        yield return new object[]
-        {
-            new List<(string,string)> { ("Contoso.Mapped", "2.0.0") },                            // A
-            new List<(string,string)> { ("Contoso.Mapped", "3.0.0") },                           // B
-            new List<(string,string)> { ("A", "Contoso.*"), ("B", "Contoso.*") }, // mapped to A&B
-            null,
-            "Contoso.Mapped", null,
-            true,
-            ("Contoso.Mapped", "3.0.0")
-        };
+    [Fact]
+    public async Task RunAsync_WithSourceMapping_NoSource_MappedToA_PackageOnlyInB_Fails()
+    {
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string id, string version)>(), // A empty
+            sourceBPackages: new List<(string id, string version)>
+            {
+            ("Contoso.Mapped", "2.0.0")    // package only in B
+            },
+            sourceMappings: new List<(string source, string pattern)>
+            {
+            ("A", "Contoso.*")             // mapped to A (wrong source)
+            },
+            sourcesArgs: null,                 // no --source
+            downloadId: "Contoso.Mapped",
+            downloadVersion: "2.0.0",
+            expectSuccess: false,
+            expectedInstalled: null);
     }
 
     [Theory]
-    [MemberData(nameof(Cases))]
-    public async Task RunAsync_WithSourceMapping(
-        IReadOnlyList<(string id, string version)> sourceAPackages,
-        IReadOnlyList<(string id, string version)> sourceBPackages,
-        IReadOnlyList<(string source, string pattern)> sourceMappings,
-        IReadOnlyList<string> sourcesArgs,
-        string downloadId,
-        string downloadVersion,
-        bool expectSuccess,
-        (string id, string version)? expectedInstalled)
+    [InlineData("1.0.0", "3.0.0")]
+    [InlineData("3.0.0", "2.0.0")]
+    public async Task RunAsync_WithSourceMapping_MappedToMultipleSources_SourceWithTheLatestVersionUsed(string versionAtSourceA, string versionAtSourceB)
+    {
+        await RunAsync_WithSourceMappingCore(
+            sourceAPackages: new List<(string, string)> { ("Contoso.Mapped", versionAtSourceA) },                            // A
+            sourceBPackages: new List<(string, string)> { ("Contoso.Mapped", versionAtSourceB) },                           // B
+            new List<(string, string)> { ("A", "Contoso.*"), ("B", "Contoso.*") },  // mapped to A&B
+            sourcesArgs: null,                 // no --source
+            downloadId: "Contoso.Mapped",
+            downloadVersion: null,
+            expectSuccess: true,
+            expectedInstalled: ("Contoso.Mapped", "3.0.0"));
+    }
+
+    private async Task RunAsync_WithSourceMappingCore(
+       IReadOnlyList<(string id, string version)> sourceAPackages,
+       IReadOnlyList<(string id, string version)> sourceBPackages,
+       IReadOnlyList<(string source, string pattern)> sourceMappings,
+       IReadOnlyList<string> sourcesArgs,
+       string downloadId,
+       string downloadVersion,
+       bool expectSuccess,
+       (string, string)? expectedInstalled)
     {
         // Arrange
         using var context = new SimpleTestPathContext();
@@ -577,7 +639,6 @@ public class PackageDownloadRunnerTests
         {
             exit.Should().Be(PackageDownloadRunner.ExitCodeSuccess, because: capturedLogs);
             expectedInstalled.Should().NotBeNull();
-
             var (expId, expVer) = expectedInstalled!.Value;
             var installDir = Path.Combine(context.WorkingDirectory, expId.ToLowerInvariant(), expVer);
             Directory.Exists(installDir).Should().BeTrue();
