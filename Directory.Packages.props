@@ -181,6 +181,7 @@
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
       <_allowBuildFromSourcePackage Include="Microsoft.Web.Xdt" />
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
+      <_allowBuildFromSourcePackage Include="Spectre.Console" />
       <_allowBuildFromSourcePackage Include="System.Collections.Immutable" />
       <_allowBuildFromSourcePackage Include="System.CommandLine" />
       <_allowBuildFromSourcePackage Include="System.ComponentModel.Composition" />
