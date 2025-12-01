@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 {
     internal static class DependencyGraphPrinter
     {
-        private static readonly Color TargetPackageColor = Color.Cyan1;
+        private static readonly Color TargetPackageColor = Color.Cyan;
 
         /// <summary>
         /// Prints the dependency graphs for all target frameworks.
