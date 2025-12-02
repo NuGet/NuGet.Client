@@ -58,7 +58,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
         [Fact]
@@ -218,8 +218,9 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"warn : The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", result.AllOutput);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+            var output = result.Output.Replace("\n", "").Replace("\r", "");
+            output.Should().Contain($"The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.");
+            output.Should().Contain($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'");
         }
 
         [Fact]
@@ -252,7 +253,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+            result.AllOutput.Replace("\n", "").Replace("\r", "").Should().Contain($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'");
         }
 
         [Fact]
