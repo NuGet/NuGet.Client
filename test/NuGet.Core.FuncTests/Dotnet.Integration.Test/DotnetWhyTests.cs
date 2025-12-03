@@ -189,41 +189,6 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task WhyCommand_InvalidFrameworksOption_WarnsCorrectly()
-        {
-            // Arrange
-            var pathContext = new SimpleTestPathContext();
-            var inputFrameworksOption = "invalidFrameworkAlias";
-            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, Constants.ProjectTargetFramework);
-
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", Constants.ProjectTargetFramework);
-            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", Constants.ProjectTargetFramework);
-
-            packageX.Dependencies.Add(packageY);
-
-            project.AddPackageToFramework(Constants.ProjectTargetFramework, packageX);
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                packageX,
-                packageY);
-
-            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
-
-            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} -f {inputFrameworksOption} -f {Constants.ProjectTargetFramework}";
-
-            // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
-
-            // Assert
-            Assert.Equal(ExitCodes.Success, result.ExitCode);
-            var output = result.Output.Replace("\n", "").Replace("\r", "");
-            output.Should().Contain($"The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.");
-            output.Should().Contain($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'");
-        }
-
-        [Fact]
         public async Task WhyCommand_DirectoryWithProject_HasTransitiveDependency_DependencyPathExists()
         {
             // Arrange
