@@ -217,7 +217,8 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageForPCInPMC(ProjectTemplate projectTemplate)
         {
@@ -248,7 +249,8 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task UpdatePackageForPCInPMC(ProjectTemplate projectTemplate)
         {
@@ -285,7 +287,8 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task UninstallPackageForPCInPMC(ProjectTemplate projectTemplate)
         {
@@ -493,7 +496,7 @@ namespace NuGet.Tests.Apex.Daily
 
         public static IEnumerable<object[]> GetWebSiteTemplates()
         {
-            yield return new object[] { ProjectTemplate.WebSiteEmpty };
+            yield return new object[] { ProjectTemplate.WebSiteEmpty, ProjectTemplate.WebApplicationEmpty };
         }
 
     }
