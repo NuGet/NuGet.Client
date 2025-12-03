@@ -1095,23 +1095,21 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetListPackage_PackageWithTargetsFileThatErrorsForNonNet50_ReturnsCorrectResults()
+        public async Task DotnetListPackage_PackageWithTargetsFileErrors_ReturnsCorrectResults()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
             _fixture.CreateDotnetNewProject(pathContext.SolutionRoot, ProjectName, args: "classlib", _testOutputHelper);
             string projectPath = Path.Combine(pathContext.SolutionRoot, ProjectName, $"{ProjectName}.csproj");
 
-            // Create a package with a .targets file that logs an error when TargetFramework is not net5.0
+            // Create a package with a .targets file that logs an error
             var packageX = new SimpleTestPackageContext("PackageX", "1.0.0");
-            packageX.Files.Clear();
             packageX.AddFile("lib/net5.0/_._");
-            packageX.AddFile("lib/net6.0/_._");
 
             var targetsContent = @"
-<Project InitialTargets=""ErrorForNonNet50"">
-  <Target Name=""ErrorForNonNet50"">
-    <Error Condition=""'$(TargetFramework)' != 'net5.0'"" Text=""This is a failure within a package targets, to ensure list package is able to handle it."" />
+<Project InitialTargets=""ErrorToFailBuild"">
+  <Target Name=""ErrorToFailBuild"">
+    <Error Text=""This is a failure within a package targets, to ensure list package is able to handle it."" />
   </Target>
 </Project>";
             packageX.AddFile("build/PackageX.targets", targetsContent);
