@@ -51,7 +51,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
@@ -97,7 +97,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
@@ -143,7 +143,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
@@ -184,7 +184,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
@@ -225,7 +225,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
@@ -266,7 +266,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
@@ -332,7 +332,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 Prerelease = false,
                 ExactMatch = true,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "Newtonsoft.Json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Format = PackageSearchFormat.Table
@@ -372,7 +372,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -407,7 +407,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -443,7 +443,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -481,7 +481,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "NullInfoPackage",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
@@ -518,7 +518,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "NullInfoPackage",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
@@ -555,7 +555,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 SearchTerm = "NullInfoPackage",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
@@ -590,7 +590,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = GetLogger(),
+                Logger = Logger,
                 Sources = new List<string> { source },
                 Format = PackageSearchFormat.Json
             };

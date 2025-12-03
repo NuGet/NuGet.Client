@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             // Act
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Assert
             RootCommand.Subcommands[0].Should().BeAssignableTo<DocumentedCommand>();
@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSearchTermOnly_SetsSearchTerm()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSingleSourceOption_SetsSources()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string source = "testSource";
 
@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withMultipleSourceOptions_SetsSources()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string source1 = "testSource1";
             string source2 = "testSource2";
@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withExactMatchOption_SetsExactMatch()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withPrereleaseOption_SetsPrerelease()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInteractiveOption_SetsInteractive()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withTakeOption_SetsTake()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "5";
 
@@ -131,7 +131,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSkipOption_SetsSkip()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "3";
 
@@ -146,7 +146,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidTakeOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, take, "--take");
@@ -163,7 +163,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidSkipOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, skip, "--skip");
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withFormatTableOption_SetsFormat()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(new[] { "search", "--format", "table" }).Invoke();
@@ -193,7 +193,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withFormatJsonOption_SetsFormat()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(new[] { "search", "--format", "json" }).Invoke();
@@ -206,7 +206,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidFormattingOption_DefaultsTable()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string invalidFormat = "invalid";
 
             // Act
@@ -224,7 +224,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withVerbosityMinimalOption_SetsFormat(string minimal)
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(new[] { "search", "--verbosity", minimal }).Invoke();
@@ -240,7 +240,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withVerbosityNormalOption_SetsFormat(string normal)
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(new[] { "search", "--verbosity", normal }).Invoke();
@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withVerbosityDetailedOption_SetsFormat(string detailed)
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(new[] { "search", "--verbosity", detailed }).Invoke();
@@ -269,7 +269,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidVerbosityOption_DefaultsNormal()
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
             string invalidFormat = "invalid";
 
             // Act
@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_WithOptions_SetsExpectedValues(string[] args, bool expectedExactMatch, bool expectedPrerelease, bool expectedInteractive, int expectedTake = 20, int expectedSkip = 0)
         {
             // Arrange
-            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            Register(RootCommand, Logger, SetupSettingsAndRunSearchAsync);
 
             // Act
             RootCommand.Parse(args).Invoke();

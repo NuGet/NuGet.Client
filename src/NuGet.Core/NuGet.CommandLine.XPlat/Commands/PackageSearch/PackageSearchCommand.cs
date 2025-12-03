@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.XPlat
             Register(rootCommand, logger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(Command rootCommand, CommandOutputLogger logger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(Command rootCommand, ILoggerWithColor logger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
             var searchCommand = new DocumentedCommand("search", Strings.pkgSearch_Description, "https://aka.ms/dotnet/package/search");
 
