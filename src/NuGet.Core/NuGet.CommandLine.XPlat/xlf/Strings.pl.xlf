@@ -931,7 +931,7 @@ Aby uzyskać więcej informacji, odwiedź stronę https://docs.nuget.org/docs/re
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped">
         <source>Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</source>
-        <target state="new">Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</target>
+        <target state="translated">Nie można pobrać pakietu „{0}”. Element PackageSourceMapping jest włączony, ale nie znaleziono zmapowanych źródeł dla tego pakietu. Następujące źródła nie zostały uwzględnione: {1}.</target>
         <note>{0} = package ID 
 {1} = comma-separated list of all configured sources </note>
       </trans-unit>
