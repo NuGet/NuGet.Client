@@ -909,7 +909,7 @@ namespace NuGet.CommandLine.XPlat
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "TargetFramework", framework },
-                    { "ExcludeRestorePackageImports", "true" }
+                    { "ExcludeRestorePackageImports", bool.TrueString }
                 };
             var newProject = new ProjectInstance(projectPath, globalProperties, null);
             newProject.Build(new[] { CollectPackageReferences, CollectCentralPackageVersions }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
