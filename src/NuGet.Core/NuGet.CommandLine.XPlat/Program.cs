@@ -103,7 +103,7 @@ namespace NuGet.CommandLine.XPlat
                     var packageCommand = new Command("package");
                     rootCommand.Subcommands.Add(packageCommand);
 
-                    PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
+                    PackageSearchCommand.Register(packageCommand);
 #if DEBUG
                     PackageUpdateCommand.Register(packageCommand, interactiveOption);
                     PackageDownloadCommand.Register(packageCommand, interactiveOption);

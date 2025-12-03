@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
 
@@ -18,12 +19,17 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        public static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger)
+        public static void Register(Command rootCommand)
         {
-            Register(rootCommand, getLogger, SetupSettingsAndRunSearchAsync);
+            var logger = new CommandOutputLogger(LogLevel.Information)
+            {
+                HidePrefixForInfoAndMinimal = true
+            };
+
+            Register(rootCommand, logger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(Command rootCommand, CommandOutputLogger logger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
             var searchCommand = new DocumentedCommand("search", Strings.pkgSearch_Description, "https://aka.ms/dotnet/package/search");
 
@@ -106,8 +112,6 @@ namespace NuGet.CommandLine.XPlat
 
             searchCommand.SetAction(async (parserResult, cancelationToken) =>
             {
-                ILoggerWithColor logger = getLogger();
-
                 try
                 {
                     var packageSearchArgs = new PackageSearchArgs(parserResult.GetValue(skip), parserResult.GetValue(take), parserResult.GetValue(format), parserResult.GetValue(verbosity))

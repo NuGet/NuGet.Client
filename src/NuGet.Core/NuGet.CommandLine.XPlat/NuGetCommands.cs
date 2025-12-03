@@ -34,6 +34,7 @@ public static class NuGetCommands
 
         PackageUpdateCommand.Register(packageCommand, interactiveOption);
         PackageDownloadCommand.Register(packageCommand, interactiveOption);
+        PackageSearchCommand.Register(packageCommand);
     }
 
     // To delete once the SDK starts using the other overload. Joys of public APIs.
