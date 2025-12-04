@@ -104,11 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 switch (moniker)
                 {
                     case MonikerPackageSources:
-                        var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
-                        if (packageSourcesList is null)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        var packageSourcesList = (IReadOnlyList<IDictionary<string, object>>)value;
                         return await Task.Run(
                             () =>
                             {
@@ -118,11 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             },
                             cancellationToken);
                     case MonikerAuditSources:
-                        var auditSourceList = value as IReadOnlyList<IDictionary<string, object>>;
-                        if (auditSourceList is null)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        var auditSourceList = (IReadOnlyList<IDictionary<string, object>>)value;
                         return await Task.Run(
                             () =>
                             {
@@ -132,11 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             },
                             cancellationToken);
                     case MonikerMachineWideSources:
-                        var machineWidePackageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
-                        if (machineWidePackageSourcesList is null)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        var machineWidePackageSourcesList = (IReadOnlyList<IDictionary<string, object>>)value;
                         return await Task.Run(
                             () => SetIsEnabledOnMachineWidePackageSources(machineWidePackageSourcesList, cancellationToken),
                             cancellationToken);
