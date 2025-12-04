@@ -886,6 +886,11 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(sources));
             }
 
+            if (environmentVariableReader == null)
+            {
+                throw new ArgumentNullException(nameof(environmentVariableReader));
+            }
+
             var isDirty = false;
             var existingSettingsLookup = GetExistingSettingsLookup(ConfigurationConstants.AuditSources);
 
