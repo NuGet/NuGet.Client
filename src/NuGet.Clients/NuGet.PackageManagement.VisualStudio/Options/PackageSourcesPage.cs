@@ -42,18 +42,19 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             base.VsSettings_SettingsChanged(sender, e);
         }
 
-        private List<PackageSource> LoadPackageSources(bool isMachineWide)
+        private IReadOnlyList<PackageSource> LoadPackageSources(bool isMachineWide)
         {
-            IEnumerable<PackageSource> all = _packageSourceProvider.LoadPackageSources();
-            List<PackageSource> filteredPackageSources = all
-                .Where(packageSource => packageSource.IsMachineWide == isMachineWide).ToList();
+            IReadOnlyList<PackageSource> filteredPackageSources = _packageSourceProvider.LoadPackageSources()
+                .Where(packageSource => packageSource.IsMachineWide == isMachineWide)
+                .ToList()
+                .AsReadOnly();
             return filteredPackageSources;
         }
 
-        private List<PackageSource> LoadAuditSources()
+        private IReadOnlyList<PackageSource> LoadAuditSources()
         {
-            IEnumerable<PackageSource> auditSources = _packageSourceProvider.LoadAuditSources();
-            return auditSources.ToList();
+            var auditSources = _packageSourceProvider.LoadAuditSources();
+            return auditSources;
         }
 
         public override async Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
@@ -213,7 +214,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             try
             {
                 List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
-                List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
+                IReadOnlyList<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
                 bool hasAnyPackageSourceNameChanged = false;
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
@@ -282,7 +283,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             try
             {
                 List<PackageSource> auditSources = new List<PackageSource>(capacity: auditSourceDictionaryList.Count);
-                List<PackageSource> existingAuditSources = LoadAuditSources();
+                IReadOnlyList<PackageSource> existingAuditSources = LoadAuditSources();
                 bool hasAnyPackageSourceNameChanged = false;
 
                 foreach (Dictionary<string, object> packageSourceDictionary in auditSourceDictionaryList)
@@ -389,7 +390,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return packageSource;
         }
 
-        private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
+        private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(IReadOnlyList<PackageSource> packageSources)
         {
             ExternalSettingOperationResult<T> result;
 
