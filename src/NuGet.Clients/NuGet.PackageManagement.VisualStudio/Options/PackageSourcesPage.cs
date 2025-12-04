@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string name = packageSourceDictionary[MonikerSourceName].ToString();
                     string lookupName;
 
-                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have an ID.
                     if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
                     {
                         lookupName = packageSourceIdObj.ToString();
@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             hasAnyPackageSourceNameChanged = true;
                         }
                     }
-                    else // Newly added Package Sources will not have a Package ID yet.
+                    else // Newly added Package Sources will not have an ID yet.
                     {
                         lookupName = name;
                     }
@@ -281,7 +281,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string name = packageSourceDictionary[MonikerSourceName].ToString();
                     string lookupName;
 
-                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have an ID.
                     if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
                     {
                         lookupName = packageSourceIdObj.ToString();
@@ -292,7 +292,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             hasAnyPackageSourceNameChanged = true;
                         }
                     }
-                    else // Newly added Package Sources will not have a Package ID yet.
+                    else // Newly added Package Sources will not have an ID yet.
                     {
                         lookupName = name;
                     }
@@ -334,12 +334,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
             string? lookupName;
 
-            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have an ID.
             if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
             {
                 lookupName = packageSourceIdObj.ToString().Trim();
             }
-            else // Newly added Package Sources will not have a Package ID yet.
+            else // Newly added Package Sources will not have an ID yet.
             {
                 lookupName = name;
             }
@@ -361,12 +361,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             string name = auditSourceDictionary[MonikerSourceName].ToString().Trim();
             string? lookupName;
 
-            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+            // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have an ID.
             if (auditSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
             {
                 lookupName = packageSourceIdObj.ToString().Trim();
             }
-            else // Newly added Package Sources will not have a Package ID yet.
+            else // Newly added Package Sources will not have an ID yet.
             {
                 lookupName = name;
             }
