@@ -206,7 +206,7 @@
                         Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
           <!-- author and download count -->
           <nuget:AuthorAndDownloadCount
-                        Margin="5,4,0,0"
+                        Margin="55,4,0,0"
                         KnownOwnerViewModels="{Binding KnownOwnerViewModels, Mode=OneTime}"
                         Author="{Binding ByAuthor, Mode=OneTime}"
                         DownloadCount="{Binding DownloadCount}" />
