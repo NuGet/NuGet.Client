@@ -142,7 +142,9 @@ The SDKAnalysisLevel feature should be used with special care in features that s
 For example, when running a restore on an .NET SDK project in Visual Studio, the Visual Studio shipped code and targets will be used. 
 When running a restore on the same project with the .NET CLI, the .NET SDK code will be used.
 
-Because of this, consider the .NET SDK loading rules, <https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#targeting-and-support-rules>. While Visual Studio 18.0, shipped with .NET 10.0.100 SDK, the minimum version for that .NET SDK is 17.14. What that means is that if a feature is available in the NuGet targets in 17.14, it will be enabled by default in 17.14, despite the fact that you may have only intended it to be enabled by default in .NET 10 only.
+Because of this, consider the [.NET SDK loading rules](https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#targeting-and-support-rules).
+While Visual Studio 18.0, shipped with .NET 10.0.100 SDK, the minimum version for that .NET SDK is 17.14.
+What that means is that if a feature is available in the NuGet targets in 17.14, it will be enabled by default in 17.14, despite the fact that you may have only intended it to be enabled by default in .NET 10 only.
 
 #### Restore considerations
 
