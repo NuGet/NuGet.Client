@@ -10,7 +10,6 @@
     <DeployExtension>false</DeployExtension>
     <Description>NuGet's Visual Studio extension Package.</Description>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
-    <VssdkCompatibleExtension>true</VssdkCompatibleExtension>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,8 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Sdk" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Build" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
