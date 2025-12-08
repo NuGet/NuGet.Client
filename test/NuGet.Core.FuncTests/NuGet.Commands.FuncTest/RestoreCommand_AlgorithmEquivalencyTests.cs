@@ -2745,7 +2745,7 @@ namespace NuGet.Commands.FuncTest
             result2.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-// Project -> B 1.0.0
+        // Project -> B 1.0.0
         //              -> C [1.0.0, 2.0.0)
         //              -> D [1.0.0, 2.0.0)
         //              -> A [1.0.0, 2.0.0)

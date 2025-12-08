@@ -514,7 +514,8 @@ namespace NuGet.Commands
                         }
 
 
-                        // We need to check for a conflict yet again.
+                        // We basically need to do the same check for every path, regardless whether we've seen the node before.
+                        // Version conflicts are based on constraint violations.
 
                         // This is a version conflict if:
                         // 1. The node is not a project and isn't unresolved
@@ -561,24 +562,9 @@ namespace NuGet.Commands
                             // Track the version conflict for later
                             versionConflicts.Add(childResolvedLibraryRangeIndex, conflictingNode);
 
-                            // Process the next child
-                            continue;
-                        }
-
-                        // If it wasn't a downgrade, then it was a version conflict like A -> B [1.0.0] but B 1.0.0 was not in the resolved graph
-                        if (versionConflicts.ContainsKey(childResolvedLibraryRangeIndex) && !nodesById.ContainsKey(currentRangeIndex))
-                        {
-                            GraphNode<RemoteResolveResult> nodeWithConflict = new(childResolvedLibraryDependency.LibraryRange)
-                            {
-                                Item = childResolvedDependencyGraphItem.Item,
-                                Disposition = Disposition.Acceptable,
-                                OuterNode = currentGraphNode,
-                            };
-
-                            currentGraphNode.InnerNodes.Add(nodeWithConflict);
-
                             nodesById.Add(currentRangeIndex, nodeWithConflict);
 
+                            // Process the next child
                             continue;
                         }
 
