@@ -54,7 +54,11 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
-                return Properties.OrderedEquals(other.Properties, pair => pair.Key, StringComparer.Ordinal);
+                // Cast to concrete Dictionary to avoid boxing the struct enumerator
+                // The cast is safe because Properties always returns the _properties field which is always Dictionary<string, string>
+                var thisDict = (Dictionary<string, string>)Properties;
+                var otherDict = (Dictionary<string, string>)other.Properties;
+                return thisDict.OrderedEquals(otherDict, pair => pair.Key, StringComparer.Ordinal);
             }
 
             return false;
