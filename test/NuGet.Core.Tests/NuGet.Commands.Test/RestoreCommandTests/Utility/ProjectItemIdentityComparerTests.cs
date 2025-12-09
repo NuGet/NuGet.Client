@@ -9,16 +9,54 @@ using NuGet.Commands.Restore;
 using NuGet.Commands.Restore.Utility;
 using Xunit;
 
-namespace NuGet.Commands.Test.Utility;
+namespace NuGet.Commands.Test.RestoreCommandTests.Utility;
 
 public class ProjectItemIdentityComparerTests
 {
+    [Fact]
+    public void Distinct_WithDifferentPackageNames_DoesNotDeduplicate()
+    {
+        // Arrange
+        var item1 = new TestItem("packagea", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { "Version", "1.0.0" } }
+        );
+        var item2 = new TestItem("packageb", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { "Version", "1.0.0" } }
+        );
+        List<IItem> items = [item1, item2];
+
+        // Act
+        var result = items.Distinct(ProjectItemIdentityComparer.Default).ToList();
+
+        // Assert
+        result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Distinct_WithSamePackageNameDifferentVersions_Deduplicates()
+    {
+        // Arrange
+        var item1 = new TestItem("packagea", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { "Version", "1.0.0" } }
+        );
+        var item2 = new TestItem("packagea", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { "Version", "2.0.0" } }
+        );
+        List<IItem> items = [item1, item2];
+
+        // Act
+        var result = items.Distinct(ProjectItemIdentityComparer.Default).ToList();
+
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
     [Fact]
     public void Distinct_WithDuplicateMixedCasePackageName_Deduplicates()
     {
         // Arrange
         var item1 = new TestItem("packagea", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            { {"Version", "1.0.0"} }
+            { { "Version", "1.0.0" } }
         );
         var item2 = new TestItem("PackageA", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             { { "Version", "1.0.0" } }
@@ -29,7 +67,7 @@ public class ProjectItemIdentityComparerTests
         var result = items.Distinct(ProjectItemIdentityComparer.Default).ToList();
 
         // Assert
-        result.Count.Should().Be(1);
+        result.Should().HaveCount(1);
     }
 
     private class TestItem : IItem
