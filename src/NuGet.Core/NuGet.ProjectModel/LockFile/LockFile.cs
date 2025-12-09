@@ -42,8 +42,8 @@ namespace NuGet.ProjectModel
         {
             return Targets.FirstOrDefault(t =>
                 t.TargetAlias.Equals(frameworkAlias) &&
-                ((string.IsNullOrEmpty(runtimeIdentifier) && string.IsNullOrEmpty(t.RuntimeIdentifier) ||
-                 string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))));
+                (string.IsNullOrEmpty(runtimeIdentifier) && string.IsNullOrEmpty(t.RuntimeIdentifier) ||
+                 string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase)));
         }
 
         public LockFileLibrary GetLibrary(string name, NuGetVersion version)
