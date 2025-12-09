@@ -14,11 +14,11 @@ namespace NuGet.Commands.Restore.Utility
 
         public bool Equals(IItem x, IItem y)
         {
-            return StringComparer.InvariantCultureIgnoreCase.Equals(x.Identity, y.Identity);
+            return StringComparer.OrdinalIgnoreCase.Equals(x.Identity, y.Identity);
         }
         public int GetHashCode(IItem obj)
         {
-            return obj.Identity.GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity);
         }
     }
 }
