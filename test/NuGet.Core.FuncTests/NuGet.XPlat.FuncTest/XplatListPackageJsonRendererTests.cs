@@ -1406,10 +1406,8 @@ namespace NuGet.XPlat.FuncTest
                 var hasAutoReferencedTopLevelPackage = project.listPackageReportFrameworks?.Any(packageReportFramework =>
                                                            packageReportFramework.TopLevelPackages?.Any(topLevelPackage => topLevelPackage.AutoReference) ?? false) ??
                                                        false;
-                var hasAutoReferencedTransitivePackage = project.listPackageReportFrameworks?.Any(packageReportFramework =>
-                                                             packageReportFramework.TransitivePackages?.Any(transitivePackage => transitivePackage.AutoReference) ?? false) ??
-                                                         false;
-                projectModel.AutoReferenceFound = hasAutoReferencedTopLevelPackage || hasAutoReferencedTransitivePackage;
+
+                projectModel.AutoReferenceFound = hasAutoReferencedTopLevelPackage;
 
                 if (project.projectProblems != null)
                 {
