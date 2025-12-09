@@ -3,7 +3,7 @@
 
 using Microsoft.VisualStudio.Extensibility;
 
-namespace NuGetVSExtension
+namespace NuGet.VisualStudio.Client
 {
     [VisualStudioContribution]
     public class NuGetExtension : Extension

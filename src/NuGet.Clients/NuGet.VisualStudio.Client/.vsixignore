@@ -98,9 +98,11 @@ Microsoft.VisualStudio.Shell.Styles.dll
 Microsoft.VisualStudio.Shell.Styles.resources.dll
 System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
+System.IO.FileSystem.AccessControl.dll
 System.Management.Automation.dll
 System.Memory.Data.dll
 System.Net.Http.Formatting.dll
+System.Security.Cryptography.ProtectedData.dll
 System.Text.Encodings.Web.dll
 System.Web.Http.dll
 

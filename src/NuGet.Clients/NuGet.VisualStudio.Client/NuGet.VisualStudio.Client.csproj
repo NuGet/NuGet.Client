@@ -29,6 +29,7 @@
     <StartArguments>/rootsuffix Exp /log</StartArguments>
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>True</DeployExtension>
+    <VsixDeployOnDebug>True</VsixDeployOnDebug>
   </PropertyGroup>
 
   <ItemGroup>
