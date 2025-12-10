@@ -133,7 +133,7 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel,
                 AuditMode = AuditMode,
-                SuppressedAdvisories = SuppressedAdvisories == null ? null : new HashSet<string>(SuppressedAdvisories),
+                SuppressedAdvisories = SuppressedAdvisories == null ? null : new HashSet<string>(SuppressedAdvisories, StringComparer.Ordinal),
             };
             return clone;
         }

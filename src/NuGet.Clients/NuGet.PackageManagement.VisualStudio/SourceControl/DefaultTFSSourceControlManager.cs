@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void PendAddFiles(IEnumerable<string> fullPaths, string root, INuGetProjectContext nuGetProjectContext)
         {
-            var filesToAdd = new HashSet<string>();
+            var filesToAdd = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
             foreach (var fullPath in fullPaths)
             {
                 // TODO: Should one also add the Directory under which the file is present since it is TFS?

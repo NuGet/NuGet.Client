@@ -92,7 +92,7 @@ namespace NuGet.SolutionRestoreManager
                 // Pass #1. Validate all the data (i/o)
                 // 1a. Validate the package specs (references & settings)
                 // 1b. Validate the expected outputs (assets file, nuget.g.*, lock file)
-                var unloadedProjects = _restoreData.Keys.ToHashSet();
+                var unloadedProjects = _restoreData.Keys.ToHashSet(PathUtility.GetStringComparerBasedOnOS());
                 foreach (var project in dependencyGraphSpec.Projects)
                 {
                     var projectUniqueName = project.RestoreMetadata.ProjectUniqueName;

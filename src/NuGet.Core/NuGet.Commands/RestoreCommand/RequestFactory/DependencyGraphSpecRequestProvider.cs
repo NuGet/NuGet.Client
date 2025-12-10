@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
@@ -69,7 +70,7 @@ namespace NuGet.Commands
             }
 
             // Validate the dg file input, this throws if errors are found.
-            var projectsWithErrors = new HashSet<string>();
+            var projectsWithErrors = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
             if (restoreContext.AdditionalMessages != null)
             {
                 foreach (var projectPath in restoreContext.AdditionalMessages.Where(m => m.Level == Common.LogLevel.Error).Select(m => m.ProjectPath))

@@ -250,7 +250,7 @@ namespace NuGet.ProjectModel
             {
                 writer.WriteObjectStart("frameworks");
 
-                var frameworkNames = new HashSet<string>();
+                var frameworkNames = new HashSet<string>(StringComparer.Ordinal);
                 var frameworkSorter = NuGetFrameworkSorter.Instance;
                 foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {

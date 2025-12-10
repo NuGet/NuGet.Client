@@ -185,7 +185,7 @@ namespace NuGet.ProjectModel
                         continue;
 
                     var queue = new Queue<Tuple<string, string>>();
-                    var visitedP2PReference = new HashSet<string>();
+                    var visitedP2PReference = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
                     foreach (var projectReference in restoreMetadataFramework.ProjectReferences)
                     {

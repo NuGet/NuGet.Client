@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement
                 var items = await msbuildProject.ProjectServices.ReferencesReader.GetItemsAsync(ProjectItems.NuGetAuditSuppress);
                 if (items?.Count > 0)
                 {
-                    var suppressions = new HashSet<string>();
+                    var suppressions = new HashSet<string>(StringComparer.Ordinal);
                     for (int i = 0; i < items.Count; i++)
                     {
                         (string url, _) = items[i];

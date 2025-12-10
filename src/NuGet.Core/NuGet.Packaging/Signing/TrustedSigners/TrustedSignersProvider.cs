@@ -95,7 +95,7 @@ namespace NuGet.Packaging.Signing
                     ICollection<string> owners = null;
                     if (itemTarget == VerificationTarget.Repository)
                     {
-                        owners = new HashSet<string>((item as RepositoryItem).Owners);
+                        owners = new HashSet<string>((item as RepositoryItem).Owners, StringComparer.Ordinal);
                     }
 
                     if (certificateLookup.TryGetValue(GetCertLookupKey(certificate), out var existingEntry))

@@ -400,7 +400,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Task<IReadOnlyCollection<string>>[] tasks = projectContextInfos.Select(pctxi => pctxi.GetPackageFoldersAsync(_serviceBroker, cancellationToken).AsTask()).ToArray();
             IReadOnlyCollection<string>[] packageFolders = await Task.WhenAll(tasks);
 
-            HashSet<string> pkgFoldersUnique = new HashSet<string>();
+            HashSet<string> pkgFoldersUnique = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
             packageFolders.ForEach(folders => pkgFoldersUnique.AddRange(folders));
 
             IEnumerable<SourceRepository> assetsPackageFolders = pkgFoldersUnique.Select(folder => _sharedServiceState.SourceRepositoryProvider.CreateRepository(new PackageSource(folder)));

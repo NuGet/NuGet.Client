@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Rules
             var dependencyGroups = dependencyNode
                 .Elements(XName.Get(Group, ns));
 
-            var bads = new HashSet<string>();
+            var bads = new HashSet<string>(StringComparer.Ordinal);
             foreach (var depGroup in dependencyGroups)
             {
                 var groupFramework = GetAttributeValue(depGroup, TargetFramework);
@@ -117,7 +117,7 @@ namespace NuGet.Packaging.Rules
         {
             var ns = metadataNode.GetDefaultNamespace().NamespaceName;
 
-            var bads = new HashSet<string>();
+            var bads = new HashSet<string>(StringComparer.Ordinal);
             foreach (var group in metadataNode.Elements(XName.Get(References, ns)).Elements(XName.Get(Group, ns)))
             {
                 var groupFramework = GetAttributeValue(group, TargetFramework);
@@ -146,7 +146,7 @@ namespace NuGet.Packaging.Rules
         {
             var ns = xml.Root.GetDefaultNamespace().NamespaceName;
 
-            var frameworks = new HashSet<string>();
+            var frameworks = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var group in metadataNode.Elements(XName.Get(FrameworkAssemblies, ns)).Elements(XName.Get(FrameworkAssembly, ns))
                 .GroupBy(n => GetAttributeValue(n, TargetFramework)))
@@ -164,7 +164,7 @@ namespace NuGet.Packaging.Rules
                 }
             }
 
-            var bads = new HashSet<string>();
+            var bads = new HashSet<string>(StringComparer.Ordinal);
             foreach (var framework in frameworks)
             {
                 if (!string.IsNullOrEmpty(framework) && !FrameworkVersionHasDesiredDots(framework))
@@ -216,7 +216,7 @@ namespace NuGet.Packaging.Rules
                 GetPatternSetThatPreservesRawValues(patterns.EmbedAssemblies),
                 GetPatternSetThatPreservesRawValues(patterns.MSBuildTransitiveFiles)
             };
-            var warnPaths = new HashSet<string>();
+            var warnPaths = new HashSet<string>(StringComparer.Ordinal);
 
             List<ContentItemGroup> targetedItemGroups = new();
             foreach (var pattern in frameworkPatterns)

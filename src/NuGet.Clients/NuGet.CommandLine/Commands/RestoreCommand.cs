@@ -287,7 +287,7 @@ namespace NuGet.CommandLine
                     {
                         if (!configToProjectPath.TryGetValue(configFile, out HashSet<string> projectPath))
                         {
-                            projectPath = new HashSet<string> { configFile };
+                            projectPath = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS()) { configFile };
                         }
 
                         if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
@@ -507,7 +507,7 @@ namespace NuGet.CommandLine
                     }
                     else
                     {
-                        configToProjectPath.Add(packagesConfig, new HashSet<string> { project.FilePath });
+                        configToProjectPath.Add(packagesConfig, new HashSet<string>(PathUtility.GetStringComparerBasedOnOS()) { project.FilePath });
                     }
                 }
             }

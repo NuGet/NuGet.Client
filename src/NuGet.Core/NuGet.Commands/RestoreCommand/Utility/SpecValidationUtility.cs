@@ -22,7 +22,7 @@ namespace NuGet.Commands
         /// </summary>
         public static void ValidateDependencySpec(DependencyGraphSpec spec)
         {
-            ValidateDependencySpec(spec, projectsToSkip: new HashSet<string>(), NullLogger.Instance);
+            ValidateDependencySpec(spec, projectsToSkip: new HashSet<string>(PathUtility.GetStringComparerBasedOnOS()), NullLogger.Instance);
         }
 
         public static void ValidateDependencySpec(DependencyGraphSpec spec, HashSet<string> projectsToSkip, ILogger logger)

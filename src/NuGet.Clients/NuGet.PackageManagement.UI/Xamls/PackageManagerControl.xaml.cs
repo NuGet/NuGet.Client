@@ -1557,7 +1557,7 @@ namespace NuGet.PackageManagement.UI
             }
             else if (updatePackageOptions.PackagesToUpdate.Any())
             {
-                var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
+                var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate, StringComparer.OrdinalIgnoreCase);
                 PackageItemViewModel firstSelectedItem = null;
                 foreach (var packageItem in _packageList.PackageItems)
                 {

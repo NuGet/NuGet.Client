@@ -127,9 +127,9 @@ namespace NuGet.Packaging
             ContentFiles = new Collection<ManifestContentFiles>();
             PackageAssemblyReferences = new Collection<PackageReferenceSet>();
             PackageTypes = new Collection<PackageType>();
-            Authors = new HashSet<string>();
-            Owners = new HashSet<string>();
-            Tags = new HashSet<string>();
+            Authors = new HashSet<string>(StringComparer.Ordinal);
+            Owners = new HashSet<string>(StringComparer.Ordinal);
+            Tags = new HashSet<string>(StringComparer.Ordinal);
             TargetFrameworks = new List<NuGetFramework>();
             // Just like parameter replacements, these are also case insensitive, for consistency.
             Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -586,7 +586,8 @@ namespace NuGet.Packaging
             var frameworksMissingPlatformVersion = new HashSet<string>(dependencies
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
-                .Select(framework => framework.GetShortFolderName()));
+                .Select(framework => framework.GetShortFolderName()),
+                StringComparer.Ordinal);
             if (frameworksMissingPlatformVersion.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
@@ -609,7 +610,8 @@ namespace NuGet.Packaging
             var frameworksMissingPlatformVersion = new HashSet<string>(packageAssemblyReferences
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework != null && groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
-                .Select(framework => framework.GetShortFolderName()));
+                .Select(framework => framework.GetShortFolderName()),
+                StringComparer.Ordinal);
             if (frameworksMissingPlatformVersion.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromReferenceGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
@@ -637,8 +639,8 @@ namespace NuGet.Packaging
             var frameworksMissingPlatformVersion = new HashSet<string>(references
                 .SelectMany(reference => reference.SupportedFrameworks)
                 .Where(framework => framework.HasPlatform && framework.PlatformVersion == FrameworkConstants.EmptyVersion)
-                .Select(framework => framework.GetShortFolderName())
-            );
+                .Select(framework => framework.GetShortFolderName()),
+                StringComparer.Ordinal);
             if (frameworksMissingPlatformVersion.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyReferences, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
@@ -648,7 +650,8 @@ namespace NuGet.Packaging
             frameworksMissingPlatformVersion = new HashSet<string>(referenceGroups
                 .Select(group => group.TargetFramework)
                 .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
-                .Select(framework => framework.GetShortFolderName()));
+                .Select(framework => framework.GetShortFolderName()),
+                StringComparer.Ordinal);
             if (frameworksMissingPlatformVersion.Any())
             {
                 throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromFrameworkAssemblyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
@@ -831,7 +834,7 @@ namespace NuGet.Packaging
                 patterns.MSBuildTransitiveFiles
             };
 
-            var itemsWithFrameworkMissingPlatformVersion = new HashSet<string>();
+            var itemsWithFrameworkMissingPlatformVersion = new HashSet<string>(StringComparer.Ordinal);
             List<ContentItemGroup> targetedItemGroups = new();
             foreach (var pattern in frameworkPatterns)
             {

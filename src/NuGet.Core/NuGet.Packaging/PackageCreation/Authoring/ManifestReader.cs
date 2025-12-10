@@ -43,7 +43,7 @@ namespace NuGet.Packaging
             manifestMetadata.MinClientVersionString = (string)xElement.Attribute("minClientVersion");
 
             // we store all child elements under <metadata> so that we can easily check for required elements.
-            var allElements = new HashSet<string>();
+            var allElements = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var element in xElement.Elements())
             {

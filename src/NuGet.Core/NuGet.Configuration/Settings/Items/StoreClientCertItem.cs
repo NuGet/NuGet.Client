@@ -156,7 +156,8 @@ namespace NuGet.Configuration
                     ConfigurationConstants.StoreNameAttribute,
                     ConfigurationConstants.FindByAttribute,
                     ConfigurationConstants.FindValueAttribute
-                });
+                },
+                StringComparer.Ordinal);
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -210,7 +211,7 @@ namespace NuGet.Configuration
 
         protected override IReadOnlyCollection<string> RequiredAttributes
         { get; }
-        = new HashSet<string>(new[] { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute });
+        = new HashSet<string>(new[] { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute }, StringComparer.Ordinal);
 
         internal override XNode AsXNode()
         {

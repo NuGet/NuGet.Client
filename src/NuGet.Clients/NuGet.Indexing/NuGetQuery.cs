@@ -24,7 +24,7 @@ namespace NuGet.Indexing
                 HashSet<string> text;
                 if (!grouping.TryGetValue(clause.Field, out text))
                 {
-                    text = new HashSet<string>();
+                    text = new HashSet<string>(StringComparer.Ordinal);
                     grouping.Add(clause.Field, text);
                 }
                 text.Add(clause.Text);

@@ -127,14 +127,16 @@ namespace NuGet.Configuration
                 ConfigurationConstants.PathAttribute,
                 ConfigurationConstants.PasswordAttribute,
                 ConfigurationConstants.ClearTextPasswordAttribute
-            });
+            },
+                StringComparer.Ordinal);
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
             = new HashSet<string>(new[]
             {
                 ConfigurationConstants.PackageSourceAttribute,
                 ConfigurationConstants.PathAttribute
-            });
+            },
+                StringComparer.Ordinal);
 
 
         internal override XNode AsXNode()

@@ -28,12 +28,12 @@ namespace NuGet.Configuration
             ).ToDictionary(a => a.Key, a => a.Value, StringComparer.OrdinalIgnoreCase));
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-            = new HashSet<string>(new[] { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute });
+            = new HashSet<string>(new[] { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute }, StringComparer.Ordinal);
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
             new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
             {
-                { ConfigurationConstants.KeyAttribute, new HashSet<string>(new [] {string.Empty }) }
+                { ConfigurationConstants.KeyAttribute, new HashSet<string>(new [] {string.Empty }, StringComparer.Ordinal) }
             });
 
         public AddItem(string key, string? value)

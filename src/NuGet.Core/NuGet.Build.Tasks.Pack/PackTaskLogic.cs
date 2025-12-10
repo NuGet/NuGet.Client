@@ -774,7 +774,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private ISet<string> CalculateFilesToExcludeInPack(IPackTaskRequest<IMSBuildItem> request)
         {
-            var excludeFiles = new HashSet<string>();
+            var excludeFiles = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
             if (request.PackageFilesToExclude != null)
             {
                 foreach (var file in request.PackageFilesToExclude)
@@ -1093,7 +1093,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)
         {
-            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase));
+            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
         }
     }
 }

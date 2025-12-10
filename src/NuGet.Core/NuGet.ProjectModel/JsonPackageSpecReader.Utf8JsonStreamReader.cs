@@ -580,7 +580,7 @@ namespace NuGet.ProjectModel
             IList<DownloadDependency> downloadDependencies,
             string packageSpecPath)
         {
-            var seenIds = new HashSet<string>();
+            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartArray)
             {
@@ -1526,7 +1526,7 @@ namespace NuGet.ProjectModel
                 {
                     var advisoryUrl = jsonReader.GetString();
 
-                    suppressedAdvisories ??= new HashSet<string>();
+                    suppressedAdvisories ??= new HashSet<string>(StringComparer.Ordinal);
                     suppressedAdvisories.Add(advisoryUrl);
 
                     jsonReader.Skip();

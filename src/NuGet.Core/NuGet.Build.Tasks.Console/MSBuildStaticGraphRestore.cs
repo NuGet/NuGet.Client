@@ -1096,7 +1096,7 @@ namespace NuGet.Build.Tasks.Console
             IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
                                                     .Select(i => i.Identity);
 
-            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
+            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions, StringComparer.Ordinal) : null;
         }
 
         /// <summary>

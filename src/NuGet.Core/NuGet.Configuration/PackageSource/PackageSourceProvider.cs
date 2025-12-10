@@ -130,7 +130,9 @@ namespace NuGet.Configuration
                 // get list of disabled packages
                 var disabledSourcesSection = settings.GetSection(ConfigurationConstants.DisabledPackageSources);
                 var disabledSourcesSettings = disabledSourcesSection?.Items.OfType<AddItem>();
-                var disabledSources = new HashSet<string>(disabledSourcesSettings?.GroupBy(setting => setting.Key).Select(group => group.First().Key) ?? Enumerable.Empty<string>());
+                var disabledSources = new HashSet<string>(
+                    disabledSourcesSettings?.GroupBy(setting => setting.Key).Select(group => group.First().Key) ?? Enumerable.Empty<string>(),
+                    StringComparer.Ordinal);
 
                 var packageSourceLookup = new Dictionary<string, IndexedPackageSource>(StringComparer.OrdinalIgnoreCase);
                 var packageIndex = 0;
@@ -388,7 +390,7 @@ namespace NuGet.Configuration
         }
         internal HashSet<string> GetPackageSourceNamesMatchingNamePrefix(string namePrefix, IEnvironmentVariableReader environmentVariableReader)
         {
-            var names = new HashSet<string>();
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             List<PackageSource> packageSources = LoadPackageSources(Settings, ConfigurationConstants.PackageSources, _configurationDefaultSources, environmentVariableReader);
             foreach (PackageSource packageSource in packageSources)

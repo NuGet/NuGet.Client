@@ -432,7 +432,7 @@ namespace NuGet.Commands
 
         private static IEnumerable<TargetFrameworkInformation> GetTargetFrameworkInformation(string filePath, ProjectStyle restoreType, IEnumerable<IMSBuildItem> items)
         {
-            var uniqueIds = new HashSet<string>();
+            var uniqueIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
@@ -1067,7 +1067,7 @@ namespace NuGet.Commands
                                                     .Select(i => i.GetProperty("Id"));
 
             return (suppressions != null && suppressions.Any())
-                    ? new HashSet<string>(suppressions)
+                    ? new HashSet<string>(suppressions, StringComparer.Ordinal)
                     : null;
         }
 

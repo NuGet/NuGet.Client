@@ -31,7 +31,7 @@ namespace NuGet.Commands
             //Create SourceFeed for each packageSource
             var sourceFeeds = new List<ListResource>();
             // this is to avoid duplicate remote calls in case of duplicate final endpoints (Ex. api/index.json and /api/v2/ point to the same target)
-            var sources = new HashSet<string>();
+            var sources = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (PackageSource packageSource in listArgs.ListEndpoints)
             {

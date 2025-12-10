@@ -1109,7 +1109,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
 
                 var allSources = new List<SourceRepository>(primarySources);
-                var primarySourcesSet = new HashSet<string>(primarySources.Select(s => s.PackageSource.Source));
+                var primarySourcesSet = new HashSet<string>(primarySources.Select(s => s.PackageSource.Source), StringComparer.Ordinal);
                 foreach (var secondarySource in secondarySources)
                 {
                     if (!primarySourcesSet.Contains(secondarySource.PackageSource.Source))

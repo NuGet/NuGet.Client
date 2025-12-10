@@ -10,17 +10,14 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace NuGet.Repo.Analyzers
 {
-    /// <summary>
-    /// Analyzer that ensures dictionaries with string keys explicitly specify a StringComparer.
-    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class DictionaryStringKeyComparerAnalyzer : DiagnosticAnalyzer
+    public class HashSetStringComparerAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "NCA0001";
+        public const string DiagnosticId = "NCA0003";
         private const string Category = "Usage";
 
-        private static readonly LocalizableString Title = "Dictionary with string key should specify a StringComparer";
-        private static readonly LocalizableString MessageFormat = "Dictionary creation with string key type should explicitly specify a StringComparer";
+        private static readonly LocalizableString Title = "HashSet with string element should specify a StringComparer";
+        private static readonly LocalizableString MessageFormat = "HashSet creation with string element type should explicitly specify a StringComparer";
         private static readonly LocalizableString Description = "NuGet package ids and versions are case insensitive. File names and paths are OS dependent. Explicitly set the StringComparer to reduce risk of bugs.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -51,7 +48,7 @@ namespace NuGet.Repo.Analyzers
 
             if (symbolInfo.Symbol is IMethodSymbol constructor)
             {
-                AnalyzeDictionaryCreation(context, objectCreation, objectCreation.ArgumentList, constructor.ContainingType, constructor);
+                AnalyzeHashSetCreation(context, objectCreation, objectCreation.ArgumentList, constructor.ContainingType);
             }
         }
 
@@ -62,7 +59,7 @@ namespace NuGet.Repo.Analyzers
 
             if (symbolInfo.Symbol is IMethodSymbol constructor)
             {
-                AnalyzeDictionaryCreation(context, implicitObjectCreation, implicitObjectCreation.ArgumentList, constructor.ContainingType, constructor);
+                AnalyzeHashSetCreation(context, implicitObjectCreation, implicitObjectCreation.ArgumentList, constructor.ContainingType);
             }
         }
 
@@ -73,46 +70,39 @@ namespace NuGet.Repo.Analyzers
 
             if (symbolInfo.Symbol is IMethodSymbol methodSymbol)
             {
-                // Check for ImmutableDictionary.Create<TKey, TValue>(), ImmutableDictionary.CreateRange<TKey, TValue>(), or ImmutableDictionary.CreateBuilder<TKey, TValue>()
-                if (methodSymbol.ContainingType?.ToDisplayString() == "System.Collections.Immutable.ImmutableDictionary" &&
+                // Check for ImmutableHashSet.Create<T>(), ImmutableHashSet.CreateRange<T>(), or ImmutableHashSet.CreateBuilder<T>()
+                if (methodSymbol.ContainingType?.ToDisplayString() == "System.Collections.Immutable.ImmutableHashSet" &&
                     (methodSymbol.Name == "Create" || methodSymbol.Name == "CreateRange" || methodSymbol.Name == "CreateBuilder") &&
                     methodSymbol.IsStatic &&
-                    methodSymbol.TypeArguments.Length == 2)
+                    methodSymbol.TypeArguments.Length == 1)
                 {
-                    var keyType = methodSymbol.TypeArguments[0];
+                    var elementType = methodSymbol.TypeArguments[0];
 
-                    // Check if the key type is string
-                    if (keyType.SpecialType == SpecialType.System_String)
+                    if (elementType.SpecialType == SpecialType.System_String)
                     {
-                        // Check if a StringComparer argument is provided
                         if (invocation.ArgumentList != null && HasStringComparerArgument(context, invocation.ArgumentList))
                         {
                             return;
                         }
 
-                        // Report diagnostic
                         var diagnostic = Diagnostic.Create(Rule, invocation.GetLocation());
                         context.ReportDiagnostic(diagnostic);
                     }
                 }
-                // Check for LINQ ToDictionary<TSource, TKey, ...>() or ToImmutableDictionary<TSource, TKey, ...>()
+                // Check for LINQ ToHashSet<TSource>() or ToImmutableHashSet<TSource>()
                 else if (methodSymbol.IsExtensionMethod &&
-                         (methodSymbol.Name == "ToDictionary" || methodSymbol.Name == "ToImmutableDictionary") &&
-                         methodSymbol.TypeArguments.Length >= 2)
+                         (methodSymbol.Name == "ToHashSet" || methodSymbol.Name == "ToImmutableHashSet") &&
+                         methodSymbol.TypeArguments.Length == 1)
                 {
-                    // For ToDictionary/ToImmutableDictionary, TypeArguments are: [TSource, TKey] or [TSource, TKey, TValue]
-                    var keyType = methodSymbol.TypeArguments[1];
+                    var elementType = methodSymbol.TypeArguments[0];
 
-                    // Check if the key type is string
-                    if (keyType.SpecialType == SpecialType.System_String)
+                    if (elementType.SpecialType == SpecialType.System_String)
                     {
-                        // Check if a StringComparer argument is provided
                         if (invocation.ArgumentList != null && HasStringComparerArgument(context, invocation.ArgumentList))
                         {
                             return;
                         }
 
-                        // Report diagnostic
                         var diagnostic = Diagnostic.Create(Rule, invocation.GetLocation());
                         context.ReportDiagnostic(diagnostic);
                     }
@@ -120,58 +110,50 @@ namespace NuGet.Repo.Analyzers
             }
         }
 
-        private static void AnalyzeDictionaryCreation(SyntaxNodeAnalysisContext context, SyntaxNode node, ArgumentListSyntax? argumentList, ITypeSymbol typeSymbol, IMethodSymbol calledConstructor)
+        private static void AnalyzeHashSetCreation(SyntaxNodeAnalysisContext context, SyntaxNode node, ArgumentListSyntax? argumentList, ITypeSymbol typeSymbol)
         {
-            // Check if it's a dictionary type
-            if (!IsDictionaryType(typeSymbol, out var keyType))
+            if (!IsHashSetType(typeSymbol, out var elementType))
             {
                 return;
             }
 
-            // Check if the key type is string
-            if (keyType?.SpecialType != SpecialType.System_String)
+            if (elementType?.SpecialType != SpecialType.System_String)
             {
                 return;
             }
 
-            // Check if a StringComparer argument is provided
             if (argumentList != null && HasStringComparerArgument(context, argumentList))
             {
                 return;
             }
 
-            // Check if the type has a constructor overload that accepts an IEqualityComparer<TKey>
-            // If no such overload exists, the type cannot accept a comparer, so don't report a diagnostic
-            if (!HasComparerConstructorOverload(typeSymbol, keyType))
+            if (!HasComparerConstructorOverload(typeSymbol, elementType))
             {
                 return;
             }
 
-            // Report diagnostic
             var diagnostic = Diagnostic.Create(Rule, node.GetLocation());
             context.ReportDiagnostic(diagnostic);
         }
 
-        private static bool IsDictionaryType(ITypeSymbol typeSymbol, out ITypeSymbol? keyType)
+        private static bool IsHashSetType(ITypeSymbol typeSymbol, out ITypeSymbol? elementType)
         {
-            keyType = null;
+            elementType = null;
 
             if (typeSymbol is not INamedTypeSymbol namedType)
                 return false;
 
-            // Check for Dictionary<TKey, TValue>
-            if (IsDictionaryInterface(namedType))
+            if (IsHashSetInterface(namedType))
             {
-                keyType = namedType.TypeArguments.FirstOrDefault();
+                elementType = namedType.TypeArguments.FirstOrDefault();
                 return true;
             }
 
-            // Check for types implementing IDictionary<TKey, TValue>
             foreach (var @interface in namedType.AllInterfaces)
             {
-                if (IsDictionaryInterface(@interface))
+                if (IsHashSetInterface(@interface))
                 {
-                    keyType = @interface.TypeArguments.FirstOrDefault();
+                    elementType = @interface.TypeArguments.FirstOrDefault();
                     return true;
                 }
             }
@@ -179,9 +161,9 @@ namespace NuGet.Repo.Analyzers
             return false;
         }
 
-        private static bool IsDictionaryInterface(INamedTypeSymbol typeSymbol)
+        private static bool IsHashSetInterface(INamedTypeSymbol typeSymbol)
         {
-            if (!typeSymbol.IsGenericType || typeSymbol.TypeArguments.Length != 2)
+            if (!typeSymbol.IsGenericType || typeSymbol.TypeArguments.Length != 1)
             {
                 return false;
             }
@@ -189,17 +171,15 @@ namespace NuGet.Repo.Analyzers
             var originalDefinition = typeSymbol.OriginalDefinition;
             var fullName = originalDefinition.ToDisplayString();
 
-            return fullName == "System.Collections.Generic.IDictionary<TKey, TValue>" ||
-                   fullName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
-                   fullName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+            return fullName == "System.Collections.Generic.ISet<T>" ||
+                   fullName == "System.Collections.Generic.HashSet<T>";
         }
 
-        private static bool HasComparerConstructorOverload(ITypeSymbol typeSymbol, ITypeSymbol keyType)
+        private static bool HasComparerConstructorOverload(ITypeSymbol typeSymbol, ITypeSymbol elementType)
         {
             if (typeSymbol is not INamedTypeSymbol namedType)
                 return false;
 
-            // Check if any constructor has a parameter that is IEqualityComparer<TKey>
             foreach (var constructor in namedType.Constructors)
             {
                 foreach (var parameter in constructor.Parameters)
@@ -208,9 +188,8 @@ namespace NuGet.Repo.Analyzers
                         parameterType.IsGenericType &&
                         parameterType.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEqualityComparer<T>")
                     {
-                        // Check if the type argument matches the key type
                         if (parameterType.TypeArguments.Length == 1 &&
-                            SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], keyType))
+                            SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], elementType))
                         {
                             return true;
                         }

@@ -11,6 +11,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
@@ -654,7 +655,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IReadOnlyCollection<string>[] packageFolders = await Task.WhenAll(prStyleTasks);
 
-            HashSet<string> packageFoldersUnique = new HashSet<string>();
+            HashSet<string> packageFoldersUnique = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
             packageFolders.ForEach(folders => packageFoldersUnique.AddRange(folders));
 
             return packageFoldersUnique.ToList();
