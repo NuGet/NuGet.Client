@@ -302,8 +302,6 @@
     <PackageReference Include="Newtonsoft.Json" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Web.Xdt" ExcludeAssets="all" GeneratePathProperty="true" />
 
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Sdk" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Build" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 

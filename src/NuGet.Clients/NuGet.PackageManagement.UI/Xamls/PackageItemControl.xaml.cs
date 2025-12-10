@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
-    /// <summary> 
+    /// <summary>
     /// This control is used as list items in the package list. Its DataContext is
     /// <see cref="PackageItemViewModel"/>.
     /// </summary>
@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.UI
         {
             var itemCheckBox = sender as CheckBox;
             var itemContainer = itemCheckBox?.FindAncestor<ListBoxItem>();
-            if (itemContainer == null)
+            if (itemContainer is null)
             {
                 return;
             }
