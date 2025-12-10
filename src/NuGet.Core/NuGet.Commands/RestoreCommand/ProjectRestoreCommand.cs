@@ -110,7 +110,7 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-                var projectProvidedRuntimeIdentifierGraphs = new SortedList<string, RuntimeGraph>();
+                var projectProvidedRuntimeIdentifierGraphs = new SortedList<string, RuntimeGraph>(StringComparer.Ordinal);
                 foreach (var graph in graphs)
                 {
                     // PCL Projects with Supports have a runtime graph but no matching framework.

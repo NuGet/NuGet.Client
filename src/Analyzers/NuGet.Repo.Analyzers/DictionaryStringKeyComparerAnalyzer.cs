@@ -199,20 +199,24 @@ namespace NuGet.Repo.Analyzers
             if (typeSymbol is not INamedTypeSymbol namedType)
                 return false;
 
-            // Check if any constructor has a parameter that is IEqualityComparer<TKey>
+            // Check if any constructor has a parameter that is IEqualityComparer<TKey> or IComparer<TKey>
             foreach (var constructor in namedType.Constructors)
             {
                 foreach (var parameter in constructor.Parameters)
                 {
                     if (parameter.Type is INamedTypeSymbol parameterType &&
-                        parameterType.IsGenericType &&
-                        parameterType.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEqualityComparer<T>")
+                        parameterType.IsGenericType)
                     {
-                        // Check if the type argument matches the key type
-                        if (parameterType.TypeArguments.Length == 1 &&
-                            SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], keyType))
+                        var parameterTypeName = parameterType.OriginalDefinition.ToDisplayString();
+                        if (parameterTypeName == "System.Collections.Generic.IEqualityComparer<T>" ||
+                            parameterTypeName == "System.Collections.Generic.IComparer<T>")
                         {
-                            return true;
+                            // Check if the type argument matches the key type
+                            if (parameterType.TypeArguments.Length == 1 &&
+                                SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], keyType))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -234,7 +238,7 @@ namespace NuGet.Repo.Analyzers
                         return true;
                     }
 
-                    if (IsIEqualityComparerOfString(typeInfo.Type))
+                    if (IsIEqualityComparerOfString(typeInfo.Type) || IsIComparerOfString(typeInfo.Type))
                     {
                         return true;
                     }
@@ -260,6 +264,33 @@ namespace NuGet.Repo.Analyzers
                 {
                     if (@interface.IsGenericType &&
                         @interface.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEqualityComparer<T>" &&
+                        @interface.TypeArguments.Length == 1 &&
+                        @interface.TypeArguments[0].SpecialType == SpecialType.System_String)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsIComparerOfString(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedType)
+            {
+                if (namedType.IsGenericType &&
+                    namedType.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IComparer<T>" &&
+                    namedType.TypeArguments.Length == 1 &&
+                    namedType.TypeArguments[0].SpecialType == SpecialType.System_String)
+                {
+                    return true;
+                }
+
+                foreach (var @interface in namedType.AllInterfaces)
+                {
+                    if (@interface.IsGenericType &&
+                        @interface.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IComparer<T>" &&
                         @interface.TypeArguments.Length == 1 &&
                         @interface.TypeArguments[0].SpecialType == SpecialType.System_String)
                     {
