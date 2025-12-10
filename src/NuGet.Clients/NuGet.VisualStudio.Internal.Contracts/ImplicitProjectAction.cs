@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return StringComparer.Ordinal.GetHashCode(Id);
         }
     }
 }

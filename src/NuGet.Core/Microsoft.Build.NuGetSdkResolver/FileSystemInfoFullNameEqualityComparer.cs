@@ -3,9 +3,9 @@
 
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Common;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -26,6 +26,8 @@ namespace Microsoft.Build.NuGetSdkResolver
         {
         }
 
+        private IEqualityComparer<string> _stringComparer = PathUtility.GetStringComparerBasedOnOS();
+
         /// <summary>
         /// Determines whether the specified <see cref="FileSystemInfo" /> objects are equal by comparing their <see cref="FileSystemInfo.FullName" /> property.
         /// </summary>
@@ -34,7 +36,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns><see langword="true" /> if the specified <see cref="FileSystemInfo" /> objects' <see cref="FileSystemInfo.FullName" /> property are equal, otherwise <see langword="false" />.</returns>
         public bool Equals(FileSystemInfo x, FileSystemInfo y)
         {
-            return string.Equals(x.FullName, y.FullName, StringComparison.Ordinal);
+            return _stringComparer.Equals(x.FullName, y.FullName);
         }
 
         /// <summary>
@@ -44,11 +46,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns>A hash code for the specified <see cref="FileSystemInfo" /> object's <see cref="FileSystemInfo.FullName" /> property..</returns>
         public int GetHashCode(FileSystemInfo obj)
         {
-#if NETFRAMEWORK || NETSTANDARD
-            return obj.FullName.GetHashCode();
-#else
-            return obj.FullName.GetHashCode(StringComparison.Ordinal);
-#endif
+            return _stringComparer.GetHashCode(obj.FullName);
         }
     }
 }

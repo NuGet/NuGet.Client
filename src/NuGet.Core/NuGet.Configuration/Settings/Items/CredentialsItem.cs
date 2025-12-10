@@ -254,7 +254,7 @@ namespace NuGet.Configuration
             return string.Equals(ElementName, item.ElementName, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => ElementName.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(ElementName);
 
         /// <remarks>
         /// This method is internal because it updates directly the xElement behind this abstraction.

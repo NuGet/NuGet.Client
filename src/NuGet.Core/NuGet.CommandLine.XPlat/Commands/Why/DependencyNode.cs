@@ -42,12 +42,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             if (x == null || y == null)
                 return false;
 
-            return string.Equals(x.Id, y.Id, StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase);
         }
 
         public int GetHashCode(DependencyNode obj)
         {
-            return obj.Id.GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Id);
         }
     }
 }

@@ -74,6 +74,6 @@ namespace NuGet.Configuration
             return false;
         }
 
-        public override int GetHashCode() => Name.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Name);
     }
 }

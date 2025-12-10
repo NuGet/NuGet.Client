@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-
-#if !NETFRAMEWORK && !NETSTANDARD
-using System;
-#endif
 
 namespace Microsoft.Extensions.Internal
 {
@@ -61,11 +58,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(string s)
         {
-#if NETFRAMEWORK || NETSTANDARD
-            var hashCode = (s != null) ? s.GetHashCode() : 0;
-#else
-            var hashCode = (s != null) ? s.GetHashCode(StringComparison.Ordinal) : 0;
-#endif
+            var hashCode = (s != null) ? StringComparer.Ordinal.GetHashCode(s) : 0;
             Add(hashCode);
         }
 

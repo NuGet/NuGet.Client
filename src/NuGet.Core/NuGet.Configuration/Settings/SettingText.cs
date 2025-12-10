@@ -52,7 +52,7 @@ namespace NuGet.Configuration
             return string.Equals(Value, text.Value, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => Value.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Value);
 
         public override bool IsEmpty() => string.IsNullOrEmpty(Value);
 

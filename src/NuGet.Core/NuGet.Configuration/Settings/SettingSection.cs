@@ -68,6 +68,6 @@ namespace NuGet.Configuration
             return string.Equals(ElementName, section.ElementName, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => ElementName.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(ElementName);
     }
 }

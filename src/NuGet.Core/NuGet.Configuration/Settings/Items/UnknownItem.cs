@@ -178,7 +178,7 @@ namespace NuGet.Configuration
             return string.Equals(ElementName, unknown.ElementName, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => ElementName.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(ElementName);
 
         internal override void Update(SettingItem setting)
         {

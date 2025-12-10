@@ -6,3 +6,4 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 NCA0001 | Usage | Warning | DictionaryStringKeyComparerAnalyzer: Dictionary with string key should specify a StringComparer
+NCA0002 | Usage | Warning | StringGetHashCodeAnalyzer: Use StringComparer.GetHashCode instead of string.GetHashCode

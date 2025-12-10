@@ -355,7 +355,7 @@ namespace NuGet
             int hashCode = Version.GetHashCode();
             if (SpecialVersion != null)
             {
-                hashCode = hashCode * 4567 + SpecialVersion.GetHashCode();
+                hashCode = hashCode * 4567 + StringComparer.OrdinalIgnoreCase.GetHashCode(SpecialVersion);
             }
 
             return hashCode;

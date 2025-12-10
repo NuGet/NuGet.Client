@@ -574,7 +574,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             public int GetHashCode(string obj)
             {
-                return Path.GetFileName(obj).ToLowerInvariant().GetHashCode();
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(Path.GetFileName(obj));
             }
         }
 

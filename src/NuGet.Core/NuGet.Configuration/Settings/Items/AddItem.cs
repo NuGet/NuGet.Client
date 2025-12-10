@@ -122,7 +122,7 @@ namespace NuGet.Configuration
         // Due to how settings AddOrUpdate is implemented, anything extending AddItem must only use the Key in GetHashCode and Equals
         // otherwise existing items won't be updated and new duplicates will always be added.
         // In other words, all sub-class properties must be ignored by these methods.
-        public sealed override int GetHashCode() => Key.GetHashCode();
+        public sealed override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Key);
 
         public override SettingBase Clone()
         {

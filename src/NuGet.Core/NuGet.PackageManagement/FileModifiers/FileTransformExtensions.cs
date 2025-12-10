@@ -37,7 +37,7 @@ namespace NuGet.ProjectManagement
 
         public override int GetHashCode()
         {
-            return InstallExtension.GetHashCode() * 3137 + UninstallExtension.GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(InstallExtension) * 3137 + StringComparer.OrdinalIgnoreCase.GetHashCode(UninstallExtension);
         }
     }
 }

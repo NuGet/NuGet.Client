@@ -133,20 +133,12 @@ namespace NuGet.Packaging
             int hash = 0;
             if (SourcePath != null)
             {
-#if NETFRAMEWORK || NETSTANDARD
-                hash = SourcePath.GetHashCode();
-#else
-                hash = SourcePath.GetHashCode(StringComparison.Ordinal);
-#endif
+                hash = StringComparer.Ordinal.GetHashCode(SourcePath);
             }
 
             if (TargetPath != null)
             {
-#if NETFRAMEWORK || NETSTANDARD
-                hash = hash * 4567 + TargetPath.GetHashCode();
-#else
-                hash = hash * 4567 + TargetPath.GetHashCode(StringComparison.Ordinal);
-#endif
+                hash = hash * 4567 + StringComparer.Ordinal.GetHashCode(TargetPath);
             }
 
             return hash;

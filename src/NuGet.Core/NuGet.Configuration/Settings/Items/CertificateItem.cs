@@ -118,6 +118,6 @@ namespace NuGet.Configuration
             return false;
         }
 
-        public override int GetHashCode() => Fingerprint.GetHashCode();
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Fingerprint);
     }
 }

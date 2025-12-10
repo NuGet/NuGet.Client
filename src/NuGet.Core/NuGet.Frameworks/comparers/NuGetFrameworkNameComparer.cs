@@ -41,7 +41,7 @@ namespace NuGet.Frameworks
                 return 0;
             }
 
-            return obj.Framework.ToUpperInvariant().GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Framework);
         }
     }
 }

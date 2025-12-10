@@ -23,7 +23,7 @@ namespace NuGet.SolutionRestoreManager
         {
             if (obj == null) { throw new ArgumentNullException(nameof(obj)); }
 
-            return obj.ProjectUniqueName.ToUpperInvariant().GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ProjectUniqueName);
         }
     }
 }
