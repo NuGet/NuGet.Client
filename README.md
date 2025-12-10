@@ -1,8 +1,8 @@
-﻿![NuGet logo](https://raw.githubusercontent.com/NuGet/Home/dev/meta/resources/nuget.png)
+![NuGet logo](https://raw.githubusercontent.com/NuGet/Home/dev/meta/resources/nuget.png)
 
 -----
 
-# NuGet Client Tools
+# NuGet Client Tools shopper more baches 
 
 This repo contains the following clients:
 
