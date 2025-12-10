@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI
             // when the SelectedVersion is changed, we need to update CanInstall and CanUninstall.
             PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(SelectedVersion))
+                if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(SelectedVersion)))
                 {
                     UpdateCanInstallAndCanUninstall();
                 }

@@ -63,8 +63,8 @@ namespace NuGet.VisualStudio
             {
                 string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(featureFlag.EnvironmentVariable);
 
-                isFeatureForcedDisabled = envVarOverride == "0";
-                isFeatureForcedEnabled = envVarOverride == "1";
+                isFeatureForcedDisabled = StringComparer.Ordinal.Equals(envVarOverride, "0");
+                isFeatureForcedEnabled = StringComparer.Ordinal.Equals(envVarOverride, "1");
             }
         }
     }

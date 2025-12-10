@@ -290,7 +290,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var error_TrustedSignerAlreadyExistsMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name);
 
-                    if (e.Message == error_TrustedSignerAlreadyExistsMessage)
+                    if (StringComparer.Ordinal.Equals(e.Message, error_TrustedSignerAlreadyExistsMessage))
                     {
                         logger.LogError(error_TrustedSignerAlreadyExistsMessage);
                         return 1;
@@ -301,7 +301,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var error_TrustedRepoAlreadyExists = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, sourceUrl);
 
-                    if (e.Message == error_TrustedRepoAlreadyExists)
+                    if (StringComparer.Ordinal.Equals(e.Message, error_TrustedRepoAlreadyExists))
                     {
                         logger.LogError(error_TrustedRepoAlreadyExists);
                         return 1;

@@ -14,13 +14,13 @@ namespace NuGet.VisualStudio.SolutionExplorer
     {
         protected override bool HasContainedItems(PackageReferenceItem parent)
         {
-            return parent.Target.Logs.Any(log => log.LibraryName == parent.Library.Name);
+            return parent.Target.Logs.Any(log => StringComparer.Ordinal.Equals(log.LibraryName, parent.Library.Name));
         }
 
         protected override void UpdateContainsCollection(PackageReferenceItem parent, AggregateContainsRelationCollectionSpan span)
         {
             span.UpdateContainsItems(
-                parent.Target.Logs.Where(log => log.LibraryName == parent.Library.Name).OrderBy(log => log.LibraryName).ThenBy(log => log.Message),
+                parent.Target.Logs.Where(log => StringComparer.Ordinal.Equals(log.LibraryName, parent.Library.Name)).OrderBy(log => log.LibraryName).ThenBy(log => log.Message),
                 (log, item) => StringComparer.Ordinal.Compare(log.LibraryName, item.Library.Name),
                 (log, item) => item.TryUpdateState(parent.Target, parent.Library, log),
                 log => new DiagnosticItem(parent.Target, parent.Library, log));

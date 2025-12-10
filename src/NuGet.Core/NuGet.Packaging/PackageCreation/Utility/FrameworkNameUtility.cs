@@ -28,7 +28,7 @@ namespace NuGet.Packaging
                     {
                         return FrameworkNameUtility.ParseFrameworkFolderName(
                             frameworkPart,
-                            strictParsing: knownFolder == PackagingConstants.Folders.Lib,
+                            strictParsing: StringComparer.Ordinal.Equals(knownFolder, PackagingConstants.Folders.Lib),
                             effectivePath: out effectivePath);
                     }
                     catch (ArgumentException)
@@ -98,7 +98,7 @@ namespace NuGet.Packaging
                     {
                         return FrameworkNameUtility.ParseNuGetFrameworkFolderName(
                             frameworkPart,
-                            strictParsing: knownFolder == PackagingConstants.Folders.Lib,
+                            strictParsing: StringComparer.Ordinal.Equals(knownFolder, PackagingConstants.Folders.Lib),
                             effectivePath: out effectivePath);
                     }
                     catch (ArgumentException)

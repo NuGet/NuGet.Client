@@ -199,7 +199,7 @@ internal static class PackageUpdateCommandRunner
             .Where(id => packages is null || packages.Count == 0 || packages.Any(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase)))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        int scannedPackages = assetsFile.Libraries.Count(l => l.Type == "package" && (packages is null || packages.Count == 0 || packages.Any(p => string.Equals(p.Id, l.Name, StringComparison.OrdinalIgnoreCase))));
+        int scannedPackages = assetsFile.Libraries.Count(l => StringComparer.Ordinal.Equals(l.Type, "package") && (packages is null || packages.Count == 0 || packages.Any(p => string.Equals(p.Id, l.Name, StringComparison.OrdinalIgnoreCase))));
 
         if (packageIdsWithVulnerabilities.Count > 0)
         {
@@ -215,7 +215,7 @@ internal static class PackageUpdateCommandRunner
             List<(PackageIdentity package, List<string> targetFrameworkAliases)> packagesToUpdate = assetsFile
                 .Targets
                 .SelectMany(tf => tf.Libraries.Select(library => (tf.TargetFramework, library)))
-                .Where(tuple => tuple.library.Type == "package" && packageIdsWithVulnerabilities.Contains(tuple.library.Name!) && PackageHasVulnerability(tuple.library.Name!, tuple.library.Version!, knownVulnerabilities))
+                .Where(tuple => StringComparer.Ordinal.Equals(tuple.library.Type, "package") && packageIdsWithVulnerabilities.Contains(tuple.library.Name!) && PackageHasVulnerability(tuple.library.Name!, tuple.library.Version!, knownVulnerabilities))
                 .GroupBy(
                     pair => new PackageIdentity(pair.library.Name, pair.library.Version),
                     pair => assetsFile.PackageSpec.TargetFrameworks.Single(tfm => tfm.FrameworkName == pair.TargetFramework).TargetAlias,
@@ -477,7 +477,7 @@ internal static class PackageUpdateCommandRunner
             }
 
             var upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
-            if (upgradeVersion.ToString() == package.identity.VersionRange.ToString())
+            if (StringComparer.Ordinal.Equals(upgradeVersion.ToString(), package.identity.VersionRange.ToString()))
             {
                 // Already using the highest version.
                 continue;

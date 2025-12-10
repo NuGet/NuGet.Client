@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
 
         private static bool IsHttpUrl(Uri uri)
         {
-            return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            return StringComparer.Ordinal.Equals(uri.Scheme, Uri.UriSchemeHttp) || StringComparer.Ordinal.Equals(uri.Scheme, Uri.UriSchemeHttps);
         }
 
         // Convert numbers into strings like "1.2K", "33.4M" etc.

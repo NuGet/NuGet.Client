@@ -116,7 +116,7 @@ namespace NuGetConsole
             const string PowerShellHostProviderName = "NuGetConsole.Host.PowerShell";
 
             var psProvider = _hostProviders
-                .Single(export => export.Metadata.HostName == PowerShellHostProviderName);
+                .Single(export => StringComparer.Ordinal.Equals(export.Metadata.HostName, PowerShellHostProviderName));
 
             return psProvider.Value;
         }

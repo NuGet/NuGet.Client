@@ -309,7 +309,7 @@ namespace NuGet.Protocol
 
         private string BuildFieldSearchClause(string term, string property)
         {
-            if (property == TagsProperty)
+            if (StringComparer.Ordinal.Equals(property, TagsProperty))
             {
                 term = string.Format(CultureInfo.InvariantCulture, TagTermFormat, term);
             }

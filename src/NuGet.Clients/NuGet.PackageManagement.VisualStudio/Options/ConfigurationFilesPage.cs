@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public Task<IReadOnlyList<IArrayItemCommand>> GetArrayItemCommandsAsync(string arraySettingMoniker, CancellationToken cancellationToken)
         {
-            if (arraySettingMoniker == MonikerConfigurationFiles)
+            if (StringComparer.Ordinal.Equals(arraySettingMoniker, MonikerConfigurationFiles))
             {
                 return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([_openFileArrayItemCommand]);
             }

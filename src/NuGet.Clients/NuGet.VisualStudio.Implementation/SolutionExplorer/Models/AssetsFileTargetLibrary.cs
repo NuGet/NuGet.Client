@@ -18,11 +18,11 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         public static bool TryCreate(LockFile lockFile, LockFileTargetLibrary lockFileLibrary, LogLevel? logLevel, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? targetLibrary)
         {
             AssetsFileLibraryType type;
-            if (lockFileLibrary.Type == "package")
+            if (StringComparer.Ordinal.Equals(lockFileLibrary.Type, "package"))
             {
                 type = AssetsFileLibraryType.Package;
             }
-            else if (lockFileLibrary.Type == "project")
+            else if (StringComparer.Ordinal.Equals(lockFileLibrary.Type, "project"))
             {
                 type = AssetsFileLibraryType.Project;
             }
@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 return false;
             }
 
-            LockFileLibrary? library = lockFile.Libraries.FirstOrDefault(lib => lib.Name == lockFileLibrary.Name);
+            LockFileLibrary? library = lockFile.Libraries.FirstOrDefault(lib => StringComparer.OrdinalIgnoreCase.Equals(lib.Name, lockFileLibrary.Name));
 
             targetLibrary = new AssetsFileTargetLibrary(library, lockFileLibrary, type, logLevel);
             return true;

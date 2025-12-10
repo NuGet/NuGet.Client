@@ -267,7 +267,7 @@ namespace NuGet.Commands
             {
                 foreach (var message in allMessages)
                 {
-                    if (message.ProjectPath == projectPath)
+                    if (StringComparer.Ordinal.Equals(message.ProjectPath, projectPath))
                     {
                         if (projectAdditionalMessages == null)
                         {

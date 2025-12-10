@@ -170,7 +170,7 @@ namespace NuGet.Common
             while (current != null)
             {
                 if (current.Message != null &&
-                    current.Message != previous) // Ignore duplicate adjacent messages.
+                    !StringComparer.Ordinal.Equals(current.Message, previous)) // Ignore duplicate adjacent messages.
                 {
                     previous = current.Message;
                     yield return current.Message;

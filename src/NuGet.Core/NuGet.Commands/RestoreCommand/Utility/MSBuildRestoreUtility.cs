@@ -275,7 +275,7 @@ namespace NuGet.Commands
                     pcRestoreMetadata.PackagesConfigPath = specItem.GetProperty("PackagesConfigPath");
                     pcRestoreMetadata.RepositoryPath = specItem.GetProperty("RepositoryPath");
                     var solutionDir = specItem.GetProperty("SolutionDir");
-                    if (string.IsNullOrEmpty(pcRestoreMetadata.RepositoryPath) && !string.IsNullOrEmpty(solutionDir) && solutionDir != "*Undefined*")
+                    if (string.IsNullOrEmpty(pcRestoreMetadata.RepositoryPath) && !string.IsNullOrEmpty(solutionDir) && !StringComparer.Ordinal.Equals(solutionDir, "*Undefined*"))
                     {
                         pcRestoreMetadata.RepositoryPath = Path.Combine(
                             solutionDir,

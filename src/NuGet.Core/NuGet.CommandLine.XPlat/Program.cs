@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.XPlat
                 interactiveOption.Description = Strings.AddPkg_InteractiveDescription;
                 interactiveOption.DefaultValueFactory = _ => Console.IsOutputRedirected;
 
-                if (args[0] == "package")
+                if (StringComparer.Ordinal.Equals(args[0], "package"))
                 {
                     var packageCommand = new Command("package");
                     rootCommand.Subcommands.Add(packageCommand);
@@ -142,7 +142,7 @@ namespace NuGet.CommandLine.XPlat
             var app = InitializeApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
-            if (app.Name == DotnetPackageAppName)
+            if (StringComparer.Ordinal.Equals(app.Name, DotnetPackageAppName))
             {
                 // package add ...
                 args[0] = null;
@@ -247,21 +247,21 @@ namespace NuGet.CommandLine.XPlat
             }
 
             string arg0 = args[0];
-            if (arg0 == "config" || arg0 == "why")
+            if (StringComparer.Ordinal.Equals(arg0, "config") || StringComparer.Ordinal.Equals(arg0, "why"))
             {
                 return true;
             }
 
-            if (args.Length >= 2 && arg0 == "package")
+            if (args.Length >= 2 && StringComparer.Ordinal.Equals(arg0, "package"))
             {
                 string arg1 = args[1];
 #if DEBUG
-                if (arg1 == "update" || arg1 == "download")
+                if (StringComparer.Ordinal.Equals(arg1, "update") || StringComparer.Ordinal.Equals(arg1, "download"))
                 {
                     return true;
                 }
 #endif
-                if (arg1 == "search")
+                if (StringComparer.Ordinal.Equals(arg1, "search"))
                 {
                     return true;
                 }
@@ -301,7 +301,7 @@ namespace NuGet.CommandLine.XPlat
 
             var app = new CommandLineApplication();
 
-            if (args.Any() && args[0] == "package")
+            if (args.Any() && StringComparer.Ordinal.Equals(args[0], "package"))
             {
                 // "dotnet * package" commands
                 app.Name = DotnetPackageAppName;
@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 foreach (CommandLineApplication command in commands)
                 {
-                    if (arg == command.Name)
+                    if (StringComparer.Ordinal.Equals(arg, command.Name))
                     {
                         lastCommand = command;
                         commands = command.Commands;

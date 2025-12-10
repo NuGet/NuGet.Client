@@ -103,7 +103,7 @@ namespace NuGet.Protocol
             }
 
             // Make sure the cache file directory is created before moving or writing a file to it.
-            if (cacheFileDirectory != newCacheFileDirectory)
+            if (!StringComparer.Ordinal.Equals(cacheFileDirectory, newCacheFileDirectory))
             {
                 Directory.CreateDirectory(cacheFileDirectory);
             }

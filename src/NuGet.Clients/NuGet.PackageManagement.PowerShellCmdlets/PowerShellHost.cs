@@ -610,7 +610,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             SetPropertyValueOnHost(PackageManagementContextKey, PackageManagementContext);
             // "All" aggregate source in a context of PS command means no particular source is preferred,
             // in that case all enabled sources will be picked for a command execution.
-            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource != AggregateSourceName ? ActivePackageSource : string.Empty);
+            SetPropertyValueOnHost(ActivePackageSourceKey, !StringComparer.Ordinal.Equals(ActivePackageSource, AggregateSourceName) ? ActivePackageSource : string.Empty);
             SetPropertyValueOnHost(DTEKey, _dte.Value);
             SetPropertyValueOnHost(CancellationTokenKey, _token);
         }
@@ -774,7 +774,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         newValue = await GetDisplayNameAsync(project);
                     }
 
-                    bool isInvalidationRequired = oldValue != newValue;
+                    bool isInvalidationRequired = !StringComparer.Ordinal.Equals(oldValue, newValue);
 
                     if (isInvalidationRequired)
                     {

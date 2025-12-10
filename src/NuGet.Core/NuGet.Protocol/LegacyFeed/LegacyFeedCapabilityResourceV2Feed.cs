@@ -121,12 +121,12 @@ namespace NuGet.Protocol
             {
                 // Get all entity containers
                 var entityContainers = from e in schemaDocument.Descendants()
-                                       where e.Name.LocalName == "EntityContainer"
+                                       where StringComparer.Ordinal.Equals(e.Name.LocalName, "EntityContainer")
                                        select e;
 
                 // Find the entity container with the Packages entity set
                 var result = (from e in entityContainers
-                              let entitySet = e.Elements().FirstOrDefault(el => el.Name.LocalName == "EntitySet")
+                              let entitySet = e.Elements().FirstOrDefault(el => StringComparer.Ordinal.Equals(el.Name.LocalName, "EntitySet"))
                               let name = entitySet != null ? entitySet.Attribute("Name").Value : null
                               where name != null && name.Equals("Packages", StringComparison.OrdinalIgnoreCase)
                               select new { Container = e, EntitySet = entitySet }).FirstOrDefault();
@@ -147,7 +147,7 @@ namespace NuGet.Protocol
 
                 var methodNames =
                     from e in packageEntityContainer.Elements()
-                    where e.Name.LocalName == "FunctionImport"
+                    where StringComparer.Ordinal.Equals(e.Name.LocalName, "FunctionImport")
                     select e.Attribute("Name").Value;
 
                 var metadata = new DataServiceMetadata
@@ -171,7 +171,7 @@ namespace NuGet.Protocol
                 packageEntityName = TrimNamespace(packageEntityName);
 
                 var packageEntity = (from e in schemaDocument.Descendants()
-                                     where e.Name.LocalName == "EntityType"
+                                     where StringComparer.Ordinal.Equals(e.Name.LocalName, "EntityType")
                                      let attribute = e.Attribute("Name")
                                      where attribute != null && attribute.Value.Equals(
                                          packageEntityName,
@@ -181,7 +181,7 @@ namespace NuGet.Protocol
                 if (packageEntity != null)
                 {
                     return from e in packageEntity.Elements()
-                           where e.Name.LocalName == "Property"
+                           where StringComparer.Ordinal.Equals(e.Name.LocalName, "Property")
                            select e.Attribute("Name").Value;
                 }
 

@@ -167,7 +167,7 @@ namespace NuGet.Protocol
                     }
 
                     // Capture if the resource is http & the source is https
-                    if (packageSource != null && uri.Scheme == Uri.UriSchemeHttp && packageSource.IsHttps)
+                    if (packageSource != null && StringComparer.Ordinal.Equals(uri.Scheme, Uri.UriSchemeHttp) && packageSource.IsHttps)
                     {
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(source: packageSource.Source, httpsSourceHasHttpResource: true));
                     }

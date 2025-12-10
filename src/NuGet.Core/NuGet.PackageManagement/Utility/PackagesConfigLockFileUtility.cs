@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.Utility
                     if (comparisonResult.IsValid)
                     {
                         // check sha hashes
-                        bool allContentHashesMatch = comparisonResult.MatchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
+                        bool allContentHashesMatch = comparisonResult.MatchedDependencies.All(pair => StringComparer.Ordinal.Equals(pair.Key.ContentHash, pair.Value.ContentHash));
                         if (allContentHashesMatch)
                         {
                             return null;
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.Utility
                         else
                         {
                             var errors = new List<IRestoreLogMessage>();
-                            foreach (var difference in comparisonResult.MatchedDependencies.Where(kvp => kvp.Key.ContentHash != kvp.Value.ContentHash))
+                            foreach (var difference in comparisonResult.MatchedDependencies.Where(kvp => !StringComparer.Ordinal.Equals(kvp.Key.ContentHash, kvp.Value.ContentHash)))
                             {
                                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageValidationFailed, difference.Key.Id + "." + difference.Key.ResolvedVersion);
                                 var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1403, message);

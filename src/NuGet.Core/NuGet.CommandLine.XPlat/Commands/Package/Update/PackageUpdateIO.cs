@@ -173,7 +173,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         List<NuGetFramework> packageTfms = new List<NuGetFramework>(packageTfmAliases.Count);
         foreach (var alias in packageTfmAliases)
         {
-            var targetFramework = updatedPackageSpec.TargetFrameworks.Single(tfm => tfm.TargetAlias == alias);
+            var targetFramework = updatedPackageSpec.TargetFrameworks.Single(tfm => StringComparer.Ordinal.Equals(tfm.TargetAlias, alias));
             packageTfms.Add(targetFramework.FrameworkName);
         }
 

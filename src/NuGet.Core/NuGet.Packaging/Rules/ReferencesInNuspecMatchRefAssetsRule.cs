@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Rules
 
                     foreach (var files in filesByTFM)
                     {
-                        if (files.Key == "unsupported")
+                        if (StringComparer.Ordinal.Equals(files.Key, "unsupported"))
                         {
                             continue;
                         }
@@ -135,8 +135,8 @@ namespace NuGet.Packaging.Rules
             {
                 var message = new StringBuilder();
                 message.AppendLine(MessageFormat);
-                var referencesMissing = missingReferences.Where(t => t.MissingFrom == "nuspec");
-                var refFilesMissing = missingReferences.Where(t => t.MissingFrom == "ref");
+                var referencesMissing = missingReferences.Where(t => StringComparer.Ordinal.Equals(t.MissingFrom, "nuspec"));
+                var refFilesMissing = missingReferences.Where(t => StringComparer.Ordinal.Equals(t.MissingFrom, "ref"));
                 foreach (var file in refFilesMissing)
                 {
                     foreach (var item in file.MissingItems)

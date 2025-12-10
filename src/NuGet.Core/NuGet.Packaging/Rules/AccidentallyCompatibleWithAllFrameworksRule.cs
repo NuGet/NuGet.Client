@@ -65,8 +65,8 @@ namespace NuGet.Packaging.Rules
                 }
 
                 // /build/any/* maps to NetPlatform for some reason
-                if (targetFramework.Framework == FrameworkConstants.FrameworkIdentifiers.NetPlatform
-                    || targetFramework.Framework == FrameworkConstants.CommonFrameworks.Native.Framework)
+                if (StringComparer.Ordinal.Equals(targetFramework.Framework, FrameworkConstants.FrameworkIdentifiers.NetPlatform)
+                    || StringComparer.Ordinal.Equals(targetFramework.Framework, FrameworkConstants.CommonFrameworks.Native.Framework))
                 {
                     // If the package is already compatible with all frameworks, then the warning is not needed.
                     // Packages for C/C++ projects don't use lib/ or ref/ folders. While these packages will prevent NuGet

@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 {
                     // don't add transitive packages if they are also top level packages
                     // don't add transitive packages if they are not packages
-                    if (!installedPackages.ContainsKey(package.Name) && package.Type == LibraryType.Package.Value)
+                    if (!installedPackages.ContainsKey(package.Name) && StringComparer.Ordinal.Equals(package.Type, LibraryType.Package.Value))
                     {
                         resolvedVersion = package.Version ?? new NuGetVersion(0, 0, 0);
 

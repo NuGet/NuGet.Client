@@ -85,7 +85,7 @@ namespace NuGet.Commands
             PackageSource packageSource = null;
             foreach (var loadedPackageSource in sourceProvider.LoadPackageSources())
             {
-                if (loadedPackageSource.IsEnabled && source == loadedPackageSource.Source)
+                if (loadedPackageSource.IsEnabled && StringComparer.Ordinal.Equals(source, loadedPackageSource.Source))
                 {
                     packageSource = loadedPackageSource;
                     break;

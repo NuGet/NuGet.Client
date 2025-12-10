@@ -92,9 +92,9 @@ namespace NuGet.ProjectModel
         {
             if (other is null) return false;
 
-            return EnableAudit == other.EnableAudit &&
-                AuditLevel == other.AuditLevel &&
-                AuditMode == other.AuditMode &&
+            return StringComparer.Ordinal.Equals(EnableAudit, other.EnableAudit) &&
+                StringComparer.Ordinal.Equals(AuditLevel, other.AuditLevel) &&
+                StringComparer.Ordinal.Equals(AuditMode, other.AuditMode) &&
                 SuppressedAdvisories.SetEqualsWithNullCheck(other.SuppressedAdvisories);
         }
 

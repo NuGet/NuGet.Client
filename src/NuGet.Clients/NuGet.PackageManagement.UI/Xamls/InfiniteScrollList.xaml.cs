@@ -142,8 +142,8 @@ namespace NuGet.PackageManagement.UI
             _joinableTaskFactory.Value.Run(async delegate
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-                if (e.PropertyName == nameof(LoadingStatusIndicator.Status)
-                    && _ltbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(LoadingStatusIndicator.Status))
+                    && StringComparer.Ordinal.Equals(_ltbLoading.Text, _loadingStatusIndicator.LocalizedStatus))
                 {
                     _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 }
@@ -626,7 +626,7 @@ namespace NuGet.PackageManagement.UI
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var package = sender as PackageItemViewModel;
-            if (e.PropertyName == nameof(package.IsSelected))
+            if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(package.IsSelected)))
             {
                 if (package.IsSelected)
                 {

@@ -616,7 +616,7 @@ namespace NuGet.ProjectManagement
             var fileName = Path.GetFileName(filePath);
 
             // if it's an empty folder, yes
-            if (fileName == PackagingCoreConstants.EmptyFolder)
+            if (StringComparer.Ordinal.Equals(fileName, PackagingCoreConstants.EmptyFolder))
             {
                 return true;
             }

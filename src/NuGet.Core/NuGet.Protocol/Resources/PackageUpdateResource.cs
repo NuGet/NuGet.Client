@@ -435,7 +435,7 @@ namespace NuGet.Protocol.Core.Types
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
             bool showPushCommandPackagePushed = true;
-            if (logErrorForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+            if (logErrorForHttpSources && StringComparer.Ordinal.Equals(serviceEndpointUrl.Scheme, Uri.UriSchemeHttp) && !allowInsecureConnections)
             {
                 logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
                 return false;
@@ -738,7 +738,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                if (sourceUri.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+                if (StringComparer.Ordinal.Equals(sourceUri.Scheme, Uri.UriSchemeHttp) && !allowInsecureConnections)
                 {
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
                     return;

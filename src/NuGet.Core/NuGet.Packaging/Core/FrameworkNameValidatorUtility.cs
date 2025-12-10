@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Rules
             }
 
             // return false if the framework is Null or Unsupported
-            return fx != null && fx.Framework != NuGetFramework.UnsupportedFramework.Framework;
+            return fx != null && !StringComparer.Ordinal.Equals(fx.Framework, NuGetFramework.UnsupportedFramework.Framework);
         }
 
         internal static bool IsValidCultureName(PackageArchiveReader builder, string name)

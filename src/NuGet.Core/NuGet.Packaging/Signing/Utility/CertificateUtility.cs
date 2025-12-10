@@ -194,7 +194,7 @@ namespace NuGet.Packaging.Signing
 
                     foreach (var eku in ekuExtension.EnhancedKeyUsages)
                     {
-                        if (eku.Value == ekuOid)
+                        if (StringComparer.Ordinal.Equals(eku.Value, ekuOid))
                         {
                             return true;
                         }
@@ -232,7 +232,7 @@ namespace NuGet.Packaging.Signing
 
                     foreach (var eku in ekuExtension.EnhancedKeyUsages)
                     {
-                        if (eku.Value == ekuOid)
+                        if (StringComparer.Ordinal.Equals(eku.Value, ekuOid))
                         {
                             return true;
                         }

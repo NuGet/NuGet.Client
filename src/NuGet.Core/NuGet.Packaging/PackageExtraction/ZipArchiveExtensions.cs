@@ -21,7 +21,7 @@ namespace NuGet.Packaging
     {
         public static ZipArchiveEntry LookupEntry(this ZipArchive zipArchive, string path)
         {
-            var entry = zipArchive.Entries.FirstOrDefault(zipEntry => UnescapePath(zipEntry.FullName) == path);
+            var entry = zipArchive.Entries.FirstOrDefault(zipEntry => StringComparer.Ordinal.Equals(UnescapePath(zipEntry.FullName), path));
             if (entry == null)
             {
                 throw new FileNotFoundException(path);

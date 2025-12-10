@@ -44,8 +44,8 @@ namespace NuGet.VisualStudio
             {
                 string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(flightVariable);
 
-                isExpForcedDisabled = envVarOverride == "0";
-                isExpForcedEnabled = envVarOverride == "1";
+                isExpForcedDisabled = StringComparer.Ordinal.Equals(envVarOverride, "0");
+                isExpForcedEnabled = StringComparer.Ordinal.Equals(envVarOverride, "1");
 
                 if (isExpForcedDisabled || isExpForcedEnabled)
                 {

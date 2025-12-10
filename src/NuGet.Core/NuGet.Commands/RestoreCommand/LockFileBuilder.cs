@@ -364,15 +364,15 @@ namespace NuGet.Commands
         /// <returns></returns>
         private static int RankReferences(string referenceType)
         {
-            if (referenceType == "project")
+            if (StringComparer.Ordinal.Equals(referenceType, "project"))
             {
                 return 0;
             }
-            else if (referenceType == "externalProject")
+            else if (StringComparer.Ordinal.Equals(referenceType, "externalProject"))
             {
                 return 1;
             }
-            else if (referenceType == "package")
+            else if (StringComparer.Ordinal.Equals(referenceType, "package"))
             {
                 return 2;
             }

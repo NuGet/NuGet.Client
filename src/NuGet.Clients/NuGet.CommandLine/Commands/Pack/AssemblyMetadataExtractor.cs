@@ -183,7 +183,7 @@ namespace NuGet.CommandLine
                 // which allowed Linq to be re-implemented for .NET 2.0 :).
                 var attributeName = typeof(AssemblyMetadataAttribute).FullName;
                 foreach (var attribute in attributes.Where(x =>
-                    x.Constructor.DeclaringType.FullName == attributeName &&
+                    StringComparer.Ordinal.Equals(x.Constructor.DeclaringType.FullName, attributeName) &&
                     x.ConstructorArguments.Count == 2))
                 {
                     string key = attribute.ConstructorArguments[0].Value.ToString();

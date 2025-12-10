@@ -163,7 +163,7 @@ namespace NuGet.LibraryModel
                    NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
                    GeneratePathProperty == other.GeneratePathProperty &&
                    VersionCentrallyManaged == other.VersionCentrallyManaged &&
-                   Aliases == other.Aliases &&
+                   StringComparer.Ordinal.Equals(Aliases, other.Aliases) &&
                    EqualityUtility.EqualsWithNullCheck(VersionOverride, other.VersionOverride) &&
                    ReferenceType == other.ReferenceType;
         }

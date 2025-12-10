@@ -49,7 +49,7 @@ namespace NuGet.Packaging.Signing
                     Strings.AnAbsoluteUriIsRequired, nameof(timestampUri));
             }
 
-            if (timestampUri.Scheme != Uri.UriSchemeHttp && timestampUri.Scheme != Uri.UriSchemeHttps)
+            if (!StringComparer.Ordinal.Equals(timestampUri.Scheme, Uri.UriSchemeHttp) && !StringComparer.Ordinal.Equals(timestampUri.Scheme, Uri.UriSchemeHttps))
             {
                 throw new ArgumentException(
                     Strings.HttpOrHttpsIsRequired, nameof(timestampUri));

@@ -1226,11 +1226,11 @@ namespace NuGet.Commands
                 .ToDictionary(dep => new PackageIdentity(dep.Id, dep.ResolvedVersion), val => val.ContentHash);
 
             StringBuilder errorMessageBuilder = null;
-            foreach (var library in assetsFile.Libraries.Where(lib => lib.Type == LibraryType.Package))
+            foreach (var library in assetsFile.Libraries.Where(lib => StringComparer.Ordinal.Equals(lib.Type, LibraryType.Package)))
             {
                 var package = new PackageIdentity(library.Name, library.Version);
 
-                if (!librariesLookUp.TryGetValue(package, out var sha512) || sha512 != library.Sha512)
+                if (!librariesLookUp.TryGetValue(package, out var sha512) || !StringComparer.Ordinal.Equals(sha512, library.Sha512))
                 {
                     // raise validation error - validate every package regardless of whether we encounter a failure.
                     if (errorMessageBuilder == null)

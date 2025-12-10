@@ -88,7 +88,7 @@ namespace NuGet.MSSigning.Extensions
             // Assert mandatory argument
             if (Uri.TryCreate(V3ServiceIndexUrl, UriKind.Absolute, out var v3ServiceIndexUrl))
             {
-                if (v3ServiceIndexUrl.Scheme == Uri.UriSchemeHttps)
+                if (StringComparer.Ordinal.Equals(v3ServiceIndexUrl.Scheme, Uri.UriSchemeHttps))
                 {
                     return v3ServiceIndexUrl;
                 }

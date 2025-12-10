@@ -236,7 +236,10 @@ namespace NuGet.CommandLine.XPlat
             }
 
             // PackageVersion should not be defined outside the project file.
-            var packageVersions = project.Items.Where(item => item.ItemType == PACKAGE_VERSION_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId) && !item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
+            var packageVersions = project.Items.Where(item =>
+                StringComparer.Ordinal.Equals(item.ItemType, PACKAGE_VERSION_TYPE_TAG)
+                && StringComparer.Ordinal.Equals(item.EvaluatedInclude, packageReferenceArgs.PackageId)
+                && !PathUtility.GetStringComparerBasedOnOS().Equals(item.Xml.ContainingProject.FullPath, directoryPackagesPropsPath));
             if (packageVersions.Any())
             {
                 packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation, packageReferenceArgs.PackageId));
@@ -244,16 +247,20 @@ namespace NuGet.CommandLine.XPlat
             }
 
             // PackageReference should not be defined in Directory.Packages.props
-            var packageReferenceOutsideProjectFile = project.Items.Where(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
+            var packageReferenceOutsideProjectFile = project.Items.Where(item =>
+                StringComparer.Ordinal.Equals(item.ItemType, PACKAGE_REFERENCE_TYPE_TAG)
+                && PathUtility.GetStringComparerBasedOnOS().Equals(item.Xml.ContainingProject.FullPath, directoryPackagesPropsPath));
             if (packageReferenceOutsideProjectFile.Any())
             {
                 packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation, packageReferenceArgs.PackageId));
                 return false;
             }
 
-            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId));
+            ProjectItem packageReference = project.Items.LastOrDefault(item =>
+                StringComparer.Ordinal.Equals(item.ItemType, PACKAGE_REFERENCE_TYPE_TAG)
+                && StringComparer.OrdinalIgnoreCase.Equals(item.EvaluatedInclude, packageReferenceArgs.PackageId));
             ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
-            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
+            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => StringComparer.OrdinalIgnoreCase.Equals(d.Name, packageReferenceArgs.PackageId));
 
             // If package reference exists and the user defined a VersionOverride or PackageVersions but didn't specified a version, no-op
             if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && packageReferenceArgs.NoVersion)
@@ -336,8 +343,10 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 // Get package version and VersionOverride if it already exists in the props file. Returns null if there is no matching package version.
-                ProjectItem packageReferenceInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_REFERENCE_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
-                var versionOverrideExists = packageReferenceInProps?.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride") && !string.IsNullOrWhiteSpace(i.EvaluatedValue));
+                ProjectItem packageReferenceInProps = project.Items.LastOrDefault(i =>
+                    StringComparer.OrdinalIgnoreCase.Equals(i.ItemType, PACKAGE_REFERENCE_TYPE_TAG)
+                    && StringComparer.OrdinalIgnoreCase.Equals(i.EvaluatedInclude, libraryDependency.Name));
+                var versionOverrideExists = packageReferenceInProps?.Metadata.FirstOrDefault(i => StringComparer.OrdinalIgnoreCase.Equals(i.Name, "VersionOverride") && !string.IsNullOrWhiteSpace(i.EvaluatedValue));
 
                 if (!existingPackageReferences.Any())
                 {
@@ -355,7 +364,9 @@ namespace NuGet.CommandLine.XPlat
                 else
                 {
                     // Get package version if it already exists in the props file. Returns null if there is no matching package version.
-                    ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                    ProjectItem packageVersionInProps = project.Items.LastOrDefault(i =>
+                        StringComparer.OrdinalIgnoreCase.Equals(i.ItemType, PACKAGE_VERSION_TYPE_TAG)
+                        && StringComparer.OrdinalIgnoreCase.Equals(i.EvaluatedInclude, libraryDependency.Name));
 
                     // If no <PackageVersion /> exists in the Directory.Packages.props file.
                     if (packageVersionInProps == null)
@@ -511,8 +522,8 @@ namespace NuGet.CommandLine.XPlat
             string condition)
         {
             var itemGroup = itemGroups?
-                .Where(itemGroupElement => itemGroupElement.Items.Any(item => item.ItemType == itemType))?
-                .Where(itemGroupElement => condition is null || itemGroupElement.Condition == condition)
+                .Where(itemGroupElement => itemGroupElement.Items.Any(item => StringComparer.OrdinalIgnoreCase.Equals(item.ItemType, itemType)))?
+                .Where(itemGroupElement => condition is null || StringComparer.Ordinal.Equals(itemGroupElement.Condition, condition))
                 .FirstOrDefault();
 
             return itemGroup;
@@ -602,7 +613,7 @@ namespace NuGet.CommandLine.XPlat
             ProjectItemElement packageReferenceItemElement = project.GetItemProvenance(packageReference).LastOrDefault()?.ItemElement;
 
             // Get the Version attribute on the packageVersionItemElement.
-            ProjectMetadataElement versionOverrideAttribute = packageReferenceItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride"));
+            ProjectMetadataElement versionOverrideAttribute = packageReferenceItemElement.Metadata.FirstOrDefault(i => StringComparer.OrdinalIgnoreCase.Equals(i.Name, "VersionOverride"));
 
             // Update the version
             versionOverrideAttribute.Value = versionCLIArgument;
@@ -691,10 +702,10 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         internal static bool IsPackageReferenceProject(Project project)
         {
-            return (project.GetPropertyValue(RESTORE_STYLE_TAG) == "PackageReference" ||
+            return (StringComparer.OrdinalIgnoreCase.Equals(project.GetPropertyValue(RESTORE_STYLE_TAG), "PackageReference") ||
                     project.GetItems(PACKAGE_REFERENCE_TYPE_TAG).Count != 0 ||
-                    project.GetPropertyValue(NUGET_STYLE_TAG) == "PackageReference" ||
-                    project.GetPropertyValue(ASSETS_FILE_PATH_TAG) != "");
+                    StringComparer.OrdinalIgnoreCase.Equals(project.GetPropertyValue(NUGET_STYLE_TAG), "PackageReference") ||
+                    !string.IsNullOrEmpty(project.GetPropertyValue(ASSETS_FILE_PATH_TAG)));
         }
 
         /// <summary>
@@ -826,7 +837,7 @@ namespace NuGet.CommandLine.XPlat
 
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
-                        if (library.Type != "project")
+                        if (StringComparer.Ordinal.Equals(library.Type, "project"))
                         {
                             topLevelPackages.Add(installedPackage);
                         }
@@ -842,7 +853,7 @@ namespace NuGet.CommandLine.XPlat
                                 .Build()
                         };
 
-                        if (library.Type != "project")
+                        if (!StringComparer.Ordinal.Equals(library.Type, "project"))
                         {
                             transitivePackages.Add(installedPackage);
                         }

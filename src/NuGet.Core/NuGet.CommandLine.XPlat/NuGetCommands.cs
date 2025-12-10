@@ -25,7 +25,7 @@ public static class NuGetCommands
     /// Those commands are not added by this method.</remarks>
     public static void Add(RootCommand rootCommand, Option<bool> interactiveOption)
     {
-        var packageCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "package");
+        var packageCommand = rootCommand.Subcommands.FirstOrDefault(c => StringComparer.Ordinal.Equals(c.Name, "package"));
         if (packageCommand is null)
         {
             packageCommand = new Command("package");

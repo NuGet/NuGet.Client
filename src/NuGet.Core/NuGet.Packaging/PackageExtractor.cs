@@ -887,18 +887,18 @@ namespace NuGet.Packaging
             var fileName = Path.GetFileName(fullName);
             if (fileName != null)
             {
-                if (fileName == ".rels")
+                if (StringComparer.Ordinal.Equals(fileName, ".rels"))
                 {
                     return false;
                 }
-                if (fileName == "[Content_Types].xml")
+                if (StringComparer.Ordinal.Equals(fileName, "[Content_Types].xml"))
                 {
                     return false;
                 }
             }
 
             var extension = Path.GetExtension(fullName);
-            if (extension == ".psmdcp")
+            if (StringComparer.Ordinal.Equals(extension, ".psmdcp"))
             {
                 return false;
             }

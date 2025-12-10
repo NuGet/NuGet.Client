@@ -203,7 +203,7 @@ namespace NuGet.RuntimeModel
             List<RuntimeDependencySet> additionalDependencies = null;
             foreach (var property in EachProperty(json.Value))
             {
-                if (property.Key == "#import")
+                if (StringComparer.Ordinal.Equals(property.Key, "#import"))
                 {
                     var imports = property.Value as JArray;
                     foreach (var import in imports)

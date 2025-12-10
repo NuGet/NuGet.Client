@@ -179,7 +179,7 @@ namespace NuGet.ProjectModel
                     var target = nuGetLockFile.Targets.FirstOrDefault(
                         t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, restoreMetadataFramework.FrameworkName));
 
-                    var targetFrameworkInformation = project.TargetFrameworks.FirstOrDefault(e => e.TargetAlias == restoreMetadataFramework.TargetAlias);
+                    var targetFrameworkInformation = project.TargetFrameworks.FirstOrDefault(e => StringComparer.Ordinal.Equals(e.TargetAlias, restoreMetadataFramework.TargetAlias));
 
                     if (target == null)
                         continue;

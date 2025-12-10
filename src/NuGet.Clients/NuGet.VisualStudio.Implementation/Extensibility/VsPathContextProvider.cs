@@ -328,7 +328,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             foreach (var pid in lockFile
                 .Libraries
-                .Where(l => l.Type == LibraryType.Package)
+                .Where(l => StringComparer.Ordinal.Equals(l.Type, LibraryType.Package))
                 .Select(l => new PackageIdentity(l.Name, l.Version)))
             {
                 var packageInstallPath = fppr.GetPackageDirectory(pid.Id, pid.Version);

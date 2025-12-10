@@ -239,7 +239,7 @@ namespace NuGet.PackageManagement.UI
             foreach (var column in gridView.Columns)
             {
                 var header = (GridViewColumnHeader)column.Header;
-                if (header.Name == "_installedVersionColumnHeader" && header.ActualWidth < 86)
+                if (StringComparer.Ordinal.Equals(header.Name, "_installedVersionColumnHeader") && header.ActualWidth < 86)
                 {
                     width -= 38;
                 }
@@ -263,11 +263,11 @@ namespace NuGet.PackageManagement.UI
             string columnName = (sizeChangedEventArgs.Source as GridViewColumnHeader)?.Name;
 
             //"Installed" is a bit wider and can clip when the sorting indicator is applied.
-            if (columnName == "_packageLevelColumnHeader")
+            if (StringComparer.Ordinal.Equals(columnName, "_packageLevelColumnHeader"))
             {
                 columnMinWidth = 96;
             }
-            if (columnName == "_installedVersionColumnHeader")
+            if (StringComparer.Ordinal.Equals(columnName, "_installedVersionColumnHeader"))
             {
                 if (_warningIndicatorInstalledHeader.Visibility == Visibility.Visible)
                 {

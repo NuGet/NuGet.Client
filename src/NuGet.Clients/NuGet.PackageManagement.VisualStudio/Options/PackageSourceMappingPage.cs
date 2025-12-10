@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
-            if (moniker == MonikerPackageSourceMapping)
+            if (StringComparer.Ordinal.Equals(moniker, MonikerPackageSourceMapping))
             {
                 IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = await Task.Run(
                     () => _packageSourceMappingProvider.GetPackageSourceMappingItems(),
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 // Stop listening to setting changes while saving.
                 _suppressSettingValuesChanged = true;
-                if (moniker == MonikerPackageSourceMapping)
+                if (StringComparer.Ordinal.Equals(moniker, MonikerPackageSourceMapping))
                 {
                     return await Task.Run(
                         () => SavePackageSourceMappings(packageSourceMappingList, cancellationToken),
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
         {
-            if (enumSettingMoniker == MonikerSourceNameEnum)
+            if (StringComparer.Ordinal.Equals(enumSettingMoniker, MonikerSourceNameEnum))
             {
                 List<PackageSource> packageSources = await Task.Run(() => _packageSourceProvider.LoadPackageSources().ToList());
 

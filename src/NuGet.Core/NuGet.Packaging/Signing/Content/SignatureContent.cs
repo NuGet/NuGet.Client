@@ -154,7 +154,7 @@ namespace NuGet.Packaging.Signing
             {
                 foreach (var hashAlgorithmOid in signingSpecifications.AllowedHashAlgorithmOids)
                 {
-                    if (property.Key == $"{hashAlgorithmOid}-Hash")
+                    if (StringComparer.Ordinal.Equals(property.Key, $"{hashAlgorithmOid}-Hash"))
                     {
                         hashAlgorithmName = CryptoHashUtility.OidToHashAlgorithmName(hashAlgorithmOid);
 
@@ -176,7 +176,7 @@ namespace NuGet.Packaging.Signing
                 throw new SignatureException(Strings.InvalidSignatureContent);
             }
 
-            if (signingSpecifications.Version != signatureFormatVersion)
+            if (!StringComparer.Ordinal.Equals(signingSpecifications.Version, signatureFormatVersion))
             {
                 throw new SignatureException(NuGetLogCode.NU3007, Strings.UnsupportedSignatureFormatVersion);
             }

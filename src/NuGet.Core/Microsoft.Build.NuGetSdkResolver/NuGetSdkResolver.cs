@@ -58,7 +58,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         {
             _globalJsonReader = globalJsonReader;
 
-            _disableNuGetSdkResolver = environmentVariableReader.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1";
+            _disableNuGetSdkResolver = StringComparer.Ordinal.Equals(environmentVariableReader.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER"), "1");
         }
 
         /// <inheritdoc />

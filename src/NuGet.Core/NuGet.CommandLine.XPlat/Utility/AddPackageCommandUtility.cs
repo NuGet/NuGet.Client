@@ -106,7 +106,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 for (int i = 0; i < requestedSources.Count; i++)
                 {
-                    PackageSource matchedSource = packageProviderSources.FirstOrDefault(e => e.Source == requestedSources[i].Source);
+                    PackageSource matchedSource = packageProviderSources.FirstOrDefault(e => StringComparer.Ordinal.Equals(e.Source, requestedSources[i].Source));
                     if (matchedSource == null)
                     {
                         packageSources.Add(requestedSources[i]);

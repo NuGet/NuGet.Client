@@ -90,7 +90,7 @@ namespace NuGet.Common.Migrations
                 }
 
                 string? parent = Path.GetDirectoryName(path);
-                while (parent is not null && parent != homePath)
+                while (parent is not null && !PathUtility.GetStringComparerBasedOnOS().Equals(parent, homePath))
                 {
                     pathsToCheck.Add(parent);
                     parent = Path.GetDirectoryName(parent);

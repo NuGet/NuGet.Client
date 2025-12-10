@@ -165,7 +165,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
                 ILogMessage? logMessage = null;
 
-                if (typeName == LogMessageTypeName)
+                if (StringComparer.Ordinal.Equals(typeName, LogMessageTypeName))
                 {
                     logMessage = new LogMessage(logLevel.Value, message)
                     {
@@ -175,7 +175,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         WarningLevel = warningLevel.Value
                     };
                 }
-                else if (typeName == PackagingLogMessageTypeName)
+                else if (StringComparer.Ordinal.Equals(typeName, PackagingLogMessageTypeName))
                 {
                     Assumes.True(endColumnNumber.HasValue);
                     Assumes.True(endLineNumber.HasValue);
@@ -197,7 +197,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
                     logMessage = packagingLogMessage;
                 }
-                else if (typeName == RestoreLogMessageTypeName)
+                else if (StringComparer.Ordinal.Equals(typeName, RestoreLogMessageTypeName))
                 {
                     Assumes.True(endColumnNumber.HasValue);
                     Assumes.True(endLineNumber.HasValue);
@@ -223,7 +223,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         WarningLevel = warningLevel.Value
                     };
                 }
-                else if (typeName == SignatureLogTypeName)
+                else if (StringComparer.Ordinal.Equals(typeName, SignatureLogTypeName))
                 {
                     SignatureLog signatureLog = SignatureLog.Error(code.Value, message);
 

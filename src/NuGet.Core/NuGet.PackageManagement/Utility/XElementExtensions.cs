@@ -45,12 +45,12 @@ namespace NuGet.ProjectManagement
 
         public static IEnumerable<XElement> ElementsNoNamespace(this XContainer container, string localName)
         {
-            return container.Elements().Where(e => e.Name.LocalName == localName);
+            return container.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, localName));
         }
 
         public static IEnumerable<XElement> ElementsNoNamespace(this IEnumerable<XContainer> source, string localName)
         {
-            return source.Elements().Where(e => e.Name.LocalName == localName);
+            return source.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, localName));
         }
 
         // REVIEW: We can use a stack if the perf is bad for Except and MergeWith
@@ -239,7 +239,7 @@ namespace NuGet.ProjectManagement
                 string sourceValue;
                 // if any of the attributes are in the source (names match) but the value doesn't match then we've found a conflict
                 if (sourceAttr.TryGetValue(targetAttr.Name, out sourceValue)
-                    && sourceValue != targetAttr.Value)
+                    && !StringComparer.Ordinal.Equals(sourceValue, targetAttr.Value))
                 {
                     return true;
                 }
@@ -367,7 +367,7 @@ namespace NuGet.ProjectManagement
             {
                 return false;
             }
-            return source.Name == target.Name && source.Value == target.Value;
+            return source.Name == target.Name && StringComparer.Ordinal.Equals(source.Value, target.Value);
         }
 
         private static void AddContents<T>(Queue<T> pendingComments, Action<T> action)

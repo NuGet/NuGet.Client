@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using NuGet.Packaging.Signing.DerEncoding;
@@ -42,7 +43,7 @@ namespace NuGet.Packaging.Signing
         {
             var policyInfoReader = reader.ReadSequence();
             var policyIdentifier = policyInfoReader.ReadOid();
-            var isAnyPolicy = policyIdentifier.Value == Oids.AnyPolicy;
+            var isAnyPolicy = StringComparer.Ordinal.Equals(policyIdentifier.Value, Oids.AnyPolicy);
             IReadOnlyList<PolicyQualifierInfo> policyQualifiers = null;
 
             if (policyInfoReader.HasData)
@@ -66,8 +67,8 @@ namespace NuGet.Packaging.Signing
 
                 if (isAnyPolicy)
                 {
-                    if (policyQualifier.PolicyQualifierId.Value != Oids.IdQtCps &&
-                        policyQualifier.PolicyQualifierId.Value != Oids.IdQtUnotice)
+                    if (!StringComparer.Ordinal.Equals(policyQualifier.PolicyQualifierId.Value, Oids.IdQtCps) &&
+                        !StringComparer.Ordinal.Equals(policyQualifier.PolicyQualifierId.Value, Oids.IdQtUnotice))
                     {
                         throw new SignatureException(Strings.InvalidAsn1);
                     }

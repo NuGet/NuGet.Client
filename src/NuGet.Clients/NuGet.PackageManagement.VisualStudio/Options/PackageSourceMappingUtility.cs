@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             foreach (PackagePatternItem packagePatternItem in packageIdOrPatterns)
             {
-                if (!sourceNamesToPackagePatterns[source].Any(id => id.Pattern == packagePatternItem.Pattern))
+                if (!sourceNamesToPackagePatterns[source].Any(id => StringComparer.Ordinal.Equals(id.Pattern, packagePatternItem.Pattern)))
                 {
                     sourceNamesToPackagePatterns[source].Add(packagePatternItem);
                 }

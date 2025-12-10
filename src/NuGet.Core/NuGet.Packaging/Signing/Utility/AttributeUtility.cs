@@ -365,7 +365,7 @@ namespace NuGet.Packaging.Signing
             }
 
             return attributes.Cast<CryptographicAttributeObject>()
-                .Where(attribute => attribute.Oid.Value == oid);
+                .Where(attribute => StringComparer.Ordinal.Equals(attribute.Oid.Value, oid));
         }
     }
 }

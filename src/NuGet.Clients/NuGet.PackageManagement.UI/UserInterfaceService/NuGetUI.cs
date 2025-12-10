@@ -474,20 +474,20 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowError(RemoteError error)
         {
-            if (error.TypeName == typeof(SignatureException).FullName)
+            if (StringComparer.Ordinal.Equals(error.TypeName, typeof(SignatureException).FullName))
             {
                 ProcessSignatureIssues(error);
             }
             else
             {
-                if (error.TypeName == typeof(NuGetResolverConstraintException).FullName
-                    || error.TypeName == typeof(PackageAlreadyInstalledException).FullName
-                    || error.TypeName == typeof(MinClientVersionException).FullName
-                    || error.TypeName == typeof(FrameworkException).FullName
-                    || error.TypeName == typeof(NuGetProtocolException).FullName
-                    || error.TypeName == typeof(PackagingException).FullName
-                    || error.TypeName == typeof(InvalidOperationException).FullName
-                    || error.TypeName == typeof(PackageReferenceRollbackException).FullName)
+                if (StringComparer.Ordinal.Equals(error.TypeName, typeof(NuGetResolverConstraintException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(PackageAlreadyInstalledException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(MinClientVersionException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(FrameworkException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(NuGetProtocolException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(PackagingException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(InvalidOperationException).FullName)
+                    || StringComparer.Ordinal.Equals(error.TypeName, typeof(PackageReferenceRollbackException).FullName))
                 {
                     ProjectContext.Log(MessageLevel.Info, error.ProjectContextLogMessage);
 
@@ -495,7 +495,7 @@ namespace NuGet.PackageManagement.UI
 
                     // Log additional messages to the error list to provide context on why the rollback failed
                     if (error.LogMessages != null
-                        && error.TypeName == typeof(PackageReferenceRollbackException).FullName)
+                        && StringComparer.Ordinal.Equals(error.TypeName, typeof(PackageReferenceRollbackException).FullName))
                     {
                         foreach (ILogMessage message in error.LogMessages)
                         {

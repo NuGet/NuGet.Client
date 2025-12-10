@@ -625,14 +625,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     var items = projectItemsQueue.Dequeue();
                     foreach (var item in items.Cast<EnvDTE.ProjectItem>())
                     {
-                        if (item.Kind == VsProjectTypes.VsProjectItemKindPhysicalFile)
+                        if (StringComparer.Ordinal.Equals(item.Kind, VsProjectTypes.VsProjectItemKindPhysicalFile))
                         {
                             if (StringComparer.OrdinalIgnoreCase.Equals(item.Name, fileName))
                             {
                                 paths.Add(item.get_FileNames(1));
                             }
                         }
-                        else if (item.Kind == VsProjectTypes.VsProjectItemKindPhysicalFolder)
+                        else if (StringComparer.Ordinal.Equals(item.Kind, VsProjectTypes.VsProjectItemKindPhysicalFolder))
                         {
                             projectItemsQueue.Enqueue(item.ProjectItems);
                         }

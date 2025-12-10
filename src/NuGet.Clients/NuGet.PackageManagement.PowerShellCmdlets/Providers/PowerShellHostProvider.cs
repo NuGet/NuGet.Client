@@ -60,7 +60,7 @@ namespace NuGetConsole.Host
         {
             // backdoor: allow turning off async mode by setting enviroment variable NuGetSyncMode=1
             string syncModeFlag = _environmentVariableReader.GetEnvironmentVariable("NuGetSyncMode");
-            if (syncModeFlag == "1")
+            if (StringComparer.Ordinal.Equals(syncModeFlag, "1"))
             {
                 @async = false;
             }

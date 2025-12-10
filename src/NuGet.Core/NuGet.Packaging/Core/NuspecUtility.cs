@@ -63,9 +63,9 @@ namespace NuGet.Packaging.Core
             {
                 nodes = metadataNode
                     .Elements()
-                    .Where(x => x.Name.LocalName == PackageTypes)
+                    .Where(x => StringComparer.Ordinal.Equals(x.Name.LocalName, PackageTypes))
                     .SelectMany(x => x.Elements())
-                    .Where(x => x.Name.LocalName == PackageType);
+                    .Where(x => StringComparer.Ordinal.Equals(x.Name.LocalName, PackageType));
             }
 
             var packageTypes = new List<PackageType>();
@@ -151,7 +151,7 @@ namespace NuGet.Packaging.Core
             {
                 frameworkReferenceGroups = metadataNode
                     .Elements()
-                    .Where(x => x.Name.LocalName == Group);
+                    .Where(x => StringComparer.Ordinal.Equals(x.Name.LocalName, Group));
             }
 
             foreach (var frameworkRefGroup in frameworkReferenceGroups)
@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Core
 
                 var frameworkReferences = useMetadataNamespace ?
                     frameworkRefGroup.Elements(XName.Get(FrameworkReference, ns)) :
-                    frameworkRefGroup.Elements().Where(x => x.Name.LocalName == FrameworkReference);
+                    frameworkRefGroup.Elements().Where(x => StringComparer.Ordinal.Equals(x.Name.LocalName, FrameworkReference));
 
                 var framework = NuGetFramework.Parse(groupFramework, frameworkProvider);
                 var frameworkRefs = GetFrameworkReferences(frameworkReferences);

@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             ForegroundColor = foregroundColor;
         }
 
-        public bool Equals(FormattedCell other) => Value == other?.Value && ForegroundColor == other?.ForegroundColor;
+        public bool Equals(FormattedCell other) => StringComparer.Ordinal.Equals(Value, other?.Value) && ForegroundColor == other?.ForegroundColor;
 
         public override bool Equals(object obj) => Equals(obj as FormattedCell);
 

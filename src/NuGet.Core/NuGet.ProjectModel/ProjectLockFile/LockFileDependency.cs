@@ -39,7 +39,7 @@ namespace NuGet.ProjectModel
             }
 
             return LockFileDependencyComparerWithoutContentHash.Default.Equals(this, other) &&
-                ContentHash == other.ContentHash;
+                StringComparer.Ordinal.Equals(ContentHash, other.ContentHash);
         }
 
         public override bool Equals(object obj)

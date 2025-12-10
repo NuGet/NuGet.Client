@@ -108,7 +108,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
                                 }
                             }
 
-                            if (path != lastAssetsFilePath || timestampUtc != lastTimestampUtc)
+                            if (!StringComparer.Ordinal.Equals(path, lastAssetsFilePath) || timestampUtc != lastTimestampUtc)
                             {
                                 lastAssetsFilePath = path;
                                 lastTimestampUtc = timestampUtc;

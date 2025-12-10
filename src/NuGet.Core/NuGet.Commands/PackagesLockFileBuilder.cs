@@ -21,7 +21,7 @@ namespace NuGet.Commands
         {
             var lockFile = new PackagesLockFile(GetPackagesLockFileVersion(assetsFile));
 
-            var libraryLookup = assetsFile.Libraries.Where(e => e.Type == LibraryType.Package)
+            var libraryLookup = assetsFile.Libraries.Where(e => StringComparer.Ordinal.Equals(e.Type, LibraryType.Package))
                 .ToDictionary(e => new PackageIdentity(e.Name, e.Version));
 
             foreach (var target in assetsFile.Targets)
@@ -45,7 +45,7 @@ namespace NuGet.Commands
                     libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib)));
                 }
 
-                foreach (var library in libraries.Where(e => e.Type == LibraryType.Package))
+                foreach (var library in libraries.Where(e => StringComparer.Ordinal.Equals(e.Type, LibraryType.Package)))
                 {
                     var identity = new PackageIdentity(library.Name, library.Version);
 
@@ -89,10 +89,10 @@ namespace NuGet.Commands
                 }
 
                 var projectFullPaths = assetsFile.Libraries
-                    .Where(l => l.Type == LibraryType.Project || l.Type == LibraryType.ExternalProject)
+                    .Where(l => StringComparer.Ordinal.Equals(l.Type, LibraryType.Project) || StringComparer.Ordinal.Equals(l.Type, LibraryType.ExternalProject))
                     .ToDictionary(l => new PackageIdentity(l.Name, l.Version), l => l.MSBuildProject);
 
-                foreach (var projectReference in libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject))
+                foreach (var projectReference in libraries.Where(e => StringComparer.Ordinal.Equals(e.Type, LibraryType.Project) || StringComparer.Ordinal.Equals(e.Type, LibraryType.ExternalProject)))
                 {
                     var projectIdentity = new PackageIdentity(projectReference.Name, projectReference.Version);
                     var projectFullPath = projectFullPaths[projectIdentity];

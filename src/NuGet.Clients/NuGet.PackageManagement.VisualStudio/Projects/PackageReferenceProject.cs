@@ -298,7 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageReferences = targetsList
                 .Where(t => t.TargetFramework.Equals(nuGetFramework))
                 .SelectMany(lib => lib.Libraries)
-                .Where(l => l.Type == "project")
+                .Where(l => StringComparer.Ordinal.Equals(l.Type, "project"))
                 .Select(package => new PackageReference(
                     new PackageIdentity(package.Name, package.Version),
                     targetFramework: nuGetFramework,
@@ -467,7 +467,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Find first target node that matches current
             foreach (LockFileTargetLibrary lib in graph.Libraries)
             {
-                if ((lib.Type == LibraryType.Package.Value || lib.Type == LibraryType.Project.Value)
+                if ((StringComparer.Ordinal.Equals(lib.Type, LibraryType.Package.Value) || StringComparer.Ordinal.Equals(lib.Type, LibraryType.Project.Value))
                     && string.Equals(lib.Name, current.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)
                     && ((current.HasAllowedVersions && current.AllowedVersions.Satisfies(lib.Version)) ||
                         (current.PackageIdentity.HasVersion && current.PackageIdentity.Version.Equals(lib.Version))))

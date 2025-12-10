@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         private IReadOnlyList<PackageSource> LoadPackageSources(bool isMachineWide)
         {
             IReadOnlyList<PackageSource> filteredPackageSources = _packageSourceProvider.LoadPackageSources()
-                .Where(packageSource => packageSource.IsMachineWide == isMachineWide)
+                .Where(packageSource => StringComparer.Ordinal.Equals(packageSource.IsMachineWide, isMachineWide))
                 .ToList()
                 .AsReadOnly();
             return filteredPackageSources;
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string originalPackageSourceName = originalMachineWideSource.Name;
                     IDictionary<string, object> targetPackageSource = packageSourcesList
                         .Single(packageSourceDictionary =>
-                            packageSourceDictionary[MonikerSourceName].ToString() == originalPackageSourceName);
+                            StringComparer.Ordinal.Equals(packageSourceDictionary[MonikerSourceName].ToString(), originalPackageSourceName));
 
                     bool originalIsEnabled = originalMachineWideSource.IsEnabled;
                     bool targetIsEnabled = (bool)targetPackageSource[MonikerIsEnabled];
@@ -431,8 +431,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             var settingMessages = new OneOrMany<SettingMessage>();
 
-            bool isAuditSources = arraySettingMoniker == MonikerAuditSources;
-            bool isPackageSources = arraySettingMoniker == MonikerPackageSources;
+            bool isAuditSources = StringComparer.Ordinal.Equals(arraySettingMoniker, MonikerAuditSources);
+            bool isPackageSources = StringComparer.Ordinal.Equals(arraySettingMoniker, MonikerPackageSources);
             if (!isPackageSources && !isAuditSources)
             {
                 return settingMessages;

@@ -552,7 +552,7 @@ namespace NuGet.Packaging
             bool hasEmptyLibFolder = files.Any(
                 f => f.NuGetFramework != null &&
                      f.Path.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                     f.EffectivePath == PackagingConstants.PackageEmptyFileName);
+                     StringComparer.Ordinal.Equals(f.EffectivePath, PackagingConstants.PackageEmptyFileName));
 
             return hasEmptyLibFolder;
         }
@@ -1107,7 +1107,7 @@ namespace NuGet.Packaging
             if (_includeEmptyDirectories)
             {
                 // we only allow empty directories which are under known root folders.
-                searchFiles.RemoveAll(file => Path.GetFileName(file.TargetPath) == PackagingConstants.PackageEmptyFileName
+                searchFiles.RemoveAll(file => StringComparer.Ordinal.Equals(Path.GetFileName(file.TargetPath), PackagingConstants.PackageEmptyFileName)
                                              && !IsKnownFolder(file.TargetPath));
             }
 

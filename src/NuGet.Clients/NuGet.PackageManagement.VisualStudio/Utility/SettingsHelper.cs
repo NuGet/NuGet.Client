@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             var packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             var sources = packageSourceProvider.LoadPackageSources();
-            sources = sources.Where(s => s.Name != name).ToList();
+            sources = sources.Where(s => !StringComparer.Ordinal.Equals(s.Name, name)).ToList();
             packageSourceProvider.SavePackageSources(sources);
         }
     }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -32,8 +33,8 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             return other.Code == Code
                 && other.Level == Level
                 && other.WarningLevel == WarningLevel
-                && other.Message == Message
-                && NormalizeLibraryName(other.LibraryId, projectFilePath) == LibraryName;
+                && StringComparer.Ordinal.Equals(other.Message, Message)
+                && StringComparer.Ordinal.Equals(NormalizeLibraryName(other.LibraryId, projectFilePath), LibraryName);
         }
 
         private static string NormalizeLibraryName(string libraryName, string projectFilePath)

@@ -1247,7 +1247,7 @@ namespace NuGet.CommandLine
 
                 // if IncludeReferencedProjects is true and we are adding source files,
                 // add projectName as part of the target to avoid file conflicts.
-                string targetPath = IncludeReferencedProjects && itemType == SourcesItemType ?
+                string targetPath = IncludeReferencedProjects && StringComparer.Ordinal.Equals(itemType, SourcesItemType) ?
                     Path.Combine(targetFolder, projectName, targetFilePath) :
                     Path.Combine(targetFolder, targetFilePath);
 

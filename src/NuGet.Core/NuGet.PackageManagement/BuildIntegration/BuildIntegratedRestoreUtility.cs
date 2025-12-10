@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -75,7 +76,7 @@ namespace NuGet.PackageManagement
                 updatedPackages = updatedLockFile
                     .Targets
                     .SelectMany(target => target.Libraries)
-                    .Where(library => library.Type == LibraryType.Package)
+                    .Where(library => StringComparer.Ordinal.Equals(library.Type, LibraryType.Package))
                     .Select(library => new PackageIdentity(library.Name, library.Version));
             }
             else
@@ -89,7 +90,7 @@ namespace NuGet.PackageManagement
                 originalPackages = originalLockFile
                     .Targets
                     .SelectMany(target => target.Libraries)
-                    .Where(library => library.Type == LibraryType.Package)
+                    .Where(library => StringComparer.Ordinal.Equals(library.Type, LibraryType.Package))
                     .Select(library => new PackageIdentity(library.Name, library.Version));
             }
             else
@@ -134,7 +135,7 @@ namespace NuGet.PackageManagement
             foreach (var parent in listOfParents)
             {
                 // do not count the target as a parent
-                var nugetProject = projects.FirstOrDefault(r => r.MSBuildProjectPath == parent);
+                var nugetProject = projects.FirstOrDefault(r => PathUtility.GetStringComparerBasedOnOS().Equals(r.MSBuildProjectPath, parent));
                 if (nugetProject != null && !nugetProject.Equals(target))
                 {
                     parentNuGetprojects.Add(nugetProject);

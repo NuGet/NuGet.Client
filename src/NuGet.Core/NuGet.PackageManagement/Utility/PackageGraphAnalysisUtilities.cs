@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -82,7 +83,7 @@ namespace NuGet.PackageManagement
 
             foreach (var packageDependencyInfo in packageDependencyInfos)
             {
-                if (packageDependencyInfo.Dependencies.Any(d => package.Id == d.Id && package.Version == d.VersionRange.MinVersion))
+                if (packageDependencyInfo.Dependencies.Any(d => StringComparer.Ordinal.Equals(package.Id, d.Id) && package.Version == d.VersionRange.MinVersion))
                 {
                     dependantPackages.Add(packageDependencyInfo);
                 }

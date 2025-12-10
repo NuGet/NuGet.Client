@@ -370,7 +370,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetPattern(string token)
         {
-            return token == "*" ? @"(.*)" : @"(" + token + ")";
+            return StringComparer.Ordinal.Equals(token, "*") ? @"(.*)" : @"(" + token + ")";
         }
 
         internal static MSBuildEvaluationProject AsMSBuildEvaluationProject(string projectFullName)

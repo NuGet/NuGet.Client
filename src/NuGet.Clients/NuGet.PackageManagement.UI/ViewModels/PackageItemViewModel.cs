@@ -468,7 +468,7 @@ namespace NuGet.PackageManagement.UI
             get => _transitiveToolTipMessage;
             set
             {
-                if (_transitiveToolTipMessage != value)
+                if (StringComparer.Ordinal.Equals(_transitiveToolTipMessage, value))
                 {
                     _transitiveToolTipMessage = value;
                     OnPropertyChanged(nameof(TransitiveToolTipMessage));

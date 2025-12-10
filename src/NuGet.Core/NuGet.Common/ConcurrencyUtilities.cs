@@ -26,7 +26,7 @@ namespace NuGet.Common
         // To continue working in parallel with older versions of .NET,
         // we cannot use DeleteOnClose by default until .NET 6 goes EOL (Nov 2024).
         private static bool UseDeleteOnClose => _useDeleteOnClose ??= RuntimeEnvironmentHelper.IsWindows ||
-                                               EnvironmentVariableReader.GetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose") == "1"; // opt-in.
+                                               StringComparer.Ordinal.Equals(EnvironmentVariableReader.GetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose"), "1"); // opt-in.
 
         internal static IEnvironmentVariableReader EnvironmentVariableReader { get; set; } = EnvironmentVariableWrapper.Instance;
 

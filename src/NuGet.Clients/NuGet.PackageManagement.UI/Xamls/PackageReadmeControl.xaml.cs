@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ReadmeViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
+            if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(ReadmePreviewViewModel.ReadmeMarkdown)))
             {
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel?.ReadmeMarkdown))
                 {
@@ -89,11 +89,11 @@ namespace NuGet.PackageManagement.UI
                     UpdateMarkdownAsync(ReadmeViewModel.ReadmeMarkdown, _markdownRenderingCancellationTokenSource.Token).PostOnFailure(nameof(PackageReadmeControl));
                 }
             }
-            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsBusy))
+            if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(ReadmePreviewViewModel.IsBusy)))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsBusy)));
             }
-            if (e.PropertyName == nameof(ReadmePreviewViewModel.IsReadmeReady))
+            if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(ReadmePreviewViewModel.IsReadmeReady)))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsReadmeReady)));
             }

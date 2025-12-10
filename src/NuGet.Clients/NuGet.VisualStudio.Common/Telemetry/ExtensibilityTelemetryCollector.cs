@@ -212,7 +212,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             protected override void OnEventSourceCreated(EventSource eventSource)
             {
-                if (eventSource.Name == NuGetETW.ExtensibilityEventSourceName)
+                if (StringComparer.Ordinal.Equals(eventSource.Name, NuGetETW.ExtensibilityEventSourceName))
                 {
                     _expectedEtwSourceGuid = eventSource.Guid;
                     EnableEvents(eventSource, EventLevel.LogAlways);
@@ -237,7 +237,7 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                     else
                     {
-                        if (eventData.EventName != "EventSourceMessage")
+                        if (StringComparer.Ordinal.Equals(eventData.EventName, "EventSourceMessage"))
                         {
                             Debug.Assert(false, "VS Extensibility API without counter");
                         }

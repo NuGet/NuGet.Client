@@ -138,7 +138,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
                 // We are notified when the IVsHierarchyItem is removed from the tree via its INotifyPropertyChanged
                 // event for the IsDisposed property. When this fires, we dispose our dataflow link and release the
                 // subscription.
-                if (e.PropertyName == nameof(ISupportDisposalNotification.IsDisposed) && hierarchyItem.IsDisposed)
+                if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(ISupportDisposalNotification.IsDisposed)) && hierarchyItem.IsDisposed)
                 {
                     link.Dispose();
                     hierarchyItem.PropertyChanged -= OnItemPropertyChanged;

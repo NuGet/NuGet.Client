@@ -69,9 +69,9 @@ namespace NuGet.Packaging.Core
 
             return
                 string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase) &&
-                Url == other.Url &&
-                Branch == other.Branch &&
-                Commit == other.Commit;
+                StringComparer.Ordinal.Equals(Url, other.Url) &&
+                StringComparer.Ordinal.Equals(Branch, other.Branch) &&
+                StringComparer.Ordinal.Equals(Commit, other.Commit);
         }
 
         public override int GetHashCode()

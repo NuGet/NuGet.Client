@@ -330,7 +330,7 @@ namespace NuGet.PackageManagement.UI
                         string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
                         foreach (IPackageReferenceContextInfo transitivePackage in installedAndTransitives.TransitivePackages)
                         {
-                            if (packageIdToInstall == VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id))
+                            if (StringComparer.OrdinalIgnoreCase.Equals(packageIdToInstall, VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id)))
                             {
                                 packageToInstallWasTransitive = true;
                                 break;

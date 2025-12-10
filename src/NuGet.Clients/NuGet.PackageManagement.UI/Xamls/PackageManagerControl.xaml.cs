@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.UI
                 Model.Context.ServiceBroker,
                 CancellationToken.None);
 
-            if (currentProjectMetadata.FullPath == renamedProjectMetadata.FullPath)
+            if (StringComparer.Ordinal.Equals(currentProjectMetadata.FullPath, renamedProjectMetadata.FullPath))
             {
                 _settingsKey = GetProjectSettingsKey(renamedProjectMetadata.Name);
 
@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement.UI
 
                 // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
                 // We also refresh the UI if projectFullPath is not present.
-                if (projectMetadata.FullPath == eventProjectFullName)
+                if (StringComparer.Ordinal.Equals(projectMetadata.FullPath, eventProjectFullName))
                 {
                     await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
                 }

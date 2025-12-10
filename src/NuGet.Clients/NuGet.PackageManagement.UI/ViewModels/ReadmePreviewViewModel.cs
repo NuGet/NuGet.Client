@@ -101,10 +101,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
         internal bool ShouldUpdatePackageMetadata(DetailedPackageMetadata packageMetadata)
         {
             return packageMetadata != null && (
-                !string.Equals(packageMetadata.Id, _packageMetadata?.Id)
+                !StringComparer.OrdinalIgnoreCase.Equals(packageMetadata.Id, _packageMetadata?.Id)
                 || packageMetadata.Version != _packageMetadata?.Version
-                || !string.Equals(packageMetadata.ReadmeFileUrl, _packageMetadata?.ReadmeFileUrl)
-                || !string.Equals(packageMetadata.PackagePath, _packageMetadata?.PackagePath)
+                || !StringComparer.Ordinal.Equals(packageMetadata.ReadmeFileUrl, _packageMetadata?.ReadmeFileUrl)
+                || !StringComparer.Ordinal.Equals(packageMetadata.PackagePath, _packageMetadata?.PackagePath)
                 );
         }
 

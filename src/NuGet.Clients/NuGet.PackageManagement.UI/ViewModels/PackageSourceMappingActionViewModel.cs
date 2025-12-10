@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get { return _packageId; }
             set
             {
-                if (_packageId == value)
+                if (StringComparer.Ordinal.Equals(_packageId, value))
                 {
                     return;
                 }

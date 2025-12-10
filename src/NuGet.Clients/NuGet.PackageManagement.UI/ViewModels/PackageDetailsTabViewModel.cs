@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private void IsVisible_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(TitledPageViewModelBase.IsVisible))
+            if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(TitledPageViewModelBase.IsVisible)))
             {
                 if (_readmeTabEnabled && sender is ReadmePreviewViewModel)
                 {
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private void DetailControlModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (_readmeTabEnabled
-                && e.PropertyName == nameof(_detailControlModel.PackageMetadata))
+                && StringComparer.Ordinal.Equals(e.PropertyName, nameof(_detailControlModel.PackageMetadata)))
             {
                 ReadmePreviewViewModel.SetPackageMetadataAsync(_detailControlModel.PackageMetadata).PostOnFailure(nameof(PackageDetailsTabViewModel), nameof(DetailControlModel_PropertyChanged));
             }

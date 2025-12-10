@@ -272,7 +272,7 @@ namespace NuGet.CommandLine
             }
             // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
             // We want to catch failed NuGet.resources.dll assembly load to look for it in embedded resoruces
-            else if (name.Name == "NuGet.resources")
+            else if (StringComparer.Ordinal.Equals(name.Name, "NuGet.resources"))
             {
                 // Load satellite resource assembly from embedded resources
                 customLoadedAssembly = GetNuGetResourcesAssembly(name.Name, name.CultureInfo);

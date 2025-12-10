@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Linq;
 using NuGet.Frameworks;
 
@@ -56,7 +57,7 @@ namespace NuGet.ProjectModel
         {
             foreach (var framework in project.TargetFrameworks)
             {
-                if (framework.TargetAlias.Equals(targetAlias))
+                if (StringComparer.Ordinal.Equals(framework.TargetAlias, targetAlias))
                 {
                     return framework;
                 }
@@ -75,7 +76,7 @@ namespace NuGet.ProjectModel
         {
             foreach (var framework in project.RestoreMetadata?.TargetFrameworks)
             {
-                if (framework.TargetAlias.Equals(targetAlias))
+                if (StringComparer.Ordinal.Equals(framework.TargetAlias, targetAlias))
                 {
                     return framework;
                 }

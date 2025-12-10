@@ -313,7 +313,7 @@ namespace NuGet.Commands
 
                 if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                 {
-                    FrameworkAssemblyReference reference = builder.FrameworkReferences.FirstOrDefault(r => r.AssemblyName == dependency.Name);
+                    FrameworkAssemblyReference reference = builder.FrameworkReferences.FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.AssemblyName, dependency.Name));
                     if (reference == null)
                     {
                         builder.FrameworkReferences.Add(
@@ -972,9 +972,9 @@ namespace NuGet.Commands
 
         public static void AddLibraryDependency(LibraryDependency dependency, ISet<LibraryDependency> list)
         {
-            if (list.Any(r => r.Name == dependency.Name))
+            if (list.Any(r => StringComparer.OrdinalIgnoreCase.Equals(r.Name, dependency.Name)))
             {
-                LibraryDependency matchingDependency = list.Single(r => r.Name == dependency.Name);
+                LibraryDependency matchingDependency = list.Single(r => StringComparer.OrdinalIgnoreCase.Equals(r.Name, dependency.Name));
                 VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
                 {
                     matchingDependency.LibraryRange.VersionRange, dependency.LibraryRange.VersionRange
@@ -1007,7 +1007,7 @@ namespace NuGet.Commands
 
         public static void AddPackageDependency(PackageDependency dependency, ISet<PackageDependency> set)
         {
-            PackageDependency matchingDependency = set.SingleOrDefault(r => r.Id == dependency.Id);
+            PackageDependency matchingDependency = set.SingleOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Id, dependency.Id));
             if (matchingDependency != null)
             {
                 VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Lucene.Net.Analysis;
@@ -58,7 +59,7 @@ namespace NuGet.Indexing
                 {
                     string shingle = string.Format(CultureInfo.CurrentCulture, "{0}{1}", prev, subTerm);
 
-                    if (shingle != term)
+                    if (!StringComparer.Ordinal.Equals(shingle, term))
                     {
                         _queue.Enqueue(new TokenAttributes
                         {
@@ -70,7 +71,7 @@ namespace NuGet.Indexing
                     }
                 }
 
-                if (subTerm != term)
+                if (!StringComparer.Ordinal.Equals(subTerm, term))
                 {
                     _queue.Enqueue(new TokenAttributes
                     {

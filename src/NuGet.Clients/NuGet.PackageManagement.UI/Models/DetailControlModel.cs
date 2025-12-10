@@ -413,7 +413,7 @@ namespace NuGet.PackageManagement.UI
             get => _packageDeprecationReasons;
             set
             {
-                if (_packageDeprecationReasons != value)
+                if (!StringComparer.Ordinal.Equals(_packageDeprecationReasons, value))
                 {
                     _packageDeprecationReasons = value;
 
@@ -428,7 +428,7 @@ namespace NuGet.PackageManagement.UI
             get => _packageDeprecationAlternatePackageText;
             set
             {
-                if (_packageDeprecationAlternatePackageText != value)
+                if (!StringComparer.Ordinal.Equals(_packageDeprecationAlternatePackageText, value))
                 {
                     _packageDeprecationAlternatePackageText = value;
 
@@ -576,7 +576,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_userInput != value)
+                if (!StringComparer.Ordinal.Equals(_userInput, value))
                 {
                     _userInput = value;
 

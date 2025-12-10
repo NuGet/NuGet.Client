@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.ComponentModel;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_loadingMessage != value)
+                if (!StringComparer.Ordinal.Equals(_loadingMessage, value))
                 {
                     _loadingMessage = value;
                     OnPropertyChanged(nameof(LoadingMessage));
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_errorMessage != value)
+                if (StringComparer.Ordinal.Equals(_errorMessage, value))
                 {
                     _errorMessage = value;
                     OnPropertyChanged(nameof(ErrorMessage));

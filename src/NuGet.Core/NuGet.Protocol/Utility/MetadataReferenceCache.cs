@@ -113,7 +113,7 @@ namespace NuGet.Protocol
                 MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>
-                                m.Name == CachableTypesMap[stringPropertyType] &&
+                                StringComparer.Ordinal.Equals(m.Name, CachableTypesMap[stringPropertyType]) &&
                                 m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
                 CachableMethodTypes.Add(_metadataReferenceCacheType, method);
             }
@@ -130,7 +130,7 @@ namespace NuGet.Protocol
                     typeof(MetadataReferenceCache).GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>
-                                m.Name == CachableTypesMap[property.PropertyType] &&
+                                StringComparer.Ordinal.Equals(m.Name, CachableTypesMap[property.PropertyType]) &&
                                 m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { property.PropertyType }))
                         .Invoke(this, new[] { value });
                 property.SetMethod.Invoke(input, new[] { cachedValue });
