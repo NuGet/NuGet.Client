@@ -12,8 +12,8 @@ namespace NuGet.RuntimeModel
 {
     public sealed class RuntimeGraph : IEquatable<RuntimeGraph>
     {
-        private static readonly ReadOnlyDictionary<string, RuntimeDescription> EmptyRuntimes = new(new Dictionary<string, RuntimeDescription>(StringComparer.OrdinalIgnoreCase));
-        private static readonly ReadOnlyDictionary<string, CompatibilityProfile> EmptySupports = new(new Dictionary<string, CompatibilityProfile>(StringComparer.OrdinalIgnoreCase));
+        private static readonly ReadOnlyDictionary<string, RuntimeDescription> EmptyRuntimes = new(new Dictionary<string, RuntimeDescription>(StringComparer.Ordinal));
+        private static readonly ReadOnlyDictionary<string, CompatibilityProfile> EmptySupports = new(new Dictionary<string, CompatibilityProfile>(StringComparer.Ordinal));
 
         // These fields are null when IsEmpty is true
         private readonly ConcurrentDictionary<RuntimeCompatKey, bool>? _areCompatible;
@@ -45,19 +45,19 @@ namespace NuGet.RuntimeModel
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes)
-            : this(runtimes.ToDictionary(r => r.RuntimeIdentifier, StringComparer.OrdinalIgnoreCase), EmptySupports)
+            : this(runtimes.ToDictionary(r => r.RuntimeIdentifier, StringComparer.Ordinal), EmptySupports)
         {
         }
 
         public RuntimeGraph(IEnumerable<CompatibilityProfile> supports)
-            : this(EmptyRuntimes, supports.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase))
+            : this(EmptyRuntimes, supports.ToDictionary(r => r.Name, StringComparer.Ordinal))
         {
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes, IEnumerable<CompatibilityProfile> supports)
             : this(
-                  runtimes.ToDictionary(r => r.RuntimeIdentifier, StringComparer.OrdinalIgnoreCase),
-                  supports.ToDictionary(r => r.Name, StringComparer.OrdinalIgnoreCase))
+                  runtimes.ToDictionary(r => r.RuntimeIdentifier, StringComparer.Ordinal),
+                  supports.ToDictionary(r => r.Name, StringComparer.Ordinal))
         {
         }
 
@@ -69,7 +69,7 @@ namespace NuGet.RuntimeModel
             if (Runtimes.Count != 0 || Supports.Count != 0)
             {
                 _areCompatible = new();
-                _expandCache = new(StringComparer.OrdinalIgnoreCase);
+                _expandCache = new(StringComparer.Ordinal);
                 _dependencyCache = new();
             }
         }
@@ -95,7 +95,7 @@ namespace NuGet.RuntimeModel
                     return source;
                 }
 
-                Dictionary<string, T> clone = new(source.Count, StringComparer.OrdinalIgnoreCase);
+                Dictionary<string, T> clone = new(source.Count, StringComparer.Ordinal);
 
                 foreach (var pair in source.NoAllocEnumerate())
                 {
@@ -122,7 +122,7 @@ namespace NuGet.RuntimeModel
                 return left;
             }
 
-            var runtimes = new Dictionary<string, RuntimeDescription>(capacity: left.Runtimes.Count + right.Runtimes.Count, StringComparer.OrdinalIgnoreCase);
+            var runtimes = new Dictionary<string, RuntimeDescription>(capacity: left.Runtimes.Count + right.Runtimes.Count, StringComparer.Ordinal);
 
             foreach (var pair in left.Runtimes.NoAllocEnumerate())
             {
@@ -144,7 +144,7 @@ namespace NuGet.RuntimeModel
                 }
             }
 
-            var supports = new Dictionary<string, CompatibilityProfile>(capacity: right.Supports.Count + left.Supports.Count, StringComparer.OrdinalIgnoreCase);
+            var supports = new Dictionary<string, CompatibilityProfile>(capacity: right.Supports.Count + left.Supports.Count, StringComparer.Ordinal);
 
             // Copy over the right ones
             foreach (var compatProfile in right.Supports.NoAllocEnumerate())
@@ -179,7 +179,7 @@ namespace NuGet.RuntimeModel
 
         private HashSet<string> ExpandRuntimeCached(string runtime)
         {
-            return _expandCache!.GetOrAdd(runtime, r => new HashSet<string>(ExpandRuntimeInternal(r), StringComparer.OrdinalIgnoreCase));
+            return _expandCache!.GetOrAdd(runtime, r => new HashSet<string>(ExpandRuntimeInternal(r), StringComparer.Ordinal));
 
             // Expand runtimes in a BFS walk. This ensures that nearest RIDs are returned first.
             // Ordering is important for finding the nearest runtime dependency.
@@ -229,7 +229,7 @@ namespace NuGet.RuntimeModel
         public bool AreCompatible(string criteria, string provided)
         {
             // Identical runtimes are compatible
-            if (StringComparer.OrdinalIgnoreCase.Equals(criteria, provided))
+            if (StringComparer.Ordinal.Equals(criteria, provided))
             {
                 return true;
             }
@@ -268,12 +268,7 @@ namespace NuGet.RuntimeModel
             {
                 var key = new RuntimeDependencyKey(runtimeName, packageId);
 
-#if NET472_OR_GREATER || NET5_0_OR_GREATER
-
                 return _dependencyCache!.GetOrAdd(key, FindRuntimeDependenciesInternal, this);
-#else
-                return _dependencyCache!.GetOrAdd(key, key => FindRuntimeDependenciesInternal(key, this, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
-#endif
             }
 
             return Enumerable.Empty<RuntimePackageDependency>();
@@ -308,8 +303,8 @@ namespace NuGet.RuntimeModel
                 return true;
             }
 
-            return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.OrdinalIgnoreCase);
+            return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.Ordinal)
+                && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.Ordinal);
         }
 
         public override bool Equals(object? obj)
@@ -395,16 +390,16 @@ namespace NuGet.RuntimeModel
 
             public bool Equals(RuntimeDependencyKey other)
             {
-                return StringComparer.OrdinalIgnoreCase.Equals(RuntimeName, other.RuntimeName)
-                    && StringComparer.OrdinalIgnoreCase.Equals(PackageId, other.PackageId);
+                return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
+                    && StringComparer.Ordinal.Equals(PackageId, other.PackageId);
             }
 
             public override int GetHashCode()
             {
                 var hashCode = new HashCodeCombiner();
 
-                hashCode.AddObject(RuntimeName, StringComparer.OrdinalIgnoreCase);
-                hashCode.AddObject(PackageId, StringComparer.OrdinalIgnoreCase);
+                hashCode.AddObject(RuntimeName, StringComparer.Ordinal);
+                hashCode.AddObject(PackageId, StringComparer.Ordinal);
 
                 return hashCode.CombinedHash;
             }
@@ -427,16 +422,16 @@ namespace NuGet.RuntimeModel
 
             public bool Equals(RuntimeCompatKey other)
             {
-                return StringComparer.OrdinalIgnoreCase.Equals(RuntimeName, other.RuntimeName)
-                    && StringComparer.OrdinalIgnoreCase.Equals(Other, other.Other);
+                return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
+                    && StringComparer.Ordinal.Equals(Other, other.Other);
             }
 
             public override int GetHashCode()
             {
                 var hashCode = new HashCodeCombiner();
 
-                hashCode.AddObject(RuntimeName, StringComparer.OrdinalIgnoreCase);
-                hashCode.AddObject(Other, StringComparer.OrdinalIgnoreCase);
+                hashCode.AddObject(RuntimeName, StringComparer.Ordinal);
+                hashCode.AddObject(Other, StringComparer.Ordinal);
 
                 return hashCode.CombinedHash;
             }
