@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using NuGet.Common;
@@ -28,7 +29,7 @@ namespace NuGet.Packaging
             NuGetOperationStatus status,
             ExtractionSource extractionSource,
             PackageIdentity packageId = null) :
-            base(EventName, new Dictionary<string, object>
+            base(EventName, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                 {
                     { nameof(Status), status },
                     { nameof(ExtractionSource), extractionSource },

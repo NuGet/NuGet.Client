@@ -39,7 +39,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             _plugin = plugin;
-            _repositories = new ConcurrentDictionary<string, SourceRepository>();
+            _repositories = new ConcurrentDictionary<string, SourceRepository>(StringComparer.Ordinal);
         }
 
         /// <summary>

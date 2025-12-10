@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement
             // Before fetching vulnerability data, check if any projects are enabled for audit
             // If there are no settings, then run the audit for all packages
             bool anyProjectsEnabledForAudit = restoreAuditProperties.Count == 0;
-            var auditSettings = new Dictionary<string, ProjectAuditSettings>(restoreAuditProperties.Count);
+            var auditSettings = new Dictionary<string, ProjectAuditSettings>(restoreAuditProperties.Count, PathUtility.GetStringComparerBasedOnOS());
             foreach (var (projectPath, restoreAuditProperty) in restoreAuditProperties)
             {
                 _ = restoreAuditProperty.TryParseEnableAudit(out bool isAuditEnabled);
@@ -434,7 +434,7 @@ namespace NuGet.PackageManagement
 
                 if (suppressedAdvisories != null)
                 {
-                    SuppressedAdvisories = new Dictionary<string, bool>(suppressedAdvisories.Count);
+                    SuppressedAdvisories = new Dictionary<string, bool>(suppressedAdvisories.Count, StringComparer.Ordinal);
 
                     foreach (string advisory in suppressedAdvisories)
                     {

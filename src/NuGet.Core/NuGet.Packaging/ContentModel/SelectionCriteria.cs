@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.ContentModel
@@ -21,7 +22,7 @@ namespace NuGet.ContentModel
     {
         public SelectionCriteriaEntry()
         {
-            Properties = new Dictionary<string, object>();
+            Properties = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         public IDictionary<string, object> Properties { get; set; }

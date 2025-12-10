@@ -39,7 +39,7 @@ namespace NuGetConsole.Implementation.PowerConsole
             {
                 if (_hostInfos == null)
                 {
-                    _hostInfos = new Dictionary<string, HostInfo>();
+                    _hostInfos = new Dictionary<string, HostInfo>(StringComparer.OrdinalIgnoreCase);
                     foreach (var hostProvider in HostProviders)
                     {
                         var info = new HostInfo(this, hostProvider);

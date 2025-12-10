@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.IDE;
 
@@ -74,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
                 foreach (var configPath in configPathsList)
                 {
-                    var dict = new Dictionary<string, object>(capacity: 1)
+                    var dict = new Dictionary<string, object>(capacity: 1, PathUtility.GetStringComparerBasedOnOS())
                     {
                         { "filePath", configPath }
                     };

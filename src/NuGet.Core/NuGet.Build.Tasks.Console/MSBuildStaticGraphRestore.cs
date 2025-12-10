@@ -512,7 +512,7 @@ namespace NuGet.Build.Tasks.Console
         internal static IReadOnlyDictionary<string, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
         {
             var projectFrameworkStrings = GetTargetFrameworkStrings(project);
-            var projectTargetFrameworks = new Dictionary<string, IMSBuildProject>();
+            var projectTargetFrameworks = new Dictionary<string, IMSBuildProject>(StringComparer.Ordinal);
 
             if (projectFrameworkStrings.Length > 0)
             {

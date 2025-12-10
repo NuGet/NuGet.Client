@@ -68,7 +68,7 @@ namespace NuGet.Build.Tasks
                         continue;
                     }
 
-                    var properties = new Dictionary<string, string>();
+                    var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     properties.Add("ProjectUniqueName", ProjectUniqueName);
                     properties.Add("Type", "ProjectReference");
                     properties.Add("ProjectPath", referencePath);

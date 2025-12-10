@@ -63,7 +63,7 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             LockFile assetsFile = GetAssetsFile(request);
-            var aliases = new Dictionary<string, string>();
+            var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
             {
                 aliases[tfm.TargetAlias] = tfm.FrameworkName.GetShortFolderName();
@@ -230,7 +230,7 @@ namespace NuGet.Build.Tasks.Pack
                     msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
             }
 
-            var aliases = new Dictionary<string, string>();
+            var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
             {
                 aliases[tfm.TargetAlias] = tfm.FrameworkName.GetShortFolderName();
@@ -406,7 +406,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private void PopulateFrameworkReferences(PackageBuilder builder, LockFile assetsFile)
         {
-            var tfmSpecificRefs = new Dictionary<string, ISet<string>>();
+            var tfmSpecificRefs = new Dictionary<string, ISet<string>>(StringComparer.Ordinal);
             bool hasAnyRefs = false;
 
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
@@ -594,7 +594,7 @@ namespace NuGet.Build.Tasks.Pack
             PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>();
+            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>(PathUtility.GetStringComparerBasedOnOS());
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
@@ -788,7 +788,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private IDictionary<string, string> GetSourceFiles(IPackTaskRequest<IMSBuildItem> request, string currentProjectDirectory)
         {
-            var sourceFiles = new Dictionary<string, string>();
+            var sourceFiles = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
             if (request.SourceFiles != null)
             {
                 foreach (var src in request.SourceFiles)

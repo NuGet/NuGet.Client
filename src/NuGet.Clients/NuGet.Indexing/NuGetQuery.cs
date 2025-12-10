@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace NuGet.Indexing
     {
         public static Query MakeQuery(string q)
         {
-            var grouping = new Dictionary<string, HashSet<string>>();
+            var grouping = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
             foreach (Clause clause in MakeClauses(Tokenize(q)))
             {
                 HashSet<string> text;

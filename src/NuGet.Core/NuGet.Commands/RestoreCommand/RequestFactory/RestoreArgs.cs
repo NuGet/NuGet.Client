@@ -148,7 +148,7 @@ namespace NuGet.Commands
             var packageSourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
 #pragma warning restore CS0618 // Type or member is obsolete
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
-            var sourceObjects = new Dictionary<string, PackageSource>();
+            var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
             for (var i = 0; i < dgSpecSources.Count; i++)
             {
                 sourceObjects[dgSpecSources[i].Source] = dgSpecSources[i];

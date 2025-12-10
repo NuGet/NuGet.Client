@@ -29,9 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 
-        public IDictionary<string, LoadingStatus> SourceSearchStatus { get; set; } = new Dictionary<string, LoadingStatus>();
+        public IDictionary<string, LoadingStatus> SourceSearchStatus { get; set; } = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal);
 
-        public IDictionary<string, Exception> SourceSearchException { get; set; } = new Dictionary<string, Exception>();
+        public IDictionary<string, Exception> SourceSearchException { get; set; } = new Dictionary<string, Exception>(StringComparer.Ordinal);
 
         // total number of unmerged items found
         public int RawItemsCount { get; set; }

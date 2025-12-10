@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
         private const string XsltManifestResourceName = "NuGet.PackageManagement.UI.Resources.UpgradeReport.xslt";
 
-        private readonly ConcurrentDictionary<string, XmlElement> _projectElements = new ConcurrentDictionary<string, XmlElement>();
+        private readonly ConcurrentDictionary<string, XmlElement> _projectElements = new ConcurrentDictionary<string, XmlElement>(StringComparer.Ordinal);
 
         private readonly XmlDocument _xmlDocument;
 

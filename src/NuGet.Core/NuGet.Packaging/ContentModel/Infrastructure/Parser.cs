@@ -20,7 +20,7 @@ namespace NuGet.ContentModel.Infrastructure
         public PatternExpression(PatternDefinition pattern)
         {
             _table = pattern.Table;
-            _defaults = pattern.Defaults.ToDictionary(p => p.Key, p => p.Value);
+            _defaults = pattern.Defaults.ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal);
             Initialize(pattern.Pattern, pattern.PreserveRawValues);
         }
 

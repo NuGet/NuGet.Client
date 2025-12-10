@@ -64,7 +64,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             TaskContinuationOptions.OnlyOnFaulted,
                             TaskScheduler.Current);
                         return valueTask;
-                    });
+                    },
+                    StringComparer.Ordinal);
 
             return tasks;
         }

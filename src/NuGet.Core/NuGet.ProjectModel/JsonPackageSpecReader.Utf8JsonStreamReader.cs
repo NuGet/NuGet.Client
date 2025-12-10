@@ -1427,7 +1427,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(CentralPackageVersionsPropertyName))
                     {
-                        centralPackageVersions ??= new Dictionary<string, CentralPackageVersion>();
+                        centralPackageVersions ??= new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
                         ReadCentralPackageVersions(
                             ref jsonReader,
                             centralPackageVersions,

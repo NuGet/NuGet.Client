@@ -51,7 +51,7 @@ namespace NuGet.Repo.Analyzers
 
             if (symbolInfo.Symbol is IMethodSymbol constructor)
             {
-                AnalyzeDictionaryCreation(context, objectCreation, objectCreation.ArgumentList, constructor.ContainingType);
+                AnalyzeDictionaryCreation(context, objectCreation, objectCreation.ArgumentList, constructor.ContainingType, constructor);
             }
         }
 
@@ -62,7 +62,7 @@ namespace NuGet.Repo.Analyzers
 
             if (symbolInfo.Symbol is IMethodSymbol constructor)
             {
-                AnalyzeDictionaryCreation(context, implicitObjectCreation, implicitObjectCreation.ArgumentList, constructor.ContainingType);
+                AnalyzeDictionaryCreation(context, implicitObjectCreation, implicitObjectCreation.ArgumentList, constructor.ContainingType, constructor);
             }
         }
 
@@ -120,7 +120,7 @@ namespace NuGet.Repo.Analyzers
             }
         }
 
-        private static void AnalyzeDictionaryCreation(SyntaxNodeAnalysisContext context, SyntaxNode node, ArgumentListSyntax? argumentList, ITypeSymbol typeSymbol)
+        private static void AnalyzeDictionaryCreation(SyntaxNodeAnalysisContext context, SyntaxNode node, ArgumentListSyntax? argumentList, ITypeSymbol typeSymbol, IMethodSymbol calledConstructor)
         {
             // Check if it's a dictionary type
             if (!IsDictionaryType(typeSymbol, out var keyType))
@@ -136,6 +136,13 @@ namespace NuGet.Repo.Analyzers
 
             // Check if a StringComparer argument is provided
             if (argumentList != null && HasStringComparerArgument(context, argumentList))
+            {
+                return;
+            }
+
+            // Check if the type has a constructor overload that accepts an IEqualityComparer<TKey>
+            // If no such overload exists, the type cannot accept a comparer, so don't report a diagnostic
+            if (!HasComparerConstructorOverload(typeSymbol, keyType))
             {
                 return;
             }
@@ -185,6 +192,33 @@ namespace NuGet.Repo.Analyzers
             return fullName == "System.Collections.Generic.IDictionary<TKey, TValue>" ||
                    fullName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
                    fullName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+        }
+
+        private static bool HasComparerConstructorOverload(ITypeSymbol typeSymbol, ITypeSymbol keyType)
+        {
+            if (typeSymbol is not INamedTypeSymbol namedType)
+                return false;
+
+            // Check if any constructor has a parameter that is IEqualityComparer<TKey>
+            foreach (var constructor in namedType.Constructors)
+            {
+                foreach (var parameter in constructor.Parameters)
+                {
+                    if (parameter.Type is INamedTypeSymbol parameterType &&
+                        parameterType.IsGenericType &&
+                        parameterType.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEqualityComparer<T>")
+                    {
+                        // Check if the type argument matches the key type
+                        if (parameterType.TypeArguments.Length == 1 &&
+                            SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], keyType))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static bool HasStringComparerArgument(SyntaxNodeAnalysisContext context, ArgumentListSyntax argumentList)

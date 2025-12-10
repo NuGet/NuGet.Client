@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 : packages.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
-            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
+            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal)
             {
                 { "Consolidate", loadingStatus }
             };

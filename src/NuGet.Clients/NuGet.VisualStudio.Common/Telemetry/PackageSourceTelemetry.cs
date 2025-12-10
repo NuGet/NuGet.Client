@@ -50,20 +50,20 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
-            _sources = new Dictionary<string, SourceRepository>();
+            _sources = new Dictionary<string, SourceRepository>(StringComparer.Ordinal);
             foreach (var source in sources)
             {
                 _sources[source.PackageSource.Source] = source;
             }
 
-            var data = new Dictionary<string, Data>(_sources.Count);
+            var data = new Dictionary<string, Data>(_sources.Count, StringComparer.Ordinal);
             foreach ((var source, _) in _sources)
             {
                 data[source] = new Data();
             }
             _data = data;
 
-            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
+            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>(StringComparer.Ordinal);
             ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
@@ -114,7 +114,7 @@ namespace NuGet.VisualStudio.Telemetry
                 return;
             }
 
-            var resourceMethodNameTable = resourceStringTable.GetOrAdd(pdEvent.ResourceType, t => new ConcurrentDictionary<string, string>());
+            var resourceMethodNameTable = resourceStringTable.GetOrAdd(pdEvent.ResourceType, t => new ConcurrentDictionary<string, string>(StringComparer.Ordinal));
             var resourceTypeAndMethod = resourceMethodNameTable.GetOrAdd(pdEvent.Method, m => pdEvent.ResourceType + "." + m);
 
             lock (data._lock)
@@ -250,7 +250,7 @@ namespace NuGet.VisualStudio.Telemetry
                 bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
 
                 telemetry = new TelemetryEvent(EventName,
-                    new Dictionary<string, object>()
+                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                     {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },
@@ -430,7 +430,7 @@ namespace NuGet.VisualStudio.Telemetry
             internal Data()
             {
                 _lock = new object();
-                Resources = new Dictionary<string, (int count, TimeSpan duration)>();
+                Resources = new Dictionary<string, (int count, TimeSpan duration)>(StringComparer.Ordinal);
                 Http = new HttpData();
                 HttpsSourceHasHttpResource = false;
             }

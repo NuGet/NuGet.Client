@@ -158,7 +158,7 @@ namespace NuGet.Configuration
                     ConfigurationConstants.FindValueAttribute
                 });
 
-        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>
+        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
         {
             {
                 ConfigurationConstants.StoreLocationAttribute,

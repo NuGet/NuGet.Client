@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
             _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _ivsFeatureFlags = new(() => _asyncServiceProvider.GetServiceAsync<SVsFeatureFlags, IVsFeatureFlags>(), NuGetUIThreadHelper.JoinableTaskFactory);
-            _featureFlagCache = new();
+            _featureFlagCache = new(StringComparer.Ordinal);
         }
 
         public async Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants featureFlag)

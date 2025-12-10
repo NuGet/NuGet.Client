@@ -22,7 +22,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     internal class RunspaceManager : IRunspaceManager
     {
         // Cache Runspace by name. There should be only one Runspace instance created though.
-        private readonly ConcurrentDictionary<string, Tuple<RunspaceDispatcher, NuGetPSHost>> _runspaceCache = new ConcurrentDictionary<string, Tuple<RunspaceDispatcher, NuGetPSHost>>();
+        private readonly ConcurrentDictionary<string, Tuple<RunspaceDispatcher, NuGetPSHost>> _runspaceCache = new ConcurrentDictionary<string, Tuple<RunspaceDispatcher, NuGetPSHost>>(StringComparer.Ordinal);
         private readonly IEnvironmentVariableReader _environmentVariableReader;
         public const string ProfilePrefix = "NuGet";
 

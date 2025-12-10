@@ -32,7 +32,7 @@ namespace NuGet.Packaging.Rules
 
         internal IDictionary<string, IEnumerable<string>> GetReferencesFromNuspec(Stream nuspecStream)
         {
-            var nuspecReferences = new Dictionary<string, IEnumerable<string>>();
+            var nuspecReferences = new Dictionary<string, IEnumerable<string>>(StringComparer.Ordinal);
             var packageNuspec = new NuspecReader(nuspecStream);
             var nuspec = packageNuspec.Xml;
             if (nuspec != null)
@@ -40,7 +40,8 @@ namespace NuGet.Packaging.Rules
                 XNamespace name = nuspec.Root.Name.Namespace;
                 var targetFrameworks = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("targetFramework");
                 nuspecReferences = targetFrameworks.ToDictionary(k => NuGetFramework.Parse(k.Value).GetShortFolderName(),
-                                                                k => k.Parent.Elements().Attributes("file").Select(f => f.Value));
+                                                                k => k.Parent.Elements().Attributes("file").Select(f => f.Value),
+                                                                StringComparer.Ordinal);
                 var filesWithoutTFM = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references"))
                     .Elements().Attributes("file").Select(f => f.Value);
                 nuspecReferences.Add("any", filesWithoutTFM);

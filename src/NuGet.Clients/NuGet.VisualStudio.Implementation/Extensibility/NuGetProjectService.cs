@@ -86,7 +86,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
             catch (Exception exception)
             {
-                var extraProperties = new Dictionary<string, object>();
+                var extraProperties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                 extraProperties["projectId"] = projectId.ToString();
                 await _telemetryProvider.PostFaultAsync(exception, typeof(NuGetProjectService).FullName, extraProperties: extraProperties);
                 throw;

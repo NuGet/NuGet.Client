@@ -31,7 +31,7 @@ namespace NuGet.Resolver
             _versionComparer = VersionComparer.Default;
             _identityComparer = PackageIdentity.Comparer;
 
-            _installedVersions = new Dictionary<string, NuGetVersion>();
+            _installedVersions = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
 
             if (_preferredVersions != null)
             {

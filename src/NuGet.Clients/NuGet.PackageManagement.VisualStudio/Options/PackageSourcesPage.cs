@@ -389,7 +389,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
                 foreach (PackageSource packageSource in packageSources)
                 {
-                    var dict = new Dictionary<string, object>(capacity: 5)
+                    var dict = new Dictionary<string, object>(capacity: 5, StringComparer.Ordinal)
                     {
                         { MonikerPackageSourceId, packageSource.Name }, // Use the package source name as a unique identifier
                         { MonikerSourceName, packageSource.Name },

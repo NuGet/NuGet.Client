@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public PluginMulticlientUtilities()
         {
-            _actions = new ConcurrentDictionary<string, Lazy<Task>>();
+            _actions = new ConcurrentDictionary<string, Lazy<Task>>(StringComparer.Ordinal);
         }
 
         /// <summary>

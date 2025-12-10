@@ -25,13 +25,13 @@ namespace NuGet.Configuration
             Attributes.Where(a =>
                 !string.Equals(a.Key, ConfigurationConstants.KeyAttribute, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(a.Key, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
-            ).ToDictionary(a => a.Key, a => a.Value));
+            ).ToDictionary(a => a.Key, a => a.Value, StringComparer.OrdinalIgnoreCase));
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
             = new HashSet<string>(new[] { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute });
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
-            new Dictionary<string, IReadOnlyCollection<string>>()
+            new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
             {
                 { ConfigurationConstants.KeyAttribute, new HashSet<string>(new [] {string.Empty }) }
             });

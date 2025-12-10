@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Plugins
 
             _logger = PluginLogger.DefaultInstance;
             _pluginIdleTimeout = pluginIdleTimeout;
-            _plugins = new ConcurrentDictionary<string, Lazy<Task<IPlugin>>>();
+            _plugins = new ConcurrentDictionary<string, Lazy<Task<IPlugin>>>(PathUtility.GetStringComparerBasedOnOS());
         }
 
         /// <summary>

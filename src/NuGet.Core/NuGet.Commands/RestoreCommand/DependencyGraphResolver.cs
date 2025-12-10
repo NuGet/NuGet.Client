@@ -133,7 +133,7 @@ namespace NuGet.Commands
             List<RestoreTargetGraph> allGraphs = new();
 
             // Stores the list of graphs without a runtime identifier by their target alias
-            Dictionary<string, RestoreTargetGraph> graphsByTargetFramework = new();
+            Dictionary<string, RestoreTargetGraph> graphsByTargetFramework = new(StringComparer.Ordinal);
 
             // Stores the list graphs that are runtime identifier specific
             List<RestoreTargetGraph> runtimeGraphs = new();

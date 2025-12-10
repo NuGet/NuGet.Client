@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel
                 {
                     lock (PropertiesLock)
                     {
-                        _properties ??= new Dictionary<string, string>();
+                        _properties ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     }
                 }
 

@@ -348,7 +348,7 @@ namespace NuGet.Frameworks
                 {
                     result.Add(framework);
 
-                    // Add in the existing framework (included here) and all equivalent frameworks  
+                    // Add in the existing framework (included here) and all equivalent frameworks
                     var equivalentFrameworks = GetAllEquivalentFrameworks(framework);
 
                     UnionWith(existingFrameworks, equivalentFrameworks);
@@ -358,13 +358,13 @@ namespace NuGet.Frameworks
             return result;
         }
 
-        /// <summary>  
-        /// Get all equivalent frameworks including the given framework  
-        /// </summary>  
+        /// <summary>
+        /// Get all equivalent frameworks including the given framework
+        /// </summary>
         private HashSet<NuGetFramework> GetAllEquivalentFrameworks(NuGetFramework framework)
         {
-            // Loop through the frameworks, all frameworks that are not in results yet   
-            // will be added to toProcess to get the equivalent frameworks  
+            // Loop through the frameworks, all frameworks that are not in results yet
+            // will be added to toProcess to get the equivalent frameworks
             var toProcess = new Stack<NuGetFramework>();
             var results = new HashSet<NuGetFramework>();
 
@@ -1137,7 +1137,7 @@ namespace NuGet.Frameworks
             var superSetFrameworks = _subSetFrameworks
                 .SelectMany(p => p.Value.Select(subset => new { Superset = p.Key, Subset = subset }))
                 .GroupBy(p => p.Subset, p => p.Superset, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => new HashSet<string>(g, StringComparer.OrdinalIgnoreCase));
+                .ToDictionary(g => g.Key, g => new HashSet<string>(g, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
 
             foreach (var framework in set.ToArray())
             {

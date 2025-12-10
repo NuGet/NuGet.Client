@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             public TelemetryState TelemetryState { get; set; }
             public string SearchString { get; set; }
-            public IDictionary<string, ContinuationToken> SourceSearchCursors { get; set; } = new Dictionary<string, ContinuationToken>();
+            public IDictionary<string, ContinuationToken> SourceSearchCursors { get; set; } = new Dictionary<string, ContinuationToken>(StringComparer.Ordinal);
         }
 
         private class AggregatedRefreshToken : RefreshToken
@@ -246,7 +246,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var statuses = notCompleted.ToDictionary(
                     kv => kv.Key,
-                    kv => GetLoadingStatus(kv.Value.Status));
+                    kv => GetLoadingStatus(kv.Value.Status),
+                    StringComparer.Ordinal);
 
                 foreach (var item in statuses)
                 {
@@ -257,7 +258,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Where(kv => kv.Value.Exception != null)
                     .ToDictionary(
                         kv => kv.Key,
-                        kv => (Exception)kv.Value.Exception);
+                        kv => (Exception)kv.Value.Exception,
+                        StringComparer.Ordinal);
 
                 foreach (var item in exceptions)
                 {
@@ -341,11 +343,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             result.SourceSearchStatus = results
                 .SelectMany(r => r.SourceSearchStatus)
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
+                .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.Ordinal);
 
             var cursors = results
                 .Where(r => r.NextToken != null)
-                .ToDictionary(r => r.SourceSearchStatus.Single().Key, r => r.NextToken);
+                .ToDictionary(r => r.SourceSearchStatus.Single().Key, r => r.NextToken, StringComparer.Ordinal);
 
             if (cursors.Keys.Any())
             {

@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement
             int packageCount,
             DateTimeOffset endTime,
             double duration) :
-            base(eventName, new Dictionary<string, object>
+            base(eventName, new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { nameof(OperationId), operationId },
                     { nameof(PackagesCount), packageCount },

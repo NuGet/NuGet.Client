@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
 
             // We will dedup certificates based on fingerprint and hash algorithm, therefore
             // the key to this lookup will be hashAlgorithm-fingerprint
-            var certificateLookup = new Dictionary<string, CertificateEntryLookupEntry>();
+            var certificateLookup = new Dictionary<string, CertificateEntryLookupEntry>(StringComparer.Ordinal);
 
             foreach (var item in trustedSignersSection.Items.OfType<TrustedSignerItem>())
             {

@@ -42,7 +42,7 @@ namespace NuGet.Build.Tasks
             {
                 var packageId = msbuildItem.ItemSpec;
 
-                var properties = new Dictionary<string, string>();
+                var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
                 properties.Add("Type", "DownloadDependency");
                 properties.Add("Id", packageId);

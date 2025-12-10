@@ -121,7 +121,7 @@ namespace NuGet.Commands
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>();
             var unresolved = new HashSet<LibraryRange>();
 
-            var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
+            var conflicts = new Dictionary<string, HashSet<ResolverRequest>>(StringComparer.Ordinal);
             var analyzeResult = new AnalyzeResult<RemoteResolveResult>();
             var resolvedDependencies = new HashSet<ResolvedDependencyKey>();
 

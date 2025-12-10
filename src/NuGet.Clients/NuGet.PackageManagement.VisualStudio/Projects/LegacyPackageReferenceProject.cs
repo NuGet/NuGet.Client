@@ -698,7 +698,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        protected override Dictionary<string, ProjectInstalledPackage> GetCollectionCopy(Dictionary<string, ProjectInstalledPackage> collection) => new(collection);
+        protected override Dictionary<string, ProjectInstalledPackage> GetCollectionCopy(Dictionary<string, ProjectInstalledPackage> collection) => new(collection, StringComparer.Ordinal);
 
         public override Task<bool> UninstallPackageAsync(string packageId, BuildIntegratedInstallationContext _, CancellationToken token)
         {

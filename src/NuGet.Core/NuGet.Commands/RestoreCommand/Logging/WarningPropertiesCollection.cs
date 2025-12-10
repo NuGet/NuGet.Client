@@ -21,7 +21,7 @@ namespace NuGet.Commands
     /// </summary>
     public class WarningPropertiesCollection : IEquatable<WarningPropertiesCollection>
     {
-        private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
+        private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Contains the target frameworks for the project.

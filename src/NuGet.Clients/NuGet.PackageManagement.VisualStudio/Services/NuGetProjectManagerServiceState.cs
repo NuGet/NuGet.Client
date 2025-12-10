@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly AsyncSemaphore _asyncSemaphore = new AsyncSemaphore(initialCount: 1);
 #pragma warning restore RS0030 // Do not used banned APIs
         private PackageIdentity? _packageidentity;
-        private readonly Dictionary<string, ResolvedAction> _resolvedActions = new Dictionary<string, ResolvedAction>();
+        private readonly Dictionary<string, ResolvedAction> _resolvedActions = new Dictionary<string, ResolvedAction>(StringComparer.Ordinal);
         private SourceCacheContext? _sourceCacheContext;
         private bool _isDisposed;
 

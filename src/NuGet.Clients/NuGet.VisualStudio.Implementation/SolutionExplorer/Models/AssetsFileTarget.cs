@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -72,7 +73,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             // Defer construction of dependents collection until needed. It's only needed for Solution Explorer search.
             if (_dependentsByLibrary == null)
             {
-                var dependentsByLibrary = new Dictionary<string, ImmutableArray<AssetsFileTargetLibrary>.Builder>(LibraryByName.Count);
+                var dependentsByLibrary = new Dictionary<string, ImmutableArray<AssetsFileTargetLibrary>.Builder>(LibraryByName.Count, StringComparer.Ordinal);
 
                 foreach ((_, AssetsFileTargetLibrary library) in LibraryByName)
                 {
@@ -82,8 +83,8 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                     }
                 }
 
-                Volatile.Write(ref _dependentsByLibrary, dependentsByLibrary.ToDictionary(pair => pair.Key, pair => pair.Value.ToImmutable()));
 
+                Volatile.Write(ref _dependentsByLibrary, dependentsByLibrary.ToDictionary(pair => pair.Key, pair => pair.Value.ToImmutable(), StringComparer.Ordinal));
                 ImmutableArray<AssetsFileTargetLibrary>.Builder GetBuilder(string library)
                 {
                     if (!dependentsByLibrary.TryGetValue(library, out ImmutableArray<AssetsFileTargetLibrary>.Builder builder))

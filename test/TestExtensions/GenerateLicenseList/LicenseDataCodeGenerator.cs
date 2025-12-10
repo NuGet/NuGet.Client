@@ -126,12 +126,12 @@ public static class NuGetLicenseData
 
         private static string DictionaryDeclaration = $@""";
 
-    public static readonly IReadOnlyDictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
+    public static readonly IReadOnlyDictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>(StringComparer.Ordinal)
         {{" + Environment.NewLine;
 
         private static string ClosingBracket = Environment.NewLine + $@"        }};
 
-    public static readonly IReadOnlyDictionary<string, ExceptionData> ExceptionList = new Dictionary<string, ExceptionData>()
+    public static readonly IReadOnlyDictionary<string, ExceptionData> ExceptionList = new Dictionary<string, ExceptionData>(StringComparer.Ordinal)
         {{" + Environment.NewLine;
 
         private static string ClosingBracket2 = Environment.NewLine + $@"        }};" + Environment.NewLine + $@"}}";
@@ -167,6 +167,7 @@ public static class NuGetLicenseData
         private static readonly string NamespaceDeclaration = $@"// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Packaging.Licenses

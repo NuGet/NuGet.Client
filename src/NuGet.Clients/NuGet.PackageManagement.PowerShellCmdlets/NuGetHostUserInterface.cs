@@ -99,7 +99,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             // this stores the field/value pairs - e.g. unbound missing mandatory parameters,
             // or scripted $host.ui.prompt invocation.
-            var results = new Dictionary<string, PSObject>(descriptions.Count);
+            var results = new Dictionary<string, PSObject>(descriptions.Count, StringComparer.Ordinal);
             int index = 0;
 
             foreach (FieldDescription description in descriptions)

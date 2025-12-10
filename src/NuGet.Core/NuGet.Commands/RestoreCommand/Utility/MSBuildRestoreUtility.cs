@@ -536,7 +536,7 @@ namespace NuGet.Commands
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             // Add groups for each spec framework
-            var aliasGroups = new Dictionary<string, List<ProjectRestoreReference>>();
+            var aliasGroups = new Dictionary<string, List<ProjectRestoreReference>>(StringComparer.Ordinal);
 
             foreach (string alias in spec.TargetFrameworks.Select(e => e.TargetAlias).Distinct())
             {
@@ -1155,7 +1155,7 @@ namespace NuGet.Commands
             IList<TargetFrameworkInformation> specFrameworks)
         {
             IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default).ToList();
-            var result = new Dictionary<string, Dictionary<string, CentralPackageVersion>>();
+            var result = new Dictionary<string, Dictionary<string, CentralPackageVersion>>(StringComparer.Ordinal);
 
             foreach (IMSBuildItem cv in centralVersions)
             {

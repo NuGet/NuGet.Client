@@ -115,7 +115,7 @@ namespace NuGet.CommandLine
                 ExtractResource(NuGetTargets, entryPointTargetPath);
 
                 // Build a .targets file of all restore inputs, this is needed to avoid going over the limit on command line arguments.
-                var properties = new Dictionary<string, string>()
+                var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "RestoreUseCustomAfterTargets", "true" },
                     { "RestoreGraphOutputPath", resultsPath },

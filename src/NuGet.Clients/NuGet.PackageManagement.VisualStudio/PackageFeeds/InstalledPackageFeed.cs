@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
 
             var loadingStatus = result.Any() ? LoadingStatus.NoMoreItems : LoadingStatus.NoItemsFound; // No pagination on installed-based feeds
-            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
+            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal)
             {
                 { "Installed", loadingStatus }
             };

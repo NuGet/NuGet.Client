@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lucene.Net.Documents;
@@ -35,7 +36,7 @@ namespace NuGet.Indexing
             var ranking = topDocs.ScoreDocs
                 .Select(d => searcher.Doc(d.Doc))
                 .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
-                .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
+                .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank, StringComparer.Ordinal);
 
             return ranking;
         }

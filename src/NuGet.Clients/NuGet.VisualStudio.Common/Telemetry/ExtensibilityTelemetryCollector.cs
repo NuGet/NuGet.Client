@@ -35,7 +35,7 @@ namespace NuGet.VisualStudio.Telemetry
         public ExtensibilityTelemetryCollector()
         {
             _eventListener = new ExtensibilityEventListener(this);
-            _counts = new Dictionary<string, Count>()
+            _counts = new Dictionary<string, Count>(StringComparer.OrdinalIgnoreCase)
             {
                 // INuGetProjectService
                 ["INuGetProjectService" + "." + "GetInstalledPackagesAsync"] = new Count(),

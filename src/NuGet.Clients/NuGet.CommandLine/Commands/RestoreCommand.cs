@@ -494,7 +494,7 @@ namespace NuGet.CommandLine
 
         private Dictionary<string, HashSet<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
         {
-            Dictionary<string, HashSet<string>> configToProjectPath = new();
+            Dictionary<string, HashSet<string>> configToProjectPath = new(PathUtility.GetStringComparerBasedOnOS());
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)

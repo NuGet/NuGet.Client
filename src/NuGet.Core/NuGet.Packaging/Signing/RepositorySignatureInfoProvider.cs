@@ -13,7 +13,7 @@ namespace NuGet.Packaging
     /// </summary>
     public class RepositorySignatureInfoProvider
     {
-        private ConcurrentDictionary<string, RepositorySignatureInfo> _dict = new ConcurrentDictionary<string, RepositorySignatureInfo>();
+        private ConcurrentDictionary<string, RepositorySignatureInfo> _dict = new ConcurrentDictionary<string, RepositorySignatureInfo>(StringComparer.Ordinal);
 
         public static RepositorySignatureInfoProvider Instance { get; } = new RepositorySignatureInfoProvider();
 

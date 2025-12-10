@@ -83,8 +83,8 @@ namespace NuGet.Protocol.Plugins
             _idGenerator = idGenerator;
             _logger = logger;
 
-            _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>();
-            _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>();
+            _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>(StringComparer.Ordinal);
+            _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>(StringComparer.Ordinal);
             _inboundRequestProcessingContext = inboundRequestProcessingHandler;
         }
 

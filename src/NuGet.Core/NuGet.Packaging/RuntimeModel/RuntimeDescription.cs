@@ -15,7 +15,7 @@ namespace NuGet.RuntimeModel
     /// </remarks>
     public sealed class RuntimeDescription : IEquatable<RuntimeDescription>
     {
-        private static readonly IReadOnlyDictionary<string, RuntimeDependencySet> EmptyRuntimeDependencySets = new Dictionary<string, RuntimeDependencySet>();
+        private static readonly IReadOnlyDictionary<string, RuntimeDependencySet> EmptyRuntimeDependencySets = new Dictionary<string, RuntimeDependencySet>(StringComparer.OrdinalIgnoreCase);
 
         public string RuntimeIdentifier { get; }
 

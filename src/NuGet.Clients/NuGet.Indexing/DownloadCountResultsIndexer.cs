@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Protocol.Core.Types;
@@ -30,7 +31,7 @@ namespace NuGet.Indexing
         {
             return entries
                 .Where(e => e.DownloadCount.HasValue)
-                .ToDictionary(e => e.Identity.Id, e => e.DownloadCount.Value);
+                .ToDictionary(e => e.Identity.Id, e => e.DownloadCount.Value, StringComparer.Ordinal);
         }
     }
 }

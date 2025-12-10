@@ -256,7 +256,7 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<PackageItemViewModel>();
             }
 
-            var listItemViewModels = new Dictionary<string, PackageItemViewModel>();
+            var listItemViewModels = new Dictionary<string, PackageItemViewModel>(StringComparer.OrdinalIgnoreCase);
 
             foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
             {

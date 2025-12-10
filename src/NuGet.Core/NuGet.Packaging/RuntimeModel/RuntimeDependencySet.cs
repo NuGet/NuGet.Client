@@ -15,7 +15,7 @@ namespace NuGet.RuntimeModel
     /// </remarks>
     public sealed class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
-        private static readonly IReadOnlyDictionary<string, RuntimePackageDependency> EmptyDependencies = new Dictionary<string, RuntimePackageDependency>();
+        private static readonly IReadOnlyDictionary<string, RuntimePackageDependency> EmptyDependencies = new Dictionary<string, RuntimePackageDependency>(StringComparer.Ordinal);
 
         /// <summary>
         /// Package Id

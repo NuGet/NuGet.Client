@@ -746,7 +746,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var sourceRepositories = new List<SourceRepository>();
             Dictionary<string, SourceRepository> allSourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories()
-                .ToDictionary(sr => sr.PackageSource.Name, sr => sr);
+                .ToDictionary(sr => sr.PackageSource.Name, sr => sr, StringComparer.OrdinalIgnoreCase);
 
             foreach (string packageSourceName in packageSourceNames)
             {

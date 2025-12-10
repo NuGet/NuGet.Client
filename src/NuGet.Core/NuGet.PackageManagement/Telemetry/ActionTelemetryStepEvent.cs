@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using NuGet.Common;
 
@@ -11,7 +12,7 @@ namespace NuGet.PackageManagement
     public class ActionTelemetryStepEvent : TelemetryEvent
     {
         public ActionTelemetryStepEvent(string parentId, string stepName, double duration) :
-            base(NugetActionStepsEventName, new Dictionary<string, object>
+            base(NugetActionStepsEventName, new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { nameof(ParentId), parentId },
                     { nameof(SubStepName), string.Join(",", stepName) },

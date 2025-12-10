@@ -28,7 +28,7 @@ namespace NuGet.Protocol
         private readonly ICredentialService _credentialService;
 
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
-        private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
+        private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>(StringComparer.Ordinal);
         private HttpSourceCredentials _credentials;
         private bool _isDisposed = false;
 

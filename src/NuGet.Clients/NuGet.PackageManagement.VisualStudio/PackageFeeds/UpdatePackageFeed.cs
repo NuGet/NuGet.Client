@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
             LoadingStatus loadingStatus = items.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
-            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
+            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal)
             {
                 ["Update"] = loadingStatus
             };

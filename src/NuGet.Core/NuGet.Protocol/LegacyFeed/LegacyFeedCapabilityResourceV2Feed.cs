@@ -22,7 +22,7 @@ namespace NuGet.Protocol
     public class LegacyFeedCapabilityResourceV2Feed : LegacyFeedCapabilityResource
     {
         private static readonly ConcurrentDictionary<string, Task<Capabilities>> CachedCapabilities
-            = new ConcurrentDictionary<string, Task<Capabilities>>();
+            = new ConcurrentDictionary<string, Task<Capabilities>>(StringComparer.Ordinal);
 
         private const string MetadataUriFormat = "{0}/$metadata";
 

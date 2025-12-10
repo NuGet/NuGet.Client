@@ -70,7 +70,7 @@ namespace NuGet.Commands
                 Build = false,
                 _packTargetArgs = packArgs.PackTargetArgs,
                 Files = new HashSet<ManifestFile>(),
-                ProjectProperties = new Dictionary<string, string>()
+                ProjectProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             };
         }
 

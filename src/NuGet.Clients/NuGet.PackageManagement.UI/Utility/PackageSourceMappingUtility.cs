@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
             string topLevelPackageId = userAction.PackageId;
 
             Dictionary<string, IReadOnlyList<string>> patternsReadOnly = existingPackageSourceMappingSourceItems
-                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
+                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Patterns.Select(p => p.Pattern).ToList(), StringComparer.OrdinalIgnoreCase);
 
             PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
 
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (newSourceMappings is null)
                 {
-                    newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
+                    newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1, StringComparer.OrdinalIgnoreCase)
                     {
                         { sourceNameToMap, new SortedSet<string>(new List<string>(capacity: added.Count) { addedPackage.Id }) }
                     };

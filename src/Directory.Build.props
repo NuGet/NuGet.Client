@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="../Directory.Build.props"/>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'NuGet.Repo.Analyzers'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Analyzers\NuGet.Repo.Analyzers\NuGet.Repo.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+</Project>

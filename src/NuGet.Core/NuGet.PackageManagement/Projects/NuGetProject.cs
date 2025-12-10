@@ -19,7 +19,7 @@ namespace NuGet.ProjectManagement
 
         protected NuGetProject(Dictionary<string, object> optionalMetadata)
         {
-            InternalMetadata = optionalMetadata ?? new Dictionary<string, object>();
+            InternalMetadata = optionalMetadata ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         protected Dictionary<string, object> InternalMetadata { get; }

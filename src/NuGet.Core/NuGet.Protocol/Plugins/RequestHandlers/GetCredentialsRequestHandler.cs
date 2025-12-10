@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Plugins
             _plugin = plugin;
             _proxy = proxy;
             _credentialService = credentialService;
-            _repositories = new ConcurrentDictionary<string, SourceRepository>();
+            _repositories = new ConcurrentDictionary<string, SourceRepository>(StringComparer.Ordinal);
         }
 
         /// <summary>

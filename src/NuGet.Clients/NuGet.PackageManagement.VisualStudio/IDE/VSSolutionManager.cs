@@ -969,7 +969,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await EnsureInitializeAsync();
 
-            var dependentProjectsDictionary = new Dictionary<string, List<IVsProjectAdapter>>();
+            var dependentProjectsDictionary = new Dictionary<string, List<IVsProjectAdapter>>(PathUtility.GetStringComparerBasedOnOS());
             var vsProjectAdapters = await GetAllVsProjectAdaptersAsync();
 
             foreach (var vsProjectAdapter in vsProjectAdapters)

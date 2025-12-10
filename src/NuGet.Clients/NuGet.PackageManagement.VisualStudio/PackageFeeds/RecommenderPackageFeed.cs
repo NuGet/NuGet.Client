@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var result = SearchResult.FromItems(items.OrderBy(p => Array.IndexOf(packages, p.Identity)).ToArray());
 
             // Set status to indicate that there are no more items to load
-            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
+            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal)
             {
                 { _sourceRepository.PackageSource.Name, LoadingStatus.NoMoreItems }
             };

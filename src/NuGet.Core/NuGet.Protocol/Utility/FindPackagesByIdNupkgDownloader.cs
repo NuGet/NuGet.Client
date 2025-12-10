@@ -23,7 +23,7 @@ namespace NuGet.Protocol
 
         private readonly object _nuspecReadersLock = new object();
         private readonly ConcurrentDictionary<string, NuspecReader> _nuspecReaders =
-            new ConcurrentDictionary<string, NuspecReader>();
+            new ConcurrentDictionary<string, NuspecReader>(StringComparer.Ordinal);
 
         private readonly HttpSource _httpSource;
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;

@@ -62,8 +62,8 @@ namespace NuGet.Configuration
             }
 
             var xElement = Node as XElement;
-            var otherAttributes = setting.Attributes.ToDictionary(a => a.Key, a => a.Value);
-            var attributesImmutable = new Dictionary<string, string>(MutableAttributes);
+            var otherAttributes = setting.Attributes.ToDictionary(a => a.Key, a => a.Value, StringComparer.Ordinal);
+            var attributesImmutable = new Dictionary<string, string>(MutableAttributes, StringComparer.Ordinal);
             foreach (var attribute in attributesImmutable)
             {
                 if (otherAttributes.TryGetValue(attribute.Key, out var otherValue))

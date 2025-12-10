@@ -20,9 +20,9 @@ namespace NuGet.Credentials
     public class CredentialService : ICredentialService
     {
         private readonly ConcurrentDictionary<string, bool> _retryCache
-            = new ConcurrentDictionary<string, bool>();
+            = new ConcurrentDictionary<string, bool>(StringComparer.Ordinal);
         private readonly ConcurrentDictionary<string, CredentialResponse> _providerCredentialCache
-            = new ConcurrentDictionary<string, CredentialResponse>();
+            = new ConcurrentDictionary<string, CredentialResponse>(StringComparer.Ordinal);
         private readonly bool _nonInteractive;
 
         /// <summary>

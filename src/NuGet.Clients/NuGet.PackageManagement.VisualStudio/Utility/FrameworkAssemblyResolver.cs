@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class FrameworkAssemblyResolver
     {
         // (dotNetFrameworkVersion + dotNetFrameworkProfile) is the key
-        private static readonly ConcurrentDictionary<string, List<FrameworkAssembly>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<FrameworkAssembly>>();
+        private static readonly ConcurrentDictionary<string, List<FrameworkAssembly>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<FrameworkAssembly>>(StringComparer.Ordinal);
         private const string NETFrameworkIdentifier = ".NETFramework";
         private const string NETFrameworkFacadesDirectoryName = "Facades";
         internal const string FrameworkListFileName = "RedistList\\FrameworkList.xml";

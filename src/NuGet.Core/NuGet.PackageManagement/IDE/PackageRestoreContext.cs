@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement
         public bool EnableNuGetAudit { get; }
         public Dictionary<string, RestoreAuditProperties> RestoreAuditProperties { get; }
 
-        private static Dictionary<string, RestoreAuditProperties> EmptyDictionary = new Dictionary<string, RestoreAuditProperties>();
+        private static Dictionary<string, RestoreAuditProperties> EmptyDictionary = new Dictionary<string, RestoreAuditProperties>(PathUtility.GetStringComparerBasedOnOS());
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageRestoreData> packages,
             CancellationToken token,

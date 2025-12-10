@@ -20,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
     {
         private IList<string> _failedProjects = new List<string>();
         private DependencyGraphSpec _cachedDependencyGraphSpec;
-        private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>();
+        private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>(PathUtility.GetStringComparerBasedOnOS());
 
         public void SaveRestoreStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
         {

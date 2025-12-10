@@ -12,7 +12,7 @@ namespace NuGet.Configuration
 {
     internal sealed class NuGetConfiguration : SettingsGroup<SettingSection>, ISettingsGroup
     {
-        internal IReadOnlyDictionary<string, SettingSection> Sections => Children.ToDictionary(c => c.ElementName);
+        internal IReadOnlyDictionary<string, SettingSection> Sections => Children.ToDictionary(c => c.ElementName, StringComparer.Ordinal);
 
         protected override bool CanBeCleared => false;
 

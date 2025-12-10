@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     packagePatternToSources.Add((packageIdPattern, sources));
                 }
 
-                var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
+                var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>(StringComparer.Ordinal);
 
                 List<PackageSourceMappingSourceItem> packageSourceMappingSourceItems =
                     PackageSourceMappingUtility.ConvertPackageIdAndSourcesToSourceMappingSourceItems(sourceNamesToPackagePatterns, packagePatternToSources);
@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     List<string> packageSourceNames = new(packageSources.Count);
                     packageSourceNames.AddRange(packageSources.Select(source => source.Name));
 
-                    var dict = new Dictionary<string, object>(capacity: 2)
+                    var dict = new Dictionary<string, object>(capacity: 2, StringComparer.Ordinal)
                     {
                         { MonikerPackageId, packageIdOrPattern },
                         { MonikerSourceNames, packageSourceNames },

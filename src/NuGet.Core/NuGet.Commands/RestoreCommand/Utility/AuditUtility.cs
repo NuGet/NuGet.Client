@@ -79,7 +79,7 @@ namespace NuGet.Commands.Restore.Utility
 
             if (restoreAuditProperties?.SuppressedAdvisories != null)
             {
-                SuppressedAdvisories = new Dictionary<string, bool>(restoreAuditProperties.SuppressedAdvisories.Count);
+                SuppressedAdvisories = new Dictionary<string, bool>(restoreAuditProperties.SuppressedAdvisories.Count, StringComparer.Ordinal);
 
                 foreach (string advisory in restoreAuditProperties.SuppressedAdvisories)
                 {

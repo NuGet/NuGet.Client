@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Commands
@@ -25,7 +26,7 @@ namespace NuGet.Commands
 
         public MSBuildPackTargetArgs()
         {
-            SourceFiles = new Dictionary<string, string>();
+            SourceFiles = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
             TargetPathsToAssemblies = new List<OutputLibFile>();
             TargetPathsToSymbols = new List<OutputLibFile>();
         }

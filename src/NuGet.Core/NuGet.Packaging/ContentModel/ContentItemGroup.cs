@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -13,7 +14,7 @@ namespace NuGet.ContentModel
     {
         public ContentItemGroup()
         {
-            Properties = new Dictionary<string, object>();
+            Properties = new Dictionary<string, object>(StringComparer.Ordinal);
             Items = new List<ContentItem>();
         }
 

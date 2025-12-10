@@ -194,7 +194,7 @@ namespace NuGet.CommandLine
                 auditSources: RestoreCommand.GetAuditSources(SourceProvider),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 enableNuGetAudit: true,
-                restoreAuditProperties: new(),
+                restoreAuditProperties: new(PathUtility.GetStringComparerBasedOnOS()),
                 logger: Console);
 
             var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;

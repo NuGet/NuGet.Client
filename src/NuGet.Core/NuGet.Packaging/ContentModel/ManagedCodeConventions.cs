@@ -38,13 +38,13 @@ namespace NuGet.Client
             PropertyNames.CodeLanguage,
             parser: CodeLanguage_Parser);
 
-        private static readonly Dictionary<string, object> NetTFMTable = new Dictionary<string, object>
+        private static readonly Dictionary<string, object> NetTFMTable = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) },
             { "tfm_raw", "net0" }
         };
 
-        private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
+        private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance },
             { PropertyNames.TargetFrameworkMoniker + "_raw", "any" }
@@ -80,7 +80,7 @@ namespace NuGet.Client
         {
             _runtimeGraph = runtimeGraph;
 
-            var props = new Dictionary<string, ContentPropertyDefinition>();
+            var props = new Dictionary<string, ContentPropertyDefinition>(StringComparer.Ordinal);
             props[AnyProperty.Name] = AnyProperty;
             props[AssemblyProperty.Name] = AssemblyProperty;
             props[LocaleProperty.Name] = LocaleProperty;

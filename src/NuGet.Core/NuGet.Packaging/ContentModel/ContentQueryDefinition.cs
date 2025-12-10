@@ -106,7 +106,7 @@ namespace NuGet.ContentModel
             if (defaults == null) throw new ArgumentNullException(nameof(defaults));
             Pattern = pattern;
             Table = table;
-            Defaults = defaults.ToDictionary(p => p.Key, p => p.Value);
+            Defaults = defaults.ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal);
         }
 
         public static implicit operator PatternDefinition(string pattern)

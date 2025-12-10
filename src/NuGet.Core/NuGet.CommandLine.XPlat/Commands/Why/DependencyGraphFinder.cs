@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -28,7 +29,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             string targetPackage,
             List<string> userInputFrameworks)
         {
-            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>?>(assetsFile.Targets.Count);
+            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>?>(assetsFile.Targets.Count, StringComparer.Ordinal);
             bool doesProjectHaveDependencyOnPackage = false;
 
             // add null to the list of runtime identifiers to account for projects that do not have a runtime identifier
@@ -221,7 +222,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             LockFile assetsFile,
             List<string> userInputFrameworks)
         {
-            var topLevelReferences = new Dictionary<string, List<string>>();
+            var topLevelReferences = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
             var targetAliases = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks;
 
@@ -234,7 +235,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             // we need to match top-level project references to their target library entries using their paths,
             // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
-            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
+            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count(), PathUtility.GetStringComparerBasedOnOS());
             var projectDirectoryPath = Path.GetDirectoryName(assetsFile.PackageSpec.FilePath);
 
             if (projectDirectoryPath != null)

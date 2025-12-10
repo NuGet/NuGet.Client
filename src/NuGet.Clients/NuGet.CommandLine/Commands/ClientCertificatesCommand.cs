@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -92,7 +93,7 @@ namespace NuGet.CommandLine.Commands
 
         private void ExecuteListCommandRunner()
         {
-            ValidateNotExpectedOptions(new Dictionary<string, string>
+            ValidateNotExpectedOptions(new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { nameof(Path), Path },
                 { nameof(FindBy), FindBy },
@@ -109,7 +110,7 @@ namespace NuGet.CommandLine.Commands
 
         private void ExecuteRemoveCommandRunner()
         {
-            ValidateNotExpectedOptions(new Dictionary<string, string>
+            ValidateNotExpectedOptions(new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { nameof(Path), Path },
                 { nameof(FindBy), FindBy },

@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace NuGet.Repo.Analyzers.Test
 {
-    [TestClass]
     public class DictionaryStringKeyComparerAnalyzerTests
     {
         private static async Task<ImmutableArray<Diagnostic>> GetDiagnosticsAsync(string source)
@@ -75,7 +74,7 @@ namespace NuGet.Repo.Analyzers.Test
             return allDiagnostics.Where(d => d.Id == DictionaryStringKeyComparerAnalyzer.DiagnosticId).ToImmutableArray();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -90,11 +89,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dictionary_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -110,10 +109,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dictionary_WithIntKey_NoComparer_NoDiagnostic()
         {
             var source = @"
@@ -128,10 +127,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ConcurrentDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -146,10 +145,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
+            Assert.Equal(1, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -164,10 +163,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
+            Assert.Equal(1, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImplicitNew_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -182,10 +181,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
+            Assert.Equal(1, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImplicitNew_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -201,10 +200,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dictionary_WithCapacity_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -219,10 +218,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
+            Assert.Equal(1, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Dictionary_WithCapacityAndComparer_NoDiagnostic()
         {
             var source = @"
@@ -238,10 +237,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SortedDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -256,11 +255,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SortedDictionary_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -276,10 +275,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -294,11 +293,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionary_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -314,10 +313,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionary_CreateRange_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -334,11 +333,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionary_CreateRange_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -356,10 +355,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionary_WithIntKey_NoComparer_NoDiagnostic()
         {
             var source = @"
@@ -374,10 +373,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionaryBuilder_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -392,11 +391,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionaryBuilder_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -412,10 +411,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ImmutableDictionaryBuilder_WithIntKey_NoComparer_NoDiagnostic()
         {
             var source = @"
@@ -430,10 +429,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -450,11 +449,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToDictionary_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -472,10 +471,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToDictionary_WithIntKey_NoComparer_NoDiagnostic()
         {
             var source = @"
@@ -492,10 +491,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToDictionary_KeyOnly_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -512,11 +511,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToDictionary_KeyOnly_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -534,10 +533,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToImmutableDictionary_WithStringKey_NoComparer_ReportsDiagnostic()
         {
             var source = @"
@@ -554,11 +553,11 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(1, diagnostics.Length);
-            Assert.AreEqual(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
+            Assert.Equal(1, diagnostics.Length);
+            Assert.Equal(DictionaryStringKeyComparerAnalyzer.DiagnosticId, diagnostics[0].Id);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToImmutableDictionary_WithStringKey_WithComparer_NoDiagnostic()
         {
             var source = @"
@@ -576,10 +575,10 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ToImmutableDictionary_WithIntKey_NoComparer_NoDiagnostic()
         {
             var source = @"
@@ -596,7 +595,28 @@ class TestClass
 }";
 
             var diagnostics = await GetDiagnosticsAsync(source);
-            Assert.AreEqual(0, diagnostics.Length);
+            Assert.Equal(0, diagnostics.Length);
+        }
+
+        [Fact]
+        public async Task ReadOnlyDictionary_InnerDictionaryWithComparer_NoDiagnostic()
+        {
+            var source = @"
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+class TestClass
+{
+    void TestMethod()
+    {
+        var innerDict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var readOnlyDict = new ReadOnlyDictionary<string, int>(innerDict);
+    }
+}";
+
+            var diagnostics = await GetDiagnosticsAsync(source);
+            Assert.Equal(0, diagnostics.Length);
         }
     }
 }

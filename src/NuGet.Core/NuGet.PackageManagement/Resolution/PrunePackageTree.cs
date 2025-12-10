@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement
             var prereleasePackageToInstall = new HashSet<PackageIdentity>(packagesToInstall.Where(p => p.HasVersion && p.Version.IsPrerelease), PackageIdentityComparer.Default);
 
             var visitedNodes = new HashSet<SourcePackageDependencyInfo>();
-            var packagesDict = packages.ToLookup(p => p.Id).ToDictionary(p => p.Key, p => p.ToArray());
+            var packagesDict = packages.ToLookup(p => p.Id).ToDictionary(p => p.Key, p => p.ToArray(), StringComparer.OrdinalIgnoreCase);
 
             foreach (var packageToInstall in packages.Where(p => prereleasePackageToInstall.Contains(p)))
             {

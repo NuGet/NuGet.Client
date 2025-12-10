@@ -664,7 +664,7 @@ namespace NuGet.SolutionRestoreManager
                 0.0 :
                 (DateTime.UtcNow - bulkRestoreCoordinationCheckStartTime.Value).TotalSeconds;
 
-            return new()
+            return new(StringComparer.OrdinalIgnoreCase)
             {
                 { RestoreTelemetryEvent.ImplicitRestoreReason, restoreReason },
                 { RestoreTelemetryEvent.RequestCount, requestCount },
