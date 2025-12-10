@@ -21,7 +21,7 @@ namespace NuGet.Repo.Analyzers
 
         private static readonly LocalizableString Title = "Dictionary with string key should specify a StringComparer";
         private static readonly LocalizableString MessageFormat = "Dictionary creation with string key type should explicitly specify a StringComparer";
-        private static readonly LocalizableString Description = "Dictionaries with string keys should explicitly specify a StringComparer to ensure consistent behavior across different cultures and platforms.";
+        private static readonly LocalizableString Description = "NuGet package ids and versions are case insensitive. File names and paths are OS dependent. Explicitly set the StringComparer to reduce risk of bugs.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId,
