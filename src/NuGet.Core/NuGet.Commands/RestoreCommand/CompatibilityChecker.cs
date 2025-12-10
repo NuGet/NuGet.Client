@@ -154,7 +154,7 @@ namespace NuGet.Commands
                 if (_validateRuntimeAssets && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
                     // Skip runtime checks for packages that have runtime references excluded,
-                    // this allows compile only packages that do not have runtimes for the 
+                    // this allows compile only packages that do not have runtimes for the
                     // graph RID to be used.
                     if ((packageIncludeFlags & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.Runtime)
                     {
@@ -374,7 +374,7 @@ namespace NuGet.Commands
             {
                 var target = _lockFile.Targets[i];
                 // When comparing the target alias, a null targetAlias means that we have a support added and as such the alias won't be available.
-                if (Equals(target.TargetFramework, graph.Framework) && (target.TargetAlias == null || Equals(target.TargetAlias, graph.TargetAlias)) && string.Equals(target.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal))
+                if (Equals(target.TargetFramework, graph.Framework) && (target.TargetAlias == null || string.Equals(target.TargetAlias, graph.TargetAlias, StringComparison.Ordinal)) && string.Equals(target.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal))
                 {
                     for (int j = 0; j < target.Libraries.Count; ++j)
                     {
