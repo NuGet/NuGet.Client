@@ -18,7 +18,7 @@ namespace NuGet.Repo.Analyzers
 
         private static readonly LocalizableString Title = "HashSet with string element should specify a StringComparer";
         private static readonly LocalizableString MessageFormat = "HashSet creation with string element type should explicitly specify a StringComparer";
-        private static readonly LocalizableString Description = "NuGet package ids and versions are case insensitive. File names and paths are OS dependent. Explicitly set the StringComparer to reduce risk of bugs.";
+        private static readonly LocalizableString Description = "Make sure to use the correct comparer for package ids, versions, and so on.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId,
@@ -27,7 +27,8 @@ namespace NuGet.Repo.Analyzers
             Category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: Description);
+            description: Description,
+            helpLinkUri: "https://github.com/NuGet/NuGet.Client/tree/dev/src/Analyzers/NuGet.Repo.Analyzers/docs/NCA0003.md");
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -143,7 +144,7 @@ namespace NuGet.Repo.Analyzers
             if (typeSymbol is not INamedTypeSymbol namedType)
                 return false;
 
-            if (IsHashSetInterface(namedType))
+            if (IsHashSetOrISet(namedType))
             {
                 elementType = namedType.TypeArguments.FirstOrDefault();
                 return true;
@@ -151,7 +152,7 @@ namespace NuGet.Repo.Analyzers
 
             foreach (var @interface in namedType.AllInterfaces)
             {
-                if (IsHashSetInterface(@interface))
+                if (IsHashSetOrISet(@interface))
                 {
                     elementType = @interface.TypeArguments.FirstOrDefault();
                     return true;
@@ -161,7 +162,7 @@ namespace NuGet.Repo.Analyzers
             return false;
         }
 
-        private static bool IsHashSetInterface(INamedTypeSymbol typeSymbol)
+        private static bool IsHashSetOrISet(INamedTypeSymbol typeSymbol)
         {
             if (!typeSymbol.IsGenericType || typeSymbol.TypeArguments.Length != 1)
             {
@@ -205,18 +206,22 @@ namespace NuGet.Repo.Analyzers
             foreach (var argument in argumentList.Arguments)
             {
                 var typeInfo = context.SemanticModel.GetTypeInfo(argument.Expression, context.CancellationToken);
-                if (typeInfo.Type != null)
+                var candidateType = (ITypeSymbol?)typeInfo.Type ?? typeInfo.ConvertedType;
+                if (candidateType == null)
                 {
-                    var typeName = typeInfo.Type.ToDisplayString();
-                    if (typeName.Contains("StringComparer"))
-                    {
-                        return true;
-                    }
+                    continue;
+                }
 
-                    if (IsIEqualityComparerOfString(typeInfo.Type))
-                    {
-                        return true;
-                    }
+                // Accept explicit StringComparer instances
+                if (candidateType.ToDisplayString() == "System.StringComparer")
+                {
+                    return true;
+                }
+
+                // Accept IEqualityComparer<string> implementations
+                if (IsIEqualityComparerOfString(candidateType))
+                {
+                    return true;
                 }
             }
 

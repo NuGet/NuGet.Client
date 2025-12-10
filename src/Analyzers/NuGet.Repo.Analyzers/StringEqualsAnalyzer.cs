@@ -21,7 +21,7 @@ namespace NuGet.Repo.Analyzers
 
         private static readonly LocalizableString Title = "Use IEqualityComparer.Equals instead of string equality comparison";
         private static readonly LocalizableString MessageFormat = "String equality comparison should use IEqualityComparer.Equals method with explicit StringComparer";
-        private static readonly LocalizableString Description = "NuGet package ids and versions are case insensitive. File names and paths are OS dependent. MSBuild property names are case insensitive. Use StringComparer with an explicit comparison type to ensure consistent behavior.";
+        private static readonly LocalizableString Description = "Make sure to use the correct comparer for package ids, versions, and so on.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId,
@@ -30,7 +30,8 @@ namespace NuGet.Repo.Analyzers
             Category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: Description);
+            description: Description,
+            helpLinkUri: "https://github.com/NuGet/NuGet.Client/tree/dev/src/Analyzers/NuGet.Repo.Analyzers/docs/NCA0004.md");
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -50,7 +51,19 @@ namespace NuGet.Repo.Analyzers
 
             // Get the symbol information for the invocation
             var symbolInfo = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken);
-            if (symbolInfo.Symbol is not IMethodSymbol methodSymbol)
+            IMethodSymbol? methodSymbol = symbolInfo.Symbol as IMethodSymbol;
+            if (methodSymbol is null && symbolInfo.CandidateSymbols.Length > 0)
+            {
+                foreach (var candidate in symbolInfo.CandidateSymbols)
+                {
+                    if (candidate is IMethodSymbol candidateMethod)
+                    {
+                        methodSymbol = candidateMethod;
+                        break;
+                    }
+                }
+            }
+            if (methodSymbol is null)
             {
                 return;
             }
@@ -138,7 +151,7 @@ namespace NuGet.Repo.Analyzers
                 return;
             }
 
-            // Ignore comparisons against string.Empty (allowed for empty checks)
+            // Ignore comparisons against string.Empty or empty string literal (allowed for empty checks)
             if (IsStringEmpty(context, binaryExpression.Left) || IsStringEmpty(context, binaryExpression.Right))
             {
                 return;
@@ -165,6 +178,16 @@ namespace NuGet.Repo.Analyzers
                 if (symbolInfo is IFieldSymbol fieldSymbol &&
                     fieldSymbol.ContainingType?.SpecialType == SpecialType.System_String &&
                     fieldSymbol.Name == "Empty")
+                {
+                    return true;
+                }
+            }
+
+            // Also treat empty string literal "" as an allowed empty check
+            if (expression.IsKind(SyntaxKind.StringLiteralExpression))
+            {
+                var constant = context.SemanticModel.GetConstantValue(expression, context.CancellationToken);
+                if (constant.HasValue && constant.Value is string s && s.Length == 0)
                 {
                     return true;
                 }

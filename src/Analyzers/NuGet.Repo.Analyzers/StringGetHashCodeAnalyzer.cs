@@ -20,7 +20,7 @@ namespace NuGet.Repo.Analyzers
 
         private static readonly LocalizableString Title = "Use StringComparer.GetHashCode instead of string.GetHashCode";
         private static readonly LocalizableString MessageFormat = "Call to string.GetHashCode() should be replaced with StringComparer.GetHashCode(string)";
-        private static readonly LocalizableString Description = "string.GetHashCode() is culture-sensitive and can produce different results on different platforms. Use StringComparer with an explicit comparison type to ensure consistent behavior.";
+        private static readonly LocalizableString Description = "Make sure to use the correct comparer for package ids, versions, and so on.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId,
@@ -29,7 +29,8 @@ namespace NuGet.Repo.Analyzers
             Category,
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: Description);
+            description: Description,
+            helpLinkUri: "https://github.com/NuGet/NuGet.Client/tree/dev/src/Analyzers/NuGet.Repo.Analyzers/docs/NCA0002.md");
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -45,14 +46,17 @@ namespace NuGet.Repo.Analyzers
         {
             var invocation = (InvocationExpressionSyntax)context.Node;
 
-            // Check if it's a member access expression (e.g., str.GetHashCode())
-            if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
+            // Support both direct member access (str.GetHashCode()) and conditional member access (str?.GetHashCode())
+            MemberAccessExpressionSyntax? memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
+            MemberBindingExpressionSyntax? memberBinding = invocation.Expression as MemberBindingExpressionSyntax;
+            if (memberAccess is null && memberBinding is null)
             {
                 return;
             }
 
             // Check if the method name is GetHashCode
-            if (memberAccess.Name.Identifier.Text != "GetHashCode")
+            var nameIdentifier = memberAccess?.Name.Identifier ?? memberBinding!.Name.Identifier;
+            if (nameIdentifier.ValueText != "GetHashCode")
             {
                 return;
             }
@@ -70,15 +74,44 @@ namespace NuGet.Repo.Analyzers
                 return;
             }
 
-            // Check if the method is GetHashCode and it's defined on System.String
-            if (methodSymbol.Name != "GetHashCode" ||
-                methodSymbol.ContainingType?.SpecialType != SpecialType.System_String)
+            // Check method is parameterless GetHashCode()
+            if (methodSymbol.Name != "GetHashCode")
             {
                 return;
             }
 
-            // Verify it's the parameterless GetHashCode() method
             if (methodSymbol.Parameters.Length != 0)
+            {
+                return;
+            }
+
+            // Determine the receiver type. For conditional access, get the conditional receiver expression.
+            ITypeSymbol? receiverType = null;
+            if (memberAccess is not null)
+            {
+                var receiver = memberAccess.Expression;
+                var receiverTypeInfo = context.SemanticModel.GetTypeInfo(receiver, context.CancellationToken);
+                receiverType = receiverTypeInfo.Type;
+            }
+            else if (memberBinding is not null)
+            {
+                var conditional = invocation.Parent as ConditionalAccessExpressionSyntax;
+                if (conditional is null)
+                {
+                    // If not part of a conditional access, bail.
+                    return;
+                }
+                var receiverTypeInfo = context.SemanticModel.GetTypeInfo(conditional.Expression, context.CancellationToken);
+                receiverType = receiverTypeInfo.Type;
+            }
+
+            // Only report when the receiver is a string (even if the method resolves to object.GetHashCode due to boxing/casting)
+            bool isStringReceiver = receiverType?.SpecialType == SpecialType.System_String;
+
+            // Also allow direct resolution to string.GetHashCode as an alternative signal
+            bool isStringMethod = methodSymbol.ContainingType?.SpecialType == SpecialType.System_String;
+
+            if (!isStringReceiver && !isStringMethod)
             {
                 return;
             }
