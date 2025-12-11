@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
                 if (StringComparer.Ordinal.Equals(e.PropertyName, nameof(LoadingStatusIndicator.Status))
-                    && StringComparer.Ordinal.Equals(_ltbLoading.Text, _loadingStatusIndicator.LocalizedStatus))
+                    && !StringComparer.Ordinal.Equals(_ltbLoading.Text, _loadingStatusIndicator.LocalizedStatus))
                 {
                     _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 }

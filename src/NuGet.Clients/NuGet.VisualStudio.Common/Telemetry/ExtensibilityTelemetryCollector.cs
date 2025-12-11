@@ -237,7 +237,7 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                     else
                     {
-                        if (StringComparer.Ordinal.Equals(eventData.EventName, "EventSourceMessage"))
+                        if (!StringComparer.Ordinal.Equals(eventData.EventName, "EventSourceMessage"))
                         {
                             Debug.Assert(false, "VS Extensibility API without counter");
                         }

@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (StringComparer.Ordinal.Equals(_errorMessage, value))
+                if (!StringComparer.Ordinal.Equals(_errorMessage, value))
                 {
                     _errorMessage = value;
                     OnPropertyChanged(nameof(ErrorMessage));

@@ -143,7 +143,7 @@ namespace NuGet.Commands
                     var path = _pathResolver.GetPackageDirectory(library.Name, library.Version);
                     var forwardSlashPath = PathUtility.GetPathWithForwardSlashes(path);
 
-                    if (StringComparer.Ordinal.Equals(forwardSlashPath, library.Path))
+                    if (!StringComparer.Ordinal.Equals(forwardSlashPath, library.Path))
                     {
                         // Update the path to the original case.
                         lockFile.Libraries[i] = library with { Path = forwardSlashPath };

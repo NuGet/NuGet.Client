@@ -264,7 +264,7 @@ namespace NuGet.RuntimeModel
                     StringComparer.OrdinalIgnoreCase);
             }
 
-            if (_packagesWithDependencies.Contains(packageId, StringComparer.Ordinal))
+            if (_packagesWithDependencies.Contains(packageId))
             {
                 var key = new RuntimeDependencyKey(runtimeName, packageId);
 

@@ -837,7 +837,7 @@ namespace NuGet.CommandLine.XPlat
 
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
-                        if (StringComparer.Ordinal.Equals(library.Type, "project"))
+                        if (!StringComparer.Ordinal.Equals(library.Type, "project"))
                         {
                             topLevelPackages.Add(installedPackage);
                         }
