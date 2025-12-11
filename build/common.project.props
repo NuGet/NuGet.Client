@@ -52,6 +52,8 @@
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <Nullable>enable</Nullable>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAudit Condition=" '$(TF_BUILD)' != '' ">false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Defaults -->
