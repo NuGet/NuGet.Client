@@ -101,6 +101,64 @@
   <Style x:Key="MarginFocusVisualStyle" TargetType="{x:Type Control}" BasedOn="{StaticResource ControlsFocusVisualStyle}">
     <Setter Property="Margin" Value="4"/>
   </Style>
+  <Style x:Key="PackageToolTipStyle" TargetType="{x:Type ToolTip}">
+    <Setter Property="ToolTip">
+      <Setter.Value>
+        <ToolTip>
+          <StackPanel>
+            <TextBlock>
+          <Run
+            Text="{Binding Id, Mode=OneTime}"
+            FontWeight="Bold" />
+          <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
+            </TextBlock>
+            <TextBlock>
+          <Run Text="{Binding Summary, Mode=OneTime}" />
+            </TextBlock>
+            <TextBlock>
+          <Run
+            Text="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"
+            FontWeight="Bold" />
+          <Run Text="{Binding TransitiveToolTipMessage, Mode=OneTime}" />
+          <Run>
+            <Run.Style>
+              <Style TargetType="Run">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                    <Setter Property="Text" Value="&#x0a;&#x0a;" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Run.Style>
+          </Run><Run>
+            <Run.Style>
+              <Style TargetType="Run">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                    <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitivePathHelp}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Run.Style>
+          </Run>
+          <Run>
+            <Run.Style>
+              <Style TargetType="Run">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                    <Setter Property="Text" Value="aka.ms/dotnet/nuget/why"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Run.Style>
+          </Run>
+            </TextBlock>
+          </StackPanel>
+        </ToolTip>
+      </Setter.Value>
+    </Setter>
+  </Style>
 
   <Style x:Key="{x:Type Button}" TargetType="{x:Type Button}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource MarginFocusVisualStyle}"/>
