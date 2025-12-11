@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
             string topLevelPackageId = userAction.PackageId;
 
             Dictionary<string, IReadOnlyList<string>> patternsReadOnly = existingPackageSourceMappingSourceItems
-                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Patterns.Select(p => p.Pattern).ToList(), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Patterns.Select(p => p.Pattern).ToList(), StringComparer.Ordinal);
 
             PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
 
@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.UI
                     IReadOnlyList<string> configuredSource = packageSourceMapping.GetConfiguredPackageSources(addedPackageId);
 
                     // Top-level package was looked up.
-                    if (StringComparer.OrdinalIgnoreCase.Equals(addedPackageId, topLevelPackageId))
+                    if (StringComparer.Ordinal.Equals(addedPackageId, topLevelPackageId))
                     {
                         // The top-level package is not already mapped to the selected source.
                         if (configuredSource.Count == 0 || !configuredSource.Contains(userAction.SelectedSourceName, StringComparer.OrdinalIgnoreCase))
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.UI
 
             PackageSourceMappingSourceItem packageSourceMappingItemForSource =
                 newAndExistingPackageSourceMappingItems
-                    .FirstOrDefault(mappingItem => StringComparer.OrdinalIgnoreCase.Equals(mappingItem.Key, sourceName));
+                    .FirstOrDefault(mappingItem => StringComparer.Ordinal.Equals(mappingItem.Key, sourceName));
 
             IEnumerable<PackagePatternItem> newPackagePatternItems = newPackageIdsToSourceMap.Select(packageId => new PackagePatternItem(packageId));
 
@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                if (StringComparer.OrdinalIgnoreCase.Equals(topLevelPackageId, addedPackage.Id))
+                if (StringComparer.Ordinal.Equals(topLevelPackageId, addedPackage.Id))
                 {
                     sourceNameToMap = selectedSourceName;
                 }
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (newSourceMappings is null)
                 {
-                    newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1, StringComparer.OrdinalIgnoreCase)
+                    newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1, StringComparer.Ordinal)
                     {
                         { sourceNameToMap, new SortedSet<string>(new List<string>(capacity: added.Count) { addedPackage.Id }) }
                     };

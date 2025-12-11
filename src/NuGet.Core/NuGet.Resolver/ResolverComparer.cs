@@ -31,7 +31,7 @@ namespace NuGet.Resolver
             _versionComparer = VersionComparer.Default;
             _identityComparer = PackageIdentity.Comparer;
 
-            _installedVersions = new Dictionary<string, NuGetVersion>(StringComparer.OrdinalIgnoreCase);
+            _installedVersions = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
 
             if (_preferredVersions != null)
             {
@@ -111,7 +111,7 @@ namespace NuGet.Resolver
             // stay as close to the installed version as possible
             // Choose upgrades over downgrades
             // For downgrades choose the highest version
-            // 
+            //
             // Example:
             // 1.0.0
             // 1.1.0
@@ -145,7 +145,7 @@ namespace NuGet.Resolver
                 }
             }
 
-            // Normal 
+            // Normal
             switch (packageBehavior)
             {
                 case DependencyBehavior.Lowest:

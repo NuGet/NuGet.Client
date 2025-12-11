@@ -4203,7 +4203,7 @@ namespace NuGet.Commands.FuncTest
 
             // Assert
             result.Success.Should().BeFalse(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpsSource));
+            result.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpsSource));
         }
 
         [Theory]

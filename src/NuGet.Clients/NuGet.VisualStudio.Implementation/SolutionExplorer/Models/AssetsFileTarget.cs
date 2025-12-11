@@ -111,7 +111,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 return false;
             }
 
-            if (version != null && !StringComparer.OrdinalIgnoreCase.Equals(library.Version, version))
+            if (version != null && !StringComparer.Ordinal.Equals(library.Version, version))
             {
                 dependencies = default;
                 return false;

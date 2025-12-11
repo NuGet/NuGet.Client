@@ -287,7 +287,7 @@ namespace NuGet.CommandLine
                     {
                         if (!configToProjectPath.TryGetValue(configFile, out HashSet<string> projectPath))
                         {
-                            projectPath = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS()) { configFile };
+                            projectPath = new HashSet<string>(StringComparer.Ordinal) { configFile };
                         }
 
                         if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
@@ -494,7 +494,7 @@ namespace NuGet.CommandLine
 
         private Dictionary<string, HashSet<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
         {
-            Dictionary<string, HashSet<string>> configToProjectPath = new(PathUtility.GetStringComparerBasedOnOS());
+            Dictionary<string, HashSet<string>> configToProjectPath = new(StringComparer.Ordinal);
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
@@ -507,7 +507,7 @@ namespace NuGet.CommandLine
                     }
                     else
                     {
-                        configToProjectPath.Add(packagesConfig, new HashSet<string>(PathUtility.GetStringComparerBasedOnOS()) { project.FilePath });
+                        configToProjectPath.Add(packagesConfig, new HashSet<string>(StringComparer.Ordinal) { project.FilePath });
                     }
                 }
             }

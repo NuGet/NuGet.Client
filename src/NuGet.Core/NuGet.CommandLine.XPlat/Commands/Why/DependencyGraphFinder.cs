@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -222,7 +221,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             LockFile assetsFile,
             List<string> userInputFrameworks)
         {
-            var topLevelReferences = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var topLevelReferences = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
             var targetAliases = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks;
 
@@ -235,7 +234,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             // we need to match top-level project references to their target library entries using their paths,
             // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => StringComparer.Ordinal.Equals(l.Type, "project"));
-            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count(), PathUtility.GetStringComparerBasedOnOS());
+            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count(), StringComparer.Ordinal);
             var projectDirectoryPath = Path.GetDirectoryName(assetsFile.PackageSpec.FilePath);
 
             if (projectDirectoryPath != null)

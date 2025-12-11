@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using NuGet.Common;
 using NuGet.Shared;
 
 namespace NuGet.Configuration
@@ -76,7 +75,7 @@ namespace NuGet.Configuration
                 {
                     return Enumerable.Empty<string>();
                 }
-                var files = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+                var files = new HashSet<string>(StringComparer.Ordinal);
 
                 foreach (var filter in filters)
                 {

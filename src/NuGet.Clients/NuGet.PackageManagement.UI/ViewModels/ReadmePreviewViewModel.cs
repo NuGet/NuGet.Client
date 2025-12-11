@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         internal bool ShouldUpdatePackageMetadata(DetailedPackageMetadata packageMetadata)
         {
             return packageMetadata != null && (
-                !StringComparer.OrdinalIgnoreCase.Equals(packageMetadata.Id, _packageMetadata?.Id)
+                !StringComparer.Ordinal.Equals(packageMetadata.Id, _packageMetadata?.Id)
                 || packageMetadata.Version != _packageMetadata?.Version
                 || !StringComparer.Ordinal.Equals(packageMetadata.ReadmeFileUrl, _packageMetadata?.ReadmeFileUrl)
                 || !StringComparer.Ordinal.Equals(packageMetadata.PackagePath, _packageMetadata?.PackagePath)

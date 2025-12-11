@@ -20,7 +20,7 @@ namespace NuGet.SolutionRestoreManager
     {
         private IList<string> _failedProjects = new List<string>();
         private DependencyGraphSpec _cachedDependencyGraphSpec;
-        private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>(PathUtility.GetStringComparerBasedOnOS());
+        private Dictionary<string, RestoreData> _restoreData = new Dictionary<string, RestoreData>(StringComparer.Ordinal);
 
         public void SaveRestoreStatus(IReadOnlyList<RestoreSummary> restoreSummaries)
         {
@@ -92,7 +92,7 @@ namespace NuGet.SolutionRestoreManager
                 // Pass #1. Validate all the data (i/o)
                 // 1a. Validate the package specs (references & settings)
                 // 1b. Validate the expected outputs (assets file, nuget.g.*, lock file)
-                var unloadedProjects = _restoreData.Keys.ToHashSet(PathUtility.GetStringComparerBasedOnOS());
+                var unloadedProjects = _restoreData.Keys.ToHashSet(StringComparer.Ordinal);
                 foreach (var project in dependencyGraphSpec.Projects)
                 {
                     var projectUniqueName = project.RestoreMetadata.ProjectUniqueName;

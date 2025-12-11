@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     {
         internal static Dictionary<string, List<PackageSourceContextInfo>> CreatePackageSourceMappingDictionary(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
         {
-            var packageSourceMappingDictionary = new Dictionary<string, List<PackageSourceContextInfo>>(StringComparer.OrdinalIgnoreCase);
+            var packageSourceMappingDictionary = new Dictionary<string, List<PackageSourceContextInfo>>(StringComparer.Ordinal);
             foreach (PackageSourceMappingSourceItem sourceItem in originalMappings)
             {
                 foreach (PackagePatternItem patternItem in sourceItem.Patterns)

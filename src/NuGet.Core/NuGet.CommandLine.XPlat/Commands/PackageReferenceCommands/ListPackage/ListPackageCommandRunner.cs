@@ -413,7 +413,7 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs)
         {
             List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
-            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count, StringComparer.OrdinalIgnoreCase);
+            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count, StringComparer.Ordinal);
 
             int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
                 ? 8 // Try to be nice to HTTP package sources

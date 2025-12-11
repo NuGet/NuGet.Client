@@ -365,7 +365,7 @@ namespace NuGet.Versioning
 
             var lastLabel = version.ReleaseLabels.LastOrDefault() ?? string.Empty;
 
-            var endsWithZero = StringComparer.OrdinalIgnoreCase.Equals(lastLabel, "0");
+            var endsWithZero = StringComparer.Ordinal.Equals(lastLabel, "0");
             var endsWithDash = lastLabel.EndsWith("-", StringComparison.Ordinal);
 
             if (endsWithZero || endsWithDash)

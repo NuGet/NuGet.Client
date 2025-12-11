@@ -28,7 +28,7 @@ namespace NuGet
         public SemanticVersion(string version)
             : this(Parse(version))
         {
-            // The constructor normalizes the version string so that it we do not need to normalize it every time we need to operate on it. 
+            // The constructor normalizes the version string so that it we do not need to normalize it every time we need to operate on it.
             // The original string represents the original form in which the version is represented to be used when printing.
             _originalString = version;
         }
@@ -124,7 +124,7 @@ namespace NuGet
             }
             else
             {
-                // if 'a' has less than 4 elements, we pad the '0' at the end 
+                // if 'a' has less than 4 elements, we pad the '0' at the end
                 // to make it 4.
                 var b = new string[4] { "0", "0", "0", "0" };
                 Array.Copy(a, 0, b, 0, a.Length);
@@ -355,7 +355,7 @@ namespace NuGet
             int hashCode = Version.GetHashCode();
             if (SpecialVersion != null)
             {
-                hashCode = hashCode * 4567 + StringComparer.OrdinalIgnoreCase.GetHashCode(SpecialVersion);
+                hashCode = hashCode * 4567 + StringComparer.Ordinal.GetHashCode(SpecialVersion);
             }
 
             return hashCode;

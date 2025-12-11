@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement
             var prereleasePackageToInstall = new HashSet<PackageIdentity>(packagesToInstall.Where(p => p.HasVersion && p.Version.IsPrerelease), PackageIdentityComparer.Default);
 
             var visitedNodes = new HashSet<SourcePackageDependencyInfo>();
-            var packagesDict = packages.ToLookup(p => p.Id).ToDictionary(p => p.Key, p => p.ToArray(), StringComparer.OrdinalIgnoreCase);
+            var packagesDict = packages.ToLookup(p => p.Id).ToDictionary(p => p.Key, p => p.ToArray(), StringComparer.Ordinal);
 
             foreach (var packageToInstall in packages.Where(p => prereleasePackageToInstall.Contains(p)))
             {
@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// This is used in update scenarios to remove packages that are of the same Id but different version than the primartTargets 
+        /// This is used in update scenarios to remove packages that are of the same Id but different version than the primartTargets
         /// </summary>
         public static IEnumerable<SourcePackageDependencyInfo> PruneByPrimaryTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> primaryTargets)
         {

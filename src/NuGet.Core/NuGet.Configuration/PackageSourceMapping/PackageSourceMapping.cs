@@ -71,7 +71,7 @@ namespace NuGet.Configuration
 
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
 
-            var patterns = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            var patterns = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
 
             foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
             {

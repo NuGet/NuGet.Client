@@ -3,9 +3,9 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Common;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         {
         }
 
-        private IEqualityComparer<string> _stringComparer = PathUtility.GetStringComparerBasedOnOS();
+        private IEqualityComparer<string> _stringComparer = StringComparer.Ordinal;
 
         /// <summary>
         /// Determines whether the specified <see cref="FileSystemInfo" /> objects are equal by comparing their <see cref="FileSystemInfo.FullName" /> property.

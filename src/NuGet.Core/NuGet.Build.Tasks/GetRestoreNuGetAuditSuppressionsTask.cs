@@ -50,7 +50,7 @@ namespace NuGet.Build.Tasks
                     continue;
                 }
 
-                var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var properties = new Dictionary<string, string>(StringComparer.Ordinal);
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
                 properties.Add("Type", "NuGetAuditSuppress");
                 properties.Add("Id", packageId);

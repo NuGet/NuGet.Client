@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI
 
             if (dependency != null)
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Id, _searchResultPackage.Id) && _searchResultPackage.InstalledVersion != null)
+                if (StringComparer.Ordinal.Equals(dependency.Id, _searchResultPackage.Id) && _searchResultPackage.InstalledVersion != null)
                 {
                     InstalledVersion = _searchResultPackage.InstalledVersion;
                 }
@@ -327,7 +327,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return SelectedVersion != null
                     && InstalledVersion != null
-                    && (IsProjectPackageReference ? StringComparer.OrdinalIgnoreCase.Equals(SelectedVersion?.Range?.OriginalString, InstalledVersionRange?.OriginalString) : true)
+                    && (IsProjectPackageReference ? StringComparer.Ordinal.Equals(SelectedVersion?.Range?.OriginalString, InstalledVersionRange?.OriginalString) : true)
                     && SelectedVersion.Version == InstalledVersion;
             }
         }

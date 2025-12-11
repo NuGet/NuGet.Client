@@ -390,7 +390,7 @@ namespace NuGet.Configuration
         }
         internal HashSet<string> GetPackageSourceNamesMatchingNamePrefix(string namePrefix, IEnvironmentVariableReader environmentVariableReader)
         {
-            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var names = new HashSet<string>(StringComparer.Ordinal);
 
             List<PackageSource> packageSources = LoadPackageSources(Settings, ConfigurationConstants.PackageSources, _configurationDefaultSources, environmentVariableReader);
             foreach (PackageSource packageSource in packageSources)

@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
                 transitivePackages = new T();
-                transitiveOrigins = new Dictionary<string, TransitiveEntry>(StringComparer.OrdinalIgnoreCase);
+                transitiveOrigins = new Dictionary<string, TransitiveEntry>(StringComparer.Ordinal);
                 targetsList = await GetTargetsListAsync(assetsFilePath, token);
             }
             else
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (TransitivePackages == null)
                     {
                         transitivePackages = new T();
-                        transitiveOrigins = new Dictionary<string, TransitiveEntry>(StringComparer.OrdinalIgnoreCase);
+                        transitiveOrigins = new Dictionary<string, TransitiveEntry>(StringComparer.Ordinal);
                     }
                     else
                     {
@@ -229,14 +229,14 @@ namespace NuGet.PackageManagement.VisualStudio
                         calculatedLibraryReferences.AddRange(calculatedInstalledPackages);
 
                         // Compute Transitive Origins
-                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedLibraryReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>(StringComparer.OrdinalIgnoreCase);
+                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedLibraryReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>(StringComparer.Ordinal);
                     }
                     else
                     {
                         lock (_transitiveOriginsLock)
                         {
                             // Make a copy of the cache to prevent concurrency issues.
-                            transitiveOrigins = new Dictionary<string, TransitiveEntry>(TransitiveOriginsCache, StringComparer.OrdinalIgnoreCase);
+                            transitiveOrigins = new Dictionary<string, TransitiveEntry>(TransitiveOriginsCache, StringComparer.Ordinal);
                         }
                     }
 
@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ct.ThrowIfCancellationRequested();
 
-            Dictionary<string, TransitiveEntry> transitiveOriginsCache = new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, TransitiveEntry> transitiveOriginsCache = new(StringComparer.Ordinal);
 
             // Find all Transitive origins and update cache
             var memoryVisited = new HashSet<PackageIdentity>();

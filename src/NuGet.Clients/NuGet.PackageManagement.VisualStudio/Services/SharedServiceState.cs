@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _repositories = await SourceRepositories.GetValueAsync();
             }
 
-            Dictionary<string, SourceRepository>? sourceRepositories = _repositories.ToDictionary(repository => repository.PackageSource.Name, _ => _, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, SourceRepository>? sourceRepositories = _repositories.ToDictionary(repository => repository.PackageSource.Name, _ => _, StringComparer.Ordinal);
             var matchingSourceRepositories = new List<SourceRepository>(capacity: packageSourceContextInfos.Count);
 
             foreach (PackageSourceContextInfo packageSource in packageSourceContextInfos)

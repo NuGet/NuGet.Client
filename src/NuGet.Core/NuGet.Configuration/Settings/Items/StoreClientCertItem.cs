@@ -159,7 +159,7 @@ namespace NuGet.Configuration
                 },
                 StringComparer.Ordinal);
 
-        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
+        protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
         {
             {
                 ConfigurationConstants.StoreLocationAttribute,

@@ -22,7 +22,7 @@ namespace NuGet.Common
 
         internal KeyedLock()
         {
-            _locks = new Dictionary<string, LockState>(PathUtility.GetStringComparerBasedOnOS());
+            _locks = new Dictionary<string, LockState>(StringComparer.Ordinal);
             _dictionaryLock = new SemaphoreSlim(initialCount: 1);
         }
 

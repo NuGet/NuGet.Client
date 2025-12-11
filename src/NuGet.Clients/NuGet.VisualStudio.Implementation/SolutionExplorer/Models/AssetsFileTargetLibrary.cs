@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 return false;
             }
 
-            LockFileLibrary? library = lockFile.Libraries.FirstOrDefault(lib => StringComparer.OrdinalIgnoreCase.Equals(lib.Name, lockFileLibrary.Name));
+            LockFileLibrary? library = lockFile.Libraries.FirstOrDefault(lib => StringComparer.Ordinal.Equals(lib.Name, lockFileLibrary.Name));
 
             targetLibrary = new AssetsFileTargetLibrary(library, lockFileLibrary, type, logLevel);
             return true;

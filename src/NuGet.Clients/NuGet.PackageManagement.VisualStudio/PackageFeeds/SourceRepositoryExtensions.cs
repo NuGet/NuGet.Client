@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 : items.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
-            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.OrdinalIgnoreCase)
+            result.SourceSearchStatus = new Dictionary<string, LoadingStatus>(StringComparer.Ordinal)
             {
                 { sourceRepository.PackageSource.Name, loadingStatus }
             };

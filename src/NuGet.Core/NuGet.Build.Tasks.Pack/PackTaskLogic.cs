@@ -594,7 +594,7 @@ namespace NuGet.Build.Tasks.Pack
             PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>(PathUtility.GetStringComparerBasedOnOS());
+            var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>(StringComparer.Ordinal);
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
@@ -774,7 +774,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private ISet<string> CalculateFilesToExcludeInPack(IPackTaskRequest<IMSBuildItem> request)
         {
-            var excludeFiles = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+            var excludeFiles = new HashSet<string>(StringComparer.Ordinal);
             if (request.PackageFilesToExclude != null)
             {
                 foreach (var file in request.PackageFilesToExclude)
@@ -788,7 +788,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private IDictionary<string, string> GetSourceFiles(IPackTaskRequest<IMSBuildItem> request, string currentProjectDirectory)
         {
-            var sourceFiles = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+            var sourceFiles = new Dictionary<string, string>(StringComparer.Ordinal);
             if (request.SourceFiles != null)
             {
                 foreach (var src in request.SourceFiles)
@@ -1093,7 +1093,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)
         {
-            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+            return new HashSet<string>(outputExtensions.Distinct(StringComparer.OrdinalIgnoreCase), StringComparer.Ordinal);
         }
     }
 }

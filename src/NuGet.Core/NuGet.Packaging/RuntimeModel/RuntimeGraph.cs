@@ -264,7 +264,7 @@ namespace NuGet.RuntimeModel
                     StringComparer.OrdinalIgnoreCase);
             }
 
-            if (_packagesWithDependencies.Contains(packageId, StringComparer.OrdinalIgnoreCase))
+            if (_packagesWithDependencies.Contains(packageId, StringComparer.Ordinal))
             {
                 var key = new RuntimeDependencyKey(runtimeName, packageId);
 
@@ -391,7 +391,7 @@ namespace NuGet.RuntimeModel
             public bool Equals(RuntimeDependencyKey other)
             {
                 return StringComparer.Ordinal.Equals(RuntimeName, other.RuntimeName)
-                    && StringComparer.Ordinal.Equals(PackageId, other.PackageId);
+                    && StringComparer.OrdinalIgnoreCase.Equals(PackageId, other.PackageId);
             }
 
             public override int GetHashCode()
@@ -399,7 +399,7 @@ namespace NuGet.RuntimeModel
                 var hashCode = new HashCodeCombiner();
 
                 hashCode.AddObject(RuntimeName, StringComparer.Ordinal);
-                hashCode.AddObject(PackageId, StringComparer.Ordinal);
+                hashCode.AddObject(PackageId, StringComparer.OrdinalIgnoreCase);
 
                 return hashCode.CombinedHash;
             }

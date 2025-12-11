@@ -29,7 +29,7 @@ namespace NuGet.Packaging
             NuGetOperationStatus status,
             ExtractionSource extractionSource,
             PackageIdentity packageId = null) :
-            base(EventName, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            base(EventName, new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { nameof(Status), status },
                     { nameof(ExtractionSource), extractionSource },

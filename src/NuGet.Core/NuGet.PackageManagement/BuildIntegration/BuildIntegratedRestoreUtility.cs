@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -135,7 +134,7 @@ namespace NuGet.PackageManagement
             foreach (var parent in listOfParents)
             {
                 // do not count the target as a parent
-                var nugetProject = projects.FirstOrDefault(r => PathUtility.GetStringComparerBasedOnOS().Equals(r.MSBuildProjectPath, parent));
+                var nugetProject = projects.FirstOrDefault(r => StringComparer.Ordinal.Equals(r.MSBuildProjectPath, parent));
                 if (nugetProject != null && !nugetProject.Equals(target))
                 {
                     parentNuGetprojects.Add(nugetProject);

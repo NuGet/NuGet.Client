@@ -849,7 +849,7 @@ namespace NuGet.CommandLine
         private void ProcessDependencies(Packaging.PackageBuilder builder)
         {
             // get all packages and dependencies, including the ones in project references
-            var packagesAndDependencies = new Dictionary<string, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>(StringComparer.OrdinalIgnoreCase);
+            var packagesAndDependencies = new Dictionary<string, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>(StringComparer.Ordinal);
             ApplyAction(p => p.AddDependencies(packagesAndDependencies));
 
             // list of all dependency packages
@@ -923,7 +923,7 @@ namespace NuGet.CommandLine
 
         private void AddDependencies(Dictionary<string, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
-            Dictionary<string, object> props = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object> props = new Dictionary<string, object>(StringComparer.Ordinal);
 
             foreach (var property in _project.Properties)
             {

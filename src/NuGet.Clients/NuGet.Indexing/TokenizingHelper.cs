@@ -48,7 +48,7 @@ namespace NuGet.Indexing
             yield break;
         }
 
-        private static ISet<string> _stopWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static ISet<string> _stopWords = new HashSet<string>(StringComparer.Ordinal)
         {
             "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "i",
             "if", "in", "into", "is", "it", "its", "no", "not", "of", "on", "or", "s", "such",

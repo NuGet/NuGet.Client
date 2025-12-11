@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Telemetry
 
         private static ConcurrentDictionary<string, ApiUsage> CreatePropertyNamesDictionary(string _)
         {
-            return new ConcurrentDictionary<string, ApiUsage>(StringComparer.OrdinalIgnoreCase);
+            return new ConcurrentDictionary<string, ApiUsage>(StringComparer.Ordinal);
         }
 
         private static ApiUsage CreateApiUsage(string propertyName, string projectTypeGuid)

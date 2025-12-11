@@ -250,7 +250,7 @@ namespace NuGet.VisualStudio.Telemetry
                 bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
 
                 telemetry = new TelemetryEvent(EventName,
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },

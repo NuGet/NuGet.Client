@@ -71,7 +71,7 @@ namespace NuGet.Build.Tasks
 
 
                 // Create top level project
-                var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var properties = new Dictionary<string, string>(StringComparer.Ordinal);
                 properties.Add("Type", "ProjectSpec");
                 properties.Add("ProjectPath", ProjectPath);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
@@ -90,7 +90,7 @@ namespace NuGet.Build.Tasks
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
 
                 // Add reference to package
-                var packageProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var packageProperties = new Dictionary<string, string>(StringComparer.Ordinal);
                 packageProperties.Add("ProjectUniqueName", uniqueName);
                 packageProperties.Add("Type", "Dependency");
                 packageProperties.Add("Id", msbuildItem.ItemSpec);
@@ -100,7 +100,7 @@ namespace NuGet.Build.Tasks
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), packageProperties));
 
                 // Add restore spec to ensure this is executed during restore
-                var restoreProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var restoreProperties = new Dictionary<string, string>(StringComparer.Ordinal);
                 restoreProperties.Add("ProjectUniqueName", uniqueName);
                 restoreProperties.Add("Type", "RestoreSpec");
 

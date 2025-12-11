@@ -3,8 +3,8 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
-using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.Commands
@@ -26,7 +26,7 @@ namespace NuGet.Commands
 
         public MSBuildPackTargetArgs()
         {
-            SourceFiles = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+            SourceFiles = new Dictionary<string, string>(StringComparer.Ordinal);
             TargetPathsToAssemblies = new List<OutputLibFile>();
             TargetPathsToSymbols = new List<OutputLibFile>();
         }

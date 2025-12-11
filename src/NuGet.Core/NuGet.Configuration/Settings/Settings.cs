@@ -198,7 +198,7 @@ namespace NuGet.Configuration
         {
             SettingsFiles = settingsFiles ?? throw new ArgumentNullException(nameof(settingsFiles));
 
-            var computedSections = new Dictionary<string, VirtualSettingSection>(PathUtility.GetStringComparerBasedOnOS());
+            var computedSections = new Dictionary<string, VirtualSettingSection>(StringComparer.Ordinal);
 
             // They come in priority order, closest to furthest
             // reverse merge them, so the closest ones apply.

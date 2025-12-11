@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return obj is PackageSourceMoniker && this == (PackageSourceMoniker)obj;
         }
 
-        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(ToString());
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(ToString());
 
         public static bool operator ==(PackageSourceMoniker x, PackageSourceMoniker y)
         {

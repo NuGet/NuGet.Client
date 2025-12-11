@@ -20,7 +20,7 @@ namespace NuGet.Protocol
         {
             var v = JsonUtility.LoadJson(reader);
 
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.Ordinal);
 
             foreach (var fingerprint in v)
             {

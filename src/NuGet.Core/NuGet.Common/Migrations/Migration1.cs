@@ -57,7 +57,7 @@ namespace NuGet.Common.Migrations
 
         private static HashSet<string> GetPathsToCheck(IEnvironmentVariableReader environmentVariableReader)
         {
-            HashSet<string> pathsToCheck = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+            HashSet<string> pathsToCheck = new HashSet<string>(StringComparer.Ordinal);
             var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             // NuGetEnvironment.GetFolderPath(SpecialFolder.LocalApplicationData) is private, so we'll get the parent of the HTTP cache.
@@ -90,7 +90,7 @@ namespace NuGet.Common.Migrations
                 }
 
                 string? parent = Path.GetDirectoryName(path);
-                while (parent is not null && !PathUtility.GetStringComparerBasedOnOS().Equals(parent, homePath))
+                while (parent is not null && !StringComparer.Ordinal.Equals(parent, homePath))
                 {
                     pathsToCheck.Add(parent);
                     parent = Path.GetDirectoryName(parent);

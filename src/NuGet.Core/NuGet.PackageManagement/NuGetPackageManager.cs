@@ -2427,7 +2427,7 @@ namespace NuGet.PackageManagement
                 _buildIntegratedProjectsUpdateSet = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
 
                 var projectUniqueNamesForBuildIntToUpdate
-                    = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath, PathUtility.GetStringComparerBasedOnOS());
+                    = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath, StringComparer.Ordinal);
 
                 var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 _buildIntegratedProjectsCache = dgFile;

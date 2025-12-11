@@ -15,7 +15,7 @@ namespace GenerateTestPackages
     {
         const string KeyFileName = "TestPackageKey.snk";
 
-        static Dictionary<string, PackageInfo> Packages = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
+        static Dictionary<string, PackageInfo> Packages = new Dictionary<string, PackageInfo>(StringComparer.Ordinal);
 
         static void Main(string[] args)
         {
@@ -113,7 +113,7 @@ namespace GenerateTestPackages
             Packages = document.Descendants(ns + "Link")
                 .ToLookup(l => l.Attribute("Source").Value)
                 .Select(group => new PackageInfo(group.Key, group.Select(GetDependencyInfoFromLinkTag)))
-                .ToDictionary(p => p.FullName.ToString(), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(p => p.FullName.ToString(), StringComparer.Ordinal);
 
             // Add all the packages that only exist as targets to the dictionary
             var allPackageNames = Packages.Values.SelectMany(p => p.Dependencies).Select(dep => dep.FullName.ToString()).Distinct().ToList();

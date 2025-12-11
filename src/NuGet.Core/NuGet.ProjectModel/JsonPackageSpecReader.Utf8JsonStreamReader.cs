@@ -580,7 +580,7 @@ namespace NuGet.ProjectModel
             IList<DownloadDependency> downloadDependencies,
             string packageSpecPath)
         {
-            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var seenIds = new HashSet<string>(StringComparer.Ordinal);
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartArray)
             {
@@ -1427,7 +1427,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(CentralPackageVersionsPropertyName))
                     {
-                        centralPackageVersions ??= new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+                        centralPackageVersions ??= new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal);
                         ReadCentralPackageVersions(
                             ref jsonReader,
                             centralPackageVersions,

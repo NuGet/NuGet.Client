@@ -101,7 +101,7 @@ namespace NuGet.Commands
 
             var noOpCount = 0;
             var feedsUsed = new HashSet<string>(StringComparer.Ordinal);
-            var configFiles = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+            var configFiles = new HashSet<string>(StringComparer.Ordinal);
             var installed = new Dictionary<string, int>(restoreSummaries.Count, PathUtility.GetStringComparerBasedOnOS());
 
             foreach (RestoreSummary restoreSummary in restoreSummaries)

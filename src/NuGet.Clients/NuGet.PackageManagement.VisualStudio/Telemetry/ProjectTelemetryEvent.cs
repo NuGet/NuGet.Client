@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.Telemetry
             NuGetProjectType nuGetProjectType,
             bool isPRUpgradable,
             string projectFilePath) :
-            base(ProjectInformationEventName, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            base(ProjectInformationEventName, new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     { nameof(NuGetProjectType), nuGetProjectType },
                     { nameof(NuGetVersion), nuGetVersion },

@@ -57,7 +57,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             if (value is TelemetryEvent telemetryEvent)
             {
-                var dictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                var dictionary = new Dictionary<string, object?>(StringComparer.Ordinal);
 
                 foreach (KeyValuePair<string, object?> pair in telemetryEvent)
                 {

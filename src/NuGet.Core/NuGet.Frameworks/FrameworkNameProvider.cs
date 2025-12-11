@@ -1137,7 +1137,7 @@ namespace NuGet.Frameworks
             var superSetFrameworks = _subSetFrameworks
                 .SelectMany(p => p.Value.Select(subset => new { Superset = p.Key, Subset = subset }))
                 .GroupBy(p => p.Subset, p => p.Superset, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => new HashSet<string>(g, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(g => g.Key, g => new HashSet<string>(g, StringComparer.OrdinalIgnoreCase), StringComparer.Ordinal);
 
             foreach (var framework in set.ToArray())
             {

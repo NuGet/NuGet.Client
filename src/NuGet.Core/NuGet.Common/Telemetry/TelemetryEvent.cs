@@ -15,7 +15,7 @@ namespace NuGet.Common
         /// <summary> Creates a new instance of <see cref="TelemetryEvent"/>. </summary>
         /// <param name="eventName"> Event name. </param>
         public TelemetryEvent(string eventName) :
-            this(eventName, new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase))
+            this(eventName, new Dictionary<string, object?>(StringComparer.Ordinal))
         {
         }
 
@@ -26,7 +26,7 @@ namespace NuGet.Common
         {
             Name = eventName;
             _properties = properties;
-            _piiProperties = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            _piiProperties = new Dictionary<string, object?>(StringComparer.Ordinal);
         }
 
         /// <summary> Name of the event. </summary>
@@ -56,7 +56,7 @@ namespace NuGet.Common
         }
 
         /// <summary> Complex data properties. </summary>
-        public IDictionary<string, object?> ComplexData { get; } = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, object?> ComplexData { get; } = new Dictionary<string, object?>(StringComparer.Ordinal);
 
         /// <summary> Gets enumerator to enumerate properties. </summary>
         /// <returns> Enumerator over recorded properties. </returns>
