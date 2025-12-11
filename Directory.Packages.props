@@ -175,6 +175,7 @@
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Tasks.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build" />
+      <_allowBuildFromSourcePackage Include="Microsoft.CodeAnalysis.CSharp" />
       <_allowBuildFromSourcePackage Include="Microsoft.CSharp" />
       <_allowBuildFromSourcePackage Include="Microsoft.DotNet.Build.Tasks.Feed" />
       <_allowBuildFromSourcePackage Include="Microsoft.DotNet.XliffTasks" />
