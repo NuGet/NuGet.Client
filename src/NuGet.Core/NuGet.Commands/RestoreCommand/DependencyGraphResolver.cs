@@ -1320,12 +1320,15 @@ namespace NuGet.Commands
                     bool isPackage = childDependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
                     bool isRootPackageReference = (currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project) && isPackage;
 
+                    bool isSuppressed = suppressions!.Contains(childLibraryDependencyIndex);
+
                     // Skip this dependency if:
                     // 1. the VersionRange is null
                     // 2. It is not transitively pinned and PrivateAssets=All
                     // 3. This child is not a direct package reference and there is already a direct package reference to it
                     if (childDependency.LibraryRange.VersionRange == null
-                        || (!currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(childLibraryDependencyIndex))
+                        || (chosenResolvedItem.Item.Key.Type == LibraryType.Package && !currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage && isSuppressed)
+                        || (chosenResolvedItem.Item.Key.Type == LibraryType.Project && isSuppressed)
                         || (!isRootPackageReference && directPackageReferences?.Contains(childLibraryDependencyIndex) == true))
                     {
                         continue;
@@ -1359,10 +1362,9 @@ namespace NuGet.Commands
 
                     // Determine if the package is transitively pinned
                     bool isCentrallyPinnedTransitiveDependency = isCentralPackageTransitivePinningEnabled
-                        && isPackage
                         && pinnedPackageVersions?.TryGetValue(childLibraryDependencyIndex, out pinnedVersionRange) == true;
 
-                    if (isCentrallyPinnedTransitiveDependency && !isRootPackageReference)
+                    if (isCentrallyPinnedTransitiveDependency && !isRootPackageReference && isPackage)
                     {
                         // If central transitive pinning is enabled the LibraryDependency must be recreated as not to mutate the in-memory copy
                         childDependency = new LibraryDependency(childDependency)
