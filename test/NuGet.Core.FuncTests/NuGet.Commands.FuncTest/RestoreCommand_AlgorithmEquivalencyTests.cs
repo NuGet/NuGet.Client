@@ -2822,6 +2822,73 @@ namespace NuGet.Commands.FuncTest
             (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, packageSpec);
         }
 
+        // Project -> B 1.0.0
+        //              -> C [1.0.0, 2.0.0)
+        //              -> D [1.0.0, 2.0.0)
+        //              -> A [1.0.0, 2.0.0)
+        //         -> A 2.0.0 -> C 2.0.0 -> D 2.0.0
+        //         -> C 2.0.0
+        //         -> D 2.0.0
+        [Fact]
+        public async Task RestoreCommand_WithConflictsOverridenByADirectDependencyRaisesNU1608_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var D = new SimpleTestPackageContext("D", "2.0.0");
+
+            var C = new SimpleTestPackageContext("C", "2.0.0")
+            {
+                Dependencies =
+                [
+                    D,
+                ]
+            };
+
+            var B = new SimpleTestPackageContext("B", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("C", "[1.0.0, 2.0.0)"),
+                    new SimpleTestPackageContext("D", "[1.0.0, 2.0.0)"),
+                    new SimpleTestPackageContext("A", "[1.0.0, 2.0.0)"),
+                ]
+            };
+
+            var A = new SimpleTestPackageContext("A", "2.0.0")
+            {
+                Dependencies =
+                [
+                    C,
+                ]
+            };
+
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(pathContext.PackageSource,
+                B,
+                A,
+                C,
+                D);
+
+            var projectSpec = @"
+            {
+              ""frameworks"": {
+                ""net10.0"": {
+                    ""dependencies"": {
+                            ""D"":  ""2.0.0"",
+                            ""C"":  ""2.0.0"",
+                            ""A"":  ""2.0.0"",
+                            ""B"":  ""1.0.0"",
+                    }
+                }
+              }
+            }";
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project", pathContext.SolutionRoot, projectSpec);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, packageSpec);
+        }
+
         // P -> A 1.0.0
         //      -> B (no version)
         // B is pinned to 1.0.0
