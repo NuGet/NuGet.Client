@@ -512,7 +512,15 @@ namespace NuGet.Commands
                             continue;
                         }
 
-                        if (TryDetectVersionConflict(currentGraphNode, childResolvedDependencyGraphItem, versionConflicts, downgrades, childLibraryDependency, currentRangeIndex, childResolvedLibraryRangeIndex, out GraphNode<RemoteResolveResult>? nodeWithConflict))
+                        if (TryDetectVersionConflict(
+                            currentGraphNode,
+                            childResolvedDependencyGraphItem,
+                            versionConflicts,
+                            downgrades,
+                            childLibraryDependency,
+                            currentRangeIndex,
+                            childResolvedLibraryRangeIndex,
+                            out GraphNode<RemoteResolveResult>? nodeWithConflict))
                         {
                             currentGraphNode.InnerNodes.Add(nodeWithConflict);
 
@@ -589,7 +597,14 @@ namespace NuGet.Commands
                             ));
                     }
 
-                    if (TryDetectVersionConflict(currentGraphNode, childResolvedDependencyGraphItem, versionConflicts, downgrades, childLibraryDependency, currentRangeIndex, childResolvedLibraryRangeIndex, out GraphNode<RemoteResolveResult>? conflictingNode))
+                    if (TryDetectVersionConflict(
+                        currentGraphNode,
+                        childResolvedDependencyGraphItem,
+                        versionConflicts, downgrades,
+                        childLibraryDependency,
+                        currentRangeIndex,
+                        childResolvedLibraryRangeIndex,
+                        out GraphNode<RemoteResolveResult>? conflictingNode))
                     {
                         // Remove the existing node so it can be replaced with a node representing the conflict
                         currentGraphNode.InnerNodes.Remove(newGraphNode);

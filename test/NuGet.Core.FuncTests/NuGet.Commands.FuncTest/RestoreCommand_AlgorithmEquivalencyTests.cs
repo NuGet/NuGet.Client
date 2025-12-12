@@ -2805,16 +2805,16 @@ namespace NuGet.Commands.FuncTest
 
 
             // Switch the order in which A & B are declared
-            var projectSpec = @"
-            {
-              ""frameworks"": {
-                ""net10.0"": {
-                    ""dependencies"": {
-                            DEPS
-                    }
-                }
-              }
-            }".Replace("DEPS", deps);
+            var projectSpec = @$"
+            {{
+              ""frameworks"": {{
+                ""net10.0"": {{
+                    ""dependencies"": {{
+                      {deps}
+                    }}
+                }}
+              }}
+            }}";
 
             var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project", pathContext.SolutionRoot, projectSpec);
 
