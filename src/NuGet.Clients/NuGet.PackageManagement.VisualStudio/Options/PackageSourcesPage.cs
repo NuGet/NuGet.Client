@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerAuditSources = "nuGetAudit.auditSources";
         internal const string MonikerNuGetAudit = "nuGetAudit.enableCheckbox";
-        internal const string MonikerMachineWideSources = "machineWidePackageSources";
+        internal const string MonikerMachineWideSources = "machineWide.machineWidePackageSources";
         internal const string MonikerPackageSourceId = "packageSourceId"; // Unique identifier for the package source
         internal const string MonikerSourceName = "sourceName";
         internal const string MonikerSourceUrl = "sourceUrl";

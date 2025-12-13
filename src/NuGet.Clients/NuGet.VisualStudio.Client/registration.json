@@ -269,11 +269,11 @@
             }
           ]
         },
-        "machineWidePackageSources": {
+        "machineWide.machineWidePackageSources": {
           "type": "array",
           "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           // Don't show Machine-wide Package Sources section when empty.
-          "visibleWhen": "${config:machineWidePackageSources} != '[]'",
+          "visibleWhen": "${config:machineWide.machineWidePackageSources} != '[]'",
 
           // Metadata about items in this array
           "items": {
@@ -307,6 +307,9 @@
       "categories": {
         "nuGetAudit": {
           "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+        },
+        "machineWide": {
+          "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
         }
       }
     },
