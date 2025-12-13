@@ -216,7 +216,6 @@
         "nuGetAudit.auditSources": {
           "type": "array",
           "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "visibleWhen": "${config:nuGetAudit.enableCheckbox}",
 
           // Metadata about items in this array
@@ -306,7 +305,8 @@
       },
       "categories": {
         "nuGetAudit": {
-          "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+          "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
         },
         "machineWide": {
           "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
