@@ -177,6 +177,11 @@
         <target state="translated">Fontes HTTP não são seguras. Considere usar HTTPS em vez disso. "AllowInsecureConnections" está habilitado, permitindo acesso HTTP. Para obter opções mais seguras, confira [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere).</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_MachineWidePackageSource_Description">
+        <source>Package sources defined at the machine level appear in a dedicated section below. These are generally provisioned by Visual Studio workloads and can only be enabled or disabled using the checkbox in the Enabled column.</source>
+        <target state="new">Package sources defined at the machine level appear in a dedicated section below. These are generally provisioned by Visual Studio workloads and can only be enabled or disabled using the checkbox in the Enabled column.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_PackageSourceEnabled_Header">
         <source>Enabled</source>
         <target state="translated">Habilitado</target>
