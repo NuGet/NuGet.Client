@@ -340,6 +340,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use separate sources for vulnerability audit.
+        /// </summary>
+        internal static string Text_AuditSources_Checkbox {
+            get {
+                return ResourceManager.GetString("Text_AuditSources_Checkbox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Audit sources provide vulnerability data during restore without acting as package sources. If no audit sources are configured, NuGet Audit uses package sources. [Learn more about audit sources](https://learn.microsoft.com/nuget/reference/nuget-config-file#auditsources).
         /// </summary>
         internal static string Text_AuditSources_Description {

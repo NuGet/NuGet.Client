@@ -207,11 +207,17 @@
           "allowItemEditing": true,
           "allowAdditionsAndRemovals": true
         },
-        "auditSources": {
+        "nuGetAudit.enableCheckbox": {
+          "type": "boolean",
+          "title": "@Text_AuditSources_Checkbox;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
+          "visibleWhen": "${config:nuGetAudit.auditSources} == '[]'"
+        },
+        "nuGetAudit.auditSources": {
           "type": "array",
           "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "helpUri": "https://learn.microsoft.com/nuget/concepts/auditing-packages",
+          "visibleWhen": "${config:nuGetAudit.enableCheckbox}",
 
           // Metadata about items in this array
           "items": {
@@ -259,11 +265,10 @@
           "messages": [
             {
               "text": "@Text_AuditSources_HowToRemove;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-              "visibleWhen": "${config:auditSources} != '[]'"
+              "visibleWhen": "${config:nuGetAudit.auditSources} != '[]'"
             }
           ]
         },
-
         "machineWidePackageSources": {
           "type": "array",
           "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
@@ -297,6 +302,11 @@
           "default": [],
           "allowItemEditing": false,
           "allowAdditionsAndRemovals": false
+        }
+      },
+      "categories": {
+        "nuGetAudit": {
+          "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
         }
       }
     },

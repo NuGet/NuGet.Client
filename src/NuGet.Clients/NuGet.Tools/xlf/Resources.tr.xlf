@@ -132,6 +132,11 @@
         <target state="translated">Güvenli Olmayan Bağlantılara İzin Ver</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AuditSources_Checkbox">
+        <source>Use separate sources for vulnerability audit</source>
+        <target state="new">Use separate sources for vulnerability audit</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_AuditSources_Description">
         <source>Audit sources provide vulnerability data during restore without acting as package sources. If no audit sources are configured, NuGet Audit uses package sources. [Learn more about audit sources](https://learn.microsoft.com/nuget/reference/nuget-config-file#auditsources)</source>
         <target state="translated">Denetim kaynakları, paket kaynağı olarak işlev görmeden geri yükleme sırasında güvenlik açığı verilerini sağlar. Denetim kaynağı yapılandırılmadıysa, NuGet Denetimi paket kaynaklarını kullanır. [Denetim kaynakları hakkında daha fazla bilgi edinin](https://learn.microsoft.com/nuget/reference/nuget-config-file#auditsources)</target>
