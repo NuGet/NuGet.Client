@@ -305,16 +305,18 @@
       "categories": {
         "packageSources": {
           "title": "@Text_PackageSources_NotMachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "description": "@Text_PackageSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+          "description": "@Text_PackageSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/nuget-visual-studio-options#package-sources"
         },
         "nuGetAudit": {
           "title": "@Text_AuditSources_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+          "description": "@Text_AuditSources_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/nuget-visual-studio-options#audit-sources"
         },
         "machineWide": {
           "title": "@Text_PackageSources_MachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "description": "@Text_MachineWidePackageSource_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/nuget-visual-studio-options#managing-package-sources"
+          "helpUri": "https://learn.microsoft.com/nuget/consume-packages/nuget-visual-studio-options#machine-wide-package-sources"
         }
       }
     },
