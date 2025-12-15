@@ -116,7 +116,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 switch (moniker)
                 {
                     case MonikerNuGetAudit:
-                        //TODO
                         return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
                     case MonikerPackageSources:
                         var packageSourcesList = (IReadOnlyList<IDictionary<string, object>>)value;
