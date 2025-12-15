@@ -121,7 +121,7 @@
         }
       }
     },
-    "nuGetPackageManager.packageSources.externalSettings": {
+    "nuGetPackageManager.sources.externalSettings": {
       "type": "external",
       "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
@@ -137,7 +137,7 @@
       // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
       // IExternalSettingsProvider.SetValueAsync.
       "properties": {
-        "packageSources": {
+        "packageSources.notMachineWide": {
           "type": "array",
           "title": "@Text_PackageSources_NotMachineWide;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
@@ -413,7 +413,7 @@
       "legacyOptionPageId": "C17B308A-00BB-446E-9212-2D14E1005985", // Corresponds to the GUID defined in OptionsPageActivator.cs for ConfigurationFilesPage
       "order": 1
     },
-    "nuGetPackageManager.packageSources": {
+    "nuGetPackageManager.sources": {
       "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C", // Corresponds to the GUID defined in OptionsPageActivator.cs for PackageSourcesPage
       "order": 2

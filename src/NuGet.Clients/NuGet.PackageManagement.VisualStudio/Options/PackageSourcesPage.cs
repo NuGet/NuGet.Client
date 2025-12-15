@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
         internal const bool DefaultNuGetAudit = false;
-        internal const string MonikerPackageSources = "packageSources";
+        internal const string MonikerPackageSources = "packageSources.notMachineWide";
         internal const string MonikerAuditSources = "nuGetAudit.auditSources";
         internal const string MonikerNuGetAudit = "nuGetAudit.enableCheckbox";
         internal const string MonikerMachineWideSources = "machineWide.machineWidePackageSources";
