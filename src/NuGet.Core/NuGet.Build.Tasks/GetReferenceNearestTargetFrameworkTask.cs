@@ -153,8 +153,6 @@ namespace NuGet.Build.Tasks
                     useTargetMonikers ? referencedProjectTargetPlatformMonikers[i] : null));
             }
 
-            // try project framework
-            // TODO NK - add a get nearest that can handle duplicates correctly. This is probably irrelevant right because you can't call it otherwise.
             var nearestNuGetFramework = NuGetFrameworkUtility.GetNearest(targetFrameworkInformations, projectNuGetFramework, GetNuGetFramework);
             if (nearestNuGetFramework != null)
             {
