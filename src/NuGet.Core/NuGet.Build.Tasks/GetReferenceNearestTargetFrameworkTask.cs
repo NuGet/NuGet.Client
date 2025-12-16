@@ -44,7 +44,6 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// The value of the current project's TargetFramework property.
         /// </summary>
-
         public string CurrentProjectTargetFrameworkProperty { get; set; }
 
         /// <summary>
