@@ -436,9 +436,10 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         return highestVersion;
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.GetProjectAssetsFileAsync(DependencyGraphSpec, ILogger, CancellationToken)"/>
+    /// <inheritdoc cref="IPackageUpdateIO.GetProjectAssetsFileAsync(DependencyGraphSpec, string, ILogger, CancellationToken)"/>
     public async Task<LockFile> GetProjectAssetsFileAsync(
         DependencyGraphSpec dgSpec,
+        string projectPath,
         ILogger logger,
         CancellationToken cancellationToken)
     {
@@ -452,7 +453,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         LockFile? assetsFile = previewRestoreResult.RestoreResultPair.Result.LockFile;
         if (assetsFile is null)
         {
-            var packageSpec = dgSpec.GetProjectSpec(dgSpec.Restore.Single());
+            var packageSpec = dgSpec.GetProjectSpec(projectPath);
             var assetsFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
             assetsFile = new LockFileFormat().Read(assetsFilePath);
         }

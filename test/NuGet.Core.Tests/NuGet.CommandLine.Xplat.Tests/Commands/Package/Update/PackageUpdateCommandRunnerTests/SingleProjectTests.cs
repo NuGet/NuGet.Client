@@ -12,6 +12,8 @@ using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -19,6 +21,7 @@ using Xunit;
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 
 using Pkg = XPlat.Commands.Package.PackageWithVersionRange;
+using Strings = NuGet.CommandLine.XPlat.Strings;
 
 public class SingleProjectTests
 {
@@ -370,6 +373,195 @@ public class SingleProjectTests
             It.IsAny<PackageUpdateCommandRunner.PackageToUpdate>(),
             It.IsAny<ILogger>()),
             Times.Never);
+    }
+
+    [Theory]
+    [InlineData("all")]
+    [InlineData("direct")]
+    public async Task VulnerablePackage_UpdatesToNonVulnerableVersion(string auditMode)
+    {
+        // Arrange
+        var packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithProperty("NuGetAudit", "true")
+                   .WithProperty("NuGetAuditMode", auditMode)
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        }).Build();
+
+        var packagesToUpdate = new List<Pkg>();
+
+        TestData testData = InitTest(packagesToUpdate, packageSpec);
+        testData = testData with
+        {
+            CommandArgs = testData.CommandArgs with { Vulnerable = true }
+        };
+
+        // Mock the GetProjectAssetsFileAsync to return a LockFile with vulnerability log messages
+        var lockFile = new LockFile
+        {
+            Version = 3,
+            PackageSpec = packageSpec
+        };
+
+        // Add a library to the lock file
+        lockFile.Libraries.Add(new LockFileLibrary
+        {
+            Name = "Test.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+
+        // Add a transitive package
+        lockFile.Libraries.Add(new LockFileLibrary
+        {
+            Name = "Transitive.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+
+        // Add target with the vulnerable package
+        var target = new LockFileTarget
+        {
+            TargetFramework = packageSpec.TargetFrameworks[0].FrameworkName
+        };
+        target.Libraries.Add(new LockFileTargetLibrary
+        {
+            Name = "Test.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+        target.Libraries.Add(new LockFileTargetLibrary
+        {
+            Name = "Transitive.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+        lockFile.Targets.Add(target);
+
+        // Add vulnerability log message
+        lockFile.LogMessages.Add(new AssetsLogMessage(
+            LogLevel.Warning,
+            NuGetLogCode.NU1903,
+            "Test.Package has a known high severity vulnerability")
+        {
+            LibraryId = "Test.Package"
+        });
+
+        if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
+        {
+            lockFile.LogMessages.Add(new AssetsLogMessage(
+                LogLevel.Warning,
+                NuGetLogCode.NU1903,
+                "Transitive.Package has a known high severity vulnerability")
+            {
+                LibraryId = "Transitive.Package"
+            });
+        }
+
+        testData.IoMock.Setup(x => x.GetProjectAssetsFileAsync(
+            It.IsAny<DependencyGraphSpec>(),
+            It.IsAny<string>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lockFile);
+
+        // Mock GetKnownVulnerabilitiesAsync to return vulnerability data
+        var vulnerabilityInfo = new PackageVulnerabilityInfo(
+            new Uri("https://example.com/advisory"),
+            PackageVulnerabilitySeverity.High,
+            VersionRange.Parse("[1.0.0]"));
+
+        var knownVulnerabilities = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>
+        {
+            new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Test.Package", new List<PackageVulnerabilityInfo> { vulnerabilityInfo } },
+                { "Transitive.Package", new List<PackageVulnerabilityInfo> { vulnerabilityInfo } }
+            }
+        };
+
+        testData.IoMock.Setup(x => x.GetKnownVulnerabilitiesAsync(
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(knownVulnerabilities);
+
+        testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
+            "Test.Package",
+            It.IsAny<IReadOnlyList<string>>(),
+            new NuGetVersion("1.0.0"),
+            It.IsAny<ILogger>(),
+            It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("1.2.3"));
+        testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
+            "Transitive.Package",
+            It.IsAny<IReadOnlyList<string>>(),
+            new NuGetVersion("1.0.0"),
+            It.IsAny<ILogger>(),
+            It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("2.0.0"));
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(0);
+
+        testData.IoMock.Verify(x => x.GetKnownVulnerabilitiesAsync(
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        testData.IoMock.Verify(x => x.GetNonVulnerableAsync(
+            "Test.Package",
+            It.IsAny<IReadOnlyList<string>>(),
+            new NuGetVersion("1.0.0"),
+            It.IsAny<ILogger>(),
+            It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
+        {
+            testData.IoMock.Verify(x => x.GetNonVulnerableAsync(
+                "Transitive.Package",
+                It.IsAny<IReadOnlyList<string>>(),
+                new NuGetVersion("1.0.0"),
+                It.IsAny<ILogger>(),
+                It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+                It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        testData.IoMock.Verify(x => x.UpdatePackageReference(
+            It.IsAny<PackageSpec>(),
+            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<List<string>>(),
+            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Test.Package" && p.NewVersion.ToString() == "[1.2.3, )"),
+            It.IsAny<ILogger>()),
+            Times.Once);
+
+        if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
+        {
+            testData.IoMock.Verify(x => x.UpdatePackageReference(
+                It.IsAny<PackageSpec>(),
+                It.IsAny<IPackageUpdateIO.RestoreResult>(),
+                It.IsAny<List<string>>(),
+                It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Transitive.Package" && p.NewVersion.ToString() == "[2.0.0, )"),
+                It.IsAny<ILogger>()),
+                Times.Once);
+        }
+
+        int packageCount =
+            auditMode.Equals("all", StringComparison.OrdinalIgnoreCase)
+            ? 2
+            : 1;
+        testData.LoggerMock.Verify(x => x.LogMinimal(
+            It.Is<string>(s => s.Contains(string.Format(Strings.PackageUpdate_FinalSummary, packageCount, packageCount))),
+            It.IsAny<ConsoleColor>()),
+            Times.Once);
     }
 
     [Theory]
