@@ -21,7 +21,7 @@ using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
-    [Collection("NuGet XPlat Test Collection")]
+    [Collection(XPlatCollection.Name)]
     public class XplatListPackageJsonRendererTests
     {
         [Fact]

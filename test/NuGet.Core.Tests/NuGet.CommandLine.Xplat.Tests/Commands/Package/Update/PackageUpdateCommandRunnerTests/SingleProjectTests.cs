@@ -383,11 +383,22 @@ public class SingleProjectTests
         // Arrange
         var packageSpec = new TestPackageSpecFactory(builder =>
         {
-            builder.WithProperty("TargetFramework", "net9.0")
+            builder.WithProperty("TargetFrameworks", "net9.0;net8.0")
                    .WithProperty("NuGetAudit", "true")
-                   .WithProperty("NuGetAuditMode", auditMode)
-                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
-        }).Build();
+                   .WithProperty("NuGetAuditMode", auditMode);
+        })
+            .WithInnerBuild(builder =>
+            {
+                builder.WithProperty("TargetFramework", "net9.0")
+                       .WithProperty("RuntimeIdentifiers", "winx64;linux-x64")
+                       .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+            })
+            .WithInnerBuild(builder =>
+            {
+                builder.WithProperty("TargetFramework", "net8.0")
+                       .WithProperty("RuntimeIdentifiers", "winx64;linux-x64")
+                       .WithItem("PackageReference", "Second.Package", [new("Version", "1.0.0")]);
+            }).Build();
 
         var packagesToUpdate = new List<Pkg>();
 
@@ -404,10 +415,17 @@ public class SingleProjectTests
             PackageSpec = packageSpec
         };
 
-        // Add a library to the lock file
+        // Add libraries to the lock file
         lockFile.Libraries.Add(new LockFileLibrary
         {
             Name = "Test.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+
+        lockFile.Libraries.Add(new LockFileLibrary
+        {
+            Name = "Second.Package",
             Version = new NuGetVersion("1.0.0"),
             Type = "package"
         });
@@ -420,32 +438,59 @@ public class SingleProjectTests
             Type = "package"
         });
 
-        // Add target with the vulnerable package
-        var target = new LockFileTarget
+        // Add target for net9.0 with Test.Package
+        var targetNet9 = new LockFileTarget
         {
             TargetFramework = packageSpec.TargetFrameworks[0].FrameworkName
         };
-        target.Libraries.Add(new LockFileTargetLibrary
+        targetNet9.Libraries.Add(new LockFileTargetLibrary
         {
             Name = "Test.Package",
             Version = new NuGetVersion("1.0.0"),
             Type = "package"
         });
-        target.Libraries.Add(new LockFileTargetLibrary
+        targetNet9.Libraries.Add(new LockFileTargetLibrary
         {
             Name = "Transitive.Package",
             Version = new NuGetVersion("1.0.0"),
             Type = "package"
         });
-        lockFile.Targets.Add(target);
+        lockFile.Targets.Add(targetNet9);
 
-        // Add vulnerability log message
+        // Add target for net8.0 with Second.Package
+        var targetNet8 = new LockFileTarget
+        {
+            TargetFramework = packageSpec.TargetFrameworks[1].FrameworkName
+        };
+        targetNet8.Libraries.Add(new LockFileTargetLibrary
+        {
+            Name = "Second.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+        targetNet8.Libraries.Add(new LockFileTargetLibrary
+        {
+            Name = "Transitive.Package",
+            Version = new NuGetVersion("1.0.0"),
+            Type = "package"
+        });
+        lockFile.Targets.Add(targetNet8);
+
+        // Add vulnerability log messages
         lockFile.LogMessages.Add(new AssetsLogMessage(
             LogLevel.Warning,
             NuGetLogCode.NU1903,
             "Test.Package has a known high severity vulnerability")
         {
             LibraryId = "Test.Package"
+        });
+
+        lockFile.LogMessages.Add(new AssetsLogMessage(
+            LogLevel.Warning,
+            NuGetLogCode.NU1903,
+            "Second.Package has a known high severity vulnerability")
+        {
+            LibraryId = "Second.Package"
         });
 
         if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
@@ -477,6 +522,7 @@ public class SingleProjectTests
             new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Test.Package", new List<PackageVulnerabilityInfo> { vulnerabilityInfo } },
+                { "Second.Package", new List<PackageVulnerabilityInfo> { vulnerabilityInfo } },
                 { "Transitive.Package", new List<PackageVulnerabilityInfo> { vulnerabilityInfo } }
             }
         };
@@ -494,6 +540,14 @@ public class SingleProjectTests
             It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new NuGetVersion("1.2.3"));
+        testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
+            "Second.Package",
+            It.IsAny<IReadOnlyList<string>>(),
+            new NuGetVersion("1.0.0"),
+            It.IsAny<ILogger>(),
+            It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new NuGetVersion("2.1.0"));
         testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
             "Transitive.Package",
             It.IsAny<IReadOnlyList<string>>(),
@@ -523,6 +577,15 @@ public class SingleProjectTests
             It.IsAny<CancellationToken>()),
             Times.Once);
 
+        testData.IoMock.Verify(x => x.GetNonVulnerableAsync(
+            "Second.Package",
+            It.IsAny<IReadOnlyList<string>>(),
+            new NuGetVersion("1.0.0"),
+            It.IsAny<ILogger>(),
+            It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+
         if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
             testData.IoMock.Verify(x => x.GetNonVulnerableAsync(
@@ -543,6 +606,14 @@ public class SingleProjectTests
             It.IsAny<ILogger>()),
             Times.Once);
 
+        testData.IoMock.Verify(x => x.UpdatePackageReference(
+            It.IsAny<PackageSpec>(),
+            It.IsAny<IPackageUpdateIO.RestoreResult>(),
+            It.IsAny<List<string>>(),
+            It.Is<PackageUpdateCommandRunner.PackageToUpdate>(p => p.Id == "Second.Package" && p.NewVersion.ToString() == "[2.1.0, )"),
+            It.IsAny<ILogger>()),
+            Times.Once);
+
         if (auditMode.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
             testData.IoMock.Verify(x => x.UpdatePackageReference(
@@ -556,8 +627,8 @@ public class SingleProjectTests
 
         int packageCount =
             auditMode.Equals("all", StringComparison.OrdinalIgnoreCase)
-            ? 2
-            : 1;
+            ? 3
+            : 2;
         testData.LoggerMock.Verify(x => x.LogMinimal(
             It.Is<string>(s => s.Contains(string.Format(Strings.PackageUpdate_FinalSummary, packageCount, packageCount))),
             It.IsAny<ConsoleColor>()),
