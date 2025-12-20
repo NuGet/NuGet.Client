@@ -197,7 +197,7 @@ public class SingleProjectTests
     }
 
     [Fact]
-    public async Task PackageNotReferenced_ReturnsErrorExitCode()
+    public async Task PackageNotReferenced_ReturnsNothingToUpdateExitCode()
     {
         // Arrange
         var packageSpec = new TestPackageSpecFactory(builder =>
@@ -215,7 +215,7 @@ public class SingleProjectTests
         int exitCode = await RunCommand(testData, CancellationToken.None);
 
         // Assert
-        exitCode.Should().Be(3);
+        exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.NoPackagesNeedUpdating);
 
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
             It.IsAny<DependencyGraphSpec>(),

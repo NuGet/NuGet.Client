@@ -195,7 +195,7 @@ public class GetPackageToUpdateTests
             CancellationToken.None);
 
         // Assert
-        packagesToUpdate.Should().BeEmpty();
+        packagesToUpdate.Should().BeNull();
         scannedPackages.Should().ContainSingle().Which.Should().Be("Contoso.Utils");
         logger.Invocations.Count.Should().BeGreaterThan(0);
     }

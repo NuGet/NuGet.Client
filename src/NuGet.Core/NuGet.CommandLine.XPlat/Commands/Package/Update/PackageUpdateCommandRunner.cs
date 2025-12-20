@@ -108,7 +108,7 @@ internal static class PackageUpdateCommandRunner
 
             foreach (var packageResult in packagesToUpdate)
             {
-                logger.LogInformation($"    " + Format.PackageUpdate_UpdatedMessage(packageResult.Package.Id, packageResult.Package.CurrentVersion.ToShortString(), packageResult.Package.NewVersion.ToShortString()));
+                logger.LogInformation($"    {Format.PackageUpdate_UpdatedMessage(packageResult.Package.Id, packageResult.Package.CurrentVersion.ToShortString(), packageResult.Package.NewVersion.ToShortString())}");
                 packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.TargetFrameworkAliases, packageResult.Package, logger);
                 uniquePackagesUpdated.Add(packageResult.Package.Id);
             }
@@ -258,19 +258,21 @@ internal static class PackageUpdateCommandRunner
 
         if (args.Vulnerable)
         {
+            foreach (var projectPath in dgSpec.Restore)
+            {
+                PackageSpec projectSpec = dgSpec.GetProjectSpec(projectPath);
+                if (!NuGetAuditEnabled(projectSpec))
+                {
+                    logger.LogError(Strings.PackageUpdate_AuditDisabled);
+                    return (ExitCodes.InvalidArgs, projectPackageUpdates, 0);
+                }
+            }
+
             (exitCode, totalPackagesScanned) = await ProcessProjectsInParallelAsync(
                 dgSpec,
                 projectPackageUpdates,
                 async (projectPath, ct) =>
                 {
-                    PackageSpec projectSpec = dgSpec.GetProjectSpec(projectPath);
-
-                    if (!NuGetAuditEnabled(projectSpec))
-                    {
-                        logger.LogError(Strings.PackageUpdate_AuditDisabled);
-                        return (null, new HashSet<string>(StringComparer.OrdinalIgnoreCase), ExitCodes.InvalidArgs);
-                    }
-
                     (List<PackageUpdateResult> packagesToUpdate, HashSet<string> scannedPackages) =
                         await SelectVulnerablePackagesToUpdateAsync(args.Packages, dgSpec, projectPath, logger, packageUpdateIO, ct);
 
@@ -313,12 +315,18 @@ internal static class PackageUpdateCommandRunner
                 async (projectPath, ct) =>
                 {
                     PackageSpec projectSpec = dgSpec.GetProjectSpec(projectPath);
-                    (List<PackageUpdateResult> packagesToUpdate, HashSet<string> scannedPackages) =
+                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages) =
                         await SelectSpecificPackagesToUpdateAsync(args.Packages!, projectSpec, logger, packageUpdateIO, ct);
 
-                    return (packagesToUpdate, scannedPackages, null);
+                    int? errorCode = packagesToUpdate is null ? ExitCodes.Error : null;
+                    return (packagesToUpdate, scannedPackages, errorCode);
                 },
                 cancellationToken);
+
+            if (exitCode.HasValue)
+            {
+                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned);
+            }
         }
 
         // Check if any packages were found to update
@@ -329,14 +337,10 @@ internal static class PackageUpdateCommandRunner
                 logger.LogMinimal(Strings.PackageUpdate_NoVulnerablePackages, ConsoleColor.Green);
                 return (ExitCodes.Success, projectPackageUpdates, totalPackagesScanned);
             }
-            else if (noPackagesSpecified)
+            else
             {
                 logger.LogMinimal(Strings.PackageUpdate_AlreadyUpToDate, ConsoleColor.Green);
                 return (ExitCodes.NoPackagesNeedUpdating, projectPackageUpdates, totalPackagesScanned);
-            }
-            else
-            {
-                return (ExitCodes.Error, projectPackageUpdates, totalPackagesScanned);
             }
         }
 
@@ -384,7 +388,7 @@ internal static class PackageUpdateCommandRunner
         return (exitCode, scannedPackages.Count);
     }
 
-    internal static async Task<(List<PackageUpdateResult>, HashSet<string> scannedPackages)> SelectSpecificPackagesToUpdateAsync(
+    internal static async Task<(List<PackageUpdateResult>?, HashSet<string> scannedPackages)> SelectSpecificPackagesToUpdateAsync(
         IReadOnlyList<PackageWithVersionRange> packages,
         PackageSpec project,
         ILoggerWithColor logger,
@@ -465,7 +469,7 @@ internal static class PackageUpdateCommandRunner
             });
         }
 
-        return (hasErrors ? [] : packagesToUpdate, scannedPackages);
+        return (hasErrors ? null : packagesToUpdate, scannedPackages);
     }
 
     /// <summary>Gets the package's referenced version range and TFMs which it's referenced in.</summary>
