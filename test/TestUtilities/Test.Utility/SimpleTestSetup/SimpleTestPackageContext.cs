@@ -70,6 +70,8 @@ namespace NuGet.Test.Utility
         public Uri V3ServiceIndexUrl { get; set; }
         public IReadOnlyList<string> PackageOwners { get; set; }
 
+        public string DependencyVersionRange { get; set; }
+
         /// <summary>
         /// runtime.json
         /// </summary>

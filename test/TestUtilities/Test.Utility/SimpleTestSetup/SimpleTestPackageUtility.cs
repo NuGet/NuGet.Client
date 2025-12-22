@@ -342,13 +342,28 @@ namespace NuGet.Test.Utility
             return packages.Select(e =>
                 new PackageDependency(
                     e.Id,
-                    e.Version != null ? VersionRange.Parse(e.Version) : null,
+                    GetVersionRange(e),
                     string.IsNullOrEmpty(e.Include)
                         ? new List<string>()
                         : e.Include.Split(',').ToList(),
                     string.IsNullOrEmpty(e.Exclude)
                         ? new List<string>()
                         : e.Exclude.Split(',').ToList())).ToList();
+
+            VersionRange GetVersionRange(SimpleTestPackageContext packageContext)
+            {
+                if (packageContext.DependencyVersionRange != null)
+                {
+                    return VersionRange.Parse(packageContext.DependencyVersionRange);
+                }
+
+                if (packageContext.Version != null)
+                {
+                    return VersionRange.Parse(packageContext.Version);
+                }
+
+                return null;
+            }
         }
 
         private static SignPackageRequest GetPrimarySignRequest(SimpleTestPackageContext packageContext)

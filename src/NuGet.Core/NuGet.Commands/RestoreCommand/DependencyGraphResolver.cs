@@ -776,6 +776,7 @@ namespace NuGet.Commands
                 // 4. The dependency has a version specified
                 // 5. The version range is not satisfied by the resolved version
                 // 6. A corresponding downgrade was not detected
+                // 7. The package is not pinned
                 if (resolvedDependencyGraphItem.Item.Key.Type != LibraryType.Project
                     && resolvedDependencyGraphItem.Item.Key.Type != LibraryType.ExternalProject
                     && resolvedDependencyGraphItem.Item.Key.Type != LibraryType.Unresolved
@@ -783,7 +784,8 @@ namespace NuGet.Commands
                     && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All
                     && childLibraryDependency.LibraryRange.VersionRange != null
                     && !childLibraryDependency.LibraryRange.VersionRange!.Satisfies(resolvedDependencyGraphItem.Item.Key.Version)
-                    && !downgrades.ContainsKey(childResolvedLibraryRangeIndex))
+                    && !downgrades.ContainsKey(childResolvedLibraryRangeIndex)
+                    && !resolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage)
                 {
                     conflictingNode = new(childLibraryDependency.LibraryRange)
                     {

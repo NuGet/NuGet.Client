@@ -2937,6 +2937,93 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
         }
 
+        // P -> A [1.0.0, )
+        //      -> B [1.0.0]
+        // P -> C [1.0.0, )
+        //      -> B [2.0.0,)
+        //
+        // B is pinned to [2.0.0,) to get around the version conflict
+        [Fact]
+        public async Task RestoreCommand_WithTransitivePinningEnabledToFixVersionConflict_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("A", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("B", "1.0.0")
+                    {
+                        DependencyVersionRange = "[1.0.0]"
+                    },
+                ]
+            };
+
+            var packageC = new SimpleTestPackageContext("C", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("B", "2.0.0")
+                ]
+            };
+
+            var packageB100 = new SimpleTestPackageContext("B", "1.0.0");
+            var packageB200 = new SimpleTestPackageContext("B", "2.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB100,
+                packageB200,
+                packageC);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                      ""centralPackageVersionsManagementEnabled"": true,
+                      ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                    ""frameworks"": {
+                      ""net472"": {
+                          ""dependencies"": {
+                            ""A"" : {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""versionCentrallyManaged"": true
+                            },
+                            ""C"" : {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""versionCentrallyManaged"": true
+                            },
+                          },
+                          ""centralPackageVersions"": {
+                            ""A"": ""[1.0.0,)"",
+                            ""B"": ""[2.0.0,)"",
+                            ""C"": ""[1.0.0,)"",
+                          }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("A");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("B");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("C");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
