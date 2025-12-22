@@ -73,8 +73,75 @@ namespace NuGet.XPlat.FuncTest
                 "Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':",
                 "",
                 "  [net472]                                                                                          ",
-                "  └── PackageX (v1.0.0)                                                                             ",
-                "      └── PackageY (v1.0.1)                                                                         ",
+                "  └── PackageX@1.0.0 (>= 1.0.0)                                                                     ",
+                "      └── PackageY@1.0.1 (>= 1.0.1)                                                                 ",
+                "",
+                ""
+                ];
+
+            Assert.Equal(ExitCodes.Success, result);
+            output.Should().Be(string.Join("\n", expected));
+        }
+
+        [Fact]
+        public async Task WhyCommand_TransitiveDependencyWithMultipleRequestedVersions_ShowsRequestedAndResolvedVersions()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageA = XPlatTestUtils.CreatePackage("PackageA", "1.2.3");
+            var packageB = XPlatTestUtils.CreatePackage("PackageB", "3.2.1");
+            var packageDepV1 = XPlatTestUtils.CreatePackage("Some.Dependency", "1.0.0");
+            var packageDepV2 = XPlatTestUtils.CreatePackage("Some.Dependency", "2.0.0");
+
+            packageA.Dependencies.Add(packageDepV1);
+            packageB.Dependencies.Add(packageDepV2);
+
+            project.AddPackageToFramework(projectFramework, packageA, packageB);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB,
+                packageDepV1,
+                packageDepV2);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageA.Id, packageA.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageB.Id, packageB.Version, project);
+            addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var console = new TestConsole();
+            console.Width(100);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageDepV1.Id,
+                    [projectFramework],
+                    console,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = console.Output;
+
+            string[] expected =
+                [
+                "Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'Some.Dependency':",
+                "",
+                "  [net472]                                                                                          ",
+                "  ├── PackageA@1.2.3 (>= 1.2.3)                                                                     ",
+                "  │   └── Some.Dependency@2.0.0 (>= 1.0.0)                                                          ",
+                "  └── PackageB@3.2.1 (>= 3.2.1)                                                                     ",
+                "      └── Some.Dependency@2.0.0 (>= 2.0.0)                                                          ",
                 "",
                 ""
                 ];

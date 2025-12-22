@@ -96,7 +96,21 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
         private static IRenderable GetNodeText(DependencyNode node, string targetPackage)
         {
-            string text = $"{node.Id} (v{node.Version})";
+            string text;
+
+            if (node.IsProject)
+            {
+                text = node.Id;
+            }
+            else if (!string.IsNullOrEmpty(node.RequestedVersion))
+            {
+                text = $"{node.Id}@{node.Version} ({node.RequestedVersion})";
+            }
+            else
+            {
+                text = $"{node.Id}@{node.Version}";
+            }
+
             Style? style = node.Id.Equals(targetPackage, StringComparison.OrdinalIgnoreCase)
                 ? new Style(foreground: TargetPackageColor)
                 : null;

@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -268,6 +269,54 @@ namespace Dotnet.Integration.Test
 
             // Assert
             result.AllOutput.Should().Contain("https://aka.ms/dotnet/nuget/why");
+        }
+
+        [Fact]
+        public async Task WhyCommand_ProjectReference_Succeeds()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, Constants.ProjectTargetFramework);
+            var projectC = XPlatTestUtils.CreateProject("ProjectC", pathContext, Constants.ProjectTargetFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", Constants.ProjectTargetFramework);
+
+            projectA.AddPackageToFramework(Constants.ProjectTargetFramework, packageX);
+            projectA.Save();
+            projectB.AddProjectToAllFrameworks(projectA);
+            projectB.Save();
+            projectC.AddProjectToAllFrameworks(projectB);
+            projectC.Save();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageX);
+
+            string addPackageCommandArgs = $"add {projectA.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+
+            CommandRunnerResult restoreResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectC.ProjectPath}", testOutputHelper: _testOutputHelper);
+
+            // Act
+            string whyCommandArgs = $"nuget why {projectC.ProjectPath} {packageX.Id}";
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+
+            // Assert
+            // project references should not have version numbers
+            string[] expected =
+                [
+                "Project 'ProjectC' has the following dependency graph(s) for 'PackageX':",
+                "",
+                $"  [{Constants.ProjectTargetFramework}]                                                                     ",
+                "  └── ProjectB                                                                  ",
+                "      └── ProjectA                                                              ",
+                "          └── PackageX@1.0.0 (>= 1.0.0)                                         ",
+                "",
+                "",
+                ""
+                ];
+            result.AllOutput.Should().Be(string.Join(Environment.NewLine, expected));
         }
     }
 }

@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
 {
@@ -36,7 +38,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 .Append(null)
                 .ToList();
             // get all top-level package and project references for the project, categorized by target framework alias
-            Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks);
+            Dictionary<string, List<LibraryRange>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks);
 
             if (topLevelReferencesByFramework.Count > 0)
             {
@@ -81,23 +83,30 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// List of all top-level package nodes in the dependency graph.
         /// </returns>
         private static List<DependencyNode>? GetDependencyGraphForTargetPerFramework(
-            List<string> topLevelReferences,
+            List<LibraryRange> topLevelReferences,
             IList<LockFileTargetLibrary> packageLibraries,
             string targetPackage)
         {
             List<DependencyNode>? dependencyGraph = null;
 
-            // hashset tracking every package node that we've traversed
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // dictionary mapping packageIds to their resolved version and type
+            (Dictionary<string, string> versions, Dictionary<string, bool> isProjectMap) = GetAllResolvedVersionsAndTypes(packageLibraries);
+
             // dictionary tracking all package nodes that have been added to the graph, mapped to their DependencyNode objects
+            // this allows sharing of nodes when the same package is reached via multiple paths
             var dependencyNodes = new Dictionary<string, DependencyNode>(StringComparer.OrdinalIgnoreCase);
-            // dictionary mapping all packageIds to their resolved version
-            Dictionary<string, string> versions = GetAllResolvedVersions(packageLibraries);
 
             foreach (var topLevelReference in topLevelReferences)
             {
                 // use depth-first search to find dependency paths from the top-level package to the target package
-                DependencyNode? topLevelNode = FindDependencyPathForTarget(topLevelReference, packageLibraries, visited, dependencyNodes, versions, targetPackage);
+                DependencyNode? topLevelNode = FindDependencyPathForTarget(
+                    topLevelReference.Name,
+                    topLevelReference.VersionRange?.ToString("p", VersionRangeFormatter.Instance),
+                    packageLibraries,
+                    dependencyNodes,
+                    versions,
+                    isProjectMap,
+                    targetPackage);
 
                 if (topLevelNode != null)
                 {
@@ -110,103 +119,87 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         }
 
         /// <summary>
-        /// Traverses the dependency graph for a given top-level package, looking for a path to the target package.
+        /// Traverses the dependency graph for a given package, looking for paths to the target package.
         /// </summary>
-        /// <param name="topLevelPackage">Top-level package.</param>
+        /// <param name="packageId">Package ID to traverse.</param>
+        /// <param name="requestedVersion">The version range requested for this package.</param>
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
-        /// <param name="visited">HashSet tracking every package node that we've traversed.</param>
         /// <param name="dependencyNodes">Dictionary tracking all packageIds that were added to the graph, mapped to their DependencyNode objects.</param>
         /// <param name="versions">Dictionary mapping packageIds to their resolved versions.</param>
+        /// <param name="isProjectMap">Dictionary mapping packageIds to whether they are projects.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns>
-        /// The top-level package node in the dependency graph (if a path was found), or null (if no path was found).
+        /// The package node in the dependency graph (if a path was found), or null (if no path was found).
         /// </returns>
         private static DependencyNode? FindDependencyPathForTarget(
-            string topLevelPackage,
+            string packageId,
+            string? requestedVersion,
             IList<LockFileTargetLibrary> packageLibraries,
-            HashSet<string> visited,
             Dictionary<string, DependencyNode> dependencyNodes,
             Dictionary<string, string> versions,
+            Dictionary<string, bool> isProjectMap,
             string targetPackage)
         {
-            var stack = new Stack<StackDependencyData>();
-            stack.Push(new StackDependencyData(topLevelPackage, null));
+            // Create a unique key combining packageId and requestedVersion to handle cases where
+            // the same package is reached via multiple paths with different version requirements
+            string nodeKey = $"{packageId}|{requestedVersion}";
 
-            while (stack.Count > 0)
+            // if we've already processed this node and determined its children, return it
+            if (dependencyNodes.TryGetValue(nodeKey, out var existingNode))
             {
-                var currentPackageData = stack.Pop();
-                var currentPackageId = currentPackageData.Id;
+                return existingNode;
+            }
 
-                // if we reach the target node, or if we've already traversed this node and found dependency paths, add it to the graph
-                if (currentPackageId.Equals(targetPackage, StringComparison.OrdinalIgnoreCase)
-                    || dependencyNodes.ContainsKey(currentPackageId))
+            // check if this package exists in the resolved dependencies
+            if (!versions.TryGetValue(packageId, out var resolvedVersion))
+            {
+                return null;
+            }
+
+            // create a node for this package (we'll determine if it should be added to the graph after checking its children)
+            bool isProject = isProjectMap.TryGetValue(packageId, out bool isProj) && isProj;
+            // For projects, use empty string as version since it won't be displayed
+            string version = isProject ? string.Empty : resolvedVersion;
+            var currentNode = new DependencyNode(packageId, version, requestedVersion, isProject);
+
+            // to prevent infinite recursion in case of circular dependencies, add to dictionary before processing children
+            dependencyNodes[nodeKey] = currentNode;
+
+            bool hasPathToTarget = packageId.Equals(targetPackage, StringComparison.OrdinalIgnoreCase);
+
+            // get all dependencies for the current package
+            var dependencies = packageLibraries?.FirstOrDefault(i => i?.Name?.Equals(packageId, StringComparison.OrdinalIgnoreCase) == true)?.Dependencies;
+
+            if (dependencies?.Count > 0)
+            {
+                foreach (var dependency in dependencies)
                 {
-                    AddToGraph(currentPackageData, dependencyNodes, versions);
-                    continue;
-                }
+                    string dependencyRequestedVersion = dependency.VersionRange.ToString("p", VersionRangeFormatter.Instance);
+                    var childNode = FindDependencyPathForTarget(
+                        dependency.Id,
+                        dependencyRequestedVersion,
+                        packageLibraries!,
+                        dependencyNodes,
+                        versions,
+                        isProjectMap,
+                        targetPackage);
 
-                // if we have already traversed this node's children, continue
-                if (visited.Contains(currentPackageId))
-                {
-                    continue;
-                }
-
-                visited.Add(currentPackageId);
-
-                // get all dependencies for the current package
-                var dependencies = packageLibraries?.FirstOrDefault(i => i?.Name?.Equals(currentPackageId, StringComparison.OrdinalIgnoreCase) == true)?.Dependencies;
-
-                if (dependencies?.Count > 0)
-                {
-                    // push all the dependencies onto the stack
-                    foreach (var dependency in dependencies)
+                    if (childNode != null)
                     {
-                        stack.Push(new StackDependencyData(dependency.Id, currentPackageData));
+                        currentNode.Children.Add(childNode);
+                        hasPathToTarget = true;
                     }
                 }
             }
 
-            return dependencyNodes.GetValueOrDefault(topLevelPackage);
-        }
-
-        /// <summary>
-        /// Adds a dependency path to the graph, starting from the target package and traversing up to the top-level package.
-        /// </summary>
-        /// <param name="targetPackageData">Target node data. This stores parent references, so it can be used to construct the dependency graph
-        /// up to the top-level package.</param>
-        /// <param name="dependencyNodes">Dictionary tracking all packageIds that were added to the graph, mapped to their DependencyNode objects.</param>
-        /// <param name="versions">Dictionary mapping packageIds to their resolved versions.</param>
-        private static void AddToGraph(
-            StackDependencyData targetPackageData,
-            Dictionary<string, DependencyNode> dependencyNodes,
-            Dictionary<string, string> versions)
-        {
-            // first, we traverse the target's parents, listing the packages in the path from the target to the top-level package
-            var dependencyPath = new List<string> { targetPackageData.Id };
-            StackDependencyData? current = targetPackageData.Parent;
-
-            while (current != null)
+            // if this node has no path to target, remove it from the dictionary and return null
+            if (!hasPathToTarget)
             {
-                dependencyPath.Add(current.Id);
-                current = current.Parent;
+                dependencyNodes.Remove(nodeKey);
+                return null;
             }
 
-            // then, we traverse this list from the target package to the top-level package, initializing/updating their dependency nodes as needed
-            for (int i = 0; i < dependencyPath.Count; i++)
-            {
-                string currentPackageId = dependencyPath[i];
-
-                if (!dependencyNodes.ContainsKey(currentPackageId))
-                {
-                    dependencyNodes.Add(currentPackageId, new DependencyNode(currentPackageId, versions[currentPackageId]));
-                }
-
-                if (i > 0)
-                {
-                    var childNode = dependencyNodes[dependencyPath[i - 1]];
-                    dependencyNodes[currentPackageId].Children.Add(childNode);
-                }
-            }
+            return currentNode;
         }
 
         /// <summary>
@@ -217,11 +210,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// <returns>
         /// Dictionary mapping the project's target framework aliases to their respective top-level package and project references.
         /// </returns>
-        private static Dictionary<string, List<string>> GetTopLevelPackageAndProjectReferences(
+        private static Dictionary<string, List<LibraryRange>> GetTopLevelPackageAndProjectReferences(
             LockFile assetsFile,
             List<string> userInputFrameworks)
         {
-            var topLevelReferences = new Dictionary<string, List<string>>();
+            var topLevelReferences = new Dictionary<string, List<LibraryRange>>();
 
             var targetAliases = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks;
 
@@ -234,14 +227,15 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             // we need to match top-level project references to their target library entries using their paths,
             // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
-            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
+            var projectLibraryPathToName = new Dictionary<string, LibraryRange>(projectLibraries.Count());
             var projectDirectoryPath = Path.GetDirectoryName(assetsFile.PackageSpec.FilePath);
 
             if (projectDirectoryPath != null)
             {
                 foreach (var library in projectLibraries)
                 {
-                    projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
+                    var projectInfo = new LibraryRange(library.Name, LibraryDependencyTarget.Project);
+                    projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), projectInfo);
                 }
             }
 
@@ -254,8 +248,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
                 if (targetFrameworkInformation != default)
                 {
-                    var topLevelPackages = targetFrameworkInformation.Dependencies.Select(d => d.Name);
-                    topLevelReferences[targetAlias].AddRange(topLevelPackages);
+                    topLevelReferences[targetAlias].AddRange(targetFrameworkInformation.Dependencies.Select(d => d.LibraryRange));
                 }
 
                 // top-level projects
@@ -274,34 +267,24 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         }
 
         /// <summary>
-        /// Adds all resolved versions of packages to a dictionary.
+        /// Adds all resolved versions of packages to a dictionary, and tracks which are projects.
         /// </summary>
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
-        private static Dictionary<string, string> GetAllResolvedVersions(IList<LockFileTargetLibrary> packageLibraries)
+        private static (Dictionary<string, string>, Dictionary<string, bool>) GetAllResolvedVersionsAndTypes(IList<LockFileTargetLibrary> packageLibraries)
         {
             var versions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var isProjectMap = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var package in packageLibraries)
             {
                 if (package?.Name != null && package?.Version != null)
                 {
                     versions.Add(package.Name, package.Version.ToNormalizedString());
+                    isProjectMap.Add(package.Name, package.Type?.Equals("project", StringComparison.OrdinalIgnoreCase) == true);
                 }
             }
 
-            return versions;
-        }
-
-        private class StackDependencyData
-        {
-            public string Id { get; set; }
-            public StackDependencyData? Parent { get; set; }
-
-            public StackDependencyData(string currentId, StackDependencyData? parentDependencyData)
-            {
-                Id = currentId;
-                Parent = parentDependencyData;
-            }
+            return (versions, isProjectMap);
         }
     }
 }

@@ -16,12 +16,16 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
     {
         public string Id { get; set; }
         public string Version { get; set; }
+        public string? RequestedVersion { get; set; }
+        public bool IsProject { get; set; }
         public HashSet<DependencyNode> Children { get; set; }
 
-        public DependencyNode(string id, string version)
+        public DependencyNode(string id, string version, string? requestedVersion, bool isProject = false)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Version = version ?? throw new ArgumentNullException(nameof(version));
+            RequestedVersion = requestedVersion;
+            IsProject = isProject;
             Children = new HashSet<DependencyNode>(new DependencyNodeComparer());
         }
 
