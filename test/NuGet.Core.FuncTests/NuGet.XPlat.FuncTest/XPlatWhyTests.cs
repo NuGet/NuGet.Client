@@ -1,12 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Why;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Spectre.Console.Testing;
 using Xunit;
@@ -352,6 +357,53 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(ExitCodes.Success, result);
             Assert.Contains($"The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", output);
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
+        }
+
+        [Fact]
+        public async Task WhyCommand_WithLegacyProjectAssetsFile_OutputsPackageGraph()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+
+            // Legacy projects' assets files don't have a target alias
+            string assetsContent = ResourceTestUtility.GetResource(
+                "NuGet.XPlat.FuncTest.compiler.resources.legacy.project.assets.json",
+                GetType());
+            string assetsPath = Path.Combine(pathContext.SolutionRoot, LockFileFormat.AssetsFileName);
+            File.WriteAllText(assetsPath, assetsContent);
+
+            var console = new TestConsole();
+            console.Width(100);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    assetsPath,
+                    "PackageC",
+                    [],
+                    console,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = console.Output;
+
+            string expected = string.Join(Environment.NewLine,
+                (string[])[
+                    "Project 'ConsoleApp17' has the following dependency graph(s) for 'PackageC':",
+                    "",
+                    "  [net481/win]",
+                    "  [net481/win-arm64]",
+                    "  [net481/win-x64]",
+                    "  [net481/win-x86]",
+                    "  [net481]",
+                    "  └── PackageA@1.0.0 (>= 1.0.0)",
+                    "      ├── PackageB@1.0.0 (>= 1.0.0)",
+                    "      │   └── PackageC@2.0.0 (>= 1.0.0)",
+                    "      └── PackageC@2.0.0 (>= 2.0.0)",
+                ]);
+            string actual = string.Join(Environment.NewLine, console.Lines.Select(line => line.TrimEnd()));
+            actual.Should().BeEquivalentTo(expected, $"Full output: {actual}");
         }
     }
 }

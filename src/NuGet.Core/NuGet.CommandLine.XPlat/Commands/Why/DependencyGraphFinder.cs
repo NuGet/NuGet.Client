@@ -48,7 +48,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     {
                         var targetFrameworkDisplayName = runtimeIdentifier == null ? targetFrameworkAlias : $"{targetFrameworkAlias}/{runtimeIdentifier}";
 
-                        LockFileTarget target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: runtimeIdentifier);
+                        bool isNonSdkStyle = assetsFile.PackageSpec.TargetFrameworks.Count == 1
+                            && string.IsNullOrEmpty(assetsFile.PackageSpec.TargetFrameworks[0].TargetAlias);
+
+                        LockFileTarget target = isNonSdkStyle
+                            ? assetsFile.Targets[0]
+                            : assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: runtimeIdentifier);
 
                         // get all package libraries for the framework
                         IList<LockFileTargetLibrary>? packageLibraries = target.Libraries;
@@ -245,14 +250,20 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 topLevelReferences.Add(targetAlias, []);
 
                 // top-level packages
-                TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
+                // For legacy (non-SDK-style) projects, TargetAlias is empty, so we need to match by framework name instead
+                TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi =>
+                    tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase) ||
+                    (string.IsNullOrEmpty(tfi.TargetAlias) && tfi.FrameworkName.GetShortFolderName().Equals(targetAlias, StringComparison.OrdinalIgnoreCase)));
                 if (targetFrameworkInformation != default)
                 {
                     topLevelReferences[targetAlias].AddRange(targetFrameworkInformation.Dependencies.Select(d => d.LibraryRange));
                 }
 
                 // top-level projects
-                ProjectRestoreMetadataFrameworkInfo? restoreMetadataFrameworkInfo = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
+                // For legacy (non-SDK-style) projects, TargetAlias is empty, so we need to match by framework name instead
+                ProjectRestoreMetadataFrameworkInfo? restoreMetadataFrameworkInfo = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(tfi =>
+                    tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase) ||
+                    (string.IsNullOrEmpty(tfi.TargetAlias) && tfi.FrameworkName.GetShortFolderName().Equals(targetAlias, StringComparison.OrdinalIgnoreCase)));
                 if (restoreMetadataFrameworkInfo != default)
                 {
                     var topLevelProjectPaths = restoreMetadataFrameworkInfo.ProjectReferences.Select(p => p.ProjectPath);
