@@ -71,21 +71,18 @@ namespace NuGet.XPlat.FuncTest
             var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
             // Assert
-            var output = console.Output;
+            Assert.Equal(ExitCodes.Success, result);
 
-            string[] expected =
+            string expected = string.Join("\n", (string[])
                 [
                 "Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':",
                 "",
-                "  [net472]                                                                                          ",
-                "  └── PackageX@1.0.0 (>= 1.0.0)                                                                     ",
-                "      └── PackageY@1.0.1 (>= 1.0.1)                                                                 ",
-                "",
-                ""
-                ];
-
-            Assert.Equal(ExitCodes.Success, result);
-            output.Should().Be(string.Join("\n", expected));
+                "  [net472]",
+                "  └── PackageX@1.0.0 (>= 1.0.0)",
+                "      └── PackageY@1.0.1 (>= 1.0.1)",
+                ]);
+            string actual = string.Join("\n", console.Lines.Select(line => line.TrimEnd()));
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -136,23 +133,20 @@ namespace NuGet.XPlat.FuncTest
             var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
             // Assert
-            var output = console.Output;
+            Assert.Equal(ExitCodes.Success, result);
 
-            string[] expected =
+            string expected = string.Join("\n", (string[])
                 [
                 "Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'Some.Dependency':",
                 "",
-                "  [net472]                                                                                          ",
-                "  ├── PackageA@1.2.3 (>= 1.2.3)                                                                     ",
-                "  │   └── Some.Dependency@2.0.0 (>= 1.0.0)                                                          ",
-                "  └── PackageB@3.2.1 (>= 3.2.1)                                                                     ",
-                "      └── Some.Dependency@2.0.0 (>= 2.0.0)                                                          ",
-                "",
-                ""
-                ];
-
-            Assert.Equal(ExitCodes.Success, result);
-            output.Should().Be(string.Join("\n", expected));
+                "  [net472]",
+                "  ├── PackageA@1.2.3 (>= 1.2.3)",
+                "  │   └── Some.Dependency@2.0.0 (>= 1.0.0)",
+                "  └── PackageB@3.2.1 (>= 3.2.1)",
+                "      └── Some.Dependency@2.0.0 (>= 2.0.0)",
+                ]);
+            string actual = string.Join("\n", console.Lines.Select(line => line.TrimEnd()));
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -392,11 +386,11 @@ namespace NuGet.XPlat.FuncTest
                 (string[])[
                     "Project 'ConsoleApp17' has the following dependency graph(s) for 'PackageC':",
                     "",
+                    "  [net481]",
                     "  [net481/win]",
                     "  [net481/win-arm64]",
                     "  [net481/win-x64]",
                     "  [net481/win-x86]",
-                    "  [net481]",
                     "  └── PackageA@1.0.0 (>= 1.0.0)",
                     "      ├── PackageB@1.0.0 (>= 1.0.0)",
                     "      │   └── PackageC@2.0.0 (>= 1.0.0)",

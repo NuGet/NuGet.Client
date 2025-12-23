@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Shared;
+using NuGet.Versioning;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -98,17 +99,15 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             string text;
 
-            if (node.IsProject)
+            if (node is PackageNode pkgNode)
             {
-                text = node.Id;
-            }
-            else if (!string.IsNullOrEmpty(node.RequestedVersion))
-            {
-                text = $"{node.Id}@{node.Version} ({node.RequestedVersion})";
+                string resolved = pkgNode.ResolvedVersion.OriginalVersion ?? pkgNode.ResolvedVersion.ToString();
+                string requested = pkgNode.RequestedVersion.ToString("p", VersionRangeFormatter.Instance);
+                text = $"{node.Id}@{resolved} ({requested})";
             }
             else
             {
-                text = $"{node.Id}@{node.Version}";
+                text = node.Id;
             }
 
             Style? style = node.Id.Equals(targetPackage, StringComparison.OrdinalIgnoreCase)
