@@ -396,7 +396,6 @@ namespace NuGet.Commands
                     }
 
                     LibraryDependencyIndex childLibraryDependencyIndex = resolvedDependencyGraphItem.GetDependencyIndexForDependencyAt(i);
-                    LibraryRangeIndex currentRangeIndex = resolvedDependencyGraphItem.GetRangeIndexForDependencyAt(i);
 
                     if (!resolvedDependencyGraphItems.TryGetValue(childLibraryDependencyIndex, out ResolvedDependencyGraphItem? childResolvedDependencyGraphItem))
                     {
@@ -410,6 +409,8 @@ namespace NuGet.Commands
                     // Determine if this dependency has already been visited
                     if (!visitedItems.Add(childLibraryDependencyIndex))
                     {
+                        LibraryRangeIndex currentRangeIndex = resolvedDependencyGraphItem.GetRangeIndexForDependencyAt(i);
+
                         if (resolvedDependencyGraphItem.Path.Contains(currentRangeIndex))
                         {
                             // If the dependency exists in the its own path, then a cycle exists
@@ -512,27 +513,10 @@ namespace NuGet.Commands
                             continue;
                         }
 
-                        if (TryDetectVersionConflict(
-                            currentGraphNode,
-                            childResolvedDependencyGraphItem,
-                            versionConflicts,
-                            downgrades,
-                            childLibraryDependency,
-                            currentRangeIndex,
-                            childResolvedLibraryRangeIndex,
-                            out GraphNode<RemoteResolveResult>? nodeWithConflict))
-                        {
-                            currentGraphNode.InnerNodes.Add(nodeWithConflict);
-
-                            nodesById.Add(currentRangeIndex, nodeWithConflict);
-
-                            continue;
-                        }
-
                         // If it wasn't a downgrade, then it was a version conflict like A -> B [1.0.0] but B 1.0.0 was not in the resolved graph
                         if (versionConflicts.ContainsKey(childResolvedLibraryRangeIndex) && !nodesById.ContainsKey(currentRangeIndex))
                         {
-                            nodeWithConflict = new(childResolvedLibraryDependency.LibraryRange)
+                            GraphNode<RemoteResolveResult> nodeWithConflict = new(childResolvedLibraryDependency.LibraryRange)
                             {
                                 Item = childResolvedDependencyGraphItem.Item,
                                 Disposition = Disposition.Acceptable,
@@ -597,26 +581,43 @@ namespace NuGet.Commands
                             ));
                     }
 
-                    if (TryDetectVersionConflict(
-                        currentGraphNode,
-                        childResolvedDependencyGraphItem,
-                        versionConflicts, downgrades,
-                        childLibraryDependency,
-                        currentRangeIndex,
-                        childResolvedLibraryRangeIndex,
-                        out GraphNode<RemoteResolveResult>? conflictingNode))
+                    // This is a version conflict if:
+                    // 1. The node is not a project and isn't unresolved
+                    // 2. The conflict has not already been detected
+                    // 3. The dependency is transitive and doesn't have PrivateAssets=All
+                    // 4. The dependency has a version specified
+                    // 5. The version range is not satisfied by the resolved version
+                    // 6. A corresponding downgrade was not detected
+                    if (newGraphNode.Item.Key.Type != LibraryType.Project
+                        && newGraphNode.Item.Key.Type != LibraryType.ExternalProject
+                        && newGraphNode.Item.Key.Type != LibraryType.Unresolved
+                        && !versionConflicts.ContainsKey(childResolvedLibraryRangeIndex)
+                        && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All
+                        && childLibraryDependency.LibraryRange.VersionRange != null
+                        && !childLibraryDependency.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version)
+                        && !downgrades.ContainsKey(childResolvedLibraryRangeIndex))
                     {
                         // Remove the existing node so it can be replaced with a node representing the conflict
                         currentGraphNode.InnerNodes.Remove(newGraphNode);
 
+                        GraphNode<RemoteResolveResult> conflictingNode = new(childLibraryDependency.LibraryRange)
+                        {
+                            Disposition = Disposition.Acceptable,
+                            Item = new GraphItem<RemoteResolveResult>(
+                                new LibraryIdentity(
+                                    childLibraryDependency.Name,
+                                    childLibraryDependency.LibraryRange.VersionRange.MinVersion!,
+                                    LibraryType.Package)),
+                            OuterNode = currentGraphNode,
+                        };
+
                         // Add the conflict node to the parent
                         currentGraphNode.InnerNodes.Add(conflictingNode);
 
-                        nodesById.Add(currentRangeIndex, conflictingNode);
+                        // Track the version conflict for later
+                        versionConflicts.Add(childResolvedLibraryRangeIndex, conflictingNode);
 
-                        // This node conflicts and won't be included in the final graph
-                        visitedItems.Remove(childLibraryDependencyIndex);
-
+                        // Process the next child
                         continue;
                     }
 
@@ -751,59 +752,6 @@ namespace NuGet.Commands
                 resolvedDependencies: resolvedPackages);
 
             return (success, restoreTargetGraph);
-
-            static bool TryDetectVersionConflict(
-                GraphNode<RemoteResolveResult> currentGraphNode,
-                ResolvedDependencyGraphItem resolvedDependencyGraphItem,
-                Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>> versionConflicts,
-                Dictionary<LibraryRangeIndex, (LibraryRangeIndex FromParentLibraryRangeIndex, LibraryDependency FromLibraryDependency, LibraryRangeIndex ToParentLibraryRangeIndex, LibraryDependencyIndex ToLibraryDependencyIndex, bool IsCentralTransitive)> downgrades,
-                LibraryDependency childLibraryDependency,
-                LibraryRangeIndex childLibraryDependencyIndex,
-                LibraryRangeIndex childResolvedLibraryRangeIndex,
-                [NotNullWhen(true)] out GraphNode<RemoteResolveResult>? conflictingNode)
-            {
-                conflictingNode = null;
-
-                if (resolvedDependencyGraphItem.IsRootPackageReference)
-                {
-                    return false;
-                }
-
-                // This is a version conflict if:
-                // 1. The node is not a project and isn't unresolved
-                // 2. The conflict has not already been detected
-                // 3. The dependency is transitive and doesn't have PrivateAssets=All
-                // 4. The dependency has a version specified
-                // 5. The version range is not satisfied by the resolved version
-                // 6. A corresponding downgrade was not detected
-                if (resolvedDependencyGraphItem.Item.Key.Type != LibraryType.Project
-                    && resolvedDependencyGraphItem.Item.Key.Type != LibraryType.ExternalProject
-                    && resolvedDependencyGraphItem.Item.Key.Type != LibraryType.Unresolved
-                    && !versionConflicts.ContainsKey(childResolvedLibraryRangeIndex)
-                    && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All
-                    && childLibraryDependency.LibraryRange.VersionRange != null
-                    && !childLibraryDependency.LibraryRange.VersionRange!.Satisfies(resolvedDependencyGraphItem.Item.Key.Version)
-                    && !downgrades.ContainsKey(childResolvedLibraryRangeIndex))
-                {
-                    conflictingNode = new(childLibraryDependency.LibraryRange)
-                    {
-                        Disposition = Disposition.Rejected,
-                        Item = new GraphItem<RemoteResolveResult>(
-                            new LibraryIdentity(
-                                childLibraryDependency.Name,
-                                childLibraryDependency.LibraryRange.VersionRange.MinVersion!,
-                                LibraryType.Package)),
-                        OuterNode = currentGraphNode,
-                    };
-
-                    // Track the version conflict for later
-                    versionConflicts.Add(childResolvedLibraryRangeIndex, conflictingNode);
-
-                    return true;
-                }
-
-                return false;
-            }
         }
 
         private static bool EvaluateRuntimeDependencies(ref LibraryDependency libraryDependency, RuntimeGraph? runtimeGraph, string? runtimeIdentifier, ref HashSet<LibraryDependency>? runtimeDependencies)
