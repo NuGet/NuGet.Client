@@ -6,6 +6,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
@@ -316,7 +317,17 @@ namespace Dotnet.Integration.Test
                 "",
                 ""
                 ];
-            result.AllOutput.Should().Be(string.Join(Environment.NewLine, expected));
+            StripAnsiCodes(result.AllOutput).Should().Be(string.Join(Environment.NewLine, expected));
+        }
+
+        private static string StripAnsiCodes(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            return Regex.Replace(input, @"\x1B\[[0-?]*[ -/]*[@-~]", string.Empty);
         }
     }
 }
