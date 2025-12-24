@@ -142,7 +142,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     LockFileTargetLibrary? dependencyLibrary = Target.Libraries.FirstOrDefault(l => l.Name!.Equals(dependency.Id, StringComparison.OrdinalIgnoreCase));
                     if (dependencyLibrary is null)
                     {
-                        throw new Exception(Strings.WhyCommand_Error_InconsistentAssetsFile);
+                        // This feels like an error, but unless https://github.com/NuGet/Home/issues/14698 is fixed, we have to ignore it.
+                        continue;
                     }
                     DependencyNode? childNode = CreateNode(dependencyLibrary, dependency.VersionRange);
                     if (childNode is not null)
