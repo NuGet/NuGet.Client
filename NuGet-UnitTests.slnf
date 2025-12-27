@@ -69,7 +69,9 @@
       "test\\TestExtensions\\TestablePluginCredentialProvider\\TestableCredentialProvider.csproj",
       "test\\TestExtensions\\TestablePlugin\\TestablePlugin.csproj",
       "test\\TestUtilities\\Microsoft.Internal.NuGet.Testing.SignedPackages\\Microsoft.Internal.NuGet.Testing.SignedPackages.csproj",
-      "test\\TestUtilities\\Test.Utility\\Test.Utility.csproj"
+      "test\\TestUtilities\\Test.Utility\\Test.Utility.csproj",
+      "src\\Analyzers\\NuGet.Repo.Analyzers\\NuGet.Repo.Analyzers.csproj",
+      "test\\Analyzers\\NuGet.Repo.Analyzers.Test\\NuGet.Repo.Analyzers.Test.csproj"
     ]
   }
 }
