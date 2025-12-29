@@ -178,8 +178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_MachineWidePackageSource_Description">
-        <source>Package sources defined at the machine level appear in a dedicated section below. These are generally provisioned by Visual Studio workloads and can only be enabled or disabled using the checkbox in the Enabled column.</source>
-        <target state="new">Package sources defined at the machine level appear in a dedicated section below. These are generally provisioned by Visual Studio workloads and can only be enabled or disabled using the checkbox in the Enabled column.</target>
+        <source>Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</source>
+        <target state="new">Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceEnabled_Header">

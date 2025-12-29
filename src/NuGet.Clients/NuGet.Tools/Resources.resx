@@ -265,6 +265,6 @@
     <value>Use separate sources for vulnerability audit</value>
   </data>
   <data name="Text_MachineWidePackageSource_Description" xml:space="preserve">
-    <value>Package sources defined at the machine level appear in a dedicated section below. These are generally provisioned by Visual Studio workloads and can only be enabled or disabled using the checkbox in the Enabled column.</value>
+    <value>Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</value>
   </data>
 </root>
