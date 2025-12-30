@@ -5,5 +5,6 @@
     "projectName": "DevDiv",
     "areaPath": "DevDiv\\NuGet\\NuGet Clients",
     "iterationPath": "DevDiv",
-    "allTools": true
+    "allTools": true,
+    "NotificationAliases": []
 }
