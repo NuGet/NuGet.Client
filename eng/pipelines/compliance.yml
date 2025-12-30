@@ -32,6 +32,11 @@ extends:
       tsa:
         enabled: true
         config:
+          codebaseName: "NuGet.Client-Trusted_dev"
+          serviceTreeID: 0eaea886-0e70-402f-92aa-ed69849c2707
+          instanceUrl: https://dev.azure.com/devdiv/
+          projectName: DevDiv
+          areaPath: "DevDiv\\NuGet\\NuGet Clients"
           notificationAliases: $(TsaNotificationAliases)
     pool:
       name: AzurePipelines-EO
