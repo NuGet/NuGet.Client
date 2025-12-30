@@ -31,6 +31,8 @@ extends:
         suppressionFile: $(Build.SourcesDirectory)\.gdn\.gdnsuppress
       tsa:
         enabled: true
+        config:
+          notificationAliases: $(TsaNotificationAliases)
     pool:
       name: AzurePipelines-EO
       image: VSEngSS-MicroBuild2022-1ES
