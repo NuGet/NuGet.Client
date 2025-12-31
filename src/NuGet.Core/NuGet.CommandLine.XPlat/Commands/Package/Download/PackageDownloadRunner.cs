@@ -50,21 +50,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
 
         public static async Task<int> RunAsync(PackageDownloadArgs args, ILoggerWithColor logger, IReadOnlyList<PackageSource> packageSources, ISettings settings, CancellationToken token)
         {
-            bool hasSourcesArg = args.Sources?.Count > 0;
-            PackageSourceMapping? packageSourceMapping = null;
-            if (!hasSourcesArg)
-            {
-                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-            }
+            (PackageSourceMapping? packageSourceMapping, bool ignorePackageSourceMapping) = GetPackageSourceMappingState(args, settings);
 
-            bool ignorePackageSourceMapping =
-                hasSourcesArg
-                || packageSourceMapping is null
-                || !packageSourceMapping.IsEnabled;
-
-            // When package source mapping is disabled, validate all configured sources upfront.
-            // When mapping is enabled, source validation is deferred to the per-package resolution step,
-            // since each package may map to a different subset of sources.
             if (ignorePackageSourceMapping && DetectAndReportInsecureSources(args.AllowInsecureConnections, packageSources, logger))
             {
                 return ExitCodeError;
@@ -73,110 +60,219 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.PackageDownload
             string outputDirectory = args.OutputDirectory ?? Directory.GetCurrentDirectory();
             var cache = new SourceCacheContext();
             IReadOnlyList<SourceRepository> allRepositories = GetSourceRepositories(packageSources);
+
+            bool allSucceeded = await DownloadAllPackagesAsync(
+                args,
+                logger,
+                settings,
+                outputDirectory,
+                cache,
+                allRepositories,
+                packageSourceMapping,
+                ignorePackageSourceMapping,
+                token);
+
+            return allSucceeded ? ExitCodeSuccess : ExitCodeError;
+        }
+
+        private static (PackageSourceMapping? packageSourceMapping, bool ignorePackageSourceMapping) GetPackageSourceMappingState(PackageDownloadArgs args, ISettings settings)
+        {
+            bool hasSourcesArg = args.Sources?.Count > 0;
+            PackageSourceMapping? packageSourceMapping = null;
+
+            if (!hasSourcesArg)
+            {
+                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            }
+
+            bool ignorePackageSourceMapping =
+                hasSourcesArg ||
+                packageSourceMapping is null ||
+                !packageSourceMapping.IsEnabled;
+
+            return (packageSourceMapping, ignorePackageSourceMapping);
+        }
+
+        private static async Task<bool> DownloadAllPackagesAsync(
+            PackageDownloadArgs args,
+            ILoggerWithColor logger,
+            ISettings settings,
+            string outputDirectory,
+            SourceCacheContext cache,
+            IReadOnlyList<SourceRepository> allRepositories,
+            PackageSourceMapping? packageSourceMapping,
+            bool ignorePackageSourceMapping,
+            CancellationToken token)
+        {
             bool downloadedAllSuccessfully = true;
 
             foreach (var package in args.Packages ?? [])
             {
-                logger.LogMinimal(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.PackageDownloadCommand_Starting,
-                    package.Id,
-                    string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString()) ? Strings.PackageDownloadCommand_LatestVersion : package.NuGetVersion.ToNormalizedString()));
+                LogPackageDownloadStart(logger, package);
 
-                // Resolve which repositories to use for this package
-                IReadOnlyList<SourceRepository> sourceRepositories;
-                if (ignorePackageSourceMapping)
-                {
-                    sourceRepositories = allRepositories;
-                }
-                else
-                {
-                    var mappedNames = packageSourceMapping!.GetConfiguredPackageSources(package.Id);
+                bool succeeded = await DownloadSinglePackageAsync(
+                    package,
+                    args,
+                    logger,
+                    settings,
+                    outputDirectory,
+                    cache,
+                    allRepositories,
+                    packageSourceMapping,
+                    ignorePackageSourceMapping,
+                    token);
 
-                    if (mappedNames.Count == 0)
-                    {
-                        // fail, no sources mapped for this package
-                        var notConsideredSources = string.Join(
-                            ", ",
-                            allRepositories.Select(repository => repository.PackageSource));
-
-                        logger.LogError(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
-                            package.Id,
-                            notConsideredSources));
-
-                        downloadedAllSuccessfully &= false;
-                        continue;
-                    }
-
-                    sourceRepositories = GetMappedRepositories(mappedNames, allRepositories, package.Id, logger);
-
-                    if (DetectAndReportInsecureSources(args.AllowInsecureConnections, sourceRepositories.Select(r => r.PackageSource), logger))
-                    {
-                        downloadedAllSuccessfully &= false;
-                        continue;
-                    }
-                }
-
-                try
-                {
-                    (NuGetVersion? version, SourceRepository? downloadRepository) =
-                        await ResolvePackageDownloadVersion(
-                            package,
-                            sourceRepositories,
-                            cache,
-                            logger,
-                            args.IncludePrerelease,
-                            token);
-
-                    if (version == null)
-                    {
-                        // Unable to find a valid version
-                        downloadedAllSuccessfully &= false;
-                        continue;
-                    }
-
-                    bool success = await DownloadPackageAsync(
-                        package.Id,
-                        version,
-                        downloadRepository!,
-                        cache,
-                        settings,
-                        outputDirectory,
-                        logger,
-                        token);
-
-                    if (success)
-                    {
-                        logger.LogMinimal(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.PackageDownloadCommand_Succeeded,
-                            package.Id,
-                            version,
-                            outputDirectory));
-                    }
-                    else
-                    {
-                        logger.LogError(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.PackageDownloadCommand_Failed,
-                            package.Id,
-                            version));
-
-                        downloadedAllSuccessfully &= false;
-                    }
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-                {
-                    logger.LogError(ex.ToString());
-                    downloadedAllSuccessfully &= false;
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
+                downloadedAllSuccessfully &= succeeded;
             }
 
-            return downloadedAllSuccessfully ? ExitCodeSuccess : ExitCodeError;
+            return downloadedAllSuccessfully;
+        }
+
+        private static void LogPackageDownloadStart(ILoggerWithColor logger, PackageWithNuGetVersion package)
+        {
+            string versionText = string.IsNullOrEmpty(package.NuGetVersion?.ToNormalizedString())
+                ? Strings.PackageDownloadCommand_LatestVersion
+                : package.NuGetVersion!.ToNormalizedString();
+
+            logger.LogMinimal(string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.PackageDownloadCommand_Starting,
+                package.Id,
+                versionText));
+        }
+
+        private static async Task<bool> DownloadSinglePackageAsync(
+           PackageWithNuGetVersion package,
+           PackageDownloadArgs args,
+           ILoggerWithColor logger,
+           ISettings settings,
+           string outputDirectory,
+           SourceCacheContext cache,
+           IReadOnlyList<SourceRepository> allRepositories,
+           PackageSourceMapping? packageSourceMapping,
+           bool ignorePackageSourceMapping,
+           CancellationToken token)
+        {
+            bool successfullyGotSourceRepositories = TryGetSourceRepositoriesForPackage(
+                package,
+                args.AllowInsecureConnections,
+                logger,
+                allRepositories,
+                packageSourceMapping,
+                ignorePackageSourceMapping,
+                out IReadOnlyList<SourceRepository>? sourceRepositories);
+
+            if (!successfullyGotSourceRepositories || sourceRepositories is null)
+            {
+                return false;
+            }
+
+            try
+            {
+                (NuGetVersion? version, SourceRepository? downloadRepository) =
+                    await ResolvePackageDownloadVersion(
+                        package,
+                        sourceRepositories!,
+                        cache,
+                        logger,
+                        args.IncludePrerelease,
+                        token);
+
+                if (version is null || downloadRepository is null)
+                {
+                    return false;
+                }
+
+                bool success = await DownloadPackageAsync(
+                    package.Id,
+                    version,
+                    downloadRepository,
+                    cache,
+                    settings,
+                    outputDirectory,
+                    logger,
+                    token);
+
+                LogPackageDownloadResult(logger, package.Id, version, outputDirectory, success);
+
+                return success;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+            {
+                logger.LogError(ex.ToString());
+                return false;
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+        }
+
+        private static bool TryGetSourceRepositoriesForPackage(
+            PackageWithNuGetVersion package,
+            bool allowInsecureConnections,
+            ILoggerWithColor logger,
+            IReadOnlyList<SourceRepository> allRepositories,
+            PackageSourceMapping? packageSourceMapping,
+            bool ignorePackageSourceMapping,
+            out IReadOnlyList<SourceRepository>? sourceRepositories)
+        {
+            sourceRepositories = null;
+
+            if (ignorePackageSourceMapping)
+            {
+                sourceRepositories = allRepositories;
+                return true;
+            }
+
+            var mappedNames = packageSourceMapping!.GetConfiguredPackageSources(package.Id);
+
+            if (mappedNames.Count == 0)
+            {
+                var notConsideredSources = string.Join(", ", allRepositories.Select(repository => repository.PackageSource));
+
+                logger.LogError(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped,
+                    package.Id,
+                    notConsideredSources));
+
+                return false;
+            }
+
+            IReadOnlyList<SourceRepository> mappedRepositories = GetMappedRepositories(mappedNames, allRepositories, package.Id, logger);
+
+            if (DetectAndReportInsecureSources(allowInsecureConnections, mappedRepositories.Select(r => r.PackageSource), logger))
+            {
+                return false;
+            }
+
+            sourceRepositories = mappedRepositories;
+            return true;
+        }
+
+        private static void LogPackageDownloadResult(
+            ILoggerWithColor logger,
+            string packageId,
+            NuGetVersion version,
+            string outputDirectory,
+            bool success)
+        {
+            if (success)
+            {
+                logger.LogMinimal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageDownloadCommand_Succeeded,
+                    packageId,
+                    version,
+                    outputDirectory));
+            }
+            else
+            {
+                logger.LogError(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageDownloadCommand_Failed,
+                    packageId,
+                    version));
+            }
         }
 
         internal static async Task<(NuGetVersion?, SourceRepository?)> ResolvePackageDownloadVersion(
