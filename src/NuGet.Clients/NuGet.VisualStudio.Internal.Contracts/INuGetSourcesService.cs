@@ -13,6 +13,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
     {
         /// <remarks> First available in version 1.0.1 </remarks>
         event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
+        event EventHandler? AuditSourcesChanged;
 
         /// <remarks> First available in version 1.0.1 </remarks>
         ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken);

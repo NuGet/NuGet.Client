@@ -24,6 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageSourceProvider _packageSourceProvider;
 
         public event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
+        public event EventHandler? AuditSourcesChanged;
 
         public NuGetSourcesService(
             ServiceActivationOptions options,
@@ -40,6 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _authorizationServiceClient = authorizationServiceClient;
             _packageSourceProvider = packageSourceProvider;
             _packageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
+            _packageSourceProvider.AuditSourcesChanged += PackageSourceProvider_AuditSourcesChanged;
         }
 
         public ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken)
@@ -93,6 +95,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             List<PackageSourceContextInfo> packageSources = _packageSourceProvider.LoadPackageSources().Select(PackageSourceContextInfo.Create).ToList();
             PackageSourcesChanged?.Invoke(this, packageSources);
+        }
+        private void PackageSourceProvider_AuditSourcesChanged(object sender, EventArgs e)
+        {
+            AuditSourcesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private IReadOnlyList<PackageSource> GetPackageSourcesToUpdate(IReadOnlyList<PackageSourceContextInfo> packageSourceContextInfos)

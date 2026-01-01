@@ -52,6 +52,7 @@ namespace NuGet.PackageManagement.UI
         private bool _initialized;
         private IVsWindowSearchHost _windowSearchHost;
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
+        private ISourceRepositoryProvider _sourceRepositoryProvider;
         private INuGetUILogger _uiLogger;
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private Stopwatch _sinceLastRefresh;
@@ -115,7 +116,7 @@ namespace NuGet.PackageManagement.UI
             var nuGetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
             var editorOptionsFactoryService = await ServiceLocator.GetComponentModelServiceAsync<IEditorOptionsFactoryService>();
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
-            ISourceRepositoryProvider sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
+            _sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             _serviceBroker = model.Context.ServiceBroker;
@@ -199,10 +200,7 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
-            List<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList();
-
-            var auditSourceRepositories = Model.Context.SourceService.GetEnabledAuditSources();
-            _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
+            await SetVulnerabilityService(_sourceRepositoryProvider);
 
             var solutionManager = Model.Context.SolutionManagerService;
             solutionManager.ProjectAdded += OnProjectChanged;
@@ -214,6 +212,7 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
+            Model.Context.SourceService.AuditSourcesChanged += AuditSourcesChanged;
 
             Unloaded += PackageManagerUnloaded;
 
@@ -225,6 +224,14 @@ namespace NuGet.PackageManagement.UI
             _missingPackageStatus = false;
 
             Settings.SettingsChanged += Settings_SettingsChanged;
+        }
+
+        private async Task SetVulnerabilityService(ISourceRepositoryProvider sourceRepositoryProvider)
+        {
+            await TaskScheduler.Default;
+            List<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList();
+            var auditSourceRepositories = Model.Context.SourceService.GetEnabledAuditSources();
+            _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
         }
 
         private void Settings_SettingsChanged(object sender, EventArgs e)
@@ -643,6 +650,40 @@ namespace NuGet.PackageManagement.UI
                         await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                     }, RefreshOperationSource.PackageSourcesChanged, timeSpan, sw);
                 }
+            }
+            finally
+            {
+                _dontStartNewSearch = false;
+            }
+        }
+
+        private void AuditSourcesChanged(object sender, EventArgs e)
+        {
+            // Set _dontStartNewSearch to true to prevent a new search started in
+            // _sourceRepoList_SelectionChanged(). This method will start the new
+            // search when needed by itself.
+            _dontStartNewSearch = true;
+            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await SetVulnerabilityService(_sourceRepositoryProvider);
+                await AuditSourcesChangedAsync(timeSpan);
+            })
+            .PostOnFailure(nameof(PackageManagerControl), nameof(AuditSourcesChanged));
+        }
+
+        private async Task AuditSourcesChangedAsync(TimeSpan timeSpan)
+        {
+            try
+            {
+                var sw = Stopwatch.StartNew();
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await RunAndEmitRefreshAsync(async () =>
+                {
+                    SaveSettings();
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                }, RefreshOperationSource.AuditSourcesChanged, timeSpan, sw);
             }
             finally
             {
@@ -1613,6 +1654,7 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
+            Model.Context.SourceService.AuditSourcesChanged -= AuditSourcesChanged;
 
             Settings.SettingsChanged -= Settings_SettingsChanged;
 

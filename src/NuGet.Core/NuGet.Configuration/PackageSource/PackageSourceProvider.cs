@@ -72,7 +72,7 @@ namespace NuGet.Configuration
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             if (enablePackageSourcesChangedEvent)
             {
-                Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
+                Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); OnAuditSourcesChanged(); };
             }
             if (configurationDefaultSources is null)
             {
@@ -636,7 +636,7 @@ namespace NuGet.Configuration
                 if (!shouldSkipSave && isDirty)
                 {
                     Settings.SaveToDisk();
-                    OnPackageSourcesChanged();
+                    OnAuditSourcesChanged();
                     isDirty = false;
                 }
             }
@@ -730,7 +730,7 @@ namespace NuGet.Configuration
             if (!shouldSkipSave && isDirty)
             {
                 Settings.SaveToDisk();
-                OnPackageSourcesChanged();
+                OnAuditSourcesChanged();
                 isDirty = false;
             }
         }
@@ -931,7 +931,7 @@ namespace NuGet.Configuration
             if (isDirty)
             {
                 Settings.SaveToDisk();
-                OnPackageSourcesChanged();
+                OnAuditSourcesChanged();
                 isDirty = false;
             }
         }
@@ -973,6 +973,11 @@ namespace NuGet.Configuration
         private void OnPackageSourcesChanged()
         {
             PackageSourcesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnAuditSourcesChanged()
+        {
+            AuditSourcesChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public string? DefaultPushSource
@@ -1059,5 +1064,6 @@ namespace NuGet.Configuration
         }
 
         public event EventHandler? PackageSourcesChanged;
+        public event EventHandler? AuditSourcesChanged;
     }
 }

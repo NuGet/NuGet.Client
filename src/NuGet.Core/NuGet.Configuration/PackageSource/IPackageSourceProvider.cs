@@ -43,6 +43,11 @@ namespace NuGet.Configuration
         event EventHandler? PackageSourcesChanged;
 
         /// <summary>
+        /// Event raised when the audit sources have been changed.
+        /// </summary>
+        event EventHandler? AuditSourcesChanged;
+
+        /// <summary>
         /// Removes the package source that matches the given name
         /// </summary>
         /// <param name="name">Name of source to remove</param>
