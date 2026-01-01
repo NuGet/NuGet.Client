@@ -203,5 +203,73 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             savedSources[0].ProtocolVersion.Should().Be(3);
             savedSources[0].DisableTLSCertificateValidation.Should().Be(true);
         }
+
+        [Fact]
+        public void Constructor_SubscribesToPackageSourceProviderEvents()
+        {
+            // Arrange
+            Mock<IPackageSourceProvider> packageSourceProvider = new();
+
+            // Act
+            var target = new NuGetSourcesService(options: default,
+                Mock.Of<IServiceBroker>(),
+                new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                packageSourceProvider.Object);
+
+            // Assert - verify that event subscriptions were set up
+            packageSourceProvider.VerifyAdd(psp => psp.PackageSourcesChanged += It.IsAny<EventHandler>(), Times.Once);
+            packageSourceProvider.VerifyAdd(psp => psp.AuditSourcesChanged += It.IsAny<EventHandler>(), Times.Once);
+        }
+
+        [Fact]
+        public void AuditSourcesChanged_WhenPackageSourceProviderRaisesEvent_RaisesAuditSourcesChanged()
+        {
+            // Arrange
+            Mock<IPackageSourceProvider> packageSourceProvider = new();
+
+            var target = new NuGetSourcesService(options: default,
+                Mock.Of<IServiceBroker>(),
+                new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                packageSourceProvider.Object);
+
+            var eventRaised = false;
+            target.AuditSourcesChanged += (sender, e) =>
+            {
+                eventRaised = true;
+            };
+
+            // Act
+            packageSourceProvider.Raise(psp => psp.AuditSourcesChanged += null, EventArgs.Empty);
+
+            // Assert
+            eventRaised.Should().BeTrue();
+        }
+
+        [Fact]
+        public void PackageSourcesChanged_WhenPackageSourceProviderRaisesEvent_RaisesPackageSourcesChanged()
+        {
+            // Arrange
+            Mock<IPackageSourceProvider> packageSourceProvider = new();
+            packageSourceProvider.Setup(psp => psp.LoadPackageSources())
+                .Returns(new[] { new PackageSource("https://test.test", "test") });
+
+            var target = new NuGetSourcesService(options: default,
+                Mock.Of<IServiceBroker>(),
+                new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                packageSourceProvider.Object);
+
+            IReadOnlyList<PackageSourceContextInfo>? receivedSources = null;
+            target.PackageSourcesChanged += (sender, e) =>
+            {
+                receivedSources = e;
+            };
+
+            // Act
+            packageSourceProvider.Raise(psp => psp.PackageSourcesChanged += null, EventArgs.Empty);
+
+            // Assert
+            receivedSources.Should().NotBeNull();
+            receivedSources!.Should().ContainSingle();
+        }
     }
 }
