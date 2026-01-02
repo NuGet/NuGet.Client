@@ -21,7 +21,7 @@ steps:
         -BranchName $(SourceBranch)
         -CommitHash $(Build.SourceVersion)
         -BuildNumber $(Build.BuildNumber)
-        -BuildInfoDirectoryPath $(Build.StagingDirectory)\BuildInfo
+        -BuildInfoDirectory $(Build.StagingDirectory)\BuildInfo
     displayName: "Configure VSTS CI Environment"
 
   - task: PowerShell@1
