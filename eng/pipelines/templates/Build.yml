@@ -136,7 +136,7 @@ steps:
         /property:ExcludeTestProjects=$(BuildRTM)
         /property:BuildNumber=$(BuildNumber)
         /binarylogger:$(Build.StagingDirectory)\\binlog\\11.Pack.binlog
-        /property:PackageOutputPath=$(Build.StagingDirectory)\\nupkgs
+        /property:NupkgOutputDirectory=$(Build.StagingDirectory)\\nupkgs
         /property:MicroBuild_SigningEnabled=false"
 
   - task: PowerShell@1
