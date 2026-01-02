@@ -151,12 +151,12 @@ steps:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-    msbuildArguments: >-
-      /restore:false
-      /target:StagingDirectory
-      /property:NupkgOutputDirectory=$(Build.StagingDirectory)\\nupkgs
-      /property:ExcludeTestProjects=$(BuildRTM)
-      /binarylogger:$(Build.StagingDirectory)\\binlog\\12.EnsurePackagesExist.binlog"
+      msbuildArguments: >-
+        /restore:false
+        /target:StagingDirectory
+        /property:NupkgOutputDirectory=$(Build.StagingDirectory)\\nupkgs
+        /property:ExcludeTestProjects=$(BuildRTM)
+        /binarylogger:$(Build.StagingDirectory)\\binlog\\12.EnsurePackagesExist.binlog"
 
   - task: MSBuild@1
     displayName: "Pack VSIX"
