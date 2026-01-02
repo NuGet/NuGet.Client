@@ -160,6 +160,7 @@ else
 
     New-Item $localBuildInfoJsonFilePath -Force | Out-Null
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
+    Write-Host "Created $localBuildInfoJsonFilePath"
 
     Update-VsixVersion -manifestName source.extension.vsixmanifest -buildNumber $BuildNumber -RepositoryPath $RepositoryPath
 }
