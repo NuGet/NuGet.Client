@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
         <source>Use separate sources for vulnerability audit</source>
-        <target state="new">Use separate sources for vulnerability audit</target>
+        <target state="translated">취약성 감사에 별도의 원본 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Description">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="Text_MachineWidePackageSource_Description">
         <source>Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</source>
-        <target state="new">Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</target>
+        <target state="translated">컴퓨터 전체 패키지 원본은 Visual Studio 워크로드를 통해 프로비전되며, 활성화하거나 비활성화할 수만 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceEnabled_Header">
