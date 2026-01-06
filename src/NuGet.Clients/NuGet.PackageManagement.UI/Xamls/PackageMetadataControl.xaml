@@ -9,7 +9,6 @@
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
-  xmlns:controls="clr-namespace:NuGet.PackageManagement.UI.Controls"
   Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
@@ -91,19 +90,8 @@
      Visibility="{Binding Path=IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
      BorderThickness="0,0,0,1">
       <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-          <Button
-              Click="ButtonHyperlink_Click">
-            Fix vulnerabilities with Copilot
-          </Button>
-        </StackPanel>
         <nuget:VulnerabilitiesControl
          x:Name="_vulnerabilitiesControl"
-         Grid.Row="1"
          DataContext="{Binding}"
          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageVulnerabilities}" />
       </Grid>

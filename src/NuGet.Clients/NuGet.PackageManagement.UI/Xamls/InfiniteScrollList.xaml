@@ -8,7 +8,6 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
-  xmlns:controls="clr-namespace:NuGet.PackageManagement.UI.Controls"
   mc:Ignorable="d"
   d:DesignHeight="200"
   d:DesignWidth="500">
@@ -443,17 +442,6 @@
           Content="{x:Static nuget:Resources.Button_Update}" />
       </Grid>
     </Border>
-    <Grid DockPanel.Dock="Top" DataContext="{Binding FixVulnerabilitiesViewModel}">
-      <TextBlock Grid.Column="1" x:Name="_textStatus" Margin="0,0,9,0" TextWrapping="Wrap">
-        <Run Text="{Binding MappingStatus, Mode=OneWay}" />
-        <Control Margin="6,0,0,0" IsTabStop="True" />
-        <controls:ButtonHyperlink Click="SettingsButtonClicked">
-          <TextBlock TextWrapping="Wrap" Text="Fix Vulnerabilities with Copilot" />
-        </controls:ButtonHyperlink>
-      </TextBlock>
-      <!--Style="{StaticResource HyperlinkStyleNoUri}"
-                   AutomationProperties.Name="{x:Static nuget:Resources.Button_FixVulnerablities}">-->
-    </Grid>
     <Grid
       DockPanel.Dock="Top"
       Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"

@@ -97,6 +97,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fix Vulnerabilities with GitHub Copilot.
+        /// </summary>
+        internal static string InfoBar_HyperlinkFixVulnerabilitiesWithCopilot {
+            get {
+                return ResourceManager.GetString("InfoBar_HyperlinkFixVulnerabilitiesWithCopilot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to How to fix with GitHub Copilot.
         /// </summary>
         internal static string InfoBar_HyperlinkGHCopilotDocs {

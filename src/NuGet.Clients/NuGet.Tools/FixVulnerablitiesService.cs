@@ -29,12 +29,10 @@ namespace NuGetVSExtension
         //private const string ChatUiPackageAvailable = "a8984974-3a2f-4e50-810a-4cc51f6c1a04";
         //private const string CompletionsPackageAvailable = "a7f179b8-a8e8-4729-86e1-414bb0a103c8";
         //private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
-        private const string MessageBoxHeader = "Fix Vulnerabilities with GitHub Copilot";
 
         private static readonly Guid CopilotReadyUIContext = new(ChatUiPackageLoaded);
 
-        private static readonly string NuGetSolverToolName = "get-nuget-solver";
-        private static readonly string FixVulnerabilitiesCopilotPrompt = "fix my vulnerabilities";
+        //private static readonly string NuGetSolverToolName = "get-nuget-solver";  
 
         [Import(typeof(SVsFullAccessServiceBroker))]
         public IServiceBroker? ServiceBroker { get; set; }
@@ -52,16 +50,15 @@ namespace NuGetVSExtension
             if (!copilotReady.IsActive)
             {
                 {
-                    ShowWarningMessage("GitHub Copilot is not ready. Please ensure GitHub Copilot is installed and signed in.");
+                    ShowWarningMessage(Resources.Error_CopilotNotReady);
                     return;
                 }
             }
 
             if (ServiceBroker == null)
             {
-                // Highly unlikely to occur and would indicate a problem with VS, but we should still handle it.
-                ActivityLogger?.LogWarning("Service Broker is not available.");
-                ShowWarningMessage("Service Broker is not available. Please ensure Visual Studio is running correctly.");
+                // Unlikely to occur and would indicate a problem with VS, but should still be handled.
+                ShowWarningMessage(Resources.Error_ServiceBrokerNotAvailable);
                 return;
             }
 
@@ -70,19 +67,19 @@ namespace NuGetVSExtension
             {
                 if (copilotService is null)
                 {
-                    ActivityLogger?.LogWarning("GitHub Copilot Service is not available.");
-                    ShowWarningMessage("GitHub Copilot Service is not available. Please ensure GitHub Copilot is installed and signed in.");
+                    ActivityLogger?.LogWarning(Resources.Error_CopilotServiceNotAvailable);
+                    ShowWarningMessage(Resources.Error_CopilotServiceNotAvailable);
                     return;
                 }
 
-                // create an identifier that will be visible in the session's telemetry
+                // Create an identifier that will be visible in the session's telemetry
                 CopilotClientId clientId = new("Microsoft.VisualStudio.NuGet.VulnerabilitiesInfoBar");
                 CopilotThreadOptions options = new(clientId);
 
                 await using (var thread = await copilotService.StartThreadAsync(options, cancellationToken))
                 {
                     // Requests from this session will be visible in the Chat window
-                    CopilotRequest request = new(FixVulnerabilitiesCopilotPrompt)
+                    CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
                     {
                         DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
                     };
@@ -92,8 +89,8 @@ namespace NuGetVSExtension
                     {
                         if (cfp is null)
                         {
-                            ActivityLogger?.LogWarning("MCP Tool Service is not available.");
-                            ShowWarningMessage("MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.");
+                            ActivityLogger?.LogWarning(Resources.Error_McpToolServiceNotAvailable);
+                            ShowWarningMessage(Resources.Error_McpToolServiceNotAvailable);
                             return;
                         }
 
@@ -113,7 +110,7 @@ namespace NuGetVSExtension
                         catch (UnauthorizedAccessException ex)
                         {
                             ActivityLog.LogError(LogEntrySource, ex.Message);
-                            ShowWarningMessage("Access denied. Please ensure you are signed in to Copilot.");
+                            ShowWarningMessage(Resources.Error_AccessDenied);
                         }
                     }
                 }
@@ -127,7 +124,7 @@ namespace NuGetVSExtension
                 return;
             }
 
-            MessageHelper.ShowWarningMessage(message, MessageBoxHeader);
+            MessageHelper.ShowWarningMessage(message, Resources.Title_FixVulnerabilitiesWithCopilot);
         }
     }
 }

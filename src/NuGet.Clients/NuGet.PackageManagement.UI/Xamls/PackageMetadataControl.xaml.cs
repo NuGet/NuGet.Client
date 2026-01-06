@@ -5,7 +5,6 @@
 
 using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -90,20 +89,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     selectedTVI.IsSelected = false;
                 }
-            }
-        }
-
-        private void ButtonHyperlink_Click(object sender, RoutedEventArgs e)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(InvokeNuGetSolverAsync)
-                .PostOnFailure(nameof(PackageMetadataControl), nameof(ButtonHyperlink_Click));
-        }
-
-        private async Task InvokeNuGetSolverAsync()
-        {
-            if (DataContext is DetailControlModel model)
-            {
-                await model.LaunchCopilotAsync(CancellationToken.None);
             }
         }
     }

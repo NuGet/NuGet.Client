@@ -19,7 +19,6 @@ using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -57,7 +56,6 @@ namespace NuGet.PackageManagement.UI
         private INuGetUILogger _logger;
         private Task<SearchResultContextInfo> _initialSearchResultTask;
         private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
-        private FixVulnerabilitiesViewModel _fixVulnerabilitiesViewModel;
         private bool _checkBoxesEnabled;
 
         private const string LogEntrySource = "NuGet Package Manager";
@@ -74,7 +72,12 @@ namespace NuGet.PackageManagement.UI
 
         internal InfiniteScrollList(Lazy<JoinableTaskFactory> joinableTaskFactory)
         {
-            _joinableTaskFactory = joinableTaskFactory ?? throw new ArgumentNullException(nameof(joinableTaskFactory));
+            if (joinableTaskFactory == null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskFactory));
+            }
+
+            _joinableTaskFactory = joinableTaskFactory;
 
             InitializeComponent();
 
@@ -161,20 +164,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         public bool IsSolution { get; set; }
-
-        public FixVulnerabilitiesViewModel FixVulnerabilitiesViewModel
-        {
-            get => _fixVulnerabilitiesViewModel;
-            set
-            {
-                if (value == null || _fixVulnerabilitiesViewModel == value)
-                {
-                    return;
-                }
-
-                _fixVulnerabilitiesViewModel = value;
-            }
-        }
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
@@ -866,11 +855,6 @@ namespace NuGet.PackageManagement.UI
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
         {
             GroupExpansionChanged?.Invoke(sender, e);
-        }
-
-        private void SettingsButtonClicked(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

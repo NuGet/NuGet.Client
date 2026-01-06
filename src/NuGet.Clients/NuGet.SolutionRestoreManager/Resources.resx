@@ -200,4 +200,7 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="InfoBar_HyperlinkGHCopilotDocs" xml:space="preserve">
     <value>How to fix with GitHub Copilot</value>
   </data>
+  <data name="InfoBar_HyperlinkFixVulnerabilitiesWithCopilot" xml:space="preserve">
+    <value>Fix Vulnerabilities with GitHub Copilot</value>
+  </data>
 </root>

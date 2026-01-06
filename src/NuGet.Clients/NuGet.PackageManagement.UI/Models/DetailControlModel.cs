@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Copilot;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
@@ -939,25 +938,6 @@ namespace NuGet.PackageManagement.UI
                 if (_searchResultPackage != null)
                 {
                     _searchResultPackage.AutoReferenced = false;
-                }
-            }
-        }
-
-        public async Task LaunchCopilotAsync(CancellationToken cancellationToken)
-        {
-            ICopilotService copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
-
-            using (copilotService as IDisposable)
-            {
-                // create an identifier that will be visible in the session's telemetry
-                var clientId = new CopilotClientId("Microsoft.VisualStudio.NuGet.NuGetSolver");
-                var options = new CopilotThreadOptions(clientId);
-
-                await using (var thread = await copilotService.StartThreadAsync(options, cancellationToken))
-                {
-                    // Requests from this session will be visible in the Chat window
-                    var request = new CopilotRequest("Use NuGet Solver to resolve package vulnerabilities");
-                    var response = await thread.Session.SendRequestAsync(request, cancellationToken);
                 }
             }
         }
