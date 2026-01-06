@@ -90,9 +90,12 @@
 
   <!-- Prepares localization artifact -->
   <Target Name="CopyBinariesToLocalizationArtifacts" AfterTargets="Localize">
+    <Error
+      Condition=" '$(LocalizationArtifactsOutputPath)' == '' "
+      Text="LocalizationArtifactsOutputPath is not set." />
     <ItemGroup>
       <_EnglishBinaries Include="@(FilesToLocalize)">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
+        <DestinationPath>$(LocalizationArtifactsOutputPath)\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
       </_EnglishBinaries>
       <_LocalizeFolder Include="$(ArtifactsDirectory)localize\**\*" Exclude="$(ArtifactsDirectory)localize\ResponseFiles\**\*" />
       <_LocalizeFiles Include="@(_LocalizeFolder)">
@@ -100,7 +103,7 @@
       </_LocalizeFiles>
       <!-- Second Localize run creates appropiate LocProject.json -->
       <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
+        <DestinationPath>$(LocalizationArtifactsOutputPath)\ENU\LocProject.json</DestinationPath>
       </_LocalizeFiles>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
