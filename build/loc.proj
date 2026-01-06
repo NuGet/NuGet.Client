@@ -105,6 +105,9 @@
 
   <!-- Copy binaries to the localization artifacts folder -->
    <Target Name="CopyBinariesToLocalizationArtifacts">
+    <Error
+      Condition=" '$(LocalizationArtifactsOutputPath)' == '' "
+      Text="LocalizationArtifactsOutputPath is not set." />
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
@@ -115,7 +118,7 @@
     </MSBuild>
     <ItemGroup>
       <_EnglishBinaries Include="@(FilesToLocalize)">
-        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
+        <DestinationPath>$(LocalizationArtifactsOutputPath)\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
       </_EnglishBinaries>
     </ItemGroup>
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
