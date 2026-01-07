@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="114">
         <source>Sources</source>
-        <target state="needs-review-translation">Paketquellen</target>
+        <target state="translated">Quellen</target>
         <note />
       </trans-unit>
       <trans-unit id="115">

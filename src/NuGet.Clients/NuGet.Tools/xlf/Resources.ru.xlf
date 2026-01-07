@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
         <source>Use separate sources for vulnerability audit</source>
-        <target state="new">Use separate sources for vulnerability audit</target>
+        <target state="translated">Использовать отдельные источники для аудита уязвимостей</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Description">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="Text_MachineWidePackageSource_Description">
         <source>Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</source>
-        <target state="new">Machine‑wide package sources are provisioned by Visual Studio workloads and can only be enabled or disabled.</target>
+        <target state="translated">Источники пакетов на уровне компьютера подготавливаются рабочими нагрузками Visual Studio и могут быть только включены или отключены.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSourceEnabled_Header">
