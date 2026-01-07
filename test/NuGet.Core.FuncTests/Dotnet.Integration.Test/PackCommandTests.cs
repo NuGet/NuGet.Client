@@ -6395,5 +6395,160 @@ namespace ClassLibrary
             dependencyGroups[1].Packages.First().Id.Should().Be("X");
             dependencyGroups[1].Packages.Last().Id.Should().Be("Z");
         }
+
+        /// <summary>
+        /// Tests that pack works correctly with -graph mode for multi-targeted projects.
+        /// This tests the fix for https://github.com/dotnet/msbuild/issues/12580 where
+        /// concurrent inner builds in graph mode would cause file access conflicts
+        /// when trying to write to the same .nupkg file.
+        /// </summary>
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_MultiTargetedProject_WithGraphMode_Succeeds()
+        {
+            // Arrange
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
+            {
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                settings.AddNetStandardFeeds();
+
+                string testDirectory = pathContext.WorkingDirectory;
+                var projectName = "MultiTargetLib";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    // Set up multi-targeting with two target frameworks
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"net8.0;{Constants.ProjectTargetFramework}");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+
+                // Act - Use -graph mode which enables parallel builds and was causing issues before the fix
+                var result = _dotnetFixture.PackProjectExpectSuccess(
+                    workingDirectory,
+                    projectName,
+                    $"-graph /p:PackageOutputPath={workingDirectory}",
+                    testOutputHelper: _testOutputHelper);
+
+                // Assert
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Verify the package contains both target frameworks
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(2, libItems.Count);
+
+                    var frameworks = libItems.Select(l => l.TargetFramework.GetShortFolderName()).OrderBy(f => f).ToList();
+                    Assert.Contains("net8.0", frameworks);
+                    Assert.Contains(NuGetFramework.Parse(Constants.ProjectTargetFramework).GetShortFolderName(), frameworks);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tests that pack with -graph mode produces the same output as pack without -graph mode
+        /// for multi-targeted projects.
+        /// </summary>
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_MultiTargetedProject_GraphModeMatchesNonGraphMode()
+        {
+            // Arrange
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
+            {
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                settings.AddNetStandardFeeds();
+
+                string testDirectory = pathContext.WorkingDirectory;
+                var projectName = "MultiTargetLib";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Create project with specific package metadata
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"net8.0;{Constants.ProjectTargetFramework}");
+                    ProjectFileUtils.AddProperty(xml, "PackageId", "TestPackage");
+                    ProjectFileUtils.AddProperty(xml, "Version", "2.0.0");
+                    ProjectFileUtils.AddProperty(xml, "Authors", "TestAuthor");
+                    ProjectFileUtils.AddProperty(xml, "Description", "A test package for graph mode testing");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+
+                // Create output directories for each mode
+                var regularOutput = Path.Combine(workingDirectory, "regular");
+                var graphOutput = Path.Combine(workingDirectory, "graph");
+                Directory.CreateDirectory(regularOutput);
+                Directory.CreateDirectory(graphOutput);
+
+                // Act - Pack without graph mode
+                _dotnetFixture.PackProjectExpectSuccess(
+                    workingDirectory,
+                    projectName,
+                    $"/p:PackageOutputPath={regularOutput}",
+                    testOutputHelper: _testOutputHelper);
+
+                // Clean intermediate files to ensure fresh build
+                var objDir = Path.Combine(workingDirectory, "obj");
+                if (Directory.Exists(objDir))
+                {
+                    foreach (var file in Directory.GetFiles(objDir, "*.nuspec", SearchOption.AllDirectories))
+                    {
+                        File.Delete(file);
+                    }
+                }
+
+                // Act - Pack with graph mode
+                _dotnetFixture.PackProjectExpectSuccess(
+                    workingDirectory,
+                    projectName,
+                    $"-graph /p:PackageOutputPath={graphOutput}",
+                    testOutputHelper: _testOutputHelper);
+
+                // Assert - Both packages should exist and have the same content
+                var regularNupkg = Path.Combine(regularOutput, "TestPackage.2.0.0.nupkg");
+                var graphNupkg = Path.Combine(graphOutput, "TestPackage.2.0.0.nupkg");
+
+                Assert.True(File.Exists(regularNupkg), "Regular mode .nupkg should exist");
+                Assert.True(File.Exists(graphNupkg), "Graph mode .nupkg should exist");
+
+                using (var regularReader = new PackageArchiveReader(regularNupkg))
+                using (var graphReader = new PackageArchiveReader(graphNupkg))
+                {
+                    // Compare nuspec metadata
+                    var regularNuspec = regularReader.NuspecReader;
+                    var graphNuspec = graphReader.NuspecReader;
+
+                    Assert.Equal(regularNuspec.GetId(), graphNuspec.GetId());
+                    Assert.Equal(regularNuspec.GetVersion(), graphNuspec.GetVersion());
+                    Assert.Equal(regularNuspec.GetAuthors(), graphNuspec.GetAuthors());
+                    Assert.Equal(regularNuspec.GetDescription(), graphNuspec.GetDescription());
+
+                    // Compare lib items
+                    var regularLibItems = regularReader.GetLibItems().ToList();
+                    var graphLibItems = graphReader.GetLibItems().ToList();
+
+                    Assert.Equal(regularLibItems.Count, graphLibItems.Count);
+                    Assert.Equal(2, graphLibItems.Count);
+
+                    var regularFrameworks = regularLibItems.Select(l => l.TargetFramework.GetShortFolderName()).OrderBy(f => f).ToList();
+                    var graphFrameworks = graphLibItems.Select(l => l.TargetFramework.GetShortFolderName()).OrderBy(f => f).ToList();
+
+                    Assert.Equal(regularFrameworks, graphFrameworks);
+                }
+            }
+        }
     }
 }
