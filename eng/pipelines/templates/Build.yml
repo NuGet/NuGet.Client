@@ -352,7 +352,6 @@ steps:
       /property:SymbolsOutputDirectory=$(Build.StagingDirectory)\\symbolstoindex
       /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog
     maximumCpuCount: true
-  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"

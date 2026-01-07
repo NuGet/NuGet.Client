@@ -94,7 +94,6 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
-        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.StagingDirectory)\\nupkgs"
         artifactName: "nupkgs - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
@@ -129,14 +128,12 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
-        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeeded(), eq(variables['IsOfficialBuild'], 'true')))"
         targetPath: "$(Build.StagingDirectory)\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
-        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.StagingDirectory)\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
@@ -223,7 +220,6 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
-        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.StagingDirectory)\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
