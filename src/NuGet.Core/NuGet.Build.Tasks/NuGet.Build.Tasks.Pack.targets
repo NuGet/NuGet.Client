@@ -200,7 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Main entry point for packing packages
     ============================================================
   -->
-  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)">
+  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsInnerBuild)' != 'true'">
      <IsPackableFalseWarningTask Condition="'$(IsPackable)' == 'false' AND '$(WarnOnPackingNonPackableProject)' == 'true'"/>
   </Target>
   <Target Name="_IntermediatePack">
