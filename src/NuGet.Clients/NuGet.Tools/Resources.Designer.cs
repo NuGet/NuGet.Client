@@ -108,9 +108,9 @@ namespace NuGetVSExtension {
         /// <summary>
         ///   Looks up a localized string similar to Access denied. Please ensure you are signed in to GitHub Copilot..
         /// </summary>
-        internal static string Error_AccessDenied {
+        internal static string Error_CopilotAccessDenied {
             get {
-                return ResourceManager.GetString("Error_AccessDenied", resourceCulture);
+                return ResourceManager.GetString("Error_CopilotAccessDenied", resourceCulture);
             }
         }
         

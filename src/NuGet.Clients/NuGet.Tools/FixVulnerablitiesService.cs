@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
@@ -14,6 +13,7 @@ using Microsoft.VisualStudio.Copilot;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -23,7 +23,6 @@ namespace NuGetVSExtension
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal class FixVulnerablitiesService : IFixVulnerabilitiesService
     {
-        private const string LogEntrySource = "NuGet Package Manager";
         private const string AgentModeResponderServiceMoniker = "Microsoft.VisualStudio.Copilot.AgentModeResponder";
         private const string ChatUiPackageLoaded = "871c3e1c-e58c-4ce9-b6a7-26600555739a";
         //private const string ChatUiPackageAvailable = "a8984974-3a2f-4e50-810a-4cc51f6c1a04";
@@ -42,22 +41,19 @@ namespace NuGetVSExtension
 
         public async Task LaunchFixVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            // TODO: When not logged in, the Copilot Service is null.We may not need to handle the UI Context
-            // which would simplify the process and not require us to switch to the main thread.
-
             UIContext copilotReady = UIContext.FromUIContextGuid(CopilotReadyUIContext);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             if (!copilotReady.IsActive)
             {
-                {
-                    ShowWarningMessage(Resources.Error_CopilotNotReady);
-                    return;
-                }
+                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotNotReady);
+                ShowWarningMessage(Resources.Error_CopilotNotReady);
+                return;
             }
 
             if (ServiceBroker == null)
             {
                 // Unlikely to occur and would indicate a problem with VS, but should still be handled.
+                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable);
                 ShowWarningMessage(Resources.Error_ServiceBrokerNotAvailable);
                 return;
             }
@@ -67,7 +63,7 @@ namespace NuGetVSExtension
             {
                 if (copilotService is null)
                 {
-                    ActivityLogger?.LogWarning(Resources.Error_CopilotServiceNotAvailable);
+                    SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable);
                     ShowWarningMessage(Resources.Error_CopilotServiceNotAvailable);
                     return;
                 }
@@ -89,28 +85,24 @@ namespace NuGetVSExtension
                     {
                         if (cfp is null)
                         {
-                            ActivityLogger?.LogWarning(Resources.Error_McpToolServiceNotAvailable);
+                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable);
                             ShowWarningMessage(Resources.Error_McpToolServiceNotAvailable);
                             return;
                         }
 
                         IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
-                        ActivityLogger?.LogInformation($"Retrieved {functions.Count} functions from MCP Tool Service. \n{string.Join(", ", functions.Select(f => f.Name))}");
                         CopilotRequest requestWithFunctions = request.WithFunctions(functions);
-
-                        //var requestOptions = new CopilotRequestOptions()
-                        //{
-                        //    ToolMode = CopilotToolMode.RequireSpecific(NuGetSolverToolName)
-                        //};
 
                         try
                         {
                             _ = await thread.Session.SendRequestAsync(requestWithFunctions, cancellationToken);
+                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None);
                         }
                         catch (UnauthorizedAccessException ex)
                         {
-                            ActivityLog.LogError(LogEntrySource, ex.Message);
-                            ShowWarningMessage(Resources.Error_AccessDenied);
+                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied);
+                            ActivityLogger?.LogError(ex.Message);
+                            ShowWarningMessage(Resources.Error_CopilotAccessDenied);
                         }
                     }
                 }
@@ -125,6 +117,12 @@ namespace NuGetVSExtension
             }
 
             MessageHelper.ShowWarningMessage(message, Resources.Title_FixVulnerabilitiesWithCopilot);
+        }
+
+        private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType)
+        {
+            var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(errorType);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
     }
 }

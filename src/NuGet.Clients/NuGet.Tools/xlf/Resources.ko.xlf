@@ -22,7 +22,7 @@
         <target state="translated">작업이 실패했습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Error_AccessDenied">
+      <trans-unit id="Error_CopilotAccessDenied">
         <source>Access denied. Please ensure you are signed in to GitHub Copilot.</source>
         <target state="new">Access denied. Please ensure you are signed in to GitHub Copilot.</target>
         <note>Do not translate GitHub or Copilot</note>

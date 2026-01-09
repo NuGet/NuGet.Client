@@ -27,11 +27,6 @@
         <target state="new">Fix Vulnerabilities with GitHub Copilot</target>
         <note />
       </trans-unit>
-      <trans-unit id="InfoBar_HyperlinkGHCopilotDocs">
-        <source>How to fix with GitHub Copilot</source>
-        <target state="translated">如何使用 GitHub Copilot 修正</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
         <source>Manage NuGet Packages</source>
         <target state="translated">管理 NuGet 套件</target>

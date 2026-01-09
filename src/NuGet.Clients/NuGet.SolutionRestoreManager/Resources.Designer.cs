@@ -106,15 +106,6 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to How to fix with GitHub Copilot.
-        /// </summary>
-        internal static string InfoBar_HyperlinkGHCopilotDocs {
-            get {
-                return ResourceManager.GetString("InfoBar_HyperlinkGHCopilotDocs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Manage NuGet Packages.
         /// </summary>
         internal static string InfoBar_HyperlinkMessage {

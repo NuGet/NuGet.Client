@@ -288,7 +288,7 @@
     <value>MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.</value>
     <comment>Do not translate GitHub or Copilot</comment>
   </data>
-  <data name="Error_AccessDenied" xml:space="preserve">
+  <data name="Error_CopilotAccessDenied" xml:space="preserve">
     <value>Access denied. Please ensure you are signed in to GitHub Copilot.</value>
     <comment>Do not translate GitHub or Copilot</comment>
   </data>

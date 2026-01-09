@@ -27,11 +27,6 @@
         <target state="new">Fix Vulnerabilities with GitHub Copilot</target>
         <note />
       </trans-unit>
-      <trans-unit id="InfoBar_HyperlinkGHCopilotDocs">
-        <source>How to fix with GitHub Copilot</source>
-        <target state="translated">Como corrigir com o GitHub Copilot</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
         <source>Manage NuGet Packages</source>
         <target state="translated">Gerenciar Pacotes do NuGet...</target>
