@@ -111,6 +111,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetPackOutputItemsTask
         PackageOutputPath="$(PackageOutputAbsolutePath)"
         NuspecOutputPath="$(NuspecOutputAbsolutePath)"
+        NuspecInputFilePath="$(NuspecFile)"
+        NuspecProperties="$(NuspecProperties)"        
         PackageId="$(PackageId)"
         PackageVersion="$(PackageVersion)"
         IncludeSymbols="$(IncludeSymbols)"
