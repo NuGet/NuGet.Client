@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             if (other == null)
                 return false;
 
-            return string.Equals(Id, other.Id, StringComparison.CurrentCultureIgnoreCase)
+            return string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase)
                 && Children.SetEquals(other.Children);
         }
 
@@ -58,7 +58,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             if (other == null)
                 return false;
 
-            return string.Equals(Id, other.Id, StringComparison.CurrentCultureIgnoreCase)
+            return string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase)
                 && ResolvedVersion.Equals(other.ResolvedVersion)
                 && RequestedVersion.Equals(other.RequestedVersion)
                 && Children.SetEquals(other.Children);
