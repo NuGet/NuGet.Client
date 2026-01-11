@@ -199,7 +199,8 @@ namespace Test.Utility
                 e => new KeyValuePair<string, bool>(
                     e.Key.Version.ToNormalizedString().ToLowerInvariant(),
                     e.Value));
-            if (!allVulnerabilities.TryGetValue(id, out var packageVulnerabilities))
+            List<(Uri, PackageVulnerabilitySeverity, VersionRange)> packageVulnerabilities = null;
+            if (allVulnerabilities != null && !allVulnerabilities.TryGetValue(id, out packageVulnerabilities))
             {
                 packageVulnerabilities = null;
             }
