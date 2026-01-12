@@ -350,7 +350,7 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
       </trans-unit>
       <trans-unit id="Error_InvalidVersion">
         <source>Invalid version value '{0}'.</source>
-        <target state="translated">バージョン値 '{0}' が無効です。</target>
+        <target state="new">Invalid version value '{0}'.</target>
         <note>0 - package version</note>
       </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
@@ -400,7 +400,7 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
         <source>Unable to find a valid package version</source>
-        <target state="translated">有効なパッケージ バージョンが見つかりません</target>
+        <target state="new">Unable to find a valid package version</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
@@ -893,75 +893,75 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescription">
         <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
-        <target state="translated">HTTP (非 HTTPS) パッケージ ソースからのダウンロードを許可します。</target>
+        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AlreadyInstalled">
         <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
-        <target state="translated">ダウンロードをスキップしています。パッケージ '{0}' バージョン {1} は既に '{2}' に存在します。</target>
+        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
         <note>0 - package id
 1 - version
 2 - directory path where the package was downloaded</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Description">
         <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
-        <target state="translated">プロジェクト ファイルを必要とせずに、NuGet パッケージをローカル フォルダーにダウンロードします。</target>
+        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Failed">
         <source>Package '{0}' ({1}) failed to download.</source>
-        <target state="translated">パッケージ '{0}' ({1}) をダウンロードできませんでした。</target>
+        <target state="new">Package '{0}' ({1}) failed to download.</target>
         <note>0 - package id
 1 - package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_LatestVersion">
         <source>latest version</source>
-        <target state="translated">最新バージョン</target>
+        <target state="new">latest version</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_OutputDirectoryDescription">
         <source>Directory where the package will be placed. Defaults to the current working directory.</source>
-        <target state="translated">パッケージが配置されるディレクトリ。既定は現在の作業ディレクトリです。</target>
+        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageIdDescription">
         <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
-        <target state="translated">パッケージ識別子 (例: 'Newtonsoft.Json')。</target>
+        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped">
         <source>Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</source>
-        <target state="translated">パッケージ '{0}'.をダウンロードできません。PackageSourceMapping は有効ですが、このパッケージにはマップされたソースが見つかりませんでした。次のソースは考慮されませんでした: {1}。</target>
+        <target state="new">Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</target>
         <note>{0} = package ID 
 {1} = comma-separated list of all configured sources </note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
         <source>The mapped source '{0}' for package '{1}' was not found among the configured sources.</source>
-        <target state="translated">パッケージ '{1}' のマップされたソース '{0}' が、構成済みのソースの中に見つかりませんでした。</target>
+        <target state="new">The mapped source '{0}' for package '{1}' was not found among the configured sources.</target>
         <note>0 - package source name
 1 - package name</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_SourcesDescription">
         <source>Specifies one or more NuGet package sources to use.</source>
-        <target state="translated">使用する 1 つ以上の NuGet パッケージ ソースを指定します。</target>
+        <target state="new">Specifies one or more NuGet package sources to use.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Starting">
         <source>Downloading package {0}, version {1}.</source>
-        <target state="translated">パッケージ {0}、バージョン {1} をダウンロードしています。</target>
+        <target state="new">Downloading package {0}, version {1}.</target>
         <note>0- package id
 1- package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Succeeded">
         <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
-        <target state="translated">パッケージ '{0}' ({1}) が '{2}' に正常にダウンロードされました。</target>
+        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
         <note>0 - package id
 1 - package version
 2 - package download location</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_UnableToDownload">
         <source>Package download failed for `{0} {1}` from source `{2}`.</source>
-        <target state="translated">ソース '{2}' から '{0} {1}' のパッケージをダウンロードできませんでした。</target>
+        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
         <note>0 package id
 1 package version
 2 package source</note>
@@ -1066,7 +1066,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Prerelease_Description">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">プレリリース パッケージのインストールを許可します。</target>
+        <target state="new">Allows prerelease packages to be installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandSkipDuplicateDescription">
@@ -1483,12 +1483,12 @@ The search is a case-insensitive string comparison using the supplied value, whi
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
-        <target state="translated">ファイル '{0}' は NuGet アセット ファイルではない可能性があります。このコマンドを実行する前に、プロジェクト '{1}' の復元を実行してください。</target>
+        <target state="translated">ファイル '{0}' は NuGet 資産ファイルではない可能性があります。このコマンドを実行する前に、プロジェクト '{1}' の復元を実行してください。</target>
         <note>{0} - Assets file path, {1} - Project name</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithoutProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet/nuget/why#older-project-format</source>
-        <target state="translated">ファイル '{0}' は NuGet アセット ファイルではない可能性があります。詳細については、https://aka.ms/dotnet/nuget/why#older-project-format を参照してください</target>
+        <target state="translated">ファイル '{0}' は NuGet 資産ファイルではない可能性があります。詳しくは、https://aka.ms/dotnet/nuget/why#older-project-format を参照してください</target>
         <note>{0} - Assets file path</note>
       </trans-unit>
       <trans-unit id="WhyCommand_FrameworksOption_Description">
