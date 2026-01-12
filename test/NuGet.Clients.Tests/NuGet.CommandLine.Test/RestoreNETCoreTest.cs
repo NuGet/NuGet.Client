@@ -24,6 +24,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -9726,7 +9727,7 @@ namespace NuGet.CommandLine.Test
                 var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    "net10.0-windows");
+                    $"{TestConstants.ProjectTargetFramework}-windows");
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
