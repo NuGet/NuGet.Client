@@ -131,7 +131,7 @@
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType">
         <source>The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">La dependencia anclada centralmente '{0}' no se encontró en el gráfico resuelto de forma inesperada para el nodo '{1}'. Envíe un problema en https://github.com/NuGet/Home</target>
+        <target state="new">The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed">
@@ -1464,14 +1464,14 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">El siguiente es un origen 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Los siguientes son orígenes 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
