@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
 using Microsoft.VisualStudio.Shell;
@@ -28,8 +30,14 @@ namespace NuGetVSExtension
         //private const string ChatUiPackageAvailable = "a8984974-3a2f-4e50-810a-4cc51f6c1a04";
         //private const string CompletionsPackageAvailable = "a7f179b8-a8e8-4729-86e1-414bb0a103c8";
         //private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
+        private const string ServiceName = "Microsoft.VisualStudio.Copilot.SolutionContextProvider";
 
         private static readonly Guid CopilotReadyUIContext = new(ChatUiPackageLoaded);
+        private static readonly ServiceRpcDescriptor ProviderDescriptor = CopilotDescriptors.CreateContextProviderDescriptor(ServiceName);
+        private static readonly CopilotContextDescriptor ContextDescriptor = new CopilotContextDescriptor(
+                    "SolutionFile",
+                    "solution file context",
+                    CopilotDefaultTypes.StringName);
 
         //private static readonly string NuGetSolverToolName = "get-nuget-solver";  
 
@@ -74,12 +82,6 @@ namespace NuGetVSExtension
 
                 await using (var thread = await copilotService.StartThreadAsync(options, cancellationToken))
                 {
-                    // Requests from this session will be visible in the Chat window
-                    CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
-                    {
-                        DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
-                    };
-
                     ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
                     using (cfp as IDisposable)
                     {
@@ -90,12 +92,23 @@ namespace NuGetVSExtension
                             return;
                         }
 
+                        // Requests from this session will be visible in the Chat window
+                        CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
+                        {
+                            Intent = CopilotIntent.None,
+                            Guidance = "Use absolute paths when invoking MCP Tools.",
+                            DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
+                        };
+
+                        // Prepare a request with the list of functions available to it and the solution path context.
+                        string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
+                        CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
                         IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
-                        CopilotRequest requestWithFunctions = request.WithFunctions(functions);
+                        CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(functions).WithContext(context);
 
                         try
                         {
-                            _ = await thread.Session.SendRequestAsync(requestWithFunctions, cancellationToken);
+                            _ = await thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
                             SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None);
                         }
                         catch (UnauthorizedAccessException ex)
@@ -123,6 +136,19 @@ namespace NuGetVSExtension
         {
             var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(errorType);
             TelemetryActivity.EmitTelemetryEvent(evt);
+        }
+
+        private static string GetSolutionPath()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE2 dte = (DTE2)Package.GetGlobalService(typeof(DTE));
+            if (dte?.Solution != null && dte.Solution.IsOpen)
+            {
+                return dte.Solution.FullName;
+            }
+
+            return string.Empty;
         }
     }
 }
