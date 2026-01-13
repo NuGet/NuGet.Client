@@ -6401,6 +6401,13 @@ namespace ClassLibrary
         /// This tests the fix for https://github.com/dotnet/msbuild/issues/12580 where
         /// concurrent inner builds in graph mode would cause file access conflicts
         /// when trying to write to the same .nupkg file.
+        /// 
+        /// The race condition occurs reliably when:
+        /// 1. Using Microsoft.Build.Traversal SDK with a dirs.proj that references the project
+        /// 2. The project is multi-targeted
+        /// 3. MSBuild server mode is enabled (MSBUILDUSESERVER=1)
+        /// 4. Graph mode is used (-graph)
+        /// 5. Clean build (no cached obj/bin artifacts)
         /// </summary>
         [PlatformFact(Platform.Windows)]
         public void PackCommand_MultiTargetedProject_WithGraphMode_Succeeds()
@@ -6412,33 +6419,79 @@ namespace ClassLibrary
                 settings.AddNetStandardFeeds();
 
                 string testDirectory = pathContext.WorkingDirectory;
-                var projectName = "MultiTargetLib";
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var projectName = "SomePackage";
+                var projectDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                // Create the project in a subdirectory
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
 
+                // Set up multi-targeting - same as the repro case
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    // Set up multi-targeting with two target frameworks
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"net8.0;{Constants.ProjectTargetFramework}");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                // Create a dirs.proj with Microsoft.Build.Traversal SDK - this is critical for reproducing the issue
+                // The traversal project pattern causes MSBuild to create separate build nodes in graph mode
+                var dirsProjContent = $@"<Project Sdk=""Microsoft.Build.Traversal"">
+  <ItemGroup>
+    <ProjectReference Include=""{projectName}\{projectName}.csproj"" />
+  </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(testDirectory, "dirs.proj"), dirsProjContent);
 
-                // Act - Use -graph mode which enables parallel builds and was causing issues before the fix
-                var result = _dotnetFixture.PackProjectExpectSuccess(
-                    workingDirectory,
-                    projectName,
-                    $"-graph /p:PackageOutputPath={workingDirectory}",
+                // Create global.json to specify the Traversal SDK version
+                var globalJsonContent = @"{
+  ""msbuild-sdks"": {
+    ""Microsoft.Build.Traversal"": ""4.1.82""
+  }
+}";
+                File.WriteAllText(Path.Combine(testDirectory, "global.json"), globalJsonContent);
+
+                // Restore both the traversal project and the actual project
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "restore dirs.proj", testOutputHelper: _testOutputHelper);
+
+                // Delete ALL build outputs to simulate a completely clean build scenario
+                // This is critical - the race condition only occurs on clean builds
+                var binDir = Path.Combine(projectDirectory, "bin");
+                if (Directory.Exists(binDir))
+                {
+                    Directory.Delete(binDir, recursive: true);
+                }
+
+                // Delete the entire obj folder and restore fresh
+                var objDir = Path.Combine(projectDirectory, "obj");
+                if (Directory.Exists(objDir))
+                {
+                    Directory.Delete(objDir, recursive: true);
+                }
+
+                // Restore again after cleaning obj
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory, "restore dirs.proj", testOutputHelper: _testOutputHelper);
+
+                // Enable MSBuild server mode - required to reproduce the race condition
+                var environmentVariables = new Dictionary<string, string>
+                {
+                    ["MSBUILDUSESERVER"] = "1"
+                };
+
+                // Act - Run pack with -graph mode directly on the multi-targeted project
+                // This is the scenario from the issue: multi-targeted project + graph + server mode
+                // Without the IsInnerBuild condition on the Pack target, both inner builds (net8.0, net9.0)
+                // run Pack simultaneously and race to write to the same .nupkg/.nuspec files.
+                var result = _dotnetFixture.RunDotnetExpectSuccess(
+                    projectDirectory,
+                    $"pack {projectName}.csproj -graph -c Release",
+                    environmentVariables: environmentVariables,
                     testOutputHelper: _testOutputHelper);
 
-                // Assert
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                // Assert - The pack should succeed and produce a valid package
+                var nupkgPath = Path.Combine(projectDirectory, "bin", "Release", $"{projectName}.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place: {nupkgPath}");
 
                 // Verify the package contains both target frameworks
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))

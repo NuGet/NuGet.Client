@@ -362,17 +362,68 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
         {
             const string packProjectName = "NuGet.Build.Tasks.Pack";
 
-            // Copy the pack SDK.
+            // Copy the pack SDK DLLs from NuGet.Build.Tasks.Pack project.
             var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, "bin", configuration);
             var tfmToCopy = GetTfmToCopy(packProjectBinDirectory);
             var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(packProjectBinDirectory, tfmToCopy));
 
-            foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+            // Copy DLLs to the main SDK folder
+            foreach (var file in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
             {
                 File.Copy(
-                    sourceFileName: assembly.FullName,
-                    destFileName: Path.Combine(pathToSdkInCli, assembly.Name),
+                    sourceFileName: file.FullName,
+                    destFileName: Path.Combine(pathToSdkInCli, file.Name),
                     overwrite: true);
+            }
+
+            // Copy .targets files from NuGet.Build.Tasks project (where they are actually built)
+            // to the NuGet.Build.Tasks.Pack SDK subfolders.
+            // The SDK has separate build and buildCrossTargeting folders for the targets files.
+            // These contain important build logic that may have fixes we need to test
+            // (e.g., IsInnerBuild conditions for graph mode).
+            const string buildTasksProjectName = "NuGet.Build.Tasks";
+            var buildTasksBinDirectory = Path.Combine(artifactsDirectory, buildTasksProjectName, "bin", configuration);
+            var buildTasksTfm = GetTfmToCopy(buildTasksBinDirectory);
+            var buildTasksArtifactsDirectory = new DirectoryInfo(Path.Combine(buildTasksBinDirectory, buildTasksTfm));
+
+            var packSdkBuildFolder = Path.Combine(pathToSdkInCli, "Sdks", packProjectName, "build");
+            var packSdkCrossTargetingFolder = Path.Combine(pathToSdkInCli, "Sdks", packProjectName, "buildCrossTargeting");
+
+            foreach (var file in buildTasksArtifactsDirectory.EnumerateFiles("NuGet.Build.Tasks.Pack.targets"))
+            {
+                // Copy to the SDK root folder (for SDK 10.0+, targets are at root level)
+                File.Copy(
+                    sourceFileName: file.FullName,
+                    destFileName: Path.Combine(pathToSdkInCli, file.Name),
+                    overwrite: true);
+
+                // Also copy to runtimes\any\native if it exists (SDK 10.0+ structure)
+                var runtimesNativeFolder = Path.Combine(pathToSdkInCli, "runtimes", "any", "native");
+                if (Directory.Exists(runtimesNativeFolder))
+                {
+                    File.Copy(
+                        sourceFileName: file.FullName,
+                        destFileName: Path.Combine(runtimesNativeFolder, file.Name),
+                        overwrite: true);
+                }
+
+                // Copy to the build folder (for single-targeted projects) - older SDK structure
+                if (Directory.Exists(packSdkBuildFolder))
+                {
+                    File.Copy(
+                        sourceFileName: file.FullName,
+                        destFileName: Path.Combine(packSdkBuildFolder, file.Name),
+                        overwrite: true);
+                }
+
+                // Copy to the buildCrossTargeting folder (for multi-targeted projects) - older SDK structure
+                if (Directory.Exists(packSdkCrossTargetingFolder))
+                {
+                    File.Copy(
+                        sourceFileName: file.FullName,
+                        destFileName: Path.Combine(packSdkCrossTargetingFolder, file.Name),
+                        overwrite: true);
+                }
             }
         }
 
