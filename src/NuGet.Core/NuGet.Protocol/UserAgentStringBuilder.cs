@@ -8,6 +8,7 @@ using System;
 #endif
 using System.Globalization;
 using System.Runtime.InteropServices;
+using NuGet.Common;
 using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.Types
@@ -23,6 +24,7 @@ namespace NuGet.Protocol.Core.Types
         private readonly string _clientName;
         private string _vsInfo;
         private string _osInfo;
+        private string _ciInfo;
 
         public UserAgentStringBuilder()
             : this(DefaultNuGetClientName)
@@ -30,6 +32,16 @@ namespace NuGet.Protocol.Core.Types
         }
 
         public UserAgentStringBuilder(string clientName)
+            : this(clientName, EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Internal constructor for testing purposes that allows injecting an environment variable reader.
+        /// </summary>
+        /// <param name="clientName">The client name to use in the user agent string.</param>
+        /// <param name="environmentVariableReader">The environment variable reader for CI detection.</param>
+        internal UserAgentStringBuilder(string clientName, IEnvironmentVariableReader environmentVariableReader)
         {
             _clientName = clientName;
 
@@ -37,6 +49,7 @@ namespace NuGet.Protocol.Core.Types
             NuGetClientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
 
             _osInfo = GetOS();
+            _ciInfo = CIEnvironmentDetector.Detect(environmentVariableReader);
         }
 
         public string NuGetClientVersion { get; }
@@ -59,18 +72,19 @@ namespace NuGet.Protocol.Core.Types
                 clientInfo = DefaultNuGetClientName;
             }
 
+            string baseUserAgent;
+
             if (string.IsNullOrEmpty(_osInfo))
             {
-                return string.Format(
+                baseUserAgent = string.Format(
                     CultureInfo.InvariantCulture,
                     UserAgentTemplate,
                     clientInfo,
                     NuGetClientVersion);
             }
-
-            if (string.IsNullOrEmpty(_vsInfo))
+            else if (string.IsNullOrEmpty(_vsInfo))
             {
-                return string.Format(
+                baseUserAgent = string.Format(
                     CultureInfo.InvariantCulture,
                     UserAgentWithOSDescriptionTemplate,
                     clientInfo,
@@ -79,7 +93,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                return string.Format(
+                baseUserAgent = string.Format(
                     CultureInfo.InvariantCulture,
                     UserAgentWithOSDescriptionAndVisualStudioSKUTemplate,
                     _clientName,
@@ -87,6 +101,13 @@ namespace NuGet.Protocol.Core.Types
                     _osInfo, /* OS version */
                     _vsInfo);  /* VS SKU + version */
             }
+
+            if (!string.IsNullOrEmpty(_ciInfo))
+            {
+                return $"{baseUserAgent} CI/{_ciInfo}";
+            }
+
+            return baseUserAgent;
         }
 
         internal static string GetOS()

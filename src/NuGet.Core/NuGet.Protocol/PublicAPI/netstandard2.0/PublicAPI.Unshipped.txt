@@ -1,1 +1,25 @@
 #nullable enable
+NuGet.Protocol.Core.Types.NuGetClientTelemetry
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.ClientId.get -> string?
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.ClientId.set -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.ClientVersion.get -> string?
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.ClientVersion.set -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.Metadata.get -> System.Collections.Generic.IDictionary<string!, string!>?
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.Metadata.set -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.NuGetClientTelemetry() -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.NuGetClientTelemetry(string? clientId, string? clientVersion, string? operation) -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.Operation.get -> string?
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.Operation.set -> void
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.ToUserAgentComment() -> string!
+NuGet.Protocol.Core.Types.NuGetClientTelemetry.WithOperation(string! operation) -> NuGet.Protocol.Core.Types.NuGetClientTelemetry!
+NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.BeginOperationScope(string! operation, NuGet.Protocol.Core.Types.NuGetClientTelemetry? baseTelemetry = null) -> System.IDisposable!
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.BeginScope(NuGet.Protocol.Core.Types.NuGetClientTelemetry! telemetry) -> System.IDisposable!
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.ClearGlobalTelemetry() -> void
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.ClearOperationScope() -> void
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.Current.get -> NuGet.Protocol.Core.Types.NuGetClientTelemetry?
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.GlobalTelemetry.get -> NuGet.Protocol.Core.Types.NuGetClientTelemetry?
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.GlobalTelemetry.set -> void
+static NuGet.Protocol.Core.Types.NuGetClientTelemetryProvider.SetGlobalClientInfo(string! clientId, string? clientVersion = null) -> void
+~NuGet.Protocol.Core.Types.UserAgentStringBuilder.WithClientTelemetry(NuGet.Protocol.Core.Types.NuGetClientTelemetry telemetry) -> NuGet.Protocol.Core.Types.UserAgentStringBuilder
+~static NuGet.Protocol.Core.Types.UserAgent.GetEnrichedUserAgentString() -> string

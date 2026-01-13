@@ -1,1 +1,7 @@
 #nullable enable
+const NuGet.Protocol.Core.Types.CIEnvironmentDetector.AzureDevOpsClientId = "AzureDevOps" -> string!
+const NuGet.Protocol.Core.Types.CIEnvironmentDetector.AzureDevOpsEnvVar = "TF_BUILD" -> string!
+const NuGet.Protocol.Core.Types.CIEnvironmentDetector.GitHubActionsClientId = "GitHub Actions" -> string!
+const NuGet.Protocol.Core.Types.CIEnvironmentDetector.GitHubActionsEnvVar = "GITHUB_ACTIONS" -> string!
+NuGet.Protocol.Core.Types.CIEnvironmentDetector
+static NuGet.Protocol.Core.Types.CIEnvironmentDetector.Detect() -> string?
