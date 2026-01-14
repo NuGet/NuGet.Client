@@ -27,9 +27,6 @@ variables:
 extends:
   template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
-    featureFlags:
-      autoEnablePREfastWithNewRuleset: false
-      autoEnableRoslynWithNewRuleset: false
     sdl:
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
@@ -47,6 +44,8 @@ extends:
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true
+      autoEnablePREfastWithNewRuleset: false
+      autoEnableRoslynWithNewRuleset: false
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
