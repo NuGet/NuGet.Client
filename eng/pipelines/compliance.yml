@@ -33,7 +33,7 @@ extends:
         enabled: true
         config:
           codebaseName: "NuGet.Client-Trusted_dev"
-          instanceUrl: https://devdiv.visualstudio.com/
+          instanceUrl: https://dev.azure.com/devdiv/
           projectName: DevDiv
           areaPath: "DevDiv\\NuGet\\NuGet Clients"
           notificationAliases: $(TsaNotificationAliases)
@@ -79,7 +79,7 @@ extends:
             $tsaOptions = [ordered]@{
               tsaVersion = 'TsaV2'
               codebaseName = 'NuGet.Client-Trusted_dev'
-              instanceUrl = 'https://devdiv.visualstudio.com/'
+              instanceUrl = 'https://dev.azure.com/devdiv/'
               projectName = 'DevDiv'
               areaPath = 'DevDiv\\NuGet\\NuGet Clients'
               notificationAliases = $notificationAliases
