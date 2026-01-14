@@ -21,14 +21,13 @@ NuGet.VisualStudio.Internal.Contracts.resources.dll
 NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.dll
 NuGet.VisualStudio.resources.dll
-Google.Protobuf.dll
-Microsoft.ML.Tokenizers.dll
-Microsoft.VisualStudio.Copilot.dll
-Microsoft.Bcl.HashCode.dll
 
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll
 Microsoft.Build.NuGetSdkResolver.resources.dll
+Microsoft.Bcl.HashCode.dll
+Microsoft.ML.Tokenizers.dll
+Microsoft.VisualStudio.Copilot.dll
 NuGet.Build.Tasks.dll
 NuGet.Build.Tasks.Pack.dll
 NuGet.Build.Tasks.Pack.resources.dll
@@ -62,11 +61,13 @@ NuGet.Versioning.dll
 NuGet.Versioning.resources.dll
 
 # 3rd party dlls to keep
+Google.Protobuf.dll
 Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 Microsoft.Web.XmlTransform.resources.dll
+PolyType.dll
 
 # Assembly XML Documentation we ship in the VSIX
 NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml
