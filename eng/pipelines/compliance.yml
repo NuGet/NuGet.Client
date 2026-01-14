@@ -74,7 +74,7 @@ extends:
 
         - powershell: |
             $tsaOptionsPath = Join-Path $env:AGENT_TEMPDIRECTORY 'TSAOptions.json'
-            $notificationAliases = '$(TsaNotificationAliases)' | ConvertFrom-Json
+            $notificationAliases = @($env:TSA_NOTIFICATION_ALIASES | ConvertFrom-Json)
             $tsaOptions = [ordered]@{
               tsaVersion = 'TsaV2'
               codebaseName = 'NuGet.Client-Trusted_dev'
@@ -88,6 +88,8 @@ extends:
             Write-Host $json
             $json| Out-File -FilePath $tsaOptionsPath -Encoding utf8 -Force
           displayName: Write TSAOptions.json
+          env:
+            TSA_NOTIFICATION_ALIASES: $(TsaNotificationAliases)
 
         - task: TSAUpload@2
           displayName: TSA upload
