@@ -31,6 +31,10 @@ parameters:
   displayName: Run a static analysis
   type: boolean
   default: true
+- name: ValidatePublishingArtifacts
+  displayName: Validate the publishing artifacts
+  type: boolean
+  default: true
 variables:
   DOTNET_NOLOGO: 1
   NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
@@ -249,7 +253,7 @@ stages:
         testTargetFramework: net9.0
         timeoutInMinutes: 30
 
-- ${{ if or(eq(parameters.RunSourceBuild, true), eq(parameters.RunStaticAnalysis, true)) }}:
+- ${{ if or(eq(parameters.RunSourceBuild, true), eq(parameters.RunStaticAnalysis, true), eq(parameters.ValidatePublishingArtifacts, true)) }}:
   - stage:
     displayName: Source Build and Static Analysis
     dependsOn: []
@@ -284,3 +288,14 @@ stages:
           displayName: Log Environment Variables
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
           displayName: Run dotnet format whitespace
+    - ${{ if eq(parameters.ValidatePublishingArtifacts, true) }}:
+      - job: Validate_Publishing_Artifacts
+        displayName: 'Validate Publishing build artifacts'
+        dependsOn: Build_RTM <TODO NK - we actually need to build the packages>
+        timeoutInMinutes: 15
+        pool:
+          vmImage: windows-latest
+        steps:
+        - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
+          parameters:
+            continueOnError: ${{ parameters.isOfficialBuild }}

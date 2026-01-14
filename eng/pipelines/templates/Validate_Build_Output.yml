@@ -1,5 +1,5 @@
 parameters:
-- name: isOfficialBuild
+- name: continueOnError
   type: boolean
 steps:
 - task: DownloadPipelineArtifact@2
@@ -27,4 +27,4 @@ steps:
       "Running validation tool"
       dotnet run --project tools-local/ensure-nupkg-dependencies-on-source/ --no-build -- $nupkgs -s https://api.nuget.org/v3/index.json
   condition: "and(succeededOrFailed(), or(eq(variables['SkipNupkgDependenciesCheck'], 'true'), eq(variables['SkipNupkgDependenciesCheck'], '')))"
-  continueOnError: ${{ parameters.isOfficialBuild }}
+  continueOnError: ${{ parameters.continueOnError }}

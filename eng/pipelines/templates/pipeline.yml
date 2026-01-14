@@ -253,4 +253,4 @@ stages:
     steps:
     - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
       parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
+        continueOnError: ${{ parameters.isOfficialBuild }}
