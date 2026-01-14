@@ -117,7 +117,6 @@ namespace Test.Utility
         {
             _packageSources = sources;
             PackageSourcesChanged?.Invoke(this, null);
-            AuditSourcesChanged?.Invoke(this, null);
         }
 
         public string ActivePackageSourceName => throw new NotImplementedException();
