@@ -26,13 +26,11 @@ namespace NuGet.Commands.Test
         public IReadOnlyList<PackageSource> LoadAuditSources() => Array.Empty<PackageSource>();
 
         public event EventHandler PackageSourcesChanged;
-        public event EventHandler AuditSourcesChanged;
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             _packageSources = sources;
             PackageSourcesChanged?.Invoke(this, null);
-            AuditSourcesChanged?.Invoke(this, null);
         }
 
         public string ActivePackageSourceName => throw new NotImplementedException();

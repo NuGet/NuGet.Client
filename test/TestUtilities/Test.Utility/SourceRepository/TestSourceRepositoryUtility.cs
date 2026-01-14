@@ -112,7 +112,6 @@ namespace Test.Utility
         public IReadOnlyList<PackageSource> LoadAuditSources() => Array.Empty<PackageSource>();
 
         public event EventHandler PackageSourcesChanged;
-        public event EventHandler AuditSourcesChanged;
 
         public void SavePackageSources(IEnumerable<PackageSource> sources)
         {

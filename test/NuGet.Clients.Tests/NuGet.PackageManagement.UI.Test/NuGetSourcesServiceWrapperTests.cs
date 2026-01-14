@@ -84,28 +84,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.True(eventRaised);
         }
 
-        [Fact]
-        public void AuditSourcesChanged_Always_ForwardsEvent()
-        {
-            var service = new TestNuGetSourcesService();
-
-            using (_wrapper.Swap(service))
-            {
-            }
-
-            var eventRaised = false;
-
-            _wrapper.AuditSourcesChanged += (sender, e) =>
-            {
-                Assert.Same(EventArgs.Empty, e);
-
-                eventRaised = true;
-            };
-
-            service.RaiseAuditSourcesChanged();
-
-            Assert.True(eventRaised);
-        }
 
         [Fact]
         public async Task GetActivePackageSourceNameAsync_Always_ReturnsActivePackageSourceName()
@@ -127,7 +105,6 @@ namespace NuGet.PackageManagement.UI.Test
         private sealed class TestNuGetSourcesService : INuGetSourcesService
         {
             public event EventHandler<IReadOnlyList<PackageSourceContextInfo>> PackageSourcesChanged;
-            public event EventHandler AuditSourcesChanged;
 
             internal string ActivePackageSourceName { get; set; }
             internal IReadOnlyList<PackageSourceContextInfo> PackageSources { get; set; }
@@ -139,11 +116,6 @@ namespace NuGet.PackageManagement.UI.Test
             internal void RaisePackageSourcesChanged(IReadOnlyList<PackageSourceContextInfo> packageSources)
             {
                 PackageSourcesChanged?.Invoke(this, packageSources);
-            }
-
-            internal void RaiseAuditSourcesChanged()
-            {
-                AuditSourcesChanged?.Invoke(this, EventArgs.Empty);
             }
 
             public ValueTask<string> GetActivePackageSourceNameAsync(CancellationToken cancellationToken)

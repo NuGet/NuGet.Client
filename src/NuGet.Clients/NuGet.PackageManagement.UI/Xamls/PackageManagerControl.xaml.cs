@@ -212,7 +212,6 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
-            Model.Context.SourceService.AuditSourcesChanged += AuditSourcesChanged;
 
             Unloaded += PackageManagerUnloaded;
 
@@ -238,6 +237,7 @@ namespace NuGet.PackageManagement.UI
         {
             _detailModel.PackageSourceMappingViewModel.SettingsChanged();
             _detailModel.SetInstalledOrUpdateButtonIsEnabled();
+            AuditSourcesChanged(sender, e);
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -1654,7 +1654,6 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
-            Model.Context.SourceService.AuditSourcesChanged -= AuditSourcesChanged;
 
             Settings.SettingsChanged -= Settings_SettingsChanged;
 

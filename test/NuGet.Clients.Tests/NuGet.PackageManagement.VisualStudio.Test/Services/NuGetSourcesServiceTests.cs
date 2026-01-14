@@ -218,31 +218,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert - verify that event subscriptions were set up
             packageSourceProvider.VerifyAdd(psp => psp.PackageSourcesChanged += It.IsAny<EventHandler>(), Times.Once);
-            packageSourceProvider.VerifyAdd(psp => psp.AuditSourcesChanged += It.IsAny<EventHandler>(), Times.Once);
-        }
-
-        [Fact]
-        public void AuditSourcesChanged_WhenPackageSourceProviderRaisesEvent_RaisesAuditSourcesChanged()
-        {
-            // Arrange
-            Mock<IPackageSourceProvider> packageSourceProvider = new();
-
-            var target = new NuGetSourcesService(options: default,
-                Mock.Of<IServiceBroker>(),
-                new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
-                packageSourceProvider.Object);
-
-            var eventRaised = false;
-            target.AuditSourcesChanged += (sender, e) =>
-            {
-                eventRaised = true;
-            };
-
-            // Act
-            packageSourceProvider.Raise(psp => psp.AuditSourcesChanged += null, EventArgs.Empty);
-
-            // Assert
-            eventRaised.Should().BeTrue();
         }
 
         [Fact]

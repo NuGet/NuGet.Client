@@ -1,5 +1,3 @@
 #nullable enable
-NuGet.Configuration.IPackageSourceProvider.AuditSourcesChanged -> System.EventHandler?
 NuGet.Configuration.IPackageSourceProvider.SaveAuditSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>! sources) -> void
-NuGet.Configuration.PackageSourceProvider.AuditSourcesChanged -> System.EventHandler?
 NuGet.Configuration.PackageSourceProvider.SaveAuditSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>! sources) -> void
