@@ -74,16 +74,19 @@ extends:
 
         - powershell: |
             $tsaOptionsPath = Join-Path $env:AGENT_TEMPDIRECTORY 'TSAOptions.json'
+            $notificationAliases = '$(TsaNotificationAliases)' | ConvertFrom-Json
             $tsaOptions = [ordered]@{
               tsaVersion = 'TsaV2'
               codebaseName = 'NuGet.Client-Trusted_dev'
               instanceUrl = 'https://devdiv.visualstudio.com/'
               projectName = 'DevDiv'
               areaPath = 'DevDiv\\NuGet\\NuGet Clients'
-              notificationAliases = '$(TsaNotificationAliases)'
+              notificationAliases = $notificationAliases
             }
 
-            $tsaOptions | ConvertTo-Json -Depth 5 | Out-File -FilePath $tsaOptionsPath -Encoding utf8 -Force
+            $json = $tsaOptions | ConvertTo-Json -Depth 5
+            Write-Host $json
+            $json| Out-File -FilePath $tsaOptionsPath -Encoding utf8 -Force
           displayName: Write TSAOptions.json
 
         - task: TSAUpload@2
