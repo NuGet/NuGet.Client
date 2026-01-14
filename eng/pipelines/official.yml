@@ -30,6 +30,9 @@ variables:
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    featureFlags:
+      autoEnablePREfastWithNewRuleset: false
+      autoEnableRoslynWithNewRuleset: false
     sdl:
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
