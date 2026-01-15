@@ -12,12 +12,6 @@ namespace NuGet.Protocol
 {
     public class MetadataFieldConverter : JsonConverter
     {
-        private static readonly JsonLoadSettings DefaultLoadSettings = new JsonLoadSettings()
-        {
-            LineInfoHandling = LineInfoHandling.Ignore,
-            CommentHandling = CommentHandling.Ignore
-        };
-
         public override bool CanConvert(Type objectType) => (objectType == typeof(string));
 
         public override bool CanWrite => false;
@@ -31,7 +25,7 @@ namespace NuGet.Protocol
 
             if (reader.TokenType == JsonToken.StartArray)
             {
-                var array = JArray.Load(reader, DefaultLoadSettings);
+                var array = JArray.Load(reader, JsonUtility.DefaultLoadSettings);
                 return string.Join(", ", array.Values<string>().Where(s => !string.IsNullOrWhiteSpace(s)));
             }
 
