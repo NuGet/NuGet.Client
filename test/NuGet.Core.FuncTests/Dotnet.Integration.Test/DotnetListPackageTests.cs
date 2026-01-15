@@ -699,7 +699,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
 
             var packageA100 = new SimpleTestPackageContext("PackageA", "1.0.0");
             var packageA200 = new SimpleTestPackageContext("PackageA", "2.0.0");
@@ -1173,7 +1173,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
 
             var packageA100 = new SimpleTestPackageContext("PackageA", "1.0.0");
             var packageB100 = new SimpleTestPackageContext("PackageB", "1.0.0");
@@ -1223,7 +1223,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
 
             var packageA100 = new SimpleTestPackageContext("PackageA", "1.0.0-alpha");
             var packageB100 = new SimpleTestPackageContext("PackageB", "1.0.0-alpha");
@@ -1271,7 +1271,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
 
             var packageA100 = new SimpleTestPackageContext("PackageA", "1.0.0");
             var packageB100 = new SimpleTestPackageContext("PackageB", "1.0.0");
@@ -1324,7 +1324,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
 
             var packageA100 = new SimpleTestPackageContext("PackageA", "1.0.0-alpha");
             var packageB100 = new SimpleTestPackageContext("PackageB", "1.0.0-alpha");
