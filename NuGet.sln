@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build\sign.targets = build\sign.targets
 		spelling.dic = spelling.dic
 		build\test.targets = build\test.targets
+		vsix.targets = vsix.targets
 		build\vsts_build.yaml = build\vsts_build.yaml
 	EndProjectSection
 EndProject

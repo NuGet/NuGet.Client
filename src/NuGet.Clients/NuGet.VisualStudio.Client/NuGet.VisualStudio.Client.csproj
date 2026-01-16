@@ -448,4 +448,6 @@
         NuGetSourceType="Package" />
     </ItemGroup>
   </Target>
+
+  <Import Project="..\..\..\vsix.targets" />
 </Project>

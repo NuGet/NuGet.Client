@@ -13,9 +13,9 @@
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
-    <Installation ExtensionType="VSSDK+VisualStudio.Extensibility" SystemComponent="true" InstalledByMsi="false" AllUsers="true">
+      <Installation SystemComponent="|%CurrentProject%;GetIsSystemComponent|" Experimental="|%CurrentProject%;GetIsExperimental|">
         <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[17.0,)">
-            <ProductArchitecture>amd64</ProductArchitecture>
+          <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
         <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[17.0,)">
             <ProductArchitecture>x86</ProductArchitecture>
