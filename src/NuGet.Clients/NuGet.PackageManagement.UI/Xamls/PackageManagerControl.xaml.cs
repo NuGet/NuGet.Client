@@ -230,7 +230,11 @@ namespace NuGet.PackageManagement.UI
             await TaskScheduler.Default;
             List<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList();
             var auditSourceRepositories = Model.Context.SourceService.GetEnabledAuditSources();
-            _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
+            var vulnerabilityService = new PackageVulnerabilityService(sourceRepositories, auditSourceRepositories, _uiLogger);
+
+            // Avoid concurrency issues by using the UI thread to synchronize reading and changing _packageVulnerabilityService.
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            _packageVulnerabilityService = vulnerabilityService;
         }
 
         private void Settings_SettingsChanged(object sender, EventArgs e)
@@ -663,32 +667,22 @@ namespace NuGet.PackageManagement.UI
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
-            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await SetVulnerabilityService(_sourceRepositoryProvider);
-                await AuditSourcesChangedAsync(timeSpan);
-            })
-            .PostOnFailure(nameof(PackageManagerControl), nameof(AuditSourcesChanged));
-        }
-
-        private async Task AuditSourcesChangedAsync(TimeSpan timeSpan)
-        {
-            try
-            {
-                var sw = Stopwatch.StartNew();
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                await RunAndEmitRefreshAsync(async () =>
+                try
                 {
+                    await SetVulnerabilityService(_sourceRepositoryProvider);
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     SaveSettings();
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                }, RefreshOperationSource.AuditSourcesChanged, timeSpan, sw);
-            }
-            finally
-            {
-                _dontStartNewSearch = false;
-            }
+                }
+                finally
+                {
+                    _dontStartNewSearch = false;
+                }
+            })
+            .PostOnFailure(nameof(PackageManagerControl), nameof(AuditSourcesChanged));
         }
 
         private async Task IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
@@ -1074,7 +1068,7 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
             // Update installed tab warning icon
-            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
+            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, _packageVulnerabilityService, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
@@ -1088,7 +1082,7 @@ namespace NuGet.PackageManagement.UI
             _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
+        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, IPackageVulnerabilityService vulnerabilityService, CancellationToken token)
         {
             // Switch off the UI thread before fetching installed packages and deprecation metadata.
             await TaskScheduler.Default;
@@ -1101,7 +1095,7 @@ namespace NuGet.PackageManagement.UI
             installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages.Where(p => p.TransitiveOrigins.Any()));
             //Use ShutdownToken to ensure the operation is canceled if it's still running when VS shuts down.
-            IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => _packageVulnerabilityService.GetVulnerabilityInfoAsync(p, VsShellUtilities.ShutdownToken)));
+            IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => vulnerabilityService.GetVulnerabilityInfoAsync(p, VsShellUtilities.ShutdownToken)));
 
             foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
             {
@@ -1847,6 +1841,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ExecuteRestartSearchCommandAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _packageVulnerabilityService?.ResetVulnerabilityData();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             await RefreshConsolidatablePackagesCountAsync();

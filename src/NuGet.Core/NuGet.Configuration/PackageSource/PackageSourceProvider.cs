@@ -636,6 +636,7 @@ namespace NuGet.Configuration
                 if (!shouldSkipSave && isDirty)
                 {
                     Settings.SaveToDisk();
+                    OnPackageSourcesChanged();
                     isDirty = false;
                 }
             }
@@ -729,6 +730,7 @@ namespace NuGet.Configuration
             if (!shouldSkipSave && isDirty)
             {
                 Settings.SaveToDisk();
+                OnPackageSourcesChanged();
                 isDirty = false;
             }
         }
@@ -929,6 +931,7 @@ namespace NuGet.Configuration
             if (isDirty)
             {
                 Settings.SaveToDisk();
+                OnPackageSourcesChanged();
                 isDirty = false;
             }
         }

@@ -80,7 +80,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         [Theory]
         [InlineData(RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.Success)]
-        [InlineData(RefreshOperationSource.AuditSourcesChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.CacheUpdated, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.NoOp)]
         [InlineData(RefreshOperationSource.ClearSearch, RefreshOperationStatus.NoOp)]
