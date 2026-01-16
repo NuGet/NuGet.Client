@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
         // used to prevent starting new search when we update the package sources
-        // list in response to PackageSourcesChanged event.
+        // list in response to Package Sources changing events.
         private bool _dontStartNewSearch;
         // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
         // This tells the operation execution part that it needs to trigger a refresh when done.
@@ -211,8 +211,6 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
-            Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
-
             Unloaded += PackageManagerUnloaded;
 
             if (IsUILegalDisclaimerSuppressed())
@@ -239,9 +237,21 @@ namespace NuGet.PackageManagement.UI
 
         private void Settings_SettingsChanged(object sender, EventArgs e)
         {
-            _detailModel.PackageSourceMappingViewModel.SettingsChanged();
-            _detailModel.SetInstalledOrUpdateButtonIsEnabled();
-            AuditSourcesChanged(sender, e);
+            // Set _dontStartNewSearch to true to prevent a new search started in
+            // _sourceRepoList_SelectionChanged(). This method will start the new
+            // search when needed by itself.
+            _dontStartNewSearch = true;
+
+            try
+            {
+                _detailModel.PackageSourceMappingViewModel.SettingsChanged();
+                _detailModel.SetInstalledOrUpdateButtonIsEnabled();
+                RefreshAfterSettingsChanged(sender, e);
+            }
+            finally
+            {
+                _dontStartNewSearch = false;
+            }
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -615,74 +625,22 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void PackageSourcesChanged(object sender, IReadOnlyCollection<PackageSourceContextInfo> e)
+        private void RefreshAfterSettingsChanged(object sender, EventArgs e)
         {
-            // Set _dontStartNewSearch to true to prevent a new search started in
-            // _sourceRepoList_SelectionChanged(). This method will start the new
-            // search when needed by itself.
-            _dontStartNewSearch = true;
-            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
-
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
-        }
-
-        private async Task PackageSourcesChangedAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, TimeSpan timeSpan)
-        {
-            try
-            {
-                var sw = Stopwatch.StartNew();
-                IReadOnlyCollection<PackageSourceMoniker> list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                // We access UI components in these calls
-                PackageSourceMoniker prevSelectedItem = SelectedSource;
-
-                await PopulatePackageSourcesAsync(list, optionalSelectSourceName: null, cancellationToken: CancellationToken.None);
-
-                // force a new search explicitly only if active source has changed
-                if (prevSelectedItem == SelectedSource)
-                {
-                    sw.Stop();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
-                }
-                else
-                {
-                    await RunAndEmitRefreshAsync(async () =>
-                    {
-                        SaveSettings();
-                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                    }, RefreshOperationSource.PackageSourcesChanged, timeSpan, sw);
-                }
-            }
-            finally
-            {
-                _dontStartNewSearch = false;
-            }
-        }
-
-        private void AuditSourcesChanged(object sender, EventArgs e)
-        {
-            // Set _dontStartNewSearch to true to prevent a new search started in
-            // _sourceRepoList_SelectionChanged(). This method will start the new
-            // search when needed by itself.
-            _dontStartNewSearch = true;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                try
-                {
-                    await SetVulnerabilityService(_sourceRepositoryProvider);
+                await SetVulnerabilityService(_sourceRepositoryProvider);
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    SaveSettings();
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                }
-                finally
-                {
-                    _dontStartNewSearch = false;
-                }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var settings = SaveSettings();
+
+                // Re-initialize package sources first, since a change to them will affect package search results.
+                await InitPackageSourcesAsync(settings, CancellationToken.None);
+
+                // Refresh package search results, which will also reflect any NuGet Audit settings changes.
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             })
-            .PostOnFailure(nameof(PackageManagerControl), nameof(AuditSourcesChanged));
+            .PostOnFailure(nameof(PackageManagerControl), nameof(RefreshAfterSettingsChanged));
         }
 
         private async Task IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
@@ -738,7 +696,7 @@ namespace NuGet.PackageManagement.UI
         // Save the settings of this doc window in the UIContext. Note that the settings
         // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
         // to persist the settings.
-        public void SaveSettings()
+        public UserSettings SaveSettings()
         {
             Assumes.NotNullOrEmpty(_settingsKey);
 
@@ -759,6 +717,8 @@ namespace NuGet.PackageManagement.UI
             _packageDetail._solutionView.SaveSettings(settings);
 
             Model.Context.UserSettingsManager.AddSettings(_settingsKey, settings);
+
+            return settings;
         }
 
         private UserSettings LoadSettings()
@@ -1646,8 +1606,6 @@ namespace NuGet.PackageManagement.UI
             solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
-
-            Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
 
             Settings.SettingsChanged -= Settings_SettingsChanged;
 
