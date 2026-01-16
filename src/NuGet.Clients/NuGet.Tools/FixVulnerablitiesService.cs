@@ -26,20 +26,15 @@ namespace NuGetVSExtension
     internal class FixVulnerablitiesService : IFixVulnerabilitiesService
     {
         private const string AgentModeResponderServiceMoniker = "Microsoft.VisualStudio.Copilot.AgentModeResponder";
-        private const string ChatUiPackageLoaded = "871c3e1c-e58c-4ce9-b6a7-26600555739a";
-        //private const string ChatUiPackageAvailable = "a8984974-3a2f-4e50-810a-4cc51f6c1a04";
-        //private const string CompletionsPackageAvailable = "a7f179b8-a8e8-4729-86e1-414bb0a103c8";
-        //private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
+        private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
         private const string ServiceName = "Microsoft.VisualStudio.Copilot.SolutionContextProvider";
 
-        private static readonly Guid CopilotReadyUIContext = new(ChatUiPackageLoaded);
+        private static readonly Guid CopilotReadyUIContext = new(AuthStatusDetermined);
         private static readonly ServiceRpcDescriptor ProviderDescriptor = CopilotDescriptors.CreateContextProviderDescriptor(ServiceName);
         private static readonly CopilotContextDescriptor ContextDescriptor = new CopilotContextDescriptor(
                     "SolutionFile",
                     "solution file context",
                     CopilotDefaultTypes.StringName);
-
-        //private static readonly string NuGetSolverToolName = "get-nuget-solver";  
 
         [Import(typeof(SVsFullAccessServiceBroker))]
         public IServiceBroker? ServiceBroker { get; set; }
