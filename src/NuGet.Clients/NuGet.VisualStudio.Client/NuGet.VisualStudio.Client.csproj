@@ -28,7 +28,7 @@
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
     <CreateVsixContainer>True</CreateVsixContainer>
-    <DeployExtension>False</DeployExtension>
+    <DeployExtension>True</DeployExtension>
     <VsixDeployOnDebug>True</VsixDeployOnDebug>
   </PropertyGroup>
 
@@ -448,6 +448,4 @@
         NuGetSourceType="Package" />
     </ItemGroup>
   </Target>
-
-  <Import Project="..\..\..\vsix.targets" />
 </Project>
