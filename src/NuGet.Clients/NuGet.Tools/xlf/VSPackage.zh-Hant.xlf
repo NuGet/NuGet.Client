@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="114">
         <source>Sources</source>
-        <target state="needs-review-translation">套件來源</target>
+        <target state="translated">來源</target>
         <note />
       </trans-unit>
       <trans-unit id="115">
