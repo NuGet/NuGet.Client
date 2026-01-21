@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Shipping>true</Shipping>
@@ -97,8 +97,14 @@ namespace $(RootNamespace)
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateProductVersionAssemblyInfo" BeforeTargets="GenerateAdditionalSources" DependsOnTargets="DetermineGenerateProductVersionAssemblyInfoOutputs" Inputs="$(MSBuildAllProjects)" Outputs="@(_ProductVersionAssemblyInfoFile)">
-    <WriteLinesToFile File="%(_ProductVersionAssemblyInfoFile.Identity)" Lines="%(_ProductVersionAssemblyInfoFile.Source)" Overwrite="true" />
+  <Target Name="GenerateProductVersionAssemblyInfo" BeforeTargets="GenerateAdditionalSources"
+          DependsOnTargets="DetermineGenerateProductVersionAssemblyInfoOutputs"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="@(_ProductVersionAssemblyInfoFile)">
+    <WriteLinesToFile
+      File="%(_ProductVersionAssemblyInfoFile.Identity)"
+      Lines="%(_ProductVersionAssemblyInfoFile.Source)"
+      Overwrite="true" />
   </Target>
 
     <!--

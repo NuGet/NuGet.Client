@@ -25,9 +25,6 @@ NuGet.VisualStudio.resources.dll
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll
 Microsoft.Build.NuGetSdkResolver.resources.dll
-Microsoft.Bcl.HashCode.dll
-Microsoft.ML.Tokenizers.dll
-Microsoft.VisualStudio.Copilot.dll
 NuGet.Build.Tasks.dll
 NuGet.Build.Tasks.Pack.dll
 NuGet.Build.Tasks.Pack.resources.dll
@@ -61,7 +58,6 @@ NuGet.Versioning.dll
 NuGet.Versioning.resources.dll
 
 # 3rd party dlls to keep
-Google.Protobuf.dll
 Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll

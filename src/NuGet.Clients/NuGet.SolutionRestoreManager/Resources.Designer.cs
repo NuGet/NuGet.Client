@@ -97,7 +97,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fix Vulnerabilities with GitHub Copilot.
+        ///   Looks up a localized string similar to Fix with GitHub Copilot.
         /// </summary>
         internal static string InfoBar_HyperlinkFixVulnerabilitiesWithCopilot {
             get {

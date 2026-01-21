@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
-using EnvDTE80;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
 using Microsoft.VisualStudio.Shell;
@@ -38,6 +36,9 @@ namespace NuGetVSExtension
 
         [Import(typeof(SVsFullAccessServiceBroker))]
         public IServiceBroker? ServiceBroker { get; set; }
+
+        [Import(typeof(IVsSolutionManager))]
+        public IVsSolutionManager? SolutionManager { get; set; }
 
         [Import(typeof(VisualStudioActivityLogger))]
         public ILogger? ActivityLogger { get; set; }
@@ -75,43 +76,41 @@ namespace NuGetVSExtension
                 CopilotClientId clientId = new("Microsoft.VisualStudio.NuGet.VulnerabilitiesInfoBar");
                 CopilotThreadOptions options = new(clientId);
 
-                await using (var thread = await copilotService.StartThreadAsync(options, cancellationToken))
+                await using var thread = await copilotService.StartThreadAsync(options, cancellationToken);
+                ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
+                using (cfp as IDisposable)
                 {
-                    ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
-                    using (cfp as IDisposable)
+                    if (cfp is null)
                     {
-                        if (cfp is null)
-                        {
-                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable);
-                            ShowWarningMessage(Resources.Error_McpToolServiceNotAvailable);
-                            return;
-                        }
+                        SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable);
+                        ShowWarningMessage(Resources.Error_McpToolServiceNotAvailable);
+                        return;
+                    }
 
-                        // Requests from this session will be visible in the Chat window
-                        CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
-                        {
-                            Intent = CopilotIntent.None,
-                            Guidance = "Use absolute paths when invoking MCP Tools.",
-                            DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
-                        };
+                    // Requests from this session will be visible in the Chat window
+                    CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
+                    {
+                        Intent = CopilotIntent.None,
+                        Guidance = "Use absolute paths when invoking MCP Tools.",
+                        DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
+                    };
 
-                        // Prepare a request with the list of functions available to it and the solution path context.
-                        string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
-                        CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
-                        IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
-                        CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(functions).WithContext(context);
+                    // Prepare a request with the list of functions available to it and the solution path context.
+                    string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
+                    CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
+                    IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
+                    CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(functions).WithContext(context);
 
-                        try
-                        {
-                            _ = await thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
-                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None);
-                        }
-                        catch (UnauthorizedAccessException ex)
-                        {
-                            SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied);
-                            ActivityLogger?.LogError(ex.Message);
-                            ShowWarningMessage(Resources.Error_CopilotAccessDenied);
-                        }
+                    try
+                    {
+                        _ = await thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                        SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None);
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied);
+                        ActivityLogger?.LogError(ex.Message);
+                        ShowWarningMessage(Resources.Error_CopilotAccessDenied);
                     }
                 }
             }
@@ -133,17 +132,6 @@ namespace NuGetVSExtension
             TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
-        private static string GetSolutionPath()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            DTE2 dte = (DTE2)Package.GetGlobalService(typeof(DTE));
-            if (dte?.Solution != null && dte.Solution.IsOpen)
-            {
-                return dte.Solution.FullName;
-            }
-
-            return string.Empty;
-        }
+        private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
     }
 }
