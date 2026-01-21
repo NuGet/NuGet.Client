@@ -184,6 +184,7 @@ stages:
     - task: MicroBuildBuildVSBootstrapper@3
       displayName: 'Build a Visual Studio bootstrapper'
       inputs:
+        azureSubscription: 'VSEng-VSDrop-MI'
         channelName: "$(VsTargetChannel)"
         vsMajorVersion: "$(VsTargetMajorVersion)"
         manifests: '$(Pipeline.Workspace)\ComponentBuildUnderTest\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
