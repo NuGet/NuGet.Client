@@ -113,7 +113,7 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            List<LibraryDependency> dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework)
+            List<LibraryDependency> dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework);
             List<LibraryDependency> uniqueDependencies = DeduplicateDependencies(dependencies);
 
             Library library = new Library
