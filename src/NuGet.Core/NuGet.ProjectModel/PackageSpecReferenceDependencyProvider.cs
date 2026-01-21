@@ -96,12 +96,13 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
-            var name = libraryRange.Name;
+            if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
+            if (targetFramework == null) throw new ArgumentNullException(nameof(targetFramework));
 
             PackageSpec packageSpec = null;
 
             // This must exist in the external references
-            if (_externalProjectsByUniqueName.TryGetValue(name, out ExternalProjectReference externalReference))
+            if (_externalProjectsByUniqueName.TryGetValue(libraryRange.Name, out ExternalProjectReference externalReference))
             {
                 packageSpec = externalReference.PackageSpec;
             }
@@ -112,34 +113,11 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            List<LibraryDependency> dependencies;
-
             var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-
-            // Read references from external project
-            if (projectStyle == ProjectStyle.PackageReference)
-            {
-                // NETCore
-                dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework);
-            }
-            else
-            {
-                // UWP
-                dependencies = GetDependenciesFromExternalReference(externalReference, packageSpec, targetFramework);
-            }
-
-            // Remove duplicate dependencies. A reference can exist both in csproj and project.json
-            // dependencies is already ordered by importance here
-            var uniqueDependencies = new List<LibraryDependency>(dependencies.Count);
-            var projectNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var project in dependencies)
-            {
-                if (projectNames.Add(project.Name))
-                {
-                    uniqueDependencies.Add(project);
-                }
-            }
+            List<LibraryDependency> dependencies = projectStyle == ProjectStyle.PackageReference ?
+                GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework)
+                : [];
+            List<LibraryDependency> uniqueDependencies = DeduplicateDependencies(dependencies);
 
             Library library = new Library
             {
@@ -169,9 +147,31 @@ namespace NuGet.ProjectModel
             }
 
             return library;
+
+            static List<LibraryDependency> DeduplicateDependencies(List<LibraryDependency> dependencies)
+            {
+                if (dependencies.Count == 0)
+                {
+                    return dependencies;
+                }
+                // Remove duplicate dependencies.
+                // dependencies is already ordered by importance here
+                var uniqueDependencies = new List<LibraryDependency>(dependencies.Count);
+                var projectNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var project in dependencies)
+                {
+                    if (projectNames.Add(project.Name))
+                    {
+                        uniqueDependencies.Add(project);
+                    }
+                }
+
+                return uniqueDependencies;
+            }
         }
 
-        private void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
+        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
         {
             var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
@@ -287,63 +287,6 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
-        /// <summary>
-        /// UWP Project.json
-        /// </summary>
-        private List<LibraryDependency> GetDependenciesFromExternalReference(
-            ExternalProjectReference externalReference,
-            PackageSpec packageSpec,
-            NuGetFramework targetFramework)
-        {
-            var dependencies = GetSpecDependencies(packageSpec, targetFramework);
-
-            if (externalReference != null)
-            {
-                var childReferences = GetChildReferences(externalReference);
-                var childReferenceNames = childReferences.Select(reference => reference.ProjectName).ToList();
-
-                // External references are created without pivoting on the TxM. Here we need to account for this
-                // and filter out references except the nearest TxM.
-                var filteredExternalDependencies = new HashSet<string>(
-                    childReferenceNames,
-                    StringComparer.OrdinalIgnoreCase);
-
-                // Set all dependencies from project.json to external if an external match was passed in
-                // This is viral and keeps p2ps from looking into directories when we are going down
-                // a path already resolved by msbuild.
-                for (int i = 0; i < dependencies.Count; i++)
-                {
-                    var d = dependencies[i];
-                    if (IsProject(d) && filteredExternalDependencies.Contains(d.Name))
-                    {
-                        var libraryRange = new LibraryRange(d.LibraryRange) { TypeConstraint = LibraryDependencyTarget.ExternalProject };
-
-                        // Do not push the dependency changes here upwards, as the original package
-                        // spec should not be modified.
-                        dependencies[i] = new LibraryDependency(d) { LibraryRange = libraryRange };
-                    }
-                }
-
-                // Add dependencies passed in externally
-                // These are usually msbuild references which have less metadata, they have
-                // the lowest priority.
-                // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
-                dependencies.AddRange(childReferences
-                    .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
-                    .Select(reference => new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = reference.ProjectName,
-                            VersionRange = VersionRange.Parse("1.0.0"),
-                            TypeConstraint = LibraryDependencyTarget.ExternalProject
-                        }
-                    }));
-            }
-
-            return dependencies;
-        }
-
         internal List<LibraryDependency> GetSpecDependencies(
             PackageSpec packageSpec,
             NuGetFramework targetFramework)
@@ -413,36 +356,6 @@ namespace NuGet.ProjectModel
                 }
                 return false;
             }
-        }
-
-        private bool IsProject(LibraryDependency dependency)
-        {
-            var type = dependency.LibraryRange.TypeConstraint;
-
-            return SupportsType(type);
-        }
-
-        private List<ExternalProjectReference> GetChildReferences(ExternalProjectReference parent)
-        {
-            var children = new List<ExternalProjectReference>(parent.ExternalProjectReferences.Count);
-
-            foreach (var reference in parent.ExternalProjectReferences)
-            {
-                ExternalProjectReference childReference;
-                if (!_externalProjectsByUniqueName.TryGetValue(reference, out childReference))
-                {
-                    // Create a reference to mark that this project is unresolved here
-                    childReference = new ExternalProjectReference(
-                        uniqueName: reference,
-                        packageSpec: null,
-                        msbuildProjectPath: null,
-                        projectReferences: Enumerable.Empty<string>());
-                }
-
-                children.Add(childReference);
-            }
-
-            return children;
         }
     }
 }
