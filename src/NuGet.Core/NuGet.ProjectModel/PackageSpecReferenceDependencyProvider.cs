@@ -113,7 +113,20 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            List<LibraryDependency> dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework);
+            List<LibraryDependency> dependencies;
+
+            var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+
+            if (projectStyle == ProjectStyle.PackageReference ||
+                projectStyle == ProjectStyle.DotnetCliTool)
+            {
+                dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework);
+            }
+            else
+            {
+                dependencies = GetDependenciesFromExternalReference(externalReference);
+            }
+
             List<LibraryDependency> uniqueDependencies = DeduplicateDependencies(dependencies);
 
             Library library = new Library
@@ -284,6 +297,35 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
+        private List<LibraryDependency> GetDependenciesFromExternalReference(ExternalProjectReference externalReference)
+        {
+            if (externalReference != null)
+            {
+                var childReferences = GetChildReferences(externalReference);
+                var childReferenceNames = childReferences.Select(reference => reference.ProjectName).ToList();
+
+                // External references are created without pivoting on the TxM. Here we need to account for this
+                // and filter out references except the nearest TxM.
+                var filteredExternalDependencies = new HashSet<string>(
+                    childReferenceNames,
+                    StringComparer.OrdinalIgnoreCase);
+
+                return [.. childReferences
+                    .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
+                    .Select(reference => new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = reference.ProjectName,
+                            VersionRange = VersionRange.Parse("1.0.0"),
+                            TypeConstraint = LibraryDependencyTarget.ExternalProject
+                        }
+                    })];
+            }
+
+            return [];
+        }
+
         internal List<LibraryDependency> GetSpecDependencies(
             PackageSpec packageSpec,
             NuGetFramework targetFramework)
@@ -353,6 +395,29 @@ namespace NuGet.ProjectModel
                 }
                 return false;
             }
+        }
+
+        private List<ExternalProjectReference> GetChildReferences(ExternalProjectReference parent)
+        {
+            var children = new List<ExternalProjectReference>(parent.ExternalProjectReferences.Count);
+
+            foreach (var reference in parent.ExternalProjectReferences)
+            {
+                ExternalProjectReference childReference;
+                if (!_externalProjectsByUniqueName.TryGetValue(reference, out childReference))
+                {
+                    // Create a reference to mark that this project is unresolved here
+                    childReference = new ExternalProjectReference(
+                        uniqueName: reference,
+                        packageSpec: null,
+                        msbuildProjectPath: null,
+                        projectReferences: Enumerable.Empty<string>());
+                }
+
+                children.Add(childReference);
+            }
+
+            return children;
         }
     }
 }
