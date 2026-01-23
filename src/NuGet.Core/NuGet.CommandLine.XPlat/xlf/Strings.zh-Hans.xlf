@@ -350,7 +350,7 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
       </trans-unit>
       <trans-unit id="Error_InvalidVersion">
         <source>Invalid version value '{0}'.</source>
-        <target state="new">Invalid version value '{0}'.</target>
+        <target state="translated">版本值“{0}”无效。</target>
         <note>0 - package version</note>
       </trans-unit>
       <trans-unit id="Error_InvalidVersionRange">
@@ -400,7 +400,7 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
         <source>Unable to find a valid package version</source>
-        <target state="new">Unable to find a valid package version</target>
+        <target state="translated">找不到有效的包版本</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
@@ -893,75 +893,75 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AllowInsecureConnectionsDescription">
         <source>Allows downloading from HTTP (non-HTTPS) package sources.</source>
-        <target state="new">Allows downloading from HTTP (non-HTTPS) package sources.</target>
+        <target state="translated">允许从 HTTP (非 HTTPS)包源下载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_AlreadyInstalled">
         <source>Skipping download. Package '{0}' version {1} already exists at '{2}'.</source>
-        <target state="new">Skipping download. Package '{0}' version {1} already exists at '{2}'.</target>
+        <target state="translated">正在跳过下载。包 "{0}" 版本 {1} 已存在于 "{2}"。</target>
         <note>0 - package id
 1 - version
 2 - directory path where the package was downloaded</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Description">
         <source>Downloads a NuGet package to a local folder without requiring a project file.</source>
-        <target state="new">Downloads a NuGet package to a local folder without requiring a project file.</target>
+        <target state="translated">将 NuGet 包下载到本地文件夹，无需项目文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Failed">
         <source>Package '{0}' ({1}) failed to download.</source>
-        <target state="new">Package '{0}' ({1}) failed to download.</target>
+        <target state="translated">包 "{0}" ({1})下载失败。</target>
         <note>0 - package id
 1 - package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_LatestVersion">
         <source>latest version</source>
-        <target state="new">latest version</target>
+        <target state="translated">最新版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_OutputDirectoryDescription">
         <source>Directory where the package will be placed. Defaults to the current working directory.</source>
-        <target state="new">Directory where the package will be placed. Defaults to the current working directory.</target>
+        <target state="translated">将放置包的目录。默认为当前工作目录。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageIdDescription">
         <source>Package identifier (e.g. 'Newtonsoft.Json').</source>
-        <target state="new">Package identifier (e.g. 'Newtonsoft.Json').</target>
+        <target state="translated">包标识符(例如 "Newtonsoft.Json")。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped">
         <source>Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</source>
-        <target state="new">Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</target>
+        <target state="translated">未能下载包“{0}”。已启用 PackageSourceMapping，但未找到此包的映射源。未考虑以下源: {1}。</target>
         <note>{0} = package ID 
 {1} = comma-separated list of all configured sources </note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
         <source>The mapped source '{0}' for package '{1}' was not found among the configured sources.</source>
-        <target state="new">The mapped source '{0}' for package '{1}' was not found among the configured sources.</target>
+        <target state="translated">在配置的源中找不到包 "{1}" 的映射源 "{0}"。</target>
         <note>0 - package source name
 1 - package name</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_SourcesDescription">
         <source>Specifies one or more NuGet package sources to use.</source>
-        <target state="new">Specifies one or more NuGet package sources to use.</target>
+        <target state="translated">指定一个或多个要使用的 NuGet 包源。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Starting">
         <source>Downloading package {0}, version {1}.</source>
-        <target state="new">Downloading package {0}, version {1}.</target>
+        <target state="translated">正在下载包 {0}，版本 {1}。</target>
         <note>0- package id
 1- package version</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_Succeeded">
         <source>Package '{0}' ({1}) successfully downloaded to '{2}'.</source>
-        <target state="new">Package '{0}' ({1}) successfully downloaded to '{2}'.</target>
+        <target state="translated">包 "{0}" ({1})已成功下载到 "{2}"。</target>
         <note>0 - package id
 1 - package version
 2 - package download location</note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_UnableToDownload">
         <source>Package download failed for `{0} {1}` from source `{2}`.</source>
-        <target state="new">Package download failed for `{0} {1}` from source `{2}`.</target>
+        <target state="translated">从源 `{2}` 下载包 `{0} {1}` 失败。</target>
         <note>0 package id
 1 package version
 2 package source</note>
@@ -1066,7 +1066,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Prerelease_Description">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="new">Allows prerelease packages to be installed.</target>
+        <target state="translated">允许安装预发行包。</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandSkipDuplicateDescription">
