@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="AddPkg_PackagePrerelease">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Consente l'installazione di pacchetti non definitivi.</target>
+        <target state="new">Allows prerelease packages to be installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddPkg_PackageVersionDescription">
