@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="114">
         <source>Package Sources</source>
-        <target state="translated">패키지 소스</target>
+        <target state="new">Package Sources</target>
         <note />
       </trans-unit>
       <trans-unit id="115">
