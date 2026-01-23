@@ -108,7 +108,7 @@ namespace Test.Utility
             return new TestPackage(dependencies);
         }
 
-        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string alias)
         {
             var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
             var identity = packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version);

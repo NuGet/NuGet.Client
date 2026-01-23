@@ -1,1 +1,3 @@
 #nullable enable
+static NuGet.ProjectModel.PackageSpecExtensions.GetNearestTargetFramework(this NuGet.ProjectModel.PackageSpec! project, NuGet.Frameworks.NuGetFramework! targetFramework, string! targetAlias) -> NuGet.ProjectModel.TargetFrameworkInformation!
+~NuGet.ProjectModel.PackageSpecReferenceDependencyProvider.GetLibrary(NuGet.LibraryModel.LibraryRange libraryRange, NuGet.Frameworks.NuGetFramework targetFramework, string alias) -> NuGet.LibraryModel.Library

@@ -13,7 +13,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -29,7 +28,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData(false, true, true)]
         [InlineData(true, false, true)]
         [InlineData(true, true, true)]
-        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled, bool useLegacyDependencyGraphResolution)
+        public void GetDependenciesFromSpecRestoreMetadata_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled, bool useLegacyDependencyGraphResolution)
         {
             // Arrange
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
@@ -53,7 +52,7 @@ namespace NuGet.ProjectModel.Test
 
             var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance, useLegacyDependencyGraphResolution);
             // Act
-            var dependencies = dependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
+            var dependencies = dependencyProvider.GetDependenciesFromSpecRestoreMetadata(packSpec, tfi.FrameworkName, tfi.TargetAlias);
 
             // Assert
             if (cpvmEnabled && CentralPackageTransitivePinningEnabled && useLegacyDependencyGraphResolution)
@@ -84,32 +83,24 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        // TODO - Add a test verifying that the new algorithm *doesn't* require packages to be added as top level
-
-        [Theory]
-        [InlineData(null, 1)]
-        [InlineData("true", 0)]
-        public void GetSpecDependencies_WithAssetTargetFallback_AndDependencyResolutionVariableSpecified_ReturnsCorrectDependencies(string assetTargetFallbackEnvironmentVariableValue, int dependencyCount)
+        [Fact]
+        public void GetDependenciesFromSpecRestoreMetadata_WithAssetTargetFallback_AndDependencyResolutionVariableSpecified_ReturnsCorrectDependencies()
         {
             // Arrange
+            int dependencyCount = 1;
             var net60Framework = FrameworkConstants.CommonFrameworks.Net60;
             var net472Framework = FrameworkConstants.CommonFrameworks.Net472;
             var packageSpec = ProjectTestHelpers.GetPackageSpec(rootPath: "C:\\", projectName: "A", framework: net472Framework.GetShortFolderName(), dependencyName: "x");
 
-            var envVarWrapper = new TestEnvironmentVariableReader(new Dictionary<string, string> { { "NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION", assetTargetFallbackEnvironmentVariableValue } });
-            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), envVarWrapper);
+            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), EnvironmentVariableWrapper.Instance);
             var assetTargetFallback = new AssetTargetFallbackFramework(net60Framework, new List<NuGetFramework> { net472Framework });
-            // Act
 
-            var dependencies = dependencyProvider.GetSpecDependencies(packageSpec, assetTargetFallback);
+            // Act
+            var dependencies = dependencyProvider.GetDependenciesFromSpecRestoreMetadata(packageSpec, assetTargetFallback, targetAlias: null);
 
             // Assert
             dependencies.Should().HaveCount(dependencyCount);
-
-            if (dependencyCount > 0)
-            {
-                dependencies[0].Name.Should().Be("x");
-            }
+            dependencies[0].Name.Should().Be("x");
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)

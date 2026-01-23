@@ -87,7 +87,14 @@ namespace NuGet.ProjectModel
 
                     if ((flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets)
                     {
-                        lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonStreamLockFileConverters.LockFileTargetConverter);
+                        if (lockFile.Version >= 4)
+                        {
+                            lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonStreamLockFileConverters.LockFileTargetConverterV4);
+                        }
+                        else
+                        {
+                            lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonStreamLockFileConverters.LockFileTargetConverter);
+                        }
                     }
                     else
                     {
@@ -194,7 +201,15 @@ namespace NuGet.ProjectModel
                 // Populate the alias at read time. This allows readers to use the alias to find targets regardless of what the underlying assets file format is.
                 foreach (var target in lockFile.Targets)
                 {
-                    target.TargetAlias = lockFile.PackageSpec?.GetRestoreMetadataFramework(target.TargetFramework)?.TargetAlias;
+                    target.TargetAlias = lockFile.PackageSpec?.GetTargetFramework(target.TargetFramework)?.TargetAlias;
+                }
+            }
+
+            if (lockFile.Version >= 4)
+            {
+                foreach (var target in lockFile.Targets)
+                {
+                    target.TargetFramework = lockFile.PackageSpec.GetTargetFramework(target.TargetAlias).FrameworkName;
                 }
             }
 

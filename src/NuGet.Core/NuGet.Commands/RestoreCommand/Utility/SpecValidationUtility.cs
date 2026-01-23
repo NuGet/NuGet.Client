@@ -173,18 +173,6 @@ namespace NuGet.Commands
             {
                 throw RestoreSpecException.Create(Strings.SpecValidationNoFrameworks, files);
             }
-
-            // Duplicate frameworks may not exist
-            // Change in ATF should *not* affect our duplicate check, so we use the full framework comparer.
-            if (frameworkNames.Count != frameworkNames.Distinct(NuGetFrameworkFullComparer.Instance).Count())
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.SpecValidationDuplicateFrameworks,
-                    string.Join(", ", frameworkNames.Select(f => f.GetShortFolderName())));
-
-                throw RestoreSpecException.Create(message, files);
-            }
         }
 
         private static void ValidateProjectSpecPackageReference(PackageSpec spec, IEnumerable<string> files, ILogger logger)
@@ -231,7 +219,7 @@ namespace NuGet.Commands
             //OriginalTargetFrameworks must match the aliases.
             if (spec.RestoreMetadata.TargetFrameworks.Count > 1)
             {
-                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias);
+                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
 
                 if (!EqualityUtility.OrderedEquals(aliases, spec.RestoreMetadata.OriginalTargetFrameworks, e => e, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase))
                 {
@@ -241,6 +229,22 @@ namespace NuGet.Commands
                         string.Join(";", spec.RestoreMetadata.OriginalTargetFrameworks),
                         string.Join(";", aliases)
                         );
+                    throw RestoreSpecException.Create(message, files);
+                }
+            }
+
+            if (spec.TargetFrameworks.Count > 1)
+            {
+                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
+                var uniqueAliases = new HashSet<string>(aliases, StringComparer.OrdinalIgnoreCase);
+
+                if (uniqueAliases.Count != aliases.Count)
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.SpecValidationDuplicateTargetAlias,
+                        string.Join(", ", aliases));
+
                     throw RestoreSpecException.Create(message, files);
                 }
             }

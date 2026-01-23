@@ -341,7 +341,8 @@ namespace NuGet.Commands
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            LibraryRangeCacheKey key = new(libraryIdentity, targetFramework);
+            // Pass an empty alias since aliases are not supported for packages.
+            LibraryRangeCacheKey key = new(libraryIdentity, targetFramework, alias: string.Empty);
 
             return _dependencyInfoCache.GetOrAddAsync(
                 key,

@@ -1462,8 +1462,10 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext contextForProject)
         {
+            int lockFileVersion = DetermineLockFileVersion();
+
             // Build the lock file
-            var lockFile = new LockFileBuilder(_request.LockFileVersion, _logger, _includeFlagGraphs)
+            var lockFile = new LockFileBuilder(lockFileVersion, _logger, _includeFlagGraphs)
                     .CreateLockFile(
                         existingLockFile,
                         project,
@@ -1473,6 +1475,23 @@ namespace NuGet.Commands
                         _lockFileBuilderCache);
 
             return lockFile;
+
+            int DetermineLockFileVersion()
+            {
+                int lockFileVersion = _request.LockFileVersion;
+
+                // We use the request provided version, unless we are using the Microsoft.NET.Sdk that does not support reading of aliased assets files.
+                if (_request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
+                    !SdkAnalysisLevelMinimums.IsEnabled(
+                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.V10_0_300))
+                {
+                    lockFileVersion = 3;
+                }
+
+                return lockFileVersion;
+            }
         }
 
         /// <summary>
@@ -1660,6 +1679,17 @@ namespace NuGet.Commands
             TelemetryActivity telemetryActivity)
         {
             bool success = true;
+
+            // Check for duplicate frameworks. The new dependency resolver supports aliasing, but the legacy one does not.
+            if (_request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, _request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+
+                success = false;
+                return (success, []);
+            }
+
             if (_request.Project.TargetFrameworks.Count == 0)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
@@ -1845,6 +1875,25 @@ namespace NuGet.Commands
                 success = false;
 
                 return (success, []);
+            }
+
+
+            bool shouldDoDuplicatesCheck = _request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
+                    !SdkAnalysisLevelMinimums.IsEnabled(
+                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.V10_0_300);
+
+            if (shouldDoDuplicatesCheck)
+            {
+                if (_request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, _request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+
+                    success = false;
+                    return (success, []);
+                }
             }
 
             var projectRestoreRequest = new ProjectRestoreRequest(_request, _request.Project, _request.ExistingLockFile, _logger)
