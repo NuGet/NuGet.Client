@@ -995,7 +995,11 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <ns0:target state="translated">Conflit de version détecté pour {0}. Installez/référencez {1} directement au projet {2} pour résoudre ce problème.</ns0:target>
         <ns0:note />
       </ns0:trans-unit>
-      <trans-unit id="Log_VersionConflictForCentralTransitive"><source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</source><target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</target><note /></trans-unit><ns0:trans-unit id="Log_WritingAssetsFile">
+      <ns0:trans-unit id="Log_VersionConflictForCentralTransitive">
+        <ns0:source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</ns0:source>
+        <ns0:target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit><ns0:trans-unit id="Log_WritingAssetsFile">
         <ns0:source>Writing assets file to disk. Path: {0}</ns0:source>
         <ns0:target state="translated">Écriture du fichier des composants sur le disque. Chemin : {0}</ns0:target>
         <ns0:note />
