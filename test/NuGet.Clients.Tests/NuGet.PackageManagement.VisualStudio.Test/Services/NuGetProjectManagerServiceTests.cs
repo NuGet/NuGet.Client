@@ -993,7 +993,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // packageX_3.0.0 -> packageD_0.1.1
             // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
             //                                  -> packageD_0.1.1
-            // net472:ock
+            // net472:
             // packageX_3.0.0 -> packageD_0.1.1
 
             // useSameVersion = false
