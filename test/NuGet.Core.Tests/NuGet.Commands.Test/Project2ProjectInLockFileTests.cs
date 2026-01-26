@@ -275,7 +275,6 @@ namespace NuGet.Commands.Test
             var format = new LockFileFormat();
 
             // Act
-            // Act
             var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync();
             await result.CommitAsync(logger, CancellationToken.None);
