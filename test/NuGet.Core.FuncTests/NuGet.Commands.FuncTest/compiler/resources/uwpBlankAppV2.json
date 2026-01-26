@@ -16898,7 +16898,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "UAP,Version=v10.0": [
+    "uap10.0": [
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.0.0"
     ]
   },
