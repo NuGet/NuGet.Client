@@ -2088,8 +2088,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             
             var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
             {
-                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
-                ProjectStyle = ProjectStyle.PackageReference
+                LockFilePath = Path.Combine(projectPath, "project.assets.json")
             };
             
             var command = new RestoreCommand(request);
