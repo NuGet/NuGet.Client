@@ -3652,10 +3652,6 @@ EndGlobal";
             bananaTarget.Libraries[0].CompileTimeAssemblies.Should().BeEmpty();
             bananaTarget.Libraries[0].RuntimeAssemblies.Should().BeEmpty();
 
-            bananaTarget.Libraries.Should().ContainSingle();
-            bananaTarget.Libraries[0].CompileTimeAssemblies.Should().BeEmpty();
-            bananaTarget.Libraries[0].RuntimeAssemblies.Should().BeEmpty();
-
             assetsFile.LogMessages.Should().HaveCount(3);
             assetsFile.LogMessages[0].Level.Should().Be(LogLevel.Warning);
             assetsFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1701);
