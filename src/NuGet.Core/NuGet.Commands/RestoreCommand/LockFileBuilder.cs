@@ -440,7 +440,7 @@ namespace NuGet.Commands
                 }
 
                 // Add entry
-                string framework = (isV4LockFile && string.IsNullOrEmpty(frameworkInfo.TargetAlias)) ? frameworkInfo.TargetAlias : frameworkInfo.FrameworkName.ToString();
+                string framework = (isV4LockFile && !string.IsNullOrEmpty(frameworkInfo.TargetAlias)) ? frameworkInfo.TargetAlias : frameworkInfo.FrameworkName.ToString();
                 var dependencyGroup = new ProjectFileDependencyGroup(
                     framework,
                     uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())
