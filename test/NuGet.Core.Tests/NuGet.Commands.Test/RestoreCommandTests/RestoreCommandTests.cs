@@ -2056,30 +2056,30 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var project1Json = @"
             {
               ""version"": ""1.0.0"",
-                ""restore"": {
-                                ""projectUniqueName"": ""TestProject"",
-                                ""centralPackageVersionsManagementEnabled"": true,
-                                ""CentralPackageTransitivePinningEnabled"": true,
-                },
+              ""restore"": {
+                ""projectUniqueName"": ""TestProject"",
+                ""centralPackageVersionsManagementEnabled"": true,
+                ""CentralPackageTransitivePinningEnabled"": true
+              },
               ""frameworks"": {
                 ""net472"": {
-                    ""dependencies"": {
-                            ""x"": {
-                                ""version"": ""[1.0.0,)"",
-                                ""target"": ""Package"",
-                                ""versionCentrallyManaged"": true
-                            },
-                            ""y"": {
-                                ""version"": ""[1.0.0,)"",
-                                ""target"": ""Package"",
-                                ""versionCentrallyManaged"": true
-                            }
+                  ""dependencies"": {
+                    ""x"": {
+                      ""version"": ""[1.0.0,)"",
+                      ""target"": ""Package"",
+                      ""versionCentrallyManaged"": true
                     },
-                    ""centralPackageVersions"": {
-                        ""x"": ""[1.0.0,)"",
-                        ""y"": ""[1.0.0,)"",
-                        ""z"": ""[1.0.0,)""
+                    ""y"": {
+                      ""version"": ""[1.0.0,)"",
+                      ""target"": ""Package"",
+                      ""versionCentrallyManaged"": true
                     }
+                  },
+                  ""centralPackageVersions"": {
+                    ""x"": ""[1.0.0,)"",
+                    ""y"": ""[1.0.0,)"",
+                    ""z"": ""[1.0.0,)""
+                  }
                 }
               }
             }";
