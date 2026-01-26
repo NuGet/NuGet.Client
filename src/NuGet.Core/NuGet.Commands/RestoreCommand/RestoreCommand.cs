@@ -1561,9 +1561,7 @@ namespace NuGet.Commands
                                CultureInfo.CurrentCulture,
                                Strings.Log_VersionConflictForCentralTransitive,
                                versionConflict.Selected.Key.Name,
-                               _request.Project.Name,
-                               "Directory.Packages.props",
-                               versionConflict.Selected.GetIdAndVersionOrRange())
+                               _request.Project.Name)
                             + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
                     }
                     else
