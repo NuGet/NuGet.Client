@@ -2024,6 +2024,91 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_VersionConflict_CentralTransitive_ShowsCorrectErrorMessage()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var logger = new TestLogger();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+            
+            // Create packages with conflicting dependencies
+            var packageX = new SimpleTestPackageContext("x", "1.0.0");
+            var packageY = new SimpleTestPackageContext("y", "1.0.0");
+            var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
+            var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+            
+            packageX.Dependencies.Add(packageZ1);
+            packageY.Dependencies.Add(packageZ2);
+            
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY,
+                packageZ1,
+                packageZ2
+            );
+            
+            // Create project.json with central package management and transitive pinning
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+                ""restore"": {
+                                ""projectUniqueName"": ""TestProject"",
+                                ""centralPackageVersionsManagementEnabled"": true,
+                                ""CentralPackageTransitivePinningEnabled"": true,
+                },
+              ""frameworks"": {
+                ""net472"": {
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""versionCentrallyManaged"": true
+                            },
+                            ""y"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""versionCentrallyManaged"": true
+                            }
+                    },
+                    ""centralPackageVersions"": {
+                        ""x"": ""[1.0.0,)"",
+                        ""y"": ""[1.0.0,)"",
+                        ""z"": ""[1.0.0,)""
+                    }
+                }
+              }
+            }";
+            
+            var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+            
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference
+            };
+            
+            var command = new RestoreCommand(request);
+            
+            // Act
+            var result = await command.ExecuteAsync();
+            
+            // Assert
+            Assert.False(result.Success);
+            
+            // Verify the error message contains CentralTransitive-specific guidance
+            var errorMessages = logger.Messages.Where(m => m.Level == LogLevel.Error && m.Code == NuGetLogCode.NU1107).ToList();
+            Assert.NotEmpty(errorMessages);
+            
+            var errorMessage = errorMessages.First().Message;
+            Assert.Contains("transitively pinned centrally managed package", errorMessage);
+            Assert.Contains("Update the centrally managed package version in Directory.Packages.props", errorMessage);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

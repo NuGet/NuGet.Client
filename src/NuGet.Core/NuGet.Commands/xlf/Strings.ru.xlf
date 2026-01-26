@@ -1,618 +1,618 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
-    <body>
-      <trans-unit id="ArgumentCannotBeNullOrEmpty">
-        <source>The argument cannot be null or empty.</source>
-        <target state="translated">Аргумент не может иметь значение NULL или быть пустым.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotBeUsedWithOtherValues">
-        <source>'{0}' cannot be used in conjunction with other values.</source>
-        <target state="translated">"{0}" не может использоваться в сочетании с другими значениями.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientCertificateSuccessfullyAdded">
-        <source>Client certificate configured for the package source '{0}' was successfully added.</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" добавлен.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificateSuccessfullyRemoved">
-        <source>Client certificate configured for the package source '{0}' was successfully removed.</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" удален.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificateSuccessfullyUpdated">
-        <source>Client certificate configured for the package source '{0}' was successfully updated.</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" обновлен.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesFileCertFilePath">
-        <source>{0}File path: {1}</source>
-        <target state="translated">{0}Путь к файлу: {1}</target>
-        <note>0 - default indentation
-    1 - file path</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesFileCertNoPassword">
-        <source>{0}Password: -</source>
-        <target state="translated">{0}Пароль: -</target>
-        <note>0 - default indentation</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesFileCertWithPassword">
-        <source>{0}Password: ****</source>
-        <target state="translated">{0}Пароль: ****</target>
-        <note>0 - default indentation</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesItemCertificateError">
-        <source>{0}Certificates status: {1}</source>
-        <target state="translated">{0}Состояние сертификатов: {1}</target>
-        <note>0 - default indentation
-    1 - error message</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesItemCertificateMessage">
-        <source>{0}Certificate: {1}</source>
-        <target state="translated">{0}Сертификат: {1}</target>
-        <note>0 - default indentation
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:xliff xmlns:ns0="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <ns0:file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
+    <ns0:body>
+      <ns0:trans-unit id="ArgumentCannotBeNullOrEmpty">
+        <ns0:source>The argument cannot be null or empty.</ns0:source>
+        <ns0:target state="translated">Аргумент не может иметь значение NULL или быть пустым.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="CannotBeUsedWithOtherValues">
+        <ns0:source>'{0}' cannot be used in conjunction with other values.</ns0:source>
+        <ns0:target state="translated">"{0}" не может использоваться в сочетании с другими значениями.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificateSuccessfullyAdded">
+        <ns0:source>Client certificate configured for the package source '{0}' was successfully added.</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" добавлен.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificateSuccessfullyRemoved">
+        <ns0:source>Client certificate configured for the package source '{0}' was successfully removed.</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" удален.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificateSuccessfullyUpdated">
+        <ns0:source>Client certificate configured for the package source '{0}' was successfully updated.</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" обновлен.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesFileCertFilePath">
+        <ns0:source>{0}File path: {1}</ns0:source>
+        <ns0:target state="translated">{0}Путь к файлу: {1}</ns0:target>
+        <ns0:note>0 - default indentation
+    1 - file path</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesFileCertNoPassword">
+        <ns0:source>{0}Password: -</ns0:source>
+        <ns0:target state="translated">{0}Пароль: -</ns0:target>
+        <ns0:note>0 - default indentation</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesFileCertWithPassword">
+        <ns0:source>{0}Password: ****</ns0:source>
+        <ns0:target state="translated">{0}Пароль: ****</ns0:target>
+        <ns0:note>0 - default indentation</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesItemCertificateError">
+        <ns0:source>{0}Certificates status: {1}</ns0:source>
+        <ns0:target state="translated">{0}Состояние сертификатов: {1}</ns0:target>
+        <ns0:note>0 - default indentation
+    1 - error message</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesItemCertificateMessage">
+        <ns0:source>{0}Certificate: {1}</ns0:source>
+        <ns0:target state="translated">{0}Сертификат: {1}</ns0:target>
+        <ns0:note>0 - default indentation
     1 - certificate hash string
-</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesLogTitle">
-        <source>{0}{1} [{2}]</source>
-        <target state="translated">{0}{1} [{2}]</target>
-        <note>0 - default indentation
+</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesLogTitle">
+        <ns0:source>{0}{1} [{2}]</ns0:source>
+        <ns0:target state="translated">{0}{1} [{2}]</ns0:target>
+        <ns0:note>0 - default indentation
     1 - package source name
-    2 - client certificate source type</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesStoreCertFindBy">
-        <source>{0}Find by: {1}</source>
-        <target state="translated">{0}Найти по: {1}</target>
-        <note>0 - default indentation
-    1 - find type</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesStoreCertFindValue">
-        <source>{0}Find value: {1}</source>
-        <target state="translated">{0}Найти значение: {1}</target>
-        <note>0 - default indentation
-    1 - find value</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesStoreCertStoreLocation">
-        <source>{0}Store location: {1}</source>
-        <target state="translated">{0}Расположение хранилища: {1}</target>
-        <note>0 - default indentation
-    1 - store location</note>
-      </trans-unit>
-      <trans-unit id="ClientCertificatesStoreCertStoreName">
-        <source>{0}Store name: {1}</source>
-        <target state="translated">{0}Имя хранилища: {1}</target>
-        <note>0 - default indentation
+    2 - client certificate source type</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesStoreCertFindBy">
+        <ns0:source>{0}Find by: {1}</ns0:source>
+        <ns0:target state="translated">{0}Найти по: {1}</ns0:target>
+        <ns0:note>0 - default indentation
+    1 - find type</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesStoreCertFindValue">
+        <ns0:source>{0}Find value: {1}</ns0:source>
+        <ns0:target state="translated">{0}Найти значение: {1}</ns0:target>
+        <ns0:note>0 - default indentation
+    1 - find value</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesStoreCertStoreLocation">
+        <ns0:source>{0}Store location: {1}</ns0:source>
+        <ns0:target state="translated">{0}Расположение хранилища: {1}</ns0:target>
+        <ns0:note>0 - default indentation
+    1 - store location</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="ClientCertificatesStoreCertStoreName">
+        <ns0:source>{0}Store name: {1}</ns0:source>
+        <ns0:target state="translated">{0}Имя хранилища: {1}</ns0:target>
+        <ns0:note>0 - default indentation
     1 - store name
-</note>
-      </trans-unit>
-      <trans-unit id="Error_AuthorTrustExpectedAuthorSignature">
-        <source>Unable to add trusted author. The package is not author signed.</source>
-        <target state="translated">Невозможно добавить доверенного автора. Пакет не подписан автором.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_CannotFindMsbuild">
-        <source>Cannot find version of msbuild.</source>
-        <target state="translated">Не удается найти версию msbuild.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_CannotTrustOwnersForAuthor">
-        <source>Trusted owners are not supported in trusted author items.</source>
-        <target state="translated">Доверенные владельцы не поддерживаются в элементах доверенных авторов.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_FloatingVersionsNotAllowed">
-        <source>The following PackageVersion items cannot specify a floating version: {0}. For more information on how to enable this functionality for projects using Central Package Management, visit https://aka.ms/nu1011</source>
-        <target state="translated">Следующие элементы PackageVersion не могут указывать нефиксированную версию: {0}. Дополнительные сведения о том, как включить эту функцию для проектов, использующих централизованное управление пакетами, см. на странице https://aka.ms/nu1011</target>
-        <note>
+</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_AuthorTrustExpectedAuthorSignature">
+        <ns0:source>Unable to add trusted author. The package is not author signed.</ns0:source>
+        <ns0:target state="translated">Невозможно добавить доверенного автора. Пакет не подписан автором.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CannotFindMsbuild">
+        <ns0:source>Cannot find version of msbuild.</ns0:source>
+        <ns0:target state="translated">Не удается найти версию msbuild.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CannotTrustOwnersForAuthor">
+        <ns0:source>Trusted owners are not supported in trusted author items.</ns0:source>
+        <ns0:target state="translated">Доверенные владельцы не поддерживаются в элементах доверенных авторов.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_FloatingVersionsNotAllowed">
+        <ns0:source>The following PackageVersion items cannot specify a floating version: {0}. For more information on how to enable this functionality for projects using Central Package Management, visit https://aka.ms/nu1011</ns0:source>
+        <ns0:target state="translated">Следующие элементы PackageVersion не могут указывать нефиксированную версию: {0}. Дополнительные сведения о том, как включить эту функцию для проектов, использующих централизованное управление пакетами, см. на странице https://aka.ms/nu1011</ns0:target>
+        <ns0:note>
       0 - The comma delimited list of package names that specified a floating version.
       Do not localize `PackageVersion`
-  </note>
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_ImplicitPackageReferenceWithVersionNotAllowed">
-        <source>The following PackageReference items are implicitly defined and cannot define a PackageVersion item: {0}. Projects using Central Package Management require that implicit package versions be specified by the PackageReference item. For more information, visit https://aka.ms/sdkimplicitrefs</source>
-        <target state="translated">Следующие элементы PackageReference неявно определены и не могут определять элемент PackageVersion: {0}. Проекты, использующие централизованное управление пакетами, требуют, чтобы неявные версии пакетов указывались в элементе PackageReference. Дополнительные сведения см. на странице https://aka.ms/sdkimplicitrefs</target>
-        <note>
+  </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_ImplicitPackageReferenceWithVersionNotAllowed">
+        <ns0:source>The following PackageReference items are implicitly defined and cannot define a PackageVersion item: {0}. Projects using Central Package Management require that implicit package versions be specified by the PackageReference item. For more information, visit https://aka.ms/sdkimplicitrefs</ns0:source>
+        <ns0:target state="translated">Следующие элементы PackageReference неявно определены и не могут определять элемент PackageVersion: {0}. Проекты, использующие централизованное управление пакетами, требуют, чтобы неявные версии пакетов указывались в элементе PackageReference. Дополнительные сведения см. на странице https://aka.ms/sdkimplicitrefs</ns0:target>
+        <ns0:note>
       0 - Comma delimited list of the package IDs that were implicitly defined and should not have a PackageVersion item
       Do not localize `PackageReference`
       Do not localize `PackageVersion`
-  </note>
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_MissingPackageVersion">
-        <source>The following PackageReference items do not define a corresponding PackageVersion item: {0}. Projects using Central Package Management must declare PackageReference and PackageVersion items with matching names. For more information, visit https://aka.ms/nuget/cpm/gettingstarted</source>
-        <target state="translated">Следующие элементы PackageReference не определяют соответствующий элемент PackageVersion: {0}. Проекты, использующие централизованное управление пакетами, должны объявлять элементы PackageReference и PackageVersion с совпадающими именами. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/gettingstarted</target>
-        <note>
+  </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_MissingPackageVersion">
+        <ns0:source>The following PackageReference items do not define a corresponding PackageVersion item: {0}. Projects using Central Package Management must declare PackageReference and PackageVersion items with matching names. For more information, visit https://aka.ms/nuget/cpm/gettingstarted</ns0:source>
+        <ns0:target state="translated">Следующие элементы PackageReference не определяют соответствующий элемент PackageVersion: {0}. Проекты, использующие централизованное управление пакетами, должны объявлять элементы PackageReference и PackageVersion с совпадающими именами. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/gettingstarted</ns0:target>
+        <ns0:note>
       0 - The comma delimited list of package names that did not have a version specified.
       Do not localize `PackageReference`
       Do not localize `PackageVersion`
-    </note>
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType">
-        <source>The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">Центрально закрепленная зависимость "{0}" неожиданно не найдена в разрешенном графе для узла "{1}". Сообщите о проблеме на странице https://github.com/NuGet/Home</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed">
-        <source>The following PackageReference items cannot define a value for Version: {0}. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted</source>
-        <target state="translated">Следующие элементы PackageReference не могут определять значение для версии: {0}. Проекты, использующие централизованное управление пакетами, должны определять значение версии в элементе PackageVersion. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/gettingstarted</target>
-        <note>
+    </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_MissingTransitivelyPinnedIncludeType">
+        <ns0:source>The centrally pinned dependency '{0}' was not found in the resolved graph unexpectedly for node '{1}'. Please file an issue at https://github.com/NuGet/Home</ns0:source>
+        <ns0:target state="translated">Центрально закрепленная зависимость "{0}" неожиданно не найдена в разрешенном графе для узла "{1}". Сообщите о проблеме на странице https://github.com/NuGet/Home</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_PackageReferenceWithVersionNotAllowed">
+        <ns0:source>The following PackageReference items cannot define a value for Version: {0}. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted</ns0:source>
+        <ns0:target state="translated">Следующие элементы PackageReference не могут определять значение для версии: {0}. Проекты, использующие централизованное управление пакетами, должны определять значение версии в элементе PackageVersion. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/gettingstarted</ns0:target>
+        <ns0:note>
       0 - Comma delimited list of the package IDs that specified a Version
       Do not localize `PackageReference`
       Do not localize `PackageVersion`
-    </note>
-      </trans-unit>
-      <trans-unit id="Error_CentralPackageManagement_VersionOverrideNotAllowed">
-        <source>The following PackageReference items cannot specify a value for VersionOverride: {0}.  Projects using Central Package Management are currently configured to disable this functionality. For more information, visit https://aka.ms/nuget/cpm/versionoverride</source>
-        <target state="translated">Следующие элементы PackageReference не могут указывать значение для VersionOverride: {0}.  Проекты, использующие централизованное управление пакетами, в настоящее время настроены на отключение этой функции. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/versionoverride</target>
-        <note>
+    </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CentralPackageManagement_VersionOverrideNotAllowed">
+        <ns0:source>The following PackageReference items cannot specify a value for VersionOverride: {0}.  Projects using Central Package Management are currently configured to disable this functionality. For more information, visit https://aka.ms/nuget/cpm/versionoverride</ns0:source>
+        <ns0:target state="translated">Следующие элементы PackageReference не могут указывать значение для VersionOverride: {0}.  Проекты, использующие централизованное управление пакетами, в настоящее время настроены на отключение этой функции. Дополнительные сведения см. на странице https://aka.ms/nuget/cpm/versionoverride</ns0:target>
+        <ns0:note>
       0 - The comma delimited list of package names that specified a value for VersionOverride.
       Do not localize `PackageReference`
       Do not localize `VersionOverride`
-    </note>
-      </trans-unit>
-      <trans-unit id="Error_ClientCertificateAlreadyExist">
-        <source>Client certificate configured for the package source '{0}' already exists.</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" уже существует.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="Error_ClientCertificateNotExist">
-        <source>Client certificate configured for the package source '{0}' does not exist</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" не существует.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="Error_ClientCertificateTypeMismatch">
-        <source>Client certificate configured for the package source '{0}' cannot be modified due to a type mismatch.</source>
-        <target state="translated">Сертификат клиента для источника пакетов "{0}" не может быть изменен из-за несоответствия типов.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="Error_ClientCertificatesNotFound">
-        <source>Client certificates were not found.</source>
-        <target state="translated">Сертификаты клиента не найдены.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_CouldNotAdd">
-        <source>Could not add the trusted signer: {0}</source>
-        <target state="translated">Не удалось добавить доверенное подписывающее лицо: {0}.</target>
-        <note>0 - Reason</note>
-      </trans-unit>
-      <trans-unit id="Error_CouldNotList">
-        <source>Could not list the trusted signers: {0}</source>
-        <target state="translated">Не удалось перечислить доверенных подписывающих лиц: {0}.</target>
-        <note>0 - Reason</note>
-      </trans-unit>
-      <trans-unit id="Error_CouldNotRemove">
-        <source>Could not remove the trusted signer: {0}</source>
-        <target state="translated">Не удалось удалить доверенное подписывающее лицо: {0}.</target>
-        <note>0 - Reason</note>
-      </trans-unit>
-      <trans-unit id="Error_CouldNotSync">
-        <source>Could not sync the trusted repository: {0}</source>
-        <target state="translated">Не удалось синхронизировать доверенный репозиторий: {0}.</target>
-        <note>0 - Reason</note>
-      </trans-unit>
-      <trans-unit id="Error_CouldNotUpdateClientCertificate">
-        <source>Could not update the client certificate: {0}</source>
-        <target state="translated">Не удалось обновить сертификат клиента: {0}</target>
-        <note>0 - reason</note>
-      </trans-unit>
-      <trans-unit id="Error_CouldNotUpdateMetadataLastAccessTime">
-        <source>Updating last access time on file {0} failed with {1}</source>
-        <target state="translated">Не удалось обновить время последнего доступа для файла {0}. Ошибка: {1}</target>
-        <note>0 - file path
-    1 - reason</note>
-      </trans-unit>
-      <trans-unit id="Error_EmptyCertificateListInRepository">
-        <source>The repository with the service index '{0}' does not list any trusted certificates.</source>
-        <target state="translated">В репозитории с индексом служб "{0}" не указаны доверенные сертификаты.</target>
-        <note>0 - service index</note>
-      </trans-unit>
-      <trans-unit id="Error_EmptySourceFilePath">
-        <source>A source file was added with an empty path.</source>
-        <target state="translated">Исходный файл был добавлен с пустым путем.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_EmptySourceFileProjectDirectory">
-        <source>The project directory for the source file '{0}' could not be found.</source>
-        <target state="translated">Каталог проекта для исходного файла "{0}" не найден.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_HttpSource_Single">
-        <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Вы выполняете операцию "{0}" с источником "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источник HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
-        <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
-      </trans-unit>
-      <trans-unit id="Error_HttpSource_Single_Short">
-        <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Вы выполняете операцию "{0}" с источником "HTTP": {1}. Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
-        <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
-      </trans-unit>
-      <trans-unit id="Error_HttpSources_Multiple">
-        <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Вы выполняете операцию "{0}" с источниками "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источники HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
-        <note>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</note>
-      </trans-unit>
-      <trans-unit id="Error_IncompatiblePackageType">
-        <source>The package {0} {1} has a package type {2} that is incompatible with this project.</source>
-        <target state="translated">Пакет {0} версии {1} имеет тип {2}, который не совместим с этим проектом.</target>
-        <note>0 - package id, 1 - version, 2 - package type</note>
-      </trans-unit>
-      <trans-unit id="Error_InputFileNotSpecified">
-        <source>Specify a nuspec, project.json, or project file to use</source>
-        <target state="translated">Укажите используемый файл nuspec, project.json или файл проекта.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidATF">
-        <source>PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment.</source>
-        <target state="translated">PackageTargetFallback и AssetTargetFallback не могут использоваться совместно. Удалите (устаревшие) ссылки PackageTargetFallback из окружения проекта.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidCertificateInformationFromServer">
-        <source>Invalid certificate information from the service index '{0}'.</source>
-        <target state="translated">Недопустимые данные сертификатов из индекса служб "{0}".</target>
-        <note>0 - service index</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidCombinationOfArguments">
-        <source>Invalid combination of arguments.</source>
-        <target state="translated">Недопустимое сочетание аргументов.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidCommandLineInput">
-        <source>Invalid input '{0}'. The file type was not recognized.</source>
-        <target state="translated">Недопустимые входные данные: "{0}". Тип файла не определен.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidCommandLineInputConfig">
-        <source>Invalid input '{0}'. Valid file names are 'packages.config' or 'packages.*.config'.</source>
-        <target state="translated">Недопустимый ввод "{0}". Допустимые имена файлов — "packages.config" или "packages.*.config".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidCommandLineInputJson">
-        <source>Invalid input '{0}'. Valid file names are 'project.json' or '*.project.json'.</source>
-        <target state="translated">Недопустимый ввод "{0}". Допустимые имена файлов — "project.json" или "*.project.json".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidDependencyVersionConstraints">
-        <source>Package version constraints for '{0}' return a version range that is empty.</source>
-        <target state="translated">Ограничения версии пакета для "{0}" возвращают пустой диапазон версий.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidLockFileInput">
-        <source>Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}.</source>
-        <target state="translated">Входные данные восстановления недопустимы, так как свойству RestorePackagesWithLockFile задано значение false, но существует lock-файл пакетов в {0}.</target>
-        <note>{0} - packages lock file path</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidNuGetAuditLevelValue">
-        <source>Invalid NuGetAuditLevel value '{0}'. Valid values: {1}</source>
-        <target state="translated">Недопустимое значение NuGetAuditLevel "{0}". Допустимые значения: {1}</target>
-        <note>Don't translate 'NuGetAuditLevel'
+    </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ClientCertificateAlreadyExist">
+        <ns0:source>Client certificate configured for the package source '{0}' already exists.</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" уже существует.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ClientCertificateNotExist">
+        <ns0:source>Client certificate configured for the package source '{0}' does not exist</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" не существует.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ClientCertificateTypeMismatch">
+        <ns0:source>Client certificate configured for the package source '{0}' cannot be modified due to a type mismatch.</ns0:source>
+        <ns0:target state="translated">Сертификат клиента для источника пакетов "{0}" не может быть изменен из-за несоответствия типов.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ClientCertificatesNotFound">
+        <ns0:source>Client certificates were not found.</ns0:source>
+        <ns0:target state="translated">Сертификаты клиента не найдены.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotAdd">
+        <ns0:source>Could not add the trusted signer: {0}</ns0:source>
+        <ns0:target state="translated">Не удалось добавить доверенное подписывающее лицо: {0}.</ns0:target>
+        <ns0:note>0 - Reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotList">
+        <ns0:source>Could not list the trusted signers: {0}</ns0:source>
+        <ns0:target state="translated">Не удалось перечислить доверенных подписывающих лиц: {0}.</ns0:target>
+        <ns0:note>0 - Reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotRemove">
+        <ns0:source>Could not remove the trusted signer: {0}</ns0:source>
+        <ns0:target state="translated">Не удалось удалить доверенное подписывающее лицо: {0}.</ns0:target>
+        <ns0:note>0 - Reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotSync">
+        <ns0:source>Could not sync the trusted repository: {0}</ns0:source>
+        <ns0:target state="translated">Не удалось синхронизировать доверенный репозиторий: {0}.</ns0:target>
+        <ns0:note>0 - Reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotUpdateClientCertificate">
+        <ns0:source>Could not update the client certificate: {0}</ns0:source>
+        <ns0:target state="translated">Не удалось обновить сертификат клиента: {0}</ns0:target>
+        <ns0:note>0 - reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_CouldNotUpdateMetadataLastAccessTime">
+        <ns0:source>Updating last access time on file {0} failed with {1}</ns0:source>
+        <ns0:target state="translated">Не удалось обновить время последнего доступа для файла {0}. Ошибка: {1}</ns0:target>
+        <ns0:note>0 - file path
+    1 - reason</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_EmptyCertificateListInRepository">
+        <ns0:source>The repository with the service index '{0}' does not list any trusted certificates.</ns0:source>
+        <ns0:target state="translated">В репозитории с индексом служб "{0}" не указаны доверенные сертификаты.</ns0:target>
+        <ns0:note>0 - service index</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_EmptySourceFilePath">
+        <ns0:source>A source file was added with an empty path.</ns0:source>
+        <ns0:target state="translated">Исходный файл был добавлен с пустым путем.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_EmptySourceFileProjectDirectory">
+        <ns0:source>The project directory for the source file '{0}' could not be found.</ns0:source>
+        <ns0:target state="translated">Каталог проекта для исходного файла "{0}" не найден.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_HttpSource_Single">
+        <ns0:source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</ns0:source>
+        <ns0:target state="translated">Вы выполняете операцию "{0}" с источником "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источник HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</ns0:target>
+        <ns0:note>0 - The command name. Ex. Push/Delete. 1 - server URI.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_HttpSource_Single_Short">
+        <ns0:source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</ns0:source>
+        <ns0:target state="translated">Вы выполняете операцию "{0}" с источником "HTTP": {1}. Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</ns0:target>
+        <ns0:note>0 - The command name. Ex. Push/Delete. 1 - server URI.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_HttpSources_Multiple">
+        <ns0:source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</ns0:source>
+        <ns0:target state="translated">Вы выполняете операцию "{0}" с источниками "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источники HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</ns0:target>
+        <ns0:note>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_IncompatiblePackageType">
+        <ns0:source>The package {0} {1} has a package type {2} that is incompatible with this project.</ns0:source>
+        <ns0:target state="translated">Пакет {0} версии {1} имеет тип {2}, который не совместим с этим проектом.</ns0:target>
+        <ns0:note>0 - package id, 1 - version, 2 - package type</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InputFileNotSpecified">
+        <ns0:source>Specify a nuspec, project.json, or project file to use</ns0:source>
+        <ns0:target state="translated">Укажите используемый файл nuspec, project.json или файл проекта.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidATF">
+        <ns0:source>PackageTargetFallback and AssetTargetFallback cannot be used together. Remove PackageTargetFallback(deprecated) references from the project environment.</ns0:source>
+        <ns0:target state="translated">PackageTargetFallback и AssetTargetFallback не могут использоваться совместно. Удалите (устаревшие) ссылки PackageTargetFallback из окружения проекта.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidCertificateInformationFromServer">
+        <ns0:source>Invalid certificate information from the service index '{0}'.</ns0:source>
+        <ns0:target state="translated">Недопустимые данные сертификатов из индекса служб "{0}".</ns0:target>
+        <ns0:note>0 - service index</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidCombinationOfArguments">
+        <ns0:source>Invalid combination of arguments.</ns0:source>
+        <ns0:target state="translated">Недопустимое сочетание аргументов.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidCommandLineInput">
+        <ns0:source>Invalid input '{0}'. The file type was not recognized.</ns0:source>
+        <ns0:target state="translated">Недопустимые входные данные: "{0}". Тип файла не определен.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidCommandLineInputConfig">
+        <ns0:source>Invalid input '{0}'. Valid file names are 'packages.config' or 'packages.*.config'.</ns0:source>
+        <ns0:target state="translated">Недопустимый ввод "{0}". Допустимые имена файлов — "packages.config" или "packages.*.config".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidCommandLineInputJson">
+        <ns0:source>Invalid input '{0}'. Valid file names are 'project.json' or '*.project.json'.</ns0:source>
+        <ns0:target state="translated">Недопустимый ввод "{0}". Допустимые имена файлов — "project.json" или "*.project.json".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidDependencyVersionConstraints">
+        <ns0:source>Package version constraints for '{0}' return a version range that is empty.</ns0:source>
+        <ns0:target state="translated">Ограничения версии пакета для "{0}" возвращают пустой диапазон версий.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidLockFileInput">
+        <ns0:source>Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}.</ns0:source>
+        <ns0:target state="translated">Входные данные восстановления недопустимы, так как свойству RestorePackagesWithLockFile задано значение false, но существует lock-файл пакетов в {0}.</ns0:target>
+        <ns0:note>{0} - packages lock file path</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidNuGetAuditLevelValue">
+        <ns0:source>Invalid NuGetAuditLevel value '{0}'. Valid values: {1}</ns0:source>
+        <ns0:target state="translated">Недопустимое значение NuGetAuditLevel "{0}". Допустимые значения: {1}</ns0:target>
+        <ns0:note>Don't translate 'NuGetAuditLevel'
 {0} - is the value from the customer's project file
-{1} is the list of valid values "low, moderate, high, critical" (these should not be translated either)</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidNuGetAuditModeValue">
-        <source>Invalid NuGetAuditMode value '{0}'. Valid values: {1}</source>
-        <target state="translated">Недопустимое значение NuGetAuditMode "{0}". Допустимые значения: {1}</target>
-        <note>Don't translate 'NuGetAuditMode'
+{1} is the list of valid values "low, moderate, high, critical" (these should not be translated either)</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidNuGetAuditModeValue">
+        <ns0:source>Invalid NuGetAuditMode value '{0}'. Valid values: {1}</ns0:source>
+        <ns0:target state="translated">Недопустимое значение NuGetAuditMode "{0}". Допустимые значения: {1}</ns0:target>
+        <ns0:note>Don't translate 'NuGetAuditMode'
 {0} - is the value from the customer's project file
-{1} is the list of valid values "direct, all"</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidNuGetAuditValue">
-        <source>Invalid NuGetAudit value '{0}'. Valid values: {1}</source>
-        <target state="translated">Недопустимое значение NuGetAudit "{0}". Допустимые значения: {1}</target>
-        <note>Don't translate 'NuGetAudit'
+{1} is the list of valid values "direct, all"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidNuGetAuditValue">
+        <ns0:source>Invalid NuGetAudit value '{0}'. Valid values: {1}</ns0:source>
+        <ns0:target state="translated">Недопустимое значение NuGetAudit "{0}". Допустимые значения: {1}</ns0:target>
+        <ns0:note>Don't translate 'NuGetAudit'
 {0} - is the value from the customer's project file
-{1} is the list of valid values "true, false"</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidProjectPackageCombo">
-        <source>Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type</source>
-        <target state="translated">Недопустимое сочетание проекта и пакета для {0} {1}. Стиль проекта DotnetToolReference допускает только ссылки типа DotnetTool</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidSymbolPackageFormat">
-        <source>The provided SymbolPackageFormat value {0} is invalid. Allowed values : 'snupkg', 'symbols.nupkg'.</source>
-        <target state="translated">Предоставленное значение SymbolPackageFormat {0} недопустимо. Разрешенные значения: "snupkg", "symbols.nupkg".</target>
-        <note>Do not localize snupkg and symbols.nupkg</note>
-      </trans-unit>
-      <trans-unit id="Error_InvalidTargetFramework">
-        <source>Failed to build package because of an unsupported targetFramework value on '{0}'.</source>
-        <target state="translated">Не удалось создать пакет из-за неподдерживаемого значения targetFramework в "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_InvalidWindowsTargetPlatformMinVersion">
-        <source>Invalid value for WindowsTargetPlatformMinVersion: {0}</source>
-        <target state="translated">Недопустимое значение для WindowsTargetPlatformMinVersion: {0}</target>
-        <note>{0} is the value supplied </note>
-      </trans-unit>
-      <trans-unit id="Error_MissingSourceParameter">
-        <source>Source parameter was not specified.</source>
-        <target state="translated">Исходный параметр не указан.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_MultiplePackagePaths">
-        <source>{0} contains more than one path</source>
-        <target state="translated">{0} содержит больше одного пути.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoClientAllowList">
-        <source>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</source>
-        <target state="translated">Для параметра signatureValidationMode установлено значение "обязательно", поэтому допускаются только пакеты, подписанные надежными подписавшими лицами, однако надежных подписавших лиц не указано.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoMatchingCertificate">
-        <source>The package signature did not match any of the allowed certificate fingerprints.</source>
-        <target state="translated">Подпись пакета не соответствует ни одному из допустимых отпечатков сертификатов.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoMatchingClientCertificate">
-        <source>This package is signed but not by a trusted signer.</source>
-        <target state="translated">Этот пакет подписан, но не надежным подписавшим лицом.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoPackageVersionsExist">
-        <source>Unable to find package {0}. No packages exist with this id in source(s): {1}</source>
-        <target state="translated">Не удалось найти пакет {0}. Пакеты с таким идентификатором отсутствуют в следующих источниках пакетов: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoPackageVersionsExistInRange">
-        <source>Unable to find package {0} with version {1}</source>
-        <target state="translated">Не удалось найти пакет {0} с версией {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoSignatureTrustedForPackage">
-        <source>No signature to be trusted was specified for the package '{0}'. Specify either Author or Repository.</source>
-        <target state="translated">Для пакета "{0}" не указана доверенная подпись. Укажите автора или репозиторий.</target>
-        <note>0 - Package path</note>
-      </trans-unit>
-      <trans-unit id="Error_NoSourcesInformation">
-        <source>Unable to get package sources information.</source>
-        <target state="translated">Невозможно получить сведения об источниках пакетов.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NoStablePackageVersionsExist">
-        <source>Unable to find a stable package {0} with version {1}</source>
-        <target state="translated">Не удалось найти стабильный пакет {0} с версией {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_NotSupportedHashAlgorithm">
-        <source>'{0}' is not a supported hash algorithm.</source>
-        <target state="translated">"{0}" — неподдерживаемый хэш-алгоритм.</target>
-        <note>0 - hash algorithm</note>
-      </trans-unit>
-      <trans-unit id="Error_PackFailed">
-        <source>Failed to build package. {0}</source>
-        <target state="translated">Не удалось создать пакет. {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_PackageCommandNoFilesForLibPackage">
-        <source>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Не удалось выполнить сборку проекта. Убедитесь, что "{0}" включает файлы сборки. Справку по сборке пакета символов см. по ссылке {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_PackageCommandNoFilesForSymbolsPackage">
-        <source>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Не удалось выполнить сборку пакета. Убедитесь, что "{0}" включает исходные файлы и файлы символов. Справку по сборке пакета символов см. по ссылке {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_PackageDownload_NoVersion">
-        <source>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">У пакета "{0}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</target>
-        <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</note>
-      </trans-unit>
-      <trans-unit id="Error_PackageDownload_OnlyExactVersionsAreAllowed">
-        <source>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">У пакета "{0}{1}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</target>
-        <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</note>
-      </trans-unit>
-      <trans-unit id="Error_PackageNotSigned">
-        <source>The package is not signed.</source>
-        <target state="translated">Пакет не подписан.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_PackageReference_NoVersion">
-        <source>The following PackageReference item(s) do not have a version specified: {0}</source>
-        <target state="translated">У следующих элементов PackageReference нет указанной версии: {0}</target>
-        <note>0 - List of package names</note>
-      </trans-unit>
-      <trans-unit id="Error_PackageValidationFailed">
-        <source>Package content hash validation failed for {0}. The package is different than the last restore.</source>
-        <target state="translated">Проверка хэша содержимого пакета для {0} не пройдена. Пакет отличается от последней восстановленной версии.</target>
-        <note>{0} - package id and version</note>
-      </trans-unit>
-      <trans-unit id="Error_PlatformVersionNotPresent">
-        <source>Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}</source>
-        <target state="translated">Для некоторых целевых платформ отсутствует требуемая версия, несмотря на то, что указана платформа: {0}.</target>
-        <note>0 - comma-separated list of TFMs missing a platform version</note>
-      </trans-unit>
-      <trans-unit id="Error_ProjectDoesNotExist">
-        <source>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</source>
-        <target state="translated">Не удалось найти проект "{0}". Убедитесь, что ссылка на проект действительна и файл проекта существует.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_ProjectJson_Deprecated">
-        <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
-        <target state="translated">Управление пакетами с помощью project.json устарело. Перейти на PackageReference.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
-        <source>The runtime.json specified in the project '{0}' could not be parsed. {1}</source>
-        <target state="translated">Не удалось проанализировать файл runtime.json, указанный в проекте "{0}". {1}</target>
-        <note>0 - runtime.json path, 1 - Additional Message, Please do not localize 'runtime.json'.</note>
-      </trans-unit>
-      <trans-unit id="Error_ProjectRuntimeJsonNotFound">
-        <source>The runtime.json specified in the project '{0}' could not be found.</source>
-        <target state="translated">Не удалось найти файл runtime.json, указанный в проекте "{0}".</target>
-        <note>0 - runtime.json path, Please do not localize 'runtime.json'</note>
-      </trans-unit>
-      <trans-unit id="Error_ProjectWithIncorrectDependenciesCount">
-        <source>Project {0} must have a single package reference(s).</source>
-        <target state="translated">Проект {0} должен содержать ссылки на один пакет.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_PropertyCannotBeNullOrEmpty">
-        <source>Property '{0}' should not be null or empty.</source>
-        <target state="translated">Свойство "{0}" не должно быть пустым или равным NULL.</target>
-        <note>0 - property name</note>
-      </trans-unit>
-      <trans-unit id="Error_RepoTrustExpectedRepoSignature">
-        <source>Unable to add trusted repository. The package is not repository signed or countersigned.</source>
-        <target state="translated">Невозможно добавить доверенный репозиторий. В пакете нет подписи репозитория или второй подписи.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_RestoreInLockedMode">
-        <source>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file.</source>
-        <target state="translated">Lock-файл пакетов не соответствует зависимостям проекта, поэтому восстановление в режиме блокировки невозможно. Отключите свойство RestoreLockedMode в MSBuild или передайте явно параметр --force-evaluate, чтобы запустить восстановление и обновить lock-файл.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_RestorePruningDirectPackageReference">
-        <source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</source>
-        <target state="translated">PackageReference {0} не будет урезано. Рассмотрите возможность удаления этого пакета из зависимостей, так как он, вероятно, не требуется.</target>
-        <note>0 - package id and version</note>
-      </trans-unit>
-      <trans-unit id="Error_RestorePruningProjectReference">
-        <source>A ProjectReference cannot be pruned, {0}.</source>
-        <target state="translated">ProjectReference нельзя урезать, {0}.</target>
-        <note>0 - project reference</note>
-      </trans-unit>
-      <trans-unit id="Error_ServiceIndexShouldBeHttps">
-        <source>The repository service index '{0}' is not a valid HTTPS url.</source>
-        <target state="translated">Индекс служб репозитория "{0}" не является допустимым URL-адресом HTTPS.</target>
-        <note>0 - service index</note>
-      </trans-unit>
-      <trans-unit id="Error_ToolsPackageWithExtraPackageTypes">
-        <source>Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType.</source>
-        <target state="translated">Недопустимый пакет инструментов {0} {1}. Пакеты инструментов не могут содержать более одного PackageType.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_TrustedAuthorNoOwners">
-        <source>A trusted author cannot have owners.</source>
-        <target state="translated">У доверенного автора не может быть владельцев.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_TrustedRepoAlreadyExists">
-        <source>A trusted repository with the service index '{0}' already exists.</source>
-        <target state="translated">Доверенный репозиторий с индексом служб "{0}" уже существует.</target>
-        <note>0 - trusted repository name</note>
-      </trans-unit>
-      <trans-unit id="Error_TrustedRepositoryDoesNotExist">
-        <source>A trusted repository '{0}' does not exist.</source>
-        <target state="translated">Доверенный репозиторий "{0}" не существует.</target>
-        <note>0 - trusted repository name</note>
-      </trans-unit>
-      <trans-unit id="Error_TrustedSignerAlreadyExists">
-        <source>A trusted signer '{0}' already exists.</source>
-        <target state="translated">Доверенное подписывающее лицо "{0}" уже существует.</target>
-        <note>0 - trusted signer name</note>
-      </trans-unit>
-      <trans-unit id="Error_UnableToFindProjectInfo">
-        <source>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</source>
-        <target state="translated">Не удалось найти сведения о проекте для "{0}". Если вы используете Visual Studio, причина может заключаться в том, что проект выгружен или не является частью текущего решения. В этом случае выполните восстановление из командной строки. В противном случае причина может быть связана с тем, что файл проекта является недопустимым или отсутствуют целевые объекты, необходимые для восстановления.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_UnableToLocateBuildOutput">
-        <source>No build found in {0}. Use the -Build option or build the project.</source>
-        <target state="translated">Сборки в {0} не найдены. Используйте параметр -Build или соберите проект.</target>
-        <note>{0} is the project output directory</note>
-      </trans-unit>
-      <trans-unit id="Error_UnableToLocateRestoreTarget">
-        <source>The folder '{0}' does not contain a project to restore.</source>
-        <target state="translated">Папка "{0}" не содержит проектов для восстановления.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_UnableToSignPackage">
-        <source>Unable to sign package.</source>
-        <target state="translated">Не удалось подписать пакет.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_UnavailableSource">
-        <source>Source '{0}' does not exist or cannot be retrived.</source>
-        <target state="translated">Источник "{0}" не существует или не может быть получен.</target>
-        <note>0 - source name</note>
-      </trans-unit>
-      <trans-unit id="Error_UnknownBuildAction">
-        <source>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</source>
-        <target state="translated">Пакет "{0}" указывает недопустимое действие сборки "{1}" для файла "{2}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_UnknownClientCertificateStoreType">
-        <source>Cannot determine client certificate store type</source>
-        <target state="translated">Не удается определить тип хранилища сертификатов клиента</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_UnknownClientCertificatesFindBy">
-        <source>The find by search type '{0}' is not recognized.</source>
-        <target state="translated">Не удалось распознать тип поиска "Найти по" "{0}".</target>
-        <note>0 - find type</note>
-      </trans-unit>
-      <trans-unit id="Error_UnknownClientCertificatesStoreLocation">
-        <source>The store location '{0}' is not recognized.</source>
-        <target state="translated">Не удалось распознать расположение хранилища "{0}".</target>
-        <note>0 - store location</note>
-      </trans-unit>
-      <trans-unit id="Error_UnknownClientCertificatesStoreName">
-        <source>The source name '{0}' is not recognized.</source>
-        <target state="translated">Не удалось распознать имя источника "{0}".</target>
-        <note>0 - source name</note>
-      </trans-unit>
-      <trans-unit id="Error_UnsupportedTrustTarget">
-        <source>The trust target '{0}' is unsupported.</source>
-        <target state="translated">Целевой объект доверия "{0}" не поддерживается.</target>
-        <note>0 - VerificationTarget</note>
-      </trans-unit>
-      <trans-unit id="Error_VulnerabilityDataFetch">
-        <source>Error occurred while getting package vulnerability data: {0}</source>
-        <target state="translated">Произошла ошибка при получении данных уязвимости пакета: {0}</target>
-        <note>{0} is an error message</note>
-      </trans-unit>
-      <trans-unit id="Error_WriteResolvedNuSpecOverwriteOriginal">
-        <source>Unable to output resolved nuspec file because it would overwrite the original at '{0}'</source>
-        <target state="translated">Не удалось вывести разрешенный NUSPEC-файл, так как его пришлось бы записать поверх оригинала в "{0}"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Error_XPROJNotAllowed">
-        <source>Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</source>
-        <target state="translated">Входные данные "{0}" недопустимы. Поддержка XProj удалена. Поддержка XProj и отдельных файлов project.json удалена. Чтобы по-прежнему работать с устаревшими проектами, используйте NuGet 3.5.x (https://nuget.org/downloads)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToBuildProject">
-        <source>Failed to build '{0}'.</source>
-        <target state="translated">Не удалось выполнить сборку "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FileNotAddedToPackage">
-        <source>File '{0}' is not added because the package already contains file '{1}'</source>
-        <target state="translated">Файл "{0}" не добавлен, так как пакет уже содержит файл "{1}"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FoundVersionsInSource">
-        <source>Found {0} version(s) in {1} [ Nearest version: {2} ]</source>
-        <target state="translated">В {1} обнаружено несколько версий ({0}) [ Ближайшая версия: {2} ]</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FoundVersionsInSourceWithoutMatch">
-        <source>Found {0} version(s) in {1}</source>
-        <target state="translated">В {1} обнаружено несколько версий ({0})</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidRestoreInput">
-        <source>Invalid restore input. {0}</source>
-        <target state="translated">Входные данные восстановления недопустимы. {0}</target>
-        <note>0 is an error message specific to the validation failure.</note>
-      </trans-unit>
-      <trans-unit id="InvalidRestoreInputWithFiles">
-        <source>Invalid restore input. {0} Input files: {1}.</source>
-        <target state="translated">Входные данные восстановления недопустимы. {0} Входные файлы: {1}.</target>
-        <note>0 is an error message specific to the validation failure. 1 is a list of file paths.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSource">
-        <source>The specified source '{0}' is invalid. Provide a valid source.</source>
-        <target state="translated">Указанный источник "{0}" является недопустимым. Укажите допустимый источник.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Invalid_AttributeValue">
-        <source>The {0} value: `{1}` is invalid. Valid example: `{2}`</source>
-        <target state="translated">Значение {0} "{1}" недопустимо. Допустимый пример: "{2}"</target>
-        <note>{0} - is the attribute
+{1} is the list of valid values "true, false"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidProjectPackageCombo">
+        <ns0:source>Invalid project-package combination for {0} {1}. DotnetToolReference project style can only contain references of the DotnetTool type</ns0:source>
+        <ns0:target state="translated">Недопустимое сочетание проекта и пакета для {0} {1}. Стиль проекта DotnetToolReference допускает только ссылки типа DotnetTool</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidSymbolPackageFormat">
+        <ns0:source>The provided SymbolPackageFormat value {0} is invalid. Allowed values : 'snupkg', 'symbols.nupkg'.</ns0:source>
+        <ns0:target state="translated">Предоставленное значение SymbolPackageFormat {0} недопустимо. Разрешенные значения: "snupkg", "symbols.nupkg".</ns0:target>
+        <ns0:note>Do not localize snupkg and symbols.nupkg</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidTargetFramework">
+        <ns0:source>Failed to build package because of an unsupported targetFramework value on '{0}'.</ns0:source>
+        <ns0:target state="translated">Не удалось создать пакет из-за неподдерживаемого значения targetFramework в "{0}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_InvalidWindowsTargetPlatformMinVersion">
+        <ns0:source>Invalid value for WindowsTargetPlatformMinVersion: {0}</ns0:source>
+        <ns0:target state="translated">Недопустимое значение для WindowsTargetPlatformMinVersion: {0}</ns0:target>
+        <ns0:note>{0} is the value supplied </ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_MissingSourceParameter">
+        <ns0:source>Source parameter was not specified.</ns0:source>
+        <ns0:target state="translated">Исходный параметр не указан.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_MultiplePackagePaths">
+        <ns0:source>{0} contains more than one path</ns0:source>
+        <ns0:target state="translated">{0} содержит больше одного пути.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoClientAllowList">
+        <ns0:source>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</ns0:source>
+        <ns0:target state="translated">Для параметра signatureValidationMode установлено значение "обязательно", поэтому допускаются только пакеты, подписанные надежными подписавшими лицами, однако надежных подписавших лиц не указано.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoMatchingCertificate">
+        <ns0:source>The package signature did not match any of the allowed certificate fingerprints.</ns0:source>
+        <ns0:target state="translated">Подпись пакета не соответствует ни одному из допустимых отпечатков сертификатов.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoMatchingClientCertificate">
+        <ns0:source>This package is signed but not by a trusted signer.</ns0:source>
+        <ns0:target state="translated">Этот пакет подписан, но не надежным подписавшим лицом.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoPackageVersionsExist">
+        <ns0:source>Unable to find package {0}. No packages exist with this id in source(s): {1}</ns0:source>
+        <ns0:target state="translated">Не удалось найти пакет {0}. Пакеты с таким идентификатором отсутствуют в следующих источниках пакетов: {1}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoPackageVersionsExistInRange">
+        <ns0:source>Unable to find package {0} with version {1}</ns0:source>
+        <ns0:target state="translated">Не удалось найти пакет {0} с версией {1}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoSignatureTrustedForPackage">
+        <ns0:source>No signature to be trusted was specified for the package '{0}'. Specify either Author or Repository.</ns0:source>
+        <ns0:target state="translated">Для пакета "{0}" не указана доверенная подпись. Укажите автора или репозиторий.</ns0:target>
+        <ns0:note>0 - Package path</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoSourcesInformation">
+        <ns0:source>Unable to get package sources information.</ns0:source>
+        <ns0:target state="translated">Невозможно получить сведения об источниках пакетов.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NoStablePackageVersionsExist">
+        <ns0:source>Unable to find a stable package {0} with version {1}</ns0:source>
+        <ns0:target state="translated">Не удалось найти стабильный пакет {0} с версией {1}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_NotSupportedHashAlgorithm">
+        <ns0:source>'{0}' is not a supported hash algorithm.</ns0:source>
+        <ns0:target state="translated">"{0}" — неподдерживаемый хэш-алгоритм.</ns0:target>
+        <ns0:note>0 - hash algorithm</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackFailed">
+        <ns0:source>Failed to build package. {0}</ns0:source>
+        <ns0:target state="translated">Не удалось создать пакет. {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageCommandNoFilesForLibPackage">
+        <ns0:source>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</ns0:source>
+        <ns0:target state="translated">Не удалось выполнить сборку проекта. Убедитесь, что "{0}" включает файлы сборки. Справку по сборке пакета символов см. по ссылке {1}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageCommandNoFilesForSymbolsPackage">
+        <ns0:source>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</ns0:source>
+        <ns0:target state="translated">Не удалось выполнить сборку пакета. Убедитесь, что "{0}" включает исходные файлы и файлы символов. Справку по сборке пакета символов см. по ссылке {1}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageDownload_NoVersion">
+        <ns0:source>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</ns0:source>
+        <ns0:target state="translated">У пакета "{0}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</ns0:target>
+        <ns0:note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageDownload_OnlyExactVersionsAreAllowed">
+        <ns0:source>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</ns0:source>
+        <ns0:target state="translated">У пакета "{0}{1}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</ns0:target>
+        <ns0:note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageNotSigned">
+        <ns0:source>The package is not signed.</ns0:source>
+        <ns0:target state="translated">Пакет не подписан.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageReference_NoVersion">
+        <ns0:source>The following PackageReference item(s) do not have a version specified: {0}</ns0:source>
+        <ns0:target state="translated">У следующих элементов PackageReference нет указанной версии: {0}</ns0:target>
+        <ns0:note>0 - List of package names</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PackageValidationFailed">
+        <ns0:source>Package content hash validation failed for {0}. The package is different than the last restore.</ns0:source>
+        <ns0:target state="translated">Проверка хэша содержимого пакета для {0} не пройдена. Пакет отличается от последней восстановленной версии.</ns0:target>
+        <ns0:note>{0} - package id and version</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PlatformVersionNotPresent">
+        <ns0:source>Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}</ns0:source>
+        <ns0:target state="translated">Для некоторых целевых платформ отсутствует требуемая версия, несмотря на то, что указана платформа: {0}.</ns0:target>
+        <ns0:note>0 - comma-separated list of TFMs missing a platform version</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ProjectDoesNotExist">
+        <ns0:source>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</ns0:source>
+        <ns0:target state="translated">Не удалось найти проект "{0}". Убедитесь, что ссылка на проект действительна и файл проекта существует.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ProjectJson_Deprecated">
+        <ns0:source>Managing packages with project.json is deprecated. Migrate to PackageReference.</ns0:source>
+        <ns0:target state="translated">Управление пакетами с помощью project.json устарело. Перейти на PackageReference.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
+        <ns0:source>The runtime.json specified in the project '{0}' could not be parsed. {1}</ns0:source>
+        <ns0:target state="translated">Не удалось проанализировать файл runtime.json, указанный в проекте "{0}". {1}</ns0:target>
+        <ns0:note>0 - runtime.json path, 1 - Additional Message, Please do not localize 'runtime.json'.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ProjectRuntimeJsonNotFound">
+        <ns0:source>The runtime.json specified in the project '{0}' could not be found.</ns0:source>
+        <ns0:target state="translated">Не удалось найти файл runtime.json, указанный в проекте "{0}".</ns0:target>
+        <ns0:note>0 - runtime.json path, Please do not localize 'runtime.json'</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ProjectWithIncorrectDependenciesCount">
+        <ns0:source>Project {0} must have a single package reference(s).</ns0:source>
+        <ns0:target state="translated">Проект {0} должен содержать ссылки на один пакет.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_PropertyCannotBeNullOrEmpty">
+        <ns0:source>Property '{0}' should not be null or empty.</ns0:source>
+        <ns0:target state="translated">Свойство "{0}" не должно быть пустым или равным NULL.</ns0:target>
+        <ns0:note>0 - property name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_RepoTrustExpectedRepoSignature">
+        <ns0:source>Unable to add trusted repository. The package is not repository signed or countersigned.</ns0:source>
+        <ns0:target state="translated">Невозможно добавить доверенный репозиторий. В пакете нет подписи репозитория или второй подписи.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_RestoreInLockedMode">
+        <ns0:source>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file.</ns0:source>
+        <ns0:target state="translated">Lock-файл пакетов не соответствует зависимостям проекта, поэтому восстановление в режиме блокировки невозможно. Отключите свойство RestoreLockedMode в MSBuild или передайте явно параметр --force-evaluate, чтобы запустить восстановление и обновить lock-файл.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_RestorePruningDirectPackageReference">
+        <ns0:source>PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.</ns0:source>
+        <ns0:target state="translated">PackageReference {0} не будет урезано. Рассмотрите возможность удаления этого пакета из зависимостей, так как он, вероятно, не требуется.</ns0:target>
+        <ns0:note>0 - package id and version</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_RestorePruningProjectReference">
+        <ns0:source>A ProjectReference cannot be pruned, {0}.</ns0:source>
+        <ns0:target state="translated">ProjectReference нельзя урезать, {0}.</ns0:target>
+        <ns0:note>0 - project reference</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ServiceIndexShouldBeHttps">
+        <ns0:source>The repository service index '{0}' is not a valid HTTPS url.</ns0:source>
+        <ns0:target state="translated">Индекс служб репозитория "{0}" не является допустимым URL-адресом HTTPS.</ns0:target>
+        <ns0:note>0 - service index</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_ToolsPackageWithExtraPackageTypes">
+        <ns0:source>Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType.</ns0:source>
+        <ns0:target state="translated">Недопустимый пакет инструментов {0} {1}. Пакеты инструментов не могут содержать более одного PackageType.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_TrustedAuthorNoOwners">
+        <ns0:source>A trusted author cannot have owners.</ns0:source>
+        <ns0:target state="translated">У доверенного автора не может быть владельцев.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_TrustedRepoAlreadyExists">
+        <ns0:source>A trusted repository with the service index '{0}' already exists.</ns0:source>
+        <ns0:target state="translated">Доверенный репозиторий с индексом служб "{0}" уже существует.</ns0:target>
+        <ns0:note>0 - trusted repository name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_TrustedRepositoryDoesNotExist">
+        <ns0:source>A trusted repository '{0}' does not exist.</ns0:source>
+        <ns0:target state="translated">Доверенный репозиторий "{0}" не существует.</ns0:target>
+        <ns0:note>0 - trusted repository name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_TrustedSignerAlreadyExists">
+        <ns0:source>A trusted signer '{0}' already exists.</ns0:source>
+        <ns0:target state="translated">Доверенное подписывающее лицо "{0}" уже существует.</ns0:target>
+        <ns0:note>0 - trusted signer name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnableToFindProjectInfo">
+        <ns0:source>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</ns0:source>
+        <ns0:target state="translated">Не удалось найти сведения о проекте для "{0}". Если вы используете Visual Studio, причина может заключаться в том, что проект выгружен или не является частью текущего решения. В этом случае выполните восстановление из командной строки. В противном случае причина может быть связана с тем, что файл проекта является недопустимым или отсутствуют целевые объекты, необходимые для восстановления.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnableToLocateBuildOutput">
+        <ns0:source>No build found in {0}. Use the -Build option or build the project.</ns0:source>
+        <ns0:target state="translated">Сборки в {0} не найдены. Используйте параметр -Build или соберите проект.</ns0:target>
+        <ns0:note>{0} is the project output directory</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnableToLocateRestoreTarget">
+        <ns0:source>The folder '{0}' does not contain a project to restore.</ns0:source>
+        <ns0:target state="translated">Папка "{0}" не содержит проектов для восстановления.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnableToSignPackage">
+        <ns0:source>Unable to sign package.</ns0:source>
+        <ns0:target state="translated">Не удалось подписать пакет.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnavailableSource">
+        <ns0:source>Source '{0}' does not exist or cannot be retrived.</ns0:source>
+        <ns0:target state="translated">Источник "{0}" не существует или не может быть получен.</ns0:target>
+        <ns0:note>0 - source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnknownBuildAction">
+        <ns0:source>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</ns0:source>
+        <ns0:target state="translated">Пакет "{0}" указывает недопустимое действие сборки "{1}" для файла "{2}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnknownClientCertificateStoreType">
+        <ns0:source>Cannot determine client certificate store type</ns0:source>
+        <ns0:target state="translated">Не удается определить тип хранилища сертификатов клиента</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnknownClientCertificatesFindBy">
+        <ns0:source>The find by search type '{0}' is not recognized.</ns0:source>
+        <ns0:target state="translated">Не удалось распознать тип поиска "Найти по" "{0}".</ns0:target>
+        <ns0:note>0 - find type</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnknownClientCertificatesStoreLocation">
+        <ns0:source>The store location '{0}' is not recognized.</ns0:source>
+        <ns0:target state="translated">Не удалось распознать расположение хранилища "{0}".</ns0:target>
+        <ns0:note>0 - store location</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnknownClientCertificatesStoreName">
+        <ns0:source>The source name '{0}' is not recognized.</ns0:source>
+        <ns0:target state="translated">Не удалось распознать имя источника "{0}".</ns0:target>
+        <ns0:note>0 - source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_UnsupportedTrustTarget">
+        <ns0:source>The trust target '{0}' is unsupported.</ns0:source>
+        <ns0:target state="translated">Целевой объект доверия "{0}" не поддерживается.</ns0:target>
+        <ns0:note>0 - VerificationTarget</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_VulnerabilityDataFetch">
+        <ns0:source>Error occurred while getting package vulnerability data: {0}</ns0:source>
+        <ns0:target state="translated">Произошла ошибка при получении данных уязвимости пакета: {0}</ns0:target>
+        <ns0:note>{0} is an error message</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_WriteResolvedNuSpecOverwriteOriginal">
+        <ns0:source>Unable to output resolved nuspec file because it would overwrite the original at '{0}'</ns0:source>
+        <ns0:target state="translated">Не удалось вывести разрешенный NUSPEC-файл, так как его пришлось бы записать поверх оригинала в "{0}"</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Error_XPROJNotAllowed">
+        <ns0:source>Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</ns0:source>
+        <ns0:target state="translated">Входные данные "{0}" недопустимы. Поддержка XProj удалена. Поддержка XProj и отдельных файлов project.json удалена. Чтобы по-прежнему работать с устаревшими проектами, используйте NuGet 3.5.x (https://nuget.org/downloads)</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="FailedToBuildProject">
+        <ns0:source>Failed to build '{0}'.</ns0:source>
+        <ns0:target state="translated">Не удалось выполнить сборку "{0}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="FileNotAddedToPackage">
+        <ns0:source>File '{0}' is not added because the package already contains file '{1}'</ns0:source>
+        <ns0:target state="translated">Файл "{0}" не добавлен, так как пакет уже содержит файл "{1}"</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="FoundVersionsInSource">
+        <ns0:source>Found {0} version(s) in {1} [ Nearest version: {2} ]</ns0:source>
+        <ns0:target state="translated">В {1} обнаружено несколько версий ({0}) [ Ближайшая версия: {2} ]</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="FoundVersionsInSourceWithoutMatch">
+        <ns0:source>Found {0} version(s) in {1}</ns0:source>
+        <ns0:target state="translated">В {1} обнаружено несколько версий ({0})</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="InvalidRestoreInput">
+        <ns0:source>Invalid restore input. {0}</ns0:source>
+        <ns0:target state="translated">Входные данные восстановления недопустимы. {0}</ns0:target>
+        <ns0:note>0 is an error message specific to the validation failure.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="InvalidRestoreInputWithFiles">
+        <ns0:source>Invalid restore input. {0} Input files: {1}.</ns0:source>
+        <ns0:target state="translated">Входные данные восстановления недопустимы. {0} Входные файлы: {1}.</ns0:target>
+        <ns0:note>0 is an error message specific to the validation failure. 1 is a list of file paths.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="InvalidSource">
+        <ns0:source>The specified source '{0}' is invalid. Provide a valid source.</ns0:source>
+        <ns0:target state="translated">Указанный источник "{0}" является недопустимым. Укажите допустимый источник.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Invalid_AttributeValue">
+        <ns0:source>The {0} value: `{1}` is invalid. Valid example: `{2}`</ns0:source>
+        <ns0:target state="translated">Значение {0} "{1}" недопустимо. Допустимый пример: "{2}"</ns0:target>
+        <ns0:note>{0} - is the attribute
 {1} is the invalid value of the attribute.
 {2} a valid attriibute value example</note>
       </trans-unit>
@@ -730,330 +730,330 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <target state="translated">Обнаружено понижение версии пакета {0} с {1} на {2}. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта.</target>
         <note>{0}: package id
 {1}: requested version
-{2}: resolved version</note>
-      </trans-unit>
-      <trans-unit id="Log_ErrorSummary">
-        <source>Errors in {0}</source>
-        <target state="translated">Ошибки в {0}</target>
-        <note>0 - project name/type</note>
-      </trans-unit>
-      <trans-unit id="Log_FeedsUsedSummary">
-        <source>Feeds used:</source>
-        <target state="translated">Использованные веб-каналы:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_FrameworkDisplay">
-        <source>{0} ({1})</source>
-        <target state="translated">{0} ({1})</target>
-        <note>0 - framework short name, 1 - System.FrameworkName</note>
-      </trans-unit>
-      <trans-unit id="Log_FrameworkRIDDisplay">
-        <source>{0} ({1}) / {2}</source>
-        <target state="translated">{0} ({1}) / {2}</target>
-        <note>0 - framework short name, 1 - System.FrameworkName, 2 - Runtime ID</note>
-      </trans-unit>
-      <trans-unit id="Log_GeneratingMsBuildFile">
-        <source>Generating MSBuild file {0}.</source>
-        <target state="translated">Идет создание файла MSBuild {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ImportsFallbackWarning">
-        <source>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This package may not be fully compatible with your project.</source>
-        <target state="translated">Пакет "{0}" был восстановлен с помощью "{1}", а не целевой платформы проекта "{2}". Этот пакет может быть не полностью совместим с вашим проектом.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_InstalledSummary">
-        <source>Installed:</source>
-        <target state="translated">Установлено:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_InstalledSummaryCount">
-        <source>{0} package(s) to {1}</source>
-        <target state="translated">Пакеты ({0}) в {1}</target>
-        <note>0 - installed package count
-1 - folder path</note>
-      </trans-unit>
-      <trans-unit id="Log_LockFileNotOnDisk">
-        <source>The lock file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</source>
-        <target state="translated">Файл блокировки для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_MergingRuntimes">
-        <source>Merging in runtimes defined in {0}.</source>
-        <target state="translated">Идет слияние сред выполнения, определенных в {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_MissingImplementationFx">
-        <source>{0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no compatible run-time assembly.</source>
-        <target state="translated">{0} {1} предоставляет ссылочную сборку времени компиляции для {2} в {3}, но отсутствует совместимая среда выполнения.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_MissingImplementationFxRuntime">
-        <source>{0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no run-time assembly compatible with {4}.</source>
-        <target state="translated">{0} {1} предоставляет ссылочную сборку времени компиляции для {2} в {3}, но отсутствует сборка среды выполнения, совместимая с {4}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_MissingPackagesOnDisk">
-        <source>Not all packages are on disk for: {0}</source>
-        <target state="translated">Не все пакеты {0} находятся на диске.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageCommandAddedFile">
-        <source>Added file '{0}'.</source>
-        <target state="translated">Добавлен файл "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageCommandAttemptingToBuildSymbolsPackage">
-        <source>Attempting to build symbols package for '{0}'.</source>
-        <target state="translated">Попытка выполнить сборку пакета символов для "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageCommandInstallPackageToOutputPath">
-        <source>Install {0} to output path '{1}'</source>
-        <target state="translated">Установить {0} по пути вывода "{1}"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageCommandSuccess">
-        <source>Successfully created package '{0}'.</source>
-        <target state="translated">Пакет "{0}" успешно создан.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageContentHashValidationFailed">
-        <source>Package content hash validation failed for {0}. Expected: {1} Actual: {2}</source>
-        <target state="translated">Проверка хэша содержимого пакета для {0} не пройдена. Ожидаемое значение: {1}, фактическое значение: {2}</target>
-        <note>0 - package ID, 1 - expected Sha, 2 - actual sha</note>
-      </trans-unit>
-      <trans-unit id="Log_PackageNotCompatibleWithFx">
-        <source>Package {0} {1} is not compatible with {2}.</source>
-        <target state="translated">Пакет {0} {1} несовместим с {2}.</target>
-        <note>0 - package id, 1 - version, 2 - target framework</note>
-      </trans-unit>
-      <trans-unit id="Log_PackageNotCompatibleWithFx_NoSupports">
-        <source>Package {0} {1} does not support any target frameworks.</source>
-        <target state="translated">Пакет {0} {1} не поддерживает какие-либо целевые платформы.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_PackageNotCompatibleWithFx_Supports">
-        <source>Package {0} {1} supports:</source>
-        <target state="translated">Пакет {0} {1} поддерживает:</target>
-        <note>0 - package id, 1 - version</note>
-      </trans-unit>
-      <trans-unit id="Log_PackagesAndProjectsAreCompatible">
-        <source>All packages and projects are compatible with {0}.</source>
-        <target state="translated">Все пакеты и проекты совместимы с {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ProjectDoesNotSpecifyTargetFrameworks">
-        <source>The project {0} does not specify any target frameworks in {1}.</source>
-        <target state="translated">Проект "{0}" не указывает целевые платформы в "{1}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ProjectNotCompatibleWithFx">
-        <source>Project {0} is not compatible with {1}.</source>
-        <target state="translated">Проект {0} несовместим с {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ProjectNotCompatibleWithFx_NoSupports">
-        <source>Project {0} does not support any target frameworks.</source>
-        <target state="translated">Проект {0} не поддерживает целевые платформы.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ProjectNotCompatibleWithFx_Supports">
-        <source>Project {0} supports:</source>
-        <target state="translated">Проект {0} поддерживает:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ProjectUpToDateSummary">
-        <source>{0} of {1} projects are up-to-date for restore.</source>
-        <target state="translated">Проектов обновлено для восстановления: {0} из {1}.</target>
-        <note>0 - number of projects that were up-to-date
-1 - Total number of projects</note>
-      </trans-unit>
-      <trans-unit id="Log_PropsFileNotOnDisk">
-        <source>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</source>
-        <target state="translated">Файл свойств для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ReadingProject">
-        <source>Reading project file {0}.</source>
-        <target state="translated">Чтение файла проекта {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ResolverConflict">
-        <source>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</source>
-        <target state="translated">Не удалось удовлетворить конфликтующие запросы для "{0}": {1}. Платформа: {2}</target>
-        <note>0 - package id, 1 - comma delimited list of conflicts, 2 - framework</note>
-      </trans-unit>
-      <trans-unit id="Log_ResolvingConflicts">
-        <source>Resolving conflicts for {0}...</source>
-        <target state="translated">Идет разрешение конфликтов для {0}...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_RestoreComplete">
-        <source>Restored {0} (in {1}).</source>
-        <target state="translated">Восстановлен {0} (за {1}).</target>
-        <note>{0} is the path to the project file. {1} is the restore duration.</note>
-      </trans-unit>
-      <trans-unit id="Log_RestoreCompleteDotnetTool">
-        <source>Restored {0} (in {1}).</source>
-        <target state="translated">Восстановлен {0} (за {1}).</target>
-        <note>{0} is the restore duration.</note>
-      </trans-unit>
-      <trans-unit id="Log_RestoreFailed">
-        <source>Failed to restore {0} (in {1}).</source>
-        <target state="translated">Не удалось восстановить {0} (за {1}).</target>
-        <note>{0} is the path to the project file.
-    {1} is the restore duration.</note>
-      </trans-unit>
-      <trans-unit id="Log_RestoreFailedDotnetTool">
-        <source>Failed to restore {0} (in {1}).</source>
-        <target state="translated">Не удалось восстановить {0} (за {1}).</target>
-        <note>{0} is the path to the project file. {1} is the restore duration.</note>
-      </trans-unit>
-      <trans-unit id="Log_RestoreNoOpDGChanged">
-        <source>The restore inputs for '{0}' have changed. Continuing restore.</source>
-        <target state="translated">Входные данные восстановления для "{0}" были изменены. Восстановление будет продолжено.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_RestoreNoOpFinish">
-        <source>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</source>
-        <target state="translated">Входные данные восстановления для "{0}" не были изменены. Дальнейших действий для завершения восстановления не требуется.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_RestoringPackages">
-        <source>Restoring packages for {0}...</source>
-        <target state="translated">Идет восстановление пакетов для {0}...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_RunningNonParallelRestore">
-        <source>Running non-parallel restore.</source>
-        <target state="translated">Выполняется непараллельное восстановление.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_RunningParallelRestore">
-        <source>Running restore with {0} concurrent jobs.</source>
-        <target state="translated">Выполняется восстановление со следующим числом параллельных заданий: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ScanningForRuntimeJson">
-        <source>Scanning packages for runtime.json files...</source>
-        <target state="translated">Идет сканирование пакетов на наличие файлов runtime.json...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_SkippingAssetsFile">
-        <source>Assets file has not changed. Skipping assets file writing. Path: {0}</source>
-        <target state="translated">Файл ресурсов не был изменен. Пропуск записи файла ресурсов. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_SkippingCacheFile">
-        <source>No-Op restore. The cache will not be updated. Path: {0}</source>
-        <target state="translated">Холостое восстановление. Кэш не будет обновлен. Путь: {0}</target>
-        <note>{0}: Path to cache file</note>
-      </trans-unit>
-      <trans-unit id="Log_SkippingPackagesLockFileGeneration">
-        <source>Skipping the lock file regeneration for '{0}'.</source>
-        <target state="translated">Пропускается повторное создание файла блокировки для "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_SourceMappingEnabledNoMatchingPackageSources">
-        <source>PackageSourceMapping is enabled, the following source(s) were not considered: {0}.</source>
-        <target state="translated">PackageSourceMapping включен, следующие источники не рассматривались: {0}.</target>
-        <note>Please do not localize `PackageSourceMapping`. 0 - package source names list.</note>
-      </trans-unit>
-      <trans-unit id="Log_TargetsFileNotOnDisk">
-        <source>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</source>
-        <target state="translated">Файл целей для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ToolSkippingAssetsFile">
-        <source>Tool assets file has not changed. Skipping assets file write. Path: {0}</source>
-        <target state="translated">Файл ресурсов инструмента не был изменен. Пропуск записи для файла ресурсов инструмента. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ToolWritingAssetsFile">
-        <source>Writing tool assets file to disk. Path: {0}</source>
-        <target state="translated">Запись файла ресурсов инструмента на диск. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_ToolWritingCacheFile">
-        <source>Writing tool cache file to disk. Path: {0}</source>
-        <target state="translated">Запись файла кэша инструмента на диск. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_UnknownCompatibilityProfile">
-        <source>Unknown Compatibility Profile: {0}</source>
-        <target state="translated">Неизвестный профиль совместимости: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_UnresolvedDependency">
-        <source>Unable to resolve '{0}' for '{1}'.</source>
-        <target state="translated">Не удалось разрешить "{0}" для "{1}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_VersionConflict">
-        <source>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</source>
-        <target state="translated">Обнаружен конфликт версий для {0}. Установите или укажите прямую ссылку {1} на проект {2}, чтобы устранить эту проблему.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_WritingAssetsFile">
-        <source>Writing assets file to disk. Path: {0}</source>
-        <target state="translated">Запись файла ресурсов на диск. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_WritingCacheFile">
-        <source>Writing cache file to disk. Path: {0}</source>
-        <target state="translated">Запись файла кэша на диск. Путь: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Log_WritingPackagesLockFile">
-        <source>Writing packages lock file at disk. Path: {0}</source>
-        <target state="translated">Запись файла блокировки пакетов на диск. Путь: {0}</target>
-        <note>{0} - Path to packages lock file</note>
-      </trans-unit>
-      <trans-unit id="MSBuildWarning_MultiTarget">
-        <source>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</source>
-        <target state="translated">Пакеты, содержащие целевые объекты и PROPS-файлы MSBuild, не могут быть полностью установлены в проектах, предназначенных для нескольких платформ. Целевые объекты и PROPS-файлы MSBuild были пропущены.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MissingRequiredProperty">
-        <source>Missing required property '{0}'.</source>
-        <target state="translated">Обязательное свойство "{0}" отсутствует.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MissingRequiredPropertyForProjectType">
-        <source>Missing required property '{0}' for project type '{1}'.</source>
-        <target state="translated">Обязательное свойство "{0}" для проекта типа "{1}" отсутствует.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Multiple_Nupkgs_Detected">
-        <source>Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.</source>
-        <target state="translated">На пути к доверию '{0}' обнаружено несколько файлов nupkg, но разрешен только 1.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoClientCertificates">
-        <source>There are no client certificates.</source>
-        <target state="translated">Сертификаты клиента отсутствуют.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoClientCertificatesMatching">
-        <source>There are no client certificates configured for the package source '{0}'.</source>
-        <target state="translated">Сертификаты клиента для источника пакетов "{0}" отсутствуют.</target>
-        <note>0 - package source name</note>
-      </trans-unit>
-      <trans-unit id="NoTrustedSigners">
-        <source>There are no trusted signers.</source>
-        <target state="translated">Нет доверенных подписывающих лиц.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoTrustedSignersMatching">
-        <source>No trusted signers with the name: '{0}' were found.</source>
-        <target state="translated">Не найдено доверенных подписывающих лиц с именем "{0}".</target>
-        <note>0 - trusted signer name</note>
-      </trans-unit>
-      <trans-unit id="NonMatchingProperties">
-        <source>Properties '{0}':'{1}' and '{2}':'{3}' do not match.</source>
-        <target state="translated">Свойства "{0}":"{1}" и "{2}":"{3}" не совпадают.</target>
-        <note>0 - first property name
+{2}: resolved version</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ErrorSummary">
+        <ns0:source>Errors in {0}</ns0:source>
+        <ns0:target state="translated">Ошибки в {0}</ns0:target>
+        <ns0:note>0 - project name/type</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_FeedsUsedSummary">
+        <ns0:source>Feeds used:</ns0:source>
+        <ns0:target state="translated">Использованные веб-каналы:</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_FrameworkDisplay">
+        <ns0:source>{0} ({1})</ns0:source>
+        <ns0:target state="translated">{0} ({1})</ns0:target>
+        <ns0:note>0 - framework short name, 1 - System.FrameworkName</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_FrameworkRIDDisplay">
+        <ns0:source>{0} ({1}) / {2}</ns0:source>
+        <ns0:target state="translated">{0} ({1}) / {2}</ns0:target>
+        <ns0:note>0 - framework short name, 1 - System.FrameworkName, 2 - Runtime ID</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_GeneratingMsBuildFile">
+        <ns0:source>Generating MSBuild file {0}.</ns0:source>
+        <ns0:target state="translated">Идет создание файла MSBuild {0}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ImportsFallbackWarning">
+        <ns0:source>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This package may not be fully compatible with your project.</ns0:source>
+        <ns0:target state="translated">Пакет "{0}" был восстановлен с помощью "{1}", а не целевой платформы проекта "{2}". Этот пакет может быть не полностью совместим с вашим проектом.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_InstalledSummary">
+        <ns0:source>Installed:</ns0:source>
+        <ns0:target state="translated">Установлено:</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_InstalledSummaryCount">
+        <ns0:source>{0} package(s) to {1}</ns0:source>
+        <ns0:target state="translated">Пакеты ({0}) в {1}</ns0:target>
+        <ns0:note>0 - installed package count
+1 - folder path</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_LockFileNotOnDisk">
+        <ns0:source>The lock file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</ns0:source>
+        <ns0:target state="translated">Файл блокировки для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_MergingRuntimes">
+        <ns0:source>Merging in runtimes defined in {0}.</ns0:source>
+        <ns0:target state="translated">Идет слияние сред выполнения, определенных в {0}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_MissingImplementationFx">
+        <ns0:source>{0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no compatible run-time assembly.</ns0:source>
+        <ns0:target state="translated">{0} {1} предоставляет ссылочную сборку времени компиляции для {2} в {3}, но отсутствует совместимая среда выполнения.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_MissingImplementationFxRuntime">
+        <ns0:source>{0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no run-time assembly compatible with {4}.</ns0:source>
+        <ns0:target state="translated">{0} {1} предоставляет ссылочную сборку времени компиляции для {2} в {3}, но отсутствует сборка среды выполнения, совместимая с {4}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_MissingPackagesOnDisk">
+        <ns0:source>Not all packages are on disk for: {0}</ns0:source>
+        <ns0:target state="translated">Не все пакеты {0} находятся на диске.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageCommandAddedFile">
+        <ns0:source>Added file '{0}'.</ns0:source>
+        <ns0:target state="translated">Добавлен файл "{0}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageCommandAttemptingToBuildSymbolsPackage">
+        <ns0:source>Attempting to build symbols package for '{0}'.</ns0:source>
+        <ns0:target state="translated">Попытка выполнить сборку пакета символов для "{0}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageCommandInstallPackageToOutputPath">
+        <ns0:source>Install {0} to output path '{1}'</ns0:source>
+        <ns0:target state="translated">Установить {0} по пути вывода "{1}"</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageCommandSuccess">
+        <ns0:source>Successfully created package '{0}'.</ns0:source>
+        <ns0:target state="translated">Пакет "{0}" успешно создан.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageContentHashValidationFailed">
+        <ns0:source>Package content hash validation failed for {0}. Expected: {1} Actual: {2}</ns0:source>
+        <ns0:target state="translated">Проверка хэша содержимого пакета для {0} не пройдена. Ожидаемое значение: {1}, фактическое значение: {2}</ns0:target>
+        <ns0:note>0 - package ID, 1 - expected Sha, 2 - actual sha</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageNotCompatibleWithFx">
+        <ns0:source>Package {0} {1} is not compatible with {2}.</ns0:source>
+        <ns0:target state="translated">Пакет {0} {1} несовместим с {2}.</ns0:target>
+        <ns0:note>0 - package id, 1 - version, 2 - target framework</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageNotCompatibleWithFx_NoSupports">
+        <ns0:source>Package {0} {1} does not support any target frameworks.</ns0:source>
+        <ns0:target state="translated">Пакет {0} {1} не поддерживает какие-либо целевые платформы.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackageNotCompatibleWithFx_Supports">
+        <ns0:source>Package {0} {1} supports:</ns0:source>
+        <ns0:target state="translated">Пакет {0} {1} поддерживает:</ns0:target>
+        <ns0:note>0 - package id, 1 - version</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PackagesAndProjectsAreCompatible">
+        <ns0:source>All packages and projects are compatible with {0}.</ns0:source>
+        <ns0:target state="translated">Все пакеты и проекты совместимы с {0}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ProjectDoesNotSpecifyTargetFrameworks">
+        <ns0:source>The project {0} does not specify any target frameworks in {1}.</ns0:source>
+        <ns0:target state="translated">Проект "{0}" не указывает целевые платформы в "{1}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ProjectNotCompatibleWithFx">
+        <ns0:source>Project {0} is not compatible with {1}.</ns0:source>
+        <ns0:target state="translated">Проект {0} несовместим с {1}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ProjectNotCompatibleWithFx_NoSupports">
+        <ns0:source>Project {0} does not support any target frameworks.</ns0:source>
+        <ns0:target state="translated">Проект {0} не поддерживает целевые платформы.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ProjectNotCompatibleWithFx_Supports">
+        <ns0:source>Project {0} supports:</ns0:source>
+        <ns0:target state="translated">Проект {0} поддерживает:</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ProjectUpToDateSummary">
+        <ns0:source>{0} of {1} projects are up-to-date for restore.</ns0:source>
+        <ns0:target state="translated">Проектов обновлено для восстановления: {0} из {1}.</ns0:target>
+        <ns0:note>0 - number of projects that were up-to-date
+1 - Total number of projects</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_PropsFileNotOnDisk">
+        <ns0:source>The props file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</ns0:source>
+        <ns0:target state="translated">Файл свойств для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ReadingProject">
+        <ns0:source>Reading project file {0}.</ns0:source>
+        <ns0:target state="translated">Чтение файла проекта {0}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ResolverConflict">
+        <ns0:source>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</ns0:source>
+        <ns0:target state="translated">Не удалось удовлетворить конфликтующие запросы для "{0}": {1}. Платформа: {2}</ns0:target>
+        <ns0:note>0 - package id, 1 - comma delimited list of conflicts, 2 - framework</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ResolvingConflicts">
+        <ns0:source>Resolving conflicts for {0}...</ns0:source>
+        <ns0:target state="translated">Идет разрешение конфликтов для {0}...</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreComplete">
+        <ns0:source>Restored {0} (in {1}).</ns0:source>
+        <ns0:target state="translated">Восстановлен {0} (за {1}).</ns0:target>
+        <ns0:note>{0} is the path to the project file. {1} is the restore duration.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreCompleteDotnetTool">
+        <ns0:source>Restored {0} (in {1}).</ns0:source>
+        <ns0:target state="translated">Восстановлен {0} (за {1}).</ns0:target>
+        <ns0:note>{0} is the restore duration.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreFailed">
+        <ns0:source>Failed to restore {0} (in {1}).</ns0:source>
+        <ns0:target state="translated">Не удалось восстановить {0} (за {1}).</ns0:target>
+        <ns0:note>{0} is the path to the project file.
+    {1} is the restore duration.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreFailedDotnetTool">
+        <ns0:source>Failed to restore {0} (in {1}).</ns0:source>
+        <ns0:target state="translated">Не удалось восстановить {0} (за {1}).</ns0:target>
+        <ns0:note>{0} is the path to the project file. {1} is the restore duration.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreNoOpDGChanged">
+        <ns0:source>The restore inputs for '{0}' have changed. Continuing restore.</ns0:source>
+        <ns0:target state="translated">Входные данные восстановления для "{0}" были изменены. Восстановление будет продолжено.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoreNoOpFinish">
+        <ns0:source>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</ns0:source>
+        <ns0:target state="translated">Входные данные восстановления для "{0}" не были изменены. Дальнейших действий для завершения восстановления не требуется.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RestoringPackages">
+        <ns0:source>Restoring packages for {0}...</ns0:source>
+        <ns0:target state="translated">Идет восстановление пакетов для {0}...</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RunningNonParallelRestore">
+        <ns0:source>Running non-parallel restore.</ns0:source>
+        <ns0:target state="translated">Выполняется непараллельное восстановление.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_RunningParallelRestore">
+        <ns0:source>Running restore with {0} concurrent jobs.</ns0:source>
+        <ns0:target state="translated">Выполняется восстановление со следующим числом параллельных заданий: {0}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ScanningForRuntimeJson">
+        <ns0:source>Scanning packages for runtime.json files...</ns0:source>
+        <ns0:target state="translated">Идет сканирование пакетов на наличие файлов runtime.json...</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_SkippingAssetsFile">
+        <ns0:source>Assets file has not changed. Skipping assets file writing. Path: {0}</ns0:source>
+        <ns0:target state="translated">Файл ресурсов не был изменен. Пропуск записи файла ресурсов. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_SkippingCacheFile">
+        <ns0:source>No-Op restore. The cache will not be updated. Path: {0}</ns0:source>
+        <ns0:target state="translated">Холостое восстановление. Кэш не будет обновлен. Путь: {0}</ns0:target>
+        <ns0:note>{0}: Path to cache file</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_SkippingPackagesLockFileGeneration">
+        <ns0:source>Skipping the lock file regeneration for '{0}'.</ns0:source>
+        <ns0:target state="translated">Пропускается повторное создание файла блокировки для "{0}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_SourceMappingEnabledNoMatchingPackageSources">
+        <ns0:source>PackageSourceMapping is enabled, the following source(s) were not considered: {0}.</ns0:source>
+        <ns0:target state="translated">PackageSourceMapping включен, следующие источники не рассматривались: {0}.</ns0:target>
+        <ns0:note>Please do not localize `PackageSourceMapping`. 0 - package source names list.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_TargetsFileNotOnDisk">
+        <ns0:source>The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore.</ns0:source>
+        <ns0:target state="translated">Файл целей для {0} в расположении {1} не существует, холостая операция невозможна. Восстановление будет продолжено.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ToolSkippingAssetsFile">
+        <ns0:source>Tool assets file has not changed. Skipping assets file write. Path: {0}</ns0:source>
+        <ns0:target state="translated">Файл ресурсов инструмента не был изменен. Пропуск записи для файла ресурсов инструмента. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ToolWritingAssetsFile">
+        <ns0:source>Writing tool assets file to disk. Path: {0}</ns0:source>
+        <ns0:target state="translated">Запись файла ресурсов инструмента на диск. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_ToolWritingCacheFile">
+        <ns0:source>Writing tool cache file to disk. Path: {0}</ns0:source>
+        <ns0:target state="translated">Запись файла кэша инструмента на диск. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_UnknownCompatibilityProfile">
+        <ns0:source>Unknown Compatibility Profile: {0}</ns0:source>
+        <ns0:target state="translated">Неизвестный профиль совместимости: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_UnresolvedDependency">
+        <ns0:source>Unable to resolve '{0}' for '{1}'.</ns0:source>
+        <ns0:target state="translated">Не удалось разрешить "{0}" для "{1}".</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_VersionConflict">
+        <ns0:source>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</ns0:source>
+        <ns0:target state="translated">Обнаружен конфликт версий для {0}. Установите или укажите прямую ссылку {1} на проект {2}, чтобы устранить эту проблему.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <trans-unit id="Log_VersionConflictForCentralTransitive"><source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</source><target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version in Directory.Packages.props to resolve this issue.</target><note /></trans-unit><ns0:trans-unit id="Log_WritingAssetsFile">
+        <ns0:source>Writing assets file to disk. Path: {0}</ns0:source>
+        <ns0:target state="translated">Запись файла ресурсов на диск. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_WritingCacheFile">
+        <ns0:source>Writing cache file to disk. Path: {0}</ns0:source>
+        <ns0:target state="translated">Запись файла кэша на диск. Путь: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Log_WritingPackagesLockFile">
+        <ns0:source>Writing packages lock file at disk. Path: {0}</ns0:source>
+        <ns0:target state="translated">Запись файла блокировки пакетов на диск. Путь: {0}</ns0:target>
+        <ns0:note>{0} - Path to packages lock file</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="MSBuildWarning_MultiTarget">
+        <ns0:source>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</ns0:source>
+        <ns0:target state="translated">Пакеты, содержащие целевые объекты и PROPS-файлы MSBuild, не могут быть полностью установлены в проектах, предназначенных для нескольких платформ. Целевые объекты и PROPS-файлы MSBuild были пропущены.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="MissingRequiredProperty">
+        <ns0:source>Missing required property '{0}'.</ns0:source>
+        <ns0:target state="translated">Обязательное свойство "{0}" отсутствует.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="MissingRequiredPropertyForProjectType">
+        <ns0:source>Missing required property '{0}' for project type '{1}'.</ns0:source>
+        <ns0:target state="translated">Обязательное свойство "{0}" для проекта типа "{1}" отсутствует.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Multiple_Nupkgs_Detected">
+        <ns0:source>Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.</ns0:source>
+        <ns0:target state="translated">На пути к доверию '{0}' обнаружено несколько файлов nupkg, но разрешен только 1.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="NoClientCertificates">
+        <ns0:source>There are no client certificates.</ns0:source>
+        <ns0:target state="translated">Сертификаты клиента отсутствуют.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="NoClientCertificatesMatching">
+        <ns0:source>There are no client certificates configured for the package source '{0}'.</ns0:source>
+        <ns0:target state="translated">Сертификаты клиента для источника пакетов "{0}" отсутствуют.</ns0:target>
+        <ns0:note>0 - package source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="NoTrustedSigners">
+        <ns0:source>There are no trusted signers.</ns0:source>
+        <ns0:target state="translated">Нет доверенных подписывающих лиц.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="NoTrustedSignersMatching">
+        <ns0:source>No trusted signers with the name: '{0}' were found.</ns0:source>
+        <ns0:target state="translated">Не найдено доверенных подписывающих лиц с именем "{0}".</ns0:target>
+        <ns0:note>0 - trusted signer name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="NonMatchingProperties">
+        <ns0:source>Properties '{0}':'{1}' and '{2}':'{3}' do not match.</ns0:source>
+        <ns0:target state="translated">Свойства "{0}":"{1}" и "{2}":"{3}" не совпадают.</ns0:target>
+        <ns0:note>0 - first property name
 1 - first property value
 2 - second property name
 3 - second property value</note>
@@ -1325,190 +1325,190 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <note>Do not localize
 
 0 - fingerprint algorithm
-1 - fingerprint</note>
-      </trans-unit>
-      <trans-unit id="TrustedSignerLogCertificateSummaryUnallowUntrustedRoot">
-        <source>{0} - {1}</source>
-        <target state="translated">{0} — {1}</target>
-        <note>Do not localize
+1 - fingerprint</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="TrustedSignerLogCertificateSummaryUnallowUntrustedRoot">
+        <ns0:source>{0} - {1}</ns0:source>
+        <ns0:target state="translated">{0} — {1}</ns0:target>
+        <ns0:note>Do not localize
 
 0 - fingerprint algorithm
-1 - fingerprint</note>
-      </trans-unit>
-      <trans-unit id="TrustedSignerLogCertificates">
-        <source>Certificate fingerprint(s):</source>
-        <target state="translated">Отпечатки сертификата:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TrustedSignerLogOwners">
-        <source>Trusted owners: {0}</source>
-        <target state="translated">Доверенные владельцы: {0}</target>
-        <note>0 - semi-colon separated owners list</note>
-      </trans-unit>
-      <trans-unit id="TrustedSignerLogServiceIndex">
-        <source>Service Index: {0}</source>
-        <target state="translated">Индекс служб: {0}</target>
-        <note>0 - service index</note>
-      </trans-unit>
-      <trans-unit id="TrustedSignerLogTitle">
-        <source>{0} [{1}]</source>
-        <target state="translated">{0} [{1}]</target>
-        <note>0 - signer name
+1 - fingerprint</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="TrustedSignerLogCertificates">
+        <ns0:source>Certificate fingerprint(s):</ns0:source>
+        <ns0:target state="translated">Отпечатки сертификата:</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="TrustedSignerLogOwners">
+        <ns0:source>Trusted owners: {0}</ns0:source>
+        <ns0:target state="translated">Доверенные владельцы: {0}</ns0:target>
+        <ns0:note>0 - semi-colon separated owners list</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="TrustedSignerLogServiceIndex">
+        <ns0:source>Service Index: {0}</ns0:source>
+        <ns0:target state="translated">Индекс служб: {0}</ns0:target>
+        <ns0:note>0 - service index</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="TrustedSignerLogTitle">
+        <ns0:source>{0} [{1}]</ns0:source>
+        <ns0:target state="translated">{0} [{1}]</ns0:target>
+        <ns0:note>0 - signer name
 1 - signer type
-</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedHashAlgorithm">
-        <source>The hash algorithm is unsupported:  '{0}'.</source>
-        <target state="translated">Хэш-алгоритм не поддерживается: "{0}".</target>
-        <note>0 - hash algorithm</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedProject">
-        <source>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</source>
-        <target state="translated">Пропускается восстановление проекта "{0}". Возможно, в файле проекта есть ошибки или отсутствуют цели, необходимые для восстановления.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_ContentHash">
-        <source>Content hash: {0}</source>
-        <target state="translated">Хэш содержимого: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_Failed">
-        <source>Package signature validation failed.</source>
-        <target state="translated">Ошибка при проверке подписи пакета.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_FinishedWithErrors">
-        <source>Finished with {0} errors and {1} warnings.</source>
-        <target state="translated">Выполнено с ошибками ({0}) и предупреждениями ({1}).</target>
-        <note>{0} is the number of errors produced and {1} is the number of warnings.</note>
-      </trans-unit>
-      <trans-unit id="VerifyCommand_NotSupported">
-        <source>Package signature validation command is not supported on this platform.</source>
-        <target state="translated">Команда проверки подписи пакета не поддерживается на этой платформе.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_PackageIsNotValid">
-        <source>'{0}' is not a valid package file.</source>
-        <target state="translated">Файл "{0}" не является допустимым файлом пакета.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_Success">
-        <source>Successfully verified package '{0}'.</source>
-        <target state="translated">Пакет "{0}" успешно проверен.</target>
-        <note>0 - package id</note>
-      </trans-unit>
-      <trans-unit id="VerifyCommand_VerificationTypeNotSupported">
-        <source>Verification type not supported. Use only one of the following supported types: -All, -Signatures</source>
-        <target state="translated">Тип проверки не поддерживается. Используйте один из следующих поддерживаемых типов: -All, -Signatures</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerifyCommand_VerifyingPackage">
-        <source>Verifying {0}</source>
-        <target state="translated">Идет проверка {0}</target>
-        <note>{0} should be the package identity of the package to verify</note>
-      </trans-unit>
-      <trans-unit id="Vulnerability_Severity_Critical">
-        <source>critical</source>
-        <target state="translated">критический уровень</target>
-        <note>As in "This package has a critical severity vulnerability"</note>
-      </trans-unit>
-      <trans-unit id="Vulnerability_Severity_High">
-        <source>high</source>
-        <target state="translated">высокий уровень</target>
-        <note>As in "This package has a high severity vulnerability"</note>
-      </trans-unit>
-      <trans-unit id="Vulnerability_Severity_Low">
-        <source>low</source>
-        <target state="translated">низкий уровень</target>
-        <note>As in "This package has a low severity vulnerability"</note>
-      </trans-unit>
-      <trans-unit id="Vulnerability_Severity_Moderate">
-        <source>moderate</source>
-        <target state="translated">средний уровень</target>
-        <note>As in "This package has a moderate severity vulnerability"</note>
-      </trans-unit>
-      <trans-unit id="Vulnerability_Severity_unknown">
-        <source>unknown</source>
-        <target state="translated">неизвестно</target>
-        <note>As in "This package has a unknown severity vulnerability"</note>
-      </trans-unit>
-      <trans-unit id="WarningAsError">
-        <source>Warning As Error: {0}</source>
-        <target state="translated">Предупреждение как ошибка: {0}</target>
-        <note>{0} is a warning message</note>
-      </trans-unit>
-      <trans-unit id="Warning_AuditSourceWithoutVulnerabilityData">
-        <source>Audit source '{0}' did not provide any vulnerability data.</source>
-        <target state="translated">Источник аудита "{0}" не предоставил данных об уязвимости.</target>
-        <note>{0} is the source name</note>
-      </trans-unit>
-      <trans-unit id="Warning_CentralPackageManagement_MultipleSourcesWithoutPackageSourceMapping">
-        <source>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</source>
-        <target state="translated">В вашей конфигурации определены {0}источники пакетов. При использовании централизованного управления пакетами сопоставьте источники пакетов с сопоставлением источников пакетов (https://aka.ms/nuget-package-source-mapping) или укажите один источник пакетов. Определены следующие источники: {1}</target>
-        <note>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</note>
-      </trans-unit>
-      <trans-unit id="Warning_DuplicatePropertyKey">
-        <source>'{0}' key already exists in Properties collection. Overriding value.</source>
-        <target state="translated">Ключ "{0}" уже существует в коллекции свойств (Properties). Идет переопределение значения.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_FileExcludedByDefault">
-        <source>File '{0}' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline</source>
-        <target state="translated">Файл "{0}" не был добавлен в пакет. Файлы и папки, начинающиеся с "." или заканчивающиеся на ".nupkg", по умолчанию исключаются. Чтобы включить этот файл, используйте параметр -NoDefaultExcludes в командной строке.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_HttpServerUsage">
-        <source>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</source>
-        <target state="translated">Вы выполняете операцию ''{0}'' с источником ''HTTP'', ''{1}''. Доступ без HTTPS будет удален в будущей версии. Рассмотрите возможность перехода на источник ''HTTPS''.</target>
-        <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
-      </trans-unit>
-      <trans-unit id="Warning_List_HttpSource">
-        <source>The following is a 'Non-HTTPS' source: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Ниже приведен источник, не поддерживающий HTTPS: {0}
-Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
-        <note>{0} - list of server URIs</note>
-      </trans-unit>
-      <trans-unit id="Warning_List_HttpSources">
-        <source>The following are 'Non-HTTPS' sources: {0}
-NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Ниже приведены источники, не поддерживающие HTTPS: {0}
-Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
-        <note>{0} - list of server URIs</note>
-      </trans-unit>
-      <trans-unit id="Warning_MinVersionDoesNotExist">
-        <source>{0} depends on {1} but {2} was not found. {3} was resolved instead.</source>
-        <target state="translated">{0} зависит от {1}, но версия {2} не найдена. Использовалась версия {3}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_MinVersionNonInclusive">
-        <source>{0} does not provide an inclusive lower bound for dependency {1}. {2} was resolved instead.</source>
-        <target state="translated">{0} не задает включенную нижнюю границу для зависимости {1}. Использовалась версия {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_PackageWithKnownVulnerability">
-        <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
-        <target state="translated">У пакета "{0}" {1} есть известная уязвимость {3} (уровень серьезности: {2})</target>
-        <note>{0} - package id
+</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="UnsupportedHashAlgorithm">
+        <ns0:source>The hash algorithm is unsupported:  '{0}'.</ns0:source>
+        <ns0:target state="translated">Хэш-алгоритм не поддерживается: "{0}".</ns0:target>
+        <ns0:note>0 - hash algorithm</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="UnsupportedProject">
+        <ns0:source>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</ns0:source>
+        <ns0:target state="translated">Пропускается восстановление проекта "{0}". Возможно, в файле проекта есть ошибки или отсутствуют цели, необходимые для восстановления.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_ContentHash">
+        <ns0:source>Content hash: {0}</ns0:source>
+        <ns0:target state="translated">Хэш содержимого: {0}</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_Failed">
+        <ns0:source>Package signature validation failed.</ns0:source>
+        <ns0:target state="translated">Ошибка при проверке подписи пакета.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_FinishedWithErrors">
+        <ns0:source>Finished with {0} errors and {1} warnings.</ns0:source>
+        <ns0:target state="translated">Выполнено с ошибками ({0}) и предупреждениями ({1}).</ns0:target>
+        <ns0:note>{0} is the number of errors produced and {1} is the number of warnings.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_NotSupported">
+        <ns0:source>Package signature validation command is not supported on this platform.</ns0:source>
+        <ns0:target state="translated">Команда проверки подписи пакета не поддерживается на этой платформе.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_PackageIsNotValid">
+        <ns0:source>'{0}' is not a valid package file.</ns0:source>
+        <ns0:target state="translated">Файл "{0}" не является допустимым файлом пакета.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_Success">
+        <ns0:source>Successfully verified package '{0}'.</ns0:source>
+        <ns0:target state="translated">Пакет "{0}" успешно проверен.</ns0:target>
+        <ns0:note>0 - package id</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_VerificationTypeNotSupported">
+        <ns0:source>Verification type not supported. Use only one of the following supported types: -All, -Signatures</ns0:source>
+        <ns0:target state="translated">Тип проверки не поддерживается. Используйте один из следующих поддерживаемых типов: -All, -Signatures</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="VerifyCommand_VerifyingPackage">
+        <ns0:source>Verifying {0}</ns0:source>
+        <ns0:target state="translated">Идет проверка {0}</ns0:target>
+        <ns0:note>{0} should be the package identity of the package to verify</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Vulnerability_Severity_Critical">
+        <ns0:source>critical</ns0:source>
+        <ns0:target state="translated">критический уровень</ns0:target>
+        <ns0:note>As in "This package has a critical severity vulnerability"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Vulnerability_Severity_High">
+        <ns0:source>high</ns0:source>
+        <ns0:target state="translated">высокий уровень</ns0:target>
+        <ns0:note>As in "This package has a high severity vulnerability"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Vulnerability_Severity_Low">
+        <ns0:source>low</ns0:source>
+        <ns0:target state="translated">низкий уровень</ns0:target>
+        <ns0:note>As in "This package has a low severity vulnerability"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Vulnerability_Severity_Moderate">
+        <ns0:source>moderate</ns0:source>
+        <ns0:target state="translated">средний уровень</ns0:target>
+        <ns0:note>As in "This package has a moderate severity vulnerability"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Vulnerability_Severity_unknown">
+        <ns0:source>unknown</ns0:source>
+        <ns0:target state="translated">неизвестно</ns0:target>
+        <ns0:note>As in "This package has a unknown severity vulnerability"</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="WarningAsError">
+        <ns0:source>Warning As Error: {0}</ns0:source>
+        <ns0:target state="translated">Предупреждение как ошибка: {0}</ns0:target>
+        <ns0:note>{0} is a warning message</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_AuditSourceWithoutVulnerabilityData">
+        <ns0:source>Audit source '{0}' did not provide any vulnerability data.</ns0:source>
+        <ns0:target state="translated">Источник аудита "{0}" не предоставил данных об уязвимости.</ns0:target>
+        <ns0:note>{0} is the source name</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_CentralPackageManagement_MultipleSourcesWithoutPackageSourceMapping">
+        <ns0:source>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</ns0:source>
+        <ns0:target state="translated">В вашей конфигурации определены {0}источники пакетов. При использовании централизованного управления пакетами сопоставьте источники пакетов с сопоставлением источников пакетов (https://aka.ms/nuget-package-source-mapping) или укажите один источник пакетов. Определены следующие источники: {1}</ns0:target>
+        <ns0:note>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_DuplicatePropertyKey">
+        <ns0:source>'{0}' key already exists in Properties collection. Overriding value.</ns0:source>
+        <ns0:target state="translated">Ключ "{0}" уже существует в коллекции свойств (Properties). Идет переопределение значения.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_FileExcludedByDefault">
+        <ns0:source>File '{0}' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline</ns0:source>
+        <ns0:target state="translated">Файл "{0}" не был добавлен в пакет. Файлы и папки, начинающиеся с "." или заканчивающиеся на ".nupkg", по умолчанию исключаются. Чтобы включить этот файл, используйте параметр -NoDefaultExcludes в командной строке.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_HttpServerUsage">
+        <ns0:source>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</ns0:source>
+        <ns0:target state="translated">Вы выполняете операцию ''{0}'' с источником ''HTTP'', ''{1}''. Доступ без HTTPS будет удален в будущей версии. Рассмотрите возможность перехода на источник ''HTTPS''.</ns0:target>
+        <ns0:note>0 - The command name. Ex. Push/Delete. 1 - server URI.</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_List_HttpSource">
+        <ns0:source>The following is a 'Non-HTTPS' source: {0}
+NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</ns0:source>
+        <ns0:target state="translated">Ниже приведен источник, не поддерживающий HTTPS: {0}
+Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</ns0:target>
+        <ns0:note>{0} - list of server URIs</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_List_HttpSources">
+        <ns0:source>The following are 'Non-HTTPS' sources: {0}
+NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</ns0:source>
+        <ns0:target state="translated">Ниже приведены источники, не поддерживающие HTTPS: {0}
+Для NuGet требуются источники HTTPS. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</ns0:target>
+        <ns0:note>{0} - list of server URIs</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_MinVersionDoesNotExist">
+        <ns0:source>{0} depends on {1} but {2} was not found. {3} was resolved instead.</ns0:source>
+        <ns0:target state="translated">{0} зависит от {1}, но версия {2} не найдена. Использовалась версия {3}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_MinVersionNonInclusive">
+        <ns0:source>{0} does not provide an inclusive lower bound for dependency {1}. {2} was resolved instead.</ns0:source>
+        <ns0:target state="translated">{0} не задает включенную нижнюю границу для зависимости {1}. Использовалась версия {2}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_PackageWithKnownVulnerability">
+        <ns0:source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</ns0:source>
+        <ns0:target state="translated">У пакета "{0}" {1} есть известная уязвимость {3} (уровень серьезности: {2})</ns0:target>
+        <ns0:note>{0} - package id
 {1} - package version
 {2} - severity, for example low, moderate, high, or critical
-{3} - URL for more info on the known vulnerability</note>
-      </trans-unit>
-      <trans-unit id="Warning_ProjectDependencyMissingLowerBound">
-        <source>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</source>
-        <target state="translated">Зависимость проекта {0} не содержит включенную нижнюю границу. Включите нижнюю границу в версию зависимости, чтобы обеспечить согласованные результаты восстановления.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_ProjectDependencyMissingVersion">
-        <source>Project dependency '{0}' does not specify a version. Include a version for the dependency to ensure consistent restore results.</source>
-        <target state="translated">Зависимость проекта "{0}" не указывает версию. Включите версию для зависимости, чтобы обеспечить согласованные результаты восстановления.</target>
-        <note>0 - package id</note>
-      </trans-unit>
-      <trans-unit id="Warning_VersionAboveUpperBound">
-        <source>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</source>
-        <target state="translated">Версия обнаруженного пакета нарушает ограничение зависимости: {0} требуется {1}, но в результате разрешения получена версия {2}.</target>
-        <note />
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
+{3} - URL for more info on the known vulnerability</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_ProjectDependencyMissingLowerBound">
+        <ns0:source>Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.</ns0:source>
+        <ns0:target state="translated">Зависимость проекта {0} не содержит включенную нижнюю границу. Включите нижнюю границу в версию зависимости, чтобы обеспечить согласованные результаты восстановления.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_ProjectDependencyMissingVersion">
+        <ns0:source>Project dependency '{0}' does not specify a version. Include a version for the dependency to ensure consistent restore results.</ns0:source>
+        <ns0:target state="translated">Зависимость проекта "{0}" не указывает версию. Включите версию для зависимости, чтобы обеспечить согласованные результаты восстановления.</ns0:target>
+        <ns0:note>0 - package id</ns0:note>
+      </ns0:trans-unit>
+      <ns0:trans-unit id="Warning_VersionAboveUpperBound">
+        <ns0:source>Detected package version outside of dependency constraint: {0} requires {1} but version {2} was resolved.</ns0:source>
+        <ns0:target state="translated">Версия обнаруженного пакета нарушает ограничение зависимости: {0} требуется {1}, но в результате разрешения получена версия {2}.</ns0:target>
+        <ns0:note />
+      </ns0:trans-unit>
+    </ns0:body>
+  </ns0:file>
+</ns0:xliff>
