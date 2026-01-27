@@ -35,14 +35,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             var result = new Dictionary<string, List<DependencyNode>?>(StringComparer.OrdinalIgnoreCase);
             bool foundPackage = false;
             bool useTargetAlias = assetsFile.PackageSpec.TargetFrameworks.All(tf => !string.IsNullOrEmpty(tf.TargetAlias));
-            if (!useTargetAlias &&
-            (
-                assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks.Count != 1 ||
-                assetsFile.PackageSpec.TargetFrameworks.Count != 1 ||
-                assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.Count != 1
-            ))
+            if (!useTargetAlias
+                && (assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks.Count != 1
+                    || assetsFile.PackageSpec.TargetFrameworks.Count != 1
+                    || assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.Count != 1
+                ))
             {
-                throw new Exception(Strings.WhyCommand_Error_InconsistentAssetsFile);
+                throw new FileFormatException(Strings.WhyCommand_Error_InconsistentAssetsFile);
             }
 
             foreach (var target in assetsFile.Targets)
@@ -63,8 +62,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     directProjectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks[0].ProjectReferences;
                 }
 
-                if (userInputFrameworks.Count > 0 &&
-                    !userInputFrameworks.Any(f => string.Equals(targetAlias, f, StringComparison.OrdinalIgnoreCase)))
+                if (userInputFrameworks.Count > 0
+                    && !userInputFrameworks.Any(f => string.Equals(targetAlias, f, StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
