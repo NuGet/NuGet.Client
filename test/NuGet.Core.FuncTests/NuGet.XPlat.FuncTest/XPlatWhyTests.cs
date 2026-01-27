@@ -150,6 +150,55 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public async Task WhyCommand_WithFloatingVersion_ShowsFloatingVersion()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageA = XPlatTestUtils.CreatePackage("PackageA", "1.2.3");
+
+            project.AddPackageToFramework(projectFramework, packageA);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageA.Id, "1.*", project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+
+            var console = new TestConsole();
+            console.Width(100);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageA.Id,
+                    [projectFramework],
+                    console,
+                    CancellationToken.None);
+
+            // Act
+            var result = await WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result);
+
+            string expected = string.Join("\n", (string[])
+                [
+                "Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageA':",
+                "",
+                "  [net472]",
+                "  └── PackageA@1.2.3 (>= 1.*)",
+                ]);
+            string actual = string.Join("\n", console.Lines.Select(line => line.TrimEnd()));
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
         public async Task WhyCommand_ProjectHasNoDependencyOnTargetPackage_PathDoesNotExist()
         {
             // Arrange

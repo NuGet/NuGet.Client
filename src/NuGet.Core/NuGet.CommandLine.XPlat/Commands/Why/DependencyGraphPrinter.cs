@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             if (node is PackageNode pkgNode)
             {
                 string resolved = pkgNode.ResolvedVersion.OriginalVersion ?? pkgNode.ResolvedVersion.ToString();
-                string requested = pkgNode.RequestedVersion.ToString("p", VersionRangeFormatter.Instance);
+                string requested = pkgNode.RequestedVersion.ToString("f", VersionRangeFormatter.Instance);
                 text = $"{node.Id}@{resolved} ({requested})";
             }
             else
