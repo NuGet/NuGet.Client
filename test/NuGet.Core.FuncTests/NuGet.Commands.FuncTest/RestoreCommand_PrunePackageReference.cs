@@ -2382,6 +2382,105 @@ namespace NuGet.Commands.FuncTest
             restoreResult.LockFile.Targets[0].Libraries[1].Dependencies.Should().HaveCount(1);
         }
 
+        // P -> A 1.0.0 -> B 2.0.0
+        // Prune B (,2.0.100]
+        // Run restore with lock file
+        // Run restore in locked mode - should succeed
+        // Change B pruning to (,1.0.100]
+        // Run restore in locked mode - should fail with NU1004
+        [Fact]
+        public async Task RestoreCommand_WithLockFileAndChangingPruningVersion_WithLockedMode_FailsWithNU1004()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "2.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                new SimpleTestPackageContext("packageB", "1.5.0"));
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+                ""packagesToPrune"": {
+                    ""packageB"" : ""(,2.0.100]"" 
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
+
+            // Pre-Conditions: Run restore with lock file enabled and B pruned with (,2.0.100]
+            var setupResult = await RunRestoreAsync(pathContext, projectSpec);
+            setupResult.Success.Should().BeTrue();
+            await setupResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+            setupResult.LockFile.Targets.Should().HaveCount(1);
+            setupResult.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            setupResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            setupResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            File.Delete(setupResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
+
+            setupResult._newPackagesLockFile.Should().NotBeNull();
+            setupResult._newPackagesLockFile.Targets.Should().HaveCount(1);
+            setupResult._newPackagesLockFile.Targets[0].Dependencies.Should().HaveCount(1);
+            setupResult._newPackagesLockFile.Targets[0].Dependencies[0].Id.Should().Be("packageA");
+            setupResult._newPackagesLockFile.Targets[0].Dependencies[0].Dependencies.Should().BeEmpty();
+
+            // Run restore in locked mode with the same pruning version - should succeed
+            projectSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
+            var testLogger = new TestLogger();
+            var lockedResult = await RunRestoreAsync(pathContext, testLogger, projectSpec);
+            lockedResult.Success.Should().BeTrue(because: testLogger.ShowMessages());
+            lockedResult.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            lockedResult.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            lockedResult.LockFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            File.Delete(lockedResult.LockFilePath); // Delete the assets file to avoid assets file library caching.
+
+            // Change the pruning version to (,1.0.100] - this should not prune B 2.0.0 anymore
+            var rootProjectWithDifferentPruning = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                },
+                ""packagesToPrune"": {
+                    ""packageB"" : ""(,1.0.100]"" 
+                }
+            }
+          }
+        }";
+
+            var projectSpecWithChangedPruning = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProjectWithDifferentPruning);
+            projectSpecWithChangedPruning.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: true);
+
+            // Run restore in locked mode with the changed pruning version - should fail with NU1004
+            var testLogger2 = new TestLogger();
+            var failedResult = await RunRestoreAsync(pathContext, testLogger2, projectSpecWithChangedPruning);
+            failedResult.Success.Should().BeFalse(because: testLogger2.ShowMessages());
+            failedResult.LockFile.LogMessages.Should().HaveCount(1);
+            failedResult.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1004);
+        }
+
         [Fact]
         public async Task RestoreCommand_WithLockFileAndPrunablePackage_WhenPackageIsRemoved_Fails()
         {

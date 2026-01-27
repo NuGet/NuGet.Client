@@ -629,6 +629,7 @@ namespace NuGet.Commands
         {
             try
             {
+                await EnsureResource(cancellationToken);
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
