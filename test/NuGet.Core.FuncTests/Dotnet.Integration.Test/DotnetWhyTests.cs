@@ -277,13 +277,13 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, Constants.ProjectTargetFramework);
-            var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, Constants.ProjectTargetFramework);
-            var projectC = XPlatTestUtils.CreateProject("ProjectC", pathContext, Constants.ProjectTargetFramework);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, TestConstants.ProjectTargetFramework);
+            var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, TestConstants.ProjectTargetFramework);
+            var projectC = XPlatTestUtils.CreateProject("ProjectC", pathContext, TestConstants.ProjectTargetFramework);
 
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", Constants.ProjectTargetFramework);
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", TestConstants.ProjectTargetFramework);
 
-            projectA.AddPackageToFramework(Constants.ProjectTargetFramework, packageX);
+            projectA.AddPackageToFramework(TestConstants.ProjectTargetFramework, packageX);
             projectA.Save();
             projectB.AddProjectToAllFrameworks(projectA);
             projectB.Save();
@@ -309,7 +309,7 @@ namespace Dotnet.Integration.Test
                 [
                 "Project 'ProjectC' has the following dependency graph(s) for 'PackageX':",
                 "",
-                $"  [{Constants.ProjectTargetFramework}]                                                                     ",
+                $"  [{TestConstants.ProjectTargetFramework}]                                                                     ",
                 "  └── ProjectB                                                                  ",
                 "      └── ProjectA                                                              ",
                 "          └── PackageX@1.0.0 (>= 1.0.0)                                         ",
