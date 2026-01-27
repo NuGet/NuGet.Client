@@ -4,3 +4,5 @@
 # For more on how to customize the CODEOWNERS file - https://help.github.com/en/articles/about-code-owners
 *       @NuGet/nuget-client
 *       @NuGet/nuget-client-pull-request-auto-assignment
+
+/eng/dotnet-build/ @dotnet/source-build @dotnet/product-construction
