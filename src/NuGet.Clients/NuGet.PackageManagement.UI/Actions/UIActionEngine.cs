@@ -489,7 +489,7 @@ namespace NuGet.PackageManagement.UI
                                 actions,
                                 cancellationToken);
                         }
-                        catch
+                        catch (Exception)
                         {
                             // If installation fails, revert the package source mappings that were added
                             sourceMappingProvider.SavePackageSourceMappings(existingPackageSourceMappingSourceItems);
