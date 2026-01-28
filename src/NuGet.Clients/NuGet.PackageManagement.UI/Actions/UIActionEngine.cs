@@ -474,6 +474,10 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        await projectManagerService.ExecuteActionsAsync(
+                            actions,
+                            cancellationToken);
+
                         PreviewResult? sourceMappingPreviewResult = results.SingleOrDefault(result => result.NewSourceMappings != null);
                         PackageSourceMappingUtility.ConfigureNewPackageSourceMappings(
                             userAction,
@@ -482,10 +486,6 @@ namespace NuGet.PackageManagement.UI
                             existingPackageSourceMappingSourceItems,
                             out countCreatedTopLevelSourceMappings,
                             out countCreatedTransitiveSourceMappings);
-
-                        await projectManagerService.ExecuteActionsAsync(
-                            actions,
-                            cancellationToken);
 
                         string[] projectIds = actions
                             .Select(action => action.ProjectId)
