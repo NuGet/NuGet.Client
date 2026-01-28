@@ -2052,12 +2052,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 packageZ2
             );
             
-            // Create project.json with central package management and transitive pinning
             var project1Json = @"
             {
-              ""version"": ""1.0.0"",
               ""restore"": {
-                ""projectUniqueName"": ""TestProject"",
                 ""centralPackageVersionsManagementEnabled"": true,
                 ""CentralPackageTransitivePinningEnabled"": true
               },
@@ -2084,12 +2081,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
               }
             }";
             
-            var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+            var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, pathContext.SolutionRoot, project1Json);
             
-            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-            {
-                LockFilePath = Path.Combine(projectPath, "project.assets.json")
-            };
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger);
             
             var command = new RestoreCommand(request);
             
