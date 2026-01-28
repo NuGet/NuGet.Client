@@ -46,21 +46,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
             foreach (var target in assetsFile.Targets)
             {
-                string targetAlias;
-                ImmutableArray<LibraryDependency> directPackages;
-                IList<ProjectRestoreReference> directProjectReferences;
-                if (useTargetAlias)
-                {
-                    targetAlias = target.TargetAlias;
-                    directPackages = assetsFile.PackageSpec.GetTargetFramework(targetAlias).Dependencies;
-                    directProjectReferences = assetsFile.PackageSpec.GetRestoreMetadataFramework(targetAlias).ProjectReferences;
-                }
-                else
-                {
-                    targetAlias = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks[0];
-                    directPackages = assetsFile.PackageSpec.TargetFrameworks[0].Dependencies;
-                    directProjectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks[0].ProjectReferences;
-                }
+                (string targetAlias,
+                    ImmutableArray<LibraryDependency> directPackages,
+                    IList<ProjectRestoreReference> directProjectReferences)
+                    = GetTargetFrameworkData(useTargetAlias, target, assetsFile.PackageSpec);
 
                 if (userInputFrameworks.Count > 0
                     && !userInputFrameworks.Any(f => string.Equals(targetAlias, f, StringComparison.OrdinalIgnoreCase)))
@@ -68,24 +57,40 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     continue;
                 }
 
+                LockFileTargetLibrary projectAsLibrary = ConvertToLibrary(directPackages, directProjectReferences, assetsFile, target);
+
+                DependencyNode? projectNode = CreateNode(target, targetPackage, projectAsLibrary, VersionRange.All);
+
                 string displayName = string.IsNullOrEmpty(target.RuntimeIdentifier)
                     ? targetAlias
                     : $"{targetAlias}/{target.RuntimeIdentifier}";
-
-                LockFileTargetLibrary projectAsLibrary = ConvertToLibrary(directPackages, directProjectReferences, assetsFile, target);
-
-                var graphBuilder = new TargetGraphBuilder
-                {
-                    Target = target,
-                    FilterPackage = targetPackage
-                };
-                DependencyNode? projectNode = graphBuilder.CreateNode(projectAsLibrary, VersionRange.All);
+                result[displayName] = projectNode?.Children.ToList();
 
                 foundPackage |= projectNode != null;
-                result[displayName] = projectNode?.Children.ToList();
             }
 
             return foundPackage ? result : null;
+
+            static (string targetAlias, ImmutableArray<LibraryDependency> directPackages, IList<ProjectRestoreReference> directProjectReferences)
+                GetTargetFrameworkData(bool useTargetAlias, LockFileTarget target, PackageSpec packageSpec)
+            {
+                string targetAlias;
+                ImmutableArray<LibraryDependency> directPackages;
+                IList<ProjectRestoreReference> directProjectReferences;
+                if (useTargetAlias)
+                {
+                    targetAlias = target.TargetAlias;
+                    directPackages = packageSpec.GetTargetFramework(targetAlias).Dependencies;
+                    directProjectReferences = packageSpec.GetRestoreMetadataFramework(targetAlias).ProjectReferences;
+                }
+                else
+                {
+                    targetAlias = packageSpec.RestoreMetadata.OriginalTargetFrameworks[0];
+                    directPackages = packageSpec.TargetFrameworks[0].Dependencies;
+                    directProjectReferences = packageSpec.RestoreMetadata.TargetFrameworks[0].ProjectReferences;
+                }
+                return (targetAlias, directPackages, directProjectReferences);
+            }
         }
 
         private static LockFileTargetLibrary ConvertToLibrary(
@@ -120,62 +125,79 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             LockFileTargetLibrary project = new LockFileTargetLibrary
             {
                 Name = assetsFile.PackageSpec.Name,
-                Type = "project",
+                Type = LibraryType.Project,
                 Dependencies = dependencies
             };
 
             return project;
         }
 
-        private struct TargetGraphBuilder
+        /// <summary>
+        /// Convert the flat list of LockFileTargetLibrary into a display graph.
+        /// </summary>
+        /// <param name="target">The assets file target for the current target framework, used to look up the resolved version and dependencies.</param>
+        /// <param name="filterPackage">The package that needs to be displayed</param>
+        /// <param name="library"> The current node in the package graph to convert</param>
+        /// <param name="requestedVersion">The requested version of the current node.</param>
+        /// <returns>If the current node's package id matches the filter package id, or the filter package is a dependency of the current node, then
+        /// a graph node instance is returned. Otherwise null is returned to signal that this part of the package graph does not contribute
+        /// to the output display.</returns>
+        public static DependencyNode? CreateNode(LockFileTarget target, string filterPackage, LockFileTargetLibrary library, VersionRange requestedVersion)
         {
-            public required LockFileTarget Target { get; init; }
-            public required string FilterPackage { get; init; }
-
-            public DependencyNode? CreateNode(LockFileTargetLibrary library, VersionRange requestedVersion)
+            if (filterPackage.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
             {
-                HashSet<DependencyNode>? children = null;
+                // NuGet doesn't allow circular dependencies, and why only shows the graph up to the filter package,
+                // so there's no point checking dependencies.
+                return new PackageNode(
+                    library.Name!,
+                    library.Version!,
+                    requestedVersion,
+                    []);
+            }
 
-                foreach (var dependency in library.Dependencies)
+            HashSet<DependencyNode>? children = null;
+
+            foreach (var dependency in library.Dependencies)
+            {
+                LockFileTargetLibrary? dependencyLibrary = target.Libraries.FirstOrDefault(l => l.Name!.Equals(dependency.Id, StringComparison.OrdinalIgnoreCase));
+                if (dependencyLibrary is null)
                 {
-                    LockFileTargetLibrary? dependencyLibrary = Target.Libraries.FirstOrDefault(l => l.Name!.Equals(dependency.Id, StringComparison.OrdinalIgnoreCase));
-                    if (dependencyLibrary is null)
+                    // When a package reference suppresses a package with PrivateAssets, but the same package is also a dependency of another
+                    // package, the assets file will list the suppressed package as a dependency of a library node, but will not create a library node
+                    // for the package itself.  See https://github.com/NuGet/Home/issues/14698
+                    continue;
+                }
+                DependencyNode? childNode = CreateNode(target, filterPackage, dependencyLibrary, dependency.VersionRange);
+                if (childNode is not null)
+                {
+                    if (children is null)
                     {
-                        // This feels like an error, but unless https://github.com/NuGet/Home/issues/14698 is fixed, we have to ignore it.
-                        continue;
+                        children = new HashSet<DependencyNode>();
                     }
-                    DependencyNode? childNode = CreateNode(dependencyLibrary, dependency.VersionRange);
-                    if (childNode is not null)
-                    {
-                        if (children is null)
-                        {
-                            children = new HashSet<DependencyNode>();
-                        }
-                        children.Add(childNode);
-                    }
+                    children.Add(childNode);
                 }
+            }
 
-                if (!FilterPackage.Equals(library.Name, StringComparison.OrdinalIgnoreCase)
-                    && children is null)
-                {
-                    return null;
-                }
+            // Why only show the parts of the graph that lead to the target package.
+            if (children is null)
+            {
+                return null;
+            }
 
-                if (library.Type!.Equals("package", StringComparison.OrdinalIgnoreCase))
-                {
-                    NuGetVersion resolvedVersion = library.Version!;
-                    var newNode = new PackageNode(
-                        library.Name!,
-                        resolvedVersion,
-                        requestedVersion,
-                        children ?? []);
-                    return newNode;
-                }
-                else
-                {
-                    var newNode = new ProjectNode(library.Name!, children ?? []);
-                    return newNode;
-                }
+            if (library.Type!.Equals(LibraryType.Package, StringComparison.OrdinalIgnoreCase))
+            {
+                NuGetVersion resolvedVersion = library.Version!;
+                var newNode = new PackageNode(
+                    library.Name!,
+                    resolvedVersion,
+                    requestedVersion,
+                    children ?? []);
+                return newNode;
+            }
+            else
+            {
+                var newNode = new ProjectNode(library.Name!, children ?? []);
+                return newNode;
             }
         }
     }
