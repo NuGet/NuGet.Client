@@ -474,10 +474,6 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        await projectManagerService.ExecuteActionsAsync(
-                            actions,
-                            cancellationToken);
-
                         PreviewResult? sourceMappingPreviewResult = results.SingleOrDefault(result => result.NewSourceMappings != null);
                         PackageSourceMappingUtility.ConfigureNewPackageSourceMappings(
                             userAction,
@@ -486,6 +482,19 @@ namespace NuGet.PackageManagement.UI
                             existingPackageSourceMappingSourceItems,
                             out countCreatedTopLevelSourceMappings,
                             out countCreatedTransitiveSourceMappings);
+
+                        try
+                        {
+                            await projectManagerService.ExecuteActionsAsync(
+                                actions,
+                                cancellationToken);
+                        }
+                        catch
+                        {
+                            // If installation fails, revert the package source mappings that were added
+                            sourceMappingProvider.SavePackageSourceMappings(existingPackageSourceMappingSourceItems);
+                            throw;
+                        }
 
                         string[] projectIds = actions
                             .Select(action => action.ProjectId)
