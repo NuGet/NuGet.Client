@@ -2099,7 +2099,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             
             var errorMessage = errorMessages.First().Message;
             Assert.Contains("transitively pinned centrally managed package", errorMessage);
-            Assert.Contains("Update the centrally managed package version in Directory.Packages.props", errorMessage);
+            Assert.Contains("Update the centrally managed package version to a higher version", errorMessage);
         }
 
         [Theory]
