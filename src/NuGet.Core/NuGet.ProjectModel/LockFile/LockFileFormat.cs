@@ -194,7 +194,7 @@ namespace NuGet.ProjectModel
 
                     jsonObjectWriter.WriteObjectStart();
 
-                    PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter, hashing: false, EnvironmentVariableWrapper.Instance, useLegacyWriter: lockFile.Version <= 3);
+                    PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter, hashing: false, EnvironmentVariableWrapper.Instance, useLegacyWriter: lockFile.Version <= LegacyVersion);
 
                     jsonObjectWriter.WriteObjectEnd();
                 }

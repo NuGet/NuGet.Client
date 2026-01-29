@@ -196,7 +196,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (lockFile.Version == 3)
+            if (lockFile.Version == LockFileFormat.LegacyVersion)
             {
                 // Populate the alias at read time. This allows readers to use the alias to find targets regardless of what the underlying assets file format is.
                 foreach (var target in lockFile.Targets)
@@ -205,7 +205,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (lockFile.Version >= 4)
+            if (lockFile.Version >= LockFileFormat.AliasedVersion)
             {
                 foreach (var target in lockFile.Targets)
                 {
