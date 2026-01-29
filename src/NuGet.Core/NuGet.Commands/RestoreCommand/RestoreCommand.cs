@@ -1681,7 +1681,7 @@ namespace NuGet.Commands
             bool success = true;
 
             // Check for duplicate frameworks. The new dependency resolver supports aliasing, but the legacy one does not.
-            if (!await ValidateNoDuplicateFrameworks(_request, _logger))
+            if (await ErrorForDuplicateFrameworks(_request, _logger))
             {
                 success = false;
                 return (success, []);
@@ -1882,7 +1882,7 @@ namespace NuGet.Commands
 
             if (shouldDoDuplicatesCheck)
             {
-                if (!await ValidateNoDuplicateFrameworks(_request, _logger))
+                if (await ErrorForDuplicateFrameworks(_request, _logger))
                 {
                     success = false;
                     return (success, []);
@@ -1981,17 +1981,17 @@ namespace NuGet.Commands
             return (success, graphs);
         }
 
-        // Validate there are no duplicate frameworks. Log an error if there are run.
-        // Returns true if no duplicates exist, false otherwise.
-        private static async Task<bool> ValidateNoDuplicateFrameworks(RestoreRequest request, ILogger logger)
+        // Check for duplicate frameworks and log an error if found.
+        // Returns true if duplicates exist, false otherwise.
+        private static async Task<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
         {
             if (request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
                 await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         internal static List<ExternalProjectReference> GetProjectReferences(RestoreRequest request)
