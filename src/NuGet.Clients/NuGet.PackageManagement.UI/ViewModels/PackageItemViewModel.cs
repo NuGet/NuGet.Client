@@ -54,6 +54,13 @@ namespace NuGet.PackageManagement.UI
             _transitiveOrigins = [];
         }
 
+        /// <summary>
+        /// Gets the current cancellation token for this view model.
+        /// This should be called at entry points (e.g., UI thread) before starting async work,
+        /// and the token should be passed through all async method calls.
+        /// </summary>
+        internal CancellationToken GetCancellationToken() => _cancellationTokenSource.Token;
+
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 
@@ -492,36 +499,24 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(CancellationToken cancellationToken)
         {
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, cancellationToken);
         }
 
-        // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
-        // and there are tests that don't mock IServiceBroker and INuGetSearchService. It's called via a jtf.RunAsync that is
-        // not awaited. By keeping this AsyncLazy, we ensure that the exception is thrown in an async continuation. Whereas
-        // if we get rid of it and have GetDetailedPackageSearchMetadataAsync call _searchService directly, then the exception
-        // will not be thrown in a continuation, and the test will fail.
-        private Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> _detailedPackageSearchMetadata =>
-            new Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>(async () =>
-            {
-                var identity = new PackageIdentity(Id, Version);
-                return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-            });
-        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync()
+        public async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync(CancellationToken cancellationToken)
         {
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-            return _detailedPackageSearchMetadata.Value;
-#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
+            var identity = new PackageIdentity(Id, Version);
+            return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
         }
 
         public AlternatePackageMetadataContextInfo AlternatePackage => (_packageModel as IDeprecationCapable)?.AlternatePackage;
@@ -689,10 +684,10 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ReloadPackageVersionsAsync()
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken = GetCancellationToken();
             try
             {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync(cancellationToken);
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
@@ -746,7 +741,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task RunOperationAsync(Func<CancellationToken, Task> func)
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken = GetCancellationToken();
             try
             {
                 await func(cancellationToken);
@@ -825,14 +820,14 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
         {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken cancellationToken = GetCancellationToken();
 
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, cancellationToken))
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
-        public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
+        public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, CancellationToken cancellationToken, bool clearCache = false)
         {
             // Get the maximum version installed in any target project/solution
             InstalledVersion = installedPackages
@@ -850,7 +845,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(Status));
         }
 
-        public async Task UpdateTransitivePackageStatusAsync()
+        public async Task UpdateTransitivePackageStatusAsync(CancellationToken cancellationToken)
         {
             InstalledVersion = Version;
 
