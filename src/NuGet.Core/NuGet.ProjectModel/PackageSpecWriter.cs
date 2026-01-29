@@ -225,15 +225,15 @@ namespace NuGet.ProjectModel
                 var frameworkSorter = NuGetFrameworkSorter.Instance;
                 foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.TargetAlias, StringComparer.OrdinalIgnoreCase))
                 {
-                    string frameworkName = useTargetFrameworkAsKey || string.IsNullOrEmpty(framework.TargetAlias)
+                    string frameworkHeader = useTargetFrameworkAsKey || string.IsNullOrEmpty(framework.TargetAlias)
                         ? framework.FrameworkName.GetShortFolderName()
                         : framework.TargetAlias;
 
-                    if (!frameworkNames.Contains(frameworkName))
+                    if (!frameworkNames.Contains(frameworkHeader))
                     {
-                        frameworkNames.Add(frameworkName);
+                        frameworkNames.Add(frameworkHeader);
 
-                        writer.WriteObjectStart(frameworkName);
+                        writer.WriteObjectStart(frameworkHeader);
 
                         SetValue(writer, "framework", framework.FrameworkName.GetShortFolderName());
                         SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
@@ -515,7 +515,7 @@ namespace NuGet.ProjectModel
             writer.WriteArrayEnd();
         }
 
-        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool hashing, bool useLegacyWriter = true)
+        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool hashing, bool useTargetFrameworkAsKey)
         {
             if (frameworks.Count > 0)
             {
@@ -523,9 +523,10 @@ namespace NuGet.ProjectModel
                 var frameworkSorter = NuGetFrameworkSorter.Instance;
                 foreach (var framework in frameworks.OrderBy(c => c.TargetAlias, StringComparer.OrdinalIgnoreCase))
                 {
-                    string frameworkHeader = !useLegacyWriter && !string.IsNullOrEmpty(framework.TargetAlias)
-                        ? framework.TargetAlias
-                        : framework.FrameworkName.GetShortFolderName();
+                    string frameworkHeader = useTargetFrameworkAsKey || string.IsNullOrEmpty(framework.TargetAlias)
+                        ? framework.FrameworkName.GetShortFolderName()
+                        : framework.TargetAlias;
+
                     writer.WriteObjectStart(frameworkHeader);
                     SetValue(writer, "framework", framework.FrameworkName.GetShortFolderName());
                     SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);

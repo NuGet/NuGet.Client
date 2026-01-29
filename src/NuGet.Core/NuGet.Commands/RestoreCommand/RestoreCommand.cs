@@ -1681,11 +1681,8 @@ namespace NuGet.Commands
             bool success = true;
 
             // Check for duplicate frameworks. The new dependency resolver supports aliasing, but the legacy one does not.
-            if (_request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+            if (!await ValidateNoDuplicateFrameworks(_request, _logger))
             {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, _request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
-
                 success = false;
                 return (success, []);
             }
@@ -1877,7 +1874,6 @@ namespace NuGet.Commands
                 return (success, []);
             }
 
-
             bool shouldDoDuplicatesCheck = _request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
                     !SdkAnalysisLevelMinimums.IsEnabled(
                     _request.Project.RestoreMetadata.SdkAnalysisLevel,
@@ -1886,11 +1882,8 @@ namespace NuGet.Commands
 
             if (shouldDoDuplicatesCheck)
             {
-                if (_request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(_request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+                if (await ValidateNoDuplicateFrameworks(_request, _logger))
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, _request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
-
                     success = false;
                     return (success, []);
                 }
@@ -1986,6 +1979,19 @@ namespace NuGet.Commands
             }
 
             return (success, graphs);
+        }
+
+        // Validate there are no duplicate frameworks. Log an error if there are run.
+        // Returns true if no duplicates exist, false otherwise.
+        private static async Task<bool> ValidateNoDuplicateFrameworks(RestoreRequest request, ILogger logger)
+        {
+            if (request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+                return false;
+            }
+            return true;
         }
 
         internal static List<ExternalProjectReference> GetProjectReferences(RestoreRequest request)
