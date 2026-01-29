@@ -23,6 +23,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -1985,12 +1986,23 @@ namespace NuGet.Commands
         // Returns true if duplicates exist, false otherwise.
         private static async Task<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
         {
-            if (request.Project.TargetFrameworks.Count != new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Select(e => e.FrameworkName)).Count)
+            if (request.Project.TargetFrameworks.Count <= 1)
             {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
-                await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
-                return true;
+                return false;
             }
+
+            var seenFrameworks = new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Count);
+            for (int i = 0; i < request.Project.TargetFrameworks.Count; i++)
+            {
+                if (!seenFrameworks.Add(request.Project.TargetFrameworks[i].FrameworkName))
+                {
+                    // Duplicate found - log error and return immediately
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+                    return true;
+                }
+            }
+
             return false;
         }
 
