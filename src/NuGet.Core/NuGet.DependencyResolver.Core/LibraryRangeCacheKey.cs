@@ -17,7 +17,7 @@ namespace NuGet.DependencyResolver
         public LibraryRangeCacheKey(LibraryRange range, NuGetFramework framework, string? alias)
         {
             Framework = framework;
-            Alias = alias ?? string.Empty;
+            Alias = alias ?? string.Empty; // alias may be passed as both null or empty and we need to treat them equivalently.
             LibraryRange = range;
         }
 

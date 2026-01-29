@@ -95,7 +95,7 @@ namespace NuGet.ProjectModel
         /// <param name="project">The project spec in question.</param>
         /// <param name="targetFramework">The pivot target framework.</param>
         /// <param name="targetAlias">The alias for disambiguation</param>
-        public static TargetFrameworkInformation GetNearestTargetFramework(this PackageSpec project, NuGetFramework targetFramework, string targetAlias)
+        public static TargetFrameworkInformation GetNearestTargetFramework(this PackageSpec project, NuGetFramework targetFramework, string? targetAlias)
         {
             TargetFrameworkInformation? result = null;
             List<TargetFrameworkInformation>? frameworks = null;
