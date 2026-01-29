@@ -1882,7 +1882,7 @@ namespace NuGet.Commands
 
             if (shouldDoDuplicatesCheck)
             {
-                if (await ValidateNoDuplicateFrameworks(_request, _logger))
+                if (!await ValidateNoDuplicateFrameworks(_request, _logger))
                 {
                     success = false;
                     return (success, []);
