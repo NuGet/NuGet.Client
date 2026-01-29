@@ -93,7 +93,7 @@ namespace NuGet.DependencyResolver
                 libraryRange,
                 framework,
                 runtimeName,
-                string.Empty,
+                targetAlias: null,
                 _context,
                 CancellationToken.None);
 
@@ -171,7 +171,7 @@ namespace NuGet.DependencyResolver
                                     dependencyLibraryRange,
                                     framework,
                                     runtimeName,
-                                    string.Empty,
+                                    targetAlias: null,
                                     _context,
                                     CancellationToken.None);
 

@@ -216,11 +216,13 @@ namespace NuGet.Commands
                 throw RestoreSpecException.Create(message, files);
             }
 
+            List<string> aliases = (spec.TargetFrameworks.Count > 1 || spec.RestoreMetadata.TargetFrameworks.Count > 1) ?
+                spec.TargetFrameworks.Select(e => e.TargetAlias).ToList()
+                : [];
+
             //OriginalTargetFrameworks must match the aliases.
             if (spec.RestoreMetadata.TargetFrameworks.Count > 1)
             {
-                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
-
                 if (!EqualityUtility.OrderedEquals(aliases, spec.RestoreMetadata.OriginalTargetFrameworks, e => e, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase))
                 {
                     var message = string.Format(
@@ -235,7 +237,6 @@ namespace NuGet.Commands
 
             if (spec.TargetFrameworks.Count > 1)
             {
-                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
                 var uniqueAliases = new HashSet<string>(aliases, StringComparer.OrdinalIgnoreCase);
 
                 if (uniqueAliases.Count != aliases.Count)

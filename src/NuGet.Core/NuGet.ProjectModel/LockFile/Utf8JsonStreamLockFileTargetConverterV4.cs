@@ -27,13 +27,6 @@ namespace NuGet.ProjectModel
             var propertyName = reader.GetString();
             var (targetFramework, runTimeFramework) = propertyName.SplitInTwo(LockFile.DirectorySeparatorChar);
 
-            // How do we differentiate between targetAlias and targetFramework here?
-            // Legacy is really supposed to be 3.
-
-            // PackageSpec probably doesn't need to be versioned to be honest.
-            // But the lock file does.
-            // This gets fucking shit.
-
             var lockFileTarget = new LockFileTarget
             {
                 TargetAlias = targetFramework,

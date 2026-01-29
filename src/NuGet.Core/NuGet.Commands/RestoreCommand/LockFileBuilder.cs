@@ -162,7 +162,7 @@ namespace NuGet.Commands
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
                 .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
-                var target = lockFile.Version >= 4 ?
+                var target = lockFile.Version >= LockFileFormat.AliasedVersion ?
                     new LockFileTarget
                     {
                         TargetFramework = targetGraph.Framework,
@@ -399,7 +399,7 @@ namespace NuGet.Commands
 
         private static void AddProjectFileDependenciesForPackageReference(PackageSpec project, LockFile lockFile, List<RestoreTargetGraph> targetGraphs)
         {
-            bool isV4LockFile = lockFile.Version >= 4;
+            bool isAliasedLockFile = lockFile.Version >= LockFileFormat.AliasedVersion;
 
             foreach (var frameworkInfo in project.TargetFrameworks
                 .OrderBy(framework => framework.TargetAlias,
@@ -440,7 +440,7 @@ namespace NuGet.Commands
                 }
 
                 // Add entry
-                string framework = (isV4LockFile && !string.IsNullOrEmpty(frameworkInfo.TargetAlias)) ? frameworkInfo.TargetAlias : frameworkInfo.FrameworkName.ToString();
+                string framework = (isAliasedLockFile && !string.IsNullOrEmpty(frameworkInfo.TargetAlias)) ? frameworkInfo.TargetAlias : frameworkInfo.FrameworkName.ToString();
                 var dependencyGroup = new ProjectFileDependencyGroup(
                     framework,
                     uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())

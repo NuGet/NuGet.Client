@@ -17,7 +17,7 @@ namespace NuGet.DependencyResolver
         public LibraryRangeCacheKey(LibraryRange range, NuGetFramework framework, string? alias)
         {
             Framework = framework;
-            Alias = alias;
+            Alias = alias ?? string.Empty;
             LibraryRange = range;
         }
 
@@ -52,7 +52,7 @@ namespace NuGet.DependencyResolver
         {
             return LibraryRange.Equals(other.LibraryRange)
                 && Framework.Equals(other.Framework)
-                && StringComparer.Ordinal.Equals(Alias, other.Alias);
+                && StringComparer.OrdinalIgnoreCase.Equals(Alias, other.Alias);
         }
 
         public override string ToString()

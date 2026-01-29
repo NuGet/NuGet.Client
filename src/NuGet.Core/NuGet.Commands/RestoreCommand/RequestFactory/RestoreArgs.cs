@@ -205,8 +205,8 @@ namespace NuGet.Commands
 
             request.RequestedRuntimes.UnionWith(Runtimes);
             request.FallbackRuntimes.UnionWith(FallbackRuntimes);
-            // Use v3 for classic csproj.
-            request.LockFileVersion = request.Project.RestoreMetadata?.UsingMicrosoftNETSdk == true ? LockFileFormat.Version : 3;
+            // Use legacy version for classic csproj.
+            request.LockFileVersion = request.Project.RestoreMetadata?.UsingMicrosoftNETSdk == true ? LockFileFormat.Version : LockFileFormat.LegacyVersion;
 
             // Run runtime asset checks for project.json, and for other types if enabled.
             if (ValidateRuntimeAssets == null)

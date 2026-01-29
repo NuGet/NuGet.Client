@@ -153,12 +153,12 @@ namespace NuGet.Commands
             _request = request ?? throw new ArgumentNullException(nameof(request));
             _lockFileBuilderCache = request.LockFileBuilderCache;
 
-            // Validate the lock file version requested
-            if (_request.LockFileVersion < 3 || _request.LockFileVersion > LockFileFormat.Version)
+            // Validate the assets file version requested
+            if (_request.LockFileVersion < LockFileFormat.LegacyVersion || _request.LockFileVersion > LockFileFormat.Version)
             {
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(request),
-                    message: $"Lock file version {_request.LockFileVersion} is not supported.");
+                    message: $"Assets file version {_request.LockFileVersion} is not supported.");
             }
 
             var collectorLoggerHideWarningsAndErrors = request.Project.RestoreSettings.HideWarningsAndErrors
