@@ -56,8 +56,8 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// Gets the current cancellation token for this view model.
-        /// This should be called at entry points (e.g., UI thread) before starting async work,
-        /// and the token should be passed through all async method calls.
+        /// This should be called at entry points from the UI thread before starting async work
+        /// and the token should be passed through async method calls.
         /// </summary>
         internal CancellationToken GetCancellationToken() => _cancellationTokenSource.Token;
 
@@ -449,8 +449,9 @@ namespace NuGet.PackageManagement.UI
                         if (BitmapStatus == IconBitmapStatus.NeedToFetch)
                         {
                             BitmapStatus = IconBitmapStatus.Fetching;
+                            CancellationToken token = GetCancellationToken();
                             NuGetUIThreadHelper.JoinableTaskFactory
-                                .RunAsync(FetchIconAsync)
+                                .RunAsync(() => FetchIconAsync(token))
                                 .PostOnFailure(nameof(PackageItemViewModel), nameof(IconBitmap));
                         }
                     }
@@ -592,13 +593,13 @@ namespace NuGet.PackageManagement.UI
                 ex is UnauthorizedAccessException;
         }
 
-        private async Task FetchIconAsync()
+        private async Task FetchIconAsync(CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
 
             Assumes.NotNull(IconUrl);
 
-            using (Stream stream = await _packageModel.GetIconAsync(CancellationToken.None))
+            using (Stream stream = await _packageModel.GetIconAsync(cancellationToken))
             {
                 if (stream != null)
                 {
@@ -682,9 +683,8 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
-        private async Task ReloadPackageVersionsAsync()
+        private async Task ReloadPackageVersionsAsync(CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = GetCancellationToken();
             try
             {
                 IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync(cancellationToken);
@@ -720,7 +720,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task ReloadPackageMetadataAsync()
+        private async Task ReloadPackageMetadataAsync(CancellationToken cancellationToken)
         {
             await RunOperationAsync(async (cancellationToken) =>
             {
@@ -736,12 +736,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     UpdateVulnerabilityInfo(vulnerableCapable);
                 }
-            });
+            },
+            cancellationToken);
         }
 
-        private async Task RunOperationAsync(Func<CancellationToken, Task> func)
+        private async Task RunOperationAsync(Func<CancellationToken, Task> func, CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = GetCancellationToken();
             try
             {
                 await func(cancellationToken);
@@ -775,7 +775,8 @@ namespace NuGet.PackageManagement.UI
                 cancellationToken.ThrowIfCancellationRequested();
 
                 UpdateVulnerabilityInfo(vulnerabilityDatabaseCapability);
-            });
+            },
+            cancellationToken);
         }
 
         private void SetVulnerabilityMaxSeverity(NuGetVersion version, int maxSeverity)
@@ -820,10 +821,9 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
         {
-            CancellationToken cancellationToken = GetCancellationToken();
-
+            CancellationToken token = GetCancellationToken();
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, cancellationToken))
+                .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, token))
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
@@ -839,8 +839,8 @@ namespace NuGet.PackageManagement.UI
                 _searchService.ClearFromCache(Id, Sources, IncludePrerelease);
             }
 
-            await ReloadPackageVersionsAsync();
-            await ReloadPackageMetadataAsync();
+            await ReloadPackageVersionsAsync(cancellationToken);
+            await ReloadPackageMetadataAsync(cancellationToken);
 
             OnPropertyChanged(nameof(Status));
         }
@@ -852,7 +852,7 @@ namespace NuGet.PackageManagement.UI
             // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
             LatestVersion = InstalledVersion;
 
-            await ReloadPackageMetadataAsync();
+            await ReloadPackageMetadataAsync(cancellationToken);
 
             OnPropertyChanged(nameof(Status));
         }
@@ -896,7 +896,6 @@ namespace NuGet.PackageManagement.UI
         public void Dispose()
         {
             _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
 
             // Don't dispose _searchService. It's a shared instance.
         }

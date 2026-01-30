@@ -299,7 +299,7 @@ namespace NuGet.PackageManagement.UI
 
         protected virtual void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAsync(_searchResultPackage?.GetCancellationToken() ?? CancellationToken.None))
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAsync(CancellationToken.None))
                 .PostOnFailure(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
