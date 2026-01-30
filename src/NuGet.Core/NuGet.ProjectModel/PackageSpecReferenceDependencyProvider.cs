@@ -94,6 +94,7 @@ namespace NuGet.ProjectModel
             return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
         }
 
+        [Obsolete("This method is obsolete and will be removed in future versions. Use GetLibrary(LibraryRange, NuGetFramework, string) instead.")]
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             return GetLibrary(libraryRange, targetFramework, alias: null);

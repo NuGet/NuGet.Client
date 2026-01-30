@@ -375,6 +375,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
+        [Obsolete("This method is obsolete")]
         public static Task<RemoteMatch?> FindProjectMatchAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,

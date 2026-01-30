@@ -54,9 +54,9 @@ namespace NuGet.ProjectModel
         /// <returns>The <see cref="TargetFrameworkInformation"/> if it exists, <see langword="null"/> otherwise. </returns>
         public static TargetFrameworkInformation? GetTargetFramework(this PackageSpec project, string? targetAlias)
         {
-            foreach (var framework in project.TargetFrameworks)
+            foreach (var framework in project.TargetFrameworks.NoAllocEnumerate())
             {
-                if (framework.TargetAlias.Equals(targetAlias))
+                if (string.Equals(framework.TargetAlias, targetAlias, StringComparison.OrdinalIgnoreCase))
                 {
                     return framework;
                 }
@@ -75,9 +75,9 @@ namespace NuGet.ProjectModel
         {
             if (project.RestoreMetadata != null)
             {
-                foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                foreach (var framework in project.RestoreMetadata.TargetFrameworks.NoAllocEnumerate())
                 {
-                    if (framework.TargetAlias.Equals(targetAlias))
+                    if (string.Equals(framework.TargetAlias, targetAlias, StringComparison.OrdinalIgnoreCase))
                     {
                         return framework;
                     }
@@ -140,7 +140,7 @@ namespace NuGet.ProjectModel
 
             static void FindMatchingFrameworks(PackageSpec project, NuGetFramework targetFramework, ref TargetFrameworkInformation? matchedFramework, ref List<TargetFrameworkInformation>? matchingFrameworks)
             {
-                foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+                foreach (TargetFrameworkInformation framework in project.TargetFrameworks.NoAllocEnumerate())
                 {
                     if (NuGetFramework.Comparer.Equals(targetFramework, framework.FrameworkName))
                     {
@@ -161,6 +161,5 @@ namespace NuGet.ProjectModel
                 }
             }
         }
-
     }
 }

@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
             {
                 TargetAlias = targetFramework,
                 RuntimeIdentifier = runTimeFramework,
-                Name = targetFramework + (string.IsNullOrEmpty(runTimeFramework) ? "" : "/" + runTimeFramework)
+                Name = string.IsNullOrEmpty(runTimeFramework) ? targetFramework : $"{targetFramework}/{runTimeFramework}"
             };
 
             reader.Read();

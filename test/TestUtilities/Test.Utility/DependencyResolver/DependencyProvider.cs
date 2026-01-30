@@ -108,6 +108,7 @@ namespace Test.Utility
             return new TestPackage(dependencies);
         }
 
+        [Obsolete]
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
             return GetLibrary(libraryRange, targetFramework, alias: null);
