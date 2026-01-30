@@ -379,7 +379,7 @@ namespace NuGet.Commands.Test
             spec.AddProject(project);
 
             // Act && Assert
-            AssertError(spec, "TargetFramework aliases must be unique");
+            AssertError(spec, "TargetFramework property must be unique");
         }
 
         private static PackageSpec GetProjectA()
