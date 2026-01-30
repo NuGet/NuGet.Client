@@ -385,7 +385,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Restore request does not contain any projects to restore.</value>
   </data>
   <data name="SpecValidationDuplicateTargetAlias" xml:space="preserve">
-    <value>TargetFramework aliases must be unique. List of TargetFramework aliases: {0}.</value>
+    <value>The TargetFramework property must be unique. List of TargetFramework properties: {0}.</value>
   </data>
   <data name="Error_XPROJNotAllowed" xml:space="preserve">
     <value>Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</value>

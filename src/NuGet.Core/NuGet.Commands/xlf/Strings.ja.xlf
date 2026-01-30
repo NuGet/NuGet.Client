@@ -1265,8 +1265,8 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <note />
       </trans-unit>
       <trans-unit id="SpecValidationDuplicateTargetAlias">
-        <source>TargetFramework aliases must be unique. List of TargetFramework aliases: {0}.</source>
-        <target state="new">TargetFramework aliases must be unique. List of TargetFramework aliases: {0}.</target>
+        <source>The TargetFramework property must be unique. List of TargetFramework properties: {0}.</source>
+        <target state="new">The TargetFramework property must be unique. List of TargetFramework properties: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecValidationInvalidFramework">

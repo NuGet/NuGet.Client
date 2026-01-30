@@ -1984,7 +1984,7 @@ namespace NuGet.Commands
 
         // Check for duplicate frameworks and log an error if found.
         // Returns true if duplicates exist, false otherwise.
-        private static async Task<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
+        private static async ValueTask<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
         {
             if (request.Project.TargetFrameworks.Count <= 1)
             {

@@ -2250,7 +2250,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to TargetFramework aliases must be unique. List of TargetFramework aliases: {0}..
+        ///   Looks up a localized string similar to The TargetFramework property must be unique. List of TargetFramework properties: {0}..
         /// </summary>
         internal static string SpecValidationDuplicateTargetAlias {
             get {
