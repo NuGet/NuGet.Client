@@ -18,8 +18,19 @@ namespace NuGet.ProjectModel
     public class LockFileFormat
     {
         public static readonly int Version = 4;
-        public static readonly int AliasedVersion = 4;
-        public static readonly int LegacyVersion = 3;
+
+        /// <summary>
+        /// The assets file version that supports the aliased format.
+        /// This means, the targets section and project section are using the alias as a pivot when there's multiple frameworks instead of the framework name.
+        /// </summary>
+        public const int AliasedVersion = 4;
+
+        /// <summary>
+        /// The assets file version that is used for classic csproj, or legacy project PackageReference.
+        /// This is also the assets file version used when the .NET SDK used for the project is not 10.0.300 or newer.
+        /// </summary>
+        public const int LegacyVersion = 3;
+
         // If this is ever renamed, you should also rename NoOpRestoreUtilities.NoOpCacheFileName to keep them in sync.
         public static readonly string AssetsFileName = "project.assets.json";
 

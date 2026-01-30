@@ -1488,7 +1488,7 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
                     SdkAnalysisLevelMinimums.V10_0_300))
                 {
-                    lockFileVersion = 3;
+                    lockFileVersion = LockFileFormat.LegacyVersion;
                 }
 
                 return lockFileVersion;
