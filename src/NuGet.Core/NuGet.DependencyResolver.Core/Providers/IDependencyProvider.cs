@@ -10,6 +10,8 @@ namespace NuGet.DependencyResolver
     {
         bool SupportsType(LibraryDependencyTarget libraryTypeFlag);
 
+        Library? GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework);
+
         Library? GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string? alias);
     }
 }

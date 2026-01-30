@@ -94,6 +94,11 @@ namespace NuGet.ProjectModel
             return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
         }
 
+        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+        {
+            return GetLibrary(libraryRange, targetFramework, alias: null);
+        }
+
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string alias)
         {
             if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));

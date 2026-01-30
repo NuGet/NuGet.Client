@@ -153,6 +153,32 @@ namespace NuGet.DependencyResolver
             };
         }
 
+        internal static Task<RemoteMatch?> FindLibraryMatchAsync(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            string? runtimeIdentifier,
+            IEnumerable<IRemoteDependencyProvider> remoteProviders,
+            IEnumerable<IRemoteDependencyProvider> localProviders,
+            IEnumerable<IDependencyProvider> projectProviders,
+            IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            return FindLibraryMatchAsync(
+                libraryRange,
+                framework,
+                runtimeIdentifier,
+                targetAlias: null,
+                remoteProviders,
+                localProviders,
+                projectProviders,
+                lockFileLibraries,
+                cacheContext,
+                logger,
+                cancellationToken);
+        }
+
         internal static async Task<RemoteMatch?> FindLibraryMatchAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -347,6 +373,15 @@ namespace NuGet.DependencyResolver
                 // Prefer local over remote generally.
                 return localMatch ?? remoteMatch;
             }
+        }
+
+        public static Task<RemoteMatch?> FindProjectMatchAsync(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            IEnumerable<IDependencyProvider> projectProviders,
+            CancellationToken cancellationToken)
+        {
+            return FindProjectMatchAsync(libraryRange, framework, targetAlias: null, projectProviders, cancellationToken);
         }
 
         internal static Task<RemoteMatch?> FindProjectMatchAsync(
