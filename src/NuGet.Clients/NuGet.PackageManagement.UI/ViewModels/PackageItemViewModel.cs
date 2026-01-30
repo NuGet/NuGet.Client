@@ -39,6 +39,7 @@ namespace NuGet.PackageManagement.UI
         internal const int DecodePixelWidth = 32;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly CancellationToken _cancellationToken;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
         private readonly PackageModel _packageModel;
         private List<NuGetVersion> _transitiveInstalledVersions;
@@ -47,19 +48,13 @@ namespace NuGet.PackageManagement.UI
         public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, IPackageVulnerabilityService vulnerabilityService = default)
         {
             _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationToken = _cancellationTokenSource.Token;
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
             _packageModel = packageModel;
             _transitiveInstalledVersions = [];
             _transitiveOrigins = [];
         }
-
-        /// <summary>
-        /// Gets the current cancellation token for this view model.
-        /// This should be called at entry points from the UI thread before starting async work
-        /// and the token should be passed through async method calls.
-        /// </summary>
-        internal CancellationToken GetCancellationToken() => _cancellationTokenSource.Token;
 
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
@@ -449,9 +444,8 @@ namespace NuGet.PackageManagement.UI
                         if (BitmapStatus == IconBitmapStatus.NeedToFetch)
                         {
                             BitmapStatus = IconBitmapStatus.Fetching;
-                            CancellationToken token = GetCancellationToken();
                             NuGetUIThreadHelper.JoinableTaskFactory
-                                .RunAsync(() => FetchIconAsync(token))
+                                .RunAsync(() => FetchIconAsync(_cancellationToken))
                                 .PostOnFailure(nameof(PackageItemViewModel), nameof(IconBitmap));
                         }
                     }
@@ -821,9 +815,8 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
         {
-            CancellationToken token = GetCancellationToken();
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, token))
+                .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, _cancellationToken))
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
@@ -896,6 +889,7 @@ namespace NuGet.PackageManagement.UI
         public void Dispose()
         {
             _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
 
             // Don't dispose _searchService. It's a shared instance.
         }

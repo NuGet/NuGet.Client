@@ -345,7 +345,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
@@ -398,7 +399,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
@@ -449,7 +451,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 tab,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
 
@@ -510,7 +513,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
@@ -716,7 +720,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.Installed,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
@@ -827,7 +832,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.UpdatesAvailable,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
@@ -951,7 +957,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
@@ -1162,7 +1169,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.Installed,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             if (includePrerelease)
@@ -1267,7 +1275,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             string expectedAditionalInfo = null;
@@ -1374,7 +1383,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.UpdatesAvailable,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             string expectedAditionalInfo = null;
@@ -1477,7 +1487,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 await _testInstance.SetCurrentPackageAsync(
                     _testViewModel,
                     ItemFilter.All,
-                    () => null, CancellationToken.None);
+                    () => null,
+                    CancellationToken.None);
             });
         }
 
@@ -1527,7 +1538,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
@@ -1581,7 +1593,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 tab,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
 
@@ -1641,7 +1654,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm, CancellationToken.None);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
@@ -1818,7 +1832,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 packageItemViewModel,
                 ItemFilter.All,
-                () => packageItemViewModel, CancellationToken.None);
+                () => packageItemViewModel,
+                CancellationToken.None);
 
             // Assert
             var resultKnownOwnerViewModels = _testInstance.PackageMetadata.KnownOwnerViewModels;
