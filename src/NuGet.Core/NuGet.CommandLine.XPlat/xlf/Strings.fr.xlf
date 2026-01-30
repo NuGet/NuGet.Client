@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="needs-review-translation">Clé API du serveur.</target>
+        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="App_FullName">
@@ -1289,7 +1289,7 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="needs-review-translation">Clé API du serveur de symboles.</target>
+        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="SymbolSource_Description">
