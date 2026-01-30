@@ -244,7 +244,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        internal List<LibraryDependency> GetDependenciesFromSpecRestoreMetadata(PackageSpec packageSpec, NuGetFramework targetFramework, string targetAlias)
+        private List<LibraryDependency> GetDependenciesFromSpecRestoreMetadata(PackageSpec packageSpec, NuGetFramework targetFramework, string targetAlias)
         {
             var targetFrameworkInfo = packageSpec.GetNearestTargetFramework(targetFramework, targetAlias);
 
