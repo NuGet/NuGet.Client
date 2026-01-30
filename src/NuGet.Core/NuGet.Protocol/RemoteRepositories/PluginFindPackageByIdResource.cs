@@ -282,10 +282,12 @@ namespace NuGet.Protocol.Core.Types
 
                     var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                         MessageMethod.PrefetchPackage,
+                        PluginJsonContext.Default.PrefetchPackageResponse,
                         new PrefetchPackageRequest(
                             _packageSource.Source,
                             packageInfo.Identity.Id,
                             packageInfo.Identity.Version.ToNormalizedString()),
+                        PluginJsonContext.Default.PrefetchPackageRequest,
                         cancellationToken);
 
                     if (response != null && response.ResponseCode == MessageResponseCode.Success)
@@ -415,7 +417,9 @@ namespace NuGet.Protocol.Core.Types
             {
                 var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<GetPackageVersionsRequest, GetPackageVersionsResponse>(
                     MessageMethod.GetPackageVersions,
+                    PluginJsonContext.Default.GetPackageVersionsResponse,
                     request,
+                    PluginJsonContext.Default.GetPackageVersionsRequest,
                     cancellationToken);
 
                 if (response != null)
@@ -504,7 +508,9 @@ namespace NuGet.Protocol.Core.Types
 
             await _plugin.Connection.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
                 MessageMethod.SetLogLevel,
+                PluginJsonContext.Default.SetLogLevelResponse,
                 new SetLogLevelRequest(logLevel),
+                PluginJsonContext.Default.SetLogLevelRequest,
                 cancellationToken);
         }
 

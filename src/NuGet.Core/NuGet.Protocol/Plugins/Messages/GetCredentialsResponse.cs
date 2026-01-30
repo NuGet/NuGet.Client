@@ -18,20 +18,25 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the password.
         /// </summary>
-        public string Password { get; }
+        [System.Text.Json.Serialization.JsonPropertyName("password")]
+        public string Password { get; init; }
 
         /// <summary>
         /// Gets the response code.
         /// </summary>
         [JsonRequired]
-        public MessageResponseCode ResponseCode { get; }
+        [System.Text.Json.Serialization.JsonRequired]
+        [System.Text.Json.Serialization.JsonPropertyName("responseCode")]
+        public MessageResponseCode ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the username.
         /// </summary>
-        public string Username { get; }
+        [System.Text.Json.Serialization.JsonPropertyName("username")]
+        public string Username { get; init; }
 
-        public IReadOnlyList<string> AuthenticationTypes { get; }
+        [System.Text.Json.Serialization.JsonPropertyName("authenticationTypes")]
+        public IReadOnlyList<string> AuthenticationTypes { get; init; }
 
 
         /// <summary>
@@ -41,6 +46,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentException">Thrown if <paramref name="responseCode" />
         /// is an undefined <see cref="MessageResponseCode" /> value.</exception>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public GetCredentialsResponse(
             MessageResponseCode responseCode,
             string username,

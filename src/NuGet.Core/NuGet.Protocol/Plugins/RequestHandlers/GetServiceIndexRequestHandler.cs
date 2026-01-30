@@ -117,7 +117,7 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var getRequest = MessageUtilities.DeserializePayload<GetServiceIndexRequest>(request);
+            var getRequest = MessageUtilities.DeserializePayload(request, PluginJsonContext.Default.GetServiceIndexRequest);
             SourceRepository sourceRepository;
             ServiceIndexResourceV3 serviceIndex = null;
             GetServiceIndexResponse responsePayload;
@@ -138,7 +138,11 @@ namespace NuGet.Protocol.Plugins
                 responsePayload = new GetServiceIndexResponse(MessageResponseCode.Success, serviceIndexJson);
             }
 
-            await responseHandler.SendResponseAsync(request, responsePayload, cancellationToken);
+            await responseHandler.SendResponseAsync<GetServiceIndexResponse>(
+                request,
+                responsePayload,
+                PluginJsonContext.Default.GetServiceIndexResponse,
+                cancellationToken);
         }
     }
 }

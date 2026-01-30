@@ -10,6 +10,7 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's implementation for interacting with feeds. Contains functionality for all feed types.</Description>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -34,9 +35,11 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\AheadOfTimeCompileAttributes.cs" />
     <Compile Include="$(SharedDirectory)\EncodingUtility.cs" />
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
+    <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SimplePool.cs" />

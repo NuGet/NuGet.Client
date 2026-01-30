@@ -250,6 +250,7 @@ namespace NuGet.Configuration
         {
             private const string EventNameFileRead = "SettingsFile/FileRead";
 
+            [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "FileReadEventData only contains primitive types (string and bool) which are safe for EventSource serialization.")]
             public static void FileReadStart(string configFilePath, bool isMachineWide, bool isReadOnly)
             {
                 var eventOptions = new EventSourceOptions
@@ -262,6 +263,7 @@ namespace NuGet.Configuration
                 NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
             }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "FileReadEventData only contains primitive types (string and bool) which are safe for EventSource serialization.")]
             public static void FileReadStop(string configFilePath, bool isMachineWide, bool isReadOnly)
             {
                 var eventOptions = new EventSourceOptions

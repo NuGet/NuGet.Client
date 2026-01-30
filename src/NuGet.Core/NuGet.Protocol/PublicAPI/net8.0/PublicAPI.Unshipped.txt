@@ -1,1 +1,35 @@
 #nullable enable
+NuGet.Protocol.Converters.FingerprintsStjConverter
+NuGet.Protocol.Converters.FingerprintsStjConverter.FingerprintsStjConverter() -> void
+NuGet.Protocol.Plugins.GetCredentialsRequest.StatusCode.init -> void
+NuGet.Protocol.Plugins.GetCredentialsResponse.ResponseCode.init -> void
+NuGet.Protocol.Plugins.GetServiceIndexResponse.ResponseCode.init -> void
+NuGet.Protocol.Plugins.LogRequest.LogLevel.init -> void
+NuGet.Protocol.Plugins.LogResponse.ResponseCode.init -> void
+NuGet.Protocol.Plugins.MonitorNuGetProcessExitRequest.ProcessId.init -> void
+NuGet.Protocol.Plugins.MonitorNuGetProcessExitResponse.ResponseCode.init -> void
+override NuGet.Protocol.Converters.FingerprintsStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> NuGet.Packaging.Core.Fingerprints?
+override NuGet.Protocol.Converters.FingerprintsStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, NuGet.Packaging.Core.Fingerprints! value, System.Text.Json.JsonSerializerOptions! options) -> void
+~NuGet.Protocol.Plugins.Fault.Message.init -> void
+~NuGet.Protocol.Plugins.GetCredentialsRequest.PackageSourceRepository.init -> void
+~NuGet.Protocol.Plugins.GetCredentialsResponse.AuthenticationTypes.init -> void
+~NuGet.Protocol.Plugins.GetCredentialsResponse.Password.init -> void
+~NuGet.Protocol.Plugins.GetCredentialsResponse.Username.init -> void
+~NuGet.Protocol.Plugins.GetServiceIndexResponse.ServiceIndex.init -> void
+~NuGet.Protocol.Plugins.HandshakeRequest.ProtocolVersion.init -> void
+~NuGet.Protocol.Plugins.LogRequest.Message.init -> void
+~NuGet.Protocol.Plugins.GetServiceIndexRequest.PackageSourceRepository.init -> void
+~NuGet.Protocol.Plugins.IConnection.SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
+~NuGet.Protocol.Plugins.Connection.SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
+~NuGet.Protocol.Plugins.IMessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
+~NuGet.Protocol.Plugins.MessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
+~NuGet.Protocol.Plugins.IResponseHandler.SendResponseAsync<TPayload>(NuGet.Protocol.Plugins.Message request, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> payloadTypeInfo, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~NuGet.Protocol.Plugins.MessageDispatcher.CreateMessage<TPayload>(NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> jsonTypeInfo) -> NuGet.Protocol.Plugins.Message
+~NuGet.Protocol.Plugins.MessageDispatcher.DispatchResponseAsync<TOutbound>(NuGet.Protocol.Plugins.Message request, TOutbound responsePayload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> responsePayloadTypeInfo, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~static NuGet.Protocol.HttpStreamValidation.ValidateJsonObject(string uri, System.IO.Stream stream) -> void
+~static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken jtoken, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo) -> T
+~static NuGet.Protocol.Plugins.MessageUtilities.Create<TPayload>(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> jsonTypeInfo) -> NuGet.Protocol.Plugins.Message
+~static NuGet.Protocol.Plugins.MessageUtilities.DeserializePayload<TPayload>(NuGet.Protocol.Plugins.Message message, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> jsonTypeInfo) -> TPayload
+~static NuGet.Protocol.Plugins.JsonSerializationUtilities.Deserialize<T>(string json, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo) -> T
+~static NuGet.Protocol.Plugins.JsonSerializationUtilities.FromObject<T>(T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo) -> Newtonsoft.Json.Linq.JObject
+~static NuGet.Protocol.Plugins.JsonSerializationUtilities.Serialize(System.Text.Json.Utf8JsonWriter writer, NuGet.Protocol.Plugins.Message message) -> void

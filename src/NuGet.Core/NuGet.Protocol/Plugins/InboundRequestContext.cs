@@ -187,7 +187,7 @@ namespace NuGet.Protocol.Plugins
                 request.RequestId,
                 MessageType.Fault,
                 request.Method,
-                JsonSerializationUtilities.FromObject(responsePayload));
+                JsonSerializationUtilities.FromObject(responsePayload, PluginJsonContext.Default.Fault));
 
             if (_logger.IsEnabled)
             {

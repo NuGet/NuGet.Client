@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,6 +86,15 @@ namespace NuGet.Protocol.Plugins
         Task<TInbound> DispatchRequestAsync<TOutbound, TInbound>(
             MessageMethod method,
             TOutbound payload,
+            CancellationToken cancellationToken)
+            where TOutbound : class
+            where TInbound : class;
+
+        Task<TInbound> DispatchRequestAsync<TOutbound, TInbound>(
+            MessageMethod method,
+            JsonTypeInfo<TInbound> inboundJti,
+            TOutbound payload,
+            JsonTypeInfo<TOutbound> outboundJti,
             CancellationToken cancellationToken)
             where TOutbound : class
             where TInbound : class;

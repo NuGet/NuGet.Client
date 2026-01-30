@@ -4,7 +4,7 @@
 #nullable disable
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -16,8 +16,10 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the fault message.
         /// </summary>
-        [JsonRequired]
-        public string Message { get; }
+        [Newtonsoft.Json.JsonRequired]
+        [JsonPropertyName("Message")]
+        [System.Text.Json.Serialization.JsonRequired]
+        public string Message { get; init; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Fault" /> class.
@@ -25,7 +27,8 @@ namespace NuGet.Protocol.Plugins
         /// <param name="message">The fault message.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="message" />
         /// is either <see langword="null" /> or an empty string.</exception>
-        [JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public Fault(string message)
         {
             if (string.IsNullOrEmpty(message))

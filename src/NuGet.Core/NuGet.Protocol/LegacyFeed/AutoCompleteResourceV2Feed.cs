@@ -5,13 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -83,13 +83,12 @@ namespace NuGet.Protocol
                    new HttpSourceRequest(apiEndpointUri, logger),
                    async stream =>
                    {
-                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
-                       using (var jsonReader = new JsonTextReader(reader))
-                       {
-                           var serializer = JsonSerializer.Create();
-                           var json = serializer.Deserialize<string[]>(jsonReader);
-                           return json;
-                       }
+                       var seekableStream = await stream.AsSeekableStreamAsync(token);
+                       var json = await JsonSerializer.DeserializeAsync(
+                           seekableStream,
+                           JsonContext.Default.StringArray,
+                           token);
+                       return json;
                    },
                    logger,
                    token);

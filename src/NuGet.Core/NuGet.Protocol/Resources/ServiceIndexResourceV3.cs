@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -26,10 +27,23 @@ namespace NuGet.Protocol
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
+        internal ServiceIndexResourceV3(JsonDocument index, DateTime requestTime, PackageSource packageSource)
+        {
+            using var stream = new System.IO.MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            index.WriteTo(writer);
+            writer.Flush();
+            _json = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            _index = MakeLookup(index.RootElement, packageSource);
+            _requestTime = requestTime;
+        }
+
         internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
+            // Legacy constructor - convert JObject to JsonDocument
             _json = index.ToString();
-            _index = MakeLookup(index, packageSource);
+            using var doc = JsonDocument.Parse(_json);
+            _index = MakeLookup(doc.RootElement, packageSource);
             _requestTime = requestTime;
         }
 
@@ -148,16 +162,15 @@ namespace NuGet.Protocol
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
         }
 
-        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JsonElement index, PackageSource packageSource)
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
 
-            JToken resources;
-            if (index.TryGetValue("resources", out resources))
+            if (index.TryGetProperty("resources", out JsonElement resources))
             {
-                foreach (var resource in resources)
+                foreach (var resource in resources.EnumerateArray())
                 {
-                    var id = GetValues(resource["@id"]).SingleOrDefault();
+                    var id = GetValues(resource, "@id").SingleOrDefault();
 
                     Uri uri;
                     if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out uri))
@@ -172,12 +185,11 @@ namespace NuGet.Protocol
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(source: packageSource.Source, httpsSourceHasHttpResource: true));
                     }
 
-                    var types = GetValues(resource["@type"]).ToArray();
-                    var clientVersionToken = resource["clientVersion"];
+                    var types = GetValues(resource, "@type").ToArray();
 
                     var clientVersions = new List<SemanticVersion>();
 
-                    if (clientVersionToken == null)
+                    if (!resource.TryGetProperty("clientVersion", out JsonElement clientVersionElement))
                     {
                         // For non-versioned services assume all clients are compatible
                         clientVersions.Add(_defaultVersion);
@@ -185,7 +197,7 @@ namespace NuGet.Protocol
                     else
                     {
                         // Parse supported versions
-                        foreach (var versionString in GetValues(clientVersionToken))
+                        foreach (var versionString in GetValues(clientVersionElement))
                         {
                             SemanticVersion version;
                             if (SemanticVersion.TryParse(versionString, out version))
@@ -226,21 +238,42 @@ namespace NuGet.Protocol
         /// Read string values from an array or string.
         /// Returns an empty enumerable if the value is null.
         /// </summary>
-        private static IEnumerable<string> GetValues(JToken token)
+        private static IEnumerable<string> GetValues(JsonElement element, string propertyName)
         {
-            if (token?.Type == JTokenType.Array)
+            if (element.TryGetProperty(propertyName, out JsonElement property))
             {
-                foreach (var entry in token)
+                return GetValues(property);
+            }
+            return Enumerable.Empty<string>();
+        }
+
+        /// <summary>
+        /// Read string values from an array or string.
+        /// Returns an empty enumerable if the value is null.
+        /// </summary>
+        private static IEnumerable<string> GetValues(JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var entry in element.EnumerateArray())
                 {
-                    if (entry.Type == JTokenType.String)
+                    if (entry.ValueKind == JsonValueKind.String)
                     {
-                        yield return entry.ToObject<string>();
+                        var value = entry.GetString();
+                        if (value != null)
+                        {
+                            yield return value;
+                        }
                     }
                 }
             }
-            else if (token?.Type == JTokenType.String)
+            else if (element.ValueKind == JsonValueKind.String)
             {
-                yield return token.ToObject<string>();
+                var value = element.GetString();
+                if (value != null)
+                {
+                    yield return value;
+                }
             }
         }
     }

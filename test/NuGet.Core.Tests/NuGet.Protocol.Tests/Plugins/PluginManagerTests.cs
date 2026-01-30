@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization.Metadata;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -305,19 +306,25 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.MonitorNuGetProcessExit),
+                        It.Is<JsonTypeInfo<MonitorNuGetProcessExitResponse>>(j => j != null),
                         It.IsNotNull<MonitorNuGetProcessExitRequest>(),
+                        It.Is<JsonTypeInfo<MonitorNuGetProcessExitRequest>>(j => j != null),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new MonitorNuGetProcessExitResponse(MessageResponseCode.Success));
 
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.Initialize),
+                        It.Is<JsonTypeInfo<InitializeResponse>>(j => j != null),
                         It.IsNotNull<InitializeRequest>(),
+                        It.Is<JsonTypeInfo<InitializeRequest>>(j => j != null),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new InitializeResponse(MessageResponseCode.Success));
 
                 _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                        It.Is<JsonTypeInfo<GetOperationClaimsResponse>>(j => j != null),
                         It.Is<GetOperationClaimsRequest>(g => g.PackageSourceRepository == null),
+                        It.Is<JsonTypeInfo<GetOperationClaimsRequest>>(j => j != null),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new GetOperationClaimsResponse(operationClaims));
 

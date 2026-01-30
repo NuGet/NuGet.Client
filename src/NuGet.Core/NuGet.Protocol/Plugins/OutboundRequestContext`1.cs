@@ -5,7 +5,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +30,7 @@ namespace NuGet.Protocol.Plugins
         private readonly TaskCompletionSource<TResult> _taskCompletionSource;
         private readonly TimeSpan? _timeout;
         private readonly Timer _timer;
+        private readonly JsonTypeInfo<TResult> _jti; // Should not be null when AOT
 
         /// <summary>
         /// Gets the completion task.
@@ -55,7 +58,7 @@ namespace NuGet.Protocol.Plugins
             TimeSpan? timeout,
             bool isKeepAlive,
             CancellationToken cancellationToken)
-            : this(connection, request, timeout, isKeepAlive, cancellationToken, PluginLogger.DefaultInstance)
+            : this(null, connection, request, timeout, isKeepAlive, cancellationToken, PluginLogger.DefaultInstance)
         {
         }
 
@@ -84,6 +87,36 @@ namespace NuGet.Protocol.Plugins
             bool isKeepAlive,
             CancellationToken cancellationToken,
             IPluginLogger logger)
+            : this(null, connection, request, timeout, isKeepAlive, cancellationToken, logger)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="OutboundRequestContext{TResult}" /> class.
+        /// </summary>
+        /// <param name="connection">A connection.</param>
+        /// <param name="request">A request.</param>
+        /// <param name="timeout">An optional request timeout.</param>
+        /// <param name="isKeepAlive">A flag indicating whether or not the request supports progress notifications
+        /// to reset the request timeout.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <param name="logger">A plugin logger.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection" />
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" />
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is <see langword="null" />.</exception>
+        internal OutboundRequestContext(
+            JsonTypeInfo<TResult> jti,
+            IConnection connection,
+            Message request,
+            TimeSpan? timeout,
+            bool isKeepAlive,
+            CancellationToken cancellationToken,
+            IPluginLogger logger)
         {
             if (connection == null)
             {
@@ -100,6 +133,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            _jti = jti;
             _connection = connection;
             _request = request;
             _taskCompletionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -156,7 +190,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(progress));
             }
 
-            var payload = MessageUtilities.DeserializePayload<Progress>(progress);
+            var payload = MessageUtilities.DeserializePayload(progress, PluginJsonContext.Default.Progress);
 
             if (_timeout.HasValue && _isKeepAlive)
             {
@@ -169,6 +203,14 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="response">A response.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="response" /> is <see langword="null" />.</exception>
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026",
+            Justification = "Trim-unsafe methods are guarded by RUC on constructor")]
+        [UnconditionalSuppressMessage(
+            "AOT",
+            "IL3050",
+            Justification = "Trim-unsafe methods are guarded by RUC on constructor")]
         public override void HandleResponse(Message response)
         {
             if (response == null)
@@ -176,7 +218,9 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(response));
             }
 
-            var payload = MessageUtilities.DeserializePayload<TResult>(response);
+            var payload = _jti == null
+                ? MessageUtilities.DeserializePayload<TResult>(response)
+                : MessageUtilities.DeserializePayload(response, _jti);
 
             _taskCompletionSource.TrySetResult(payload);
         }
@@ -193,7 +237,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(fault));
             }
 
-            var payload = MessageUtilities.DeserializePayload<Fault>(fault);
+            var payload = MessageUtilities.DeserializePayload(fault, PluginJsonContext.Default.Fault);
 
             throw new ProtocolException(payload.Message);
         }

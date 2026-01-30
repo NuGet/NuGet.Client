@@ -4,7 +4,7 @@
 #nullable disable
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -16,14 +16,17 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the package source repository location.
         /// </summary>
-        [JsonRequired]
-        public string PackageSourceRepository { get; }
+        [Newtonsoft.Json.JsonRequired]
+        [JsonPropertyName("PackageSourceRepository")]
+        [System.Text.Json.Serialization.JsonRequired]
+        public string PackageSourceRepository { get; init; }
 
         /// <summary>
         /// Initializes a new <see cref="GetServiceIndexRequest" /> class.
         /// </summary>
         /// <param name="packageSourceRepository">The package source repository location.</param>
-        [JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public GetServiceIndexRequest(string packageSourceRepository)
         {
             if (string.IsNullOrEmpty(packageSourceRepository))
