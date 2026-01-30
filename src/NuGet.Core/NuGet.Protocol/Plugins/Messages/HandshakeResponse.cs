@@ -6,6 +6,7 @@
 using System;
 using System.Globalization;
 using Newtonsoft.Json;
+using NuGet.Protocol.Converters;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Plugins
@@ -19,12 +20,14 @@ namespace NuGet.Protocol.Plugins
         /// Gets the handshake responder's handshake response code.
         /// </summary>
         [JsonRequired]
+        [System.Text.Json.Serialization.JsonRequired]
         public MessageResponseCode ResponseCode { get; }
 
         /// <summary>
         /// Gets the handshake responder's plugin protocol version if the handshake was successful;
         /// otherwise, <see langword="null" />.
         /// </summary>
+        [System.Text.Json.Serialization.JsonConverter(typeof(SemanticVersionStjConverter))]
         public SemanticVersion ProtocolVersion { get; }
 
         /// <summary>
@@ -42,6 +45,7 @@ namespace NuGet.Protocol.Plugins
         /// is not <see cref="MessageResponseCode.Success" /> and <paramref name="protocolVersion" />
         /// is not <see langword="null" />.</exception>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public HandshakeResponse(MessageResponseCode responseCode, SemanticVersion protocolVersion)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))

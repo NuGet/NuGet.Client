@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
@@ -8,6 +8,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's core types and interfaces for PackageReference-based restore, such as lock files, assets file and internal restore models.</Description>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,9 +54,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NuGet.ProjectModel.Test" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 </Project>

@@ -7,9 +7,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -137,7 +137,7 @@ namespace NuGet.Protocol
                                 "service_index",
                                 cacheContext)
                             {
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJsonObject(url, stream),
                                 MaxTries = 1,
                                 IsRetry = retry > 1,
                                 IsLastAttempt = retry == maxRetries
@@ -191,16 +191,16 @@ namespace NuGet.Protocol
         private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
             // Parse the JSON
-            JObject json = await stream.AsJObjectAsync(token);
+            using JsonDocument json = await JsonDocument.ParseAsync(stream, cancellationToken: token);
 
             // Use SemVer instead of NuGetVersion, the service index should always be
             // in strict SemVer format
-            JToken versionToken;
-            if (json.TryGetValue("version", out versionToken) &&
-                versionToken.Type == JTokenType.String)
+            if (json.RootElement.TryGetProperty("version", out JsonElement versionElement) &&
+                versionElement.ValueKind == JsonValueKind.String)
             {
+                var versionString = versionElement.GetString();
                 SemanticVersion version;
-                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                if (SemanticVersion.TryParse(versionString, out version) &&
                     version.Major == 3)
                 {
                     return new ServiceIndexResourceV3(json, utcNow, source);
@@ -210,7 +210,7 @@ namespace NuGet.Protocol
                     string errorMessage = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Protocol_UnsupportedVersion,
-                        (string)versionToken);
+                        versionString);
                     throw new InvalidDataException(errorMessage);
                 }
             }

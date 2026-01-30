@@ -201,7 +201,9 @@ namespace NuGet.Protocol.Plugins
 
             var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<GetPackageHashRequest, GetPackageHashResponse>(
                 MessageMethod.GetPackageHash,
+                PluginJsonContext.Default.GetPackageHashResponse,
                 request,
+                PluginJsonContext.Default.GetPackageHashRequest,
                 cancellationToken);
 
             if (response != null && response.ResponseCode == MessageResponseCode.Success)

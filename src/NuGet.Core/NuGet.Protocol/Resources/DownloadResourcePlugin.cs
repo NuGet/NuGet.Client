@@ -116,7 +116,9 @@ namespace NuGet.Protocol
 
                 var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                     MessageMethod.PrefetchPackage,
+                    PluginJsonContext.Default.PrefetchPackageResponse,
                     new PrefetchPackageRequest(_packageSource.Source, identity.Id, identity.Version.ToNormalizedString()),
+                    PluginJsonContext.Default.PrefetchPackageRequest,
                     cancellationToken);
 
                 if (response != null)
@@ -170,7 +172,9 @@ namespace NuGet.Protocol
 
             await _plugin.Connection.SendRequestAndReceiveResponseAsync<SetLogLevelRequest, SetLogLevelResponse>(
                 MessageMethod.SetLogLevel,
+                PluginJsonContext.Default.SetLogLevelResponse,
                 new SetLogLevelRequest(logLevel),
+                PluginJsonContext.Default.SetLogLevelRequest,
                 cancellationToken);
         }
     }

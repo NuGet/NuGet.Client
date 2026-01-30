@@ -6,9 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -40,7 +39,7 @@ namespace NuGet.Protocol.Plugins
 
         /// <summary>
         /// Loads and processes the contet from the generated file if it exists.
-        /// Even after this method is invoked, the operation claims might be null. 
+        /// Even after this method is invoked, the operation claims might be null.
         /// </summary>
         public void LoadFromFile()
         {
@@ -61,12 +60,7 @@ namespace NuGet.Protocol.Plugins
 
         private void ProcessContent(Stream content)
         {
-            var serializer = new JsonSerializer();
-            using (var sr = new StreamReader(content))
-            using (var jsonTextReader = new JsonTextReader(sr))
-            {
-                OperationClaims = serializer.Deserialize<IReadOnlyList<OperationClaim>>(jsonTextReader);
-            }
+            OperationClaims = JsonSerializer.Deserialize(content, PluginJsonContext.Default.IReadOnlyListOperationClaim);
         }
 
         /// <summary>
@@ -90,8 +84,7 @@ namespace NuGet.Protocol.Plugins
                     FileShare.None,
                     CachingUtility.BufferSize))
                 {
-                    var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
-                    await fileStream.WriteAsync(json, 0, json.Length);
+                    await JsonSerializer.SerializeAsync(fileStream, OperationClaims, PluginJsonContext.Default.IReadOnlyListOperationClaim);
                 }
 
                 if (File.Exists(CacheFileName))

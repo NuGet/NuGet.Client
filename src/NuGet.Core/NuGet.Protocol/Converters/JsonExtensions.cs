@@ -18,25 +18,31 @@ namespace NuGet.Protocol
     {
         public const int JsonSerializationMaxDepth = 512;
 
-        public static readonly JsonSerializerSettings ObjectSerializationSettings = new JsonSerializerSettings
-        {
-            MaxDepth = JsonSerializationMaxDepth,
-            NullValueHandling = NullValueHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.None,
-            Converters = new List<JsonConverter>
-            {
-                new NuGetVersionConverter(),
-                new VersionInfoConverter(),
-                new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
-                new FingerprintsConverter(),
-                new VersionRangeConverter(),
-                new PackageVulnerabilityInfoConverter(),
-                new NuGetFrameworkConverter()
-            },
-        };
+        public static readonly JsonSerializerSettings ObjectSerializationSettings;
+        internal static readonly JsonSerializer JsonObjectSerializer;
 
-        internal static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+        static JsonExtensions()
+        {
+            ObjectSerializationSettings = new JsonSerializerSettings
+            {
+                MaxDepth = JsonSerializationMaxDepth,
+                NullValueHandling = NullValueHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.None,
+                Converters = new List<JsonConverter>
+                {
+                    new NuGetVersionConverter(),
+                    new VersionInfoConverter(),
+                    new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
+                    new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
+                    new FingerprintsConverter(),
+                    new VersionRangeConverter(),
+                    new PackageVulnerabilityInfoConverter(),
+                    new NuGetFrameworkConverter()
+                },
+            };
+
+            JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+        }
 
         /// <summary>
         /// Serialize object to the JSON.
@@ -95,6 +101,19 @@ namespace NuGet.Protocol
         public static T FromJToken<T>(this JToken jtoken)
         {
             return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer);
+        }
+
+        /// <summary>
+        /// Deserialize object directly from JToken using AOT-compatible serialization.
+        /// </summary>
+        /// <typeparam name="T">Type of object.</typeparam>
+        /// <param name="jtoken">The JToken to be deserialized.</param>
+        /// <param name="jsonTypeInfo">The JSON type info for AOT-compatible deserialization.</param>
+        public static T FromJToken<T>(this JToken jtoken, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
+        {
+            // Convert JToken to string, then deserialize using System.Text.Json
+            var jsonString = jtoken.ToString(Formatting.None);
+            return System.Text.Json.JsonSerializer.Deserialize(jsonString, jsonTypeInfo);
         }
 
         /// <summary>

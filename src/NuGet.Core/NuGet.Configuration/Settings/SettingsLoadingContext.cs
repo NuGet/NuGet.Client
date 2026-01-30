@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using NuGet.Common;
@@ -87,6 +88,7 @@ namespace NuGet.Configuration
         {
             private const string EventNameFileRead = "SettingsLoadingContext/FileRead";
 
+            [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "FileReadData only contains primitive types (string and bool) which are safe for EventSource serialization.")]
             public static void FileRead(string filePath, bool isMachineWide, bool isReadOnly)
             {
                 var eventOptions = new EventSourceOptions

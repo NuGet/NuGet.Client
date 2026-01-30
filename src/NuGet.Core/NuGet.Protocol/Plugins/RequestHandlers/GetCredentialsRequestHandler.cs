@@ -132,7 +132,7 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var requestPayload = MessageUtilities.DeserializePayload<GetCredentialsRequest>(request);
+            var requestPayload = MessageUtilities.DeserializePayload(request, PluginJsonContext.Default.GetCredentialsRequest);
             var packageSource = GetPackageSource(requestPayload.PackageSourceRepository);
 
             GetCredentialsResponse responsePayload = null;
@@ -190,7 +190,7 @@ namespace NuGet.Protocol.Plugins
                     password: null);
             }
 
-            await responseHandler.SendResponseAsync(request, responsePayload, cancellationToken);
+            await responseHandler.SendResponseAsync(request, responsePayload, PluginJsonContext.Default.GetCredentialsResponse, cancellationToken);
         }
 
         private async Task<ICredentials> GetCredentialAsync(

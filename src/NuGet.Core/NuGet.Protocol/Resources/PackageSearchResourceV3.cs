@@ -6,14 +6,15 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Protocol.Plugins;
 
 namespace NuGet.Protocol
 {
@@ -41,8 +42,8 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
-        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
+        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result
+        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result.
         /// </summary>
         /// <param name="searchTerm">The term we're searching for.</param>
         /// <param name="filter">Filter for whether to include prerelease, delisted, supportedframework flags in query.</param>
@@ -72,7 +73,7 @@ namespace NuGet.Protocol
                 var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
 #pragma warning restore CS0618
                 searchResultMetadata = searchResultJsonObjects
-                    .Select(s => s.FromJToken<PackageSearchMetadata>());
+                    .Select(s => s.FromJToken(PluginJsonContext.Default.PackageSearchMetadata));
             }
 
             var searchResults = searchResultMetadata
@@ -206,8 +207,8 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
-        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
+        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result
+        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result.
         /// </summary>
         /// <param name="searchTerm">The term we're searching for.</param>
         /// <param name="filters">Filter for whether to include prerelease, delisted, supportedframework flags in query.</param>
@@ -255,18 +256,27 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
-            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = false,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                TypeInfoResolver = PluginJsonContext.Default
+            };
+
+            // Add the take-aware converter
+            var converter = new Converters.V3SearchResultsStjConverter(take, PluginJsonContext.Default.Options);
+            options.Converters.Add(converter);
+
+            // Get the JsonTypeInfo for V3SearchResults
+            var typeInfo = (JsonTypeInfo<V3SearchResults>)options.GetTypeInfo(typeof(V3SearchResults));
 
 #if NETCOREAPP2_0_OR_GREATER
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync(token))
 #else
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
 #endif
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
             {
-                return _newtonsoftConvertersSerializer.Deserialize<V3SearchResults>(jsonReader);
+                return await System.Text.Json.JsonSerializer.DeserializeAsync(stream, typeInfo, token);
             }
         }
     }

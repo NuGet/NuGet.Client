@@ -92,7 +92,7 @@ namespace NuGet.Protocol.Plugins
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var monitorRequest = MessageUtilities.DeserializePayload<MonitorNuGetProcessExitRequest>(request);
+            var monitorRequest = MessageUtilities.DeserializePayload(request, PluginJsonContext.Default.MonitorNuGetProcessExitRequest);
 
             Process process = null;
 
@@ -121,7 +121,7 @@ namespace NuGet.Protocol.Plugins
 
             var response = new MonitorNuGetProcessExitResponse(responseCode);
 
-            await responseHandler.SendResponseAsync(request, response, cancellationToken);
+            await responseHandler.SendResponseAsync(request, response, PluginJsonContext.Default.MonitorNuGetProcessExitResponse, cancellationToken);
         }
 
         private void OnProcessExited(object sender, EventArgs e)

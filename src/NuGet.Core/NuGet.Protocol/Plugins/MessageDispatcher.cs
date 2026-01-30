@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -169,6 +170,35 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
+        /// Creates a message using System.Text.Json with source generation support.
+        /// </summary>
+        /// <typeparam name="TPayload">The message payload.</typeparam>
+        /// <param name="type">The message type.</param>
+        /// <param name="method">The message method.</param>
+        /// <param name="payload">The message payload.</param>
+        /// <param name="jsonTypeInfo">The JSON type info for AOT-friendly serialization.</param>
+        /// <returns>A message.</returns>
+        /// <exception cref="ArgumentNullException">Throws if <paramref name="payload" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Throws if <paramref name="jsonTypeInfo" /> is <see langword="null" />.</exception>
+        public Message CreateMessage<TPayload>(MessageType type, MessageMethod method, TPayload payload, JsonTypeInfo<TPayload> jsonTypeInfo)
+            where TPayload : class
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            if (jsonTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(jsonTypeInfo));
+            }
+
+            var requestId = _idGenerator.GenerateUniqueId();
+
+            return MessageUtilities.Create(requestId, type, method, payload, jsonTypeInfo);
+        }
+
+        /// <summary>
         /// Asynchronously dispatches a cancellation request for the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -278,6 +308,48 @@ namespace NuGet.Protocol.Plugins
         /// is cancelled.</exception>
         public Task<TInbound> DispatchRequestAsync<TOutbound, TInbound>(
             MessageMethod method,
+            JsonTypeInfo<TInbound> inboundJti,
+            TOutbound payload,
+            JsonTypeInfo<TOutbound> outboundJti,
+            CancellationToken cancellationToken)
+            where TOutbound : class
+            where TInbound : class
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Capture _connection as SetConnection(...) could null it out later.
+            var connection = _connection;
+
+            if (connection == null)
+            {
+                return TaskResult.Null<TInbound>();
+            }
+
+            return DispatchWithNewContextAsync<TOutbound, TInbound>(
+                connection,
+                MessageType.Request,
+                inboundJti,
+                method,
+                payload,
+                outboundJti,
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously dispatches a request.
+        /// </summary>
+        /// <typeparam name="TOutbound">The request payload type.</typeparam>
+        /// <typeparam name="TInbound">The expected response payload type.</typeparam>
+        /// <param name="method">The request method.</param>
+        /// <param name="payload">The request payload.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <typeparamref name="TInbound" />
+        /// from the target.</returns>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public Task<TInbound> DispatchRequestAsync<TOutbound, TInbound>(
+            MessageMethod method,
             TOutbound payload,
             CancellationToken cancellationToken)
             where TOutbound : class
@@ -343,6 +415,55 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
+        /// Dispatches a response for a given request.
+        /// </summary>
+        /// <typeparam name="TOutbound">The response payload type.</typeparam>
+        /// <param name="request">A request message.</param>
+        /// <param name="responsePayload">A response payload.</param>
+        /// <param name="responsePayloadTypeInfo">The JSON type info for AOT-compatible serialization.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="request" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responsePayload" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responsePayloadTypeInfo" /> is <see langword="null" />.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public Task DispatchResponseAsync<TOutbound>(
+            Message request,
+            TOutbound responsePayload,
+            System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> responsePayloadTypeInfo,
+            CancellationToken cancellationToken)
+            where TOutbound : class
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (responsePayload == null)
+            {
+                throw new ArgumentNullException(nameof(responsePayload));
+            }
+
+            if (responsePayloadTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(responsePayloadTypeInfo));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Capture _connection as SetConnection(...) could null it out later.
+            var connection = _connection;
+
+            if (connection == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return DispatchAsync(connection, MessageType.Response, request, responsePayload, responsePayloadTypeInfo, cancellationToken);
+        }
+
+        /// <summary>
         /// Sets the connection to be used for dispatching messages.
         /// </summary>
         /// <param name="connection">A connection instance.  Can be <see langword="null" />.</param>
@@ -374,6 +495,15 @@ namespace NuGet.Protocol.Plugins
             return DispatchResponseAsync(request, payload, cancellationToken);
         }
 
+        Task IResponseHandler.SendResponseAsync<TPayload>(
+            Message request,
+            TPayload payload,
+            System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> payloadTypeInfo,
+            CancellationToken cancellationToken)
+        {
+            return DispatchResponseAsync(request, payload, payloadTypeInfo, cancellationToken);
+        }
+
         private async Task DispatchAsync<TOutgoing>(
             IConnection connection,
             MessageType type,
@@ -390,6 +520,34 @@ namespace NuGet.Protocol.Plugins
             }
 
             var message = MessageUtilities.Create(request.RequestId, type, request.Method, payload);
+
+            try
+            {
+                await connection.SendAsync(message, cancellationToken);
+            }
+            finally
+            {
+                RemoveInboundRequestContext(request.RequestId);
+            }
+        }
+
+        private async Task DispatchAsync<TOutgoing>(
+            IConnection connection,
+            MessageType type,
+            Message request,
+            TOutgoing payload,
+            System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutgoing> payloadTypeInfo,
+            CancellationToken cancellationToken)
+            where TOutgoing : class
+        {
+            InboundRequestContext requestContext;
+
+            if (!_inboundRequestContexts.TryGetValue(request.RequestId, out requestContext))
+            {
+                return;
+            }
+
+            var message = MessageUtilities.Create(request.RequestId, type, request.Method, payload, payloadTypeInfo);
 
             try
             {
@@ -419,21 +577,17 @@ namespace NuGet.Protocol.Plugins
         {
             Message message;
 
-            var jsonPayload = JsonSerializationUtilities.FromObject(fault);
-
             if (request == null)
             {
                 var requestId = _idGenerator.GenerateUniqueId();
 
-                message = new Message(requestId, MessageType.Fault, MessageMethod.None, jsonPayload);
+                message = MessageUtilities.Create(requestId, MessageType.Fault, MessageMethod.None, fault, PluginJsonContext.Default.Fault);
 
                 await connection.SendAsync(message, cancellationToken);
             }
             else
             {
-                message = new Message(request.RequestId, MessageType.Fault, request.Method, jsonPayload);
-
-                await DispatchWithExistingContextAsync(connection, message, cancellationToken);
+                await DispatchAsync(connection, MessageType.Fault, request, fault, PluginJsonContext.Default.Fault, cancellationToken);
             }
         }
 
@@ -443,7 +597,7 @@ namespace NuGet.Protocol.Plugins
             Progress progress,
             CancellationToken cancellationToken)
         {
-            var message = MessageUtilities.Create(request.RequestId, MessageType.Progress, request.Method, progress);
+            var message = MessageUtilities.Create(request.RequestId, MessageType.Progress, request.Method, progress, PluginJsonContext.Default.Progress);
 
             await DispatchWithExistingContextAsync(connection, message, cancellationToken);
         }
@@ -471,6 +625,75 @@ namespace NuGet.Protocol.Plugins
             var timeout = GetRequestTimeout(connection, type, method);
             var isKeepAlive = GetIsKeepAlive(type, method);
             var requestContext = CreateOutboundRequestContext<TIncoming>(
+                message,
+                timeout,
+                isKeepAlive,
+                cancellationToken);
+
+            _outboundRequestContexts.TryAdd(message.RequestId, requestContext);
+
+            switch (type)
+            {
+                case MessageType.Request:
+                case MessageType.Response:
+                case MessageType.Fault:
+                    var removeRequestContext = true;
+
+                    try
+                    {
+                        await connection.SendAsync(message, requestContext.CancellationToken);
+
+                        return await requestContext.CompletionTask;
+                    }
+                    catch (OperationCanceledException) when (requestContext.CancellationToken.IsCancellationRequested)
+                    {
+                        if (_logger.IsEnabled)
+                        {
+                            _logger.Write(new CommunicationLogMessage(_logger.Now, message.RequestId, message.Method, message.Type, MessageState.Cancelled));
+                        }
+
+                        // Keep the request context around if cancellation was requested.
+                        // A race condition exists where after sending a cancellation request,
+                        // we could receive a response (which was in flight) or a cancellation
+                        // response.
+                        // If a normal response (success/failure) and not a cancellation response
+                        // is received after a cancellation request, we need to have an active
+                        // request context to avoid a protocol exception.
+                        removeRequestContext = false;
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (removeRequestContext)
+                        {
+                            RemoveOutboundRequestContext(message.RequestId);
+                        }
+                    }
+
+                default:
+                    break;
+            }
+
+            return null;
+        }
+
+        private async Task<TIncoming> DispatchWithNewContextAsync<TOutgoing, TIncoming>(
+            IConnection connection,
+            MessageType type,
+            JsonTypeInfo<TIncoming> incomingJsonTypeInfo,
+            MessageMethod method,
+            TOutgoing payload,
+            JsonTypeInfo<TOutgoing> outgoingJsonTypeInfo,
+            CancellationToken cancellationToken)
+            where TOutgoing : class
+            where TIncoming : class
+        {
+            var message = CreateMessage(type, method, payload, outgoingJsonTypeInfo);
+            var timeout = GetRequestTimeout(connection, type, method);
+            var isKeepAlive = GetIsKeepAlive(type, method);
+            var requestContext = CreateOutboundRequestContext<TIncoming>(
+                incomingJsonTypeInfo,
                 message,
                 timeout,
                 isKeepAlive,
@@ -607,7 +830,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(fault));
             }
 
-            var payload = MessageUtilities.DeserializePayload<Fault>(fault);
+            var payload = MessageUtilities.DeserializePayload(fault, PluginJsonContext.Default.Fault);
 
             throw new ProtocolException(payload.Message);
         }
@@ -707,6 +930,23 @@ namespace NuGet.Protocol.Plugins
             CancellationToken cancellationToken)
         {
             return new OutboundRequestContext<TIncoming>(
+                _connection,
+                message,
+                timeout,
+                isKeepAlive,
+                cancellationToken,
+                _logger);
+        }
+
+        private OutboundRequestContext<TIncoming> CreateOutboundRequestContext<TIncoming>(
+            JsonTypeInfo<TIncoming> jsonTypeInfo,
+            Message message,
+            TimeSpan? timeout,
+            bool isKeepAlive,
+            CancellationToken cancellationToken)
+        {
+            return new OutboundRequestContext<TIncoming>(
+                jsonTypeInfo,
                 _connection,
                 message,
                 timeout,

@@ -5,9 +5,10 @@
 
 using System;
 using System.IO;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -60,7 +61,7 @@ namespace NuGet.Protocol.Plugins
             catch (IOException)
             {
                 // can throw a named pipe exception
-                // we don't care since we are disposing. 
+                // we don't care since we are disposing.
             }
 
             GC.SuppressFinalize(this);
@@ -131,11 +132,16 @@ namespace NuGet.Protocol.Plugins
             {
                 lock (_sendLock)
                 {
-                    using (var jsonWriter = new JsonTextWriter(_textWriter))
+                    using (var memoryStream = new MemoryStream())
                     {
-                        jsonWriter.CloseOutput = false;
+                        using (var jsonWriter = new Utf8JsonWriter(memoryStream, new JsonWriterOptions { SkipValidation = false }))
+                        {
+                            JsonSerializationUtilities.Serialize(jsonWriter, message);
+                        }
 
-                        JsonSerializationUtilities.Serialize(jsonWriter, message);
+                        // Write the JSON to the text writer
+                        string json = Encoding.UTF8.GetString(memoryStream.ToArray());
+                        _textWriter.Write(json);
 
                         // We need to terminate JSON objects with a delimiter (i.e.:  a single
                         // newline sequence) to signal to the receiver when to stop reading.

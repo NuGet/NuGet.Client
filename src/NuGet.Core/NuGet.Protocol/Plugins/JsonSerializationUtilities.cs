@@ -19,11 +19,14 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the JSON serializer.
         /// </summary>
-        public static JsonSerializer Serializer { get; }
+        public static Newtonsoft.Json.JsonSerializer Serializer
+        {
+            get;
+        }
 
         static JsonSerializationUtilities()
         {
-            Serializer = JsonSerializer.Create(new JsonSerializerSettings()
+            Serializer = Newtonsoft.Json.JsonSerializer.Create(new JsonSerializerSettings()
             {
                 Converters = new JsonConverter[]
                 {
@@ -60,6 +63,32 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
+        /// Deserializes an object from the provided JSON using System.Text.Json with source generation.
+        /// </summary>
+        /// <typeparam name="T">The deserialization type.</typeparam>
+        /// <param name="json">JSON to deserialize.</param>
+        /// <param name="jsonTypeInfo">The JSON type info for AOT-friendly deserialization.</param>
+        /// <returns>An instance of <typeparamref name="T" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="json" />
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="jsonTypeInfo" /> is <see langword="null" />.</exception>
+        public static T Deserialize<T>(string json, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
+            where T : class
+        {
+            if (string.IsNullOrEmpty(json))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(json));
+            }
+
+            if (jsonTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(jsonTypeInfo));
+            }
+
+            return System.Text.Json.JsonSerializer.Deserialize(json, jsonTypeInfo);
+        }
+
+        /// <summary>
         /// Serializes an object.
         /// </summary>
         /// <param name="value">An object to serialize.</param>
@@ -76,6 +105,34 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
+        /// Serializes an object using System.Text.Json with source generation.
+        /// </summary>
+        /// <typeparam name="T">The type of the value to serialize.</typeparam>
+        /// <param name="value">An object to serialize.</param>
+        /// <param name="jsonTypeInfo">The JSON type info for AOT-friendly serialization.</param>
+        /// <returns>A <see cref="JObject" />.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="jsonTypeInfo" /> is <see langword="null" />.</exception>
+        public static JObject FromObject<T>(T value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (jsonTypeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(jsonTypeInfo));
+            }
+
+            // Serialize to JSON string using System.Text.Json
+            string json = System.Text.Json.JsonSerializer.Serialize(value, jsonTypeInfo);
+
+            // Parse the JSON string into a JObject for compatibility
+            return JObject.Parse(json);
+        }
+
+        /// <summary>
         /// Serializes an object to the provided writer.
         /// </summary>
         /// <param name="writer">A JSON writer.</param>
@@ -89,6 +146,44 @@ namespace NuGet.Protocol.Plugins
             }
 
             Serializer.Serialize(writer, value);
+        }
+
+        /// <summary>
+        /// Serializes a Message to the provided writer using System.Text.Json.
+        /// </summary>
+        /// <param name="writer">A JSON writer.</param>
+        /// <param name="message">The Message to serialize.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="writer" /> or <paramref name="message" /> is <see langword="null" />.</exception>
+        public static void Serialize(System.Text.Json.Utf8JsonWriter writer, Message message)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            writer.WriteStartObject();
+
+            writer.WriteString("RequestId", message.RequestId);
+            writer.WriteString("Type", message.Type.ToString());
+            writer.WriteString("Method", message.Method.ToString());
+
+            if (message.Payload != null)
+            {
+                writer.WritePropertyName("Payload");
+                // Convert JObject to string and write it as raw JSON
+                string payloadJson = message.Payload.ToString(Formatting.None);
+                using (var doc = System.Text.Json.JsonDocument.Parse(payloadJson))
+                {
+                    doc.RootElement.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
         }
 
         /// <summary>

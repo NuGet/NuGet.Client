@@ -14,6 +14,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the progress percentage.
         /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("percentage")]
         public double? Percentage { get; }
 
         /// <summary>
@@ -21,6 +22,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="percentage">The progress percentage.</param>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public Progress(double? percentage = null)
         {
             if (!IsValidPercentage(percentage))

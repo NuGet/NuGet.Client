@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading;
@@ -116,6 +117,7 @@ namespace NuGet.Common.Migrations
                 NuGetEventSource.Instance.Write(EventNameMigrationRun, eventOptions);
             }
 
+            [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "RunStopEventData only contains primitive types (string and bool) which are safe for EventSource serialization.")]
             public static void RunStop(string migrationFilePath, bool migrationPerformed)
             {
                 var eventOptions = new EventSourceOptions

@@ -178,7 +178,8 @@ namespace NuGet.Protocol.Plugins
                             _request.RequestId,
                             MessageType.Progress,
                             _request.Method,
-                            new Progress());
+                            new Progress(),
+                            PluginJsonContext.Default.Progress);
 
                         await _connection.SendAsync(progress, _cancellationToken);
                     }

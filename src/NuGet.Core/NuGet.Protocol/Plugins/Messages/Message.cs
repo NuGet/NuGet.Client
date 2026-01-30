@@ -19,23 +19,31 @@ namespace NuGet.Protocol.Plugins
         /// Gets the request ID.
         /// </summary>
         [JsonRequired]
+        [System.Text.Json.Serialization.JsonPropertyName("requestId")]
+        [System.Text.Json.Serialization.JsonRequired]
         public string RequestId { get; }
 
         /// <summary>
         /// Gets the message type.
         /// </summary>
         [JsonRequired]
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonRequired]
         public MessageType Type { get; }
 
         /// <summary>
         /// Gets the message method.
         /// </summary>
         [JsonRequired]
+        [System.Text.Json.Serialization.JsonPropertyName("method")]
+        [System.Text.Json.Serialization.JsonRequired]
         public MessageMethod Method { get; }
 
         /// <summary>
         /// Gets the optional message payload.
         /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("payload")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(NuGet.Protocol.Converters.JObjectConverter))]
         public JObject Payload { get; }
 
         /// <summary>
@@ -52,6 +60,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentException">Thrown if <paramref name="method" />
         /// is an undefined <see cref="MessageMethod" /> value.</exception>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public Message(string requestId, MessageType type, MessageMethod method, JObject payload = null)
         {
             if (string.IsNullOrEmpty(requestId))

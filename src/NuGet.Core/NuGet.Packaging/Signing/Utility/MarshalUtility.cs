@@ -4,18 +4,19 @@
 #nullable disable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace NuGet.Packaging.Signing.Utility
 {
     internal static class MarshalUtility
     {
-        internal static T PtrToStructure<T>(IntPtr pointer)
+        internal static T PtrToStructure<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(IntPtr pointer)
         {
             return Marshal.PtrToStructure<T>(pointer);
         }
 
-        internal static int SizeOf<T>()
+        internal static int SizeOf<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] T>()
         {
             return Marshal.SizeOf<T>();
         }

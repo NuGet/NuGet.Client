@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Versioning;
@@ -292,6 +293,31 @@ namespace NuGet.Protocol.Plugins
             cancellationToken.ThrowIfCancellationRequested();
 
             return MessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(method, payload, cancellationToken);
+        }
+
+        public Task<TInbound> SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(
+            MessageMethod method,
+            JsonTypeInfo<TInbound> inboundJti,
+            TOutbound payload,
+            JsonTypeInfo<TOutbound> outboundJti,
+            CancellationToken cancellationToken)
+            where TOutbound : class
+            where TInbound : class
+        {
+            if (State == ConnectionState.Closing ||
+                State == ConnectionState.Closed)
+            {
+                return TaskResult.Null<TInbound>();
+            }
+
+            if (_state < (int)ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException(Strings.Plugin_NotConnected);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return MessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(method, inboundJti, payload, outboundJti, cancellationToken);
         }
 
         private void OnMessageReceived(object sender, MessageEventArgs e)

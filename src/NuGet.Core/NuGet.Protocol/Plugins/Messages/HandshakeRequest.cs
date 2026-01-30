@@ -19,12 +19,16 @@ namespace NuGet.Protocol.Plugins
         /// Gets the requestor's plugin protocol version.
         /// </summary>
         [JsonRequired]
-        public SemanticVersion ProtocolVersion { get; }
+        [System.Text.Json.Serialization.JsonPropertyName("protocolVersion")]
+        [System.Text.Json.Serialization.JsonRequired]
+        public SemanticVersion ProtocolVersion { get; init; }
 
         /// <summary>
         /// Gets the requestor's minimum plugin protocol version.
         /// </summary>
         [JsonRequired]
+        [System.Text.Json.Serialization.JsonPropertyName("minimumProtocolVersion")]
+        [System.Text.Json.Serialization.JsonRequired]
         public SemanticVersion MinimumProtocolVersion { get; }
 
         /// <summary>
@@ -39,6 +43,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="protocolVersion" />
         /// is less than <paramref name="minimumProtocolVersion" />.</exception>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public HandshakeRequest(SemanticVersion protocolVersion, SemanticVersion minimumProtocolVersion)
         {
             if (protocolVersion == null)

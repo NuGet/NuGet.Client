@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Plugins
             {
                 if (!IsClosed && !string.IsNullOrEmpty(e.Line))
                 {
-                    message = JsonSerializationUtilities.Deserialize<Message>(e.Line);
+                    message = JsonSerializationUtilities.Deserialize(e.Line, PluginJsonContext.Default.Message);
 
                     if (message != null)
                     {

@@ -7,6 +7,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 using Newtonsoft.Json;
 using NuGet.Packaging;
@@ -15,6 +16,32 @@ namespace NuGet.Protocol
 {
     public static class HttpStreamValidation
     {
+        public static void ValidateJsonObject(string uri, Stream stream)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(stream, new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = false,
+                    CommentHandling = JsonCommentHandling.Disallow
+                });
+
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    throw new System.Text.Json.JsonException("The JSON document is not an object.");
+                }
+            }
+            catch (Exception e) when (!(e is InvalidDataException))
+            {
+                string message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Protocol_InvalidJsonObject,
+                    uri);
+
+                throw new InvalidDataException(message, e);
+            }
+        }
+
         public static void ValidateJObject(string uri, Stream stream)
         {
             try

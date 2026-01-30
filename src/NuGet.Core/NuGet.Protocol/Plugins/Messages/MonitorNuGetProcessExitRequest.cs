@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -13,14 +13,17 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the process ID.
         /// </summary>
-        [JsonRequired]
-        public int ProcessId { get; }
+        [Newtonsoft.Json.JsonRequired]
+        [JsonPropertyName("ProcessId")]
+        [System.Text.Json.Serialization.JsonRequired]
+        public int ProcessId { get; init; }
 
         /// <summary>
         /// Initializes a new <see cref="MonitorNuGetProcessExitRequest" /> class.
         /// </summary>
         /// <param name="processId">The process ID.</param>
-        [JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public MonitorNuGetProcessExitRequest(int processId)
         {
             ProcessId = processId;

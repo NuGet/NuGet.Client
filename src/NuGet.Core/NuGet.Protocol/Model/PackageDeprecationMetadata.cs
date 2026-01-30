@@ -5,18 +5,22 @@
 
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using StjJsonPropertyNameAttribute = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace NuGet.Protocol
 {
     public class PackageDeprecationMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.DeprecationMessage)]
+        [StjJsonPropertyName(JsonProperties.DeprecationMessage)]
         public string Message { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.DeprecationReasons)]
+        [StjJsonPropertyName(JsonProperties.DeprecationReasons)]
         public IEnumerable<string> Reasons { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.AlternatePackage)]
+        [StjJsonPropertyName(JsonProperties.AlternatePackage)]
         public AlternatePackageMetadata AlternatePackage { get; internal set; }
     }
 }

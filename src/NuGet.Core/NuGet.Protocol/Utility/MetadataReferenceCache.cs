@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using NuGet.Versioning;
@@ -17,9 +18,22 @@ namespace NuGet.Protocol
     public class MetadataReferenceCache
     {
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
+        private readonly Dictionary<TypeWithProperties, PropertyInfo[]> _propertyCache = new Dictionary<TypeWithProperties, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
+
+        private readonly struct TypeWithProperties(
+            [DynamicallyAccessedMembers(TypeWithProperties.Annotations)] Type type)
+        {
+            public const DynamicallyAccessedMemberTypes Annotations = DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties;
+
+            [property: DynamicallyAccessedMembers(Annotations)]
+            public Type Type => type;
+
+            [return: DynamicallyAccessedMembers(Annotations)]
+            public TypeInfo GetTypeInfo() => type.GetTypeInfo();
+        }
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -90,11 +104,11 @@ namespace NuGet.Protocol
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
         /// </summary>
-        public T GetObject<T>(T input)
+        public T GetObject<[DynamicallyAccessedMembers(TypeWithProperties.Annotations)] T>(T input)
         {
             // Get all properties that contain both a Get method and a Set method and can be cached.
             PropertyInfo[] properties;
-            Type typeKey = typeof(T);
+            TypeWithProperties typeKey = new(typeof(T));
 
             if (!_propertyCache.TryGetValue(typeKey, out properties))
             {

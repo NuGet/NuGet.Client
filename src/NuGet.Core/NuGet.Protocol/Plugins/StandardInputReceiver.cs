@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Plugins
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    message = JsonSerializationUtilities.Deserialize<Message>(line);
+                    message = JsonSerializationUtilities.Deserialize(line, PluginJsonContext.Default.Message);
 
                     if (message != null)
                     {

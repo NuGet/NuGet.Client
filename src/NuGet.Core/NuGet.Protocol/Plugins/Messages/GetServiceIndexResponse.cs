@@ -7,6 +7,7 @@ using System;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Converters;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -19,12 +20,14 @@ namespace NuGet.Protocol.Plugins
         /// Gets the response code.
         /// </summary>
         [JsonRequired]
-        public MessageResponseCode ResponseCode { get; }
+        [System.Text.Json.Serialization.JsonRequired]
+        public MessageResponseCode ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the service index (index.json) for the package source repository.
         /// </summary>
-        public JObject ServiceIndex { get; }
+        [System.Text.Json.Serialization.JsonConverter(typeof(JObjectConverter))]
+        public JObject ServiceIndex { get; init; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetServiceIndexResponse" /> class.
@@ -33,10 +36,11 @@ namespace NuGet.Protocol.Plugins
         /// <param name="serviceIndex">The service index (index.json) for the package source repository.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="responseCode" />
         /// is an undefined <see cref="MessageResponseCode" /> value.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseCode" /> 
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseCode" />
         /// is <see cref="MessageResponseCode.Success" /> and <paramref name="serviceIndex" />
         /// is <see langword="null" />.</exception>
         [JsonConstructor]
+        [System.Text.Json.Serialization.JsonConstructor]
         public GetServiceIndexResponse(MessageResponseCode responseCode, JObject serviceIndex)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
