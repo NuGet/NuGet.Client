@@ -156,6 +156,11 @@
         <target state="translated">Versione del pacchetto non valida per l'ID pacchetto '{0}': '{1}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="ErrorInvalidTimestamp">
+        <source>Invalid timestamp: '{0}'</source>
+        <target state="new">Invalid timestamp: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorInvalidPackageVersionForDependency">
         <source>Invalid package version for a dependency with id '{0}' in package '{1}': '{2}'</source>
         <target state="translated">È stata rilevata una versione del pacchetto non valida per una dipendenza con ID '{0}' nel pacchetto '{1}': '{2}'</target>

@@ -446,6 +446,15 @@ namespace NuGet.Packaging {
                 return ResourceManager.GetString("ErrorInvalidPackageVersionForDependency", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid timestamp: &apos;{0}&apos;.
+        /// </summary>
+        internal static string ErrorInvalidTimestamp {
+            get {
+                return ResourceManager.GetString("ErrorInvalidTimestamp", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Manifest file not found at &apos;{0}&apos;.

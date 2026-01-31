@@ -135,6 +135,9 @@
 {1} is the package's identity.
 {2} is the dependency's version range.</comment>
   </data>
+  <data name="ErrorInvalidTimestamp" xml:space="preserve">
+    <value>Invalid timestamp: '{0}'</value>
+  </data>
   <data name="ErrorNullOrEmptyPackageId" xml:space="preserve">
     <value>Null or empty package id</value>
   </data>
