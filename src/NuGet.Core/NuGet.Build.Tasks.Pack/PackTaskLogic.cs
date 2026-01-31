@@ -1086,24 +1086,25 @@ namespace NuGet.Build.Tasks.Pack
 
         internal static void SetPackArgsPropertiesFromNuspecProperties(PackArgs packArgs, string[] nuspecProperties, string nuspecInputFilePath)
         {
-            if (!string.IsNullOrWhiteSpace(nuspecInputFilePath))
+            if (string.IsNullOrWhiteSpace(nuspecInputFilePath) || nuspecProperties == null || !nuspecProperties.Any())
             {
-                if (nuspecProperties != null && nuspecProperties.Any())
-                {
-                    packArgs.Properties.AddRange(ParsePropertiesAsDictionary(nuspecProperties));
-                    if (packArgs.Properties.TryGetValue("version", out var packageVersion))
-                    {
-                        if (!NuGetVersion.TryParse(packageVersion, out var version))
-                        {
-                            throw new ArgumentException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.InvalidPackageVersion,
-                                packageVersion));
-                        }
-                        packArgs.Version = version.ToNormalizedString();
-                    }
-                }
+                return;
             }
+
+            packArgs.Properties.AddRange(ParsePropertiesAsDictionary(nuspecProperties));
+            if (packArgs.Properties.TryGetValue("version", out var packageVersion))
+            {
+                if (!NuGetVersion.TryParse(packageVersion, out var version))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPackageVersion,
+                        packageVersion));
+                }
+                packArgs.Version = version.ToNormalizedString();
+            }
+
+
         }
 
         private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)

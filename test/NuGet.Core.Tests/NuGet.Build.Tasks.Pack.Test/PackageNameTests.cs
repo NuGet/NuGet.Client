@@ -63,7 +63,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             // https://github.com/NuGet/NuGet.Client/pull/6712
             // NuGet.Build.Tasks.Pack.targets has been moved to in NuGet.Build.Tasks project.
-            // Therefore, NuGet.Build.Tasks project must be built before runnig this test.
+            // Therefore, NuGet.Build.Tasks project must be built before running this test.
             var tfmTargets = GetFrameworkMoniker(typeof(PackageFileNameTests), out var _);
             _pathTargetsFile = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks", "bin", CONFIGURATION, tfmTargets, FILENAME_TARGETS);
             if (!System.IO.File.Exists(_pathTargetsFile))
@@ -85,86 +85,80 @@ namespace NuGet.Build.Tasks.Pack.Test
         {
             get
             {
-                var cases = new object[][]
+                var cases = new PackageFileNameTestCase[]
                     {
                     // without nuspec input
-                    new object[]{"proj.1.9.0.nupkg", "proj", "nusp", "1.9", "", "", false},
-                    new object[]{"proj.2.0.0.nupkg", "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", false},
-                    new object[]{"proj.2.0.0.1.nupkg", "proj", "nusp", "2.0.0.1", "       ", "4.0.0.1", false},
-                    new object[]{"proj.2.0.0.2.nupkg", "proj", "nusp", "2.0.0.2", "3.0.0.2", "4.0.0.2", false},
-                    new object[]{"proj.2.0.0.3-preview.nupkg", "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false},
+                    new PackageFileNameTestCase("000",["proj.1.9.0.nupkg"          ], "proj", "nusp", "1.9", "", "", false),
+                    new PackageFileNameTestCase("001",["proj.2.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", false),
+                    new PackageFileNameTestCase("002",["proj.2.0.0.1.nupkg"        ], "proj", "nusp", "2.0.0.1", "       ", "4.0.0.1", false),
+                    new PackageFileNameTestCase("003",["proj.2.0.0.2.nupkg"        ], "proj", "nusp", "2.0.0.2", "3.0.0.2", "4.0.0.2", false),
+                    new PackageFileNameTestCase("004",["proj.2.0.0.3-preview.nupkg"], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false),
+                    new PackageFileNameTestCase("100",["proj.nupkg"                ], "proj", "nusp", "1.9", "", "", false, OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("104",["proj.nupkg"                ], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false,OutputFileNamesWithoutVersion:true),
 
                     // with nuspec input
-                    new object[]{"nusp.4.0.0.nupkg", "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", true},
-                    new object[]{"nusp.4.0.0.3.nupkg", "proj", "nusp", "2.0.0.3", "       ", "4.0.0.3", true},
-                    new object[]{"nusp.3.0.0.4.nupkg", "proj", "nusp", "2.0.0.4", "3.0.0.4", "4.0.0.4", true},
-                    new object[]{"nusp.5.0.0-preview.nupkg", "proj", "nusp", "2.0.0.0", "   ", "5.0.0.0-preview", true},
-                    new object[]{"nusp.5.0.0.2-preview.nupkg", "proj", "nusp", "2.0.0.0", " ", "5.0.0.2-preview", true},
-                    new object[]{"nusp.6.0.0-beta.nupkg", "proj", "nusp", "2.0.0.0", "6-beta", "5.0.0.3-preview", true},
+                    new PackageFileNameTestCase("010",["nusp.4.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", true),
+                    new PackageFileNameTestCase("011",["nusp.4.0.0.3.nupkg"        ], "proj", "nusp", "2.0.0.3", "         ", "4.0.0.3", true),
+                    new PackageFileNameTestCase("012",["nusp.3.0.0.4.nupkg"        ], "proj", "nusp", "2.0.0.4", "3.0.0.4", "4.0.0.4", true),
+                    new PackageFileNameTestCase("013",["nusp.5.0.0-preview.nupkg"  ], "proj", "nusp", "2.0.0.0", "         ", "5.0.0.0-preview", true),
+                    new PackageFileNameTestCase("014",["nusp.5.0.0.2-preview.nupkg"], "proj", "nusp", "2.0.0.0", "         ", "5.0.0.2-preview", true),
+                    new PackageFileNameTestCase("015",["nusp.6.0.0-beta.nupkg"     ], "proj", "nusp", "2.0.0.0", "6-beta   ", "5.0.0.3-preview", true),
+                    new PackageFileNameTestCase("110",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", true, OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("115",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "6-beta   ", "5.0.0.3-preview", true, OutputFileNamesWithoutVersion:true),
 
                     // has symbol
-                    new object[]{"proj.2.1.0.snupkg", "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, true,NuGet.Commands.SymbolPackageFormat.Snupkg },
-                    new object[]{"nusp.7.1.2.snupkg", "proj", "nusp", "2.0.0.0", "7.1.2", "5.0.0.4-preview", true, true,NuGet.Commands.SymbolPackageFormat.Snupkg },
+                    new PackageFileNameTestCase("020",["proj.2.1.0.snupkg"], "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ),
+                    new PackageFileNameTestCase("021",["nusp.7.1.2.snupkg"], "proj", "nusp", "2.0.0.0", "7.1.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ),
+                    new PackageFileNameTestCase("120",["proj.snupkg"      ], "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ,OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("121",["nusp.snupkg"      ], "proj", "nusp", "2.0.0.0", "7.1.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ,OutputFileNamesWithoutVersion:true),
 
-                    new object[]{"proj.2.2.0.nupkg;proj.2.2.0.symbols.nupkg", "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, true,NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
-                    new object[]{"nusp.7.2.2.nupkg;nusp.7.2.2.symbols.nupkg", "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, true,NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
-                    };
+                    new PackageFileNameTestCase("022",["proj.2.2.0.nupkg", "proj.2.2.0.symbols.nupkg"], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
+                    new PackageFileNameTestCase("023",["nusp.7.2.2.nupkg", "nusp.7.2.2.symbols.nupkg"], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
+                    new PackageFileNameTestCase("122",["proj.nupkg", "proj.symbols.nupkg"            ], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("123",["nusp.nupkg", "nusp.symbols.nupkg"            ], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, OutputFileNamesWithoutVersion:true),
+                    // NoVersion
+                     };
 
-                // for view order in test explorer
-                for (int i = 0; i < cases.Length; i++)
-                {
-                    cases[i][0] = string.Join(";", cases[i][0].ToString()!.Split(';').Select(fileName => $"{i:00}_{fileName}").OfType<object>());
-                    for (int j = 1; j < 3; j++)
-                    {
-                        cases[i][j] = $"{i:00}_{cases[i][j]}";
-                    }
-                }
-                return cases;
+
+                return (object[][])cases.Select((c, i) => new object[] { c }).ToArray();
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [Theory]
         [MemberData(nameof(TestCases))]
-        public void GetPackOutputItemsTask_PackageFileName
-            (string outputNupkgNames
-            , string idProjProp
-            , string idNuspecMeta
-            , string versionProjProp
-            , string versionNuspecProperties
-            , string versionNuspecMeta
-            , bool useNuspecFile
-            , bool includeSymbols = false
-            , NuGet.Commands.SymbolPackageFormat symbolPackageFormat = Commands.SymbolPackageFormat.Snupkg)
+        public void GetPackOutputItemsTask_PackageFileName(PackageFileNameTestCase testCase)
         {
+
             const string projectFileName = "test.csproj";
             const string nuspecFileName = "test.nuspec";
 
-            string[] outputExtensions = GetOutputExtensions(includeSymbols, symbolPackageFormat);
+            string[] outputExtensions = GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
 
             var outputItemTask = new NuGet.Build.Tasks.Pack.GetPackOutputItemsTask();
-            outputItemTask.PackageId = idProjProp;
-            outputItemTask.PackageVersion = versionProjProp;
-            outputItemTask.IncludeSymbols = includeSymbols;
-            outputItemTask.SymbolPackageFormat = GetSymbolPackageFormatText(symbolPackageFormat);
-            if (!string.IsNullOrWhiteSpace(versionNuspecProperties))
+            outputItemTask.PackageId = testCase.IdProjProp;
+            outputItemTask.PackageVersion = testCase.VersionProjProp;
+            outputItemTask.IncludeSymbols = testCase.IncludeSymbols;
+            outputItemTask.SymbolPackageFormat = GetSymbolPackageFormatText(testCase.SymbolPackageFormat);
+            outputItemTask.OutputFileNamesWithoutVersion = testCase.OutputFileNamesWithoutVersion;
+            if (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties))
             {
-                outputItemTask.NuspecProperties = new string[] { $"version={versionNuspecProperties}" };
+                outputItemTask.NuspecProperties = new string[] { $"version={testCase.VersionNuspecProperties}" };
             }
 
             using (var testDirectory = TestDirectory.Create())
             {
                 outputItemTask.PackageOutputPath = testDirectory.Path;
                 outputItemTask.NuspecOutputPath = testDirectory.Path;
-                if (useNuspecFile)
+                if (testCase.UseNuspecFile)
                 {
                     outputItemTask.NuspecInputFilePath = System.IO.Path.Combine(testDirectory.Path, nuspecFileName);
                 }
 
-                CreateTestProjectFileAndNuspecFile(testDirectory, projectFileName, nuspecFileName, idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
+                CreateTestProjectFileAndNuspecFile(testDirectory, projectFileName, nuspecFileName, testCase);// idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
 
                 Assert.True(outputItemTask.Execute());
 
-                foreach (string outputNupkgName in outputNupkgNames.Split(';'))
+                foreach (string outputNupkgName in testCase.OutputNupkgNames)
                 {
                     string[] itemSpecs = outputItemTask.OutputPackItems.Select(item => item.ItemSpec).ToArray();
                     var matchCount = GetNameMatchFilePathCount(outputNupkgName, itemSpecs);
@@ -176,22 +170,13 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         [PlatformTheory(Platform.Windows)]
         [MemberData(nameof(TestCases))]
-        public void PackTask_PackageFileName_FromProjectFileWithNuspecFile
-            (string outputNupkgNames
-            , string idProjProp
-            , string idNuspecMeta
-            , string versionProjProp
-            , string versionNuspecProperties
-            , string versionNuspecMeta
-            , bool useNuspecFile
-            , bool includeSymbols = false
-            , NuGet.Commands.SymbolPackageFormat symbolPackageFormat = Commands.SymbolPackageFormat.Snupkg)
+        public void PackTask_PackageFileName_FromProjectFileWithNuspecFile(PackageFileNameTestCase testCase)
         {
-            string[] outputExtensions = GetOutputExtensions(includeSymbols, symbolPackageFormat);
+            string[] outputExtensions = GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
 
             using (var testDirectory = TestDirectory.Create())
             {
-                CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
+                CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);// idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
 
                 CommandRunnerResult runresultDotnetPack;
                 if (_isDotNetFramework)
@@ -225,7 +210,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                         .Distinct().ToArray();
                 Assert.Equal(outputExtensions.Length, nupkgGneratedFiles.Length);
 
-                foreach (string outputNupkgName in outputNupkgNames.Split(';'))
+                foreach (string outputNupkgName in testCase.OutputNupkgNames)
                 {
                     var matchCountInFileSystem = GetNameMatchFilePathCount(outputNupkgName, nupkgGneratedFiles);
                     Assert.True(matchCountInFileSystem == 1, $"{outputNupkgName} is not found in filesystem. [{string.Join(" , ", nupkgGneratedFiles.Select(_ => System.IO.Path.GetFileName(_)))}]");
@@ -240,14 +225,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             (string testDirectory
             , string projectFileName
             , string nuspecFileName
-            , string idProjProp
-            , string idNuspecMeta
-            , string versionProjProp
-            , string versionNuspecProperties
-            , string versionNuspecMeta
-            , bool useNuspecFile
-            , bool includeSymbols
-            , NuGet.Commands.SymbolPackageFormat symbolPackageFormat)
+            , PackageFileNameTestCase testCase)
         {
 
             var csprojPath = Path.Combine(testDirectory, projectFileName);
@@ -270,24 +248,26 @@ namespace NuGet.Build.Tasks.Pack.Test
         <IncludeBuiltProjectOutputGroup>false</IncludeBuiltProjectOutputGroup>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-        <PackageId>{idProjProp}</PackageId>
-        <PackageVersion>{versionProjProp}</PackageVersion>
+        <PackageId>{testCase.IdProjProp}</PackageId>
+        <PackageVersion>{testCase.VersionProjProp}</PackageVersion>
         <PackageTags>tagA;tagB</PackageTags>
 
-        <NuspecFile Condition="'{useNuspecFile}'=='{true}'" >{nuspecFileName}</NuspecFile>
-        <NuspecProperties Condition="'{versionNuspecProperties?.Trim()}'!=''" >version={versionNuspecProperties}</NuspecProperties>
+        <NuspecFile Condition="'{testCase.UseNuspecFile}'=='{true}'" >{nuspecFileName}</NuspecFile>
+        <NuspecProperties Condition="'{testCase.VersionNuspecProperties?.Trim()}'!=''" >version={testCase.VersionNuspecProperties}</NuspecProperties>
 
-        <IncludeSymbols>{includeSymbols}</IncludeSymbols>
-        <SymbolPackageFormat>{GetSymbolPackageFormatText(symbolPackageFormat)}</SymbolPackageFormat>
+        <IncludeSymbols>{testCase.IncludeSymbols}</IncludeSymbols>
+        <SymbolPackageFormat>{GetSymbolPackageFormatText(testCase.SymbolPackageFormat)}</SymbolPackageFormat>
+
+        <OutputFileNamesWithoutVersion Condition="'{testCase.OutputFileNamesWithoutVersion}'=='{true}'" >{testCase.OutputFileNamesWithoutVersion}</OutputFileNamesWithoutVersion>
     </PropertyGroup>
     <ItemGroup>
         <None Remove="{nuspecFileName}" />
     </ItemGroup>
 
     <Target Name="write_OutputPackItems" AfterTargets="_GetOutputItemsFromPack" >
-
-<WriteLinesToFile File="obj/_OutputPackItems2.txt" Lines="$(NuspecFile)" Overwrite="true" Encoding="UTF-8" />
-<WriteLinesToFile File="obj/_OutputPackItems3.txt" Lines="$(NuspecProperties)" Overwrite="true" Encoding="UTF-8" />
+    
+        <WriteLinesToFile File="obj/_OutputPackItems2.txt" Lines="$(NuspecFile)" Overwrite="true" Encoding="UTF-8" />
+        <WriteLinesToFile File="obj/_OutputPackItems3.txt" Lines="$(NuspecProperties)" Overwrite="true" Encoding="UTF-8" />
 
 	    <WriteLinesToFile File="obj/_OutputPackItems.txt" Lines="@(_OutputPackItems)" Overwrite="true" Encoding="UTF-8" />
     </Target>
@@ -298,8 +278,8 @@ namespace NuGet.Build.Tasks.Pack.Test
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>{idNuspecMeta}</id>
-        <version>{versionNuspecMeta?.Trim()}</version>
+        <id>{testCase.IdNuspecMeta}</id>
+        <version>{testCase.VersionNuspecMeta?.Trim()}</version>
         <authors>Unit Test</authors>
         <description>Sample Description</description>
         <language>en-US</language>
@@ -308,7 +288,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 """;
 
             File.WriteAllText(csprojPath, csprojContent, System.Text.Encoding.Unicode);
-            if (useNuspecFile)
+            if (testCase.UseNuspecFile)
             {
                 File.WriteAllText(nuspecPath, nuspecContent, new System.Text.UTF8Encoding(true));
             }
@@ -366,7 +346,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             {
                 var msbuildexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "Microsoft.NET", "Framework", "v4.0.30319", "msbuild.exe");
 
-                var vswhereexe = @"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe";
+                var vswhereexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "Installer", "vswhere.exe");
                 var runresult = CommandRunner.Run(
                         vswhereexe,
                         System.Environment.CurrentDirectory,
@@ -382,5 +362,57 @@ namespace NuGet.Build.Tasks.Pack.Test
                 return "";
             }
         }
+    }
+
+    [method: Newtonsoft.Json.JsonConstructor]
+    public record class PackageFileNameTestCase
+           (string TestNumber
+           , string[] OutputNupkgNames
+           , string IdProjProp
+           , string IdNuspecMeta
+           , string VersionProjProp
+           , string VersionNuspecProperties
+           , string VersionNuspecMeta
+           , bool UseNuspecFile
+           , bool OutputFileNamesWithoutVersion = false
+           , bool IncludeSymbols = false
+           , NuGet.Commands.SymbolPackageFormat SymbolPackageFormat = Commands.SymbolPackageFormat.Snupkg
+           ) : IXunitSerializable
+    {
+
+
+        #region IXunitSerializable
+
+        [System.Obsolete]
+        public PackageFileNameTestCase() : this("", [], "", "", "", "", "", false) { }
+
+        private const string TestObjectKey = nameof(PackageFileNameTests);
+        private readonly Newtonsoft.Json.JsonSerializerSettings _settings = new Newtonsoft.Json.JsonSerializerSettings { MaxDepth = null };
+
+        void IXunitSerializable.Serialize(IXunitSerializationInfo info)
+        {
+            info.AddValue(TestObjectKey, Newtonsoft.Json.JsonConvert.SerializeObject(this));
+
+        }
+        void IXunitSerializable.Deserialize(IXunitSerializationInfo info)
+        {
+            var json = (string)info.GetValue(TestObjectKey, typeof(string));
+            var x = Newtonsoft.Json.JsonConvert.DeserializeObject<PackageFileNameTestCase>(json, _settings);
+            if (x == null)
+            {
+                return;
+            }
+
+            var t = typeof(PackageFileNameTestCase);
+            var c = t.GetConstructors().Where(_ => _.GetParameters().Length != 0).ToArray()[0];
+
+            foreach (System.Reflection.ParameterInfo p in c.GetParameters())
+            {
+                var pi = t.GetProperty(p.Name!);
+                pi!.SetValue(this, pi.GetValue(x));
+            }
+        }
+
+        #endregion
     }
 }
