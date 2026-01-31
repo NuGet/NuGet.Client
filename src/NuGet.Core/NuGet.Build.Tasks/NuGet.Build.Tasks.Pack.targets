@@ -112,13 +112,13 @@ Copyright (c) .NET Foundation. All rights reserved.
         PackageOutputPath="$(PackageOutputAbsolutePath)"
         NuspecOutputPath="$(NuspecOutputAbsolutePath)"
         NuspecInputFilePath="$(NuspecFile)"
-        NuspecProperties="$(NuspecProperties)"        
+        NuspecProperties="$(NuspecProperties)"
         PackageId="$(PackageId)"
         PackageVersion="$(PackageVersion)"
         IncludeSymbols="$(IncludeSymbols)"
         IncludeSource="$(IncludeSource)"
-        SymbolPackageFormat="$(SymbolPackageFormat)">
-
+        SymbolPackageFormat="$(SymbolPackageFormat)"
+        OutputFileNamesWithoutVersion="$(OutputFileNamesWithoutVersion)">
       <Output
         TaskParameter="OutputPackItems"
         ItemName="_OutputPackItems" />
