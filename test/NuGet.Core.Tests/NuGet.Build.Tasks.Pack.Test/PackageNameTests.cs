@@ -154,7 +154,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     outputItemTask.NuspecInputFilePath = System.IO.Path.Combine(testDirectory.Path, nuspecFileName);
                 }
 
-                CreateTestProjectFileAndNuspecFile(testDirectory, projectFileName, nuspecFileName, testCase);// idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
+                CreateTestProjectFileAndNuspecFile(testDirectory, projectFileName, nuspecFileName, testCase);
 
                 Assert.True(outputItemTask.Execute());
 
@@ -176,7 +176,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);// idProjProp, idNuspecMeta, versionProjProp, versionNuspecProperties, versionNuspecMeta, useNuspecFile, includeSymbols, symbolPackageFormat);
+                CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);
 
                 CommandRunnerResult runresultDotnetPack;
                 if (_isDotNetFramework)
