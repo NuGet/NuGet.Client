@@ -587,7 +587,9 @@ namespace NuGet.Protocol.Plugins
             }
             else
             {
-                await DispatchAsync(connection, MessageType.Fault, request, fault, PluginJsonContext.Default.Fault, cancellationToken);
+                message = MessageUtilities.Create(request.RequestId, MessageType.Fault, request.Method, fault, PluginJsonContext.Default.Fault);
+
+                await DispatchWithExistingContextAsync(connection, message, cancellationToken);
             }
         }
 

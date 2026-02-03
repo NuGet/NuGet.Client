@@ -58,7 +58,7 @@ namespace NuGet.Protocol.Core.Types
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-            public bool IsListed { get; set; }
+            public bool? IsListed { get; set; }
             [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
             public string PackagePath { get; set; }

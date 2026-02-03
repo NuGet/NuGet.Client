@@ -44,7 +44,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string Summary => _inner.Summary;
         public string Tags => _inner.Tags;
         public string Title => _inner.Title;
-        public bool IsListed => _inner.IsListed;
+        public bool? IsListed => _inner.IsListed;
         public bool PrefixReserved => _inner.PrefixReserved;
         public LicenseMetadata LicenseMetadata => _inner.LicenseMetadata;
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => _inner.GetDeprecationMetadataAsync();

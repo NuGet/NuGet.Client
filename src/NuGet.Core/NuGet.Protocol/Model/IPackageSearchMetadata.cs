@@ -37,7 +37,7 @@ namespace NuGet.Protocol.Core.Types
         string Tags { get; }
         string Title { get; }
 
-        bool IsListed { get; }
+        bool? IsListed { get; }
         bool PrefixReserved { get; }
 
         LicenseMetadata LicenseMetadata { get; }

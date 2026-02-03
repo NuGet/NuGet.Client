@@ -85,6 +85,11 @@ namespace NuGet.Protocol.Converters
                                         continue;
                                     }
 
+                                    if (searchResult.IsListed == null)
+                                    {
+                                        searchResult.IsListed = true;
+                                    }
+
                                     searchResults.Data.Add(searchResult);
 
                                     if (searchResults.Data.Count >= _take)

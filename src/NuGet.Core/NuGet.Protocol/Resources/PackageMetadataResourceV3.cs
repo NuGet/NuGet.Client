@@ -274,7 +274,7 @@ namespace NuGet.Protocol
             {
                 PackageSearchMetadataRegistration catalogEntry = registrationLeaf.CatalogEntry;
                 NuGetVersion version = catalogEntry.Version;
-                bool listed = catalogEntry.IsListed;
+                bool listed = catalogEntry.IsListed == true;
 
                 if (range.Satisfies(catalogEntry.Version)
                     && (includePrerelease || !version.IsPrerelease)

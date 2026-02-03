@@ -53,7 +53,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public string Title => _packageSearchMetadata.Title;
 
-        public bool IsListed => _packageSearchMetadata.IsListed;
+        public bool? IsListed => _packageSearchMetadata.IsListed;
 
         public bool PrefixReserved => _packageSearchMetadata.PrefixReserved;
 

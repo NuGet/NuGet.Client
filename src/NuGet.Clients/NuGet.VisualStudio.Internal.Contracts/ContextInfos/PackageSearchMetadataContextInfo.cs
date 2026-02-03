@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 RequireLicenseAcceptance = packageSearchMetadata.RequireLicenseAcceptance,
                 Summary = packageSearchMetadata.Summary,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,
-                IsListed = packageSearchMetadata.IsListed,
+                IsListed = packageSearchMetadata.IsListed == true,
                 DependencySets = packageSearchMetadata.DependencySets?.ToList(),
                 DownloadCount = packageSearchMetadata.DownloadCount,
                 Vulnerabilities = packageSearchMetadata.Vulnerabilities?

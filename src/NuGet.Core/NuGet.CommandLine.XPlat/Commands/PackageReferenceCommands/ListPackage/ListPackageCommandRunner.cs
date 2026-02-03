@@ -560,7 +560,7 @@ namespace NuGet.CommandLine.XPlat
                         if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Count > 0)
                         {
                             var latestVersion = matchingPackage
-                                .Where(package => package.IsListed)
+                                .Where(package => package.IsListed == true)
                                 .Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs))
                                 .Max(i => i.Identity.Version);
 
@@ -599,7 +599,7 @@ namespace NuGet.CommandLine.XPlat
                         if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Count > 0)
                         {
                             var latestVersion = matchingPackage
-                                .Where(newVersion => newVersion.IsListed)
+                                .Where(newVersion => newVersion.IsListed == true)
                                 .Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs))
                                 .Max(i => i.Identity.Version);
 
