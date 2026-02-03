@@ -13,14 +13,14 @@ namespace NuGet.Protocol
     {
         [JsonProperty(PropertyName = JsonProperties.DeprecationMessage)]
         [StjJsonPropertyName(JsonProperties.DeprecationMessage)]
-        public string Message { get; internal set; }
+        public string Message { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.DeprecationReasons)]
         [StjJsonPropertyName(JsonProperties.DeprecationReasons)]
-        public IEnumerable<string> Reasons { get; internal set; }
+        public IEnumerable<string> Reasons { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.AlternatePackage)]
         [StjJsonPropertyName(JsonProperties.AlternatePackage)]
-        public AlternatePackageMetadata AlternatePackage { get; internal set; }
+        public AlternatePackageMetadata AlternatePackage { get; init; }
     }
 }

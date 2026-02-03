@@ -7,6 +7,7 @@ using NuGet.Versioning;
 using StjJsonPropertyNameAttribute = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using StjJsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
 using StjJsonIgnoreAttribute = System.Text.Json.Serialization.JsonIgnoreAttribute;
+using StjJsonConstructorAttribute = System.Text.Json.Serialization.JsonConstructorAttribute;
 using NuGet.Protocol.Converters;
 
 namespace NuGet.Protocol.Core.Types
@@ -29,6 +30,7 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
+        [StjJsonConstructor]
         public VersionInfo(NuGetVersion version, long? downloadCount)
         {
             Version = version;
@@ -37,10 +39,10 @@ namespace NuGet.Protocol.Core.Types
 
         [StjJsonPropertyName("version")]
         [StjJsonConverter(typeof(NuGetVersionStjConverter))]
-        public NuGetVersion Version { get; private set; }
+        public NuGetVersion Version { get; init; }
 
         [StjJsonPropertyName("downloads")]
-        public long? DownloadCount { get; private set; }
+        public long? DownloadCount { get; init; }
 
         /// <summary>
         /// In V2, when finding the list of versions that a package ID has, we also get all of the metadata

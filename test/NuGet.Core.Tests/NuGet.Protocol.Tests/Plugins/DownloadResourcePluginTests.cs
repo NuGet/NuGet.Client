@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -163,7 +164,9 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                    It.Is<MessageMethod>(m => m == MessageMethod.PrefetchPackage),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageResponse>>(),
                    It.IsNotNull<PrefetchPackageRequest>(),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageRequest>>(),
                    It.IsAny<CancellationToken>()))
                .ReturnsAsync(new PrefetchPackageResponse(MessageResponseCode.Error));
 
@@ -184,7 +187,9 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                    It.Is<MessageMethod>(m => m == MessageMethod.PrefetchPackage),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageResponse>>(),
                    It.IsNotNull<PrefetchPackageRequest>(),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageRequest>>(),
                    It.IsAny<CancellationToken>()))
                .ReturnsAsync(new PrefetchPackageResponse(MessageResponseCode.Success));
 
@@ -209,7 +214,9 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
                    It.Is<MessageMethod>(m => m == MessageMethod.PrefetchPackage),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageResponse>>(),
                    It.IsNotNull<PrefetchPackageRequest>(),
+                   It.IsNotNull<JsonTypeInfo<PrefetchPackageRequest>>(),
                    It.IsAny<CancellationToken>()))
                .ReturnsAsync(new PrefetchPackageResponse(MessageResponseCode.NotFound));
 

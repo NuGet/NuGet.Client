@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -110,6 +111,7 @@ namespace NuGet.Protocol.Plugins.Tests
             responseHandler.Setup(x => x.SendResponseAsync(
                     It.Is<Message>(r => r == request),
                     It.Is<MonitorNuGetProcessExitResponse>(r => r.ResponseCode == MessageResponseCode.NotFound),
+                    It.IsNotNull<JsonTypeInfo<MonitorNuGetProcessExitResponse>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
@@ -129,6 +131,7 @@ namespace NuGet.Protocol.Plugins.Tests
             responseHandler.Setup(x => x.SendResponseAsync(
                     It.Is<Message>(r => r == request),
                     It.Is<MonitorNuGetProcessExitResponse>(r => r.ResponseCode == MessageResponseCode.Success),
+                    It.IsNotNull<JsonTypeInfo<MonitorNuGetProcessExitResponse>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 

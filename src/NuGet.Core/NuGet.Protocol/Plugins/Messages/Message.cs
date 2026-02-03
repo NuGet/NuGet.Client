@@ -19,32 +19,28 @@ namespace NuGet.Protocol.Plugins
         /// Gets the request ID.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonPropertyName("requestId")]
         [System.Text.Json.Serialization.JsonRequired]
-        public string RequestId { get; }
+        public string RequestId { get; init; }
 
         /// <summary>
         /// Gets the message type.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonPropertyName("type")]
         [System.Text.Json.Serialization.JsonRequired]
-        public MessageType Type { get; }
+        public MessageType Type { get; init; }
 
         /// <summary>
         /// Gets the message method.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonPropertyName("method")]
         [System.Text.Json.Serialization.JsonRequired]
-        public MessageMethod Method { get; }
+        public MessageMethod Method { get; init; }
 
         /// <summary>
         /// Gets the optional message payload.
         /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("payload")]
         [System.Text.Json.Serialization.JsonConverter(typeof(NuGet.Protocol.Converters.JObjectConverter))]
-        public JObject Payload { get; }
+        public JObject Payload { get; init; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Message" /> class.

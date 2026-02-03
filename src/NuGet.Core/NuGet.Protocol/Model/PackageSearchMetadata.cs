@@ -26,13 +26,13 @@ namespace NuGet.Protocol
     {
         [JsonProperty(PropertyName = JsonProperties.Authors)]
         [JsonConverter(typeof(MetadataFieldConverter))]
-        [StjJsonPropertyName("authors")]
+        [StjJsonPropertyName(JsonProperties.Authors)]
         [StjJsonConverter(typeof(MetadataFieldStjConverter))]
-        public string Authors { get; private set; }
+        public string Authors { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.DependencyGroups)]
-        [StjJsonPropertyName("dependencyGroups")]
-        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; private set; }
+        [StjJsonPropertyName(JsonProperties.DependencyGroups)]
+        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; init; }
 
         [JsonIgnore]
         [StjJsonIgnore]
@@ -45,16 +45,16 @@ namespace NuGet.Protocol
         }
 
         [JsonProperty(PropertyName = JsonProperties.Description)]
-        [StjJsonPropertyName("description")]
-        public string Description { get; private set; }
+        [StjJsonPropertyName(JsonProperties.Description)]
+        public string Description { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.DownloadCount)]
-        [StjJsonPropertyName("downloadCount")]
-        public long? DownloadCount { get; private set; }
+        [StjJsonPropertyName(JsonProperties.DownloadCount)]
+        public long? DownloadCount { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.IconUrl)]
-        [StjJsonPropertyName("iconUrl")]
-        public Uri IconUrl { get; private set; }
+        [StjJsonPropertyName(JsonProperties.IconUrl)]
+        public Uri IconUrl { get; init; }
 
         private PackageIdentity _packageIdentity = null;
 
@@ -74,20 +74,20 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
         [JsonConverter(typeof(SafeUriConverter))]
-        [StjJsonPropertyName("licenseUrl")]
+        [StjJsonPropertyName(JsonProperties.LicenseUrl)]
         [StjJsonConverter(typeof(SafeUriStjConverter))]
-        public Uri LicenseUrl { get; private set; }
+        public Uri LicenseUrl { get; init; }
 
         private IReadOnlyList<string> _ownersList;
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
         [JsonConverter(typeof(MetadataStringOrArrayConverter))]
-        [StjJsonPropertyName("owners")]
+        [StjJsonPropertyName(JsonProperties.Owners)]
         [StjJsonConverter(typeof(MetadataStringOrArrayStjConverter))]
         public IReadOnlyList<string> OwnersList
         {
             get { return _ownersList; }
-            private set
+            init
             {
                 if (_ownersList != value)
                 {
@@ -112,24 +112,24 @@ namespace NuGet.Protocol
         }
 
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
-        [StjJsonPropertyName("id")]
-        public string PackageId { get; private set; }
+        [StjJsonPropertyName(JsonProperties.PackageId)]
+        public string PackageId { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.ProjectUrl)]
         [JsonConverter(typeof(SafeUriConverter))]
-        [StjJsonPropertyName("projectUrl")]
+        [StjJsonPropertyName(JsonProperties.ProjectUrl)]
         [StjJsonConverter(typeof(SafeUriStjConverter))]
-        public Uri ProjectUrl { get; private set; }
+        public Uri ProjectUrl { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.Published)]
-        [StjJsonPropertyName("published")]
-        public DateTimeOffset? Published { get; private set; }
+        [StjJsonPropertyName(JsonProperties.Published)]
+        public DateTimeOffset? Published { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.ReadmeUrl)]
         [JsonConverter(typeof(SafeUriConverter))]
-        [StjJsonPropertyName("readmeUrl")]
+        [StjJsonPropertyName(JsonProperties.ReadmeUrl)]
         [StjJsonConverter(typeof(SafeUriStjConverter))]
-        public Uri ReadmeUrl { get; private set; }
+        public Uri ReadmeUrl { get; init; }
 
         [JsonIgnore]
         [StjJsonIgnore]
@@ -146,56 +146,56 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
         [JsonConverter(typeof(SafeBoolConverter))]
-        [StjJsonPropertyName("requireLicenseAcceptance")]
+        [StjJsonPropertyName(JsonProperties.RequireLicenseAcceptance)]
         [StjJsonConverter(typeof(SafeBoolStjConverter))]
-        public bool RequireLicenseAcceptance { get; private set; }
+        public bool RequireLicenseAcceptance { get; init; }
 
         private string _summaryValue;
 
         [JsonProperty(PropertyName = JsonProperties.Summary)]
-        [StjJsonPropertyName("summary")]
+        [StjJsonPropertyName(JsonProperties.Summary)]
         public string Summary
         {
             get { return !string.IsNullOrEmpty(_summaryValue) ? _summaryValue : Description; }
-            private set { _summaryValue = value; }
+            init { _summaryValue = value; }
         }
 
         [JsonProperty(PropertyName = JsonProperties.Tags)]
         [JsonConverter(typeof(MetadataFieldConverter))]
-        [StjJsonPropertyName("tags")]
+        [StjJsonPropertyName(JsonProperties.Tags)]
         [StjJsonConverter(typeof(MetadataFieldStjConverter))]
-        public string Tags { get; private set; }
+        public string Tags { get; init; }
 
         private string _titleValue;
 
         [JsonProperty(PropertyName = JsonProperties.Title)]
-        [StjJsonPropertyName("title")]
+        [StjJsonPropertyName(JsonProperties.Title)]
         public string Title
         {
             get { return !string.IsNullOrEmpty(_titleValue) ? _titleValue : PackageId; }
-            private set { _titleValue = value; }
+            init { _titleValue = value; }
         }
 
         [JsonProperty(PropertyName = JsonProperties.Version)]
-        [StjJsonPropertyName("version")]
+        [StjJsonPropertyName(JsonProperties.Version)]
         [StjJsonConverter(typeof(NuGetVersionStjConverter))]
-        public NuGetVersion Version { get; private set; }
+        public NuGetVersion Version { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.Versions)]
-        [StjJsonPropertyName("versions")]
-        public VersionInfo[] ParsedVersions { get; private set; }
+        [StjJsonPropertyName(JsonProperties.Versions)]
+        public VersionInfo[] ParsedVersions { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.PrefixReserved)]
-        [StjJsonPropertyName("prefixReserved")]
-        public bool PrefixReserved { get; private set; }
+        [StjJsonPropertyName(JsonProperties.PrefixReserved)]
+        public bool PrefixReserved { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseExpression)]
-        [StjJsonPropertyName("licenseExpression")]
-        public string LicenseExpression { get; private set; }
+        [StjJsonPropertyName(JsonProperties.LicenseExpression)]
+        public string LicenseExpression { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseExpressionVersion)]
-        [StjJsonPropertyName("licenseExpressionVersion")]
-        public string LicenseExpressionVersion { get; private set; }
+        [StjJsonPropertyName(JsonProperties.LicenseExpressionVersion)]
+        public string LicenseExpressionVersion { get; init; }
 
         [JsonIgnore]
         [StjJsonIgnore]
@@ -284,19 +284,19 @@ namespace NuGet.Protocol
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
-        [StjJsonPropertyName("listed")]
-        public bool IsListed { get; private set; } = true;
+        [StjJsonPropertyName(JsonProperties.Listed)]
+        public bool IsListed { get; init; } = true;
 
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
-        [StjJsonPropertyName("deprecation")]
-        public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
+        [StjJsonPropertyName(JsonProperties.Deprecation)]
+        public PackageDeprecationMetadata DeprecationMetadata { get; init; }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
-        [StjJsonPropertyName("vulnerabilities")]
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
+        [StjJsonPropertyName(JsonProperties.Vulnerabilities)]
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; init; }
     }
 }

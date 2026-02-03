@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -101,12 +100,13 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             });
 
             Assert.IsType<InvalidDataException>(exception.InnerException);
-            Assert.IsType<JsonReaderException>(exception.InnerException.InnerException);
+            // System.Text.Json.JsonReaderException is private, so check for the next best thing.
+            Assert.True(exception.InnerException.InnerException is System.Text.Json.JsonException);
         }
 
         [Theory]
-        [InlineData("{ version: \"not-semver\" } ")]
-        [InlineData("{ version: \"3.0.0.0\" } ")] // not strict semver
+        [InlineData("{ \"version\": \"not-semver\" }")]
+        [InlineData("{ \"version\": \"3.0.0.0\" }")] // not strict semver
         public async Task TryCreate_Throws_IfInvalidVersionInJson(string content)
         {
             // Arrange
@@ -127,9 +127,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         }
 
         [Theory]
-        [InlineData("{ json: \"that does not contain version.\" }")]
-        [InlineData("{ version: 3 } ")] // version is not a string
-        [InlineData("{ version: { value: 3 } } ")] // version is not a string
+        [InlineData("{ \"json\": \"that does not contain version.\" }")]
+        [InlineData("{ \"version\": 3 }")] // version is not a string
+        [InlineData("{ \"version\": { \"value\": 3 } }")] // version is not a string
         public async Task TryCreate_Throws_IfNoVersionInJson(string content)
         {
             // Arrange
@@ -154,7 +154,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = $"https://some-site-{new Guid().ToString()}.org/test.json";
-            var content = @"{ version: '3.1.0-beta' }";
+            var content = @"{ ""version"": ""3.1.0-beta"" }";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
@@ -412,7 +412,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = $"https://some-site-{new Guid().ToString()}.org/test.json";
-            var content = @"{ version: '3.1.0-beta' }";
+            var content = @"{ ""version"": ""3.1.0-beta"" }";
             //Create an HTTP provider that will cancel the token.
             var httpProvider = StaticHttpSource.CreateHttpSource(
                 new Dictionary<string, string> { { source, content } },

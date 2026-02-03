@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Plugins
         /// Gets the response code.
         /// </summary>
         [JsonRequired]
-        public MessageResponseCode ResponseCode { get; }
+        public MessageResponseCode ResponseCode { get; init; }
 
         /// <summary>
         /// Initializes a new <see cref="CopyNupkgFileResponse" /> class.

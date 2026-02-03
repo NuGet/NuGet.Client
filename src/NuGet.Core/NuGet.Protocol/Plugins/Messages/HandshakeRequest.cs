@@ -6,6 +6,7 @@
 using System;
 using System.Globalization;
 using Newtonsoft.Json;
+using NuGet.Protocol.Converters;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Plugins
@@ -19,17 +20,17 @@ namespace NuGet.Protocol.Plugins
         /// Gets the requestor's plugin protocol version.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonPropertyName("protocolVersion")]
         [System.Text.Json.Serialization.JsonRequired]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SemanticVersionStjConverter))]
         public SemanticVersion ProtocolVersion { get; init; }
 
         /// <summary>
         /// Gets the requestor's minimum plugin protocol version.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonPropertyName("minimumProtocolVersion")]
         [System.Text.Json.Serialization.JsonRequired]
-        public SemanticVersion MinimumProtocolVersion { get; }
+        [System.Text.Json.Serialization.JsonConverter(typeof(SemanticVersionStjConverter))]
+        public SemanticVersion MinimumProtocolVersion { get; init; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HandshakeRequest" /> class.

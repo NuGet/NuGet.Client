@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -188,6 +189,7 @@ namespace NuGet.Protocol.Plugins.Tests
             responseHandler.Setup(x => x.SendResponseAsync(
                     It.IsNotNull<Message>(),
                     It.IsNotNull<LogResponse>(),
+                    It.IsNotNull<JsonTypeInfo<LogResponse>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
@@ -249,6 +251,7 @@ namespace NuGet.Protocol.Plugins.Tests
             responseHandler.Setup(x => x.SendResponseAsync(
                     It.Is<Message>(message => message == request),
                     It.Is<LogResponse>(response => response.ResponseCode == responseCode),
+                    It.IsNotNull<JsonTypeInfo<LogResponse>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 

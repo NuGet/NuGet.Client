@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -2786,9 +2787,11 @@ namespace NuGet.Packaging.Test
 
                 connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetFilesInPackageRequest, GetFilesInPackageResponse>(
                        It.Is<MessageMethod>(m => m == MessageMethod.GetFilesInPackage),
+                       It.IsNotNull<JsonTypeInfo<GetFilesInPackageResponse>>(),
                        It.Is<GetFilesInPackageRequest>(c => c.PackageSourceRepository == packageSource.Source
                            && c.PackageId == packageIdentity.Id
                            && c.PackageVersion == packageIdentity.Version.ToNormalizedString()),
+                       It.IsNotNull<JsonTypeInfo<GetFilesInPackageRequest>>(),
                        It.IsAny<CancellationToken>()))
                    .ReturnsAsync(new GetFilesInPackageResponse(MessageResponseCode.Success, new[] { $"{packageIdentity.Id}.nuspec" }));
 
@@ -2796,13 +2799,15 @@ namespace NuGet.Packaging.Test
 
                 connection.Setup(x => x.SendRequestAndReceiveResponseAsync<CopyFilesInPackageRequest, CopyFilesInPackageResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.CopyFilesInPackage),
+                        It.IsNotNull<JsonTypeInfo<CopyFilesInPackageResponse>>(),
                         It.Is<CopyFilesInPackageRequest>(c => c.PackageSourceRepository == packageSource.Source
                             && c.PackageId == packageIdentity.Id
                             && c.PackageVersion == packageIdentity.Version.ToNormalizedString()
                             && c.FilesInPackage.Count() == 1),
+                        It.IsNotNull<JsonTypeInfo<CopyFilesInPackageRequest>>(),
                         It.IsAny<CancellationToken>()))
-                    .Callback<MessageMethod, CopyFilesInPackageRequest, CancellationToken>(
-                        (method, request, cancellationToken) =>
+                    .Callback<MessageMethod, JsonTypeInfo<CopyFilesInPackageResponse>, CopyFilesInPackageRequest, JsonTypeInfo<CopyFilesInPackageRequest>, CancellationToken>(
+                        (method, inboundJti, request, outboundJti, cancellationToken) =>
                         {
                             var copiedFiles = new List<string>();
 
@@ -4857,10 +4862,12 @@ namespace NuGet.Packaging.Test
                 var connection = new Mock<IConnection>();
                 connection.Setup(x => x.SendRequestAndReceiveResponseAsync<CopyNupkgFileRequest, CopyNupkgFileResponse>(
                         It.Is<MessageMethod>(m => m == MessageMethod.CopyNupkgFile),
+                        It.IsNotNull<JsonTypeInfo<CopyNupkgFileResponse>>(),
                         It.Is<CopyNupkgFileRequest>(c => c.PackageId == identity.Id &&
                             c.PackageVersion == identity.Version.ToNormalizedString() &&
                             c.PackageSourceRepository == packageSourceRepository &&
                             c.DestinationFilePath == pathResolver.GetPackageDirectory(identity.Id, identity.Version)),
+                        It.IsNotNull<JsonTypeInfo<CopyNupkgFileRequest>>(),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new CopyNupkgFileResponse(MessageResponseCode.Success));
 

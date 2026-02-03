@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -114,8 +115,10 @@ namespace NuGet.Credentials.Test
             // Setup expectations
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
                     It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                    It.IsNotNull<JsonTypeInfo<GetOperationClaimsResponse>>(),
                     It.Is<GetOperationClaimsRequest>(
                         g => g.PackageSourceRepository == expectations.OperationClaimsSourceRepository),
+                    It.IsNotNull<JsonTypeInfo<GetOperationClaimsRequest>>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetOperationClaimsResponse(expectations.OperationClaims.ToArray()));
 
@@ -183,8 +186,10 @@ namespace NuGet.Credentials.Test
             {
                 _connection.Verify(x => x.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
                     It.Is<MessageMethod>(m => m == MessageMethod.GetOperationClaims),
+                    It.IsNotNull<JsonTypeInfo<GetOperationClaimsResponse>>(),
                     It.Is<GetOperationClaimsRequest>(
                         g => g.PackageSourceRepository == null), // The source repository should be null in the context of credential plugins
+                    It.IsNotNull<JsonTypeInfo<GetOperationClaimsRequest>>(),
                     It.IsAny<CancellationToken>()), Times.Once());
 
                 if (_expectations.Success)
@@ -250,13 +255,17 @@ namespace NuGet.Credentials.Test
 
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<MonitorNuGetProcessExitRequest, MonitorNuGetProcessExitResponse>(
                     It.Is<MessageMethod>(m => m == MessageMethod.MonitorNuGetProcessExit),
+                    It.IsNotNull<JsonTypeInfo<MonitorNuGetProcessExitResponse>>(),
                     It.IsNotNull<MonitorNuGetProcessExitRequest>(),
+                    It.IsNotNull<JsonTypeInfo<MonitorNuGetProcessExitRequest>>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MonitorNuGetProcessExitResponse(MessageResponseCode.Success));
 
             _connection.Setup(x => x.SendRequestAndReceiveResponseAsync<InitializeRequest, InitializeResponse>(
                     It.Is<MessageMethod>(m => m == MessageMethod.Initialize),
+                    It.IsNotNull<JsonTypeInfo<InitializeResponse>>(),
                     It.IsNotNull<InitializeRequest>(),
+                    It.IsNotNull<JsonTypeInfo<InitializeRequest>>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new InitializeResponse(MessageResponseCode.Success));
 
