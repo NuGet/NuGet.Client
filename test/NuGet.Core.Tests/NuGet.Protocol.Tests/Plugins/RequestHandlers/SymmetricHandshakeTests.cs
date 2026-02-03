@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -251,6 +252,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 responseHandler.Setup(x => x.SendResponseAsync(
                         It.IsNotNull<Message>(),
                         It.IsNotNull<HandshakeResponse>(),
+                        It.IsNotNull<JsonTypeInfo<HandshakeResponse>>(),
                         It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult(0));
 
@@ -259,7 +261,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     requestId: "a",
                     type: MessageType.Request,
                     method: MessageMethod.Handshake,
-                    payload: JsonSerializationUtilities.FromObject(request));
+                    payload: JsonSerializationUtilities.FromObject(request, PluginJsonContext.Default.HandshakeRequest));
 
                 await handshake.HandleResponseAsync(
                     Mock.Of<IConnection>(),
@@ -274,6 +276,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     It.Is<Message>(message => message == inboundMessage),
                     It.Is<HandshakeResponse>(response => response.ResponseCode == expectedResponseCode &&
                         response.ProtocolVersion == negotiatedProtocolVersion),
+                    It.IsNotNull<JsonTypeInfo<HandshakeResponse>>(),
                     It.Is<CancellationToken>(token => !token.IsCancellationRequested)),
                     Times.Once);
             }

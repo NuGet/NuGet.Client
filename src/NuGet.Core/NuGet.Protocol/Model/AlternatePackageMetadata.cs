@@ -14,12 +14,12 @@ namespace NuGet.Protocol
     public class AlternatePackageMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
-        [StjJsonPropertyName("id")]
-        public string PackageId { get; internal set; }
+        [StjJsonPropertyName(JsonProperties.PackageId)]
+        public string PackageId { get; init; }
 
         [JsonProperty(PropertyName = JsonProperties.Range, ItemConverterType = typeof(VersionRangeConverter))]
-        [StjJsonPropertyName("range")]
+        [StjJsonPropertyName(JsonProperties.Range)]
         [StjJsonConverter(typeof(VersionRangeStjConverter))]
-        public VersionRange Range { get; internal set; }
+        public VersionRange Range { get; init; }
     }
 }

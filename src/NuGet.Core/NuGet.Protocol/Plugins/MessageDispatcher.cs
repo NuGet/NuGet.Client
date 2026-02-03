@@ -694,6 +694,7 @@ namespace NuGet.Protocol.Plugins
             var isKeepAlive = GetIsKeepAlive(type, method);
             var requestContext = CreateOutboundRequestContext<TIncoming>(
                 incomingJsonTypeInfo,
+                connection,
                 message,
                 timeout,
                 isKeepAlive,
@@ -940,6 +941,7 @@ namespace NuGet.Protocol.Plugins
 
         private OutboundRequestContext<TIncoming> CreateOutboundRequestContext<TIncoming>(
             JsonTypeInfo<TIncoming> jsonTypeInfo,
+            IConnection connection,
             Message message,
             TimeSpan? timeout,
             bool isKeepAlive,
@@ -947,7 +949,7 @@ namespace NuGet.Protocol.Plugins
         {
             return new OutboundRequestContext<TIncoming>(
                 jsonTypeInfo,
-                _connection,
+                connection,
                 message,
                 timeout,
                 isKeepAlive,

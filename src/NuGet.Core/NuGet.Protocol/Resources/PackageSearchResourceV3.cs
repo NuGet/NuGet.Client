@@ -260,11 +260,11 @@ namespace NuGet.Protocol
             {
                 PropertyNameCaseInsensitive = false,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                TypeInfoResolver = PluginJsonContext.Default
+                TypeInfoResolver = ModelJsonContext.Default
             };
 
             // Add the take-aware converter
-            var converter = new Converters.V3SearchResultsStjConverter(take, PluginJsonContext.Default.Options);
+            var converter = new Converters.V3SearchResultsStjConverter(take, ModelJsonContext.Default.Options);
             options.Converters.Add(converter);
 
             // Get the JsonTypeInfo for V3SearchResults

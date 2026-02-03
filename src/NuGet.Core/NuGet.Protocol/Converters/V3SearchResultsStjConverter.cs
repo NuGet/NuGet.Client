@@ -28,9 +28,8 @@ namespace NuGet.Protocol.Converters
             }
 
             var searchResults = new V3SearchResults();
-            var finished = false;
 
-            while (!finished && reader.Read())
+            while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
@@ -75,6 +74,7 @@ namespace NuGet.Protocol.Converters
                                     JsonTypeInfo<PackageSearchMetadata>? typeInfo = _options.GetTypeInfo(typeof(PackageSearchMetadata)) as System.Text.Json.Serialization.Metadata.JsonTypeInfo<PackageSearchMetadata>;
                                     if (typeInfo == null)
                                     {
+                                        reader.Skip();
                                         continue;
                                     }
 
@@ -89,7 +89,11 @@ namespace NuGet.Protocol.Converters
 
                                     if (searchResults.Data.Count >= _take)
                                     {
-                                        finished = true;
+                                        // Skip remaining array items
+                                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                                        {
+                                            reader.Skip();
+                                        }
                                         break;
                                     }
                                 }
@@ -103,8 +107,7 @@ namespace NuGet.Protocol.Converters
                         break;
 
                     case JsonTokenType.EndObject:
-                        finished = true;
-                        break;
+                        return searchResults;
 
                     default:
                         throw new JsonException("Unexpected token: " + reader.TokenType);

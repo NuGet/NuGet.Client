@@ -438,7 +438,9 @@ namespace NuGet.Protocol.Plugins.Tests
                 await Assert.ThrowsAsync<InvalidOperationException>(
                     () => test.Connection.SendRequestAndReceiveResponseAsync<HandshakeRequest, HandshakeResponse>(
                         MessageMethod.Handshake,
+                        PluginJsonContext.Default.HandshakeResponse,
                         new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion),
+                        PluginJsonContext.Default.HandshakeRequest,
                         CancellationToken.None));
             }
         }
@@ -472,7 +474,9 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 var response = await test.Connection.SendRequestAndReceiveResponseAsync<HandshakeRequest, HandshakeResponse>(
                     MessageMethod.Handshake,
+                    PluginJsonContext.Default.HandshakeResponse,
                     new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion),
+                    PluginJsonContext.Default.HandshakeRequest,
                     CancellationToken.None);
 
                 Assert.Null(response);

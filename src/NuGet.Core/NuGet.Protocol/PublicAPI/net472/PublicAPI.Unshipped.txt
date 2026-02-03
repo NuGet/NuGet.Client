@@ -1,31 +1,76 @@
 #nullable enable
 NuGet.Protocol.Converters.FingerprintsStjConverter
 NuGet.Protocol.Converters.FingerprintsStjConverter.FingerprintsStjConverter() -> void
+NuGet.Protocol.Core.Types.VersionInfo.DownloadCount.init -> void
+NuGet.Protocol.PackageSearchMetadata.DownloadCount.init -> void
+NuGet.Protocol.PackageSearchMetadata.IsListed.init -> void
+NuGet.Protocol.PackageSearchMetadata.PrefixReserved.init -> void
+NuGet.Protocol.PackageSearchMetadata.Published.init -> void
+NuGet.Protocol.PackageSearchMetadata.RequireLicenseAcceptance.init -> void
+NuGet.Protocol.PackageVulnerabilityMetadata.Severity.init -> void
+NuGet.Protocol.Plugins.CopyNupkgFileResponse.ResponseCode.init -> void
 NuGet.Protocol.Plugins.GetCredentialsRequest.StatusCode.init -> void
 NuGet.Protocol.Plugins.GetCredentialsResponse.ResponseCode.init -> void
 NuGet.Protocol.Plugins.GetServiceIndexResponse.ResponseCode.init -> void
+NuGet.Protocol.Plugins.HandshakeResponse.ResponseCode.init -> void
 NuGet.Protocol.Plugins.LogRequest.LogLevel.init -> void
 NuGet.Protocol.Plugins.LogResponse.ResponseCode.init -> void
+NuGet.Protocol.Plugins.Message.Method.init -> void
+NuGet.Protocol.Plugins.Message.Type.init -> void
 NuGet.Protocol.Plugins.MonitorNuGetProcessExitRequest.ProcessId.init -> void
 NuGet.Protocol.Plugins.MonitorNuGetProcessExitResponse.ResponseCode.init -> void
+NuGet.Protocol.RepositoryCertificateInfo.NotAfter.init -> void
+NuGet.Protocol.RepositoryCertificateInfo.NotBefore.init -> void
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> NuGet.Packaging.Core.Fingerprints?
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, NuGet.Packaging.Core.Fingerprints! value, System.Text.Json.JsonSerializerOptions! options) -> void
+~NuGet.Protocol.AlternatePackageMetadata.PackageId.init -> void
+~NuGet.Protocol.AlternatePackageMetadata.Range.init -> void
+~NuGet.Protocol.Core.Types.VersionInfo.Version.init -> void
+~NuGet.Protocol.PackageDeprecationMetadata.AlternatePackage.init -> void
+~NuGet.Protocol.PackageDeprecationMetadata.Message.init -> void
+~NuGet.Protocol.PackageDeprecationMetadata.Reasons.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Authors.init -> void
+~NuGet.Protocol.PackageSearchMetadata.DependencySetsInternal.init -> void
+~NuGet.Protocol.PackageSearchMetadata.DeprecationMetadata.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Description.init -> void
+~NuGet.Protocol.PackageSearchMetadata.IconUrl.init -> void
+~NuGet.Protocol.PackageSearchMetadata.LicenseExpression.init -> void
+~NuGet.Protocol.PackageSearchMetadata.LicenseExpressionVersion.init -> void
+~NuGet.Protocol.PackageSearchMetadata.LicenseUrl.init -> void
+~NuGet.Protocol.PackageSearchMetadata.OwnersList.init -> void
+~NuGet.Protocol.PackageSearchMetadata.PackageId.init -> void
+~NuGet.Protocol.PackageSearchMetadata.ParsedVersions.init -> void
+~NuGet.Protocol.PackageSearchMetadata.ProjectUrl.init -> void
+~NuGet.Protocol.PackageSearchMetadata.ReadmeUrl.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Summary.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Tags.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Title.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Version.init -> void
+~NuGet.Protocol.PackageSearchMetadata.Vulnerabilities.init -> void
+~NuGet.Protocol.PackageVulnerabilityMetadata.AdvisoryUrl.init -> void
 ~NuGet.Protocol.Plugins.Fault.Message.init -> void
 ~NuGet.Protocol.Plugins.GetCredentialsRequest.PackageSourceRepository.init -> void
 ~NuGet.Protocol.Plugins.GetCredentialsResponse.AuthenticationTypes.init -> void
 ~NuGet.Protocol.Plugins.GetCredentialsResponse.Password.init -> void
 ~NuGet.Protocol.Plugins.GetCredentialsResponse.Username.init -> void
 ~NuGet.Protocol.Plugins.GetServiceIndexResponse.ServiceIndex.init -> void
+~NuGet.Protocol.Plugins.HandshakeRequest.MinimumProtocolVersion.init -> void
 ~NuGet.Protocol.Plugins.HandshakeRequest.ProtocolVersion.init -> void
 ~NuGet.Protocol.Plugins.LogRequest.Message.init -> void
 ~NuGet.Protocol.Plugins.GetServiceIndexRequest.PackageSourceRepository.init -> void
 ~NuGet.Protocol.Plugins.IConnection.SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
 ~NuGet.Protocol.Plugins.Connection.SendRequestAndReceiveResponseAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
 ~NuGet.Protocol.Plugins.IMessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
+~NuGet.Protocol.Plugins.Message.Payload.init -> void
+~NuGet.Protocol.Plugins.Message.RequestId.init -> void
 ~NuGet.Protocol.Plugins.MessageDispatcher.DispatchRequestAsync<TOutbound, TInbound>(NuGet.Protocol.Plugins.MessageMethod method, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TInbound> inboundJti, TOutbound payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> outboundJti, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TInbound>
 ~NuGet.Protocol.Plugins.IResponseHandler.SendResponseAsync<TPayload>(NuGet.Protocol.Plugins.Message request, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> payloadTypeInfo, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 ~NuGet.Protocol.Plugins.MessageDispatcher.CreateMessage<TPayload>(NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> jsonTypeInfo) -> NuGet.Protocol.Plugins.Message
 ~NuGet.Protocol.Plugins.MessageDispatcher.DispatchResponseAsync<TOutbound>(NuGet.Protocol.Plugins.Message request, TOutbound responsePayload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TOutbound> responsePayloadTypeInfo, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~NuGet.Protocol.RepositoryCertificateInfo.ContentUrl.init -> void
+~NuGet.Protocol.RepositoryCertificateInfo.Fingerprints.init -> void
+~NuGet.Protocol.RepositoryCertificateInfo.Issuer.init -> void
+~NuGet.Protocol.RepositoryCertificateInfo.Subject.init -> void
 ~static NuGet.Protocol.HttpStreamValidation.ValidateJsonObject(string uri, System.IO.Stream stream) -> void
 ~static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken jtoken, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo) -> T
 ~static NuGet.Protocol.Plugins.MessageUtilities.Create<TPayload>(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload payload, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TPayload> jsonTypeInfo) -> NuGet.Protocol.Plugins.Message

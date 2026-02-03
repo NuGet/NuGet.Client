@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         [JsonRequired]
         [System.Text.Json.Serialization.JsonRequired]
-        public MessageResponseCode ResponseCode { get; }
+        public MessageResponseCode ResponseCode { get; init; }
 
         /// <summary>
         /// Gets the handshake responder's plugin protocol version if the handshake was successful;
