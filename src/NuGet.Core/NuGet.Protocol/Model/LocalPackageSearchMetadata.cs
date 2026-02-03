@@ -126,7 +126,7 @@ namespace NuGet.Protocol
             return fullUri;
         }
 
-        public bool IsListed => true;
+        public bool? IsListed => true;
 
         /// <remarks>
         /// The prefix reservation is not applicable to local packages

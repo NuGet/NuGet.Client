@@ -202,14 +202,14 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                  .Select(
                      package =>
                          V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed == true)
             :
             _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version).First())
                  .Select(
                      package =>
                          V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed == true);
 
 
             var enumerator = results.GetEnumerator();
@@ -235,14 +235,14 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                 .Select(
                     package =>
                         V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
+                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed == true)
                 :
                 _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version).First())
                  .Select(
                      package =>
                          V2FeedUtilities.CreatePackageSearchResult(package, metadataCache, _filter,
-                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed == true);
 
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;

@@ -1,12 +1,18 @@
 #nullable enable
 NuGet.Protocol.Converters.FingerprintsStjConverter
 NuGet.Protocol.Converters.FingerprintsStjConverter.FingerprintsStjConverter() -> void
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.IsListed.get -> bool?
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.get -> bool?
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.set -> void
 NuGet.Protocol.Core.Types.VersionInfo.DownloadCount.init -> void
+NuGet.Protocol.LocalPackageSearchMetadata.IsListed.get -> bool?
 NuGet.Protocol.PackageSearchMetadata.DownloadCount.init -> void
-NuGet.Protocol.PackageSearchMetadata.IsListed.init -> void
+NuGet.Protocol.PackageSearchMetadata.IsListed.get -> bool?
+NuGet.Protocol.PackageSearchMetadata.IsListed.set -> void
 NuGet.Protocol.PackageSearchMetadata.PrefixReserved.init -> void
 NuGet.Protocol.PackageSearchMetadata.Published.init -> void
 NuGet.Protocol.PackageSearchMetadata.RequireLicenseAcceptance.init -> void
+NuGet.Protocol.PackageSearchMetadataV2Feed.IsListed.get -> bool?
 NuGet.Protocol.PackageVulnerabilityMetadata.Severity.init -> void
 NuGet.Protocol.Plugins.CopyNupkgFileResponse.ResponseCode.init -> void
 NuGet.Protocol.Plugins.GetCredentialsRequest.StatusCode.init -> void

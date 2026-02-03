@@ -285,7 +285,7 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
         [StjJsonPropertyName(JsonProperties.Listed)]
-        public bool IsListed { get; init; } = true;
+        public bool? IsListed { get; set; } = true;
 
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
         [StjJsonPropertyName(JsonProperties.Deprecation)]

@@ -86,7 +86,6 @@ NuGet.Protocol.Core.Types.IPackageSearchMetadata.DownloadCount.get -> long?
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>>
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.IconUrl.get -> System.Uri
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.Identity.get -> NuGet.Packaging.Core.PackageIdentity
-NuGet.Protocol.Core.Types.IPackageSearchMetadata.IsListed.get -> bool
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.LicenseUrl.get -> System.Uri
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.Owners.get -> string
@@ -176,8 +175,6 @@ NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetada
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IconUrl.set -> void
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Identity.get -> NuGet.Packaging.Core.PackageIdentity
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Identity.set -> void
-NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.get -> bool
-NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.set -> void
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.LicenseMetadata.set -> void
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.LicenseUrl.get -> System.Uri
@@ -638,7 +635,6 @@ NuGet.Protocol.LocalPackageSearchMetadata.DownloadCount.get -> long?
 ~NuGet.Protocol.LocalPackageSearchMetadata.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>>
 ~NuGet.Protocol.LocalPackageSearchMetadata.IconUrl.get -> System.Uri
 ~NuGet.Protocol.LocalPackageSearchMetadata.Identity.get -> NuGet.Packaging.Core.PackageIdentity
-NuGet.Protocol.LocalPackageSearchMetadata.IsListed.get -> bool
 ~NuGet.Protocol.LocalPackageSearchMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
 ~NuGet.Protocol.LocalPackageSearchMetadata.LicenseUrl.get -> System.Uri
 ~NuGet.Protocol.LocalPackageSearchMetadata.LoadFileAsText(string path) -> string
@@ -759,7 +755,6 @@ NuGet.Protocol.PackageSearchMetadata.DownloadCount.get -> long?
 ~NuGet.Protocol.PackageSearchMetadata.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>>
 ~NuGet.Protocol.PackageSearchMetadata.IconUrl.get -> System.Uri
 ~NuGet.Protocol.PackageSearchMetadata.Identity.get -> NuGet.Packaging.Core.PackageIdentity
-NuGet.Protocol.PackageSearchMetadata.IsListed.get -> bool
 ~NuGet.Protocol.PackageSearchMetadata.LicenseExpression.get -> string
 ~NuGet.Protocol.PackageSearchMetadata.LicenseExpressionVersion.get -> string
 ~NuGet.Protocol.PackageSearchMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
@@ -798,7 +793,6 @@ NuGet.Protocol.PackageSearchMetadataV2Feed.DownloadCount.get -> long?
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>>
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.IconUrl.get -> System.Uri
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.Identity.get -> NuGet.Packaging.Core.PackageIdentity
-NuGet.Protocol.PackageSearchMetadataV2Feed.IsListed.get -> bool
 NuGet.Protocol.PackageSearchMetadataV2Feed.LastEdited.get -> System.DateTimeOffset?
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.LicenseUrl.get -> System.Uri

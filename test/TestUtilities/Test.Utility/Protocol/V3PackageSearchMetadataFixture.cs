@@ -102,7 +102,7 @@ namespace NuGet.Test.Utility
 
             public string Title => "title";
 
-            public bool IsListed => true;
+            public bool? IsListed => true;
 
             public bool PrefixReserved => false;
 
