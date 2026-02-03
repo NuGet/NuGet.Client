@@ -11,10 +11,7 @@ using Xunit.Abstractions;
 
 public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBase<INuGetProjectService, NuGetServiceMock>
 {
-    public NuGetProjectServiceV1ContractTests(ITestOutputHelper logger)
-        : base(logger, NuGetServices.NuGetProjectServiceV1)
-    {
-    }
+    public NuGetProjectServiceV1ContractTests(ITestOutputHelper logger) : base(logger, NuGetServices.NuGetProjectServiceV1) { }
 
     [Fact]
     public async Task GetInstalledPackagesAsync_SerializationTest()
