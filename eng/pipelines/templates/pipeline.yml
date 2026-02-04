@@ -54,22 +54,23 @@ stages:
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
-- stage: StaticSourceAnalysis
-  displayName: Static Source Analysis
-  dependsOn: []
-  jobs:
-  - job: RunStaticSourceAnalysis
-    displayName: Run Static Source Analysis
-    condition: "and(succeeded(), ne(variables['RunStaticAnalysis'], 'false'))"
-    timeoutInMinutes: 15
-    pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
-      os: windows
-    steps:
-    - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
-      parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
+- ${{ if not(parameters.isOfficialBuild) }}:
+  - stage: StaticSourceAnalysis
+    displayName: Static Source Analysis
+    dependsOn: []
+    jobs:
+    - job: RunStaticSourceAnalysis
+      displayName: Run Static Source Analysis
+      condition: "and(succeeded(), ne(variables['RunStaticAnalysis'], 'false'))"
+      timeoutInMinutes: 15
+      pool:
+        name: AzurePipelines-EO
+        image: 1ESPT-Windows2022
+        os: windows
+      steps:
+      - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
+        parameters:
+          isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
