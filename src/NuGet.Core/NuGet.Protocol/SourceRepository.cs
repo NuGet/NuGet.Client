@@ -188,8 +188,8 @@ namespace NuGet.Protocol.Core.Types
             Sort(IEnumerable<Lazy<INuGetResourceProvider>> group)
         {
             // initial ordering to help make this deterministic
-            var items = new List<INuGetResourceProvider>(
-                group.Select(e => e.Value).OrderBy(e => e.Name).ThenBy(e => e.After.Count()).ThenBy(e => e.Before.Count()));
+            var items = new List<INuGetResourceProvider>(group.Count());
+            items.AddRange(group.Select(e => e.Value).OrderBy(e => e.Name).ThenBy(e => e.After.Count()).ThenBy(e => e.Before.Count()));
 
             var comparer = ProviderComparer.Instance;
 
