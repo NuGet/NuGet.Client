@@ -265,10 +265,13 @@ steps:
   - task: MicroBuildBuildVSBootstrapper@3
     displayName: "Build a Visual Studio bootstrapper"
     inputs:
+      azureSubscription: 'VSEng-VSDrop-MI'
       channelName: "$(VsTargetChannel)"
       vsMajorVersion: "$(VsTargetMajorVersion)"
       manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
       outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
