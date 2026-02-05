@@ -102,12 +102,12 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Build_WhenInGitHubActions_AppendsCIGitHubActions()
+        public void Build_WhenInAWSCodeBuild_AppendsCIInfoInParentheses()
         {
             // Arrange
             var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
             {
-                { CIEnvironmentDetector.GitHubActionsEnvVar, "true" }
+                { "CODEBUILD_BUILD_ID", "build-123" }
             });
             var clientName = "TestClient";
             var builder = new UserAgentStringBuilder(clientName, environmentReader);
@@ -117,17 +117,17 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             _output.WriteLine(userAgent);
-            userAgent.Should().EndWith($"CI/{CIEnvironmentDetector.GitHubActionsClientId}");
-            userAgent.Should().Contain(clientName);
+            userAgent.Should().Contain("CI: AWS CodeBuild");
         }
 
         [Fact]
-        public void Build_WhenInAzureDevOps_AppendsCIAzureDevOps()
+        public void Build_WhenInGoogleCloud_AppendsCIInfoInParentheses()
         {
             // Arrange
             var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
             {
-                { CIEnvironmentDetector.AzureDevOpsEnvVar, "True" }
+                { "BUILD_ID", "build-123" },
+                { "PROJECT_ID", "my-project" }
             });
             var clientName = "TestClient";
             var builder = new UserAgentStringBuilder(clientName, environmentReader);
@@ -137,8 +137,26 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             _output.WriteLine(userAgent);
-            userAgent.Should().EndWith($"CI/{CIEnvironmentDetector.AzureDevOpsClientId}");
-            userAgent.Should().Contain(clientName);
+            userAgent.Should().Contain("CI: Google Cloud");
+        }
+
+        [Fact]
+        public void Build_WhenInGenericCI_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "CI", "True" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: other)");
         }
 
         [Fact]
@@ -156,7 +174,7 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             _output.WriteLine(userAgent);
-            userAgent.Should().NotContain("CI/");
+            userAgent.Should().NotContain("CI:");
             userAgent.Should().Be($"{clientName}/{clientVersion} ({os})");
         }
 
@@ -166,10 +184,11 @@ namespace NuGet.Protocol.Tests
             // Arrange
             var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
             {
-                { CIEnvironmentDetector.GitHubActionsEnvVar, "true" }
+                { "GITHUB_ACTIONS", "true" }
             });
             var clientName = "TestClient";
             var vsInfo = "VS Enterprise/17.0";
+            var os = UserAgentStringBuilder.GetOS();
             var builder = new UserAgentStringBuilder(clientName, environmentReader);
 
             // Act
@@ -178,7 +197,57 @@ namespace NuGet.Protocol.Tests
             // Assert
             _output.WriteLine(userAgent);
             userAgent.Should().Contain(vsInfo);
-            userAgent.Should().EndWith($"CI/{CIEnvironmentDetector.GitHubActionsClientId}");
+            userAgent.Should().Contain($"{os}, CI: GitHub Actions");
+        }
+
+        [Fact]
+        public void BuildMetadataString_WithAllInfo_ReturnsCommaSeparatedItems()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "GITHUB_ACTIONS", "true" }
+            });
+            var builder = new UserAgentStringBuilder("TestClient", environmentReader);
+            builder.WithVisualStudioSKU("VS Enterprise/17.0");
+            var os = UserAgentStringBuilder.GetOS();
+
+            // Act
+            string result = builder.BuildMetadataString();
+
+            // Assert - all items separated by ", "
+            result.Should().Be($"{os}, CI: GitHub Actions, VS Enterprise/17.0");
+        }
+
+        [Fact]
+        public void BuildMetadataString_WithNoCI_ReturnsOSAndVS()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>());
+            var builder = new UserAgentStringBuilder("TestClient", environmentReader);
+            builder.WithVisualStudioSKU("VS Enterprise/17.0");
+            var os = UserAgentStringBuilder.GetOS();
+
+            // Act
+            string result = builder.BuildMetadataString();
+
+            // Assert
+            result.Should().Be($"{os}, VS Enterprise/17.0");
+        }
+
+        [Fact]
+        public void BuildMetadataString_WithOnlyOS_ReturnsOS()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>());
+            var builder = new UserAgentStringBuilder("TestClient", environmentReader);
+            var os = UserAgentStringBuilder.GetOS();
+
+            // Act
+            string result = builder.BuildMetadataString();
+
+            // Assert
+            result.Should().Be(os);
         }
     }
 }
