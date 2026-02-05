@@ -138,6 +138,96 @@ namespace NuGet.ContentModel
             }
         }
 
+        /// <summary>
+        /// Classifies all assets using the decision tree approach and returns ContentItems
+        /// grouped by their asset type.
+        /// This method provides O(n * d) complexity where d is tree depth (~4-5) instead of 
+        /// O(n * m) where m is the number of patterns.
+        /// </summary>
+        /// <param name="classifier">The asset classifier to use.</param>
+        /// <param name="targetAssetType">The asset type to filter for, or None to get all types.</param>
+        /// <returns>A list of ContentItems matching the specified asset type.</returns>
+        internal List<ContentItem> ClassifyAssets(AssetClassifier classifier, AssetType targetAssetType = AssetType.None)
+        {
+            if (classifier == null)
+            {
+                throw new ArgumentNullException(nameof(classifier));
+            }
+
+            var results = new List<ContentItem>();
+
+            if (_assets == null || _assets.Count == 0)
+            {
+                return results;
+            }
+
+            foreach (var asset in _assets)
+            {
+                var item = classifier.Classify(asset.Path, out AssetType assetType);
+                if (item != null && (targetAssetType == AssetType.None || assetType == targetAssetType))
+                {
+                    // Populate related file extensions for assemblies
+                    if (item.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
+                    {
+                        string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(item.Path, _assets);
+                        if (relatedFileExtensionsProperty is not null)
+                        {
+                            item.Add("related", relatedFileExtensionsProperty);
+                        }
+                    }
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Classifies all assets and groups them by asset type using the decision tree approach.
+        /// </summary>
+        /// <param name="classifier">The asset classifier to use.</param>
+        /// <returns>A dictionary mapping asset types to lists of ContentItems.</returns>
+        internal Dictionary<AssetType, List<ContentItem>> ClassifyAllAssets(AssetClassifier classifier)
+        {
+            if (classifier == null)
+            {
+                throw new ArgumentNullException(nameof(classifier));
+            }
+
+            var results = new Dictionary<AssetType, List<ContentItem>>();
+
+            if (_assets == null || _assets.Count == 0)
+            {
+                return results;
+            }
+
+            foreach (var asset in _assets)
+            {
+                var item = classifier.Classify(asset.Path, out AssetType assetType);
+                if (item != null && assetType != AssetType.None)
+                {
+                    // Populate related file extensions for assemblies
+                    if (item.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
+                    {
+                        string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(item.Path, _assets);
+                        if (relatedFileExtensionsProperty is not null)
+                        {
+                            item.Add("related", relatedFileExtensionsProperty);
+                        }
+                    }
+
+                    if (!results.TryGetValue(assetType, out var list))
+                    {
+                        list = new List<ContentItem>();
+                        results[assetType] = list;
+                    }
+                    list.Add(item);
+                }
+            }
+
+            return results;
+        }
+
         public ContentItemGroup? FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             if (criteria is null)

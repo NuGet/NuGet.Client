@@ -105,6 +105,16 @@ namespace NuGet.Client
             Patterns = new ManagedCodePatterns(this);
         }
 
+        /// <summary>
+        /// Creates an AssetClassifier that uses a decision tree approach for faster asset classification.
+        /// This provides O(n * d) complexity where d is tree depth (~4-5) instead of O(n * m) 
+        /// where m is the number of patterns.
+        /// </summary>
+        internal AssetClassifier CreateAssetClassifier()
+        {
+            return new AssetClassifier(_frameworkCache, DotnetAnyTable, AnyTable);
+        }
+
         private bool RuntimeIdentifier_CompatibilityTest(object criteria, object available)
         {
             if (_runtimeGraph == null)
