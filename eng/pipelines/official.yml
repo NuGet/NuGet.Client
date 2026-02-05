@@ -24,7 +24,6 @@ variables:
   NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
   Codeql.Enabled: true
   Codeql.TSAEnabled: true
-  # Update monthly to target the release branch for OneLoc.
   OneLocReleaseBranch: release/7.3.x
   RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
   SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
