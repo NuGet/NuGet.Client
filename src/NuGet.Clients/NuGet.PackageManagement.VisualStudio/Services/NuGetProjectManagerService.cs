@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
-            CancellationToken cancellationToken) => await GetInstalledAndTransitivePackagesAsync(projectIds, includeTransitiveOrigins: false, cancellationToken);
+            CancellationToken cancellationToken) => await GetInstalledAndTransitivePackagesAsync(projectIds, includeTransitiveOrigins: true, cancellationToken);
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,
