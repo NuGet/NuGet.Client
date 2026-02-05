@@ -326,7 +326,10 @@ namespace NuGet.ProjectModel
 
                 for (var i = 0; i < actual.Targets.Count; i++)
                 {
-                    if (actual.Targets[i].TargetFramework == expectedTarget.TargetFramework)
+                    // Match by framework and alias (for v3) or just framework (for v1/v2)
+                    if (actual.Targets[i].TargetFramework == expectedTarget.TargetFramework &&
+                        StringComparer.OrdinalIgnoreCase.Equals(actual.Targets[i].TargetAlias, expectedTarget.TargetAlias) &&
+                        StringComparer.Ordinal.Equals(actual.Targets[i].RuntimeIdentifier, expectedTarget.RuntimeIdentifier))
                     {
                         if (actualTarget == null)
                         {
@@ -338,16 +341,16 @@ namespace NuGet.ProjectModel
                             return LockFileValidityWithMatchedResults.Invalid;
                         }
                     }
+                }
 
-                    if (actualTarget == null)
-                    {
-                        return LockFileValidityWithMatchedResults.Invalid;
-                    }
+                if (actualTarget == null)
+                {
+                    return LockFileValidityWithMatchedResults.Invalid;
+                }
 
-                    if (actualTarget.Dependencies.Count != expectedTarget.Dependencies.Count)
-                    {
-                        return LockFileValidityWithMatchedResults.Invalid;
-                    }
+                if (actualTarget.Dependencies.Count != expectedTarget.Dependencies.Count)
+                {
+                    return LockFileValidityWithMatchedResults.Invalid;
                 }
             }
 
@@ -358,7 +361,10 @@ namespace NuGet.ProjectModel
 
             foreach (PackagesLockFileTarget expectedTarget in expected.Targets)
             {
-                PackagesLockFileTarget actualTarget = actual.Targets.Single(t => t.TargetFramework == expectedTarget.TargetFramework);
+                PackagesLockFileTarget actualTarget = actual.Targets.Single(t =>
+                    t.TargetFramework == expectedTarget.TargetFramework &&
+                    StringComparer.Ordinal.Equals(t.TargetAlias, expectedTarget.TargetAlias) &&
+                    StringComparer.Ordinal.Equals(t.RuntimeIdentifier, expectedTarget.RuntimeIdentifier));
 
                 // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
                 var actualDependencies = new Dictionary<LockFileDependency, LockFileDependency>(

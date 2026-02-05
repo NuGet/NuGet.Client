@@ -19,8 +19,11 @@ namespace NuGet.ProjectModel
     {
         public static readonly int Version = 1;
 
-        // Diverge the lockfile version to allow evolving the lock file schema
+        // This is the version for lock files with central package versions support, but without alias support. This allows us to maintain compatibility with older clients that don't understand the concept of central package versions.
         public static readonly int PackagesLockFileVersion = 2;
+
+        // Version 3 is used when aliases are present (duplicate frameworks with different aliases)
+        public static readonly int AliasedLockFileVersion = 3;
 
         public static readonly string LockFileName = "packages.lock.json";
 
@@ -91,10 +94,15 @@ namespace NuGet.ProjectModel
 
         private static PackagesLockFile ReadLockFile(JObject cursor)
         {
+            int version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
+            var targets = version >= AliasedLockFileVersion
+                ? JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV3)
+                : JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV2);
+
             var lockFile = new PackagesLockFile()
             {
-                Version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
-                Targets = JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependency),
+                Version = version,
+                Targets = targets,
             };
 
             return lockFile;
@@ -155,9 +163,9 @@ namespace NuGet.ProjectModel
             return json;
         }
 
-        private static PackagesLockFileTarget ReadDependency(string property, JToken json)
+        private static PackagesLockFileTarget ReadDependencyV2(string property, JToken json)
         {
-            var parts = property.Split(JsonUtility.PathSplitChars, 2);
+            var parts = property.Split(JsonUtility.PathSplitChars);
 
             var target = new PackagesLockFileTarget
             {
@@ -169,6 +177,21 @@ namespace NuGet.ProjectModel
             {
                 target.RuntimeIdentifier = parts[1];
             }
+
+            return target;
+        }
+
+        private static PackagesLockFileTarget ReadDependencyV3(string property, JToken json)
+        {
+            var parts = property.Split(JsonUtility.PathSplitChars);
+
+            var target = new PackagesLockFileTarget
+            {
+                TargetFramework = NuGetFramework.Parse(parts[1]),
+                RuntimeIdentifier = parts.Length == 3 ? parts[2] : null,
+                TargetAlias = parts[0],
+                Dependencies = JsonUtility.ReadObject(json as JObject, ReadTargetDependency)
+            };
 
             return target;
         }

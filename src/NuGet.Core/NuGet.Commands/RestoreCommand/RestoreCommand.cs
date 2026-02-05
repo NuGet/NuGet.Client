@@ -2030,23 +2030,32 @@ namespace NuGet.Commands
         // Returns true if duplicates exist, false otherwise.
         private static async ValueTask<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
         {
-            if (request.Project.TargetFrameworks.Count <= 1)
+            if (HasDuplicateFrameworks(request.Project))
+            {
+                // Duplicate found - log error and return immediately
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool HasDuplicateFrameworks(PackageSpec packageSpec)
+        {
+            if (packageSpec.TargetFrameworks.Count <= 1)
             {
                 return false;
             }
 
-            var seenFrameworks = new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Count);
-            for (int i = 0; i < request.Project.TargetFrameworks.Count; i++)
+            var seenFrameworks = new HashSet<NuGetFramework>(packageSpec.TargetFrameworks.Count);
+            for (int i = 0; i < packageSpec.TargetFrameworks.Count; i++)
             {
-                if (!seenFrameworks.Add(request.Project.TargetFrameworks[i].FrameworkName))
+                if (!seenFrameworks.Add(packageSpec.TargetFrameworks[i].FrameworkName))
                 {
-                    // Duplicate found - log error and return immediately
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
                     return true;
                 }
             }
-
             return false;
         }
 
