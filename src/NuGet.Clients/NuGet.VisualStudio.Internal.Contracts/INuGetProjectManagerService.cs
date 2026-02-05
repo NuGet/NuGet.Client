@@ -18,6 +18,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
+        /// <summary>
+        /// Obtains the installed and transitive packages from all given projects, including transitive origins for transitive packages by default.
+        /// </summary>
+        /// <param name="projectIds">Projects to retrieve installed and transitive packages</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>An object with two lists: installed and transitive packages from all projects, with transitive packages containing origin information</returns>
+        /// <remarks>
+        /// This method includes transitive origins by default. If you don't need transitive origins information, 
+        /// use the overload with <c>includeTransitiveOrigins</c> parameter set to <see langword="false" /> to avoid the overhead.
+        /// </remarks>
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
