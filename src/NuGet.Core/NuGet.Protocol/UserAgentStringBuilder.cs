@@ -6,6 +6,7 @@
 #if NETCOREAPP
 using System;
 #endif
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using NuGet.Common;
@@ -17,8 +18,7 @@ namespace NuGet.Protocol.Core.Types
     {
         public static readonly string DefaultNuGetClientName = "NuGet Client V3";
 
-        private const string UserAgentWithOSDescriptionAndVisualStudioSKUTemplate = "{0}/{1} ({2}, {3})";
-        private const string UserAgentWithOSDescriptionTemplate = "{0}/{1} ({2})";
+        private const string UserAgentWithMetadataTemplate = "{0}/{1} ({2})";
         private const string UserAgentTemplate = "{0}/{1}";
 
         private readonly string _clientName;
@@ -72,42 +72,52 @@ namespace NuGet.Protocol.Core.Types
                 clientInfo = DefaultNuGetClientName;
             }
 
-            string baseUserAgent;
+            string metadataString = BuildMetadataString();
 
-            if (string.IsNullOrEmpty(_osInfo))
+            if (string.IsNullOrEmpty(metadataString))
             {
-                baseUserAgent = string.Format(
+                return string.Format(
                     CultureInfo.InvariantCulture,
                     UserAgentTemplate,
                     clientInfo,
                     NuGetClientVersion);
             }
-            else if (string.IsNullOrEmpty(_vsInfo))
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                UserAgentWithMetadataTemplate,
+                clientInfo,
+                NuGetClientVersion,
+                metadataString);
+        }
+
+        /// <summary>
+        /// Builds the metadata string for the parentheses section.
+        /// Items are collected in order (OS, CI, VS) and joined with ", ".
+        /// </summary>
+        internal string BuildMetadataString()
+        {
+            var items = new List<string>();
+
+            // OS info
+            if (!string.IsNullOrEmpty(_osInfo))
             {
-                baseUserAgent = string.Format(
-                    CultureInfo.InvariantCulture,
-                    UserAgentWithOSDescriptionTemplate,
-                    clientInfo,
-                    NuGetClientVersion,
-                    _osInfo);
-            }
-            else
-            {
-                baseUserAgent = string.Format(
-                    CultureInfo.InvariantCulture,
-                    UserAgentWithOSDescriptionAndVisualStudioSKUTemplate,
-                    _clientName,
-                    NuGetClientVersion, /* NuGet version */
-                    _osInfo, /* OS version */
-                    _vsInfo);  /* VS SKU + version */
+                items.Add(_osInfo);
             }
 
+            // CI info (formatted as "CI: {provider}")
             if (!string.IsNullOrEmpty(_ciInfo))
             {
-                return $"{baseUserAgent} CI/{_ciInfo}";
+                items.Add($"CI: {_ciInfo}");
             }
 
-            return baseUserAgent;
+            // VS info
+            if (!string.IsNullOrEmpty(_vsInfo))
+            {
+                items.Add(_vsInfo);
+            }
+
+            return string.Join(", ", items);
         }
 
         internal static string GetOS()

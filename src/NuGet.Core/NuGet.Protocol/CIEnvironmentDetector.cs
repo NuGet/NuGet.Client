@@ -1,36 +1,50 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
     /// Detects CI/CD environment from environment variables.
-    /// Currently supports GitHub Actions, Azure DevOps, and generic CI.
     /// </summary>
     public static class CIEnvironmentDetector
     {
-        /// <summary>
-        /// Environment variable set to "true" when running in GitHub Actions.
-        /// </summary>
-        public const string GitHubActionsEnvVar = "GITHUB_ACTIONS";
+        private static readonly EnvironmentDetectionRule[] DetectionRules =
+        {
+            // GitHub Actions
+            new BooleanEnvironmentRule("GitHub Actions", "GITHUB_ACTIONS"),
 
-        /// <summary>
-        /// Environment variable set to "True" when running in Azure DevOps pipelines.
-        /// </summary>
-        public const string AzureDevOpsEnvVar = "TF_BUILD";
+            // Azure DevOps
+            new BooleanEnvironmentRule("Azure DevOps", "TF_BUILD"),
 
-        /// <summary>
-        /// Client ID for GitHub Actions environment.
-        /// </summary>
-        public const string GitHubActionsClientId = "GitHub Actions";
+            // AppVeyor
+            new BooleanEnvironmentRule("AppVeyor", "APPVEYOR"),
 
-        /// <summary>
-        /// Client ID for Azure DevOps environment.
-        /// </summary>  
-        public const string AzureDevOpsClientId = "AzureDevOps";
+            // Travis CI
+            new BooleanEnvironmentRule("Travis CI", "TRAVIS"),
+
+            // CircleCI
+            new BooleanEnvironmentRule("CircleCI", "CIRCLECI"),
+
+            // AWS CodeBuild
+            new AnyPresentEnvironmentRule("AWS CodeBuild", "CODEBUILD_BUILD_ID"),
+
+            // Jenkins - requires both BUILD_ID and BUILD_URL
+            new AllPresentEnvironmentRule("Jenkins", "BUILD_ID", "BUILD_URL"),
+
+            // Google Cloud Build - requires both BUILD_ID and PROJECT_ID
+            new AllPresentEnvironmentRule("Google Cloud", "BUILD_ID", "PROJECT_ID"),
+
+            // TeamCity
+            new AnyPresentEnvironmentRule("TeamCity", "TEAMCITY_VERSION"),
+
+            // JetBrains Space
+            new AnyPresentEnvironmentRule("JetBrains Space", "JB_SPACE_API_URL"),
+
+            // Generic CI - must be last as it's the most general
+            new BooleanEnvironmentRule("other", "CI")
+        };
 
         /// <summary>
         /// Detects the CI environment based on environment variables.
@@ -48,41 +62,15 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>A <see cref="string"/> if a CI environment is detected, null otherwise.</returns>
         internal static string? Detect(IEnvironmentVariableReader environmentVariableReader)
         {
-            // Check for GitHub Actions
-            if (IsGitHubActions(environmentVariableReader))
+            foreach (EnvironmentDetectionRule rule in DetectionRules)
             {
-                return GitHubActionsClientId;
-            }
-
-            // Check for Azure DevOps
-            if (IsAzureDevOps(environmentVariableReader))
-            {
-                return AzureDevOpsClientId;
+                if (rule.IsMatch(environmentVariableReader))
+                {
+                    return rule.Name;
+                }
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Checks if the current environment is GitHub Actions.
-        /// </summary>
-        /// <param name="environmentVariableReader">The environment variable reader to use.</param>
-        /// <returns>True if running in GitHub Actions, false otherwise.</returns>
-        internal static bool IsGitHubActions(IEnvironmentVariableReader environmentVariableReader)
-        {
-            string? value = environmentVariableReader.GetEnvironmentVariable(GitHubActionsEnvVar);
-            return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Checks if the current environment is Azure DevOps.
-        /// </summary>
-        /// <param name="environmentVariableReader">The environment variable reader to use.</param>
-        /// <returns>True if running in Azure DevOps, false otherwise.</returns>
-        internal static bool IsAzureDevOps(IEnvironmentVariableReader environmentVariableReader)
-        {
-            string? value = environmentVariableReader.GetEnvironmentVariable(AzureDevOpsEnvVar);
-            return string.Equals(value, "True", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
