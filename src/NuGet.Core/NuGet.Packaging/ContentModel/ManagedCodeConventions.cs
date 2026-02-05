@@ -72,6 +72,8 @@ namespace NuGet.Client
 
         private Dictionary<ReadOnlyMemory<char>, NuGetFramework> _frameworkCache = new(ReadOnlyMemoryCharComparerOrdinal.Instance);
 
+        private AssetClassifier _cachedClassifier;
+
         public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
         public ManagedCodePatterns Patterns { get; }
@@ -113,6 +115,49 @@ namespace NuGet.Client
         internal AssetClassifier CreateAssetClassifier()
         {
             return new AssetClassifier(_frameworkCache, DotnetAnyTable, AnyTable);
+        }
+
+        /// <summary>
+        /// Gets or creates a cached AssetClassifier instance for this ManagedCodeConventions.
+        /// </summary>
+        internal AssetClassifier GetOrCreateCachedClassifier()
+        {
+            if (_cachedClassifier == null)
+            {
+                _cachedClassifier = CreateAssetClassifier();
+            }
+            return _cachedClassifier;
+        }
+
+        /// <summary>
+        /// Gets the AssetType corresponding to a PatternSet, or null if there's no direct mapping.
+        /// </summary>
+        internal AssetType? GetAssetTypeForPattern(PatternSet patternSet)
+        {
+            if (ReferenceEquals(patternSet, Patterns.RuntimeAssemblies))
+                return AssetType.RuntimeAssembly;
+            if (ReferenceEquals(patternSet, Patterns.CompileRefAssemblies))
+                return AssetType.CompileRefAssembly;
+            if (ReferenceEquals(patternSet, Patterns.CompileLibAssemblies))
+                return AssetType.CompileLibAssembly;
+            if (ReferenceEquals(patternSet, Patterns.NativeLibraries))
+                return AssetType.NativeLibrary;
+            if (ReferenceEquals(patternSet, Patterns.ResourceAssemblies))
+                return AssetType.ResourceAssembly;
+            if (ReferenceEquals(patternSet, Patterns.MSBuildFiles))
+                return AssetType.MSBuildFile;
+            if (ReferenceEquals(patternSet, Patterns.MSBuildMultiTargetingFiles))
+                return AssetType.MSBuildMultiTargetingFile;
+            if (ReferenceEquals(patternSet, Patterns.MSBuildTransitiveFiles))
+                return AssetType.MSBuildTransitiveFile;
+            if (ReferenceEquals(patternSet, Patterns.ContentFiles))
+                return AssetType.ContentFile;
+            if (ReferenceEquals(patternSet, Patterns.ToolsAssemblies))
+                return AssetType.ToolsAssembly;
+            if (ReferenceEquals(patternSet, Patterns.EmbedAssemblies))
+                return AssetType.EmbedAssembly;
+            // AnyTargettedFile doesn't have a direct AssetType mapping
+            return null;
         }
 
         private bool RuntimeIdentifier_CompatibilityTest(object criteria, object available)

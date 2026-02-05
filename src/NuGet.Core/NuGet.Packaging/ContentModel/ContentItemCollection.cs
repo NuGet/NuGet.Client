@@ -81,6 +81,41 @@ namespace NuGet.ContentModel
         /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups</param>
         public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
         {
+            PopulateItemGroups(definition, contentItemGroupList, classifier: null, assetType: null);
+        }
+
+        /// <summary>
+        /// Populate the provided list with ContentItemGroups based on a provided pattern set.
+        /// When the feature flag is enabled and the pattern set has a corresponding asset type,
+        /// uses the optimized decision tree approach instead of pattern matching.
+        /// </summary>
+        /// <param name="definition">The pattern set to match</param>
+        /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups</param>
+        /// <param name="conventions">The managed code conventions (used to get classifier and asset type mapping)</param>
+        public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList, ManagedCodeConventions conventions)
+        {
+            if (conventions == null)
+            {
+                PopulateItemGroups(definition, contentItemGroupList, classifier: null, assetType: null);
+                return;
+            }
+
+            var assetType = conventions.GetAssetTypeForPattern(definition);
+            var classifier = assetType.HasValue ? conventions.GetOrCreateCachedClassifier() : null;
+            PopulateItemGroups(definition, contentItemGroupList, classifier, assetType);
+        }
+
+        /// <summary>
+        /// Populate the provided list with ContentItemGroups based on a provided pattern set.
+        /// When a classifier and asset type are provided and the feature flag is enabled,
+        /// uses the optimized decision tree approach instead of pattern matching.
+        /// </summary>
+        /// <param name="definition">The pattern set to match</param>
+        /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups</param>
+        /// <param name="classifier">Optional asset classifier for optimized path</param>
+        /// <param name="assetType">Optional asset type for optimized path</param>
+        internal void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList, AssetClassifier? classifier, AssetType? assetType)
+        {
             if (definition == null)
             {
                 throw new ArgumentNullException(nameof(definition));
@@ -89,6 +124,15 @@ namespace NuGet.ContentModel
             {
                 throw new ArgumentNullException(nameof(contentItemGroupList));
             }
+
+            // Use optimized path if classifier is provided, asset type is specified, and feature flag is enabled
+            if (classifier != null && assetType.HasValue && assetType.Value != AssetType.None && ContentModelFeatureFlags.UseOptimizedAssetClassifier)
+            {
+                PopulateItemGroupsOptimized(classifier, assetType.Value, contentItemGroupList);
+                return;
+            }
+
+            // Original pattern-matching implementation
             if (_assets != null && _assets.Count > 0)
             {
                 var groupPatterns = definition.GroupExpressions;
@@ -226,6 +270,88 @@ namespace NuGet.ContentModel
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Populate the provided list with ContentItemGroups using the decision tree classifier.
+        /// This is an optimized version of PopulateItemGroups that avoids O(n*m) pattern matching.
+        /// </summary>
+        /// <param name="classifier">The asset classifier to use.</param>
+        /// <param name="assetType">The asset type to filter for.</param>
+        /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups.</param>
+        internal void PopulateItemGroupsOptimized(AssetClassifier classifier, AssetType assetType, IList<ContentItemGroup> contentItemGroupList)
+        {
+            if (classifier == null)
+            {
+                throw new ArgumentNullException(nameof(classifier));
+            }
+            if (contentItemGroupList == null)
+            {
+                throw new ArgumentNullException(nameof(contentItemGroupList));
+            }
+
+            if (_assets == null || _assets.Count == 0)
+            {
+                return;
+            }
+
+            // Group items by their grouping properties (TFM, RID, etc.)
+            // Using a dictionary keyed by a tuple of grouping values
+            var groupedItems = new Dictionary<(object? tfm, object? rid, object? codeLanguage), List<ContentItem>>();
+
+            foreach (var asset in _assets)
+            {
+                var item = classifier.Classify(asset.Path, out AssetType classifiedType);
+                if (item == null || classifiedType != assetType)
+                {
+                    continue;
+                }
+
+                // Populate related file extensions for assemblies
+                if (item.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
+                {
+                    string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(item.Path, _assets);
+                    if (relatedFileExtensionsProperty is not null)
+                    {
+                        item.Add("related", relatedFileExtensionsProperty);
+                    }
+                }
+
+                // Create grouping key based on TFM, RID, and codeLanguage
+                item.TryGetValue(ContentItem.TargetFrameworkMoniker, out object? tfm);
+                item.TryGetValue(ContentItem.RuntimeIdentifier, out object? rid);
+                item.TryGetValue(ContentItem.CodeLanguage, out object? codeLanguage);
+
+                var key = (tfm, rid, codeLanguage);
+
+                if (!groupedItems.TryGetValue(key, out var items))
+                {
+                    items = new List<ContentItem>();
+                    groupedItems[key] = items;
+                }
+
+                items.Add(item);
+            }
+
+            // Convert grouped items to ContentItemGroups
+            foreach (var (key, items) in groupedItems)
+            {
+                var properties = new Dictionary<string, object>();
+                if (key.tfm != null)
+                {
+                    properties[ContentItem.TargetFrameworkMoniker] = key.tfm;
+                }
+                if (key.rid != null)
+                {
+                    properties[ContentItem.RuntimeIdentifier] = key.rid;
+                }
+                if (key.codeLanguage != null)
+                {
+                    properties[ContentItem.CodeLanguage] = key.codeLanguage;
+                }
+
+                contentItemGroupList.Add(new ContentItemGroup(properties, items));
+            }
         }
 
         public ContentItemGroup? FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)

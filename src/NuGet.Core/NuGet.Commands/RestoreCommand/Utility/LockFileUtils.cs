@@ -300,7 +300,7 @@ namespace NuGet.Commands
         {
             // content v2 items
             List<ContentItemGroup> contentFileGroups = new();
-            contentItems.PopulateItemGroups(managedCodeConventions.Patterns.ContentFiles, contentFileGroups);
+            contentItems.PopulateItemGroups(managedCodeConventions.Patterns.ContentFiles, contentFileGroups, managedCodeConventions);
 
             if (contentFileGroups.Count > 0)
             {
@@ -343,7 +343,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Runtime,
                     managedCodeConventions.Patterns.RuntimeAssemblies,
-                    "runtime"));
+                    "runtime",
+                    managedCodeConventions));
 
                 // Resource
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
@@ -352,7 +353,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Runtime,
                     managedCodeConventions.Patterns.ResourceAssemblies,
-                    "resource"));
+                    "resource",
+                    managedCodeConventions));
 
                 // Native
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
@@ -361,7 +363,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Native,
                     managedCodeConventions.Patterns.NativeLibraries,
-                    "native"));
+                    "native",
+                    managedCodeConventions));
 
                 lockFileLib.RuntimeTargets = runtimeTargetItems;
             }
@@ -935,10 +938,11 @@ namespace NuGet.Commands
             LibraryIncludeFlags dependencyType,
             LibraryIncludeFlags groupType,
             PatternSet patternSet,
-            string assetType)
+            string assetType,
+            ManagedCodeConventions managedCodeConventions = null)
         {
             List<ContentItemGroup> groups = new List<ContentItemGroup>();
-            contentItems.PopulateItemGroups(patternSet, groups);
+            contentItems.PopulateItemGroups(patternSet, groups, managedCodeConventions);
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,
