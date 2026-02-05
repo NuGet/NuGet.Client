@@ -10,7 +10,7 @@ namespace NuGet.Protocol.Converters
     /// <summary>
     /// A System.Text.Json converter for URIs that safely handles invalid URIs.
     /// </summary>
-    internal sealed class SafeUriStjConverter : JsonConverter<Uri>
+    public sealed class SafeUriStjConverter : JsonConverter<Uri>
     {
         public override Uri? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

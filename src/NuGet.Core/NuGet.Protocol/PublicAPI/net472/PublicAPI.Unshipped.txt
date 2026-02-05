@@ -1,6 +1,8 @@
 #nullable enable
 NuGet.Protocol.Converters.FingerprintsStjConverter
 NuGet.Protocol.Converters.FingerprintsStjConverter.FingerprintsStjConverter() -> void
+NuGet.Protocol.Converters.SafeUriStjConverter
+NuGet.Protocol.Converters.SafeUriStjConverter.SafeUriStjConverter() -> void
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.IsListed.get -> bool?
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.get -> bool?
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.IsListed.set -> void
@@ -29,6 +31,8 @@ NuGet.Protocol.RepositoryCertificateInfo.NotAfter.init -> void
 NuGet.Protocol.RepositoryCertificateInfo.NotBefore.init -> void
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> NuGet.Packaging.Core.Fingerprints?
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, NuGet.Packaging.Core.Fingerprints! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override NuGet.Protocol.Converters.SafeUriStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Uri?
+override NuGet.Protocol.Converters.SafeUriStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Uri! value, System.Text.Json.JsonSerializerOptions! options) -> void
 ~NuGet.Protocol.AlternatePackageMetadata.PackageId.init -> void
 ~NuGet.Protocol.AlternatePackageMetadata.Range.init -> void
 ~NuGet.Protocol.Core.Types.VersionInfo.Version.init -> void
