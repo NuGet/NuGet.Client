@@ -23,16 +23,23 @@ namespace NuGet.Protocol
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
         private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
 
-        private readonly struct TypeWithProperties(
-            [DynamicallyAccessedMembers(TypeWithProperties.Annotations)] Type type)
+        private readonly struct TypeWithProperties
         {
             public const DynamicallyAccessedMemberTypes Annotations = DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties;
 
+            [DynamicallyAccessedMembers(Annotations)]
+            private readonly Type _type;
+
+            public TypeWithProperties([DynamicallyAccessedMembers(Annotations)] Type type)
+            {
+                _type = type;
+            }
+
             [property: DynamicallyAccessedMembers(Annotations)]
-            public Type Type => type;
+            public Type Type => _type;
 
             [return: DynamicallyAccessedMembers(Annotations)]
-            public TypeInfo GetTypeInfo() => type.GetTypeInfo();
+            public TypeInfo GetTypeInfo() => _type.GetTypeInfo();
         }
 
         /// <summary>
