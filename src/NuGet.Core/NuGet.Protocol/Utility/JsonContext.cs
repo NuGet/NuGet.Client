@@ -20,8 +20,8 @@ namespace NuGet.Protocol.Utility
             typeof(VersionInfoStjConverter),
             typeof(FingerprintsStjConverter),
             typeof(VersionRangeStjConverter),
-            //typeof(PackageVulnerabilityInfoStjConverter),
-            //typeof(NuGetFrameworkStjConverter)
+            typeof(PackageVulnerabilityInfoStjConverter),
+            typeof(NuGetFrameworkStjConverter)
             ])]
 #pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
