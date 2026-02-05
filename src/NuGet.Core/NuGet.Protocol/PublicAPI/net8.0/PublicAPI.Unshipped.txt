@@ -29,10 +29,14 @@ NuGet.Protocol.Plugins.MonitorNuGetProcessExitRequest.ProcessId.init -> void
 NuGet.Protocol.Plugins.MonitorNuGetProcessExitResponse.ResponseCode.init -> void
 NuGet.Protocol.RepositoryCertificateInfo.NotAfter.init -> void
 NuGet.Protocol.RepositoryCertificateInfo.NotBefore.init -> void
+NuGet.Protocol.VersionInfoStjConverter
+NuGet.Protocol.VersionInfoStjConverter.VersionInfoStjConverter() -> void
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> NuGet.Packaging.Core.Fingerprints?
 override NuGet.Protocol.Converters.FingerprintsStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, NuGet.Packaging.Core.Fingerprints! value, System.Text.Json.JsonSerializerOptions! options) -> void
 override NuGet.Protocol.Converters.SafeUriStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Uri?
 override NuGet.Protocol.Converters.SafeUriStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Uri! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override NuGet.Protocol.VersionInfoStjConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> NuGet.Protocol.Core.Types.VersionInfo!
+override NuGet.Protocol.VersionInfoStjConverter.Write(System.Text.Json.Utf8JsonWriter! writer, NuGet.Protocol.Core.Types.VersionInfo! value, System.Text.Json.JsonSerializerOptions! options) -> void
 ~NuGet.Protocol.AlternatePackageMetadata.PackageId.init -> void
 ~NuGet.Protocol.AlternatePackageMetadata.Range.init -> void
 ~NuGet.Protocol.Core.Types.VersionInfo.Version.init -> void
@@ -57,6 +61,7 @@ override NuGet.Protocol.Converters.SafeUriStjConverter.Write(System.Text.Json.Ut
 ~NuGet.Protocol.PackageSearchMetadata.Title.init -> void
 ~NuGet.Protocol.PackageSearchMetadata.Version.init -> void
 ~NuGet.Protocol.PackageSearchMetadata.Vulnerabilities.init -> void
+~NuGet.Protocol.PackageSearchMetadataRegistration.CatalogUri.init -> void
 ~NuGet.Protocol.PackageVulnerabilityMetadata.AdvisoryUrl.init -> void
 ~NuGet.Protocol.Plugins.Fault.Message.init -> void
 ~NuGet.Protocol.Plugins.GetCredentialsRequest.PackageSourceRepository.init -> void

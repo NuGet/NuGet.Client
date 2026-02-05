@@ -20,7 +20,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Creates a NuGetVersion from a string representing the semantic version.
         /// </summary>
-        public new static NuGetVersion Parse(string value)
+        public new static NuGetVersion Parse(string? value)
         {
             if (string.IsNullOrEmpty(value))
             {

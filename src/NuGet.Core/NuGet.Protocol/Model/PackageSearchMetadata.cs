@@ -54,6 +54,7 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.IconUrl)]
         [StjJsonPropertyName(JsonProperties.IconUrl)]
+        [StjJsonConverter(typeof(SafeUriStjConverter))]
         public Uri IconUrl { get; init; }
 
         private PackageIdentity _packageIdentity = null;

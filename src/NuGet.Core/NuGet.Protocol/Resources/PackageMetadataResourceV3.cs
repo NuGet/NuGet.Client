@@ -7,14 +7,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Extensions;
 using NuGet.Protocol.Model;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -105,7 +107,7 @@ namespace NuGet.Protocol
                 registrationUri,
                 packageId,
                 sourceCacheContext,
-                httpSourceResult => DeserializeStreamDataAsync<RegistrationIndex>(httpSourceResult.Stream, token),
+                httpSourceResult => DeserializeStreamDataAsync(httpSourceResult.Stream, JsonContext.Default.RegistrationIndex, token),
                 log,
                 token);
 
@@ -158,7 +160,7 @@ namespace NuGet.Protocol
         /// <param name="stream">Stream data to read.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private async Task<T> DeserializeStreamDataAsync<T>(Stream stream, CancellationToken token)
+        private static async Task<T> DeserializeStreamDataAsync<T>(Stream stream, JsonTypeInfo<T> jsonTypeInfo, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -167,14 +169,9 @@ namespace NuGet.Protocol
                 return default(T);
             }
 
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                var registrationIndex = JsonExtensions.JsonObjectSerializer
-                    .Deserialize<T>(jsonReader);
+            var registrationIndex = await JsonSerializer.DeserializeAsync<T>(stream, jsonTypeInfo, cancellationToken: token);
 
-                return await Task.FromResult(registrationIndex);
-            }
+            return registrationIndex;
         }
 
         /// <summary>
@@ -229,7 +226,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private Task<RegistrationPage> GetRegistratioIndexPageAsync(
+        private static Task<RegistrationPage> GetRegistratioIndexPageAsync(
             HttpSource httpSource,
             string rangeUri,
             string packageId,
@@ -248,7 +245,7 @@ namespace NuGet.Protocol
                             {
                                 IgnoreNotFounds = true,
                             },
-                            httpSourceResult => DeserializeStreamDataAsync<RegistrationPage>(httpSourceResult.Stream, token),
+                            httpSourceResult => DeserializeStreamDataAsync(httpSourceResult.Stream, JsonContext.Default.RegistrationPage, token),
                             log,
                             token);
 

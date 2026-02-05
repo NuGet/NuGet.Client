@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 using NuGet.Versioning;
+using StjJsonPropertyNameAttribute = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using StjJsonConstructorAttribute = System.Text.Json.Serialization.JsonConstructorAttribute;
 
 namespace NuGet.Packaging.Core
 {
@@ -38,6 +40,7 @@ namespace NuGet.Packaging.Core
         /// Range of versions allowed for the depenency
         /// </summary>
         [JsonProperty(PropertyName = "range")]
+        [StjJsonPropertyName("range")]
         public VersionRange VersionRange
         {
             get { return _versionRange; }
@@ -49,6 +52,7 @@ namespace NuGet.Packaging.Core
         }
 
         [JsonConstructor]
+        [StjJsonConstructor]
         public PackageDependency(string id, VersionRange versionRange)
             : this(id, versionRange, include: null, exclude: null)
         {

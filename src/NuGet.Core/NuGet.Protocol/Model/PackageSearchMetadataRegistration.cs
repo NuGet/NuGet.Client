@@ -5,6 +5,9 @@
 
 using System;
 using Newtonsoft.Json;
+using NuGet.Protocol.Converters;
+using StjJsonPropertyNameAttribute = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using StjJsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
 
 namespace NuGet.Protocol
 {
@@ -18,6 +21,8 @@ namespace NuGet.Protocol
         /// The <see cref="Uri"/> of this package in the catalog.
         /// </summary>
         [JsonProperty(PropertyName = JsonProperties.SubjectId)]
-        public Uri CatalogUri { get; private set; }
+        [StjJsonPropertyName(JsonProperties.SubjectId)]
+        [StjJsonConverter(typeof(SafeUriStjConverter))]
+        public Uri CatalogUri { get; init; }
     }
 }

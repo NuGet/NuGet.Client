@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
+using StjJsonPropertyNameAttribute = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using StjJsonConstructorAttribute = System.Text.Json.Serialization.JsonConstructorAttribute;
 
 namespace NuGet.Packaging
 {
@@ -22,7 +24,8 @@ namespace NuGet.Packaging
         private readonly IEnumerable<PackageDependency> _packages;
 
         [JsonConstructor]
-        private PackageDependencyGroup(NuGetFramework targetFramework)
+        [StjJsonConstructor]
+        public PackageDependencyGroup(NuGetFramework targetFramework)
         {
             if (targetFramework == null)
             {
@@ -61,6 +64,7 @@ namespace NuGet.Packaging
         /// Dependency group target framework
         /// </summary>
         [JsonProperty(PropertyName = "targetFramework")]
+        [StjJsonPropertyName("targetFramework")]
         public NuGetFramework TargetFramework
         {
             get { return _targetFramework; }
@@ -70,9 +74,11 @@ namespace NuGet.Packaging
         /// Package dependencies
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
+        [StjJsonPropertyName("dependencies")]
         public IEnumerable<PackageDependency> Packages
         {
             get { return _packages; }
+            init { _packages = value; }
         }
 
         public override bool Equals(object obj)
