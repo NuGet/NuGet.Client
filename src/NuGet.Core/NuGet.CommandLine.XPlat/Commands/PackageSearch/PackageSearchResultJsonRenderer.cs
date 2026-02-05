@@ -52,9 +52,14 @@ namespace NuGet.CommandLine.XPlat
             {
                 WriteIndented = true,
                 Converters = { new SearchResultPackagesConverter(_verbosity, _exactMatch) },
+                PropertyNameCaseInsensitive = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
-            var json = JsonSerializer.Serialize(_packageSearchMainOutput, options);
+            var jsonSerializationContext = new Commands.PackageSearch.JsonSerializationContext(new JsonSerializerOptions(options)
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+            var json = JsonSerializer.Serialize(_packageSearchMainOutput, jsonSerializationContext.SearchMainOutput);
             _logger.LogMinimal(json);
         }
 
