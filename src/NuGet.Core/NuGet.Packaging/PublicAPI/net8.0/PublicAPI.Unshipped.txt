@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.Packaging.PackageDependencyGroup.PackageDependencyGroup(NuGet.Frameworks.NuGetFramework targetFramework) -> void
+~NuGet.Packaging.PackageDependencyGroup.Packages.init -> void

@@ -1,1 +1,2 @@
 #nullable enable
+static NuGet.Versioning.NuGetVersion.Parse(string? value) -> NuGet.Versioning.NuGetVersion!

@@ -146,7 +146,6 @@ override NuGet.Versioning.VersionRangeBase.Equals(object? obj) -> bool
 override NuGet.Versioning.VersionRangeBase.GetHashCode() -> int
 static NuGet.Versioning.FloatRange.Parse(string! versionString) -> NuGet.Versioning.FloatRange!
 static NuGet.Versioning.FloatRange.TryParse(string! versionString, out NuGet.Versioning.FloatRange? range) -> bool
-static NuGet.Versioning.NuGetVersion.Parse(string! value) -> NuGet.Versioning.NuGetVersion!
 static NuGet.Versioning.NuGetVersion.TryParse(string? value, out NuGet.Versioning.NuGetVersion? version) -> bool
 static NuGet.Versioning.NuGetVersion.TryParseStrict(string! value, out NuGet.Versioning.NuGetVersion? version) -> bool
 static NuGet.Versioning.SemanticVersion.Parse(string! value) -> NuGet.Versioning.SemanticVersion!
