@@ -1316,7 +1316,11 @@ namespace NuGet.Commands
                                 .ToList();
 
                             // add lock file libraries into RemoteWalkContext so that it can be used during restore graph generation
-                            contextForProject.LockFileLibraries.Add(new LockFileCacheKey(target.TargetFramework, target.RuntimeIdentifier), libraries);
+                            contextForProject.LockFileLibraries.Add(new LockFileCacheKey(target.TargetFramework, target.RuntimeIdentifier,
+                                string.IsNullOrEmpty(target.TargetAlias) ?
+                                _request.Project.GetTargetFramework(target.TargetFramework)?.TargetAlias :
+                                target.TargetAlias
+                                ), libraries);
                         }
                     }
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
