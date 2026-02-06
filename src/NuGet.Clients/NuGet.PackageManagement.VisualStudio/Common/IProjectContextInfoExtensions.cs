@@ -51,18 +51,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
-        /// <summary>
-        /// Gets the installed and transitive packages for the project, including transitive origins by default.
-        /// </summary>
-        /// <param name="projectContextInfo">The project context information</param>
-        /// <param name="serviceBroker">The service broker</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>An object containing installed and transitive packages, with transitive packages containing origin information</returns>
-        /// <remarks>
-        /// This method includes transitive origins by default. If you don't need transitive origins information, 
-        /// use the overload with <c>includeTransitiveOrigins</c> parameter set to <see langword="false" /> to avoid the overhead.
-        /// </remarks>
         public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,
