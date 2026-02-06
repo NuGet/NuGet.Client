@@ -52,29 +52,23 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            bool equal = false;
-
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
                 // Handle null/empty dictionaries (treat them as equal)
                 bool thisEmpty = _properties == null || _properties.Count == 0;
                 bool otherEmpty = other._properties == null || other._properties.Count == 0;
 
-                if (thisEmpty && otherEmpty)
+                if (thisEmpty || otherEmpty)
                 {
-                    equal = true;
-                }
-                else if (thisEmpty || otherEmpty)
-                {
-                    equal = false;
+                    return thisEmpty && otherEmpty;
                 }
                 else
                 {
-                    equal = _properties.OrderedEquals(other._properties, pair => pair.Key, StringComparer.Ordinal);
+                    return _properties.OrderedEquals(other._properties, pair => pair.Key, StringComparer.Ordinal);
                 }
             }
 
-            return equal;
+            return false;
         }
 
         public override bool Equals(object obj)
