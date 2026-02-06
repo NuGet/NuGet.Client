@@ -21,6 +21,9 @@ using NuGet.Packaging;
 #if !NETFRAMEWORK
 using NuGet.Packaging.Signing;
 #endif
+#if NETFRAMEWORK
+using Microsoft.VisualStudio.Threading;
+#endif
 using NuGet.Versioning;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -104,7 +107,15 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 NuGet.Common.Migrations.MigrationRunner.Run();
 
-                return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
+#if NETFRAMEWORK
+                if (resolverContext.IsRunningInVisualStudio)
+                {
+                    return NuGetAbstraction.GetSdkResultInsideVisualStudio(sdkReference, parsedSdkVersion, resolverContext, factory);
+                }
+#endif
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory).Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
             }
             finally
             {
@@ -152,7 +163,18 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// </summary>
         private static class NuGetAbstraction
         {
-            public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
+#if NETFRAMEWORK
+            public static SdkResult GetSdkResultInsideVisualStudio(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
+            {
+                JoinableTaskFactory joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
+
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                return joinableTaskFactory.RunAsync(() => GetSdkResult(sdk, nuGetVersion, context, factory)).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+            }
+#endif
+
+            public static async Task<SdkResult> GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
             {
                 var logger = new NuGetSdkLogger(context.Logger);
 
@@ -203,15 +225,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                             if (NuGetEventSource.IsEnabled) TraceEvents.RestorePackageStart(libraryIdentity);
 
-                            // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
-                            // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
-                            // https://developercommunity.visualstudio.com/content/problem/311379/solution-load-never-completes-when-project-contain.html
-                            var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
-                                libraryIdentity,
-                                settings,
-                                logger));
-
-                            var results = restoreTask.Result;
+                            IReadOnlyList<RestoreResultPair> results = await RestoreRunnerEx.RunWithoutCommit(libraryIdentity, settings, logger).ConfigureAwait(false);
 
                             if (NuGetEventSource.IsEnabled) TraceEvents.RestorePackageStop(libraryIdentity);
 

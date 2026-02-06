@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>
