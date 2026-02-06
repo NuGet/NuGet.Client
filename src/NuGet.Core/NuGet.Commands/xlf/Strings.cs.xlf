@@ -994,11 +994,11 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <source>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</source>
         <target state="translated">Pro {0} se zjistil konflikt. Pokud chcete tento problém vyřešit, nainstalujte nebo vytvořte odkaz na {1} přímo do projektu {2}.</target>
         <note />
+      </trans-unit>
       <trans-unit id="Log_VersionConflictForCentralTransitive">
         <source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</source>
         <target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</target>
         <note />
-      </trans-unit>
       </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">
         <source>Writing assets file to disk. Path: {0}</source>
