@@ -576,26 +576,6 @@ namespace NuGet.PackageManagement.UI
             return selectedProjects;
         }
 
-        private void BatchUnselectAllProjects()
-        {
-            _isInBatchUpdate = true;
-
-            try
-            {
-                foreach (PackageInstallationInfo project in Projects)
-                {
-                    project.IsSelected = false;
-                }
-
-                UpdateSelectCheckBoxState();
-                UpdateSelectAllAfterProjectSelectionChanged();
-            }
-            finally
-            {
-                _isInBatchUpdate = false;
-            }
-        }
-
         private void BatchUpdateIsSelectedBasedOnInstalledVersion()
         {
             _isInBatchUpdate = true;
