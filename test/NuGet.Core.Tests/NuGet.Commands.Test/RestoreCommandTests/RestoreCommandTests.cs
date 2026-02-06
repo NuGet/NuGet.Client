@@ -2033,16 +2033,16 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
-            
+
             // Create packages with conflicting dependencies
             var packageX = new SimpleTestPackageContext("x", "1.0.0");
             var packageY = new SimpleTestPackageContext("y", "1.0.0");
             var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
             var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
-            
+
             packageX.Dependencies.Add(packageZ1);
             packageY.Dependencies.Add(packageZ2);
-            
+
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
@@ -2051,7 +2051,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 packageZ1,
                 packageZ2
             );
-            
+
             var project1Json = @"
             {
               ""restore"": {
@@ -2080,23 +2080,23 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 }
               }
             }";
-            
+
             var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, pathContext.SolutionRoot, project1Json);
-            
+
             var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger);
-            
+
             var command = new RestoreCommand(request);
-            
+
             // Act
             var result = await command.ExecuteAsync();
-            
+
             // Assert
             Assert.False(result.Success);
-            
+
             // Verify the error message contains CentralTransitive-specific guidance
             var errorMessages = logger.LogMessages.Where(m => m.Level == LogLevel.Error && m.Code == NuGetLogCode.NU1107).ToList();
             Assert.NotEmpty(errorMessages);
-            
+
             var errorMessage = errorMessages.First().Message;
             Assert.Contains("transitively pinned centrally managed package", errorMessage);
             Assert.Contains("Update the centrally managed package version to a higher version", errorMessage);

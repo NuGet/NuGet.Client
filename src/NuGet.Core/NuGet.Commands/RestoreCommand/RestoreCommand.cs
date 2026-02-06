@@ -1549,11 +1549,11 @@ namespace NuGet.Commands
                 foreach (var versionConflict in graph.AnalyzeResult.VersionConflicts)
                 {
                     string message;
-                    
+
                     // Check if either the selected or conflicting node is a centrally managed transitive package
                     bool isCentralTransitive = versionConflict.Selected.Item?.IsCentralTransitive == true ||
                                                versionConflict.Conflicting.Item?.IsCentralTransitive == true;
-                    
+
                     if (isCentralTransitive)
                     {
                         // Use the CentralTransitive-specific message
