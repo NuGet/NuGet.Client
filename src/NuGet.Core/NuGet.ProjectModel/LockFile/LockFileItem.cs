@@ -52,6 +52,8 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
+            bool equal = false;
+
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
                 // Handle null/empty dictionaries (treat them as equal)
@@ -60,18 +62,19 @@ namespace NuGet.ProjectModel
 
                 if (thisEmpty && otherEmpty)
                 {
-                    return true;
+                    equal = true;
                 }
-
-                if (thisEmpty || otherEmpty)
+                else if (thisEmpty || otherEmpty)
                 {
-                    return false;
+                    equal = false;
                 }
-
-                return _properties.OrderedEquals(other._properties, pair => pair.Key, StringComparer.Ordinal);
+                else
+                {
+                    equal = _properties.OrderedEquals(other._properties, pair => pair.Key, StringComparer.Ordinal);
+                }
             }
 
-            return false;
+            return equal;
         }
 
         public override bool Equals(object obj)
