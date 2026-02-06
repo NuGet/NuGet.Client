@@ -2094,7 +2094,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             Assert.False(result.Success);
             
             // Verify the error message contains CentralTransitive-specific guidance
-            var errorMessages = logger.Messages.Where(m => m.Level == LogLevel.Error && m.Code == NuGetLogCode.NU1107).ToList();
+            var errorMessages = logger.LogMessages.Where(m => m.Level == LogLevel.Error && m.Code == NuGetLogCode.NU1107).ToList();
             Assert.NotEmpty(errorMessages);
             
             var errorMessage = errorMessages.First().Message;
