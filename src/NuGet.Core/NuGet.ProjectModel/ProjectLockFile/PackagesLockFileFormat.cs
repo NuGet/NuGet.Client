@@ -19,11 +19,8 @@ namespace NuGet.ProjectModel
     {
         public static readonly int Version = 1;
 
-        // This is the version for lock files with central package versions support, but without alias support. This allows us to maintain compatibility with older clients that don't understand the concept of central package versions.
-        public static readonly int PackagesLockFileVersion = 2;
-
-        // Version 3 is used when aliases are present (duplicate frameworks with different aliases)
-        public static readonly int AliasedLockFileVersion = 3;
+        // This allows us to maintain compatibility with older clients that don't understand the concept of central package versions.
+        public static readonly int PackagesLockFileVersion = 3;
 
         public static readonly string LockFileName = "packages.lock.json";
 
@@ -95,7 +92,7 @@ namespace NuGet.ProjectModel
         private static PackagesLockFile ReadLockFile(JObject cursor)
         {
             int version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            var targets = version >= AliasedLockFileVersion
+            var targets = version >= 3
                 ? JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV3)
                 : JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV2);
 

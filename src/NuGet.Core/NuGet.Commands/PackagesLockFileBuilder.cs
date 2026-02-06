@@ -32,15 +32,13 @@ namespace NuGet.Commands
                     TargetAlias = lockFile.Version >= 3 ? target.TargetAlias : null
                 };
 
-                var framework = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(
-                    f => EqualityUtility.EqualsWithNullCheck(f.FrameworkName, target.TargetFramework));
-
+                TargetFrameworkInformation? framework = assetsFile.PackageSpec.GetTargetFramework(target.TargetAlias);
                 IEnumerable<LockFileTargetLibrary> libraries = target.Libraries;
 
                 // check if this is RID-based graph then only add those libraries which differ from original TFM.
                 if (!string.IsNullOrEmpty(target.RuntimeIdentifier))
                 {
-                    var onlyTFM = assetsFile.Targets.First(t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, target.TargetFramework));
+                    LockFileTarget onlyTFM = assetsFile.Targets.First(t => EqualityUtility.EqualsWithNullCheck(t.TargetAlias, target.TargetAlias));
 
                     libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib)));
                 }
@@ -118,20 +116,20 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private int GetPackagesLockFileVersion(LockFile assetsFile)
+        private static int GetPackagesLockFileVersion(LockFile assetsFile)
         {
             if (RestoreCommand.HasDuplicateFrameworks(assetsFile.PackageSpec))
             {
-                return PackagesLockFileFormat.AliasedLockFileVersion; // Version 3 for alias support
+                return 3; // Version 3 for alias support
             }
 
             // Increase the version only for the projects opted-in central version management
             if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
             {
-                return PackagesLockFileFormat.PackagesLockFileVersion;
+                return 2;
             }
 
-            return PackagesLockFileFormat.Version;
+            return 1;
         }
     }
 }
