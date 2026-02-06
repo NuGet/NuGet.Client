@@ -537,14 +537,6 @@ namespace NuGet.PackageManagement.UI
         public override void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)
         {
             base.OnFilterChanged(previousFilter, currentFilter);
-
-            // clear selection if filter is changed from Consolidate/UpdateAvailable
-            // to Browse/Install.
-            if ((previousFilter == ItemFilter.Consolidate || previousFilter == ItemFilter.UpdatesAvailable) &&
-                (_filter == ItemFilter.All || _filter == ItemFilter.Installed))
-            {
-                BatchUnselectAllProjects();
-            }
         }
 
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
