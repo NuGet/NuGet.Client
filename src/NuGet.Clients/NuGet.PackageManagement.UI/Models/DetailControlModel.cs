@@ -165,16 +165,17 @@ namespace NuGet.PackageManagement.UI
             var identity = new PackageIdentity(searchResultPackage.Id, searchResultPackage.Version);
             var isTransitive = searchResultPackage.PackageLevel == PackageLevel.Transitive;
 
-            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask;
+            IReadOnlyCollection<VersionInfoContextInfo> versions;
             using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
-                getVersionsTask = searchService.GetPackageVersionsAsync(
+                // Await immediately to ensure proper disposal of the service proxy
+                versions = await searchService.GetPackageVersionsAsync(
                     identity,
                     currentSources,
                     searchResultPackage.IncludePrerelease,
                     isTransitive,
                     _nugetProjects,
-                    cancellationToken).AsTask();
+                    cancellationToken);
             }
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
@@ -257,8 +258,6 @@ namespace NuGet.PackageManagement.UI
             await CreateVersionsAsync(cancellationToken);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
-
-            var versions = await getVersionsTask;
 
             // GetVersionAsync can take long time to finish, user might changed selected package.
             // Check selected package.
