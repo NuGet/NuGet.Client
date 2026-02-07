@@ -161,7 +161,10 @@ namespace NuGet.PackageManagement.UI
             // Use the current active package sources instead of the cached sources from the search result package.
             // When users switch sources, the package objects retain their old Sources property, which can lead
             // to fetching versions from the wrong source and displaying an incomplete version list.
-            IReadOnlyCollection<PackageSourceContextInfo> currentSources = _uiController.ActivePackageSourceMoniker?.PackageSources ?? searchResultPackage.Sources;
+            IReadOnlyCollection<PackageSourceContextInfo> currentSources =
+                _uiController.ActivePackageSourceMoniker?.PackageSources is { Count: > 0 } sources
+                    ? sources
+                    : searchResultPackage.Sources;
             var identity = new PackageIdentity(searchResultPackage.Id, searchResultPackage.Version);
             var isTransitive = searchResultPackage.PackageLevel == PackageLevel.Transitive;
 
