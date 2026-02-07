@@ -259,8 +259,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
 
-            // GetVersionAsync can take long time to finish, user might changed selected package.
-            // Check selected package.
+            // Fetching package versions can take a while. Check if the user changed the selected package.
             if (getPackageItemViewModel() != searchResultPackage)
             {
                 return;
