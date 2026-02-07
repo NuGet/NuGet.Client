@@ -3077,7 +3077,7 @@ namespace NuGet.PackageManagement
                     .Result
                     .CompatibilityCheckResults
                     .Where(t => !t.Success)
-                    .Select(t => t.Graph.TargetAlias ?? string.Empty) // TargetAlias is not enforced as empty, even though it is currently implemented as such.
+                    .Select(t => t.Graph.TargetAlias ?? string.Empty)
                     .Distinct()
                     .ToList();
 
@@ -3332,8 +3332,11 @@ namespace NuGet.PackageManagement
                                 originalAction.PackageIdentity);
 
                             var framework = installationContext.SuccessfulFrameworks.First();
-                            // What about legacy?
-                            var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.TargetAlias.Equals(framework))
+
+                            TargetFrameworkInformation matchingTfi = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.Count == 1 ?
+                                projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks[0] :
+                                projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.TargetAlias.Equals(framework));
+                            var resolvedAction = matchingTfi
                                 .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
                             installationContext.SuppressParent = resolvedAction.SuppressParent;
