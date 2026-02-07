@@ -158,7 +158,24 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
-            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects, cancellationToken);
+            // Use the current active package sources instead of the cached sources from the search result package.
+            // When users switch sources, the package objects retain their old Sources property, which can lead
+            // to fetching versions from the wrong source and displaying an incomplete version list.
+            IReadOnlyCollection<PackageSourceContextInfo> currentSources = _uiController.ActivePackageSourceMoniker?.PackageSources ?? searchResultPackage.Sources;
+            var identity = new PackageIdentity(searchResultPackage.Id, searchResultPackage.Version);
+            var isTransitive = searchResultPackage.PackageLevel == PackageLevel.Transitive;
+
+            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask;
+            using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
+            {
+                getVersionsTask = searchService.GetPackageVersionsAsync(
+                    identity,
+                    currentSources,
+                    searchResultPackage.IncludePrerelease,
+                    isTransitive,
+                    _nugetProjects,
+                    cancellationToken).AsTask();
+            }
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
