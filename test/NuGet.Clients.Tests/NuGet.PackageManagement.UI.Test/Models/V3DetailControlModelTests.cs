@@ -1841,6 +1841,83 @@ namespace NuGet.PackageManagement.UI.Test.Models
             resultKnownOwnerViewModels.Count.Should().Be(3);
             resultKnownOwnerViewModels.Should().ContainInOrder(knownOwnerViewModels);
         }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_UsesActivePackageSourcesInsteadOfCachedSources()
+        {
+            // Arrange
+            var oldSource = new PackageSourceContextInfo("oldSource", "https://old.source.com/v3/index.json");
+            var newSource = new PackageSourceContextInfo("newSource", "https://new.source.com/v3/index.json");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("2.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+            };
+
+            // Track which sources were used in GetPackageVersionsAsync
+            IReadOnlyCollection<PackageSourceContextInfo> sourcesUsedInGetVersions = null;
+
+            var searchService = new Mock<INuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<IEnumerable<IProjectContextInfo>>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<PackageIdentity, IReadOnlyCollection<PackageSourceContextInfo>, bool, bool, IEnumerable<IProjectContextInfo>, CancellationToken>(
+                    (id, sources, prerelease, isTransitive, projects, ct) => sourcesUsedInGetVersions = sources)
+                .ReturnsAsync(testVersions);
+
+            var mockServiceBroker = new Mock<IServiceBroker>();
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(
+                x => x.GetProxyAsync<INuGetSearchService>(
+                    NuGetServices.SearchService,
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<INuGetSearchService>(searchService.Object));
+#pragma warning restore ISB001 // Dispose of proxies
+
+            // Setup the active package source moniker with the NEW source
+            var activePackageSourceMoniker = new PackageSourceMoniker("New Source", new[] { newSource }, 0);
+            var mockNuGetUI = new Mock<INuGetUI>();
+            mockNuGetUI.Setup(x => x.ActivePackageSourceMoniker).Returns(activePackageSourceMoniker);
+
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+            var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
+            var packagePath = "C:\\TestPackage";
+            var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
+
+            // Create a PackageItemViewModel with the OLD source cached
+            var packageItemViewModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
+            {
+                InstalledVersion = new NuGetVersion("1.0.0"),
+                Sources = new List<PackageSourceContextInfo> { oldSource }, // OLD source cached here
+            };
+
+            var solMgr = new Mock<INuGetSolutionManagerService>();
+            var testInstance = new PackageDetailControlModel(
+                mockServiceBroker.Object,
+                solutionManager: solMgr.Object,
+                Array.Empty<IProjectContextInfo>(),
+                uiController: mockNuGetUI.Object);
+
+            // Act
+            await testInstance.SetCurrentPackageAsync(
+                packageItemViewModel,
+                ItemFilter.All,
+                () => packageItemViewModel,
+                CancellationToken.None);
+
+            // Assert
+            // Verify that GetPackageVersionsAsync was called with the NEW active source, not the OLD cached source
+            sourcesUsedInGetVersions.Should().NotBeNull();
+            sourcesUsedInGetVersions.Should().HaveCount(1);
+            sourcesUsedInGetVersions.First().Name.Should().Be("newSource");
+            sourcesUsedInGetVersions.First().Source.Should().Be("https://new.source.com/v3/index.json");
+        }
     }
 
     public interface IPropertyChangedEventHandler
