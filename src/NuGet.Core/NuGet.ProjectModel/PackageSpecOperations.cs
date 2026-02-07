@@ -125,22 +125,10 @@ namespace NuGet.ProjectModel
             for (var i = 0; i < spec.TargetFrameworks.Count; i++)
             {
                 var targetFramework = spec.TargetFrameworks[i];
+
                 if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.FrameworkName))
                 {
-                    var newDependencies = AddOrUpdateDependencyInDependencyList(spec, targetFramework.Dependencies, dependency.Id, dependency.VersionRange);
-                    spec.TargetFrameworks[i] = new TargetFrameworkInformation(targetFramework) { Dependencies = newDependencies };
-                }
-            }
-
-            if (spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false)
-            {
-                for (var i = 0; i < spec.TargetFrameworks.Count; i++)
-                {
-                    var targetFramework = spec.TargetFrameworks[i];
-                    if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.FrameworkName))
-                    {
-                        spec.TargetFrameworks[i] = GetTargetFrameworkInformationWithAddedCentralPackageDependency(dependency, targetFramework);
-                    }
+                    spec.TargetFrameworks[i] = GetTargetFrameworkInformationWithAddedDependency(spec, dependency, targetFramework);
                 }
             }
         }
@@ -163,46 +151,41 @@ namespace NuGet.ProjectModel
             for (var i = 0; i < spec.TargetFrameworks.Count; i++)
             {
                 var targetFramework = spec.TargetFrameworks[i];
+
                 if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.TargetAlias))
                 {
-                    var newDependencies = AddOrUpdateDependencyInDependencyList(spec, targetFramework.Dependencies, dependency.Id, dependency.VersionRange);
-                    spec.TargetFrameworks[i] = new TargetFrameworkInformation(targetFramework) { Dependencies = newDependencies };
+                    spec.TargetFrameworks[i] = GetTargetFrameworkInformationWithAddedDependency(spec, dependency, targetFramework);
                 }
             }
+        }
 
-            if (spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false)
+        private static TargetFrameworkInformation GetTargetFrameworkInformationWithAddedDependency(PackageSpec spec, PackageDependency dependency, TargetFrameworkInformation targetFramework)
+        {
+            ImmutableArray<LibraryDependency> newDependencies = AddOrUpdateDependencyInDependencyList(spec, targetFramework.Dependencies, dependency.Id, dependency.VersionRange);
+
+            // Update Central Package Version if enabled.
+            IReadOnlyDictionary<string, CentralPackageVersion> newCentralPackageVersions = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false ?
+                GetUpdatedCentralPackageDependencies(dependency, targetFramework.CentralPackageVersions) :
+                targetFramework.CentralPackageVersions;
+
+            return new TargetFrameworkInformation(targetFramework) { Dependencies = newDependencies, CentralPackageVersions = newCentralPackageVersions };
+
+            static IReadOnlyDictionary<string, CentralPackageVersion> GetUpdatedCentralPackageDependencies(PackageDependency dependency, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
             {
-                for (var i = 0; i < spec.TargetFrameworks.Count; i++)
+                // The central packages dictionaries can be pretty large, so right-sizing them is important.
+                int dictSize = centralPackageVersions.ContainsKey(dependency.Id) ? centralPackageVersions.Count : centralPackageVersions.Count + 1;
+                Dictionary<string, CentralPackageVersion> result = new(dictSize, StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in centralPackageVersions.NoAllocEnumerate())
                 {
-                    var targetFramework = spec.TargetFrameworks[i];
-                    if (frameworksToAdd == null || frameworksToAdd.Contains(targetFramework.TargetAlias))
+                    if (!string.Equals(kvp.Key, dependency.Id, StringComparison.OrdinalIgnoreCase))
                     {
-                        spec.TargetFrameworks[i] = GetTargetFrameworkInformationWithAddedCentralPackageDependency(dependency, targetFramework);
+                        result.Add(kvp.Key, kvp.Value);
                     }
                 }
+                result.Add(dependency.Id, new CentralPackageVersion(dependency.Id, dependency.VersionRange));
+
+                return result;
             }
-        }
-
-        private static TargetFrameworkInformation GetTargetFrameworkInformationWithAddedCentralPackageDependency(PackageDependency dependency, TargetFrameworkInformation targetFramework)
-        {
-            var newCentralPackageVersion = new KeyValuePair<string, CentralPackageVersion>(dependency.Id, new CentralPackageVersion(dependency.Id, dependency.VersionRange));
-            var newCentralPackageVersionsEnum = targetFramework.CentralPackageVersions
-                .Where(kvp => !string.Equals(kvp.Key, dependency.Id, StringComparison.OrdinalIgnoreCase))
-                .Append(newCentralPackageVersion);
-            var newCentralPackageVersions = CreateCentralPackageVersions(newCentralPackageVersionsEnum);
-            var newTargetFrameworkInformation = new TargetFrameworkInformation(targetFramework) { CentralPackageVersions = newCentralPackageVersions };
-            return newTargetFrameworkInformation;
-        }
-
-        private static IReadOnlyDictionary<string, CentralPackageVersion> CreateCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions)
-        {
-            Dictionary<string, CentralPackageVersion> result = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
-            foreach (var kvp in versions)
-            {
-                result.Add(kvp.Key, kvp.Value);
-            }
-
-            return result;
         }
 
         /// <summary>
