@@ -1508,12 +1508,11 @@ namespace NuGet.Commands
                             && _request.Project.RestoreSettings.SdkVersion.Major == 0
                             && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
                         {
-                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.2"))
+                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.1.26104.118"))
                             {
                                 lockFileVersion = LockFileFormat.LegacyVersion;
                             }
                         }
-
                     }
                 }
 
