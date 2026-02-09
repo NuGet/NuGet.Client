@@ -1479,44 +1479,13 @@ namespace NuGet.Commands
 
             int DetermineLockFileVersion()
             {
-                int lockFileVersion = _request.LockFileVersion;
-
-                // We use the request provided version, unless we are using the Microsoft.NET.Sdk that does not support reading of aliased assets files.
-                if (_request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
-                    !SdkAnalysisLevelMinimums.IsEnabled(
-                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
-                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                    SdkAnalysisLevelMinimums.V10_0_300))
+                // We use the request provided version, unless we are using the Microsoft.NET.Sdk version that does not support reading of aliased assets files.
+                if (DoesProjectToolsetSupportsDuplicateFrameworks(_request.Project))
                 {
-                    lockFileVersion = LockFileFormat.LegacyVersion;
-                }
-                else
-                {
-                    // If the SDK version is a prerelease, we need to ensure it's a prerelease version that can handle the aliased assets file.
-                    if (_request.Project.RestoreSettings.SdkVersion?.IsPrerelease == true)
-                    {
-                        if (_request.Project.RestoreSettings.SdkVersion.Major == 10
-                            && _request.Project.RestoreSettings.SdkVersion.Minor == 0
-                            && _request.Project.RestoreSettings.SdkVersion.Patch == 300)
-                        {
-                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("10.0.300-preview.1"))
-                            {
-                                lockFileVersion = LockFileFormat.LegacyVersion;
-                            }
-                        }
-                        if (_request.Project.RestoreSettings.SdkVersion.Major == 11
-                            && _request.Project.RestoreSettings.SdkVersion.Minor == 0
-                            && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
-                        {
-                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.1.26104"))
-                            {
-                                lockFileVersion = LockFileFormat.LegacyVersion;
-                            }
-                        }
-                    }
+                    return _request.LockFileVersion;
                 }
 
-                return lockFileVersion;
+                return LockFileFormat.LegacyVersion;
             }
         }
 
@@ -1899,7 +1868,7 @@ namespace NuGet.Commands
 
                 return (success, []);
             }
-            var shouldDoDuplicatesCheck = !DoesProjectToolsetSupportsDuplicateFrameworks();
+            var shouldDoDuplicatesCheck = !DoesProjectToolsetSupportsDuplicateFrameworks(_request.Project);
 
             if (shouldDoDuplicatesCheck)
             {
@@ -2002,12 +1971,12 @@ namespace NuGet.Commands
             return (success, graphs);
         }
 
-        private bool DoesProjectToolsetSupportsDuplicateFrameworks()
+        private static bool DoesProjectToolsetSupportsDuplicateFrameworks(PackageSpec project)
         {
-            if (_request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
+            if (project.RestoreMetadata.UsingMicrosoftNETSdk &&
                     !SdkAnalysisLevelMinimums.IsEnabled(
-                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
-                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    project.RestoreMetadata.SdkAnalysisLevel,
+                    project.RestoreMetadata.UsingMicrosoftNETSdk,
                     SdkAnalysisLevelMinimums.V10_0_300))
             {
                 return false;
@@ -2015,22 +1984,22 @@ namespace NuGet.Commands
             else
             {
                 // If the SDK version is a prerelease, we need to ensure it's a prerelease version that can handle the aliased assets file.
-                if (_request.Project.RestoreSettings.SdkVersion?.IsPrerelease == true)
+                if (project.RestoreSettings.SdkVersion?.IsPrerelease == true)
                 {
-                    if (_request.Project.RestoreSettings.SdkVersion.Major == 10
-                        && _request.Project.RestoreSettings.SdkVersion.Minor == 0
-                        && _request.Project.RestoreSettings.SdkVersion.Patch == 300)
+                    if (project.RestoreSettings.SdkVersion.Major == 10
+                        && project.RestoreSettings.SdkVersion.Minor == 0
+                        && project.RestoreSettings.SdkVersion.Patch == 300)
                     {
-                        if (_request.Project.RestoreSettings.SdkVersion < NuGetVersion.Parse("10.0.300-preview.1"))
+                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("10.0.300-preview.1"))
                         {
                             return false;
                         }
                     }
-                    if (_request.Project.RestoreSettings.SdkVersion.Major == 11
-                        && _request.Project.RestoreSettings.SdkVersion.Minor == 0
-                        && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
+                    if (project.RestoreSettings.SdkVersion.Major == 11
+                        && project.RestoreSettings.SdkVersion.Minor == 0
+                        && project.RestoreSettings.SdkVersion.Patch == 100)
                     {
-                        if (_request.Project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.1.26104"))
+                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.1.26104"))
                         {
                             return false;
                         }
