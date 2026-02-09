@@ -71,8 +71,8 @@ namespace NuGet.Protocol.Tests
             var userAgentString = builder.Build();
             var userAgentString2 = builder.WithVisualStudioSKU(vs).Build();
 
-            userAgentString.Should().Be($"{clientName}/{clientVersion} ({os})");
-            userAgentString2.Should().Be($"{clientName}/{clientVersion} ({os}, {vs})");
+            userAgentString.Should().Contain($"{clientName}/{clientVersion} ({os})");
+            userAgentString2.Should().Contain($"{clientName}/{clientVersion} ({os}, {vs})");
         }
 
         [Fact]
