@@ -1496,19 +1496,19 @@ namespace NuGet.Commands
                     if (_request.Project.RestoreSettings.SdkVersion?.IsPrerelease == true)
                     {
                         if (_request.Project.RestoreSettings.SdkVersion.Major == 10
-                            && _request.Project.RestoreSettings.SdkVersion.Major == 0
+                            && _request.Project.RestoreSettings.SdkVersion.Minor == 0
                             && _request.Project.RestoreSettings.SdkVersion.Patch == 300)
                         {
-                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("10.0.300-preview.2"))
+                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("10.0.300-preview.1"))
                             {
                                 lockFileVersion = LockFileFormat.LegacyVersion;
                             }
                         }
                         if (_request.Project.RestoreSettings.SdkVersion.Major == 11
-                            && _request.Project.RestoreSettings.SdkVersion.Major == 0
+                            && _request.Project.RestoreSettings.SdkVersion.Minor == 0
                             && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
                         {
-                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.1.26104.118"))
+                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.1.26104"))
                             {
                                 lockFileVersion = LockFileFormat.LegacyVersion;
                             }
@@ -1899,12 +1899,7 @@ namespace NuGet.Commands
 
                 return (success, []);
             }
-
-            bool shouldDoDuplicatesCheck = _request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
-                    !SdkAnalysisLevelMinimums.IsEnabled(
-                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
-                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                    SdkAnalysisLevelMinimums.V10_0_300);
+            var shouldDoDuplicatesCheck = !DoesProjectToolsetSupportsDuplicateFrameworks();
 
             if (shouldDoDuplicatesCheck)
             {
@@ -2005,6 +2000,46 @@ namespace NuGet.Commands
             }
 
             return (success, graphs);
+        }
+
+        private bool DoesProjectToolsetSupportsDuplicateFrameworks()
+        {
+            if (_request.Project.RestoreMetadata.UsingMicrosoftNETSdk &&
+                    !SdkAnalysisLevelMinimums.IsEnabled(
+                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.V10_0_300))
+            {
+                return false;
+            }
+            else
+            {
+                // If the SDK version is a prerelease, we need to ensure it's a prerelease version that can handle the aliased assets file.
+                if (_request.Project.RestoreSettings.SdkVersion?.IsPrerelease == true)
+                {
+                    if (_request.Project.RestoreSettings.SdkVersion.Major == 10
+                        && _request.Project.RestoreSettings.SdkVersion.Minor == 0
+                        && _request.Project.RestoreSettings.SdkVersion.Patch == 300)
+                    {
+                        if (_request.Project.RestoreSettings.SdkVersion < NuGetVersion.Parse("10.0.300-preview.1"))
+                        {
+                            return false;
+                        }
+                    }
+                    if (_request.Project.RestoreSettings.SdkVersion.Major == 11
+                        && _request.Project.RestoreSettings.SdkVersion.Minor == 0
+                        && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
+                    {
+                        if (_request.Project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.1.26104"))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            return true;
         }
 
         // Check for duplicate frameworks and log an error if found.
