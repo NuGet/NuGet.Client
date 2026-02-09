@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
@@ -10,42 +11,6 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public static class CIEnvironmentDetector
     {
-        private static readonly EnvironmentDetectionRule[] DetectionRules =
-        {
-            // GitHub Actions
-            new BooleanEnvironmentRule("GitHub Actions", "GITHUB_ACTIONS"),
-
-            // Azure DevOps
-            new BooleanEnvironmentRule("Azure DevOps", "TF_BUILD"),
-
-            // AppVeyor
-            new BooleanEnvironmentRule("AppVeyor", "APPVEYOR"),
-
-            // Travis CI
-            new BooleanEnvironmentRule("Travis CI", "TRAVIS"),
-
-            // CircleCI
-            new BooleanEnvironmentRule("CircleCI", "CIRCLECI"),
-
-            // AWS CodeBuild
-            new AnyPresentEnvironmentRule("AWS CodeBuild", "CODEBUILD_BUILD_ID"),
-
-            // Jenkins - requires both BUILD_ID and BUILD_URL
-            new AllPresentEnvironmentRule("Jenkins", "BUILD_ID", "BUILD_URL"),
-
-            // Google Cloud Build - requires both BUILD_ID and PROJECT_ID
-            new AllPresentEnvironmentRule("Google Cloud", "BUILD_ID", "PROJECT_ID"),
-
-            // TeamCity
-            new AnyPresentEnvironmentRule("TeamCity", "TEAMCITY_VERSION"),
-
-            // JetBrains Space
-            new AnyPresentEnvironmentRule("JetBrains Space", "JB_SPACE_API_URL"),
-
-            // Generic CI - must be last as it's the most general
-            new BooleanEnvironmentRule("other", "CI")
-        };
-
         /// <summary>
         /// Detects the CI environment based on environment variables.
         /// </summary>
@@ -62,12 +27,72 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>A <see cref="string"/> if a CI environment is detected, null otherwise.</returns>
         internal static string? Detect(IEnvironmentVariableReader environmentVariableReader)
         {
-            foreach (EnvironmentDetectionRule rule in DetectionRules)
+            // GitHub Actions
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase))
             {
-                if (rule.IsMatch(environmentVariableReader))
-                {
-                    return rule.Name;
-                }
+                return "GitHub Actions";
+            }
+
+            // Azure DevOps
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Azure DevOps";
+            }
+
+            // AppVeyor
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("APPVEYOR"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "AppVeyor";
+            }
+
+            // Travis CI
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("TRAVIS"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Travis CI";
+            }
+
+            // CircleCI
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("CIRCLECI"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "CircleCI";
+            }
+
+            // AWS CodeBuild
+            if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("CODEBUILD_BUILD_ID")))
+            {
+                return "AWS CodeBuild";
+            }
+
+            // Jenkins - requires both BUILD_ID and BUILD_URL
+            if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("BUILD_ID")) &&
+                !string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("BUILD_URL")))
+            {
+                return "Jenkins";
+            }
+
+            // Google Cloud Build - requires both BUILD_ID and PROJECT_ID
+            if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("BUILD_ID")) &&
+                !string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("PROJECT_ID")))
+            {
+                return "Google Cloud";
+            }
+
+            // TeamCity
+            if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("TEAMCITY_VERSION")))
+            {
+                return "TeamCity";
+            }
+
+            // JetBrains Space
+            if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("JB_SPACE_API_URL")))
+            {
+                return "JetBrains Space";
+            }
+
+            // Generic CI - must be last as it's the most general
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "other";
             }
 
             return null;

@@ -6,9 +6,9 @@
 #if NETCOREAPP
 using System;
 #endif
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using NuGet.Common;
 using NuGet.Packaging;
 
@@ -97,27 +97,29 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         internal string BuildMetadataString()
         {
-            var items = new List<string>();
+            var sb = new StringBuilder();
 
             // OS info
             if (!string.IsNullOrEmpty(_osInfo))
             {
-                items.Add(_osInfo);
+                sb.Append(_osInfo);
             }
 
             // CI info (formatted as "CI: {provider}")
             if (!string.IsNullOrEmpty(_ciInfo))
             {
-                items.Add($"CI: {_ciInfo}");
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append("CI: ").Append(_ciInfo);
             }
 
             // VS info
             if (!string.IsNullOrEmpty(_vsInfo))
             {
-                items.Add(_vsInfo);
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append(_vsInfo);
             }
 
-            return string.Join(", ", items);
+            return sb.ToString();
         }
 
         internal static string GetOS()

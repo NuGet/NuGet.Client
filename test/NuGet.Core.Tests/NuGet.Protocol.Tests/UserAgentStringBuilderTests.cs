@@ -102,6 +102,82 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public void Build_WhenInAzureDevOps_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "TF_BUILD", "True" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: Azure DevOps");
+        }
+
+        [Fact]
+        public void Build_WhenInAppVeyor_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "APPVEYOR", "True" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: AppVeyor");
+        }
+
+        [Fact]
+        public void Build_WhenInTravisCI_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "TRAVIS", "True" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: Travis CI");
+        }
+
+        [Fact]
+        public void Build_WhenInCircleCI_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "CIRCLECI", "True" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: CircleCI");
+        }
+
+        [Fact]
         public void Build_WhenInAWSCodeBuild_AppendsCIInfoInParentheses()
         {
             // Arrange
@@ -118,6 +194,26 @@ namespace NuGet.Protocol.Tests
             // Assert
             _output.WriteLine(userAgent);
             userAgent.Should().Contain("CI: AWS CodeBuild");
+        }
+
+        [Fact]
+        public void Build_WhenInJenkins_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "BUILD_ID", "build-123" },
+                { "BUILD_URL", "http://jenkins.example.com/job/123" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: Jenkins");
         }
 
         [Fact]
@@ -138,6 +234,44 @@ namespace NuGet.Protocol.Tests
             // Assert
             _output.WriteLine(userAgent);
             userAgent.Should().Contain("CI: Google Cloud");
+        }
+
+        [Fact]
+        public void Build_WhenInTeamCity_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "TEAMCITY_VERSION", "2023.11.1" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: TeamCity");
+        }
+
+        [Fact]
+        public void Build_WhenInJetBrainsSpace_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "JB_SPACE_API_URL", "https://space.example.com/api" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: JetBrains Space");
         }
 
         [Fact]
