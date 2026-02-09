@@ -1490,6 +1490,32 @@ namespace NuGet.Commands
                 {
                     lockFileVersion = LockFileFormat.LegacyVersion;
                 }
+                else
+                {
+                    // If the SDK version is a prerelease, we need to ensure it's a prerelease version that can handle the aliased assets file.
+                    if (_request.Project.RestoreSettings.SdkVersion?.IsPrerelease == true)
+                    {
+                        if (_request.Project.RestoreSettings.SdkVersion.Major == 10
+                            && _request.Project.RestoreSettings.SdkVersion.Major == 0
+                            && _request.Project.RestoreSettings.SdkVersion.Patch == 300)
+                        {
+                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("10.0.300-preview.2"))
+                            {
+                                lockFileVersion = LockFileFormat.LegacyVersion;
+                            }
+                        }
+                        if (_request.Project.RestoreSettings.SdkVersion.Major == 11
+                            && _request.Project.RestoreSettings.SdkVersion.Major == 0
+                            && _request.Project.RestoreSettings.SdkVersion.Patch == 100)
+                        {
+                            if (_request.Project.RestoreSettings.SdkVersion <= NuGetVersion.Parse("11.0.100-preview.2"))
+                            {
+                                lockFileVersion = LockFileFormat.LegacyVersion;
+                            }
+                        }
+
+                    }
+                }
 
                 return lockFileVersion;
             }
