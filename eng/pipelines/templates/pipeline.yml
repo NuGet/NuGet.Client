@@ -89,14 +89,14 @@ stages:
         condition: "succeeded()"
         targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
         artifactName: 'BuildInfo'
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
         artifactName: "nupkgs - $(RtmLabel)"
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: artifactsDrop
         displayName: 'Publish the .runsettings files to artifact services'
@@ -124,21 +124,21 @@ stages:
         displayName: 'Publish NuGet.exe and VSIX as artifact'
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
         artifactName: "$(VsixPublishDir)"
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
         condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeeded(), eq(variables['IsOfficialBuild'], 'true')))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
-        sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: artifactsDrop
         displayName: 'Upload VSTS Drop'
@@ -167,7 +167,7 @@ stages:
       - output: pipelineArtifact
         displayName: Publish SBOM manifest
         artifactName: $(ARTIFACT_NAME)
-        targetPath: '$(Build.SourcesDirectory)/artifacts'
+        targetPath: '$(Build.StagingDirectory)/sbom'
         sbomEnabled: false
 
     steps:
