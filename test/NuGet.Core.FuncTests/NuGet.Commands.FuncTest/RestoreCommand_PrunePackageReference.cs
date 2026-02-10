@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
 using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
@@ -1456,23 +1459,27 @@ namespace NuGet.Commands.FuncTest
         public void AnalyzePruningResults_WithCPMAndNullVersionRange_DoesNotThrowNullReferenceException()
         {
             // Test for issue: NullReferenceException in package pruning when using CPM and a version is not specified
-            var rootProject = @"
+            var projectSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
                 {
-                  ""frameworks"": {
-                    ""net10.0"": {
-                        ""dependencies"": {
-                                ""A"": {
-                                    ""target"": ""Package"",
-                                },
-                        },
-                        ""packagesToPrune"": {
-                            ""A"" : ""(,1.0.0]"" 
-                        }
+                    FrameworkName = NuGetFramework.Parse("net10.0"),
+                    TargetAlias = "net10.0",
+                    Dependencies = ImmutableArray.Create(new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange("A", null, LibraryDependencyTarget.Package)
+                    }),
+                    PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                    {
+                        { "A", new PrunePackageReference("A", VersionRange.Parse("(,1.0.0]")) }
                     }
-                  }
-                }";
+                }
+            })
+            {
+                Name = "Project1",
+                FilePath = Path.Combine(Path.GetTempPath(), "Project1.csproj")
+            };
 
-            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", Path.GetTempPath(), rootProject);
             var testLogger = new TestLogger();
             var testEvent = new TelemetryEvent("dummyEvent");
 
@@ -1501,24 +1508,43 @@ namespace NuGet.Commands.FuncTest
                 PackageSaveMode.Defaultv3,
                 packageA);
 
-            var rootProject = @"
-        {
-          ""frameworks"": {
-            ""net10.0"": {
-                ""dependencies"": {
-                        ""A"": {
-                            ""target"": ""Package"",
-                        },
-                },
-                ""packagesToPrune"": {
-                    ""A"" : ""(,1.0.0]"" 
+            // Create PackageSpec manually with null version range to simulate CPM without version
+            var projectPath = Path.Combine(pathContext.SolutionRoot, "Project1", "Project1.csproj");
+            var projectSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net10.0"),
+                    TargetAlias = "net10.0",
+                    Dependencies = ImmutableArray.Create(new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange("A", null, LibraryDependencyTarget.Package)
+                    }),
+                    PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                    {
+                        { "A", new PrunePackageReference("A", VersionRange.Parse("(,1.0.0]")) }
+                    }
                 }
-            }
-          }
-        }";
+            })
+            {
+                Name = "Project1",
+                FilePath = projectPath,
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectPath = projectPath,
+                    ProjectName = "Project1",
+                    ProjectUniqueName = projectPath,
+                    OutputPath = Path.Combine(pathContext.SolutionRoot, "Project1", "obj"),
+                    OriginalTargetFrameworks = ["net10.0"],
+                    ConfigFilePaths = [],
+                    PackagesPath = pathContext.UserPackagesFolder,
+                    Sources = [new PackageSource(pathContext.PackageSource)],
+                    FallbackFolders = [],
+                    CentralPackageVersionsEnabled = true
+                }
+            };
 
-            // Setup project
-            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
             var testLogger = new TestLogger();
 
             // Act - This should not throw a NullReferenceException during restore
