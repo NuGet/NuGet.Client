@@ -1452,6 +1452,85 @@ namespace NuGet.Commands.FuncTest
             testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
         }
 
+        [Fact]
+        public void AnalyzePruningResults_WithCPMAndNullVersionRange_DoesNotThrowNullReferenceException()
+        {
+            // Test for issue: NullReferenceException in package pruning when using CPM and a version is not specified
+            var rootProject = @"
+                {
+                  ""frameworks"": {
+                    ""net10.0"": {
+                        ""dependencies"": {
+                                ""A"": {
+                                    ""target"": ""Package"",
+                                },
+                        },
+                        ""packagesToPrune"": {
+                            ""A"" : ""(,1.0.0]"" 
+                        }
+                    }
+                  }
+                }";
+
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", Path.GetTempPath(), rootProject);
+            var testLogger = new TestLogger();
+            var testEvent = new TelemetryEvent("dummyEvent");
+
+            // This should not throw a NullReferenceException
+            RestoreCommand.AnalyzePruningResults(projectSpec, testEvent, testLogger);
+
+            // Should not warn because the version range is null (not within pruning range)
+            testLogger.WarningMessages.Should().BeEmpty();
+            testEvent["Pruning.Pruned.Direct.Count"].Should().Be(0);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithCPMAndMissingVersion_DoesNotThrowNullReferenceException()
+        {
+            // Test for issue: NullReferenceException in package pruning when using CPM and a version is not specified
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("A", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("B", "1.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net10.0"": {
+                ""dependencies"": {
+                        ""A"": {
+                            ""target"": ""Package"",
+                        },
+                },
+                ""packagesToPrune"": {
+                    ""A"" : ""(,1.0.0]"" 
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            var testLogger = new TestLogger();
+
+            // Act - This should not throw a NullReferenceException during restore
+            var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
+
+            // Assert - Restore should fail with NU1010 (missing version in CPM), but not crash with NRE
+            result.Success.Should().BeFalse();
+            testLogger.ErrorMessages.Should().Contain(msg => msg.Contains("NU1010"));
+            // Ensure no NullReferenceException occurred
+            testLogger.ErrorMessages.Should().NotContain(msg => msg.Contains("Object reference not set"));
+        }
+
         // A 1.0.0 -> B 1.0.0
         // C 1.0.0
         private static async Task SetupCommonPackagesAsync(SimpleTestPathContext pathContext)

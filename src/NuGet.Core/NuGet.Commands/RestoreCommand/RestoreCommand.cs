@@ -864,6 +864,7 @@ namespace NuGet.Commands
                         foreach (var dependency in framework.Dependencies)
                         {
                             if (framework.PackagesToPrune.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune)
+                                && dependency.LibraryRange.VersionRange != null
                                 && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion!))
                             {
                                 prunedDirectPackages ??= new(StringComparer.OrdinalIgnoreCase);
