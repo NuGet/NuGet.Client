@@ -1971,6 +1971,9 @@ namespace NuGet.Commands
             return (success, graphs);
         }
 
+        private static NuGetVersion Version_11_WithAliasSupport = NuGetVersion.Parse("11.0.100-preview.2.26104");
+        private static NuGetVersion Version_10_WithAliasSupport = NuGetVersion.Parse("10.0.300-preview.1");
+
         private static bool DoesProjectToolsetSupportsDuplicateFrameworks(PackageSpec project)
         {
             if (project.RestoreMetadata.UsingMicrosoftNETSdk &&
@@ -1990,7 +1993,7 @@ namespace NuGet.Commands
                         && project.RestoreSettings.SdkVersion.Minor == 0
                         && project.RestoreSettings.SdkVersion.Patch == 300)
                     {
-                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("10.0.300-preview.1"))
+                        if (project.RestoreSettings.SdkVersion < Version_10_WithAliasSupport)
                         {
                             return false;
                         }
@@ -1999,7 +2002,7 @@ namespace NuGet.Commands
                         && project.RestoreSettings.SdkVersion.Minor == 0
                         && project.RestoreSettings.SdkVersion.Patch == 100)
                     {
-                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.2.26104"))
+                        if (project.RestoreSettings.SdkVersion < Version_11_WithAliasSupport)
                         {
                             return false;
                         }
