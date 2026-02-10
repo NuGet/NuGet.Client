@@ -1999,7 +1999,7 @@ namespace NuGet.Commands
                         && project.RestoreSettings.SdkVersion.Minor == 0
                         && project.RestoreSettings.SdkVersion.Patch == 100)
                     {
-                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.1.26104"))
+                        if (project.RestoreSettings.SdkVersion < NuGetVersion.Parse("11.0.100-preview.2.26104"))
                         {
                             return false;
                         }
