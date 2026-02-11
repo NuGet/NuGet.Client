@@ -122,11 +122,7 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: ${{ variables['isOfficialBuild'] }}
-          OptimizationInputsLookupMethod: DropPrefix
-          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: $(ShouldSkipOptimize)
-          AccessToken: $(System.AccessToken)
+          enabled: false
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
