@@ -117,9 +117,7 @@
       <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</PathToMergedNuGetExe>
     </PropertyGroup>
     <ItemGroup>
-      <!-- Dependent assemblies. Make sure NuGet.Core.dll is last. -->
-      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="$(OutputPath)\NuGet.Core.dll" />
-      <BuildArtifacts Include="$(OutputPath)\NuGet.Core.dll" />
+      <BuildArtifacts Include="$(OutputPath)\*.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
