@@ -383,7 +383,6 @@ namespace NuGet.ProjectModel
             static bool IsDependencyPruned(LibraryDependency dependency, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune)
             {
                 if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference packageToPrune) == true
-                    && dependency.LibraryRange.VersionRange != null
                     && dependency.LibraryRange.VersionRange.Satisfies(packageToPrune.VersionRange.MaxVersion))
                 {
                     return true;

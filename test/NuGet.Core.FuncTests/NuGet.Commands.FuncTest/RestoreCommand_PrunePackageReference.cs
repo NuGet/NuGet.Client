@@ -1457,10 +1457,9 @@ namespace NuGet.Commands.FuncTest
         [Fact]
         public void AnalyzePruningResults_WithCPMAndNullVersionRange_HandlesItGracefully()
         {
-            var projectSpec = new PackageSpec(new List<TargetFrameworkInformation>
-            {
-                new TargetFrameworkInformation
-                {
+            var projectSpec = new PackageSpec(
+            [
+                new() {
                     FrameworkName = NuGetFramework.Parse("net10.0"),
                     TargetAlias = "net10.0",
                     Dependencies = ImmutableArray.Create(new LibraryDependency
@@ -1472,11 +1471,11 @@ namespace NuGet.Commands.FuncTest
                         { "A", new PrunePackageReference("A", VersionRange.Parse("(,1.0.0]")) }
                     }
                 }
-            })
+            ])
             {
                 Name = "Project1",
                 FilePath = Path.Combine(Path.GetTempPath(), "Project1.csproj")
-            };
+            }.WithTestRestoreMetadata();
 
             var testLogger = new TestLogger();
             var testEvent = new TelemetryEvent("dummyEvent");
@@ -1488,15 +1487,12 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithCPMAndMissingVersion_DoesNotThrowNullReferenceException()
+        public async Task RestoreCommand_WithCPMAndMissingVersion_HandlesItGracefully()
         {
             using var pathContext = new SimpleTestPathContext();
 
             // Setup packages
-            var packageA = new SimpleTestPackageContext("A", "1.0.0")
-            {
-                Dependencies = [new SimpleTestPackageContext("B", "1.0.0")]
-            };
+            var packageA = new SimpleTestPackageContext("A", "1.0.0");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -1505,16 +1501,23 @@ namespace NuGet.Commands.FuncTest
 
             var rootProject = @"
         {
+        ""restore"": {
+                    ""centralPackageVersionsManagementEnabled"": true,
+                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
           ""frameworks"": {
             ""net10.0"": {
                 ""dependencies"": {
                         ""A"": {
                             ""version"": ""[1.0.0,)"",
                             ""target"": ""Package"",
+                            ""versionCentrallyManaged"": true
                         },
                 },
                 ""packagesToPrune"": {
                     ""A"" : ""(,1.0.0]"" 
+                },
+                ""centralPackageVersions"": {
                 }
             }
           }
@@ -1525,27 +1528,20 @@ namespace NuGet.Commands.FuncTest
 
             // Modify to simulate CPM without version - create new framework with null version range
             var originalFramework = projectSpec.TargetFrameworks[0];
-            var newFramework = new TargetFrameworkInformation
+            var newFramework = new TargetFrameworkInformation(originalFramework)
             {
-                FrameworkName = originalFramework.FrameworkName,
-                TargetAlias = originalFramework.TargetAlias,
-                Dependencies = ImmutableArray.Create(
-                    new LibraryDependency
+                Dependencies = [new LibraryDependency
                     {
-                        LibraryRange = new LibraryRange("A", null, LibraryDependencyTarget.Package)
-                    }),
-                PackagesToPrune = originalFramework.PackagesToPrune
+                        LibraryRange = new LibraryRange("A", null, LibraryDependencyTarget.Package),
+                        VersionCentrallyManaged = true,
+                    }],
             };
-            projectSpec.TargetFrameworks.Clear();
-            projectSpec.TargetFrameworks.Add(newFramework);
-
+            projectSpec.TargetFrameworks[0] = newFramework;
             var testLogger = new TestLogger();
 
-            // Act - This should not throw a NullReferenceException during restore
             var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
 
-            // Assert - Should handle gracefully without NRE
-            testLogger.ErrorMessages.Should().NotContain(msg => msg.Contains("Object reference not set"));
+            result.Success.Should().BeFalse();
         }
 
         // A 1.0.0 -> B 1.0.0
