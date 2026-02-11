@@ -1542,6 +1542,8 @@ namespace NuGet.Commands.FuncTest
             var result = await RunRestoreAsync(pathContext, testLogger, projectSpec);
 
             result.Success.Should().BeFalse();
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1010);
         }
 
         // A 1.0.0 -> B 1.0.0
