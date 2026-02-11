@@ -1986,6 +1986,17 @@ namespace NuGet.Commands
             }
             else
             {
+                if (project.RestoreMetadata.UsingMicrosoftNETSdk)
+                {
+                    foreach (TargetFrameworkInformation tfi in project.TargetFrameworks)
+                    {
+                        if (string.IsNullOrEmpty(tfi.TargetAlias))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
                 // If the SDK version is a prerelease, we need to ensure it's a prerelease version that can handle the aliased assets file.
                 if (project.RestoreSettings.SdkVersion?.IsPrerelease == true)
                 {
