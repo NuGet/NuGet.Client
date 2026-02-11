@@ -17,9 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Core" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Include="AssemblySourceFileGenerator.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

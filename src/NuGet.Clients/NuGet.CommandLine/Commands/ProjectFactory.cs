@@ -1,7 +1,5 @@
 #nullable disable
 
-extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -29,7 +27,7 @@ using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
-    public class ProjectFactory : IProjectFactory, CoreV2.NuGet.IPropertyProvider, IDisposable
+    public class ProjectFactory : IProjectFactory, IDisposable
     {
         private const string NUGET_ENABLE_LEGACY_CSPROJ_PACK = nameof(NUGET_ENABLE_LEGACY_CSPROJ_PACK);
 
@@ -401,11 +399,6 @@ namespace NuGet.CommandLine
             }
 
             return value;
-        }
-
-        dynamic CoreV2.NuGet.IPropertyProvider.GetPropertyValue(string propertyName) // used in tests
-        {
-            return GetPropertyValue(propertyName);
         }
 
         private void BuildProject()

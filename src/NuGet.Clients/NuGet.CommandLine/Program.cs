@@ -3,8 +3,6 @@
 
 #nullable disable
 
-extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -109,16 +107,14 @@ namespace NuGet.CommandLine
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 
-            var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
-
             try
             {
                 // Remove NuGet.exe.old
-                RemoveOldFile(fileSystem);
+                RemoveOldFile();
 
                 // Import Dependencies
                 var p = new Program();
-                p.Initialize(fileSystem, console);
+                p.Initialize(console);
 
                 // Add commands to the manager
                 foreach (var cmd in p.Commands)
@@ -206,14 +202,13 @@ namespace NuGet.CommandLine
             }
             finally
             {
-                CoreV2.NuGet.OptimizedZipPackage.PurgeCache();
                 SetConsoleOutputEncoding(oldOutputEncoding);
             }
 
             return 0;
         }
 
-        private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
+        private void Initialize(IConsole console)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.ResourceResolve += CurrentDomain_ResourceResolve;
@@ -230,8 +225,6 @@ namespace NuGet.CommandLine
                     using (var container = new CompositionContainer(catalog))
                     {
                         container.ComposeExportedValue(console);
-                        container.ComposeExportedValue<CoreV2.NuGet.IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
-                        container.ComposeExportedValue(fileSystem);
                         container.ComposeParts(this);
                     }
                 }
@@ -319,14 +312,14 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
-        internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
+        internal static void RemoveOldFile()
         {
             var oldFile = NuGetExeAssembly.Location + ".old";
             try
             {
-                if (fileSystem.FileExists(oldFile))
+                if (File.Exists(oldFile))
                 {
-                    fileSystem.DeleteFile(oldFile);
+                    File.Delete(oldFile);
                 }
             }
             catch

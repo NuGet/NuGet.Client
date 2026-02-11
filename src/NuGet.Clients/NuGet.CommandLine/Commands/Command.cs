@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable disable
 
-extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -93,8 +91,6 @@ namespace NuGet.CommandLine
 
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
 
-        protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
-
         private Lazy<MsBuildToolset> MsBuildToolset
         {
             get
@@ -170,7 +166,6 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
 
                 SetDefaultCredentialProvider();
-                RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
@@ -222,16 +217,7 @@ namespace NuGet.CommandLine
         {
             PluginDiscoveryUtility.InternalPluginDiscoveryRoot = new Lazy<string>(() => PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildDirectory(msbuildDirectory.Value.Path));
             CredentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => GetCredentialProvidersAsync()), NonInteractive, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
-
-            CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
-
             HttpHandlerResourceV3.CredentialService = new Lazy<Configuration.ICredentialService>(() => CredentialService);
-
-            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
-            {
-                // v2 stack credentials update
-                CoreV2.NuGet.CredentialStore.Instance.Add(uri, credentials);
-            };
         }
 
         private async Task<IEnumerable<ICredentialProvider>> GetCredentialProvidersAsync()
@@ -243,7 +229,6 @@ namespace NuGet.CommandLine
                 .ToList();
             var securePluginProviders = await (new SecurePluginCredentialProviderBuilder(PluginManager.Instance, canShowDialog: true, logger: Console)).BuildAllAsync();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(securePluginProviders);
             providers.AddRange(pluginProviders);
 

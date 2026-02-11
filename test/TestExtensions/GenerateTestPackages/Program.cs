@@ -7,7 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.CSharp;
-using NuGet;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace GenerateTestPackages
 {
@@ -45,7 +48,7 @@ namespace GenerateTestPackages
                 var manifest = Manifest.ReadFrom(fileStream, validateSchema: true);
                 var packageBuilder = new PackageBuilder();
                 packageBuilder.Populate(manifest.Metadata);
-                if (!manifest.Files.IsEmpty())
+                if (manifest.Files.Count > 0)
                 {
                     foreach (var file in manifest.Files)
                     {
@@ -151,7 +154,7 @@ namespace GenerateTestPackages
 
             return new DependencyInfo(
                 new FullPackageName(linkTag.Attribute("Target").Value),
-                label != null ? VersionUtility.ParseVersionSpec(label.Value) : null);
+                label != null ? VersionRange.Parse(label.Value) : null);
         }
 
         static void EnsurePackageProcessed(string fullName)
@@ -237,9 +240,9 @@ namespace GenerateTestPackages
                 TargetPath = @"lib\" + Path.GetFileName(assemblySourcePath)
             });
 
-            var set = new PackageDependencySet(VersionUtility.DefaultTargetFramework,
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
                 package.Dependencies.Select(dependency => new PackageDependency(dependency.Id, dependency.VersionSpec)));
-            packageBuilder.DependencySets.Add(set);
+            packageBuilder.DependencyGroups.Add(group);
 
             using (var stream = File.Create(GetPackageFileFullPath(package)))
             {
@@ -259,7 +262,7 @@ namespace GenerateTestPackages
         {
             string packagesFolder = Path.GetFullPath("Packages");
             Directory.CreateDirectory(packagesFolder);
-            string packageFileName = String.Format("{0}.{1}.nupkg", package.Id, package.Version);
+            string packageFileName = string.Format("{0}.{1}.nupkg", package.Id, package.Version);
             return Path.Combine(packagesFolder, packageFileName);
         }
     }
@@ -275,7 +278,7 @@ namespace GenerateTestPackages
 
         public FullPackageName FullName { get; private set; }
         public string Id { get { return FullName.Id; } }
-        public SemanticVersion Version { get { return FullName.Version; } }
+        public NuGetVersion Version { get { return FullName.Version; } }
         public IEnumerable<DependencyInfo> Dependencies { get; private set; }
         public bool Processed { get; set; }
 
@@ -288,16 +291,16 @@ namespace GenerateTestPackages
     // Contains at least an exact id:version, and optionally a fuller version spec
     class DependencyInfo
     {
-        public DependencyInfo(FullPackageName fullName, IVersionSpec versionSpec)
+        public DependencyInfo(FullPackageName fullName, VersionRange versionSpec)
         {
             FullName = fullName;
 
             // Default to the simple version (which means min-version)
-            VersionSpec = versionSpec ?? VersionUtility.ParseVersionSpec(FullName.Version.ToString());
+            VersionSpec = versionSpec ?? VersionRange.Parse(FullName.Version.ToString());
         }
 
         public FullPackageName FullName { get; private set; }
-        public IVersionSpec VersionSpec { get; private set; }
+        public VersionRange VersionSpec { get; private set; }
         public string Id { get { return FullName.Id; } }
     }
 
@@ -307,11 +310,11 @@ namespace GenerateTestPackages
         {
             var parts = nameAndVersion.Split(':');
             Id = parts[0];
-            Version = new SemanticVersion(parts[1]);
+            Version = NuGetVersion.Parse(parts[1]);
         }
 
         public string Id { get; private set; }
-        public SemanticVersion Version { get; private set; }
+        public NuGetVersion Version { get; private set; }
 
         public override string ToString()
         {

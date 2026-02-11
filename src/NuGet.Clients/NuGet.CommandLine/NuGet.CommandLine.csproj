@@ -55,13 +55,8 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="NuGet.Core">
-      <HintPath>$(PkgNuGet_Core)\lib\net40-Client\NuGet.Core.dll</HintPath>
-      <Aliases>CoreV2</Aliases>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Core" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" />
     <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
