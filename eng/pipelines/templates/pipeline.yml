@@ -146,6 +146,7 @@ stages:
         sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
 
       - output: artifactsDrop
+        enabled: false
         displayName: 'Publish the .runsettings files to artifact services'
         condition: "succeeded()"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
@@ -156,6 +157,7 @@ stages:
         dropMetadataContainerName: 'DropMetadata-RunSettings'
 
       - output: artifactsDrop
+        enabled: false
         displayName: 'OptProfV2:  publish profiling inputs to artifact services'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
