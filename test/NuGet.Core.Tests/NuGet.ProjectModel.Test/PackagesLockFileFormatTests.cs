@@ -235,16 +235,20 @@ namespace NuGet.ProjectModel.Test
         {
             var lockFileContent = @"{
                 ""version"": 3,
-                ""dependencies"": {
-                    ""netcoreapp10.0/net10.0"": {
+                ""netcoreapp10.0"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageA"": {
                             ""type"": ""Direct"",
                             ""requested"": ""[1.0.0, )"",
                             ""resolved"": ""1.0.0"",
                             ""contentHash"": ""hash1""
                         }
-                    },
-                    ""net10.0/net10.0"": {
+                    }
+                },
+                ""net10.0"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageB"": {
                             ""type"": ""Direct"",
                             ""requested"": ""[2.0.0, )"",
@@ -276,15 +280,19 @@ namespace NuGet.ProjectModel.Test
         {
             var lockFileContent = @"{
                 ""version"": 3,
-                ""dependencies"": {
-                    ""netcoreapp10.0/net10.0"": {
+                ""netcoreapp10.0"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageA"": {
                             ""type"": ""Direct"",
                             ""resolved"": ""1.0.0"",
                             ""contentHash"": ""hash1""
                         }
-                    },
-                    ""netcoreapp10.0/net10.0/win-x64"": {
+                    }
+                },
+                ""netcoreapp10.0/win-x64"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageC"": {
                             ""type"": ""Transitive"",
                             ""resolved"": ""1.5.0"",
@@ -348,10 +356,18 @@ namespace NuGet.ProjectModel.Test
             var json = JObject.Parse(output);
 
             Assert.Equal(3, (int)json["version"]!);
-            var dependencies = json["dependencies"] as JObject;
-            Assert.NotNull(dependencies);
-            Assert.True(dependencies.ContainsKey("netcoreapp10.0/net10.0"));
-            Assert.True(dependencies.ContainsKey("net10.0/net10.0"));
+            Assert.True(json.ContainsKey("netcoreapp10.0"));
+            Assert.True(json.ContainsKey("net10.0"));
+
+            var target1Json = json["netcoreapp10.0"] as JObject;
+            Assert.NotNull(target1Json);
+            Assert.Equal("net10.0", (string)target1Json["framework"]!);
+            Assert.NotNull(target1Json["dependencies"]);
+
+            var target2Json = json["net10.0"] as JObject;
+            Assert.NotNull(target2Json);
+            Assert.Equal("net10.0", (string)target2Json["framework"]!);
+            Assert.NotNull(target2Json["dependencies"]);
         }
 
         [Fact]
@@ -359,15 +375,19 @@ namespace NuGet.ProjectModel.Test
         {
             var originalContent = @"{
                 ""version"": 3,
-                ""dependencies"": {
-                    ""netcoreapp10.0/net10.0"": {
+                ""netcoreapp10.0"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageA"": {
                             ""type"": ""Direct"",
                             ""resolved"": ""1.0.0"",
                             ""contentHash"": ""hash1""
                         }
-                    },
-                    ""net10.0/net10.0"": {
+                    }
+                },
+                ""net10.0"": {
+                    ""framework"": ""net10.0"",
+                    ""dependencies"": {
                         ""PackageB"": {
                             ""type"": ""Direct"",
                             ""resolved"": ""2.0.0"",

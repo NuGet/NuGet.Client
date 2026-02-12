@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace NuGet.ProjectModel
         private const string ContentHashProperty = "contentHash";
         private const string DependenciesProperty = "dependencies";
         private const string TypeProperty = "type";
+        private const string FrameworkProperty = "framework";
 
         public static PackagesLockFile Parse(string lockFileContent, string path)
         {
@@ -92,9 +94,29 @@ namespace NuGet.ProjectModel
         private static PackagesLockFile ReadLockFile(JObject cursor)
         {
             int version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            var targets = version >= 3
-                ? JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV3)
-                : JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV2);
+            IList<PackagesLockFileTarget> targets;
+
+            if (version >= 3)
+            {
+                // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
+                targets = new List<PackagesLockFileTarget>();
+                foreach (var property in cursor.Properties())
+                {
+                    if (property.Name != VersionProperty)
+                    {
+                        var target = ReadTargetV3(property.Name, property.Value);
+                        if (target != null)
+                        {
+                            targets.Add(target);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // V1 and V2 format: read from dependencies property
+                targets = JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV2);
+            }
 
             var lockFile = new PackagesLockFile()
             {
@@ -153,9 +175,23 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject
             {
-                [VersionProperty] = new JValue(lockFile.Version),
-                [DependenciesProperty] = JsonUtility.WriteObject(lockFile.Targets, WriteTarget),
+                [VersionProperty] = new JValue(lockFile.Version)
             };
+
+            if (lockFile.Version >= 3)
+            {
+                // V3 format: write targets at root level with framework and dependencies inside
+                foreach (var target in lockFile.Targets)
+                {
+                    var targetProperty = WriteTargetV3(target);
+                    json.Add(targetProperty);
+                }
+            }
+            else
+            {
+                // V1 and V2 format: write targets under dependencies property
+                json[DependenciesProperty] = JsonUtility.WriteObject(lockFile.Targets, WriteTarget);
+            }
 
             return json;
         }
@@ -178,16 +214,28 @@ namespace NuGet.ProjectModel
             return target;
         }
 
-        private static PackagesLockFileTarget ReadDependencyV3(string property, JToken json)
+        private static PackagesLockFileTarget ReadTargetV3(string property, JToken json)
         {
+            var jObject = json as JObject;
+            if (jObject == null)
+            {
+                return null;
+            }
+
+            var frameworkString = JsonUtility.ReadProperty<string>(jObject, FrameworkProperty);
+            if (string.IsNullOrEmpty(frameworkString))
+            {
+                return null;
+            }
+
             var parts = property.Split(JsonUtility.PathSplitChars);
 
             var target = new PackagesLockFileTarget
             {
-                TargetFramework = NuGetFramework.Parse(parts[1]),
-                RuntimeIdentifier = parts.Length == 3 ? parts[2] : null,
+                TargetFramework = NuGetFramework.Parse(frameworkString),
+                RuntimeIdentifier = parts.Length == 2 ? parts[1] : null,
                 TargetAlias = parts[0],
-                Dependencies = JsonUtility.ReadObject(json as JObject, ReadTargetDependency)
+                Dependencies = JsonUtility.ReadObject(jObject[DependenciesProperty] as JObject, ReadTargetDependency)
             };
 
             return target;
@@ -230,6 +278,21 @@ namespace NuGet.ProjectModel
             return dependency;
         }
 
+        private static JProperty WriteTargetV3(PackagesLockFileTarget target)
+        {
+            var key = string.IsNullOrEmpty(target.RuntimeIdentifier)
+                ? target.TargetAlias
+                : $"{target.TargetAlias}/{target.RuntimeIdentifier}";
+
+            var json = new JObject
+            {
+                [FrameworkProperty] = GetFrameworkString(target.TargetFramework),
+                [DependenciesProperty] = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency)
+            };
+
+            return new JProperty(key, json);
+        }
+
         private static JProperty WriteTarget(PackagesLockFileTarget target)
         {
             var json = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency);
@@ -237,6 +300,24 @@ namespace NuGet.ProjectModel
             var key = target.Name;
 
             return new JProperty(key, json);
+        }
+
+        private static string GetFrameworkString(NuGetFramework framework)
+        {
+            // Use the same logic as PackagesLockFileTarget.GetNameString for consistency
+            if (string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp, StringComparison.OrdinalIgnoreCase)
+                && (
+                    (framework.Version.Major >= 6)
+                    || (framework.Version.Major == 5 && framework.HasPlatform)
+                   )
+                )
+            {
+                return framework.ToString();
+            }
+            else
+            {
+                return framework.DotNetFrameworkName;
+            }
         }
 
         private static JProperty WriteTargetDependency(LockFileDependency dependency)
