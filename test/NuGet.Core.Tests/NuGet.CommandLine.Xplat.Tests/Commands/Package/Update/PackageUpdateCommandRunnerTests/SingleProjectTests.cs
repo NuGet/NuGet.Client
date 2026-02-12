@@ -251,8 +251,8 @@ public class SingleProjectTests
                 builder
                 .WithProperty("TargetFramework", "apple")
                 .WithProperty("TargetFrameworkIdentifier", ".NETCoreApp")
-                .WithProperty("TargetFrameworkVersion", "v9.0")
-                .WithProperty("TargetFrameworkMoniker", ".NETCoreApp,Version=v9.0")
+                .WithProperty("TargetFrameworkVersion", "v10.0")
+                .WithProperty("TargetFrameworkMoniker", ".NETCoreApp,Version=v10.0")
                 .WithItem("PackageReference", "Contoso.Polyfill", [new("Version", "1.0.0")]);
             })
             .WithInnerBuild(builder =>
