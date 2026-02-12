@@ -26,28 +26,24 @@ namespace NuGet.Packaging
 
             // Important: always add newer version checks at the top
 
-            // V5
             if ((metadata.PackageAssemblyReferences != null &&
                 metadata.PackageAssemblyReferences.Any(r => r.TargetFramework != null && r.TargetFramework.IsSpecificFramework)) ||
                 !string.IsNullOrEmpty(metadata.MinClientVersionString))
             {
-                return TargetFrameworkSupportForReferencesVersion;
+                return 5;
             }
 
-            // V4
             if (metadata.DependencyGroups != null &&
                 metadata.DependencyGroups.Any(d => d.TargetFramework != null && d.TargetFramework.IsSpecificFramework))
             {
-                return TargetFrameworkSupportForDependencyContentsAndToolsVersion;
+                return 4;
             }
 
-            // V3
             if (metadata.Version != null && metadata.Version.IsPrerelease)
             {
-                return SemverVersion;
+                return 3;
             }
 
-            // V2
             if (!string.IsNullOrEmpty(metadata.ReleaseNotes) ||
                 !string.IsNullOrEmpty(metadata.Copyright) ||
                 (metadata.PackageAssemblyReferences?.Any() ?? false))
