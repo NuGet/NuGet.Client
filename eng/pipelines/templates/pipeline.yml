@@ -275,7 +275,7 @@ stages:
     steps:
     - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
       parameters:
-        isOfficialBuild: true
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
 - stage: Source_Build
   dependsOn: Initialize
