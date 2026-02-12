@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -134,15 +135,18 @@ namespace NuGet.XPlat.FuncTest
             var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
             var actualProjectFrameworks = MSBuildStringUtility.Split(projectFrameworks);
             var actualTfms = MSBuildStringUtility.Split(projectTargetFrameworkMonikers);
-            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName: projectName,
-                    solutionRoot: pathContext.SolutionRoot,
-                    frameworks: actualProjectFrameworks);
+            var project = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, pathContext.SolutionRoot);
+            project.ToolingVersion15 = true;
+            project.Properties.Add("BuildWithNetFrameworkHostedCompiler", bool.FalseString);
 
             for (int i = 0; i < actualProjectFrameworks.Length; i++)
             {
-                var framework = project.Frameworks.Single(e => e.TargetAlias.Equals(actualProjectFrameworks[i]));
-                framework.Properties.Add("TargetFrameworkMoniker", actualTfms[i]);
+                var fw = new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(actualTfms[i]))
+                {
+                    TargetAlias = actualProjectFrameworks[i]
+                };
+                fw.Properties.Add("TargetFrameworkMoniker", actualTfms[i]);
+                project.Frameworks.Add(fw);
             }
 
             project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
