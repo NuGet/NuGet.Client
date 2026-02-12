@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Linq;
 
 namespace NuGet.Packaging
@@ -20,7 +21,7 @@ namespace NuGet.Packaging
         {
             if (metadata == null)
             {
-                return DefaultVersion;
+                throw new ArgumentNullException(nameof(metadata));
             }
 
             // Important: always add newer version checks at the top
