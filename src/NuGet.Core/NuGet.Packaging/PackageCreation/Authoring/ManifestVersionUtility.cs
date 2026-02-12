@@ -4,9 +4,7 @@
 #nullable disable
 
 using System;
-using System.Collections;
 using System.Linq;
-using System.Reflection;
 
 namespace NuGet.Packaging
 {
@@ -18,6 +16,19 @@ namespace NuGet.Packaging
         public const int TargetFrameworkSupportForDependencyContentsAndToolsVersion = 4;
         public const int TargetFrameworkSupportForReferencesVersion = 5;
         public const int XdtTransformationVersion = 6;
+
+        // IMPORTANT:
+        // Whenever adding a new ManifestVersion constant, make sure to update
+        // ManifestVersionUtility.GetVersionFromObject(...) accordingly.
+        // The version calculation logic is explicit (no reflection),
+        // so new versioned properties must be handled there as well.
+        internal static class ManifestVersions
+        {
+            public const int ReleaseNotes = 2;
+            public const int Copyright = 2;
+            public const int PackageAssemblyReferences = 2;
+            public const int MinClientVersionString = 5;
+        }
 
         public static int GetManifestVersion(ManifestMetadata metadata)
         {
@@ -53,70 +64,36 @@ namespace NuGet.Packaging
             return DefaultVersion;
         }
 
-        private static int GetVersionFromObject(object obj)
+        private static int GetVersionFromObject(ManifestMetadata metadata)
         {
-            // all public, gettable, non-static properties
-            return obj?.GetType()
-                       .GetRuntimeProperties()
-                       .Where(prop => prop.GetMethod != null && prop.GetMethod.IsPublic && !prop.GetMethod.IsStatic)
-                       .Max(prop => GetVersionFromPropertyInfo(obj, prop))
-                      ?? DefaultVersion;
-        }
-
-        private static int GetVersionFromPropertyInfo(object obj, PropertyInfo property)
-        {
-            var value = property.GetValue(obj, index: null);
-            if (value == null)
+            if (metadata == null)
             {
                 return DefaultVersion;
             }
 
-            int? version = GetPropertyVersion(property);
-            if (!version.HasValue)
-            {
-                return DefaultVersion;
-            }
-
-            var list = value as IList;
-            if (list != null)
-            {
-                if (list.Count > 0)
-                {
-                    return Math.Max(version.Value, VisitList(list));
-                }
-                return DefaultVersion;
-            }
-
-            var stringValue = value as string;
-            if (stringValue != null)
-            {
-                if (!string.IsNullOrEmpty(stringValue))
-                {
-                    return version.Value;
-                }
-                return DefaultVersion;
-            }
-
-            // For all other object types a null check would suffice.
-            return version.Value;
-        }
-
-        private static int VisitList(IEnumerable list)
-        {
             int version = DefaultVersion;
 
-            foreach (var item in list)
+            if (!string.IsNullOrEmpty(metadata.MinClientVersionString))
             {
-                version = Math.Max(version, GetVersionFromObject(item));
+                version = Math.Max(version, ManifestVersions.MinClientVersionString);
+            }
+
+            if (!string.IsNullOrEmpty(metadata.ReleaseNotes))
+            {
+                version = Math.Max(version, ManifestVersions.ReleaseNotes);
+            }
+
+            if (!string.IsNullOrEmpty(metadata.Copyright))
+            {
+                version = Math.Max(version, ManifestVersions.Copyright);
+            }
+
+            if (metadata.PackageAssemblyReferences != null && metadata.PackageAssemblyReferences.Any())
+            {
+                version = Math.Max(version, ManifestVersions.PackageAssemblyReferences);
             }
 
             return version;
-        }
-
-        private static int? GetPropertyVersion(PropertyInfo property)
-        {
-            var attribute = property.GetCustomAttribute<ManifestVersionAttribute>();
-            return attribute?.Version;
         }
     }
 }
