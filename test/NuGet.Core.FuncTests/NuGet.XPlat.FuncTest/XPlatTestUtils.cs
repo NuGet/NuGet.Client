@@ -126,6 +126,34 @@ namespace NuGet.XPlat.FuncTest
             return project;
         }
 
+        public static SimpleTestProjectContext CreateProject(string projectName,
+            SimpleTestPathContext pathContext,
+            string projectFrameworks,
+            string projectTargetFrameworkMonikers)
+        {
+            var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
+            var actualProjectFrameworks = MSBuildStringUtility.Split(projectFrameworks);
+            var actualTfms = MSBuildStringUtility.Split(projectTargetFrameworkMonikers);
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    frameworks: actualProjectFrameworks);
+
+            for (int i = 0; i < actualProjectFrameworks.Length; i++)
+            {
+                var framework = project.Frameworks.Single(e => e.TargetAlias.Equals(actualProjectFrameworks[i]));
+                framework.Properties.Add("TargetFrameworkMoniker", actualTfms[i]);
+            }
+
+            project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
+            project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            project.Sources = packageSourceProvider.LoadPackageSources();
+
+            project.Save();
+            return project;
+        }
+
         public static SimpleTestPackageContext CreatePackage(string packageId = "packageX",
             string packageVersion = "1.0.0",
             string? frameworkString = null,
