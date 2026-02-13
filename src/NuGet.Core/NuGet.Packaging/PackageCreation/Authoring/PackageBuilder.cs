@@ -927,7 +927,7 @@ namespace NuGet.Packaging
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
-            Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true);
+            Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true, TryGetVersionOverride(propertyProvider));
 
             Populate(manifest.Metadata);
 
@@ -997,6 +997,23 @@ namespace NuGet.Packaging
             {
                 AddFiles(basePath, file.Source, file.Target, file.Exclude);
             }
+        }
+
+        private static NuGetVersion TryGetVersionOverride(Func<string, string> propertyProvider)
+        {
+            if (propertyProvider == null)
+            {
+                return null;
+            }
+
+            var value = propertyProvider("Version");
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return NuGetVersion.TryParse(value, out var parsed) ? parsed : null;
         }
 
         private ZipArchiveEntry CreateEntry(ZipArchive package, string entryName, CompressionLevel compressionLevel)

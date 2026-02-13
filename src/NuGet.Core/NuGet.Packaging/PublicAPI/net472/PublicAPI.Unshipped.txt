@@ -1,1 +1,2 @@
 #nullable enable
+~static NuGet.Packaging.Manifest.ReadFrom(System.IO.Stream stream, System.Func<string, string> propertyProvider, bool validateSchema, NuGet.Versioning.NuGetVersion versionOverride) -> NuGet.Packaging.Manifest
