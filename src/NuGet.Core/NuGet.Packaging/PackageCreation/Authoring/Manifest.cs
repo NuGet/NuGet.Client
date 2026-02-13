@@ -14,8 +14,6 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Xml;
 using static NuGet.Shared.XmlUtility;
-using NuGet.Versioning;
-
 
 #if !IS_CORECLR
 using System.Xml.Schema;
@@ -117,11 +115,6 @@ namespace NuGet.Packaging
 
         public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema)
         {
-            return ReadFrom(stream, propertyProvider, validateSchema, versionOverride: null);
-        }
-
-        public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema, NuGetVersion versionOverride)
-        {
             XDocument document;
             if (propertyProvider == null)
             {
@@ -151,11 +144,6 @@ namespace NuGet.Packaging
 
             // Deserialize it
             var manifest = ManifestReader.ReadManifest(document);
-
-            if (versionOverride != null)
-            {
-                manifest.Metadata.Version = versionOverride;
-            }
 
             // Validate before returning
             Validate(manifest);
