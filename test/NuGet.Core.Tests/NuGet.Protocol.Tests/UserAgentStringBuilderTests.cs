@@ -62,12 +62,13 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void AddsOSInfo()
         {
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>());
             var clientName = "clientName";
             var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
             var os = UserAgentStringBuilder.GetOS();
             var vs = "VS SKU/Version";
 
-            var builder = new UserAgentStringBuilder(clientName);
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
             var userAgentString = builder.Build();
             var userAgentString2 = builder.WithVisualStudioSKU(vs).Build();
 

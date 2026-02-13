@@ -9,17 +9,8 @@ namespace NuGet.Protocol.Core.Types
     /// <summary>
     /// Detects CI/CD environment from environment variables.
     /// </summary>
-    public static class CIEnvironmentDetector
+    internal static class CIEnvironmentDetector
     {
-        /// <summary>
-        /// Detects the CI environment based on environment variables.
-        /// </summary>
-        /// <returns>A <see cref="string"/> if a CI environment is detected, null otherwise.</returns>
-        public static string? Detect()
-        {
-            return Detect(EnvironmentVariableWrapper.Instance);
-        }
-
         /// <summary>
         /// Detects the CI environment based on environment variables.
         /// </summary>
@@ -87,6 +78,13 @@ namespace NuGet.Protocol.Core.Types
             if (!string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("JB_SPACE_API_URL")))
             {
                 return "JetBrains Space";
+            }
+
+            // GitLab CI
+
+            if (string.Equals(environmentVariableReader.GetEnvironmentVariable("GITLAB_CI"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "GitLab CI";
             }
 
             // Generic CI - must be last as it's the most general

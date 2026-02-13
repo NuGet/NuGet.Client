@@ -1,3 +1,1 @@
 #nullable enable
-NuGet.Protocol.Core.Types.CIEnvironmentDetector
-static NuGet.Protocol.Core.Types.CIEnvironmentDetector.Detect() -> string?
