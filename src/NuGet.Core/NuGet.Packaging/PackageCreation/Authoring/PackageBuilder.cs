@@ -950,7 +950,11 @@ namespace NuGet.Packaging
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
-            Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true, overrideVersion: NuGetVersion.Parse(_versionOverride));
+            Manifest manifest = Manifest.ReadFrom(
+                stream,
+                propertyProvider,
+                validateSchema: true,
+                overrideVersion: !(string.IsNullOrEmpty(_versionOverride)) ? NuGetVersion.Parse(_versionOverride) : null);
 
             Populate(manifest.Metadata);
 
