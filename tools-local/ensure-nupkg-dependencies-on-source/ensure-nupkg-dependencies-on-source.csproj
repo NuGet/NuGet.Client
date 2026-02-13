@@ -8,7 +8,6 @@
     <Nullable>enable</Nullable>
     <Description>Checks that the dependencies of one or more nupkgs are available on specified NuGet source(s)</Description>
     <SkipShared>true</SkipShared>
-    <NoWarn>CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
