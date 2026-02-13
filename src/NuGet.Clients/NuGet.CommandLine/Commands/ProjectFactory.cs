@@ -1147,7 +1147,7 @@ namespace NuGet.CommandLine
             {
                 // Don't validate the manifest since this might be a partial manifest
                 // The bulk of the metadata might be coming from the project.
-                Packaging.Manifest manifest = Packaging.Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true, builder.Version);
+                Packaging.Manifest manifest = Packaging.Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
                 builder.Populate(manifest.Metadata);
 
                 if (manifest.HasFilesNode)
