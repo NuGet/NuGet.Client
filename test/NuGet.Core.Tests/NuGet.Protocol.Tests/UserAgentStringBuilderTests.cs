@@ -160,6 +160,25 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public void Build_WhenInGitLabCI_AppendsCIInfoInParentheses()
+        {
+            // Arrange
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "GITLAB_CI", "true" }
+            });
+            var clientName = "TestClient";
+            var builder = new UserAgentStringBuilder(clientName, environmentReader);
+
+            // Act
+            var userAgent = builder.Build();
+
+            // Assert
+            _output.WriteLine(userAgent);
+            userAgent.Should().Contain("CI: GitLab CI");
+        }
+
+        [Fact]
         public void Build_WhenInCircleCI_AppendsCIInfoInParentheses()
         {
             // Arrange
