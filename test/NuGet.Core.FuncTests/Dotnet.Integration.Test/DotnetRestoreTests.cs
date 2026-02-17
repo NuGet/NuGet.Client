@@ -3782,7 +3782,7 @@ EndGlobal";
 
         // P (apple) -> Project2 
         // P (banana) -> Project3
-        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Client.Engineering/issues/3632")]
+        [PlatformFact(Platform.Windows)]
         public async Task DotnetRestore_WithAliasesOfSameFramework_MultipleProjectReferencesFlowCorrectly()
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
