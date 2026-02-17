@@ -14,6 +14,7 @@ using System.Threading;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -725,7 +726,6 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentNullException(nameof(assetsFile));
             }
 
-            var projectPath = project.FullPath;
             var resultPackages = new List<FrameworkPackages>();
             var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
             var requestedTargets = assetsFile.Targets;
@@ -781,7 +781,7 @@ namespace NuGet.CommandLine.XPlat
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
                 var frameworkDependencies = tfmInformation.Dependencies;
-                var projectPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
+                var projectPackages = GetPackageReferencesFromTargets(project, tfmInformation.ToString());
                 var topLevelPackages = new List<InstalledPackageReference>();
                 var transitivePackages = new List<InstalledPackageReference>();
 
@@ -808,7 +808,7 @@ namespace NuGet.CommandLine.XPlat
                             }
                             catch (Exception)
                             {
-                                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
+                                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingReferenceFromProject, project.FullPath));
                             }
                         }
                         else
@@ -900,18 +900,18 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Returns all package references after invoking the target CollectPackageReferences.
         /// </summary>
-        /// <param name="projectPath"> Path to the project for which the package references have to be obtained.</param>
+        /// <param name="project">The project for which the package references have to be obtained.</param>
         /// <param name="framework">Framework to get reference(s) for</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
-        private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(string projectPath, string framework)
+        private static IEnumerable<InstalledPackageReference> GetPackageReferencesFromTargets(Project project, string framework)
         {
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "TargetFramework", framework },
                     { "ExcludeRestorePackageImports", bool.TrueString }
                 };
-            var newProject = new ProjectInstance(projectPath, globalProperties, null);
+            var newProject = new ProjectInstance(project.Xml, globalProperties, null, ProjectCollection.GlobalProjectCollection);
             newProject.Build(new[] { CollectPackageReferences, CollectCentralPackageVersions }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
 
             // Find the first target output that matches `CollectPackageReferences`
@@ -1040,6 +1040,14 @@ namespace NuGet.CommandLine.XPlat
 
         private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
+            if (VirtualProjectBuilder.IsValidEntryPointPath(filename))
+            {
+                // TODO: Don't hardcode TFM.
+                return VirtualProjectBuilder.CreateProjectRootElement(
+                    filePath: filename,
+                    targetFrameworkVersion: "10.0");
+            }
+
             try
             {
                 // There is ProjectRootElement.TryOpen but it does not work as expected
