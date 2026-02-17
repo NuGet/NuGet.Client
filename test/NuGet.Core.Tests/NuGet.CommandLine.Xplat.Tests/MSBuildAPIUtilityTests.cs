@@ -461,6 +461,58 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.DoesNotContain(@$"<PackageVersion Include=""X"" VersionOverride=""3.0.0"" />", updatedPropsFile);
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void IsCentralPackageManagementEnabled_WhenEnabled_ReturnsTrue()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            var propsFile =
+@$"<Project>
+    <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+</Project>";
+            File.WriteAllText(Path.Combine(testDirectory, "Directory.Packages.props"), propsFile);
+
+            string projectContent =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+	<PropertyGroup>
+	<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+</Project>";
+            var projectPath = Path.Combine(testDirectory, "projectA.csproj");
+            File.WriteAllText(projectPath, projectContent);
+
+            // Act
+            var result = MSBuildAPIUtility.IsCentralPackageManagementEnabled(projectPath);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void IsCentralPackageManagementEnabled_WhenNotEnabled_ReturnsFalse()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            string projectContent =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+	<PropertyGroup>
+	<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+</Project>";
+            var projectPath = Path.Combine(testDirectory, "projectA.csproj");
+            File.WriteAllText(projectPath, projectContent);
+
+            // Act
+            var result = MSBuildAPIUtility.IsCentralPackageManagementEnabled(projectPath);
+
+            // Assert
+            Assert.False(result);
+        }
+
         [Fact]
         public void GetListOfProjectsFromPathArgument_WithProjectFile_ReturnsCorrectPaths()
         {

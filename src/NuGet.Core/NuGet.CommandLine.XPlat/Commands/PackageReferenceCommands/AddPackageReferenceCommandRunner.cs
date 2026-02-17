@@ -52,12 +52,16 @@ namespace NuGet.CommandLine.XPlat
                     versionRange = VersionRange.Parse(packageReferenceArgs.PackageVersion);
                 }
 
+                var isCPMEnabled = MSBuildAPIUtility.IsCentralPackageManagementEnabled(
+                    packageReferenceArgs.ProjectPath);
+
                 var libraryDependency = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(
                         name: packageReferenceArgs.PackageId,
                         versionRange: versionRange,
-                        typeConstraint: LibraryDependencyTarget.Package)
+                        typeConstraint: LibraryDependencyTarget.Package),
+                    VersionCentrallyManaged = isCPMEnabled
                 };
 
                 msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);

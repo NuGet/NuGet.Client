@@ -83,6 +83,27 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
 
+        /// <summary>
+        /// Checks whether Central Package Management is enabled for the given project
+        /// by evaluating the ManagePackageVersionsCentrally MSBuild property.
+        /// </summary>
+        /// <param name="projectCSProjPath">CSProj file to check</param>
+        /// <returns>True if CPM is enabled, false otherwise.</returns>
+        internal static bool IsCentralPackageManagementEnabled(string projectCSProjPath)
+        {
+            var project = GetProject(projectCSProjPath);
+            try
+            {
+                return StringComparer.OrdinalIgnoreCase.Equals(
+                    project.GetPropertyValue("ManagePackageVersionsCentrally"),
+                    "true");
+            }
+            finally
+            {
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+            }
+        }
+
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
         {
             var sln = SolutionFile.Parse(solutionPath);
