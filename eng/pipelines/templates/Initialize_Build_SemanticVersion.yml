@@ -3,6 +3,8 @@ steps:
 - task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"
+  env:
+    DOTNET_ROLL_FORWARD: LatestMajor
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
