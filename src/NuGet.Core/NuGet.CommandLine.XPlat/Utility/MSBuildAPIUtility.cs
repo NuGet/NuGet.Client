@@ -1045,7 +1045,8 @@ namespace NuGet.CommandLine.XPlat
                 // TODO: Don't hardcode TFM.
                 return VirtualProjectBuilder.CreateProjectRootElement(
                     filePath: filename,
-                    targetFrameworkVersion: "10.0");
+                    targetFrameworkVersion: "10.0",
+                    ProjectCollection.GlobalProjectCollection);
             }
 
             try
