@@ -98,7 +98,8 @@ namespace NuGet.Commands
             // Once we have collected data for all of these, we can exit.
             var parentPackageDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            var parentTargetFramework = targetGraph.TargetAlias;
+            var parentTargetFramework = targetGraph.Framework;
+            var parentAlias = targetGraph.TargetAlias;
 
             // Add all dependencies into a dict for a quick transitive lookup
             foreach (var dependencyGraphItem in targetGraph.Flattened)
@@ -224,7 +225,7 @@ namespace NuGet.Commands
             // At the end of the graph traversal add the remaining package no warn lists into the result
             foreach ((var packageId, var codes) in packageNoWarn)
             {
-                resultWarningProperties.AddRangeOfCodes(codes.ToImmutableArray(), packageId, parentTargetFramework);
+                resultWarningProperties.AddRangeOfCodes(codes.ToImmutableArray(), packageId, parentAlias);
             }
 
             return resultWarningProperties;

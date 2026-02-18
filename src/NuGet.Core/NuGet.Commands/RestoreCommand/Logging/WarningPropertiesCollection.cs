@@ -101,7 +101,7 @@ namespace NuGet.Commands
                 !string.IsNullOrEmpty(message.LibraryId))
             {
                 // If the message does not contain a target graph, assume that it is applicable for all project frameworks.
-                if (!message.TargetGraphs.Select(GetNuGetFramework).Any())
+                if (!message.TargetGraphs.Any())
                 {
                     // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
                     if (ProjectFrameworks.Count > 0 &&
@@ -115,7 +115,7 @@ namespace NuGet.Commands
                     // Get all the target graphs for which code + libraryId combination is not suppressed.
                     message.TargetGraphs = message
                         .TargetGraphs
-                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e))
+                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e.Split('/')[0]))
                         .ToList();
 
                     // If the message is left with no target graphs then suppress it.
@@ -172,18 +172,6 @@ namespace NuGet.Commands
                     message.Level = LogLevel.Error;
                 }
             }
-        }
-
-        private NuGetFramework GetNuGetFramework(string targetGraph)
-        {
-            return _getFrameworkCache.GetOrAdd(targetGraph, (s) => GetNuGetFrameworkFromTargetGraph(s));
-        }
-
-        private static NuGetFramework GetNuGetFrameworkFromTargetGraph(string targetGraph)
-        {
-            var parts = targetGraph.Split('/');
-
-            return NuGetFramework.Parse(parts[0]);
         }
 
         public override int GetHashCode()

@@ -59,9 +59,12 @@ namespace NuGet.Commands
 
             var targetFrameworkInformation = packageSpec.GetTargetFramework(framework);
 
-            foreach (var dependency in targetFrameworkInformation.Dependencies)
+            if (targetFrameworkInformation != null)
             {
-                warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                foreach (var dependency in targetFrameworkInformation.Dependencies)
+                {
+                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                }
             }
 
             return warningProperties;
