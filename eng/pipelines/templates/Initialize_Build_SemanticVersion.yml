@@ -7,6 +7,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       try {
+        $env:DOTNET_ROLL_FORWARD = 'LatestMajor'
         $version = ((& dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetSemanticVersion) | Out-String).Trim()
         if ($LASTEXITCODE -ne 0) { throw $version }
         $version = $version.Trim()
