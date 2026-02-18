@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\AheadOfTimeCompileAttributes.cs" />
     <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
