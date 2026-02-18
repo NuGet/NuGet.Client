@@ -10,6 +10,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -27,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\AheadOfTimeCompileAttributes.cs" />
     <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />

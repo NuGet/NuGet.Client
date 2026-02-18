@@ -7,6 +7,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NuGet.Client;
@@ -115,7 +116,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Create an ordered criteria list in order, based on the framework and runtime identifier provided.
         /// The boolean indicates whether the criteria is for a fallback version of the framework or not.
-        /// </summary> 
+        /// </summary>
         internal static List<(List<SelectionCriteria>, bool)> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
         {
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
@@ -822,7 +823,7 @@ namespace NuGet.Commands
         /// Clears a lock file group and replaces the first item with _._ if
         /// the group has items. Empty groups are left alone.
         /// </summary>
-        private static void ClearIfExists<T>(IList<T> group) where T : LockFileItem
+        private static void ClearIfExists<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(IList<T> group) where T : LockFileItem
         {
             if (GroupHasNonEmptyItems(group))
             {
