@@ -3412,7 +3412,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithAliasesOfTheSameFramework_UsesCorrectPackages()
+        public async Task DotnetRestore_WithAliasedFramework_SuppressesWithPackageSpecificNoWarn()
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;

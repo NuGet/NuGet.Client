@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using NuGet.Common;
 using NuGet.DependencyResolver;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
@@ -30,16 +29,16 @@ namespace NuGet.Commands
             PackageSpec parentProjectSpec)
         {
             var transitivePackageSpecificProperties = new PackageSpecificWarningProperties();
-            var projectFrameworks = new List<NuGetFramework>();
+            var projectFrameworks = new List<string>();
             var parentWarningProperties = new WarningPropertiesCollection(
                     parentProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
                     PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(parentProjectSpec),
-                    parentProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly());
+                    parentProjectSpec.TargetFrameworks.Select(f => f.TargetAlias).AsList().AsReadOnly());
 
             var parentPackageSpecificNoWarn = ExtractPackageSpecificNoWarnPerFramework(
                 parentWarningProperties.PackageSpecificWarningProperties);
 
-            var warningPropertiesCache = new Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>>(
+            var warningPropertiesCache = new Dictionary<string, Dictionary<string, WarningPropertiesCollection>>(
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (var targetGraph in targetGraphs)
@@ -47,7 +46,7 @@ namespace NuGet.Commands
                 if (string.IsNullOrEmpty(targetGraph.RuntimeIdentifier))
                 {
                     if (parentPackageSpecificNoWarn == null ||
-                        !parentPackageSpecificNoWarn.TryGetValue(targetGraph.Framework, out var parentPackageSpecificNoWarnForFramework))
+                        !parentPackageSpecificNoWarn.TryGetValue(targetGraph.TargetAlias, out var parentPackageSpecificNoWarnForFramework))
                     {
                         parentPackageSpecificNoWarnForFramework = null;
                     }
@@ -59,7 +58,7 @@ namespace NuGet.Commands
                         parentPackageSpecificNoWarnForFramework,
                         warningPropertiesCache);
 
-                    projectFrameworks.Add(targetGraph.Framework);
+                    projectFrameworks.Add(targetGraph.TargetAlias);
 
                     transitivePackageSpecificProperties = MergePackageSpecificWarningProperties(
                         transitivePackageSpecificProperties,
@@ -87,7 +86,7 @@ namespace NuGet.Commands
             string parentProjectName,
             HashSet<NuGetLogCode> parentProjectWideNoWarn,
             Dictionary<string, HashSet<NuGetLogCode>> parentPackageSpecificNoWarn,
-            Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>> warningPropertiesCache)
+            Dictionary<string, Dictionary<string, WarningPropertiesCollection>> warningPropertiesCache)
         {
             var dependencyMapping = new Dictionary<string, LookUpNode>(StringComparer.OrdinalIgnoreCase);
             var queue = new Queue<DependencyNode>();
@@ -99,7 +98,7 @@ namespace NuGet.Commands
             // Once we have collected data for all of these, we can exit.
             var parentPackageDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            var parentTargetFramework = targetGraph.Framework;
+            var parentTargetFramework = targetGraph.TargetAlias;
 
             // Add all dependencies into a dict for a quick transitive lookup
             foreach (var dependencyGraphItem in targetGraph.Flattened)
@@ -112,7 +111,7 @@ namespace NuGet.Commands
                 {
                     var localMatch = (LocalMatch)dependencyGraphItem.Data.Match;
                     var nodeProjectSpec = GetNodePackageSpec(localMatch);
-                    var nearestFramework = nodeProjectSpec.GetTargetFramework(parentTargetFramework).FrameworkName;
+                    var nearestFramework = nodeProjectSpec.GetTargetFramework(parentTargetFramework).TargetAlias;
 
                     if (nearestFramework != null)
                     {
@@ -233,15 +232,15 @@ namespace NuGet.Commands
 
         private static WarningPropertiesCollection GetNodeWarningProperties(
             PackageSpec nodeProjectSpec,
-            NuGetFramework framework,
-            Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>> warningPropertiesCache)
+            string framework,
+            Dictionary<string, Dictionary<string, WarningPropertiesCollection>> warningPropertiesCache)
         {
             var key = nodeProjectSpec.RestoreMetadata.ProjectPath;
 
             if (!warningPropertiesCache.TryGetValue(key, out var frameworkCollection))
             {
                 frameworkCollection
-                    = new Dictionary<NuGetFramework, WarningPropertiesCollection>(NuGetFrameworkFullComparer.Instance);
+                    = new Dictionary<string, WarningPropertiesCollection>(StringComparer.OrdinalIgnoreCase);
 
                 warningPropertiesCache[key] = frameworkCollection;
             }
@@ -251,7 +250,7 @@ namespace NuGet.Commands
                 collection = new WarningPropertiesCollection(
                     nodeProjectSpec.RestoreMetadata?.ProjectWideWarningProperties,
                     PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(nodeProjectSpec, framework),
-                    nodeProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly());
+                    nodeProjectSpec.TargetFrameworks.Select(f => f.TargetAlias).AsList().AsReadOnly());
 
                 frameworkCollection.Add(framework, collection);
             }
@@ -532,14 +531,14 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="packageSpecificWarningProperties">PackageSpecificWarningProperties to be converted.</param>
         /// <returns>New dictionary containing the data of a PackageSpecificWarningProperties collection on framework.</returns>
-        public static Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>> ExtractPackageSpecificNoWarnPerFramework(
+        public static Dictionary<string, Dictionary<string, HashSet<NuGetLogCode>>> ExtractPackageSpecificNoWarnPerFramework(
             PackageSpecificWarningProperties packageSpecificWarningProperties)
         {
-            Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>> result = null;
+            Dictionary<string, Dictionary<string, HashSet<NuGetLogCode>>> result = null;
 
             if (packageSpecificWarningProperties?.Properties != null)
             {
-                result = new Dictionary<NuGetFramework, Dictionary<string, HashSet<NuGetLogCode>>>(NuGetFrameworkFullComparer.Instance);
+                result = new Dictionary<string, Dictionary<string, HashSet<NuGetLogCode>>>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var codePair in packageSpecificWarningProperties.Properties)
                 {
@@ -581,7 +580,7 @@ namespace NuGet.Commands
         /// <returns>New dictionary containing the data of a PackageSpecificWarningProperties collection on framework.</returns>
         public static Dictionary<string, HashSet<NuGetLogCode>> ExtractPackageSpecificNoWarnForFramework(
             PackageSpecificWarningProperties packageSpecificWarningProperties,
-            NuGetFramework framework)
+            string framework)
         {
             Dictionary<string, HashSet<NuGetLogCode>> result = null;
 
