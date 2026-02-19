@@ -112,10 +112,12 @@ namespace NuGet.Commands
                 }
                 else
                 {
+                    bool legacy = ProjectFrameworks.Count == 1 && string.IsNullOrEmpty(ProjectFrameworks[0]);
+
                     // Get all the target graphs for which code + libraryId combination is not suppressed.
                     message.TargetGraphs = message
                         .TargetGraphs
-                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, e.Split('/')[0]))
+                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, legacy ? string.Empty : e.Split('/')[0]))
                         .ToList();
 
                     // If the message is left with no target graphs then suppress it.
