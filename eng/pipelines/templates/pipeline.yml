@@ -43,36 +43,36 @@ stages:
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
-${{ if eq(parameters.TryRunOneLocBuild, true) }}:
-- stage: RunOneLocBuild
-  displayName: Run OneLocBuild
-  condition: |
-    and(
-      succeeded(),
-      eq(variables['IsOfficialBuild'], 'true'),
-      or(
-        eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-        and(
-          ne(variables['OneLocReleaseBranch'], ''),
-          or(
-            eq(variables['SourceBranch'], variables['OneLocReleaseBranch']),
-            eq(variables['Build.SourceBranch'], variables['OneLocReleaseBranch']),
-            eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables['OneLocReleaseBranch']))
+- ${{ if eq(parameters.TryRunOneLocBuild, true) }}:
+  - stage: RunOneLocBuild
+    displayName: Run OneLocBuild
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['IsOfficialBuild'], 'true'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+          and(
+            ne(variables['OneLocReleaseBranch'], ''),
+            or(
+              eq(variables['SourceBranch'], variables['OneLocReleaseBranch']),
+              eq(variables['Build.SourceBranch'], variables['OneLocReleaseBranch']),
+              eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables['OneLocReleaseBranch']))
+            )
           )
         )
       )
-    )
-  jobs:
-  - template: /eng/common/templates-official/job/onelocbuild.yml
-    parameters:
-      LclSource: lclFilesfromPackage
-      ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
-        LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
-      ${{ else }}:
-        LclPackageId: 'LCL-JUNO-PROD-NuGetClientRel'
-      MirrorRepo: 'NuGet.Client'
-      MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
-      GitHubOrg: 'NuGet'
+    jobs:
+    - template: /eng/common/templates-official/job/onelocbuild.yml
+      parameters:
+        LclSource: lclFilesfromPackage
+        ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
+          LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
+        ${{ else }}:
+          LclPackageId: 'LCL-JUNO-PROD-NuGetClientRel'
+        MirrorRepo: 'NuGet.Client'
+        MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
+        GitHubOrg: 'NuGet'
 
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
