@@ -10,6 +10,9 @@ parameters:
   values:
   - Real
   - Test
+- name: OneLocReleaseBranch
+  displayName: Release branch to run OneLocBuild
+  type: string
 
 resources:
   repositories:
@@ -51,7 +54,7 @@ extends:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
         isOfficialBuild: true
-        ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables['OneLocReleaseBranch']))) }}:
+        ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/dev'), eq(variables['Build.SourceBranch'], format('refs/heads/{0}', parameters.OneLocReleaseBranch))) }}:
           RunOneLocBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         SigningType: ${{ parameters.SigningType }}
