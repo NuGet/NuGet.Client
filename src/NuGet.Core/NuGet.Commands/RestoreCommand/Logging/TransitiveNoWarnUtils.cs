@@ -15,7 +15,7 @@ using NuGet.Shared;
 
 namespace NuGet.Commands
 {
-    public static class TransitiveNoWarnUtils
+    internal static class TransitiveNoWarnUtils
     {
 
         /// <summary>

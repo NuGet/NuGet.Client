@@ -1,2 +1,1 @@
 #nullable enable
-~NuGet.Commands.PackageSpecificWarningProperties.Properties.get -> System.Collections.Generic.IDictionary<NuGet.Common.NuGetLogCode, System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<string>>>

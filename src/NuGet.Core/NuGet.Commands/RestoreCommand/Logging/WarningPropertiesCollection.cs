@@ -19,7 +19,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Class to hold ProjectWide and PackageSpecific WarningProperties.
     /// </summary>
-    public class WarningPropertiesCollection : IEquatable<WarningPropertiesCollection>
+    internal class WarningPropertiesCollection : IEquatable<WarningPropertiesCollection>
     {
         private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
 

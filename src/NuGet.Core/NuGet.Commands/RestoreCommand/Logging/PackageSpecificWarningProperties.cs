@@ -15,7 +15,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Contains Package specific properties for Warnings.
     /// </summary>
-    public class PackageSpecificWarningProperties : IEquatable<PackageSpecificWarningProperties>
+    internal class PackageSpecificWarningProperties : IEquatable<PackageSpecificWarningProperties>
     {
 
         /// <summary>
