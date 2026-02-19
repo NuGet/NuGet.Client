@@ -10,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 
@@ -21,7 +20,8 @@ namespace NuGet.Commands
     /// </summary>
     internal class WarningPropertiesCollection : IEquatable<WarningPropertiesCollection>
     {
-        private readonly ConcurrentDictionary<string, NuGetFramework> _getFrameworkCache = new ConcurrentDictionary<string, NuGetFramework>();
+
+        private readonly ConcurrentDictionary<string, string> _getTargetGraphAliasCache = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// Contains the target frameworks for the project.
@@ -117,7 +117,7 @@ namespace NuGet.Commands
                     // Get all the target graphs for which code + libraryId combination is not suppressed.
                     message.TargetGraphs = message
                         .TargetGraphs
-                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, legacy ? string.Empty : e.Split('/')[0]))
+                        .Where(e => !PackageSpecificWarningProperties.Contains(message.Code, message.LibraryId, legacy ? string.Empty : GetTargetGraphAlias(e)))
                         .ToList();
 
                     // If the message is left with no target graphs then suppress it.
@@ -174,6 +174,11 @@ namespace NuGet.Commands
                     message.Level = LogLevel.Error;
                 }
             }
+        }
+
+        private string GetTargetGraphAlias(string targetGraph)
+        {
+            return _getTargetGraphAliasCache.GetOrAdd(targetGraph, (s) => s.Split('/')[0]);
         }
 
         public override int GetHashCode()
