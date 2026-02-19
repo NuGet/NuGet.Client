@@ -48,7 +48,7 @@ stages:
   condition: |
     and(
       succeeded(),
-      eq(variables['IsOfficialBuild'], 'true')),
+      eq(variables['IsOfficialBuild'], 'true'),
       or(
         eq('${{ parameters.RunOneLocBuild }}', 'true'),
         eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
