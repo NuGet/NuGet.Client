@@ -53,3 +53,4 @@ extends:
         isOfficialBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         SigningType: ${{ parameters.SigningType }}
+        TryRunOneLocBuild: true
