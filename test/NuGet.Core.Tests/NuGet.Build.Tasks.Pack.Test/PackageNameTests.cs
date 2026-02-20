@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable enable
 
-using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
-using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
+
     /// <summary></summary>
     /// <remarks>The _GetOutputItemsFromPack target inside the NuGet.Build.Tasks.Pack.targets file is the subject of the test, so the project that includes NuGet.Build.Tasks.Pack.targets must be registered as a build dependency.</remarks>
+    [Collection(FixtureCollection.Name)]
     public class PackageFileNameTests
     {
         #region constructor and fields
@@ -25,58 +25,16 @@ namespace NuGet.Build.Tasks.Pack.Test
         const string CONFIGURATION = "Release";
 #endif
 
-        const string FILENAME_DLL = "NuGet.Build.Tasks.Pack.dll";
-        const string FILENAME_TARGETS = "NuGet.Build.Tasks.Pack.targets";
         const string FILENAME_PROJECT_FILE = "test.csproj";
         const string FILENAME_NUSPEC_FILE = "test.nuspec";
 
-        private readonly bool _isDotNetFramework = false;
-        private readonly string _testFrameworkMoniker = "netstandard2.0";
-
-        private readonly string _pathDotnetExe = "";
-        private readonly string _pathMSBuildExe = "";
-        private readonly string _pathDllFile;
-        private readonly string _pathTargetsFile;
-
+        private readonly BuildFixture _testFixture;
         private readonly ITestOutputHelper _testOutputHelper;
 
-        public PackageFileNameTests(ITestOutputHelper testOutputHelper)
+        public PackageFileNameTests(BuildFixture testFixture, ITestOutputHelper testOutputHelper)
         {
+            _testFixture = testFixture;
             _testOutputHelper = testOutputHelper;
-
-            _pathDotnetExe = NuGet.Test.Utility.TestFileSystemUtility.GetDotnetCli();
-            _pathMSBuildExe = GetMsBuildExePath();
-            _testFrameworkMoniker = GetFrameworkMoniker(typeof(NuGet.Build.Tasks.Pack.GetPackOutputItemsTask), out var isDotNetFramework);
-            _isDotNetFramework = isDotNetFramework;
-
-            var dllLocation = typeof(NuGet.Build.Tasks.Pack.GetPackOutputItemsTask).Assembly.Location;
-            var artifactsDirectory = NuGet.Test.Utility.TestFileSystemUtility.GetArtifactsDirectoryInRepo();
-
-            var dllDirectory = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks.Pack", "bin", CONFIGURATION, _testFrameworkMoniker);
-            if (!System.IO.Directory.Exists(dllDirectory))
-            {
-                _testFrameworkMoniker = GetFrameworkMoniker(typeof(NuGet.Build.Tasks.Pack.GetPackOutputItemsTask), out var isDotnetFramework);
-                dllDirectory = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks.Pack", "bin", CONFIGURATION, _testFrameworkMoniker);
-            }
-
-            _pathDllFile = Path.Combine(dllDirectory, FILENAME_DLL);
-
-            // https://github.com/NuGet/NuGet.Client/pull/6712
-            // NuGet.Build.Tasks.Pack.targets has been moved to in NuGet.Build.Tasks project.
-            // Therefore, NuGet.Build.Tasks project must be built before running this test.
-            var tfmTargets = GetFrameworkMoniker(typeof(PackageFileNameTests), out var _);
-            _pathTargetsFile = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks", "bin", CONFIGURATION, tfmTargets, FILENAME_TARGETS);
-            if (!System.IO.File.Exists(_pathTargetsFile))
-            {
-                _pathTargetsFile = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks", "bin", CONFIGURATION, _testFrameworkMoniker, FILENAME_TARGETS);
-                if (!System.IO.File.Exists(_pathTargetsFile))
-                {
-                    _pathTargetsFile = Path.Combine(dllDirectory, FILENAME_TARGETS);
-                }
-            }
-
-            Assert.True(System.IO.File.Exists(_pathDllFile), $"{FILENAME_DLL} missing");
-            Assert.True(System.IO.File.Exists(_pathTargetsFile), $"{FILENAME_TARGETS} missing");
         }
 
         #endregion
@@ -87,24 +45,26 @@ namespace NuGet.Build.Tasks.Pack.Test
             {
                 var cases = new PackageFileNameTestCase[]
                     {
+
                     // without nuspec input
                     new PackageFileNameTestCase("000",["proj.1.9.0.nupkg"          ], "proj", "nusp", "1.9", "", "", false),
                     new PackageFileNameTestCase("001",["proj.2.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", false),
                     new PackageFileNameTestCase("002",["proj.2.0.0.1.nupkg"        ], "proj", "nusp", "2.0.0.1", "       ", "4.0.0.1", false),
                     new PackageFileNameTestCase("003",["proj.2.0.0.2.nupkg"        ], "proj", "nusp", "2.0.0.2", "3.0.0.2", "4.0.0.2", false),
                     new PackageFileNameTestCase("004",["proj.2.0.0.3-preview.nupkg"], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false),
+                    new PackageFileNameTestCase("005",["proj.2.0.0.4-release.nupkg"], "proj", "$meta_id$", "2.0.0.4-release", "3.0.0.2", "$meta_version$", false),
                     new PackageFileNameTestCase("100",["proj.nupkg"                ], "proj", "nusp", "1.9", "", "", false, OutputFileNamesWithoutVersion:true),
                     new PackageFileNameTestCase("104",["proj.nupkg"                ], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false,OutputFileNamesWithoutVersion:true),
 
                     // with nuspec input
-                    new PackageFileNameTestCase("010",["nusp.4.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", true),
-                    new PackageFileNameTestCase("011",["nusp.4.0.0.3.nupkg"        ], "proj", "nusp", "2.0.0.3", "         ", "4.0.0.3", true),
+                    new PackageFileNameTestCase("010",["nusp.4.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", true),
+                    new PackageFileNameTestCase("011",["nusp.4.0.0.3.nupkg"        ], "proj", "nusp", "2.0.0.3", "       ", "4.0.0.3", true),
                     new PackageFileNameTestCase("012",["nusp.3.0.0.4.nupkg"        ], "proj", "nusp", "2.0.0.4", "3.0.0.4", "4.0.0.4", true),
-                    new PackageFileNameTestCase("013",["nusp.5.0.0-preview.nupkg"  ], "proj", "nusp", "2.0.0.0", "         ", "5.0.0.0-preview", true),
-                    new PackageFileNameTestCase("014",["nusp.5.0.0.2-preview.nupkg"], "proj", "nusp", "2.0.0.0", "         ", "5.0.0.2-preview", true),
-                    new PackageFileNameTestCase("015",["nusp.6.0.0-beta.nupkg"     ], "proj", "nusp", "2.0.0.0", "6-beta   ", "5.0.0.3-preview", true),
-                    new PackageFileNameTestCase("110",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "         ", "4.0.0.0", true, OutputFileNamesWithoutVersion:true),
-                    new PackageFileNameTestCase("115",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "6-beta   ", "5.0.0.3-preview", true, OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("013",["nusp.5.0.0-preview.nupkg"  ], "proj", "nusp", "2.0.0.0", "       ", "5.0.0.0-preview", true),
+                    new PackageFileNameTestCase("014",["nusp.5.0.0.2-preview.nupkg"], "proj", "nusp", "2.0.0.0", "       ", "5.0.0.2-preview", true),
+                    new PackageFileNameTestCase("015",["nusp.6.0.0-beta.nupkg"     ], "proj", "nusp", "2.0.0.0", "6-beta ", "5.0.0.3-preview", true),
+                    new PackageFileNameTestCase("110",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", true, OutputFileNamesWithoutVersion:true),
+                    new PackageFileNameTestCase("115",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "6-beta ", "5.0.0.3-preview", true, OutputFileNamesWithoutVersion:true),
 
                     // has symbol
                     new PackageFileNameTestCase("020",["proj.2.1.0.snupkg"], "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ),
@@ -115,6 +75,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     new PackageFileNameTestCase("022",["proj.2.2.0.nupkg", "proj.2.2.0.symbols.nupkg"], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
                     new PackageFileNameTestCase("023",["nusp.7.2.2.nupkg", "nusp.7.2.2.symbols.nupkg"], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
                     new PackageFileNameTestCase("122",["proj.nupkg", "proj.symbols.nupkg"            ], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, OutputFileNamesWithoutVersion:true),
+
                     new PackageFileNameTestCase("123",["nusp.nupkg", "nusp.symbols.nupkg"            ], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, IncludeSymbols: true,SymbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, OutputFileNamesWithoutVersion:true),
                     // NoVersion
                      };
@@ -128,10 +89,6 @@ namespace NuGet.Build.Tasks.Pack.Test
         [MemberData(nameof(TestCases))]
         public void GetPackOutputItemsTask_PackageFileName(PackageFileNameTestCase testCase)
         {
-
-            const string projectFileName = "test.csproj";
-            const string nuspecFileName = "test.nuspec";
-
             string[] outputExtensions = GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
 
             var outputItemTask = new NuGet.Build.Tasks.Pack.GetPackOutputItemsTask();
@@ -151,10 +108,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                 outputItemTask.NuspecOutputPath = testDirectory.Path;
                 if (testCase.UseNuspecFile)
                 {
-                    outputItemTask.NuspecInputFilePath = System.IO.Path.Combine(testDirectory.Path, nuspecFileName);
+                    outputItemTask.NuspecInputFilePath = System.IO.Path.Combine(testDirectory.Path, FILENAME_NUSPEC_FILE);
                 }
 
-                CreateTestProjectFileAndNuspecFile(testDirectory, projectFileName, nuspecFileName, testCase);
+                CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);
 
                 Assert.True(outputItemTask.Execute());
 
@@ -167,8 +124,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Windows, Timeout = -1)]
         [MemberData(nameof(TestCases))]
         public void PackTask_PackageFileName_FromProjectFileWithNuspecFile(PackageFileNameTestCase testCase)
         {
@@ -179,12 +135,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                 CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);
 
                 CommandRunnerResult runresultDotnetPack;
-                if (_isDotNetFramework)
+                if (_testFixture._isDotNetFramework)
                 {
                     // As noted in #6703, since the .NetStandard2.0 library has been removed,
                     // running tests on .net Framework requires invoking msbuild.exe.
                     runresultDotnetPack = CommandRunner.Run(
-                                        _pathMSBuildExe,
+                                        _testFixture._pathMSBuildExe,
                                         testDirectory,
                                         $"/t:Restore;Build;Pack /p:Configuration={CONFIGURATION} /p:UsingMicrosoftNetSdk=true {FILENAME_PROJECT_FILE} ",
                                         testOutputHelper: _testOutputHelper);
@@ -193,10 +149,11 @@ namespace NuGet.Build.Tasks.Pack.Test
                 {
                     // dotnet build
                     runresultDotnetPack = CommandRunner.Run(
-                                       _pathDotnetExe,
-                                       testDirectory,
-                                       $"build -p:Configuration={CONFIGURATION} {FILENAME_PROJECT_FILE}",
-                                       testOutputHelper: _testOutputHelper);
+                                        _testFixture._pathDotnetExe,
+                                        testDirectory,
+                                        $"build -p:Configuration={CONFIGURATION} {FILENAME_PROJECT_FILE}",
+                                        environmentVariables: _testFixture._dotnetEnvironments,
+                                        testOutputHelper: _testOutputHelper);
                 }
                 Assert.True(0 == runresultDotnetPack.ExitCode, runresultDotnetPack.Output + " " + runresultDotnetPack.Errors);
 
@@ -233,14 +190,16 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var csprojContent = $"""
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="{_pathTargetsFile}" />
+    <Import Project="{_testFixture._pathTargetsFile}" />
     <PropertyGroup>
-        <NuGetPackTaskAssemblyFile>{_pathDllFile}</NuGetPackTaskAssemblyFile>
+        <NuGetPackTaskAssemblyFile>{_testFixture._pathDllFile}</NuGetPackTaskAssemblyFile>
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>{_testFrameworkMoniker}</TargetFramework>
+        <TargetFramework>{_testFixture._testFrameworkMoniker}</TargetFramework>
+        <NoWarn>NU5100;NU5119;CS2008</NoWarn>
     </PropertyGroup>
+
     <PropertyGroup>
         <IsPackable>true</IsPackable>
 
@@ -264,11 +223,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         <None Remove="{nuspecFileName}" />
     </ItemGroup>
 
-    <Target Name="write_OutputPackItems" AfterTargets="_GetOutputItemsFromPack" >
-    
-        <WriteLinesToFile File="obj/_OutputPackItems2.txt" Lines="$(NuspecFile)" Overwrite="true" Encoding="UTF-8" />
-        <WriteLinesToFile File="obj/_OutputPackItems3.txt" Lines="$(NuspecProperties)" Overwrite="true" Encoding="UTF-8" />
-
+    <Target Name="write_OutputPackItems" AfterTargets="_GetOutputItemsFromPack" >    
 	    <WriteLinesToFile File="obj/_OutputPackItems.txt" Lines="@(_OutputPackItems)" Overwrite="true" Encoding="UTF-8" />
     </Target>
 </Project>
@@ -325,42 +280,6 @@ namespace NuGet.Build.Tasks.Pack.Test
         private int GetNameMatchFilePathCount(string fileName, System.Collections.Generic.IEnumerable<string> fullpaths)
         {
             return fullpaths.Count(file => string.Equals(fileName, System.IO.Path.GetFileName(file), System.StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static string GetFrameworkMoniker(Type typeInAssembly, out bool isDotNetFramework)
-        {
-            var assembly = typeInAssembly.Assembly;
-            var targetFrameworkAttribute
-                = assembly.GetCustomAttributes(typeof(System.Runtime.Versioning.TargetFrameworkAttribute), false)
-                .OfType<System.Runtime.Versioning.TargetFrameworkAttribute>().FirstOrDefault();
-
-            Assert.True(targetFrameworkAttribute != null, "Can't get targetFramework version");
-
-            isDotNetFramework = targetFrameworkAttribute.FrameworkName.Contains(".NETFramework");
-            return NuGetFramework.Parse(targetFrameworkAttribute.FrameworkName).GetShortFolderName();
-        }
-
-        private static string GetMsBuildExePath()
-        {
-            if (System.Environment.OSVersion.Platform == System.PlatformID.Win32NT)
-            {
-                var msbuildexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "Microsoft.NET", "Framework", "v4.0.30319", "msbuild.exe");
-
-                var vswhereexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "Installer", "vswhere.exe");
-                var runresult = CommandRunner.Run(
-                        vswhereexe,
-                        System.Environment.CurrentDirectory,
-                        @" -latest -find MSBuild\**\Bin\MSBuild.exe");
-                if (runresult.Success)
-                {
-                    msbuildexe = new System.IO.StringReader(runresult.Output).ReadLine() ?? "";
-                }
-                return msbuildexe;
-            }
-            else
-            {
-                return "";
-            }
         }
     }
 
