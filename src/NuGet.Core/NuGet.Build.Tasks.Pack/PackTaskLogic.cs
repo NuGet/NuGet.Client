@@ -75,7 +75,7 @@ namespace NuGet.Build.Tasks.Pack
 
             if (!string.IsNullOrEmpty(request.NuspecFile))
             {
-                SetPackArgsPropertiesFromNuspecProperties(packArgs, request.NuspecProperties, request.NuspecFile);
+                SetPackArgsPropertiesFromNuspecProperties(packArgs, request.NuspecProperties);
             }
             else
             {
@@ -1084,9 +1084,9 @@ namespace NuGet.Build.Tasks.Pack
             return dictionary;
         }
 
-        internal static void SetPackArgsPropertiesFromNuspecProperties(PackArgs packArgs, string[] nuspecProperties, string nuspecInputFilePath)
+        internal static void SetPackArgsPropertiesFromNuspecProperties(PackArgs packArgs, string[] nuspecProperties)
         {
-            if (string.IsNullOrWhiteSpace(nuspecInputFilePath) || nuspecProperties == null || !nuspecProperties.Any())
+            if (nuspecProperties == null || !nuspecProperties.Any())
             {
                 return;
             }
@@ -1103,8 +1103,6 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 packArgs.Version = version.ToNormalizedString();
             }
-
-
         }
 
         private HashSet<string> InitOutputExtensions(IEnumerable<string> outputExtensions)

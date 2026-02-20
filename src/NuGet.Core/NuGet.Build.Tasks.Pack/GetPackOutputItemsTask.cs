@@ -54,27 +54,42 @@ namespace NuGet.Build.Tasks.Pack
 
             if (!string.IsNullOrWhiteSpace(NuspecInputFilePath))
             {
+                bool hasVersionInNuspecProperties = false;
+                if (NuspecProperties != null && NuspecProperties.Length > 0)
+                {
+                    PackArgs packArgs = new PackArgs();
+                    PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
+                    if (packArgs.Properties.ContainsKey("version"))
+                    {
+                        packageVersion = packArgs.Version;
+                        hasVersionInNuspecProperties = true;
+                    }
+                    if (packArgs.Properties.TryGetValue("id", out var idTemp))
+                    {
+                        packageId = idTemp;
+                    }
+                }
+
                 var nuspecReader = new NuGet.Packaging.NuspecReader(NuspecInputFilePath);
                 packageId = nuspecReader.GetId();
-                packageVersion = nuspecReader.GetVersion().ToNormalizedString();
-
-                PackArgs packArgs = new PackArgs() { Version = packageVersion };
-                PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties), NuspecInputFilePath);
-                packageVersion = packArgs.Version;
+                if (!hasVersionInNuspecProperties)
+                {
+                    packageVersion = nuspecReader.GetVersion().ToNormalizedString();
+                }
             }
 
-            NuGetVersion version;
-            if (!NuGetVersion.TryParse(packageVersion, out version))
+            if (!NuGetVersion.TryParse(packageVersion, out var versionTemp))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.InvalidPackageVersion,
                     packageVersion));
             }
+            NuGetVersion version = versionTemp!;
 
             var symbolPackageFormat = PackArgs.GetSymbolPackageFormat(MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat));
-            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
 
             var outputs = new List<ITaskItem>();
             outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
