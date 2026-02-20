@@ -681,8 +681,8 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="translated">El proyecto {0} está intentando restaurar marcos duplicados, que solo se admiten en el solucionador de dependencias predeterminado cuando el SDK de .NET es una versión {1} o una versión más reciente.
-Actualice el SDK de .NET o quite RestoreUseLegacyDependencyResolver para usar esta característica.</target>
+        <target state="new">The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
+Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">
@@ -1266,7 +1266,7 @@ Actualice el SDK de .NET o quite RestoreUseLegacyDependencyResolver para usar es
       </trans-unit>
       <trans-unit id="SpecValidationDuplicateTargetAlias">
         <source>The TargetFramework property must be unique. List of TargetFramework properties: {0}.</source>
-        <target state="translated">La propiedad TargetFramework debe ser única. Lista de propiedades de TargetFramework: {0}.</target>
+        <target state="new">The TargetFramework property must be unique. List of TargetFramework properties: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecValidationInvalidFramework">
@@ -1466,14 +1466,14 @@ Actualice el SDK de .NET o quite RestoreUseLegacyDependencyResolver para usar es
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">El siguiente es un origen 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Los siguientes son orígenes 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">

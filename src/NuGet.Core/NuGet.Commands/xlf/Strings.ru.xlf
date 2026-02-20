@@ -681,8 +681,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET {1} или более поздней.
-Обновите пакет SDK для .NET или удалите RestoreUseLegacyDependencyResolver, чтобы использовать эту функцию.</target>
+        <target state="new">The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
+Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">
@@ -1266,7 +1266,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="SpecValidationDuplicateTargetAlias">
         <source>The TargetFramework property must be unique. List of TargetFramework properties: {0}.</source>
-        <target state="translated">Свойство TargetFramework должно быть уникальным. Список свойств TargetFramework: {0}.</target>
+        <target state="new">The TargetFramework property must be unique. List of TargetFramework properties: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecValidationInvalidFramework">
@@ -1409,22 +1409,22 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Critical">
         <source>critical</source>
-        <target state="translated">критический уровень</target>
+        <target state="translated">критический</target>
         <note>As in "This package has a critical severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_High">
         <source>high</source>
-        <target state="translated">высокий уровень</target>
+        <target state="translated">высокий</target>
         <note>As in "This package has a high severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Low">
         <source>low</source>
-        <target state="translated">низкий уровень</target>
+        <target state="translated">низкий</target>
         <note>As in "This package has a low severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Moderate">
         <source>moderate</source>
-        <target state="translated">средний уровень</target>
+        <target state="translated">средний</target>
         <note>As in "This package has a moderate severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
