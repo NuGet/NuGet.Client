@@ -22,6 +22,31 @@
         <target state="translated">作業失敗</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_CopilotAccessDenied">
+        <source>Access denied. Please ensure you are signed in to GitHub Copilot.</source>
+        <target state="translated">存取遭拒。請確保您已登入 GitHub Copilot。</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="Error_CopilotNotReady">
+        <source>GitHub Copilot is not ready. Please ensure GitHub Copilot is installed and signed in.</source>
+        <target state="translated">GitHub Copilot 尚未就緒。請確保已安裝並登入 GitHub Copilot。</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="Error_CopilotServiceNotAvailable">
+        <source>GitHub Copilot Service is not available. Please ensure GitHub Copilot is installed and signed in.</source>
+        <target state="translated">GitHub Copilot 服務無法使用。請確保已安裝並登入 GitHub Copilot。</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="Error_McpToolServiceNotAvailable">
+        <source>MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.</source>
+        <target state="translated">MCP 工具服務無法使用。請確保已安裝並登入 GitHub Copilot。</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="Error_NuGetSolverNotAvailable">
+        <source>The NuGet Solver tool is unavailable. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
+        <target state="new">The NuGet Solver tool is unavailable. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
         <source>A package pattern must be provided.</source>
         <target state="translated">必須提供套件模式。</target>
@@ -45,6 +70,11 @@
       <trans-unit id="Error_PackageSourceUri_Missing">
         <source>A source must be provided.</source>
         <target state="translated">必須提供來源。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_ServiceBrokerNotAvailable">
+        <source>Service Broker is not available. Please ensure Visual Studio is running correctly.</source>
+        <target state="translated">Service Broker 無法使用。請確保 Visual Studio 正常執行。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectSelected">
@@ -115,6 +145,11 @@
       <trans-unit id="ProjectMigrateErrorMessage">
         <source>Project is not eligible for migration. Either the project is not packages.config based or doesn't support PackageReference yet.</source>
         <target state="translated">專案不符合移轉資格。可能是專案並非 packages.config 形式，或是尚未支援 PackageReference。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Prompt_FixNuGetPackageVulnerabilities">
+        <source>Fix my NuGet package vulnerabilities</source>
+        <target state="translated">修復我的 NuGet 套件漏洞</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
@@ -221,6 +256,11 @@
         <source>Contoso.Contracts or System.*</source>
         <target state="translated">Contoso.Contracts 或 System.*</target>
         <note>"Contoso.Contracts" and "System.*" are examples of a package ID pattern and a package prefix pattern, respectively, so these two specific examples should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
+        <source>Fix Vulnerabilities with GitHub Copilot</source>
+        <target state="translated">使用 GitHub Copilot 修復漏洞</target>
+        <note />
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
