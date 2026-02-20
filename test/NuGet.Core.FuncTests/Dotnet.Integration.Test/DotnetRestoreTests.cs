@@ -3450,8 +3450,8 @@ EndGlobal";
                 var appleProps = new Dictionary<string, string>
                     {
                         { "TargetFrameworkIdentifier", ".NETCoreApp" },
-                        { "TargetFrameworkVersion", $"v{Constants.DefaultTargetFramework.Version.ToString(2)}" },
-                        { "TargetFrameworkMoniker", $".NETCoreApp, Version={Constants.DefaultTargetFramework.Version.ToString(2)}" }
+                        { "TargetFrameworkVersion", $"v{TestConstants.DefaultTargetFramework.Version.ToString(2)}" },
+                        { "TargetFrameworkMoniker", $".NETCoreApp, Version={TestConstants.DefaultTargetFramework.Version.ToString(2)}" }
                     };
                 ProjectFileUtils.AddProperties(xml, appleProps, $" '$(TargetFramework)' == '{apple}' ");
 
