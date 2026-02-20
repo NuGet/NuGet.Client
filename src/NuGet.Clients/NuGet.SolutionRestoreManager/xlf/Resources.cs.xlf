@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="InfoBar_HyperlinkFixVulnerabilitiesWithCopilot">
         <source>Fix with GitHub Copilot</source>
-        <target state="translated">Opravit pomocí GitHub Copilota</target>
+        <target state="new">Fix with GitHub Copilot</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
