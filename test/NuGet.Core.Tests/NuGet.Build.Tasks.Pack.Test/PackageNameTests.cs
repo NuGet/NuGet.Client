@@ -108,7 +108,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 outputItemTask.NuspecOutputPath = testDirectory.Path;
                 if (testCase.UseNuspecFile)
                 {
-                    outputItemTask.NuspecInputFilePath = System.IO.Path.Combine(testDirectory.Path, FILENAME_NUSPEC_FILE);
+                    outputItemTask.NuspecFile = System.IO.Path.Combine(testDirectory.Path, FILENAME_NUSPEC_FILE);
                 }
 
                 CreateTestProjectFileAndNuspecFile(testDirectory, FILENAME_PROJECT_FILE, FILENAME_NUSPEC_FILE, testCase);
