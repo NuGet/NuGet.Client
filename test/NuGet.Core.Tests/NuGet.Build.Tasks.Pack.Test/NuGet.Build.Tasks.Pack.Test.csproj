@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksUnitTest)</TargetFrameworks>
-    <TargetFrameworks>net10.0</TargetFrameworks>
     <Description>Unit tests for NuGet.Build.Tasks.Pack.</Description>
   </PropertyGroup>
 
