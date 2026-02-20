@@ -108,10 +108,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- 'PackageOutputAbsolutePath' and 'NuspecOutputAbsolutePath' will be provided by '_GetAbsoluteOutputPathsForPack' target -->
 
+    <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
+    </ConvertToAbsolutePath>
+    
     <GetPackOutputItemsTask
         PackageOutputPath="$(PackageOutputAbsolutePath)"
         NuspecOutputPath="$(NuspecOutputAbsolutePath)"
-        NuspecInputFilePath="$(NuspecFile)"
+        NuspecFile="$(NuspecFileAbsolutePath)"
         NuspecProperties="$(NuspecProperties)"
         PackageId="$(PackageId)"
         PackageVersion="$(PackageVersion)"

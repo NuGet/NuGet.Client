@@ -29,7 +29,7 @@ namespace NuGet.Build.Tasks.Pack
         [Required]
         public string NuspecOutputPath { get; set; }
 
-        public string NuspecInputFilePath { get; set; }
+        public string NuspecFile { get; set; }
 
         public string[] NuspecProperties { get; set; }
 
@@ -52,7 +52,7 @@ namespace NuGet.Build.Tasks.Pack
             var packageId = PackageId;
             var packageVersion = PackageVersion;
 
-            if (!string.IsNullOrWhiteSpace(NuspecInputFilePath))
+            if (!string.IsNullOrWhiteSpace(NuspecFile))
             {
                 bool hasVersionInNuspecProperties = false;
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
@@ -70,7 +70,7 @@ namespace NuGet.Build.Tasks.Pack
                     }
                 }
 
-                var nuspecReader = new NuGet.Packaging.NuspecReader(NuspecInputFilePath);
+                var nuspecReader = new NuGet.Packaging.NuspecReader(NuspecFile);
                 packageId = nuspecReader.GetId();
                 if (!hasVersionInNuspecProperties)
                 {
