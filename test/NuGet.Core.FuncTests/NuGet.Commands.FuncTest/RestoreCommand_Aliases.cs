@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -671,6 +672,73 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets.Should().HaveCount(2);
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([banana]);
+        }
+
+        // P (apple) -> Project2 (apple) -> Package A
+        // P (banana) -> Project2 (banana) -> Package B
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferenceToASingleProject_WithConditionalWarningSuppression_SupressesWarningsCorrectly()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Create packages
+            var pkgA = new SimpleTestPackageContext("PackageA", "1.0.1");
+            var pkgB = new SimpleTestPackageContext("PackageB", "1.0.1");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgA, pkgB);
+
+            string apple = nameof(apple);
+            string banana = nameof(banana);
+
+            var project2Spec = @"
+            {
+              ""frameworks"": {
+                ""net8.0"": {
+                    ""framework"": ""net8.0"",
+                    ""targetAlias"": ""net8.0"",
+                    ""dependencies"": {
+                            ""PackageA"": {
+                                ""version"": ""[,2.0.0)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""]
+                            }
+                    }
+                }
+              }
+            }";
+
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2Spec);
+
+            // Create Project1 spec that references Project2
+            var project1Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1Spec);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, project1, project2);
+
+            // Assert
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages.Select(e => e.Message)));
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1602);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([apple, banana]);
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)

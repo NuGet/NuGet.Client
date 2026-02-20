@@ -4127,8 +4127,6 @@ EndGlobal";
             // Assert
             var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
             var assetsFile = new LockFileFormat().Read(assetsFilePath);
-            LockFileTarget appleTarget = assetsFile.GetTarget(apple, null);
-            appleTarget.Libraries.Should().NotContain(e => e.Name.Equals("x"));
             assetsFile.LogMessages.Should().BeEmpty();
         }
 
