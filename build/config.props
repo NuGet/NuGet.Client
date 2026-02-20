@@ -22,7 +22,7 @@
     <!-- Preview 3 is typically the last "main branch" preview, so we start using rc at this time -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rc</ReleaseLabel>
 
-    <IsEscrowMode Condition="'$(IsEscrowMode)' == ''">false</IsEscrowMode>
+    <IsEscrowMode Condition="'$(IsEscrowMode)' == ''">true</IsEscrowMode>
 
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
@@ -34,7 +34,7 @@
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
     <!-- This branches are used for creating insertion PRs -->
-    <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
+    <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
     <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
     <!-- Run Apex/E2E tests on the target release branch -->
     <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' == 'true'">$(VsTargetChannel)</VsTargetChannelForTests>
