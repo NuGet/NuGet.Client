@@ -25,17 +25,17 @@
     <IsEscrowMode Condition="'$(IsEscrowMode)' == ''">true</IsEscrowMode>
 
     <!-- Visual Studio Insertion Logic -->
-    <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' != 'true'">main</VsTargetBranch>
-    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' != 'true'">int.$(VsTargetBranch)</VsTargetChannel>
-    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' != 'true'">int.$(VsTargetBranch)</VsTargetChannelForTests>
+    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' != 'true'">int.main</VsTargetChannel>
+    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' != 'true'">$(VsTargetChannel)</VsTargetChannelForTests>
 
     <!-- NuGet SDK VS package Semantic Version -->
+    <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
-    <!-- This branches are used for creating insertion PRs -->
+    <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
-    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
+    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">insiders</VsTargetChannel>
     <!-- Run Apex/E2E tests on the target release branch -->
     <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' == 'true'">$(VsTargetChannel)</VsTargetChannelForTests>
   </PropertyGroup>
