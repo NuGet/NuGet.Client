@@ -500,24 +500,6 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_SDKProjectWithMissingAliases_UsesV3AssetsFile()
         {
             using var pathContext = new SimpleTestPathContext();
-            PackageSpec projectSpec = GetSDKPackageSpecWithMissingAlias(pathContext);
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                new SimpleTestPackageContext("x", "1.0.0"));
-
-            // Act & Assert
-            var result = await RunRestoreAsync(pathContext, projectSpec);
-            result.Success.Should().BeTrue();
-            result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].TargetAlias.Should().Be(string.Empty);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("x");
-            result.LockFile.Version.Should().Be(3);
-        }
-
-        private static PackageSpec GetSDKPackageSpecWithMissingAlias(SimpleTestPathContext pathContext)
-        {
             var rootProject = @"
             {
               ""frameworks"": {
@@ -544,7 +526,74 @@ namespace NuGet.Commands.FuncTest
                 TargetAlias = string.Empty
             };
             projectSpec.RestoreMetadata.TargetFrameworks[0].TargetAlias = string.Empty;
-            return projectSpec;
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("x", "1.0.0"));
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].TargetAlias.Should().Be(string.Empty);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("x");
+            result.LockFile.Version.Should().Be(3);
+        }
+
+        [Theory]
+        [InlineData("net9.0", "net9.0", "net10.0", "net10.0")]
+        [InlineData("apple", "net9.0", "banana", "net10.0")]
+        [InlineData("apple", "net10.0", "banana", "net10.0")]
+        [InlineData("banana", "net10.0", "apple", "net10.0")]
+        public async Task RestoreCommand_WithAliasesOfDifferentFramework_WithConditionalWarningSuppression_SupressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var rootProject = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""TFM1"",
+                    ""targetAlias"": ""ALIAS1"",
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""TFM2"",
+                    ""targetAlias"": ""ALIAS2"",
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""]
+                            }
+                    }
+                }
+              }
+            }"
+            .Replace("ALIAS1", firstAlias)
+            .Replace("TFM1", firstFramework)
+            .Replace("ALIAS2", secondAlias)
+            .Replace("TFM2", secondFramework);
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("x", "1.0.1"));
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[1].Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([firstAlias]);
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
