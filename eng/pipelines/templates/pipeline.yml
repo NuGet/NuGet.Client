@@ -52,14 +52,8 @@ stages:
         eq(variables['IsOfficialBuild'], 'true'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-          and(
-            ne(variables['OneLocReleaseBranch'], ''),
-            or(
-              eq(variables['SourceBranch'], variables['OneLocReleaseBranch']),
-              eq(variables['Build.SourceBranch'], variables['OneLocReleaseBranch']),
-              eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables['OneLocReleaseBranch']))
-            )
-          )
+          eq(variables['Build.SourceBranch'], variables['OneLocReleaseBranch']),
+          eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables['OneLocReleaseBranch']))
         )
       )
     jobs:
