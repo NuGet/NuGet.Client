@@ -124,7 +124,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows, Timeout = -1)]
+        [PlatformTheory(Platform.Windows)]
         [MemberData(nameof(TestCases))]
         public void PackTask_PackageFileName_FromProjectFileWithNuspecFile(PackageFileNameTestCase testCase)
         {
