@@ -546,7 +546,7 @@ namespace NuGet.Commands.FuncTest
         [InlineData("apple", "net9.0", "banana", "net10.0")]
         [InlineData("apple", "net10.0", "banana", "net10.0")]
         [InlineData("banana", "net10.0", "apple", "net10.0")]
-        public async Task RestoreCommand_WithAliasesOfDifferentFramework_WithConditionalWarningSuppression_SupressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
+        public async Task RestoreCommand_WithAliases_WithConditionalWarningSuppression_SupressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
         {
             using var pathContext = new SimpleTestPathContext();
             var rootProject = @"
@@ -594,6 +594,83 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[1].Libraries.Should().HaveCount(1);
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([firstAlias]);
+        }
+
+        // P (apple) -> Project2 (apple) -> Package A
+        // P (banana) -> Project2 (banana) -> Package B
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferences_WithConditionalWarningSuppression_SupressesWarningsCorrectly()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Create packages
+            var pkgA = new SimpleTestPackageContext("PackageA", "1.0.1");
+            var pkgB = new SimpleTestPackageContext("PackageB", "1.0.1");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgA, pkgB);
+
+            string apple = nameof(apple);
+            string banana = nameof(banana);
+
+            // Create Project2 spec with different package dependencies per alias
+            var project2Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                            ""PackageA"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""] 
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                            ""PackageB"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                }
+              }
+            }";
+
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2Spec);
+
+            // Create Project1 spec that references Project2
+            var project1Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1Spec);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, project1, project2);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([banana]);
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)
