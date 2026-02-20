@@ -674,8 +674,6 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([banana]);
         }
 
-        // P (apple) -> Project2 (apple) -> Package A
-        // P (banana) -> Project2 (banana) -> Package B
         [Fact]
         public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferenceToASingleProject_WithConditionalWarningSuppression_SupressesWarningsCorrectly()
         {
