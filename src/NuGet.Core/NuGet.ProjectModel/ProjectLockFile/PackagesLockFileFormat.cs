@@ -284,7 +284,7 @@ namespace NuGet.ProjectModel
 
             var json = new JObject
             {
-                [FrameworkProperty] = target.TargetFramework.GetShortFolderName(),
+                [FrameworkProperty] = target.TargetFramework.ToString(),
                 [DependenciesProperty] = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency)
             };
 
