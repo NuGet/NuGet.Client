@@ -27,7 +27,6 @@
     <!-- Visual Studio Insertion Logic -->
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' != 'true'">main</VsTargetBranch>
     <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' != 'true'">int.main</VsTargetChannel>
-    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' != 'true'">$(VsTargetChannel)</VsTargetChannelForTests>
 
     <!-- NuGet SDK VS package Semantic Version -->
     <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
@@ -36,8 +35,9 @@
     <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
     <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">insiders</VsTargetChannel>
-    <!-- Run Apex/E2E tests on the target release branch -->
-    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == '' And '$(IsEscrowMode)' == 'true'">$(VsTargetChannel)</VsTargetChannelForTests>
+
+    <!-- Run Apex/E2E tests on the target branch -->
+    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == ''">$(VsTargetChannel)</VsTargetChannelForTests>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
