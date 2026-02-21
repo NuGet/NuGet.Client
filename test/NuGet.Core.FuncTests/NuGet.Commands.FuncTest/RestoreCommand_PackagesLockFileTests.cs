@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -1050,13 +1051,15 @@ namespace NuGet.Commands.FuncTest
 
             var appleTarget = packagesLockFile.Targets.FirstOrDefault(t => t.TargetAlias == "apple");
             appleTarget.Should().NotBeNull();
-            appleTarget.Name.Should().Be("apple/net10.0");
+            appleTarget.Name.Should().Be("apple");
+            appleTarget.TargetFramework.Should().Be(NuGetFramework.Parse("net10.0"));
             appleTarget.Dependencies.Should().ContainSingle(d => d.Id == "x");
             appleTarget.Dependencies[0].Type.Should().Be(PackageDependencyType.Direct);
 
             var bananaTarget = packagesLockFile.Targets.FirstOrDefault(t => t.TargetAlias == "banana");
             bananaTarget.Should().NotBeNull();
-            bananaTarget.Name.Should().Be("banana/net10.0");
+            bananaTarget.Name.Should().Be("banana");
+            bananaTarget.TargetFramework.Should().Be(NuGetFramework.Parse("net10.0"));
             bananaTarget.Dependencies.Should().ContainSingle(d => d.Id == "y");
             bananaTarget.Dependencies[0].Type.Should().Be(PackageDependencyType.Direct);
         }
@@ -1120,11 +1123,12 @@ namespace NuGet.Commands.FuncTest
 
             var appleWin = packagesLockFile.Targets.FirstOrDefault(t => t.TargetAlias == "apple" && t.RuntimeIdentifier == "win-x64");
             appleWin.Should().NotBeNull();
-            appleWin.Name.Should().Be("apple/net10.0/win-x64");
-
+            appleWin.Name.Should().Be("apple/win-x64");
+            appleWin.TargetFramework.Should().Be(NuGetFramework.Parse("net10.0"));
             var bananaLinux = packagesLockFile.Targets.FirstOrDefault(t => t.TargetAlias == "banana" && t.RuntimeIdentifier == "linux-x64");
             bananaLinux.Should().NotBeNull();
-            bananaLinux.Name.Should().Be("banana/net10.0/linux-x64");
+            bananaLinux.Name.Should().Be("banana/linux-x64");
+            bananaLinux.TargetFramework.Should().Be(NuGetFramework.Parse("net10.0"));
         }
 
         [Fact]

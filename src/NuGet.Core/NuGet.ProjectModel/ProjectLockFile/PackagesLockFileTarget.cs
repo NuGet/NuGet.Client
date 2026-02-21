@@ -54,7 +54,7 @@ namespace NuGet.ProjectModel
             }
 
             return StringComparer.Ordinal.Equals(RuntimeIdentifier, other.RuntimeIdentifier)
-                && StringComparer.Ordinal.Equals(TargetAlias, other.TargetAlias)
+                && StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias)
                 && NuGetFramework.Comparer.Equals(TargetFramework, other.TargetFramework)
                 && EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies);
         }
@@ -105,9 +105,9 @@ namespace NuGet.ProjectModel
             {
                 if (!string.IsNullOrEmpty(runtime))
                 {
-                    return $"{alias}/{frameworkString}/{runtime}";
+                    return $"{alias}/{runtime}";
                 }
-                return $"{alias}/{frameworkString}";
+                return $"{alias}";
             }
 
             // Version 1 & 2 : framework or framework/rid

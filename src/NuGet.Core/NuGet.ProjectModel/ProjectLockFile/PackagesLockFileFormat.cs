@@ -280,13 +280,11 @@ namespace NuGet.ProjectModel
 
         private static JProperty WriteTargetV3(PackagesLockFileTarget target)
         {
-            var key = string.IsNullOrEmpty(target.RuntimeIdentifier)
-                ? target.TargetAlias
-                : $"{target.TargetAlias}/{target.RuntimeIdentifier}";
+            var key = target.Name;
 
             var json = new JObject
             {
-                [FrameworkProperty] = GetFrameworkString(target.TargetFramework),
+                [FrameworkProperty] = target.TargetFramework.GetShortFolderName(),
                 [DependenciesProperty] = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency)
             };
 
@@ -302,23 +300,6 @@ namespace NuGet.ProjectModel
             return new JProperty(key, json);
         }
 
-        private static string GetFrameworkString(NuGetFramework framework)
-        {
-            // Use the same logic as PackagesLockFileTarget.GetNameString for consistency
-            if (string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.NetCoreApp, StringComparison.OrdinalIgnoreCase)
-                && (
-                    (framework.Version.Major >= 6)
-                    || (framework.Version.Major == 5 && framework.HasPlatform)
-                   )
-                )
-            {
-                return framework.ToString();
-            }
-            else
-            {
-                return framework.DotNetFrameworkName;
-            }
-        }
 
         private static JProperty WriteTargetDependency(LockFileDependency dependency)
         {
