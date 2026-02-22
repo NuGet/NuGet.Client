@@ -282,9 +282,6 @@ namespace NuGet.CommandLine.XPlat
         {
             var project = GetProject(projectPath);
 
-            // Determine CPM status from the loaded project so callers don't need to check separately.
-            libraryDependency.VersionCentrallyManaged = IsCentralPackageManagementEnabled(project);
-
             // Here we get package references for any framework.
             // If the project has a conditional reference, then an unconditional reference is not added.
 
@@ -308,10 +305,6 @@ namespace NuGet.CommandLine.XPlat
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
-
-                // Determine CPM status from the loaded project so callers don't need to check separately.
-                libraryDependency.VersionCentrallyManaged = IsCentralPackageManagementEnabled(project);
-
                 var existingPackageReferences = GetPackageReferences(project, libraryDependency);
                 AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
@@ -332,8 +325,11 @@ namespace NuGet.CommandLine.XPlat
             bool noVersion,
             string framework = null)
         {
+            // Determine CPM status from the loaded project so callers don't need to check separately.
+            bool isCentralPackageManagementEnabled = IsCentralPackageManagementEnabled(project);
+
             // Add packageReference to the project file only if it does not exist.
-            if (!libraryDependency.VersionCentrallyManaged)
+            if (!isCentralPackageManagementEnabled)
             {
                 if (!existingPackageReferences.Any())
                 {
