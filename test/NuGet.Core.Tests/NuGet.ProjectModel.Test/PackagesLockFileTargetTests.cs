@@ -21,9 +21,9 @@ namespace NuGet.ProjectModel.Test
         [InlineData("net6.0", "win-x64", null, "net6.0/win-x64")]
         [InlineData("net6.0-windows7.0", null, null, "net6.0-windows7.0")]
         [InlineData("net6.0-windows7.0", "win-x64", null, "net6.0-windows7.0/win-x64")]
-        [InlineData("net10.0", null, "netcoreapp10.0", "netcoreapp10.0/net10.0")]
-        [InlineData("net10.0", "win-x64", "netcoreapp10.0", "netcoreapp10.0/net10.0/win-x64")]
-        [InlineData("net6.0", null, "net6.0", "net6.0/net6.0")]
+        [InlineData("net10.0", null, "netcoreapp10.0", "netcoreapp10.0")]
+        [InlineData("net10.0", "win-x64", "netcoreapp10.0", "netcoreapp10.0/win-x64")]
+        [InlineData("net6.0", null, "net6.0", "net6.0")]
         public void Name_DifferentTargetFrameworkRuntimeIdentifiersAndAliases_HasExpectedValue(string targetFramework, string runtimeIdentifier, string alias, string expectedName)
         {
             // Arrange
