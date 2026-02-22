@@ -83,25 +83,11 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
 
-        /// <summary>
-        /// Checks whether Central Package Management is enabled for the given project
-        /// by evaluating the ManagePackageVersionsCentrally MSBuild property.
-        /// </summary>
-        /// <param name="projectCSProjPath">CSProj file to check</param>
-        /// <returns>True if CPM is enabled, false otherwise.</returns>
-        internal static bool IsCentralPackageManagementEnabled(string projectCSProjPath)
+        private static bool IsCentralPackageManagementEnabled(Project project)
         {
-            var project = GetProject(projectCSProjPath);
-            try
-            {
-                return StringComparer.OrdinalIgnoreCase.Equals(
-                    project.GetPropertyValue("ManagePackageVersionsCentrally"),
-                    "true");
-            }
-            finally
-            {
-                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
-            }
+            return StringComparer.OrdinalIgnoreCase.Equals(
+                project.GetPropertyValue("ManagePackageVersionsCentrally"),
+                "true");
         }
 
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
@@ -296,6 +282,9 @@ namespace NuGet.CommandLine.XPlat
         {
             var project = GetProject(projectPath);
 
+            // Determine CPM status from the loaded project so callers don't need to check separately.
+            libraryDependency.VersionCentrallyManaged = IsCentralPackageManagementEnabled(project);
+
             // Here we get package references for any framework.
             // If the project has a conditional reference, then an unconditional reference is not added.
 
@@ -319,6 +308,10 @@ namespace NuGet.CommandLine.XPlat
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
+
+                // Determine CPM status from the loaded project so callers don't need to check separately.
+                libraryDependency.VersionCentrallyManaged = IsCentralPackageManagementEnabled(project);
+
                 var existingPackageReferences = GetPackageReferences(project, libraryDependency);
                 AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
