@@ -9,7 +9,7 @@ using NuGet.VisualStudio.Contracts;
 using Xunit;
 using Xunit.Abstractions;
 
-public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBase<INuGetProjectService, NuGetServiceWithDummyValues>
+public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBase<INuGetProjectService, NuGetProjectServiceWithDummyValues>
 {
     public NuGetProjectServiceV1ContractTests(ITestOutputHelper logger) : base(logger, NuGetServices.NuGetProjectServiceV1) { }
 
@@ -20,7 +20,7 @@ public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBas
     }
 }
 
-public class NuGetServiceWithDummyValues : INuGetProjectService
+public class NuGetProjectServiceWithDummyValues : INuGetProjectService
 {
     public Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
     {
