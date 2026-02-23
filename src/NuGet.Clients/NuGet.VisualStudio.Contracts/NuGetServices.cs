@@ -17,7 +17,9 @@ namespace NuGet.VisualStudio.Contracts
         public const string Version1 = "1.0";
 
         /// <summary>Service descriptor for <see cref="INuGetProjectService"/> version 1</summary>
-        public static ServiceRpcDescriptor NuGetProjectServiceV1 { get; } = new NuGetContractsServiceMessagePackRpcDescriptor(
-            new ServiceMoniker(NuGetProjectServiceName, new System.Version(Version1)));
+        public static ServiceRpcDescriptor NuGetProjectServiceV1 { get; } = new ServiceJsonRpcDescriptor(
+            new ServiceMoniker(NuGetProjectServiceName, new System.Version(Version1)),
+            ServiceJsonRpcDescriptor.Formatters.MessagePack,
+            ServiceJsonRpcDescriptor.MessageDelimiters.BigEndianInt32LengthHeader);
     }
 }

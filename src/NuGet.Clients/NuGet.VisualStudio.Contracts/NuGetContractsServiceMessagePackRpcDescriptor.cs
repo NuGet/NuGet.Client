@@ -3,8 +3,6 @@
 
 using System;
 using MessagePack;
-using MessagePack.Formatters;
-using MessagePack.Resolvers;
 using Microsoft.ServiceHub.Framework;
 using StreamJsonRpc;
 
@@ -13,7 +11,7 @@ namespace NuGet.VisualStudio.Contracts
     internal class NuGetContractsServiceMessagePackRpcDescriptor : ServiceJsonRpcDescriptor
     {
         private static readonly Lazy<MessagePackSerializerOptions> MessagePackSerializerOptions =
-            new Lazy<MessagePackSerializerOptions>(CreateMessagePackSerializerOptions);
+            new Lazy<MessagePackSerializerOptions>();
 
         internal NuGetContractsServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker)
             : base(serviceMoniker, Formatters.MessagePack, MessageDelimiters.BigEndianInt32LengthHeader)
@@ -35,25 +33,6 @@ namespace NuGet.VisualStudio.Contracts
             formatter.SetMessagePackSerializerOptions(options);
 
             return formatter;
-        }
-
-        internal static IMessagePackFormatter[] CreateMessagePackFormatters()
-        {
-            return
-            [
-                InstalledPackagesResultFormatter.Instance,
-                NuGetInstalledPackageFormatter.Instance
-            ];
-        }
-
-        private static MessagePackSerializerOptions CreateMessagePackSerializerOptions()
-        {
-            IMessagePackFormatter[] formatters = CreateMessagePackFormatters();
-            var resolvers = new IFormatterResolver[] { MessagePack.MessagePackSerializerOptions.Standard.Resolver };
-
-            return MessagePack.MessagePackSerializerOptions.Standard
-                .WithSecurity(MessagePackSecurity.UntrustedData)
-                .WithResolver(CompositeResolver.Create(formatters, resolvers));
         }
     }
 }
