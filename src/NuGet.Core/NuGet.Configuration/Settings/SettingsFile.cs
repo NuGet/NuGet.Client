@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Xml;
@@ -110,7 +109,7 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
+            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SettingsFile_FileReadStart(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
 
             try
             {
@@ -130,7 +129,7 @@ namespace NuGet.Configuration
             }
             finally
             {
-                if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
+                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SettingsFile_FileReadStop(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
             }
         }
 
@@ -246,36 +245,5 @@ namespace NuGet.Configuration
 #pragma warning restore CS8603 // Possible null reference return.
         }
 
-        private static class TraceEvents
-        {
-            private const string EventNameFileRead = "SettingsFile/FileRead";
-
-            public static void FileReadStart(string configFilePath, bool isMachineWide, bool isReadOnly)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Configuration,
-                    Opcode = EventOpcode.Start,
-                };
-
-                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
-            }
-
-            public static void FileReadStop(string configFilePath, bool isMachineWide, bool isReadOnly)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Configuration,
-                    Opcode = EventOpcode.Stop,
-                };
-
-                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
-            }
-
-            [EventData]
-            private record struct FileReadEventData(string ConfigFilePath, bool IsMachineWide, bool IsReadOnly);
-        }
     }
 }

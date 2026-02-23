@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable
@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -242,7 +241,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
             string json;
 
-            if (NuGetEventSource.IsEnabled) TraceEvents.GlobalJsonReadStart(globalJsonPath, sdkResolverContext);
+            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
 
             try
             {
@@ -281,40 +280,8 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                if (NuGetEventSource.IsEnabled) TraceEvents.GlobalJsonReadStop(globalJsonPath, sdkResolverContext);
+                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
             }
-        }
-
-        private static class TraceEvents
-        {
-            private const string EventNameGlobalJsonRead = "SdkResolver/GlobalJsonRead";
-
-            public static void GlobalJsonReadStart(string globalJsonPath, SdkResolverContext sdkResolverContext)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
-                    Opcode = EventOpcode.Start
-                };
-
-                NuGetEventSource.Instance.Write(EventNameGlobalJsonRead, eventOptions, new GlobalJsonReadEventData(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath));
-            }
-
-            public static void GlobalJsonReadStop(string globalJsonPath, SdkResolverContext sdkResolverContext)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
-                    Opcode = EventOpcode.Stop
-                };
-
-                NuGetEventSource.Instance.Write(EventNameGlobalJsonRead, eventOptions, new GlobalJsonReadEventData(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath));
-            }
-
-            [EventData]
-            private record struct GlobalJsonReadEventData(string Path, string ProjectFullPath, string SolutionFullPath);
         }
     }
 }
