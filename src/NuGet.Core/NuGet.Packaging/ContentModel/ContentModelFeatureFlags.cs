@@ -27,8 +27,8 @@ namespace NuGet.ContentModel
             {
                 if (_useOptimizedAssetClassifier == null)
                 {
-                    var envValue = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_USE_OPTIMIZED_ASSET_CLASSIFIER");
-                    _useOptimizedAssetClassifier = MSBuildStringUtility.IsTrue(envValue);
+                    //var envValue = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_USE_OPTIMIZED_ASSET_CLASSIFIER");
+                    _useOptimizedAssetClassifier = MSBuildStringUtility.IsTrue(bool.TrueString);
                 }
                 return _useOptimizedAssetClassifier.Value;
             }
