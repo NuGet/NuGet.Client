@@ -1039,7 +1039,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
-            var virtualProjectBuilder = NuGetCommands.VirtualProjectBuilder;
+            var virtualProjectBuilder = IVirtualProjectBuilder.TryLoad();
             if (virtualProjectBuilder != null && virtualProjectBuilder.IsValidEntryPointPath(filename))
             {
                 return virtualProjectBuilder.CreateProjectRootElement(filename, ProjectCollection.GlobalProjectCollection);

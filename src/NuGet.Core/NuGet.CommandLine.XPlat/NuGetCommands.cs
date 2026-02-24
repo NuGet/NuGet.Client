@@ -5,7 +5,9 @@
 
 using System;
 using System.CommandLine;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
@@ -18,8 +20,6 @@ namespace NuGet.CommandLine.XPlat;
 /// </summary>
 public static class NuGetCommands
 {
-    public static IVirtualProjectBuilder? VirtualProjectBuilder { get; set; }
-
     /// <summary>
     /// <para>Adds NuGet's dotnet CLI commands to the dotnet CLI RootCommand object</para>
     /// </summary>
@@ -57,4 +57,19 @@ public interface IVirtualProjectBuilder
     bool IsValidEntryPointPath(string entryPointFilePath);
 
     ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection);
+
+    internal static IVirtualProjectBuilder? TryLoad()
+    {
+        var assemblyPath = Path.Join(AppContext.BaseDirectory, "dotnet.dll");
+
+        if (!File.Exists(assemblyPath))
+        {
+            return null;
+        }
+
+        var type = Assembly.LoadFile(assemblyPath)
+            .GetExportedTypes()
+            .FirstOrDefault(static t => t.IsAssignableTo(typeof(IVirtualProjectBuilder)));
+        return type != null ? (IVirtualProjectBuilder?)Activator.CreateInstance(type) : null;
+    }
 }

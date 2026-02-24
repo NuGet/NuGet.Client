@@ -2,5 +2,3 @@
 NuGet.CommandLine.XPlat.IVirtualProjectBuilder
 NuGet.CommandLine.XPlat.IVirtualProjectBuilder.CreateProjectRootElement(string! entryPointFilePath, Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.Build.Construction.ProjectRootElement!
 NuGet.CommandLine.XPlat.IVirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool
-static NuGet.CommandLine.XPlat.NuGetCommands.VirtualProjectBuilder.get -> NuGet.CommandLine.XPlat.IVirtualProjectBuilder?
-static NuGet.CommandLine.XPlat.NuGetCommands.VirtualProjectBuilder.set -> void
