@@ -6,6 +6,8 @@
 using System;
 using System.CommandLine;
 using System.Linq;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 
@@ -16,6 +18,8 @@ namespace NuGet.CommandLine.XPlat;
 /// </summary>
 public static class NuGetCommands
 {
+    public static IVirtualProjectBuilder? VirtualProjectBuilder { get; set; }
+
     /// <summary>
     /// <para>Adds NuGet's dotnet CLI commands to the dotnet CLI RootCommand object</para>
     /// </summary>
@@ -46,4 +50,11 @@ public static class NuGetCommands
         };
         Add(rootCommand, interactiveOption);
     }
+}
+
+public interface IVirtualProjectBuilder
+{
+    bool IsValidEntryPointPath(string entryPointFilePath);
+
+    ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection);
 }

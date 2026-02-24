@@ -14,7 +14,6 @@ using System.Threading;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.ProjectTools;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -1040,13 +1039,10 @@ namespace NuGet.CommandLine.XPlat
 
         private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
-            if (VirtualProjectBuilder.IsValidEntryPointPath(filename))
+            var virtualProjectBuilder = NuGetCommands.VirtualProjectBuilder;
+            if (virtualProjectBuilder != null && virtualProjectBuilder.IsValidEntryPointPath(filename))
             {
-                // TODO: Don't hardcode TFM.
-                return VirtualProjectBuilder.CreateProjectRootElement(
-                    filePath: filename,
-                    targetFrameworkVersion: "10.0",
-                    ProjectCollection.GlobalProjectCollection);
+                return virtualProjectBuilder.CreateProjectRootElement(filename, ProjectCollection.GlobalProjectCollection);
             }
 
             try
