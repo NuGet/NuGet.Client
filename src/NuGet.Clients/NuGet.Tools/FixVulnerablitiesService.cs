@@ -27,8 +27,6 @@ namespace NuGetVSExtension
         private const string AgentModeResponderServiceMoniker = "Microsoft.VisualStudio.Copilot.AgentModeResponder";
         private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
         private const string ServiceName = "Microsoft.VisualStudio.Copilot.SolutionContextProvider";
-        private const string NuGetMCPServerName = "nuget";
-        private const string NuGetSolverToolName = "get-nuget-solver";
 
         private static readonly Guid CopilotReadyUIContext = new(AuthStatusDetermined);
         private static readonly ServiceRpcDescriptor ProviderDescriptor = CopilotDescriptors.CreateContextProviderDescriptor(ServiceName);
