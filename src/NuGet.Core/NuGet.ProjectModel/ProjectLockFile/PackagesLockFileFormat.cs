@@ -19,9 +19,10 @@ namespace NuGet.ProjectModel
     public static class PackagesLockFileFormat
     {
         public static readonly int Version = 1;
+        internal static readonly int AliasedVersion = 3;
 
         // This allows us to maintain compatibility with older clients that don't understand the concept of central package versions.
-        public static readonly int PackagesLockFileVersion = 3;
+        public static readonly int PackagesLockFileVersion = AliasedVersion;
 
         public static readonly string LockFileName = "packages.lock.json";
 
@@ -96,7 +97,7 @@ namespace NuGet.ProjectModel
             int version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
             IList<PackagesLockFileTarget> targets;
 
-            if (version >= 3)
+            if (version >= AliasedVersion)
             {
                 // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
                 targets = new List<PackagesLockFileTarget>();
@@ -178,7 +179,7 @@ namespace NuGet.ProjectModel
                 [VersionProperty] = new JValue(lockFile.Version)
             };
 
-            if (lockFile.Version >= 3)
+            if (lockFile.Version >= AliasedVersion)
             {
                 // V3 format: write targets at root level with framework and dependencies inside
                 foreach (var target in lockFile.Targets)

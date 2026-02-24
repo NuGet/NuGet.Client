@@ -374,7 +374,7 @@ namespace NuGet.ProjectModel
             {
                 PackagesLockFileTarget actualTarget = actual.Targets.Single(t =>
                     t.TargetFramework == expectedTarget.TargetFramework &&
-                    StringComparer.Ordinal.Equals(t.TargetAlias, expectedTarget.TargetAlias) &&
+                    StringComparer.OrdinalIgnoreCase.Equals(t.TargetAlias, expectedTarget.TargetAlias) &&
                     StringComparer.Ordinal.Equals(t.RuntimeIdentifier, expectedTarget.RuntimeIdentifier));
 
                 // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
