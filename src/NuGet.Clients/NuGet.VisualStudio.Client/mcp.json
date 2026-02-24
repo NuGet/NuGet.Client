@@ -1,5 +1,6 @@
 {
   "servers": {
+    // If the server name changes, update the name in src/NuGet.Clients/NuGet.PackageManagement.VisualStudio/McpServerConstants.cs
     "nuget": {
       "type": "stdio",
       "command": "dnx",

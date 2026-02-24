@@ -102,7 +102,7 @@ namespace NuGetVSExtension
                     string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
                     CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
                     IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
-                    if (functions is null || !functions.Any(f => string.Equals(f.Name, $"{NuGetMCPServerName}_{NuGetSolverToolName}", StringComparison.OrdinalIgnoreCase)))
+                    if (functions is null || !functions.Any(f => string.Equals(f.Name, McpServerConstants.NuGetSolverFullyQualifiedToolName, StringComparison.OrdinalIgnoreCase)))
                     {
                         SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable);
                         ShowWarningMessage(Resources.Error_NuGetSolverNotAvailable);
