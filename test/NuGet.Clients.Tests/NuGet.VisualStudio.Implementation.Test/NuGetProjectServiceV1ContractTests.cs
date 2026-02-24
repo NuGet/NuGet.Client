@@ -14,7 +14,7 @@ public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBas
     public NuGetProjectServiceV1ContractTests(ITestOutputHelper logger) : base(logger, NuGetServices.NuGetProjectServiceV1) { }
 
     [Fact]
-    public async Task GetInstalledPackagesAsync_SerializationTest()
+    public async Task GetInstalledPackagesAsync_Serialization_Succeeds()
     {
         await ClientProxy.GetInstalledPackagesAsync(new Guid(), TimeoutToken);
     }
