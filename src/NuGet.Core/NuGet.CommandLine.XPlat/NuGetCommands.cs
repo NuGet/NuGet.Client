@@ -5,11 +5,7 @@
 
 using System;
 using System.CommandLine;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 
@@ -49,27 +45,5 @@ public static class NuGetCommands
             DefaultValueFactory = _ => Console.IsOutputRedirected
         };
         Add(rootCommand, interactiveOption);
-    }
-}
-
-public interface IVirtualProjectBuilder
-{
-    bool IsValidEntryPointPath(string entryPointFilePath);
-
-    ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection);
-
-    internal static IVirtualProjectBuilder? TryLoad()
-    {
-        var assemblyPath = Path.Join(AppContext.BaseDirectory, "dotnet.dll");
-
-        if (!File.Exists(assemblyPath))
-        {
-            return null;
-        }
-
-        var type = Assembly.LoadFile(assemblyPath)
-            .GetExportedTypes()
-            .FirstOrDefault(static t => t.IsAssignableTo(typeof(IVirtualProjectBuilder)));
-        return type != null ? (IVirtualProjectBuilder?)Activator.CreateInstance(type) : null;
     }
 }
