@@ -12,6 +12,11 @@ using Microsoft.Build.Evaluation;
 
 namespace NuGet.CommandLine.XPlat;
 
+/// <summary>
+/// We cannot have a dependency on a package from SDK due to source build,
+/// hence we invert the relationship and define the interface here,
+/// SDK implements it and we load the implementation dynamically.
+/// </summary>
 public interface IVirtualProjectBuilder
 {
     bool IsValidEntryPointPath(string entryPointFilePath);
