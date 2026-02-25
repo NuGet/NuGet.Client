@@ -55,7 +55,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
-                Format = PackageSearchFormat.Table
+                Format = PackageSearchFormat.Table,
+                ConsoleWidth = -1
             };
 
             // Act
@@ -101,7 +102,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
-                Format = PackageSearchFormat.Table
+                Format = PackageSearchFormat.Table,
+                ConsoleWidth = -1
             };
 
             // Act
@@ -147,7 +149,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
-                Format = PackageSearchFormat.Table
+                Format = PackageSearchFormat.Table,
+                ConsoleWidth = -1
             };
 
             // Act
@@ -335,7 +338,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Logger = GetLogger(),
                 SearchTerm = "Newtonsoft.Json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
-                Format = PackageSearchFormat.Table
+                Format = PackageSearchFormat.Table,
+                ConsoleWidth = -1
             };
 
             if (verbosity != null)

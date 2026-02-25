@@ -36,19 +36,22 @@ namespace NuGet.CommandLine.XPlat
         // This is the default console color
         private readonly ConsoleColor _consoleColor = Console.ForegroundColor;
 
-        public Table(int[] columnsToHighlight, params string[] headers)
+        public Table(int[] columnsToHighlight, string[] headers, int consoleWidth = 0)
         {
             _columnsToHighlight = columnsToHighlight;
-            int windowWidth = -1;
+            int windowWidth = consoleWidth;
 
-            // Get the window width if possible 
-            try
+            if (windowWidth == 0)
             {
-                windowWidth = Console.WindowWidth;
-            }
-            catch (Exception)
-            {
-                // Ignore any exception
+                // Auto-detect the window width
+                try
+                {
+                    windowWidth = Console.WindowWidth;
+                }
+                catch (Exception)
+                {
+                    // Ignore any exception
+                }
             }
 
             // If the window width is not available, use the default window width
