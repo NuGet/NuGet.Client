@@ -89,18 +89,18 @@ NuGet.ProjectModel.FileFormatException.Line.get -> int
 ~NuGet.ProjectModel.FileFormatException.Path.get -> string
 NuGet.ProjectModel.HashObjectWriter
 NuGet.ProjectModel.HashObjectWriter.Dispose() -> void
-~NuGet.ProjectModel.HashObjectWriter.GetHash() -> string
-~NuGet.ProjectModel.HashObjectWriter.HashObjectWriter(NuGet.Packaging.IHashFunction hashFunc) -> void
+NuGet.ProjectModel.HashObjectWriter.GetHash() -> string!
+NuGet.ProjectModel.HashObjectWriter.HashObjectWriter(NuGet.Packaging.IHashFunction! hashFunc) -> void
 NuGet.ProjectModel.HashObjectWriter.WriteArrayEnd() -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteArrayStart(string name) -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteNameArray(string name, System.Collections.Generic.IEnumerable<string> values) -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string name, bool value) -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string name, int value) -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string name, string value) -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteNonEmptyNameArray(string name, System.Collections.Generic.IEnumerable<string> values) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteArrayStart(string! name) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteNameArray(string! name, System.Collections.Generic.IEnumerable<string!>! values) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string! name, bool value) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string! name, int value) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteNameValue(string! name, string? value) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteNonEmptyNameArray(string! name, System.Collections.Generic.IEnumerable<string!>! values) -> void
 NuGet.ProjectModel.HashObjectWriter.WriteObjectEnd() -> void
 NuGet.ProjectModel.HashObjectWriter.WriteObjectStart() -> void
-~NuGet.ProjectModel.HashObjectWriter.WriteObjectStart(string name) -> void
+NuGet.ProjectModel.HashObjectWriter.WriteObjectStart(string! name) -> void
 NuGet.ProjectModel.IAssetsLogMessage
 NuGet.ProjectModel.IAssetsLogMessage.Code.get -> NuGet.Common.NuGetLogCode
 NuGet.ProjectModel.IAssetsLogMessage.EndColumnNumber.get -> int
