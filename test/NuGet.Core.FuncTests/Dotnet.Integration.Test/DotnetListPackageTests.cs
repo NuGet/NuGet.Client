@@ -12,8 +12,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Newtonsoft.Json.Linq;
+using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -75,6 +77,71 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
             }
+        }
+
+        [Fact]
+        public async Task DotnetListPackage_FileBasedApp()
+        {
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+
+            // Create the file-based app.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var appFile = Path.Join(fbaDir, "app.cs");
+            File.WriteAllText(appFile, """
+                #:property PublishAot=false
+                #:package packageX@1.0.0
+                Console.WriteLine();
+                """);
+
+            var packageX = XPlatTestUtils.CreatePackage();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, packageX);
+
+            // Restore.
+            _fixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
+
+            // Write the project XML to a temp file.
+            var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
+
+            var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
+            Directory.CreateDirectory(tempDir);
+
+            var projectContentFile = Path.Join(tempDir, "app.csproj");
+            File.WriteAllText(projectContentFile, projectContent);
+
+            // List packages.
+            using var outWriter = new StringWriter();
+            using var errorWriter = new StringWriter();
+            var testApp = new CommandLineApplication
+            {
+                Out = outWriter,
+                Error = errorWriter,
+            };
+            ListPackageCommand.Register(
+                testApp,
+                () => new TestLogger(_testOutputHelper),
+                (_) => { },
+                () => new ListPackageCommandRunner());
+            int result = testApp.Execute([
+                "list", appFile,
+                "--source", pathContext.PackageSource,
+                "--project-content-file", projectContentFile,
+                "--format", "json",
+            ]);
+
+            var output = outWriter.ToString();
+            var error = errorWriter.ToString();
+
+            _testOutputHelper.WriteLine(output);
+            _testOutputHelper.WriteLine(error);
+
+            Assert.Equal(0, result);
+
+            Assert.Empty(error);
+
+            Assert.Contains("packageX", output);
+            Assert.Contains("1.0.0", output);
         }
 
         [PlatformFact(Platform.Windows)]

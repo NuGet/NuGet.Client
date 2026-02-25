@@ -82,6 +82,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_HighestMinorDescription,
                     CommandOptionType.NoValue);
 
+                var projectContentFile = listpkg.Option(
+                    "--project-content-file",
+                    Strings.Pkg_ProjectContentFileDescription,
+                    CommandOptionType.SingleValue);
+
                 var source = listpkg.Option(
                     "--source",
                     Strings.ListPkg_SourceDescription,
@@ -130,10 +135,12 @@ namespace NuGet.CommandLine.XPlat
                         isDeprecated: deprecatedReport.HasValue(),
                         isVulnerable: vulnerableReport.HasValue());
 
-                    IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
+                    IReportRenderer reportRenderer = GetOutputType(app.Out, app.Error, outputFormat.Value(), outputVersionOption: outputVersion.Value());
                     var provider = new PackageSourceProvider(settings);
+                    var projectContentFileValue = projectContentFile.Value();
+                    var pathValue = MSBuildAPIUtility.ChangeProjectPath(path.Value, projectContentFileValue);
                     var packageRefArgs = new ListPackageArgs(
-                        path.Value,
+                        pathValue,
                         packageSources,
                         framework.Values,
                         reportType,
@@ -144,7 +151,10 @@ namespace NuGet.CommandLine.XPlat
                         highestMinor.HasValue(),
                         provider.LoadAuditSources(),
                         logger,
-                        CancellationToken.None);
+                        CancellationToken.None)
+                    {
+                        ProjectContentFile = projectContentFileValue,
+                    };
 
                     WarnAboutIncompatibleOptions(packageRefArgs, reportRenderer);
 
@@ -174,7 +184,7 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
         }
 
-        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption)
+        private static IReportRenderer GetOutputType(TextWriter consoleOut, TextWriter consoleError, string outputFormatOption, string outputVersionOption)
         {
             ReportOutputFormat outputFormat = ReportOutputFormat.Console;
             if (!string.IsNullOrEmpty(outputFormatOption) &&
@@ -190,7 +200,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     throw new ArgumentException(string.Format(Strings.ListPkg_OutputVersionNotApplicable));
                 }
-                return new ListPackageConsoleRenderer();
+                return new ListPackageConsoleRenderer(consoleOut, consoleError);
             }
 
             IReportRenderer jsonReportRenderer;
@@ -203,7 +213,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                jsonReportRenderer = new ListPackageJsonRenderer();
+                jsonReportRenderer = new ListPackageJsonRenderer(consoleOut);
             }
 
             return jsonReportRenderer;

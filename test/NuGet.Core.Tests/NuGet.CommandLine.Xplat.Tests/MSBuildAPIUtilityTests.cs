@@ -383,7 +383,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            MSBuildAPIUtility.UpdatePackageVersion(project, packageVersionInProps, "2.0.0");
+            MSBuildAPIUtility.UpdatePackageVersion(new SaveableProject { Project = project }, packageVersionInProps, "2.0.0");
 
             // Assert
             Assert.Equal(projectContent, File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
@@ -452,7 +452,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             // Act
-            MSBuildAPIUtility.UpdateVersionOverride(project, packageVersionInProps, "3.0.0");
+            MSBuildAPIUtility.UpdateVersionOverride(new SaveableProject { Project = project }, packageVersionInProps, "3.0.0");
 
             // Assert
             Assert.Equal(projectContent, File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));

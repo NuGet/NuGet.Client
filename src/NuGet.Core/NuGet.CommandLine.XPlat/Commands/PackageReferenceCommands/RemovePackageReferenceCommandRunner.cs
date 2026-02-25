@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.XPlat
             };
 
             // Remove reference from the project
-            var result = msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath, libraryDependency);
+            var result = msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.ProjectContentFile);
 
             return TaskResult.Integer(result);
         }

@@ -31,6 +31,11 @@ namespace NuGet.CommandLine.XPlat
         public IReadOnlyList<PackageSource> AuditSources { get; }
 
         /// <summary>
+        /// Path to a file with the XML content of the project (used for virtual projects).
+        /// </summary>
+        public string? ProjectContentFile { get; init; }
+
+        /// <summary>
         /// A constructor for the arguments of list package
         /// command. This is used to execute the runner's
         /// method
@@ -119,7 +124,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (HighestPatch)
             {
-                sb.Append("--highest-patch");
+                sb.Append(" --highest-patch");
             }
 
             return sb.ToString().Trim();

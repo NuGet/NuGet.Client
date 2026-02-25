@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -12,10 +13,14 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using FluentAssertions;
 using NuGet.CommandLine.Xplat.Tests;
+using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.XPlat.FuncTest;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -93,6 +98,76 @@ namespace Dotnet.Integration.Test
 
             string version = GetPackageReferenceVersion(csprojPath, "NuGet.Internal.Test.a");
             version.Should().Be("2.0.0");
+        }
+
+        [Fact]
+        public async Task FileBasedApp()
+        {
+            using var pathContext = _testFixture.CreateSimpleTestPathContext();
+
+            // Create packages.
+            var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
+            var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
+
+            SimpleTestPackageContext[] packages = [a1, a2];
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packages);
+
+            // Create the file-based app.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var appFile = Path.Join(fbaDir, "app.cs");
+            File.WriteAllText(appFile, """
+                #:property PublishAot=false
+                #:package NuGet.Internal.Test.a@1.0.0
+                Console.WriteLine();
+                """);
+
+            // Write the project XML to a temp file.
+            var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
+
+            var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
+            Directory.CreateDirectory(tempDir);
+
+            var projectContentFile = Path.Join(tempDir, "app.csproj");
+            _testOutputHelper.WriteLine("before:\n" + projectContent);
+            Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", projectContent);
+            File.WriteAllText(projectContentFile, projectContent);
+
+            // Update the package.
+            using var outWriter = new StringWriter();
+            using var errorWriter = new StringWriter();
+            var rootCommand = new RootCommand();
+            PackageUpdateCommand.Register(
+                rootCommand,
+                new Option<bool>("--interactive"),
+                (args, ct) =>
+                {
+                    var msbuildUtility = new MSBuildAPIUtility(new TestLogger(_testOutputHelper));
+                    var packageUpdateIO = new PackageUpdateIO(args.Project, msbuildUtility, new TestEnvironmentVariableReader(_envVars));
+                    return PackageUpdateCommandRunner.Run(args, new TestCommandOutputLogger(_testOutputHelper), packageUpdateIO, ct);
+                });
+            int result = rootCommand.Parse([
+                "update",
+                "--project", appFile,
+                "--project-content-file", projectContentFile,
+            ]).Invoke(new() { Output = outWriter, Error = errorWriter });
+
+            var output = outWriter.ToString();
+            var error = errorWriter.ToString();
+
+            _testOutputHelper.WriteLine(output);
+            _testOutputHelper.WriteLine(error);
+
+            Assert.Equal(0, result);
+
+            Assert.Empty(error);
+
+            var modifiedProjectContent = File.ReadAllText(projectContentFile);
+            _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
+            Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="2.0.0" />""", modifiedProjectContent);
+
+            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [Fact]

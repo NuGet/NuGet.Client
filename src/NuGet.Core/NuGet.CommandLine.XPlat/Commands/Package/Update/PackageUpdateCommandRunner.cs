@@ -56,7 +56,7 @@ internal static class PackageUpdateCommandRunner
 
         // 1. Get DGSpec for project/solution
         logger.LogVerbose(Strings.PackageUpdate_LoadingDGSpec);
-        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project);
+        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project, args.ProjectContentFile);
 
         if (dgSpec is null || dgSpec.Restore is null || dgSpec.Restore.Count == 0)
         {
@@ -106,10 +106,12 @@ internal static class PackageUpdateCommandRunner
 
             var updatedPackageSpec = updatedDgSpec.GetProjectSpec(projectPath);
 
+            string? projectContentFile = projectPath == args.Project ? args.ProjectContentFile : null;
+
             foreach (var packageResult in packagesToUpdate)
             {
                 logger.LogInformation($"    {Format.PackageUpdate_UpdatedMessage(packageResult.Package.Id, packageResult.Package.CurrentVersion.ToShortString(), packageResult.Package.NewVersion.ToShortString())}");
-                packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.TargetFrameworkAliases, packageResult.Package, logger);
+                packageUpdateIO.UpdatePackageReference(updatedPackageSpec, restorePreviewResult, packageResult.TargetFrameworkAliases, packageResult.Package, logger, projectContentFile);
                 uniquePackagesUpdated.Add(packageResult.Package.Id);
             }
         }

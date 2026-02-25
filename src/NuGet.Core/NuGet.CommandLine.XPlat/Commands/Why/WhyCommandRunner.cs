@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
         public static Task<int> ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
-            bool validArgumentsUsed = ValidatePathArgument(whyCommandArgs.Path, whyCommandArgs.Logger)
+            bool validArgumentsUsed = ValidatePathArgument(whyCommandArgs.Path, whyCommandArgs.Logger, whyCommandArgs.ProjectContentFile)
                                         && ValidatePackageArgument(whyCommandArgs.Package, whyCommandArgs.Logger);
             if (!validArgumentsUsed)
             {
@@ -35,7 +35,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             IEnumerable<(string assetsFilePath, string? projectPath)> assetsFiles;
             try
             {
-                assetsFiles = FindAssetsFiles(whyCommandArgs.Path, whyCommandArgs.Logger);
+                assetsFiles = FindAssetsFiles(whyCommandArgs.Path, whyCommandArgs.Logger, whyCommandArgs.ProjectContentFile);
             }
             catch (ArgumentException ex)
             {
@@ -90,7 +90,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             return Task.FromResult(anyErrors ? ExitCodes.Error : ExitCodes.Success);
         }
 
-        private static IEnumerable<(string assetsFilePath, string? projectPath)> FindAssetsFiles(string path, IAnsiConsole logger)
+        private static IEnumerable<(string assetsFilePath, string? projectPath)> FindAssetsFiles(string path, IAnsiConsole logger, string? projectContentFile)
         {
             if (XPlatUtility.IsJsonFile(path))
             {
@@ -98,10 +98,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 yield break;
             }
 
-            var projectPaths = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(path);
+            var projectPaths = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(path, projectContentFile);
             foreach (string projectPath in projectPaths.NoAllocEnumerate())
             {
-                Project project = MSBuildAPIUtility.GetProject(projectPath);
+                Project project = MSBuildAPIUtility.GetProject(projectPath, projectContentFile: projectPath == path ? projectContentFile : null).Project;
                 try
                 {
                     string usingNetSdk = project.GetPropertyValue("UsingMicrosoftNETSdk");
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// <summary>
         /// Validates that the input 'path' argument is a valid path to a directory, solution file or project file.
         /// </summary>
-        private static bool ValidatePathArgument(string path, IAnsiConsole logger)
+        private static bool ValidatePathArgument(string path, IAnsiConsole logger, string? projectContentFile)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -178,7 +178,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             }
 
             // Check that the path is a directory, solution file or project file
-            if (Directory.Exists(fullPath)
+            // (We don't perform this check if projectContentFile was provided, because the project file is virtual in that case)
+            if (projectContentFile != null
+                || Directory.Exists(fullPath)
                 || (File.Exists(fullPath)
                     && (XPlatUtility.IsSolutionFile(fullPath) || XPlatUtility.IsProjectFile(fullPath) || XPlatUtility.IsJsonFile(fullPath))))
             {

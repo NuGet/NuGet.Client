@@ -47,6 +47,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.AddPkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
+                var projectContentFile = addpkg.Option(
+                    "--project-content-file",
+                    Strings.Pkg_ProjectContentFileDescription,
+                    CommandOptionType.SingleValue);
+
                 var frameworks = addpkg.Option(
                     "-f|--framework",
                     Strings.AddPkg_FrameworksDescription,
@@ -81,7 +86,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     ValidateArgument(id, addpkg.Name);
                     ValidateArgument(projectPath, addpkg.Name);
-                    ValidateProjectPath(projectPath, addpkg.Name);
+                    ValidateProjectPath(projectPath, projectContentFile, addpkg.Name);
                     if (!noRestore.HasValue())
                     {
                         ValidateArgument(dgFilePath, addpkg.Name);
@@ -90,8 +95,11 @@ namespace NuGet.CommandLine.XPlat
                     var noVersion = !version.HasValue();
                     var packageVersion = version.HasValue() ? version.Value() : null;
                     ValidatePrerelease(prerelease.HasValue(), noVersion, addpkg.Name);
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), logger)
+                    var projectContentFileValue = projectContentFile.Value();
+                    var projectPathValue = MSBuildAPIUtility.ChangeProjectPath(projectPath.Value(), projectContentFileValue);
+                    var packageRefArgs = new PackageReferenceArgs(projectPathValue, logger)
                     {
+                        ProjectContentFile = projectContentFileValue,
                         Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworks.Values),
                         Sources = CommandLineUtility.SplitAndJoinAcrossMultipleValues(sources.Values),
                         PackageDirectory = packageDirectory.Value(),
@@ -132,9 +140,9 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void ValidateProjectPath(CommandOption projectPath, string commandName)
+        private static void ValidateProjectPath(CommandOption projectPath, CommandOption projectContentFile, string commandName)
         {
-            if (!File.Exists(projectPath.Value()) || !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(projectPath.Value()) || (!projectContentFile.HasValue() && !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_PkgMissingOrInvalidProjectFile,

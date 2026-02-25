@@ -61,13 +61,13 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.GetDependencyGraphSpec(string)"/>
-    public DependencyGraphSpec? GetDependencyGraphSpec(string project)
+    /// <inheritdoc cref="IPackageUpdateIO.GetDependencyGraphSpec(string, string?)"/>
+    public DependencyGraphSpec? GetDependencyGraphSpec(string project, string? projectContentFile = null)
     {
         string tempFile = Path.GetTempFileName();
         try
         {
-            if (!RunMsbuildTarget(project, tempFile))
+            if (!RunMsbuildTarget(project, tempFile, projectContentFile))
             {
                 return null;
             }
@@ -81,7 +81,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             File.Delete(tempFile);
         }
 
-        bool RunMsbuildTarget(string project, string tempFile)
+        bool RunMsbuildTarget(string project, string tempFile, string? projectContentFile)
         {
             // When being run from the dotnet CLI, use the same dotnet executable, just in case the dotnet on the PATH is different
             // But when NuGet.CommandLine.XPlat is being called directly, call dotnet on the path, so this code is debuggable.
@@ -90,17 +90,19 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             // don't redirect stdout or stderr, so errors are output. But use quiet verbosity, so that success has no output.
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
             {
-                Arguments = $"msbuild " +
-                $"\"{project}\" " +
-                $"-restore:false " +
+                Arguments = $"build " +
+                $"\"{(projectContentFile is null ? project : Path.ChangeExtension(project, ".cs"))}\" " +
+                $"--no-restore " +
                 $"-target:GenerateRestoreGraphFile " +
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +
                 $"-property:RestoreRecursive=false " +
-                $"-nologo " +
                 $"-verbosity:quiet " +
-                $"-tl:false " +
-                $"-noautoresponse",
+                (projectContentFile is null ? $"-noautoresponse" : null), // currently not supported for file-based apps
                 UseShellExecute = false,
+                Environment =
+                {
+                    { "MSBUILDTERMINALLOGGER", "off" },
+                },
             };
 
             using var process = Process.Start(processStartInfo);
@@ -164,8 +166,8 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         }
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.UpdatePackageReference(PackageSpec, IPackageUpdateIO.RestoreResult, List{string}, PackageToUpdate, ILogger)"/>
-    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<string> packageTfmAliases, PackageToUpdate packageToUpdate, ILogger logger)
+    /// <inheritdoc cref="IPackageUpdateIO.UpdatePackageReference(PackageSpec, IPackageUpdateIO.RestoreResult, List{string}, PackageToUpdate, ILogger, string?)"/>
+    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<string> packageTfmAliases, PackageToUpdate packageToUpdate, ILogger logger, string? projectContentFile = null)
     {
         PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
 
@@ -203,7 +205,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         if (packageTfms.Count == updatedPackageSpec.TargetFrameworks.Count)
         {
             // package is used by all project TFMs (no condition)
-            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, noVersion);
+            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, noVersion, projectContentFile);
         }
         else
         {
@@ -211,7 +213,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
                 .Select(e => AddPackageReferenceCommandRunner.GetAliasForFramework(updatedPackageSpec, e))
                 .Where(originalFramework => originalFramework != null);
 
-            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, frameworkAliases, noVersion);
+            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, frameworkAliases, noVersion, projectContentFile);
         }
     }
 

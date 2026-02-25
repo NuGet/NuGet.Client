@@ -1059,6 +1059,11 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
         <target state="translated">Aktualizují se balíčky s bezpečnostními upozorněními v {0}</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
+      <trans-unit id="Pkg_ProjectContentFileDescription">
+        <source>Path to a file with the XML content of the project (used for virtual projects).</source>
+        <target state="new">Path to a file with the XML content of the project (used for virtual projects).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">Nejsou k dispozici žádné stabilní verze, nejlepší dostupná verze je {0}. Zvažte možnost přidat --prerelease.</target>

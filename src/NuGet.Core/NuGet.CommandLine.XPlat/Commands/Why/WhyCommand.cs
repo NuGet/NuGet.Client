@@ -95,6 +95,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.OneOrMore
             };
 
+            Option<string> projectContentFile = new Option<string>("--project-content-file")
+            {
+                Description = Strings.Pkg_ProjectContentFileDescription,
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+
             HelpOption help = new HelpOption()
             {
                 Arity = ArgumentArity.Zero
@@ -103,18 +109,24 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             whyCommand.Arguments.Add(path);
             whyCommand.Arguments.Add(package);
             whyCommand.Options.Add(frameworks);
+            whyCommand.Options.Add(projectContentFile);
             whyCommand.Options.Add(help);
 
             whyCommand.SetAction(async (parseResult, cancellationToken) =>
             {
                 try
                 {
+                    var projectContentFileValue = parseResult.GetValue(projectContentFile);
+                    var projectPath = MSBuildAPIUtility.ChangeProjectPath(parseResult.GetValue(path), projectContentFileValue);
                     var whyCommandArgs = new WhyCommandArgs(
-                        parseResult.GetValue(path)!,
+                        projectPath,
                         parseResult.GetValue(package)!,
                         parseResult.GetValue(frameworks)!,
                         console.Value,
-                        cancellationToken);
+                        cancellationToken)
+                    {
+                        ProjectContentFile = projectContentFileValue,
+                    };
 
                     int exitCode = await action(whyCommandArgs);
                     return exitCode;

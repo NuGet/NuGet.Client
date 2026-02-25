@@ -391,6 +391,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_SourceDescription" xml:space="preserve">
     <value>Sources to lookup for latest versions. Works only with `--outdated`.</value>
   </data>
+  <data name="Pkg_ProjectContentFileDescription" xml:space="preserve">
+    <value>Path to a file with the XML content of the project (used for virtual projects).</value>
+  </data>
   <data name="Error_NotPRProject" xml:space="preserve">
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
   </data>

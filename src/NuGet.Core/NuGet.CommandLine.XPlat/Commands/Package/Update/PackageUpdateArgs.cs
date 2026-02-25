@@ -19,5 +19,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         public required LogLevel LogLevel { get; init; }
 
         public required bool Vulnerable { get; init; }
+
+        /// <summary>
+        /// Path to a file with the XML content of the project (used for virtual projects).
+        /// </summary>
+        public string? ProjectContentFile { get; init; }
     }
 }

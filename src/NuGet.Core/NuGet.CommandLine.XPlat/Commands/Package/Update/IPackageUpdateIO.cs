@@ -24,8 +24,9 @@ internal interface IPackageUpdateIO
     /// Loads a project or solution and gets the restore inputs as a DependencyGraphSpec.
     /// </summary>
     /// <param name="project">The project or solution requested.</param>
+    /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
     /// <returns>A DependencyGraphSpec representing the restore inputs.</returns>
-    DependencyGraphSpec? GetDependencyGraphSpec(string project);
+    DependencyGraphSpec? GetDependencyGraphSpec(string project, string? projectContentFile = null);
 
     /// <summary>
     /// Performs a restore preview operation without committing the result.
@@ -57,12 +58,14 @@ internal interface IPackageUpdateIO
     /// <param name="restorePreviewResult">The restore preview result containing resolved package information.</param>
     /// <param name="packageDependency">Package dependency information.</param>
     /// <param name="logger">Logger for the operation.</param>
+    /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
     void UpdatePackageReference(
         PackageSpec updatedPackageSpec,
         RestoreResult restorePreviewResult,
         List<string> packageTfmAliases,
         PackageToUpdate packageDependency,
-        ILogger logger);
+        ILogger logger,
+        string? projectContentFile = null);
 
     /// <summary>
     /// Gets the latest version of a package from package sources.

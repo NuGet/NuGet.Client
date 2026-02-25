@@ -23,6 +23,11 @@ namespace NuGet.CommandLine.XPlat
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
 
+        /// <summary>
+        /// Path to a file with the XML content of the project (used for virtual projects).
+        /// </summary>
+        public string ProjectContentFile { get; init; }
+
         public PackageReferenceArgs(string projectPath, ILogger logger, bool noVersion)
         {
             ValidateArgument(projectPath);

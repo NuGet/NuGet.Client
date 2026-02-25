@@ -19,6 +19,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         public CancellationToken CancellationToken { get; }
 
         /// <summary>
+        /// Path to a file with the XML content of the project (used for virtual projects).
+        /// </summary>
+        public string? ProjectContentFile { get; init; }
+
+        /// <summary>
         /// A constructor for the arguments of the 'why' command.
         /// </summary>
         /// <param name="path">The path to the solution or project file.</param>

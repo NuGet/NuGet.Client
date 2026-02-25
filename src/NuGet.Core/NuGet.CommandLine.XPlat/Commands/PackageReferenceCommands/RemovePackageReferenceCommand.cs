@@ -36,6 +36,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.RemovePkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
+                var projectContentFile = removePkg.Option(
+                    "--project-content-file",
+                    Strings.Pkg_ProjectContentFileDescription,
+                    CommandOptionType.SingleValue);
+
                 var interactive = removePkg.Option(
                     "--interactive",
                     Strings.AddPkg_InteractiveDescription,
@@ -45,10 +50,13 @@ namespace NuGet.CommandLine.XPlat
                 {
                     ValidateArgument(id, removePkg.Name);
                     ValidateArgument(projectPath, removePkg.Name);
-                    ValidateProjectPath(projectPath, removePkg.Name);
+                    ValidateProjectPath(projectPath, projectContentFile, removePkg.Name);
                     var logger = getLogger();
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), logger)
+                    var projectContentFileValue = projectContentFile.Value();
+                    var projectPathValue = MSBuildAPIUtility.ChangeProjectPath(projectPath.Value(), projectContentFileValue);
+                    var packageRefArgs = new PackageReferenceArgs(projectPathValue, logger)
                     {
+                        ProjectContentFile = projectContentFileValue,
                         Interactive = interactive.HasValue(),
                         PackageId = id.Value()
                     };
@@ -69,9 +77,9 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void ValidateProjectPath(CommandOption projectPath, string commandName)
+        private static void ValidateProjectPath(CommandOption projectPath, CommandOption projectContentFile, string commandName)
         {
-            if (!File.Exists(projectPath.Value()) || !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(projectPath.Value()) || (!projectContentFile.HasValue() && !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_PkgMissingOrInvalidProjectFile,

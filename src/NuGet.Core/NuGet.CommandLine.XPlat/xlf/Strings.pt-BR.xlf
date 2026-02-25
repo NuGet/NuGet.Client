@@ -1059,6 +1059,11 @@ Para obter mais informações, acesse https://docs.nuget.org/docs/reference/comm
         <target state="translated">Atualizando pacotes com avisos de segurança em {0}</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
+      <trans-unit id="Pkg_ProjectContentFileDescription">
+        <source>Path to a file with the XML content of the project (used for virtual projects).</source>
+        <target state="new">Path to a file with the XML content of the project (used for virtual projects).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">Não há versões estáveis disponíveis. {0} é a melhor disponível. Considere a adição da opção --prerelease</target>
