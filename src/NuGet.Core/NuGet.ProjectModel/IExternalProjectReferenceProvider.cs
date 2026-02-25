@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.ProjectModel
 {
+    [Obsolete("This API is unused and will be removed in a future release.")]
     /// <summary>
     /// Provides external project reference closures.
     /// </summary>
