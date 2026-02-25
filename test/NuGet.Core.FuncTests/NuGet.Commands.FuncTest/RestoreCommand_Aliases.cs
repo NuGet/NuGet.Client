@@ -547,7 +547,7 @@ namespace NuGet.Commands.FuncTest
         [InlineData("apple", "net9.0", "banana", "net10.0")]
         [InlineData("apple", "net10.0", "banana", "net10.0")]
         [InlineData("banana", "net10.0", "apple", "net10.0")]
-        public async Task RestoreCommand_WithAliases_WithConditionalWarningSuppression_SupressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
+        public async Task RestoreCommand_WithAliases_WithConditionalWarningSuppression_SuppressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
         {
             using var pathContext = new SimpleTestPathContext();
             var rootProject = @"
@@ -600,7 +600,7 @@ namespace NuGet.Commands.FuncTest
         // P (apple) -> Project2 (apple) -> Package A
         // P (banana) -> Project2 (banana) -> Package B
         [Fact]
-        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferences_WithConditionalWarningSuppression_SupressesWarningsCorrectly()
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferences_WithConditionalWarningSuppression_SuppressesWarningsCorrectly()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -675,7 +675,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferenceToASingleProject_WithConditionalWarningSuppression_SupressesWarningsCorrectly()
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferenceToASingleProject_WithConditionalWarningSuppression_SuppressesWarningsCorrectly()
         {
             using var pathContext = new SimpleTestPathContext();
 

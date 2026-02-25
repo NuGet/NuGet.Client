@@ -112,7 +112,8 @@ namespace NuGet.Commands
                 {
                     var localMatch = (LocalMatch)dependencyGraphItem.Data.Match;
                     var nodeProjectSpec = GetNodePackageSpec(localMatch);
-                    var nearestFramework = nodeProjectSpec.GetTargetFramework(parentTargetFramework).TargetAlias;
+                    TargetFrameworkInformation targetFrameworkInformation = nodeProjectSpec.GetTargetFramework(parentTargetFramework);
+                    string nearestFramework = targetFrameworkInformation.FrameworkName != null ? targetFrameworkInformation.TargetAlias : null;
 
                     if (nearestFramework != null)
                     {

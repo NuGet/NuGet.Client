@@ -155,7 +155,7 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.CentralPackageTransitivePinningEnabled = spec.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
             if (spec.RestoreMetadata != null)
             {
-                updated.RestoreMetadata.ProjectWideWarningProperties = spec.RestoreMetadata.ProjectWideWarningProperties;
+                updated.RestoreMetadata.ProjectWideWarningProperties = spec.RestoreMetadata.ProjectWideWarningProperties.Clone();
             }
             updated.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties()
             {
