@@ -237,7 +237,98 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-        // Project 1 -> Project 2 -> a (null)
+        // Project -> A 1.0.0 -> B 1.0.0 -> Q 2.0.0   (Q 2.0.0 is chosen before D finishes, eclipsing Q 1.0.0)
+        //                   -> Q 1.0.0
+        //         -> C 2.0.0 -> D 1.0.0 -> B 2.0.0   (B 2.0.0 evicts B 1.0.0 → cascade reinstates Q 1.0.0)
+        //
+        // BFS processes level-2 items in order: B 1.0.0, Q 1.0.0, D 1.0.0.
+        // B 1.0.0 enqueues Q 2.0.0 before D 1.0.0 enqueues B 2.0.0, so the queue at level 3 is
+        // [Q 2.0.0, B 2.0.0].  Q 2.0.0 is chosen (eclipsing Q 1.0.0), then B 2.0.0 evicts B 1.0.0.
+        // The cascade-eviction handler re-enqueues Q 1.0.0 (the stored loser) without restarting.
+        //
+        // Expected: A 1.0.0, B 2.0.0, C 2.0.0, D 1.0.0, Q 1.0.0
+        [Fact]
+        public async Task RestoreCommand_WithCascadeEviction_ReinstatesEclipsedPackage()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // A 1.0.0 depends on B 1.0.0 first (ensuring B 1.0.0 is enqueued before Q 1.0.0 in BFS),
+            // then Q 1.0.0 directly.
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("b", "1.0.0")  // B 1.0.0 → Q 2.0.0
+                    {
+                        Dependencies =
+                        [
+                            new SimpleTestPackageContext("q", "2.0.0"),
+                        ]
+                    },
+                    new SimpleTestPackageContext("q", "1.0.0"),  // Q 1.0.0 initially chosen
+                ]
+            };
+
+            // C 2.0.0 → D 1.0.0 → B 2.0.0 (B 2.0.0 has no Q dependency)
+            var packageC = new SimpleTestPackageContext("c", "2.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("d", "1.0.0")
+                    {
+                        Dependencies =
+                        [
+                            new SimpleTestPackageContext("b", "2.0.0"),  // evicts B 1.0.0; no Q dep
+                        ]
+                    },
+                ]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageC);
+
+            var projectSpec = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""a"":  ""1.0.0"",
+                                ""c"": ""2.0.0""
+                        }
+                    }
+                  }
+                }";
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, projectSpec));
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.LogMessages.Should().HaveCount(0);
+
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
+
+            var libraries = result.LockFile.Targets[0].Libraries.OrderBy(l => l.Name).ToList();
+            libraries[0].Name.Should().Be("a");
+            libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            libraries[1].Name.Should().Be("b");
+            libraries[1].Version.Should().Be(new NuGetVersion("2.0.0")); // B 2.0.0 wins over B 1.0.0
+
+            libraries[2].Name.Should().Be("c");
+            libraries[2].Version.Should().Be(new NuGetVersion("2.0.0"));
+
+            libraries[3].Name.Should().Be("d");
+            libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            libraries[4].Name.Should().Be("q");
+            libraries[4].Version.Should().Be(new NuGetVersion("1.0.0")); // Q 1.0.0 reinstated after cascade
+        }
+
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

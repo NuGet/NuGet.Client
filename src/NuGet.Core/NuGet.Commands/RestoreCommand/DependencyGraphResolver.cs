@@ -880,11 +880,10 @@ namespace NuGet.Commands
             // Stores the queue of DependencyGraphItem objects to process
             Queue<DependencyGraphItem> dependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
 
-            // Stores any evictions to process
-            Dictionary<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint)> evictions = new(EvictionsDictionarySize);
-
-            // Keeps track of the number of times the entire walk is started over
-            int restartCount = -1;
+            // Stores any evictions to process.  Each entry records the winning path (for cascade detection),
+            // the winner's dependency index, the loser's type constraint (for the dequeue-time check), and a
+            // DependencyGraphItem for the loser so it can be re-enqueued if the eviction is later invalidated.
+            Dictionary<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint, DependencyGraphItem LoserItem)> evictions = new(EvictionsDictionarySize);
 
             // Keeps track of the total number of items that have been queued for processing
             int totalQueuedItemCount = 0;
@@ -894,39 +893,6 @@ namespace NuGet.Commands
 
             // Cache the result of IsNewerThanNET10 since it is invariant for the entire method
             bool enablePruningWarnings = IsNewerThanNET10(projectTargetFramework.FrameworkName);
-
-        // A restart is needed when evicting one item invalidates a previous eviction (a cascade eviction).
-        //
-        // Consider this graph:
-        //
-        // Project
-        // ├── A 1.0.0
-        // │   └── Q 1.0.0
-        // └── B 1.0.0
-        //     └── Q 2.0.0
-        // └── C 2.0.0
-        //     └── B 2.0.0
-        //
-        // The items are processed in the following order:
-        // A 1.0.0 and B 1.0.0 and C 2.0.0 are chosen.
-        // Q 1.0.0 is chosen initially, but Q 2.0.0 (from B 1.0.0's subtree) evicts it.
-        // evictions[Q1] records a winning path through B 1.0.0.
-        // B 2.0.0 (from C 2.0.0's subtree) evicts B 1.0.0.
-        //
-        // Since Q 2.0.0's winning path went through B 1.0.0, which is now itself evicted,
-        // Q 1.0.0's eviction is no longer valid and must be reconsidered.
-        // Because Q 1.0.0 was already dequeued and rejected, the walk must restart from the beginning.
-        // On the next pass, evictions[B1] prevents B 1.0.0 from being processed, so Q 2.0.0 is never
-        // reached and Q 1.0.0 is chosen without competition.
-        //
-        // Transitive children of an evicted item that are already in resolvedDependencyGraphItems (for
-        // example C and D in B 1.0.0's subtree) are handled without a restart by removing them directly
-        // from resolvedDependencyGraphItems; items still in the queue are skipped by the lazy path check.
-        StartOver:
-            restartCount++;
-
-            dependencyGraphItemQueue.Clear();
-            resolvedDependencyGraphItems.Clear();
 
             dependencyGraphItemQueue.Enqueue(rootProjectDependencyGraphItem);
 
@@ -939,7 +905,7 @@ namespace NuGet.Commands
 
                 GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, enablePruningWarnings, isRootProject, targetGraphName, _logger);
 
-                if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint) eviction))
+                if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint, DependencyGraphItem LoserItem) eviction))
                 {
                     // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
                     // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
@@ -1066,18 +1032,46 @@ namespace NuGet.Commands
                         // Record an eviction for the item we are replacing.  The eviction path is for the current item.
                         LibraryRangeIndex evictedLibraryRangeIndex = chosenResolvedItem.LibraryRangeIndex;
 
+                        // Reconstruct a DependencyGraphItem for the loser so it can be re-enqueued if this
+                        // eviction is later cascade-invalidated (i.e., the winning path passes through a node
+                        // that is itself subsequently evicted, meaning the loser must be reconsidered).
+                        // This implements the ref-count model: the loser's "parent link" is stored here and
+                        // reinstated if the winner loses all its own parents.
+                        LibraryRangeIndex[] loserPath = chosenResolvedItem.Path;
+                        DependencyGraphItem loserItem = new()
+                        {
+                            LibraryDependency = chosenResolvedItem.LibraryDependency,
+                            LibraryDependencyIndex = currentDependencyGraphItem.LibraryDependencyIndex,
+                            LibraryRangeIndex = evictedLibraryRangeIndex,
+                            Path = loserPath,
+                            Parent = loserPath.Length > 0 ? loserPath[loserPath.Length - 1] : LibraryRangeIndex.Project,
+                            // Suppressions[0] corresponds to the path stored in chosenResolvedItem.Path (the last
+                            // path that updated the resolved item).  Any additional entries in Suppressions belong
+                            // to earlier paths whose items are still in the queue and will be processed normally.
+                            Suppressions = chosenResolvedItem.Suppressions.Count > 0 ? chosenResolvedItem.Suppressions[0] : new HashSet<LibraryDependencyIndex>(),
+                            IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
+                            IsRootPackageReference = false,
+                            FindLibraryTask = ResolverUtility.FindLibraryCachedAsync(
+                                chosenResolvedItem.LibraryDependency.LibraryRange,
+                                pair.Framework,
+                                runtimeIdentifier: string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) ? null : pair.RuntimeIdentifier,
+                                pair.TargetAlias,
+                                context,
+                                token),
+                        };
+
                         // Record the eviction immediately so that:
                         // 1. The evicted range is skipped if re-encountered at dequeue time (LibraryRangeIndex key check).
                         // 2. Items still in the queue whose path passes through the evicted item are lazily skipped.
-                        evictions[evictedLibraryRangeIndex] = (DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItem.Path, currentDependencyGraphItem.LibraryRangeIndex), currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraint);
+                        evictions[evictedLibraryRangeIndex] = (DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItem.Path, currentDependencyGraphItem.LibraryRangeIndex), currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraint, loserItem);
 
                         // Check whether any previously-recorded evictions have a winning path that passes through
                         // the item we just evicted.  Those evictions are now invalid because the ancestor that caused
-                        // them is itself evicted.  The previously-rejected items must be re-evaluated, but they are
-                        // no longer in the queue, so the entire walk must restart.
+                        // them is itself evicted.  The previously-eclipsed losers are re-enqueued directly (see
+                        // below) so the walk can reconsider them without restarting from the beginning.
                         HashSet<LibraryRangeIndex>? evicteesToRemove = default;
 
-                        foreach (KeyValuePair<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint)> evictee in evictions)
+                        foreach (KeyValuePair<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint, DependencyGraphItem LoserItem)> evictee in evictions)
                         {
                             // Skip the eviction entry we just recorded above; it was added before this loop
                             // started, so the dictionary enumerator will reach it, but it is not a pre-existing
@@ -1106,18 +1100,30 @@ namespace NuGet.Commands
                         {
                             foreach (LibraryRangeIndex evicteeToRemove in evicteesToRemove)
                             {
+                                // Re-enqueue the previously-eclipsed item so it can be reconsidered without
+                                // restarting the entire walk.  The winning path that justified the eviction ran
+                                // through the node we just evicted, so that eviction decision is no longer valid.
+                                // Putting the loser back in the queue lets the walk reconsider it as though it
+                                // had never been rejected - exactly what the ref-count model calls for when a
+                                // winner's last parent is removed.
+                                if (evictions.TryGetValue(evicteeToRemove, out (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint, DependencyGraphItem LoserItem) cascadeEviction))
+                                {
+                                    dependencyGraphItemQueue.Enqueue(cascadeEviction.LoserItem);
+                                    totalQueuedItemCount++;
+                                }
+
                                 evictions.Remove(evicteeToRemove);
                             }
 
-                            // The previously-rejected items that are now un-evicted are no longer in the queue,
-                            // so the walk must restart from the beginning.
-                            goto StartOver;
+                            // The loser items have been re-enqueued; fall through to the stale-item cleanup
+                            // below, which removes any already-resolved items whose path passes through the
+                            // newly-evicted node.
                         }
 
-                        // No cascade eviction requires a restart.  Remove any already-resolved items whose ancestry
-                        // passes through the evicted item; they are stale because the evicted item is no longer in
-                        // the graph.  Items still in the queue that are children of the evicted item will be skipped
-                        // lazily by the path check at dequeue time.
+                        // Remove any already-resolved items whose ancestry passes through the evicted item;
+                        // they are stale because the evicted item is no longer in the graph.  Items still in
+                        // the queue that are children of the evicted item will be skipped lazily by the path
+                        // check at dequeue time.
                         List<LibraryDependencyIndex>? resolvedItemsToRemove = null;
 
                         foreach (KeyValuePair<LibraryDependencyIndex, ResolvedDependencyGraphItem> resolvedItem in resolvedDependencyGraphItems)
@@ -1389,7 +1395,7 @@ namespace NuGet.Commands
 
             if (NuGetEventSource.IsEnabled)
             {
-                TraceEvents.ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair, resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
+                TraceEvents.ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair, resolvedDependencyGraphItems.Count, 0, totalQueuedItemCount);
             }
 
             return resolvedDependencyGraphItems;
