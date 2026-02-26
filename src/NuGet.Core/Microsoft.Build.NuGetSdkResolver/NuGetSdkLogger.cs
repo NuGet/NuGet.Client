@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -82,7 +82,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
             }
 
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_LogMessage((int)level, data);
+            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LogMessage((int)level, data);
         }
 
         /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />

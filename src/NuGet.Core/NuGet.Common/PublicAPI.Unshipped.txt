@@ -1,64 +1,12 @@
 ﻿#nullable enable
 NuGet.Common.NuGetLogCode.NU1018 = 1018 -> NuGet.Common.NuGetLogCode
+*REMOVED*NuGet.Common.NuGetEventSource
+*REMOVED*NuGet.Common.NuGetEventSource.Keywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.Common = (System.Diagnostics.Tracing.EventKeywords)1 -> System.Diagnostics.Tracing.EventKeywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.Configuration = (System.Diagnostics.Tracing.EventKeywords)2 -> System.Diagnostics.Tracing.EventKeywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.Logging = (System.Diagnostics.Tracing.EventKeywords)4 -> System.Diagnostics.Tracing.EventKeywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.Performance = (System.Diagnostics.Tracing.EventKeywords)8 -> System.Diagnostics.Tracing.EventKeywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.Restore = (System.Diagnostics.Tracing.EventKeywords)32 -> System.Diagnostics.Tracing.EventKeywords
+*REMOVED*const NuGet.Common.NuGetEventSource.Keywords.SdkResolver = (System.Diagnostics.Tracing.EventKeywords)16 -> System.Diagnostics.Tracing.EventKeywords
 *REMOVED*static NuGet.Common.NuGetEventSource.Instance.get -> System.Diagnostics.Tracing.EventSource!
 *REMOVED*static NuGet.Common.NuGetEventSource.IsEnabled.get -> bool
-NuGet.Common.NuGetEventSource.RestoreCommand_BuildAssetsFileStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreCommand_BuildAssetsFileStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreCommand_BuildRestoreGraphStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreCommand_BuildRestoreGraphStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreCommand_CalcNoOpRestoreStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreCommand_CalcNoOpRestoreStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreRunner_CommitAsyncStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreRunner_CommitAsyncStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.DependencyGraphResolver_CreateRestoreTargetGraphStart(string! filePath, string! frameworkRuntimeDefinition) -> void
-NuGet.Common.NuGetEventSource.DependencyGraphResolver_CreateRestoreTargetGraphStop(string! filePath, string! frameworkRuntimeDefinition, int success, int resolvedPackageCount, int unresolvedPackageCount) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_GetResultStart(string! id, string! version) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_GetResultStop(string! id, string! version, string! installPath, int success) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_GlobalJsonReadStart(string! path, string! projectFullPath, string! solutionFullPath) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_GlobalJsonReadStop(string! path, string! projectFullPath, string! solutionFullPath) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_LoadSettingsStart() -> void
-NuGet.Common.NuGetEventSource.SdkResolver_LoadSettingsStop() -> void
-NuGet.Common.NuGetEventSource.MigrationRunner_RunStart() -> void
-NuGet.Common.NuGetEventSource.MigrationRunner_RunStop(string! migrationFileFullPath, int migrationPerformed) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_ResolveStart(string! name, string! version) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_ResolveStop(string! name, string! version) -> void
-NuGet.Common.NuGetEventSource.DependencyGraphResolver_ResolveDependencyGraphItemsStart(string! filePath, string! frameworkRuntimeDefinition) -> void
-NuGet.Common.NuGetEventSource.DependencyGraphResolver_ResolveDependencyGraphItemsStop(string! filePath, string! frameworkRuntimeDefinition, int resolvedPackagesCount, int restartCount, int totalQueuedItemCount) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_RestorePackageStart(string! id, string! version) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_RestorePackageStop(string! id, string! version) -> void
-NuGet.Common.NuGetEventSource.RestoreRunner_RestoreProjectStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreRunner_RestoreProjectStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.SdkResolver_LogMessage(int logLevel, string! message) -> void
-NuGet.Common.NuGetEventSource.SettingsFile_FileReadStart(string! configFilePath, int isMachineWide, int isReadOnly) -> void
-NuGet.Common.NuGetEventSource.SettingsFile_FileReadStop(string! configFilePath, int isMachineWide, int isReadOnly) -> void
-NuGet.Common.NuGetEventSource.SettingsLoadingContext_FileRead(string! fullPath, int isMachineWide, int isReadOnly) -> void
-NuGet.Common.NuGetEventSource.Tasks
-NuGet.Common.NuGetEventSource.RestoreResult_WriteAssetsFileStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WriteAssetsFileStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WriteCacheFileStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WriteCacheFileStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WriteDgSpecFileStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WriteDgSpecFileStop(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WritePackagesLockFileStart(string! filePath) -> void
-NuGet.Common.NuGetEventSource.RestoreResult_WritePackagesLockFileStop(string! filePath) -> void
-const NuGet.Common.NuGetEventSource.Tasks.RestoreCommand_BuildAssetsFile = (System.Diagnostics.Tracing.EventTask)4 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreCommand_BuildRestoreGraph = (System.Diagnostics.Tracing.EventTask)5 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreCommand_CalcNoOpRestore = (System.Diagnostics.Tracing.EventTask)6 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreRunner_CommitAsync = (System.Diagnostics.Tracing.EventTask)8 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.DependencyGraphResolver_CreateRestoreTargetGraph = (System.Diagnostics.Tracing.EventTask)13 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_GetResult = (System.Diagnostics.Tracing.EventTask)17 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_GlobalJsonRead = (System.Diagnostics.Tracing.EventTask)15 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_LoadSettings = (System.Diagnostics.Tracing.EventTask)18 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.MigrationRunner_Run = (System.Diagnostics.Tracing.EventTask)3 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_Resolve = (System.Diagnostics.Tracing.EventTask)16 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.DependencyGraphResolver_ResolveDependencyGraphItems = (System.Diagnostics.Tracing.EventTask)14 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_RestorePackage = (System.Diagnostics.Tracing.EventTask)19 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreRunner_RestoreProject = (System.Diagnostics.Tracing.EventTask)7 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SdkResolver_LogMessage = (System.Diagnostics.Tracing.EventTask)20 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SettingsFile_FileRead = (System.Diagnostics.Tracing.EventTask)1 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.SettingsLoadingContext_FileRead = (System.Diagnostics.Tracing.EventTask)2 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreResult_WriteAssetsFile = (System.Diagnostics.Tracing.EventTask)9 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreResult_WriteCacheFile = (System.Diagnostics.Tracing.EventTask)10 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreResult_WriteDgSpecFile = (System.Diagnostics.Tracing.EventTask)12 -> System.Diagnostics.Tracing.EventTask
-const NuGet.Common.NuGetEventSource.Tasks.RestoreResult_WritePackagesLockFile = (System.Diagnostics.Tracing.EventTask)11 -> System.Diagnostics.Tracing.EventTask
-static readonly NuGet.Common.NuGetEventSource.Instance -> NuGet.Common.NuGetEventSource!

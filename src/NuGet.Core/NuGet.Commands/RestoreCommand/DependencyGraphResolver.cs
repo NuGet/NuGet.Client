@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -211,18 +211,18 @@ namespace NuGet.Commands
                     context,
                     token);
 
-                if (NuGetEventSource.Instance.IsEnabled())
+                if (NuGetEventSourceCommands.Instance.IsEnabled())
                 {
-                    NuGetEventSource.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStart(_request.Project.FilePath, frameworkRuntimeDefinition.ToString());
+                    NuGetEventSourceCommands.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStart(_request.Project.FilePath, frameworkRuntimeDefinition.ToString());
                 }
 
                 // Now that the graph has been resolved, we need to create walk all of the defined dependencies again to detect any cycles and downgrades.  The RestoreTargetGraph stores all of the
                 // information about the graph including the nodes with their parent/child relationships, cycles, downgrades, and conflicts.
                 (bool wasRestoreTargetGraphCreationSuccessful, RestoreTargetGraph restoreTargetGraph) = await CreateRestoreTargetGraphAsync(frameworkRuntimeDefinition, runtimeGraph, isCentralPackageTransitivePinningEnabled, unresolvedPackages, resolvedPackages, resolvedDependencyGraphItems, context);
 
-                if (NuGetEventSource.Instance.IsEnabled())
+                if (NuGetEventSourceCommands.Instance.IsEnabled())
                 {
-                    NuGetEventSource.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStop(_request.Project.FilePath, frameworkRuntimeDefinition.ToString(), wasRestoreTargetGraphCreationSuccessful ? 1 : 0, resolvedPackages.Count, unresolvedPackages.Count);
+                    NuGetEventSourceCommands.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStop(_request.Project.FilePath, frameworkRuntimeDefinition.ToString(), wasRestoreTargetGraphCreationSuccessful ? 1 : 0, resolvedPackages.Count, unresolvedPackages.Count);
                 }
 
                 success &= wasRestoreTargetGraphCreationSuccessful;
@@ -915,9 +915,9 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            if (NuGetEventSource.Instance.IsEnabled())
+            if (NuGetEventSourceCommands.Instance.IsEnabled())
             {
-                NuGetEventSource.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStart(_request.Project.FilePath, pair.ToString());
+                NuGetEventSourceCommands.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStart(_request.Project.FilePath, pair.ToString());
             }
 
             // Stores the resolved dependency graph items
@@ -1404,9 +1404,9 @@ namespace NuGet.Commands
                 }
             }
 
-            if (NuGetEventSource.Instance.IsEnabled())
+            if (NuGetEventSourceCommands.Instance.IsEnabled())
             {
-                NuGetEventSource.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair.ToString(), resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
+                NuGetEventSourceCommands.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair.ToString(), resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
             }
 
             return resolvedDependencyGraphItems;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory, IEnvironmentVariableReader environmentVariableReader)
         {
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.MigrationRunner_RunStart();
+            if (NuGetEventSourceCommon.Instance.IsEnabled()) NuGetEventSourceCommon.Instance.MigrationRunner_RunStart();
 
             var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
@@ -65,7 +65,7 @@ namespace NuGet.Common.Migrations
             }
             finally
             {
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.MigrationRunner_RunStop(expectedMigrationFilename, migrationPerformed ? 1 : 0);
+                if (NuGetEventSourceCommon.Instance.IsEnabled()) NuGetEventSourceCommon.Instance.MigrationRunner_RunStop(expectedMigrationFilename, migrationPerformed ? 1 : 0);
             }
 
             static bool WaitForMutex(Mutex mutex)

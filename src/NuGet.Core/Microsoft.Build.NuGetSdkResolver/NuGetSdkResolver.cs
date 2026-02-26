@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable
@@ -87,7 +87,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_DisabledSdkResolver }, warnings: null);
             }
 
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_ResolveStart(sdkReference.Name, sdkReference.Version);
+            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.ResolveStart(sdkReference.Name, sdkReference.Version);
 
             try
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_ResolveStop(sdkReference.Name, sdkReference.Version);
+                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.ResolveStop(sdkReference.Name, sdkReference.Version);
             }
         }
 
@@ -158,13 +158,13 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
+                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
 
                 SdkResult result = null;
 
                 try
                 {
-                    if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_LoadSettingsStart();
+                    if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LoadSettingsStart();
 
                     // Load NuGet settings and a path resolver
                     ISettings settings;
@@ -182,7 +182,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                     finally
                     {
-                        if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_LoadSettingsStop();
+                        if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LoadSettingsStop();
                     }
 
                     var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
@@ -200,7 +200,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                             X509TrustStore.InitializeForDotNetSdk(logger);
 #endif
 
-                            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_RestorePackageStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.RestorePackageStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
 
                             // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                             // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
@@ -212,7 +212,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                             var results = restoreTask.Result;
 
-                            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_RestorePackageStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.RestorePackageStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
 
                             fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
@@ -265,7 +265,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 finally
                 {
-                    if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result?.Path, result == null ? 0 : (result.Success ? 1 : 0));
+                    if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result?.Path, result == null ? 0 : (result.Success ? 1 : 0));
                 }
             }
 

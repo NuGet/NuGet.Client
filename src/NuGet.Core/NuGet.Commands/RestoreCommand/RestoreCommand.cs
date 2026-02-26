@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable
@@ -262,7 +262,7 @@ namespace NuGet.Commands
                 telemetry.StartIntervalMeasure();
 
                 // Create assets file
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_BuildAssetsFileStart(_request.Project.FilePath);
+                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_BuildAssetsFileStart(_request.Project.FilePath);
 
                 LockFile assetsFile = RestoreCommand_BuildAssetsFile(
                     _request.ExistingLockFile,
@@ -271,7 +271,7 @@ namespace NuGet.Commands
                     localRepositories,
                     contextForProject);
 
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_BuildAssetsFileStop(_request.Project.FilePath);
+                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_BuildAssetsFileStop(_request.Project.FilePath);
 
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
@@ -447,9 +447,9 @@ namespace NuGet.Commands
             bool noOpCacheFileEvaluation;
             TimeSpan? cacheFileAge;
 
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_CalcNoOpRestoreStart(_request.Project.FilePath);
+            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_CalcNoOpRestoreStart(_request.Project.FilePath);
             (cacheFile, noOpCacheFileEvaluation, cacheFileAge) = EvaluateCacheFile();
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_CalcNoOpRestoreStop(_request.Project.FilePath);
+            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_CalcNoOpRestoreStop(_request.Project.FilePath);
 
             telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOpCacheFileEvaluation;
             telemetry.TelemetryEvent[ForceRestore] = !_request.AllowNoOp;
@@ -578,7 +578,7 @@ namespace NuGet.Commands
             {
                 using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                 {
-                    if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_BuildRestoreGraphStart(_request.Project.FilePath);
+                    if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_BuildRestoreGraphStart(_request.Project.FilePath);
 
                     bool resultSuccessful;
                     if (_enableNewDependencyResolver)
@@ -592,7 +592,7 @@ namespace NuGet.Commands
                     }
                     success &= resultSuccessful;
 
-                    if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreCommand_BuildRestoreGraphStop(_request.Project.FilePath);
+                    if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_BuildRestoreGraphStop(_request.Project.FilePath);
                 }
             }
             else

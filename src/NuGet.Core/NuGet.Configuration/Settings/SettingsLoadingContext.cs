@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -74,7 +74,7 @@ namespace NuGet.Configuration
                     // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
                     FileRead?.Invoke(this, fileInfo.FullName);
 
-                    if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SettingsLoadingContext_FileRead(fileInfo.FullName, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+                    if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsLoadingContext_FileRead(fileInfo.FullName, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
 
                     return settingsFile;
                 }));

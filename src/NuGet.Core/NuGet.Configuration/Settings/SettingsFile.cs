@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -109,7 +109,7 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SettingsFile_FileReadStart(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+            if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsFile_FileReadStart(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
 
             try
             {
@@ -129,7 +129,7 @@ namespace NuGet.Configuration
             }
             finally
             {
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SettingsFile_FileReadStop(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+                if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsFile_FileReadStop(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
             }
         }
 

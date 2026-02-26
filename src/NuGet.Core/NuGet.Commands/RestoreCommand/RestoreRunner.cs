@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable
@@ -258,9 +258,9 @@ namespace NuGet.Commands
             var request = summaryRequest.Request;
 
             var command = new RestoreCommand(request);
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreRunner_RestoreProjectStart(request.Project.FilePath);
+            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreRunner_RestoreProjectStop(request.Project.FilePath);
+            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_RestoreProjectStop(request.Project.FilePath);
 
             return new RestoreResultPair(summaryRequest, result);
         }
@@ -291,9 +291,9 @@ namespace NuGet.Commands
 
                 // Commit the result
                 log.LogVerbose(Strings.Log_Committing);
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreRunner_CommitAsyncStart(summaryRequest.InputPath);
+                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_CommitAsyncStart(summaryRequest.InputPath);
                 await result.CommitAsync(log, token);
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.RestoreRunner_CommitAsyncStop(summaryRequest.InputPath);
+                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_CommitAsyncStop(summaryRequest.InputPath);
             }
             finally
             {

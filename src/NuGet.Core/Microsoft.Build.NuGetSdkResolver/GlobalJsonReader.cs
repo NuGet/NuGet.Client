@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #nullable disable
@@ -241,7 +241,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
             string json;
 
-            if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
 
             try
             {
@@ -280,7 +280,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                if (NuGetEventSource.Instance.IsEnabled()) NuGetEventSource.Instance.SdkResolver_GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
             }
         }
     }
