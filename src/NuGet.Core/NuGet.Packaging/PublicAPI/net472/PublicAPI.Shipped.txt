@@ -217,10 +217,10 @@ NuGet.Packaging.ExtractionSource.DownloadResource = 1 -> NuGet.Packaging.Extract
 NuGet.Packaging.ExtractionSource.NuGetFolderProject = 2 -> NuGet.Packaging.ExtractionSource
 NuGet.Packaging.ExtractionSource.RestoreCommand = 0 -> NuGet.Packaging.ExtractionSource
 NuGet.Packaging.FallbackPackagePathInfo
-~NuGet.Packaging.FallbackPackagePathInfo.FallbackPackagePathInfo(string id, NuGet.Versioning.NuGetVersion version, NuGet.Packaging.VersionFolderPathResolver resolver) -> void
-~NuGet.Packaging.FallbackPackagePathInfo.Id.get -> string
-~NuGet.Packaging.FallbackPackagePathInfo.PathResolver.get -> NuGet.Packaging.VersionFolderPathResolver
-~NuGet.Packaging.FallbackPackagePathInfo.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.Packaging.FallbackPackagePathInfo.FallbackPackagePathInfo(string! id, NuGet.Versioning.NuGetVersion! version, NuGet.Packaging.VersionFolderPathResolver! resolver) -> void
+NuGet.Packaging.FallbackPackagePathInfo.Id.get -> string!
+NuGet.Packaging.FallbackPackagePathInfo.PathResolver.get -> NuGet.Packaging.VersionFolderPathResolver!
+NuGet.Packaging.FallbackPackagePathInfo.Version.get -> NuGet.Versioning.NuGetVersion!
 NuGet.Packaging.FallbackPackagePathResolver
 ~NuGet.Packaging.FallbackPackagePathResolver.FallbackPackagePathResolver(NuGet.Common.INuGetPathContext pathContext) -> void
 ~NuGet.Packaging.FallbackPackagePathResolver.FallbackPackagePathResolver(string userPackageFolder, System.Collections.Generic.IEnumerable<string> fallbackPackageFolders) -> void
@@ -259,8 +259,8 @@ NuGet.Packaging.IAsyncPackageContentReader
 ~NuGet.Packaging.IAsyncPackageContentReader.GetReferenceItemsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkSpecificGroup>>
 ~NuGet.Packaging.IAsyncPackageContentReader.GetToolItemsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkSpecificGroup>>
 NuGet.Packaging.IHashFunction
-~NuGet.Packaging.IHashFunction.GetHash() -> string
-~NuGet.Packaging.IHashFunction.Update(byte[] data, int offset, int count) -> void
+NuGet.Packaging.IHashFunction.GetHash() -> string!
+NuGet.Packaging.IHashFunction.Update(byte[]! data, int offset, int count) -> void
 NuGet.Packaging.INuspecReader
 ~NuGet.Packaging.INuspecReader.GetDependencyGroups() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageDependencyGroup>
 ~NuGet.Packaging.INuspecReader.GetFrameworkReferenceGroups() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkSpecificGroup>
@@ -325,7 +325,7 @@ NuGet.Packaging.IPackageResolver
 ~NuGet.Packaging.IPackageResolver.Resolve(System.Collections.Generic.IEnumerable<string> targets, System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependencyInfo> availablePackages, System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReference> installedPackages, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageIdentity>
 ~NuGet.Packaging.IPackageResolver.Resolve(System.Collections.Generic.IEnumerable<string> targets, System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependencyInfo> availablePackages, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageIdentity>
 NuGet.Packaging.InvalidPackageIdException
-~NuGet.Packaging.InvalidPackageIdException.InvalidPackageIdException(string message) -> void
+NuGet.Packaging.InvalidPackageIdException.InvalidPackageIdException(string! message) -> void
 NuGet.Packaging.LicenseMetadata
 ~NuGet.Packaging.LicenseMetadata.Equals(NuGet.Packaging.LicenseMetadata other) -> bool
 ~NuGet.Packaging.LicenseMetadata.License.get -> string
@@ -482,7 +482,7 @@ NuGet.Packaging.ManifestMetadata.Serviceable.set -> void
 NuGet.Packaging.ManifestSchemaUtility
 NuGet.Packaging.ManifestVersionUtility
 NuGet.Packaging.MinClientVersionException
-~NuGet.Packaging.MinClientVersionException.MinClientVersionException(string message) -> void
+NuGet.Packaging.MinClientVersionException.MinClientVersionException(string! message) -> void
 NuGet.Packaging.MinClientVersionUtility
 NuGet.Packaging.NupkgMetadataFile
 ~NuGet.Packaging.NupkgMetadataFile.ContentHash.get -> string
@@ -730,8 +730,8 @@ NuGet.Packaging.PackagesConfigReader
 ~NuGet.Packaging.PackagesConfigReader.PackagesConfigReader(System.IO.Stream stream, bool leaveStreamOpen) -> void
 ~NuGet.Packaging.PackagesConfigReader.PackagesConfigReader(System.Xml.Linq.XDocument xml) -> void
 NuGet.Packaging.PackagesConfigReaderException
-~NuGet.Packaging.PackagesConfigReaderException.PackagesConfigReaderException(string message) -> void
-~NuGet.Packaging.PackagesConfigReaderException.PackagesConfigReaderException(string message, System.Exception innerException) -> void
+NuGet.Packaging.PackagesConfigReaderException.PackagesConfigReaderException(string! message) -> void
+NuGet.Packaging.PackagesConfigReaderException.PackagesConfigReaderException(string! message, System.Exception! innerException) -> void
 NuGet.Packaging.PackagesConfigWriter
 ~NuGet.Packaging.PackagesConfigWriter.AddPackageEntry(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Frameworks.NuGetFramework targetFramework) -> void
 ~NuGet.Packaging.PackagesConfigWriter.AddPackageEntry(NuGet.Packaging.PackageReference entry) -> void
@@ -749,8 +749,8 @@ NuGet.Packaging.PackagesConfigWriter.Dispose() -> void
 ~NuGet.Packaging.PackagesConfigWriter.WriteFile(string fullPath) -> void
 ~NuGet.Packaging.PackagesConfigWriter.WriteMinClientVersion(NuGet.Versioning.NuGetVersion version) -> void
 NuGet.Packaging.PackagesConfigWriterException
-~NuGet.Packaging.PackagesConfigWriterException.PackagesConfigWriterException(string message) -> void
-~NuGet.Packaging.PackagesConfigWriterException.PackagesConfigWriterException(string message, System.Exception innerException) -> void
+NuGet.Packaging.PackagesConfigWriterException.PackagesConfigWriterException(string! message) -> void
+NuGet.Packaging.PackagesConfigWriterException.PackagesConfigWriterException(string! message, System.Exception! innerException) -> void
 NuGet.Packaging.PackagingConstants
 NuGet.Packaging.PackagingConstants.Folders
 NuGet.Packaging.PhysicalPackageFile
@@ -801,10 +801,10 @@ NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule
 ~NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
 NuGet.Packaging.Sha512HashFunction
 NuGet.Packaging.Sha512HashFunction.Dispose() -> void
-~NuGet.Packaging.Sha512HashFunction.GetHash() -> string
-~NuGet.Packaging.Sha512HashFunction.GetHashBytes() -> byte[]
+NuGet.Packaging.Sha512HashFunction.GetHash() -> string!
+NuGet.Packaging.Sha512HashFunction.GetHashBytes() -> byte[]!
 NuGet.Packaging.Sha512HashFunction.Sha512HashFunction() -> void
-~NuGet.Packaging.Sha512HashFunction.Update(byte[] data, int offset, int count) -> void
+NuGet.Packaging.Sha512HashFunction.Update(byte[]! data, int offset, int count) -> void
 NuGet.Packaging.Signing.Accuracy
 NuGet.Packaging.Signing.Accuracy.GetTotalMicroseconds() -> long?
 NuGet.Packaging.Signing.Accuracy.Microseconds.get -> int?
@@ -1233,19 +1233,19 @@ NuGet.Packaging.Signing.X509TrustStore
 NuGet.Packaging.StreamExtensions
 NuGet.Packaging.TopologicalSortUtility
 NuGet.Packaging.UnsafePackageEntryException
-~NuGet.Packaging.UnsafePackageEntryException.UnsafePackageEntryException(string message) -> void
+NuGet.Packaging.UnsafePackageEntryException.UnsafePackageEntryException(string! message) -> void
 NuGet.Packaging.VersionFolderPathResolver
-~NuGet.Packaging.VersionFolderPathResolver.GetHashFileName(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetHashPath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetManifestFilePath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetNupkgMetadataPath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetPackageDownloadMarkerFileName(string packageId) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetPackageFilePath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~NuGet.Packaging.VersionFolderPathResolver.GetVersionListPath(string packageId) -> string
+NuGet.Packaging.VersionFolderPathResolver.GetHashFileName(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetHashPath(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetManifestFilePath(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetNupkgMetadataPath(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetPackageDownloadMarkerFileName(string! packageId) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetPackageFilePath(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+NuGet.Packaging.VersionFolderPathResolver.GetVersionListPath(string! packageId) -> string!
 NuGet.Packaging.VersionFolderPathResolver.IsLowerCase.get -> bool
-~NuGet.Packaging.VersionFolderPathResolver.RootPath.get -> string
-~NuGet.Packaging.VersionFolderPathResolver.VersionFolderPathResolver(string rootPath) -> void
-~NuGet.Packaging.VersionFolderPathResolver.VersionFolderPathResolver(string rootPath, bool isLowercase) -> void
+NuGet.Packaging.VersionFolderPathResolver.RootPath.get -> string!
+NuGet.Packaging.VersionFolderPathResolver.VersionFolderPathResolver(string! rootPath) -> void
+NuGet.Packaging.VersionFolderPathResolver.VersionFolderPathResolver(string! rootPath, bool isLowercase) -> void
 NuGet.Packaging.XElementExtensions
 NuGet.Packaging.XmlDocFileSaveMode
 NuGet.Packaging.XmlDocFileSaveMode.Compress = 2 -> NuGet.Packaging.XmlDocFileSaveMode
@@ -1416,7 +1416,7 @@ override NuGet.Packaging.LicenseMetadata.GetHashCode() -> int
 ~override NuGet.Packaging.Licenses.NuGetLicense.ToString() -> string
 ~override NuGet.Packaging.Licenses.NuGetLicenseException.ToString() -> string
 ~override NuGet.Packaging.Licenses.WithOperator.ToString() -> string
-~override NuGet.Packaging.MinClientVersionException.AsLogMessage() -> NuGet.Common.ILogMessage
+override NuGet.Packaging.MinClientVersionException.AsLogMessage() -> NuGet.Common.ILogMessage!
 ~override NuGet.Packaging.NupkgMetadataFile.Equals(object obj) -> bool
 override NuGet.Packaging.NupkgMetadataFile.GetHashCode() -> int
 ~override NuGet.Packaging.PackageArchiveReader.CanVerifySignedPackages(NuGet.Packaging.Signing.SignedPackageVerifierSettings verifierSettings) -> bool
@@ -1497,7 +1497,7 @@ override NuGet.Packaging.Signing.SigningSpecificationsV1.RSAPublicKeyMinLength.g
 ~override NuGet.Packaging.Signing.SigningSpecificationsV1.Version.get -> string
 ~override NuGet.Packaging.Signing.TrustedSignerAllowListEntry.Equals(object obj) -> bool
 override NuGet.Packaging.Signing.TrustedSignerAllowListEntry.GetHashCode() -> int
-~override NuGet.Packaging.UnsafePackageEntryException.AsLogMessage() -> NuGet.Common.ILogMessage
+override NuGet.Packaging.UnsafePackageEntryException.AsLogMessage() -> NuGet.Common.ILogMessage!
 ~override NuGet.RuntimeModel.CompatibilityProfile.Equals(object obj) -> bool
 override NuGet.RuntimeModel.CompatibilityProfile.GetHashCode() -> int
 ~override NuGet.RuntimeModel.CompatibilityProfile.ToString() -> string
@@ -1583,7 +1583,7 @@ static NuGet.Packaging.PackageExtraction.PackageExtractionBehavior.XmlDocFileSav
 ~static NuGet.Packaging.PackagesConfig.BoolAttribute(System.Xml.Linq.XElement node, string name, bool defaultValue = false) -> bool
 ~static NuGet.Packaging.PackagesConfig.HasAttributeValue(System.Xml.Linq.XElement node, string attributeName, string targetValue, out System.Xml.Linq.XElement element) -> bool
 ~static NuGet.Packaging.PackagesConfig.TryGetAttribute(System.Xml.Linq.XElement node, string name, out string value) -> bool
-~static NuGet.Packaging.PackagingConstants.Folders.Known.get -> string[]
+static NuGet.Packaging.PackagingConstants.Folders.Known.get -> string![]!
 ~static NuGet.Packaging.RepositorySignatureInfoProvider.Instance.get -> NuGet.Packaging.RepositorySignatureInfoProvider
 ~static NuGet.Packaging.Rules.AnalysisResources.AssemblyDirectlyUnderLibWarning.get -> string
 ~static NuGet.Packaging.Rules.AnalysisResources.AssemblyOutsideLibWarning.get -> string
@@ -1802,27 +1802,27 @@ static readonly NuGet.Packaging.NupkgMetadataFileFormat.Version -> int
 ~static readonly NuGet.Packaging.PackagesConfig.VersionAttributeName -> string
 ~static readonly NuGet.Packaging.PackagesConfig.allowedVersionsAttributeName -> string
 ~static readonly NuGet.Packaging.PackagesConfig.developmentDependencyAttributeName -> string
-~static readonly NuGet.Packaging.PackagingConstants.AgnosticFramework -> string
-~static readonly NuGet.Packaging.PackagingConstants.AnyCodeLanguage -> string
-~static readonly NuGet.Packaging.PackagingConstants.AnyFramework -> string
-~static readonly NuGet.Packaging.PackagingConstants.ContentFilesDefaultBuildAction -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Analyzers -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Build -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.BuildCrossTargeting -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.BuildTransitive -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Content -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.ContentFiles -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Lib -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Native -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Ref -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Runtimes -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Source -> string
-~static readonly NuGet.Packaging.PackagingConstants.Folders.Tools -> string
-~static readonly NuGet.Packaging.PackagingConstants.ManifestExtension -> string
-~static readonly NuGet.Packaging.PackagingConstants.PackageVerifyDurationName -> string
-~static readonly NuGet.Packaging.PackagingConstants.SnupkgFormat -> string
-~static readonly NuGet.Packaging.PackagingConstants.SymbolsNupkgFormat -> string
-~static readonly NuGet.Packaging.PackagingConstants.TargetFrameworkPropertyKey -> string
+static readonly NuGet.Packaging.PackagingConstants.AgnosticFramework -> string!
+static readonly NuGet.Packaging.PackagingConstants.AnyCodeLanguage -> string!
+static readonly NuGet.Packaging.PackagingConstants.AnyFramework -> string!
+static readonly NuGet.Packaging.PackagingConstants.ContentFilesDefaultBuildAction -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Analyzers -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Build -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.BuildCrossTargeting -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.BuildTransitive -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Content -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.ContentFiles -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Lib -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Native -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Ref -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Runtimes -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Source -> string!
+static readonly NuGet.Packaging.PackagingConstants.Folders.Tools -> string!
+static readonly NuGet.Packaging.PackagingConstants.ManifestExtension -> string!
+static readonly NuGet.Packaging.PackagingConstants.PackageVerifyDurationName -> string!
+static readonly NuGet.Packaging.PackagingConstants.SnupkgFormat -> string!
+static readonly NuGet.Packaging.PackagingConstants.SymbolsNupkgFormat -> string!
+static readonly NuGet.Packaging.PackagingConstants.TargetFrameworkPropertyKey -> string!
 ~static readonly NuGet.Packaging.Signing.SigningSpecifications.V1 -> NuGet.Packaging.Signing.SigningSpecificationsV1
 static readonly NuGet.RuntimeModel.RuntimeGraph.Empty -> NuGet.RuntimeModel.RuntimeGraph!
 static readonly NuGet.RuntimeModel.RuntimeGraph.RuntimeGraphFileName -> string!
@@ -1894,8 +1894,8 @@ virtual NuGet.Packaging.Signing.PackageVerificationResult.Trust.get -> NuGet.Pac
 virtual NuGet.Packaging.Signing.SignPackageRequest.Dispose(bool disposing) -> void
 ~virtual NuGet.Packaging.Signing.Signature.FriendlyName.get -> string
 ~virtual NuGet.Packaging.Signing.Signature.Verify(NuGet.Packaging.Signing.Timestamp timestamp, NuGet.Packaging.Signing.SignatureVerifySettings settings, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, System.Security.Cryptography.X509Certificates.X509Certificate2Collection certificateExtraStore) -> NuGet.Packaging.Signing.SignatureVerificationSummary
-~virtual NuGet.Packaging.VersionFolderPathResolver.GetInstallPath(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~virtual NuGet.Packaging.VersionFolderPathResolver.GetManifestFileName(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~virtual NuGet.Packaging.VersionFolderPathResolver.GetPackageDirectory(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~virtual NuGet.Packaging.VersionFolderPathResolver.GetPackageFileName(string packageId, NuGet.Versioning.NuGetVersion version) -> string
-~virtual NuGet.Packaging.VersionFolderPathResolver.GetVersionListDirectory(string packageId) -> string
+virtual NuGet.Packaging.VersionFolderPathResolver.GetInstallPath(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+virtual NuGet.Packaging.VersionFolderPathResolver.GetManifestFileName(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+virtual NuGet.Packaging.VersionFolderPathResolver.GetPackageDirectory(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+virtual NuGet.Packaging.VersionFolderPathResolver.GetPackageFileName(string! packageId, NuGet.Versioning.NuGetVersion! version) -> string!
+virtual NuGet.Packaging.VersionFolderPathResolver.GetVersionListDirectory(string! packageId) -> string!
