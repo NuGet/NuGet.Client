@@ -1155,7 +1155,7 @@ namespace NuGet.Commands
 
                         resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
 
-                        // Recreate the queue
+                        // Recreate the queue but leave out any items that are children of the chosen item that was just removed which essentially evicts unprocessed children from the queue
                         Queue<DependencyGraphItem> newDependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
 
                         while (dependencyGraphItemQueue.Count > 0)
