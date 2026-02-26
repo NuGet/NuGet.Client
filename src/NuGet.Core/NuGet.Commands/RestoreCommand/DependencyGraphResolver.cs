@@ -32,7 +32,7 @@ namespace NuGet.Commands
         private const int DependencyGraphItemQueueSize = 4096;
 
         /// <summary>
-        /// Defines the default size for the evictions queue used to process evictions.
+        /// Defines the default size for the evictions dictionary used to track evictions.
         /// </summary>
         private const int EvictionsDictionarySize = 1024;
 
@@ -881,7 +881,7 @@ namespace NuGet.Commands
             Queue<DependencyGraphItem> dependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
 
             // Stores any evictions to process
-            Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(EvictionsDictionarySize);
+            Dictionary<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint)> evictions = new(EvictionsDictionarySize);
 
             // Keeps track of the number of times the entire walk is started over
             int restartCount = -1;
@@ -891,6 +891,9 @@ namespace NuGet.Commands
 
             // Used when logging package id specific messages, we need to know the target graph name
             string targetGraphName = pair.Name;
+
+            // Cache the result of IsNewerThanNET10 since it is invariant for the entire method
+            bool enablePruningWarnings = IsNewerThanNET10(projectTargetFramework.FrameworkName);
 
         // Used to start over when a dependency has multiple descendants of an item to be evicted.
         //
@@ -926,17 +929,34 @@ namespace NuGet.Commands
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
 
-                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, targetGraphName, _logger);
+                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, enablePruningWarnings, isRootProject, targetGraphName, _logger);
 
                 LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
-                if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
+                if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint) eviction))
                 {
-                    (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
-
                     // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
                     // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
-                    if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
+                    if (!((eviction.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal || eviction.TypeConstraint == LibraryDependencyTarget.ExternalProject) &&
                         currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
+                    {
+                        continue;
+                    }
+                }
+
+                // Lazily skip items whose path passes through an evicted range; this replaces the queue rebuild that previously happened at eviction time
+                if (evictions.Count > 0)
+                {
+                    bool isChildOfEvictedItem = false;
+                    foreach (LibraryRangeIndex pathElement in currentDependencyGraphItem.Path)
+                    {
+                        if (evictions.ContainsKey(pathElement))
+                        {
+                            isChildOfEvictedItem = true;
+                            break;
+                        }
+                    }
+
+                    if (isChildOfEvictedItem)
                     {
                         continue;
                     }
@@ -1044,17 +1064,15 @@ namespace NuGet.Commands
                         // To "evict" a chosen item, we need to also remove all of its transitive children from the chosen list.
                         HashSet<LibraryRangeIndex>? evicteesToRemove = default;
 
-                        foreach (KeyValuePair<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictee in evictions)
+                        foreach (KeyValuePair<LibraryRangeIndex, (LibraryRangeIndex[] Path, LibraryDependencyIndex DependencyIndex, LibraryDependencyTarget TypeConstraint)> evictee in evictions)
                         {
-                            (LibraryRangeIndex[] evicteePath, LibraryDependencyIndex evicteeDepIndex, LibraryDependencyTarget evicteeTypeConstraint) = evictee.Value;
-
                             // See if the evictee is a descendant of the evicted item
-                            if (evicteePath.Contains(evictedLibraryRangeIndex))
+                            if (evictee.Value.Path.Contains(evictedLibraryRangeIndex))
                             {
                                 // if evictee.Key (depIndex) == currentDepIndex && evictee.TypeConstraint == ExternalProject --> Don't remove it.  It must remain evicted.
                                 // If the evictee to remove is the same dependency, but the project version of said dependency, then do not remove it - it must remain evicted in favor of the package.
-                                if (!(evicteeDepIndex == currentDependencyGraphItem.LibraryDependencyIndex &&
-                                    (evicteeTypeConstraint == LibraryDependencyTarget.ExternalProject || evicteeTypeConstraint == LibraryDependencyTarget.PackageProjectExternal)))
+                                if (!(evictee.Value.DependencyIndex == currentDependencyGraphItem.LibraryDependencyIndex &&
+                                    (evictee.Value.TypeConstraint == LibraryDependencyTarget.ExternalProject || evictee.Value.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal)))
                                 {
                                     evicteesToRemove ??= new HashSet<LibraryRangeIndex>();
 
@@ -1084,7 +1102,7 @@ namespace NuGet.Commands
                             }
                         }
 
-                        // Add the eviction to be used later
+                        // Add the eviction to be used later; children of the evicted item that remain in the queue will be skipped lazily via the path check above
                         evictions[evictedLibraryRangeIndex] = (DependencyGraphItemIndexer.CreatePathToRef(currentDependencyGraphItem.Path, currentDependencyGraphItem.LibraryRangeIndex), currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem.LibraryDependency.LibraryRange.TypeConstraint);
 
                         if (shouldStartOver)
@@ -1104,21 +1122,6 @@ namespace NuGet.Commands
                         };
 
                         resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
-
-                        // Recreate the queue but leave out any items that are children of the chosen item that was just removed which essentially evicts unprocessed children from the queue
-                        Queue<DependencyGraphItem> newDependencyGraphItemQueue = new(DependencyGraphItemQueueSize);
-
-                        while (dependencyGraphItemQueue.Count > 0)
-                        {
-                            DependencyGraphItem item = dependencyGraphItemQueue.Dequeue();
-
-                            if (!item.Path.Contains(evictedLibraryRangeIndex))
-                            {
-                                newDependencyGraphItemQueue.Enqueue(item);
-                            }
-                        }
-
-                        dependencyGraphItemQueue = newDependencyGraphItemQueue;
                     }
                     else if (!chosenVersionRange.Equals(currentVersionRange)) // The current item has a lower version
                     {
@@ -1173,6 +1176,7 @@ namespace NuGet.Commands
                                 if (currentDependencyGraphItem.Suppressions.IsSupersetOf(chosenDependencyGraphItemSuppression))
                                 {
                                     isEqualOrSuperSetDisposition = true;
+                                    break;
                                 }
                             }
 
