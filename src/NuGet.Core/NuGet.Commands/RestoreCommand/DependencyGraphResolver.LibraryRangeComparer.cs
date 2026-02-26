@@ -37,76 +37,35 @@ namespace NuGet.Commands
                     return true;
                 }
 
-                // All of this logic is copied from LibraryRange.ToString()
-                LibraryDependencyTarget typeConstraint1 = LibraryDependencyTarget.None;
-                LibraryDependencyTarget typeConstraint2 = LibraryDependencyTarget.None;
-
-                switch (x.TypeConstraint)
-                {
-                    case LibraryDependencyTarget.Reference:
-                        typeConstraint1 = LibraryDependencyTarget.Reference;
-                        break;
-
-                    case LibraryDependencyTarget.ExternalProject:
-                        typeConstraint1 = LibraryDependencyTarget.ExternalProject;
-                        break;
-
-                    case LibraryDependencyTarget.Project:
-                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                        typeConstraint1 = LibraryDependencyTarget.Project;
-                        break;
-                }
-
-                switch (y.TypeConstraint)
-                {
-                    case LibraryDependencyTarget.Reference:
-                        typeConstraint2 = LibraryDependencyTarget.Reference;
-                        break;
-
-                    case LibraryDependencyTarget.ExternalProject:
-                        typeConstraint2 = LibraryDependencyTarget.ExternalProject;
-                        break;
-
-                    case LibraryDependencyTarget.Project:
-                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                        typeConstraint2 = LibraryDependencyTarget.Project;
-                        break;
-                }
-
-                return typeConstraint1 == typeConstraint2
+                return NormalizeTypeConstraint(x.TypeConstraint) == NormalizeTypeConstraint(y.TypeConstraint)
                     && x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase)
                     && x.VersionRange.Equals(y.VersionRange);
             }
 
             public int GetHashCode(LibraryRange obj)
             {
-                LibraryDependencyTarget typeConstraint = LibraryDependencyTarget.None;
-
-                switch (obj.TypeConstraint)
-                {
-                    case LibraryDependencyTarget.Reference:
-                        typeConstraint = LibraryDependencyTarget.Reference;
-                        break;
-
-                    case LibraryDependencyTarget.ExternalProject:
-                        typeConstraint = LibraryDependencyTarget.ExternalProject;
-                        break;
-
-                    case LibraryDependencyTarget.Project:
-                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                        typeConstraint = LibraryDependencyTarget.Project;
-                        break;
-                }
-
                 VersionRange versionRange = obj.VersionRange ?? VersionRange.None;
 
                 HashCodeCombiner combiner = new();
 
-                combiner.AddObject((int)typeConstraint);
+                combiner.AddObject((int)NormalizeTypeConstraint(obj.TypeConstraint));
                 combiner.AddStringIgnoreCase(obj.Name);
                 combiner.AddObject(versionRange);
 
                 return combiner.CombinedHash;
+            }
+
+            // All of this logic is copied from LibraryRange.ToString()
+            private static LibraryDependencyTarget NormalizeTypeConstraint(LibraryDependencyTarget typeConstraint)
+            {
+                return typeConstraint switch
+                {
+                    LibraryDependencyTarget.Reference => LibraryDependencyTarget.Reference,
+                    LibraryDependencyTarget.ExternalProject => LibraryDependencyTarget.ExternalProject,
+                    LibraryDependencyTarget.Project => LibraryDependencyTarget.Project,
+                    LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject => LibraryDependencyTarget.Project,
+                    _ => LibraryDependencyTarget.None,
+                };
             }
         }
     }

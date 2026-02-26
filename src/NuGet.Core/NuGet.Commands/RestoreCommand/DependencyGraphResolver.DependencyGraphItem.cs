@@ -163,7 +163,8 @@ namespace NuGet.Commands
                 ILogger logger)
             {
                 if (packagesToPrune?.TryGetValue(dependency.Name, out PrunePackageReference? packageToPrune) != true
-                    || !dependency.LibraryRange!.VersionRange!.Satisfies(packageToPrune!.VersionRange!.MaxVersion!))
+                    || dependency.LibraryRange?.VersionRange == null
+                    || !dependency.LibraryRange.VersionRange.Satisfies(packageToPrune!.VersionRange!.MaxVersion!))
                 {
                     // There is either no packages to prune or the package to prune does not match the version range of the dependency
                     return false;

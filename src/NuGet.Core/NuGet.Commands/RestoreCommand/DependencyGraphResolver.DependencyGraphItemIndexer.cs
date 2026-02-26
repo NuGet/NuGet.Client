@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using NuGet.LibraryModel;
 
 namespace NuGet.Commands
@@ -57,12 +57,12 @@ namespace NuGet.Commands
             /// <summary>
             /// A case-insensitive dictionary that stores a <see cref="LibraryDependencyIndex" /> by the name of a library.
             /// </summary>
-            private readonly ConcurrentDictionary<string, LibraryDependencyIndex> _libraryDependencyTable = new ConcurrentDictionary<string, LibraryDependencyIndex>(StringComparer.OrdinalIgnoreCase);
+            private readonly Dictionary<string, LibraryDependencyIndex> _libraryDependencyTable = new Dictionary<string, LibraryDependencyIndex>(StringComparer.OrdinalIgnoreCase);
 
             /// <summary>
             /// A case-insensitive dictionary that stores a <see cref="LibraryRangeIndex" /> by the <see cref="LibraryRange" /> of a library.  This dictionary uses the <see cref="LibraryRangeComparer" /> to compare <see cref="LibraryRange" /> objects.
             /// </summary>
-            private readonly ConcurrentDictionary<LibraryRange, LibraryRangeIndex> _libraryRangeTable = new(LibraryRangeComparer.Instance);
+            private readonly Dictionary<LibraryRange, LibraryRangeIndex> _libraryRangeTable = new(LibraryRangeComparer.Instance);
 
             /// <summary>
             /// Stores the next index to use if a unique library is indexed.
@@ -80,8 +80,8 @@ namespace NuGet.Commands
             /// <param name="libraryDependency">A <see cref="LibraryDependency" /> representing the root project.</param>
             public DependencyGraphItemIndexer(LibraryDependency libraryDependency)
             {
-                _libraryDependencyTable.TryAdd(libraryDependency.Name, LibraryDependencyIndex.Project);
-                _libraryRangeTable.TryAdd(libraryDependency.LibraryRange, LibraryRangeIndex.Project);
+                _libraryDependencyTable.Add(libraryDependency.Name, LibraryDependencyIndex.Project);
+                _libraryRangeTable.Add(libraryDependency.LibraryRange, LibraryRangeIndex.Project);
             }
 
             /// <summary>
@@ -117,7 +117,7 @@ namespace NuGet.Commands
                     index = _nextLibraryDependencyIndex++;
 
                     // Store the index in the table so it can be used for equal library names
-                    _libraryDependencyTable.TryAdd(name, index);
+                    _libraryDependencyTable.Add(name, index);
 
                     return index;
                 }
@@ -146,7 +146,7 @@ namespace NuGet.Commands
                     index = _nextLibraryRangeIndex++;
 
                     // Store the index in the table so it can be re-used by equal library ranges
-                    _libraryRangeTable.TryAdd(libraryRange, index);
+                    _libraryRangeTable.Add(libraryRange, index);
 
                     return index;
                 }
