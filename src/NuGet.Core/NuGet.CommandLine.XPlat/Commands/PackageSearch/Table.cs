@@ -38,29 +38,14 @@ namespace NuGet.CommandLine.XPlat
 
         public Table(int[] columnsToHighlight, string[] headers, int consoleWidth)
         {
+            if (consoleWidth <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(consoleWidth), consoleWidth, "Console width must be greater than zero.");
+            }
+
             _columnsToHighlight = columnsToHighlight;
-            int windowWidth = consoleWidth;
 
-            if (windowWidth == 0)
-            {
-                // Auto-detect the window width
-                try
-                {
-                    windowWidth = Console.WindowWidth;
-                }
-                catch (Exception)
-                {
-                    // Ignore any exception
-                }
-            }
-
-            // If the window width is not available, use the default window width
-            if (windowWidth <= 0)
-            {
-                windowWidth = DefaultWindowWidth;
-            }
-
-            _maxColumnWidth = Math.Max(MinimumCharactersInAColumn, (windowWidth - MinimumCharactersInAColumn * headers.Length) / headers.Length);
+            _maxColumnWidth = Math.Max(MinimumCharactersInAColumn, (consoleWidth - MinimumCharactersInAColumn * headers.Length) / headers.Length);
 
             // Add the headers
             foreach (var header in headers)
