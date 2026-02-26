@@ -324,12 +324,12 @@ NuGet.ProjectModel.PackageSpecUtility
 NuGet.ProjectModel.PackageSpecWriter
 NuGet.ProjectModel.PackageSpecWriter.PackageSpecWriter() -> void
 NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata
-~NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Equals(NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata obj) -> bool
-~NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.PackagesConfigPath.get -> string
-~NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.PackagesConfigPath.set -> void
+NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Equals(NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata? obj) -> bool
+NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.PackagesConfigPath.get -> string?
+NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.PackagesConfigPath.set -> void
 NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.PackagesConfigProjectRestoreMetadata() -> void
-~NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.RepositoryPath.get -> string
-~NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.RepositoryPath.set -> void
+NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.RepositoryPath.get -> string?
+NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.RepositoryPath.set -> void
 NuGet.ProjectModel.PackagesLockFile
 ~NuGet.ProjectModel.PackagesLockFile.Equals(NuGet.ProjectModel.PackagesLockFile other) -> bool
 NuGet.ProjectModel.PackagesLockFile.PackagesLockFile() -> void
@@ -563,8 +563,8 @@ override NuGet.ProjectModel.LockFileTargetLibrary.Equals(object? obj) -> bool
 override NuGet.ProjectModel.LockFileTargetLibrary.GetHashCode() -> int
 ~override NuGet.ProjectModel.PackageSpec.Equals(object obj) -> bool
 override NuGet.ProjectModel.PackageSpec.GetHashCode() -> int
-~override NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Clone() -> NuGet.ProjectModel.ProjectRestoreMetadata
-~override NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Equals(object obj) -> bool
+override NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Clone() -> NuGet.ProjectModel.ProjectRestoreMetadata!
+override NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.Equals(object? obj) -> bool
 override NuGet.ProjectModel.PackagesConfigProjectRestoreMetadata.GetHashCode() -> int
 ~override NuGet.ProjectModel.PackagesLockFile.Equals(object obj) -> bool
 override NuGet.ProjectModel.PackagesLockFile.GetHashCode() -> int
@@ -630,8 +630,8 @@ static NuGet.ProjectModel.PackageSpecExtensions.GetTargetFramework(this NuGet.Pr
 ~static NuGet.ProjectModel.PackageSpecOperations.AddOrUpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageIdentity identity, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void
 ~static NuGet.ProjectModel.PackageSpecOperations.HasPackage(NuGet.ProjectModel.PackageSpec spec, string packageId) -> bool
 ~static NuGet.ProjectModel.PackageSpecOperations.RemoveDependency(NuGet.ProjectModel.PackageSpec spec, string packageId) -> void
-~static NuGet.ProjectModel.PackageSpecUtility.IsSnapshotVersion(string version) -> bool
-~static NuGet.ProjectModel.PackageSpecUtility.SpecifySnapshot(string version, string snapshotValue) -> NuGet.Versioning.NuGetVersion
+static NuGet.ProjectModel.PackageSpecUtility.IsSnapshotVersion(string? version) -> bool
+static NuGet.ProjectModel.PackageSpecUtility.SpecifySnapshot(string! version, string? snapshotValue) -> NuGet.Versioning.NuGetVersion!
 ~static NuGet.ProjectModel.PackageSpecWriter.Write(NuGet.ProjectModel.PackageSpec packageSpec, NuGet.RuntimeModel.IObjectWriter writer) -> void
 ~static NuGet.ProjectModel.PackagesLockFileFormat.Parse(string lockFileContent, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.PackagesLockFile
 ~static NuGet.ProjectModel.PackagesLockFileFormat.Parse(string lockFileContent, string path) -> NuGet.ProjectModel.PackagesLockFile
