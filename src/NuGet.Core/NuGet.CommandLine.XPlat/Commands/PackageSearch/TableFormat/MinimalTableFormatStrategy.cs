@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat
         private readonly string[] _minimalVerbosityTableHeader = { "Package ID", "Latest Version" };
         private readonly int[] _minimalColumnsToHighlight = { 0 };
 
-        public Table CreateTable(int consoleWidth = 0)
+        public Table CreateTable(int consoleWidth)
         {
             return new Table(_minimalColumnsToHighlight, _minimalVerbosityTableHeader, consoleWidth);
         }

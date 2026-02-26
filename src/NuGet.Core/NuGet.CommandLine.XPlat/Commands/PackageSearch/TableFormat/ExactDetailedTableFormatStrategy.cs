@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat
         private readonly string[] _detailedVerbosityTableHeaderForExactMatch = { "Package ID", "Version", "Owners", "Total Downloads", "Vulnerable", "Deprecation", "Project URL", "Description" };
         private readonly int[] _detailedColumnsToHighlight = { 0, 2, 6, 7 };
 
-        public Table CreateTable(int consoleWidth = 0)
+        public Table CreateTable(int consoleWidth)
         {
             return new Table(_detailedColumnsToHighlight, _detailedVerbosityTableHeaderForExactMatch, consoleWidth);
         }

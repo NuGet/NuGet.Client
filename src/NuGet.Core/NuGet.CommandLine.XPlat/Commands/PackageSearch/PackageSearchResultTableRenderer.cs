@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.XPlat
         private bool _exactMatch;
         private int _consoleWidth;
 
-        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity, bool exactMatch, int consoleWidth = 0)
+        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity, bool exactMatch, int consoleWidth)
         {
             _searchTerm = searchTerm;
             _loggerWithColor = loggerWithColor;
