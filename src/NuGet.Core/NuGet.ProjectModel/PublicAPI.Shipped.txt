@@ -83,10 +83,10 @@ NuGet.ProjectModel.ExternalProjectReference
 ~NuGet.ProjectModel.ExternalProjectReference.UniqueName.get -> string
 NuGet.ProjectModel.FileFormatException
 NuGet.ProjectModel.FileFormatException.Column.get -> int
-~NuGet.ProjectModel.FileFormatException.FileFormatException(string message) -> void
-~NuGet.ProjectModel.FileFormatException.FileFormatException(string message, System.Exception innerException) -> void
+NuGet.ProjectModel.FileFormatException.FileFormatException(string! message) -> void
+NuGet.ProjectModel.FileFormatException.FileFormatException(string! message, System.Exception! innerException) -> void
 NuGet.ProjectModel.FileFormatException.Line.get -> int
-~NuGet.ProjectModel.FileFormatException.Path.get -> string
+NuGet.ProjectModel.FileFormatException.Path.get -> string?
 NuGet.ProjectModel.HashObjectWriter
 NuGet.ProjectModel.HashObjectWriter.Dispose() -> void
 NuGet.ProjectModel.HashObjectWriter.GetHash() -> string!
@@ -115,8 +115,8 @@ NuGet.ProjectModel.IAssetsLogMessage.StartLineNumber.get -> int
 ~NuGet.ProjectModel.IAssetsLogMessage.TargetGraphs.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.IAssetsLogMessage.WarningLevel.get -> NuGet.Common.WarningLevel
 NuGet.ProjectModel.IExternalProjectReferenceProvider
-~NuGet.ProjectModel.IExternalProjectReferenceProvider.GetEntryPoints() -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.ExternalProjectReference>
-~NuGet.ProjectModel.IExternalProjectReferenceProvider.GetReferences(string entryPointPath) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.ExternalProjectReference>
+NuGet.ProjectModel.IExternalProjectReferenceProvider.GetEntryPoints() -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.ExternalProjectReference!>!
+NuGet.ProjectModel.IExternalProjectReferenceProvider.GetReferences(string! entryPointPath) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.ExternalProjectReference!>!
 NuGet.ProjectModel.JTokenExtensions
 NuGet.ProjectModel.JsonPackageSpecReader
 NuGet.ProjectModel.LockFile
@@ -521,12 +521,12 @@ NuGet.ProjectModel.TargetFrameworkInformation.TargetFrameworkInformation() -> vo
 NuGet.ProjectModel.TargetFrameworkInformation.Warn.get -> bool
 NuGet.ProjectModel.TargetFrameworkInformation.Warn.init -> void
 NuGet.ProjectModel.ToolPathResolver
-~NuGet.ProjectModel.ToolPathResolver.GetBestToolDirectoryPath(string packageId, NuGet.Versioning.VersionRange versionRange, NuGet.Frameworks.NuGetFramework framework) -> string
-~NuGet.ProjectModel.ToolPathResolver.GetLockFilePath(string packageId, NuGet.Versioning.NuGetVersion version, NuGet.Frameworks.NuGetFramework framework) -> string
-~NuGet.ProjectModel.ToolPathResolver.GetLockFilePath(string toolDirectory) -> string
-~NuGet.ProjectModel.ToolPathResolver.GetToolDirectoryPath(string packageId, NuGet.Versioning.NuGetVersion version, NuGet.Frameworks.NuGetFramework framework) -> string
-~NuGet.ProjectModel.ToolPathResolver.ToolPathResolver(string packagesDirectory) -> void
-~NuGet.ProjectModel.ToolPathResolver.ToolPathResolver(string packagesDirectory, bool isLowercase) -> void
+NuGet.ProjectModel.ToolPathResolver.GetBestToolDirectoryPath(string! packageId, NuGet.Versioning.VersionRange! versionRange, NuGet.Frameworks.NuGetFramework! framework) -> string?
+NuGet.ProjectModel.ToolPathResolver.GetLockFilePath(string! packageId, NuGet.Versioning.NuGetVersion! version, NuGet.Frameworks.NuGetFramework! framework) -> string!
+NuGet.ProjectModel.ToolPathResolver.GetLockFilePath(string! toolDirectory) -> string!
+NuGet.ProjectModel.ToolPathResolver.GetToolDirectoryPath(string! packageId, NuGet.Versioning.NuGetVersion! version, NuGet.Frameworks.NuGetFramework! framework) -> string!
+NuGet.ProjectModel.ToolPathResolver.ToolPathResolver(string! packagesDirectory) -> void
+NuGet.ProjectModel.ToolPathResolver.ToolPathResolver(string! packagesDirectory, bool isLowercase) -> void
 NuGet.ProjectModel.WarningProperties
 NuGet.ProjectModel.WarningProperties.AllWarningsAsErrors.get -> bool
 NuGet.ProjectModel.WarningProperties.AllWarningsAsErrors.set -> void
@@ -605,11 +605,11 @@ static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction
 ~static NuGet.ProjectModel.DependencyGraphSpec.Load(string path) -> NuGet.ProjectModel.DependencyGraphSpec
 ~static NuGet.ProjectModel.DependencyGraphSpec.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packages) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 ~static NuGet.ProjectModel.DependencyGraphSpec.Union(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.DependencyGraphSpec> dgSpecs) -> NuGet.ProjectModel.DependencyGraphSpec
-~static NuGet.ProjectModel.FileFormatException.Create(System.Exception exception, Newtonsoft.Json.Linq.JToken value, string path) -> NuGet.ProjectModel.FileFormatException
-~static NuGet.ProjectModel.FileFormatException.Create(string message, Newtonsoft.Json.Linq.JToken value, string path) -> NuGet.ProjectModel.FileFormatException
-~static NuGet.ProjectModel.JTokenExtensions.GetValue<T>(this Newtonsoft.Json.Linq.JToken token, string name) -> T
-~static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken jToken) -> T[]
-~static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken jToken, string name) -> T[]
+static NuGet.ProjectModel.FileFormatException.Create(System.Exception! exception, Newtonsoft.Json.Linq.JToken! value, string! path) -> NuGet.ProjectModel.FileFormatException!
+static NuGet.ProjectModel.FileFormatException.Create(string! message, Newtonsoft.Json.Linq.JToken! value, string! path) -> NuGet.ProjectModel.FileFormatException!
+static NuGet.ProjectModel.JTokenExtensions.GetValue<T>(this Newtonsoft.Json.Linq.JToken! token, string! name) -> T?
+static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken! jToken) -> T?[]!
+static NuGet.ProjectModel.JTokenExtensions.ValueAsArray<T>(this Newtonsoft.Json.Linq.JToken! jToken, string! name) -> T?[]?
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(System.IO.Stream stream, string name, string packageSpecPath, string snapshotValue) -> NuGet.ProjectModel.PackageSpec
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(string json, string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec
 ~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec

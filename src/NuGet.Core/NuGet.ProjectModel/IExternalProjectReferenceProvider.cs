@@ -6,10 +6,10 @@ using System.Collections.Generic;
 
 namespace NuGet.ProjectModel
 {
-    [Obsolete("This API is unused and will be removed in a future release.")]
     /// <summary>
     /// Provides external project reference closures.
     /// </summary>
+    [Obsolete("This API is unused and will be removed in a future release.")]
     public interface IExternalProjectReferenceProvider
     {
         /// <summary>
