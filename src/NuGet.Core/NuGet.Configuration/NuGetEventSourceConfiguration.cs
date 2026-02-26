@@ -22,13 +22,13 @@ namespace NuGet.Configuration
             public const EventTask SettingsLoadingContext_FileRead = (EventTask)2;
         }
 
-        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Configuration, Opcode = EventOpcode.Start, Task = Tasks.SettingsFile_FileRead)]
+        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Configuration, Opcode = EventOpcode.Start, Task = Tasks.SettingsFile_FileRead, ActivityOptions = EventActivityOptions.Detachable)]
         public void SettingsFile_FileReadStart(string configFilePath, int isMachineWide, int isReadOnly)
         {
             WriteEvent(1, configFilePath ?? string.Empty, isMachineWide, isReadOnly);
         }
 
-        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Configuration, Opcode = EventOpcode.Stop, Task = Tasks.SettingsFile_FileRead)]
+        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Configuration, Opcode = EventOpcode.Stop, Task = Tasks.SettingsFile_FileRead, ActivityOptions = EventActivityOptions.Detachable)]
         public void SettingsFile_FileReadStop(string configFilePath, int isMachineWide, int isReadOnly)
         {
             WriteEvent(2, configFilePath ?? string.Empty, isMachineWide, isReadOnly);

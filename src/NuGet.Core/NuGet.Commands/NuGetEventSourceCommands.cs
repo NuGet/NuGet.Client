@@ -34,13 +34,13 @@ namespace NuGet.Commands
 
         // RestoreCommand/BuildAssetsFile (IDs 1-2)
 
-        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_BuildAssetsFile)]
+        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_BuildAssetsFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_BuildAssetsFileStart(string filePath)
         {
             WriteEvent(1, filePath ?? string.Empty);
         }
 
-        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_BuildAssetsFile)]
+        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_BuildAssetsFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_BuildAssetsFileStop(string filePath)
         {
             WriteEvent(2, filePath ?? string.Empty);
@@ -48,13 +48,13 @@ namespace NuGet.Commands
 
         // RestoreCommand/BuildRestoreGraph (IDs 3-4)
 
-        [Event(3, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_BuildRestoreGraph)]
+        [Event(3, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_BuildRestoreGraph, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_BuildRestoreGraphStart(string filePath)
         {
             WriteEvent(3, filePath ?? string.Empty);
         }
 
-        [Event(4, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_BuildRestoreGraph)]
+        [Event(4, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_BuildRestoreGraph, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_BuildRestoreGraphStop(string filePath)
         {
             WriteEvent(4, filePath ?? string.Empty);
@@ -62,13 +62,13 @@ namespace NuGet.Commands
 
         // RestoreCommand/CalcNoOpRestore (IDs 5-6)
 
-        [Event(5, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_CalcNoOpRestore)]
+        [Event(5, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreCommand_CalcNoOpRestore, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_CalcNoOpRestoreStart(string filePath)
         {
             WriteEvent(5, filePath ?? string.Empty);
         }
 
-        [Event(6, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_CalcNoOpRestore)]
+        [Event(6, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreCommand_CalcNoOpRestore, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreCommand_CalcNoOpRestoreStop(string filePath)
         {
             WriteEvent(6, filePath ?? string.Empty);
@@ -76,13 +76,13 @@ namespace NuGet.Commands
 
         // RestoreRunner/RestoreProject (IDs 7-8)
 
-        [Event(7, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreRunner_RestoreProject)]
+        [Event(7, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreRunner_RestoreProject, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreRunner_RestoreProjectStart(string filePath)
         {
             WriteEvent(7, filePath ?? string.Empty);
         }
 
-        [Event(8, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreRunner_RestoreProject)]
+        [Event(8, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreRunner_RestoreProject, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreRunner_RestoreProjectStop(string filePath)
         {
             WriteEvent(8, filePath ?? string.Empty);
@@ -90,13 +90,13 @@ namespace NuGet.Commands
 
         // RestoreRunner/CommitAsync (IDs 9-10)
 
-        [Event(9, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreRunner_CommitAsync)]
+        [Event(9, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreRunner_CommitAsync, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreRunner_CommitAsyncStart(string filePath)
         {
             WriteEvent(9, filePath ?? string.Empty);
         }
 
-        [Event(10, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreRunner_CommitAsync)]
+        [Event(10, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreRunner_CommitAsync, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreRunner_CommitAsyncStop(string filePath)
         {
             WriteEvent(10, filePath ?? string.Empty);
@@ -104,13 +104,13 @@ namespace NuGet.Commands
 
         // RestoreResult/WriteAssetsFile (IDs 11-12)
 
-        [Event(11, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteAssetsFile)]
+        [Event(11, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteAssetsFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteAssetsFileStart(string filePath)
         {
             WriteEvent(11, filePath ?? string.Empty);
         }
 
-        [Event(12, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteAssetsFile)]
+        [Event(12, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteAssetsFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteAssetsFileStop(string filePath)
         {
             WriteEvent(12, filePath ?? string.Empty);
@@ -118,13 +118,13 @@ namespace NuGet.Commands
 
         // RestoreResult/WriteCacheFile (IDs 13-14)
 
-        [Event(13, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteCacheFile)]
+        [Event(13, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteCacheFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteCacheFileStart(string filePath)
         {
             WriteEvent(13, filePath ?? string.Empty);
         }
 
-        [Event(14, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteCacheFile)]
+        [Event(14, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteCacheFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteCacheFileStop(string filePath)
         {
             WriteEvent(14, filePath ?? string.Empty);
@@ -132,13 +132,13 @@ namespace NuGet.Commands
 
         // RestoreResult/WritePackagesLockFile (IDs 15-16)
 
-        [Event(15, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WritePackagesLockFile)]
+        [Event(15, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WritePackagesLockFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WritePackagesLockFileStart(string filePath)
         {
             WriteEvent(15, filePath ?? string.Empty);
         }
 
-        [Event(16, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WritePackagesLockFile)]
+        [Event(16, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WritePackagesLockFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WritePackagesLockFileStop(string filePath)
         {
             WriteEvent(16, filePath ?? string.Empty);
@@ -146,13 +146,13 @@ namespace NuGet.Commands
 
         // RestoreResult/WriteDgSpecFile (IDs 17-18)
 
-        [Event(17, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteDgSpecFile)]
+        [Event(17, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.RestoreResult_WriteDgSpecFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteDgSpecFileStart(string filePath)
         {
             WriteEvent(17, filePath ?? string.Empty);
         }
 
-        [Event(18, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteDgSpecFile)]
+        [Event(18, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.RestoreResult_WriteDgSpecFile, ActivityOptions = EventActivityOptions.Detachable)]
         public void RestoreResult_WriteDgSpecFileStop(string filePath)
         {
             WriteEvent(18, filePath ?? string.Empty);
@@ -160,13 +160,13 @@ namespace NuGet.Commands
 
         // DependencyGraphResolver/CreateRestoreTargetGraph (IDs 19-20)
 
-        [Event(19, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.DependencyGraphResolver_CreateRestoreTargetGraph)]
+        [Event(19, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.DependencyGraphResolver_CreateRestoreTargetGraph, ActivityOptions = EventActivityOptions.Detachable)]
         public void DependencyGraphResolver_CreateRestoreTargetGraphStart(string filePath, string frameworkRuntimeDefinition)
         {
             WriteEvent(19, filePath ?? string.Empty, frameworkRuntimeDefinition ?? string.Empty);
         }
 
-        [Event(20, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.DependencyGraphResolver_CreateRestoreTargetGraph)]
+        [Event(20, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.DependencyGraphResolver_CreateRestoreTargetGraph, ActivityOptions = EventActivityOptions.Detachable)]
         public void DependencyGraphResolver_CreateRestoreTargetGraphStop(string filePath, string frameworkRuntimeDefinition, int success, int resolvedPackageCount, int unresolvedPackageCount)
         {
             WriteEvent(20, filePath ?? string.Empty, frameworkRuntimeDefinition ?? string.Empty, success, resolvedPackageCount, unresolvedPackageCount);
@@ -174,13 +174,13 @@ namespace NuGet.Commands
 
         // DependencyGraphResolver/ResolveDependencyGraphItems (IDs 21-22)
 
-        [Event(21, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.DependencyGraphResolver_ResolveDependencyGraphItems)]
+        [Event(21, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Start, Task = Tasks.DependencyGraphResolver_ResolveDependencyGraphItems, ActivityOptions = EventActivityOptions.Detachable)]
         public void DependencyGraphResolver_ResolveDependencyGraphItemsStart(string filePath, string frameworkRuntimeDefinition)
         {
             WriteEvent(21, filePath ?? string.Empty, frameworkRuntimeDefinition ?? string.Empty);
         }
 
-        [Event(22, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.DependencyGraphResolver_ResolveDependencyGraphItems)]
+        [Event(22, Level = EventLevel.Informational, Keywords = Keywords.Performance | Keywords.Restore, Opcode = EventOpcode.Stop, Task = Tasks.DependencyGraphResolver_ResolveDependencyGraphItems, ActivityOptions = EventActivityOptions.Detachable)]
         public void DependencyGraphResolver_ResolveDependencyGraphItemsStop(string filePath, string frameworkRuntimeDefinition, int resolvedPackagesCount, int restartCount, int totalQueuedItemCount)
         {
             WriteEvent(22, filePath ?? string.Empty, frameworkRuntimeDefinition ?? string.Empty, resolvedPackagesCount, restartCount, totalQueuedItemCount);

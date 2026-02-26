@@ -22,13 +22,13 @@ namespace NuGet.Common
             public const EventTask MigrationRunner_Run = (EventTask)1;
         }
 
-        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Common | Keywords.Performance, Opcode = EventOpcode.Start, Task = Tasks.MigrationRunner_Run)]
+        [Event(1, Level = EventLevel.Informational, Keywords = Keywords.Common | Keywords.Performance, Opcode = EventOpcode.Start, Task = Tasks.MigrationRunner_Run, ActivityOptions = EventActivityOptions.Detachable)]
         public void MigrationRunner_RunStart()
         {
             WriteEvent(1);
         }
 
-        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Common | Keywords.Performance, Opcode = EventOpcode.Stop, Task = Tasks.MigrationRunner_Run)]
+        [Event(2, Level = EventLevel.Informational, Keywords = Keywords.Common | Keywords.Performance, Opcode = EventOpcode.Stop, Task = Tasks.MigrationRunner_Run, ActivityOptions = EventActivityOptions.Detachable)]
         public void MigrationRunner_RunStop(string migrationFileFullPath, int migrationPerformed)
         {
             WriteEvent(2, migrationFileFullPath ?? string.Empty, migrationPerformed);

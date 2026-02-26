@@ -264,7 +264,7 @@ namespace NuGet.Commands
                 // Create assets file
                 if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreCommand_BuildAssetsFileStart(_request.Project.FilePath);
 
-                LockFile assetsFile = RestoreCommand_BuildAssetsFile(
+                LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
                     _request.Project,
                     graphs,
@@ -1454,7 +1454,7 @@ namespace NuGet.Commands
             }
         }
 
-        private LockFile RestoreCommand_BuildAssetsFile(
+        private LockFile BuildAssetsFile(
             LockFile existingLockFile,
             PackageSpec project,
             List<RestoreTargetGraph> graphs,

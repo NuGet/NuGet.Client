@@ -82,7 +82,28 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
             }
 
-            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LogMessage((int)level, data);
+            if (NuGetEventSourceSdkResolver.Instance.IsEnabled())
+            {
+                switch (level)
+                {
+                    case LogLevel.Debug:
+                    case LogLevel.Verbose:
+                        NuGetEventSourceSdkResolver.Instance.LogMessageVerbose((int)level, data);
+                        break;
+                    case LogLevel.Information:
+                        NuGetEventSourceSdkResolver.Instance.LogMessageInformational((int)level, data);
+                        break;
+                    case LogLevel.Minimal:
+                        NuGetEventSourceSdkResolver.Instance.LogMessageAlways((int)level, data);
+                        break;
+                    case LogLevel.Warning:
+                        NuGetEventSourceSdkResolver.Instance.LogMessageWarning((int)level, data);
+                        break;
+                    case LogLevel.Error:
+                        NuGetEventSourceSdkResolver.Instance.LogMessageError((int)level, data);
+                        break;
+                }
+            }
         }
 
         /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />
