@@ -495,8 +495,8 @@ namespace NuGet.Commands
                                     }
                                 }
 
-                                // It is a downgrade if central transitive pinning is not being used or if the child is not a direct package reference
-                                if (!foundParentDowngrade && (!isCentralPackageTransitivePinningEnabled || !childResolvedDependencyGraphItem.IsRootPackageReference))
+                                // It is a downgrade if no parent downgrade was found. Direct package references always generate NU1605 warnings rather than NU1109 errors.
+                                if (!foundParentDowngrade)
                                 {
                                     downgrades.Add(
                                         childResolvedLibraryRangeIndex,
@@ -505,7 +505,7 @@ namespace NuGet.Commands
                                             FromLibraryDependency: childLibraryDependency,
                                             ToParentLibraryRangeIndex: childResolvedDependencyGraphItem.Path[childResolvedDependencyGraphItem.Path.Length - 1],
                                             ToLibraryDependencyIndex: childLibraryDependencyIndex,
-                                            IsCentralTransitive: isCentralPackageTransitivePinningEnabled ? childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage : false
+                                            IsCentralTransitive: isCentralPackageTransitivePinningEnabled && childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !childResolvedDependencyGraphItem.IsRootPackageReference
                                         ));
                                 }
                             }

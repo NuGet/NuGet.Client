@@ -2793,6 +2793,74 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
         }
 
+        // Project 1 -> a 1.0.0 -> b 1.8.0
+        //           -> b 1.0.0 (direct dep, pinned by CPM)
+        // CentralPackageTransitivePinningEnabled = true
+        // Expected: NU1605 (b downgraded by direct dep, not by central transitive pin)
+        [Fact]
+        public async Task RestoreCommand_WithDirectDependencyDowngradeAndTransitivePinningEnabled_RespectsDowngrade_AndRaisesNU1605()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("b", "1.8.0"),
+                ]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                new SimpleTestPackageContext("b", "1.0.0"),
+                new SimpleTestPackageContext("b", "1.8.0"));
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                                ""b"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[1.0.0,)"",
+                            ""b"": ""[1.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec);
+
+            result.Success.Should().BeTrue();
+            result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
