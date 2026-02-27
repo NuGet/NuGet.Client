@@ -40,7 +40,8 @@ namespace NuGet.Packaging.Core
         /// Package Version
         /// </summary>
         /// <remarks>can be null</remarks>
-        /// <remarks>Note that this is incorrect annotated intentionally. There are very few scenarios in which the null is useful and very few places in the  </remarks>
+        /// <remarks>This property is annotated as not nullable intentionally.
+        /// The null is used in very few scenarios and practically illegal in cases dealing with an actual package identity. </remarks>
         public NuGetVersion Version
         {
             get { return _version!; }
