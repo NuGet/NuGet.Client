@@ -46,8 +46,6 @@ namespace Dotnet.Integration.Test
 
         public DotnetIntegrationTestFixture()
         {
-            MSBuildLocator.RegisterDefaults();
-
             string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
             _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath);
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
@@ -58,6 +56,8 @@ namespace Dotnet.Integration.Test
 
             SdkDirectory = new DirectoryInfo(sdkPath);
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
+
+            MSBuildLocator.RegisterMSBuildPath(sdkPath);
 
             _templateDirectory = new SimpleTestPathContext();
             TestDotnetCLiUtility.WriteGlobalJson(_templateDirectory.WorkingDirectory);
