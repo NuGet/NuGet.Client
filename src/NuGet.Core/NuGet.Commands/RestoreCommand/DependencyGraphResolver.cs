@@ -1000,10 +1000,7 @@ namespace NuGet.Commands
                     {
                         IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
                         IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
-                        Suppressions =
-                        [
-                            currentDependencyGraphItem.Suppressions!
-                        ]
+                        Suppressions = [currentDependencyGraphItem.Suppressions!],
                     };
 
                     resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
@@ -1147,10 +1144,7 @@ namespace NuGet.Commands
                         {
                             IsCentrallyPinnedTransitivePackage = currentDependencyGraphItem.IsCentrallyPinnedTransitivePackage,
                             IsRootPackageReference = currentDependencyGraphItem.IsRootPackageReference,
-                            Suppressions =
-                            [
-                                currentDependencyGraphItem.Suppressions!
-                            ],
+                            Suppressions = [currentDependencyGraphItem.Suppressions!],
                         };
 
                         resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
@@ -1207,10 +1201,7 @@ namespace NuGet.Commands
                             {
                                 IsCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage,
                                 IsRootPackageReference = chosenResolvedItem.IsRootPackageReference,
-                                Suppressions =
-                                [
-                                    currentDependencyGraphItem.Suppressions,
-                                ],
+                                Suppressions = [currentDependencyGraphItem.Suppressions],
                             };
 
                             resolvedDependencyGraphItems.Add(currentDependencyGraphItem.LibraryDependencyIndex, chosenResolvedItem);
