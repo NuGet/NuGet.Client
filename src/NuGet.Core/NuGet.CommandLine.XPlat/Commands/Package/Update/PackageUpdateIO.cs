@@ -90,7 +90,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
             {
                 Arguments = $"build " +
-                $"\"{(projectContentFile is null ? project : Path.ChangeExtension(project, ".cs"))}\" " +
+                $"\"{project}\" " +
                 $"--no-restore " +
                 $"-target:GenerateRestoreGraphFile " +
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +

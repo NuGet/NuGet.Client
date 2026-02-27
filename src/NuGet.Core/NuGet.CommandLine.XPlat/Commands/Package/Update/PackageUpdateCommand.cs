@@ -64,6 +64,7 @@ internal static class PackageUpdateCommand
             bool vulnerable = args.GetValue(vulnerableOption);
 
             var projectPath = project?.FullName ?? Environment.CurrentDirectory;
+            var originalProjectPath = projectPath;
             var projectContentFile = args.GetValue(projectContentFileOption)?.FullName;
             projectPath = MSBuildAPIUtility.ChangeProjectPath(projectPath, projectContentFile);
 
@@ -75,6 +76,7 @@ internal static class PackageUpdateCommand
                 LogLevel = logLevel,
                 Vulnerable = vulnerable,
                 ProjectContentFile = projectContentFile,
+                OriginalProject = originalProjectPath,
             };
 
             return await action(commandArgs, cancellationToken);

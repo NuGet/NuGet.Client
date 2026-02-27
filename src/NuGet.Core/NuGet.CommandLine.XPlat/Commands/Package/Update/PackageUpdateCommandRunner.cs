@@ -56,7 +56,7 @@ internal static class PackageUpdateCommandRunner
 
         // 1. Get DGSpec for project/solution
         logger.LogVerbose(Strings.PackageUpdate_LoadingDGSpec);
-        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.Project, args.ProjectContentFile);
+        var dgSpec = packageUpdateIO.GetDependencyGraphSpec(args.OriginalProject ?? args.Project, args.ProjectContentFile);
 
         if (dgSpec is null || dgSpec.Restore is null || dgSpec.Restore.Count == 0)
         {
