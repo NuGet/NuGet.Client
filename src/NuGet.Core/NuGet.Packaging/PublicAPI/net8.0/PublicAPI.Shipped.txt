@@ -358,33 +358,33 @@ NuGet.Packaging.Licenses.LicenseOperatorType
 NuGet.Packaging.Licenses.LicenseOperatorType.LogicalOperator = 1 -> NuGet.Packaging.Licenses.LicenseOperatorType
 NuGet.Packaging.Licenses.LicenseOperatorType.WithOperator = 0 -> NuGet.Packaging.Licenses.LicenseOperatorType
 NuGet.Packaging.Licenses.LogicalOperator
-~NuGet.Packaging.Licenses.LogicalOperator.Left.get -> NuGet.Packaging.Licenses.NuGetLicenseExpression
-~NuGet.Packaging.Licenses.LogicalOperator.LogicalOperator(NuGet.Packaging.Licenses.LogicalOperatorType logicalOperatorType, NuGet.Packaging.Licenses.NuGetLicenseExpression left, NuGet.Packaging.Licenses.NuGetLicenseExpression right) -> void
+NuGet.Packaging.Licenses.LogicalOperator.Left.get -> NuGet.Packaging.Licenses.NuGetLicenseExpression!
+NuGet.Packaging.Licenses.LogicalOperator.LogicalOperator(NuGet.Packaging.Licenses.LogicalOperatorType logicalOperatorType, NuGet.Packaging.Licenses.NuGetLicenseExpression! left, NuGet.Packaging.Licenses.NuGetLicenseExpression! right) -> void
 NuGet.Packaging.Licenses.LogicalOperator.LogicalOperatorType.get -> NuGet.Packaging.Licenses.LogicalOperatorType
-~NuGet.Packaging.Licenses.LogicalOperator.Right.get -> NuGet.Packaging.Licenses.NuGetLicenseExpression
+NuGet.Packaging.Licenses.LogicalOperator.Right.get -> NuGet.Packaging.Licenses.NuGetLicenseExpression!
 NuGet.Packaging.Licenses.LogicalOperatorType
 NuGet.Packaging.Licenses.LogicalOperatorType.And = 0 -> NuGet.Packaging.Licenses.LogicalOperatorType
 NuGet.Packaging.Licenses.LogicalOperatorType.Or = 1 -> NuGet.Packaging.Licenses.LogicalOperatorType
 NuGet.Packaging.Licenses.NuGetLicense
-~NuGet.Packaging.Licenses.NuGetLicense.Identifier.get -> string
+NuGet.Packaging.Licenses.NuGetLicense.Identifier.get -> string!
 NuGet.Packaging.Licenses.NuGetLicense.IsStandardLicense.get -> bool
 NuGet.Packaging.Licenses.NuGetLicense.Plus.get -> bool
 NuGet.Packaging.Licenses.NuGetLicenseData
 NuGet.Packaging.Licenses.NuGetLicenseException
-~NuGet.Packaging.Licenses.NuGetLicenseException.Identifier.get -> string
+NuGet.Packaging.Licenses.NuGetLicenseException.Identifier.get -> string!
 NuGet.Packaging.Licenses.NuGetLicenseExpression
 NuGet.Packaging.Licenses.NuGetLicenseExpression.NuGetLicenseExpression() -> void
 NuGet.Packaging.Licenses.NuGetLicenseExpression.Type.get -> NuGet.Packaging.Licenses.LicenseExpressionType
 NuGet.Packaging.Licenses.NuGetLicenseExpression.Type.set -> void
 NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions
 NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException
-~NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
-~NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string message) -> void
-~NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string message, System.Exception innerException) -> void
+NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string! message) -> void
+NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string! message, System.Exception! innerException) -> void
 NuGet.Packaging.Licenses.WithOperator
-~NuGet.Packaging.Licenses.WithOperator.Exception.get -> NuGet.Packaging.Licenses.NuGetLicenseException
-~NuGet.Packaging.Licenses.WithOperator.License.get -> NuGet.Packaging.Licenses.NuGetLicense
-~NuGet.Packaging.Licenses.WithOperator.WithOperator(NuGet.Packaging.Licenses.NuGetLicense license, NuGet.Packaging.Licenses.NuGetLicenseException exception) -> void
+NuGet.Packaging.Licenses.WithOperator.Exception.get -> NuGet.Packaging.Licenses.NuGetLicenseException!
+NuGet.Packaging.Licenses.WithOperator.License.get -> NuGet.Packaging.Licenses.NuGetLicense!
+NuGet.Packaging.Licenses.WithOperator.WithOperator(NuGet.Packaging.Licenses.NuGetLicense! license, NuGet.Packaging.Licenses.NuGetLicenseException! exception) -> void
 NuGet.Packaging.Manifest
 ~NuGet.Packaging.Manifest.Files.get -> System.Collections.Generic.ICollection<NuGet.Packaging.ManifestFile>
 NuGet.Packaging.Manifest.HasFilesNode.get -> bool
@@ -1398,10 +1398,10 @@ override NuGet.Packaging.FrameworkSpecificGroup.Equals(object? obj) -> bool
 override NuGet.Packaging.FrameworkSpecificGroup.GetHashCode() -> int
 ~override NuGet.Packaging.LicenseMetadata.Equals(object obj) -> bool
 override NuGet.Packaging.LicenseMetadata.GetHashCode() -> int
-~override NuGet.Packaging.Licenses.LogicalOperator.ToString() -> string
-~override NuGet.Packaging.Licenses.NuGetLicense.ToString() -> string
-~override NuGet.Packaging.Licenses.NuGetLicenseException.ToString() -> string
-~override NuGet.Packaging.Licenses.WithOperator.ToString() -> string
+override NuGet.Packaging.Licenses.LogicalOperator.ToString() -> string!
+override NuGet.Packaging.Licenses.NuGetLicense.ToString() -> string!
+override NuGet.Packaging.Licenses.NuGetLicenseException.ToString() -> string!
+override NuGet.Packaging.Licenses.WithOperator.ToString() -> string!
 override NuGet.Packaging.MinClientVersionException.AsLogMessage() -> NuGet.Common.ILogMessage!
 ~override NuGet.Packaging.NupkgMetadataFile.Equals(object obj) -> bool
 override NuGet.Packaging.NupkgMetadataFile.GetHashCode() -> int
@@ -1514,11 +1514,11 @@ static NuGet.Packaging.Core.RepositoryMetadata.operator ==(NuGet.Packaging.Core.
 ~static NuGet.Packaging.FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(string filePath, out string effectivePath) -> NuGet.Frameworks.NuGetFramework
 ~static NuGet.Packaging.FrameworksExtensions.GetFrameworkString(this NuGet.Frameworks.NuGetFramework self) -> string
 static NuGet.Packaging.Licenses.NuGetLicenseData.LicenseListVersion.get -> string!
-~static NuGet.Packaging.Licenses.NuGetLicenseExpression.Parse(string expression) -> NuGet.Packaging.Licenses.NuGetLicenseExpression
-~static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.HasOnlyStandardIdentifiers(this NuGet.Packaging.Licenses.NuGetLicenseExpression expression) -> bool
-~static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.IsUnlicensed(this NuGet.Packaging.Licenses.NuGetLicense license) -> bool
-~static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.IsUnlicensed(this NuGet.Packaging.Licenses.NuGetLicenseExpression expression) -> bool
-~static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.OnEachLeafNode(this NuGet.Packaging.Licenses.NuGetLicenseExpression expression, System.Action<NuGet.Packaging.Licenses.NuGetLicense> licenseProcessor, System.Action<NuGet.Packaging.Licenses.NuGetLicenseException> exceptionProcessor) -> void
+static NuGet.Packaging.Licenses.NuGetLicenseExpression.Parse(string! expression) -> NuGet.Packaging.Licenses.NuGetLicenseExpression!
+static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.HasOnlyStandardIdentifiers(this NuGet.Packaging.Licenses.NuGetLicenseExpression! expression) -> bool
+static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.IsUnlicensed(this NuGet.Packaging.Licenses.NuGetLicense! license) -> bool
+static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.IsUnlicensed(this NuGet.Packaging.Licenses.NuGetLicenseExpression! expression) -> bool
+static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.OnEachLeafNode(this NuGet.Packaging.Licenses.NuGetLicenseExpression! expression, System.Action<NuGet.Packaging.Licenses.NuGetLicense!>? licenseProcessor, System.Action<NuGet.Packaging.Licenses.NuGetLicenseException!>? exceptionProcessor) -> void
 ~static NuGet.Packaging.Manifest.Create(NuGet.Packaging.IPackageMetadata metadata) -> NuGet.Packaging.Manifest
 ~static NuGet.Packaging.Manifest.ReadFrom(System.IO.Stream stream, System.Func<string, string> propertyProvider, bool validateSchema) -> NuGet.Packaging.Manifest
 ~static NuGet.Packaging.Manifest.ReadFrom(System.IO.Stream stream, bool validateSchema) -> NuGet.Packaging.Manifest
