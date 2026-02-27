@@ -258,9 +258,9 @@ namespace NuGet.Commands
             var request = summaryRequest.Request;
 
             var command = new RestoreCommand(request);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_RestoreProjectStart(request.Project.FilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreRunner_RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_RestoreProjectStop(request.Project.FilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreRunner_RestoreProjectStop(request.Project.FilePath);
 
             return new RestoreResultPair(summaryRequest, result);
         }
@@ -291,9 +291,9 @@ namespace NuGet.Commands
 
                 // Commit the result
                 log.LogVerbose(Strings.Log_Committing);
-                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_CommitAsyncStart(summaryRequest.InputPath);
+                if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreRunner_CommitAsyncStart(summaryRequest.InputPath);
                 await result.CommitAsync(log, token);
-                if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreRunner_CommitAsyncStop(summaryRequest.InputPath);
+                if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreRunner_CommitAsyncStop(summaryRequest.InputPath);
             }
             finally
             {

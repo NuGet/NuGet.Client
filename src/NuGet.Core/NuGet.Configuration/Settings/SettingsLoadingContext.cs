@@ -74,7 +74,7 @@ namespace NuGet.Configuration
                     // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
                     FileRead?.Invoke(this, fileInfo.FullName);
 
-                    if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsLoadingContext_FileRead(fileInfo.FullName, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+                    if (ConfigurationEventSource.Instance.IsEnabled()) ConfigurationEventSource.Instance.SettingsLoadingContext_FileRead(fileInfo.FullName, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
 
                     return settingsFile;
                 }));

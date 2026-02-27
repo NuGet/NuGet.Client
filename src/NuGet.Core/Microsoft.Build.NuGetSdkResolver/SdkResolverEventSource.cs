@@ -5,11 +5,11 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.Build.NuGetSdkResolver
 {
     [EventSource(Name = "Microsoft-NuGet-SdkResolver")]
-    internal sealed class NuGetEventSourceSdkResolver : EventSource
+    internal sealed class SdkResolverEventSource : EventSource
     {
-        public static readonly NuGetEventSourceSdkResolver Instance = new();
+        public static readonly SdkResolverEventSource Instance = new();
 
-        private NuGetEventSourceSdkResolver() { }
+        private SdkResolverEventSource() { }
 
         public static class Keywords
         {

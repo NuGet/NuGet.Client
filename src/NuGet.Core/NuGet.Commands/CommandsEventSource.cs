@@ -5,11 +5,11 @@ using System.Diagnostics.Tracing;
 namespace NuGet.Commands
 {
     [EventSource(Name = "Microsoft-NuGet-Commands")]
-    internal sealed class NuGetEventSourceCommands : EventSource
+    internal sealed class CommandsEventSource : EventSource
     {
-        public static readonly NuGetEventSourceCommands Instance = new();
+        public static readonly CommandsEventSource Instance = new();
 
-        private NuGetEventSourceCommands() { }
+        private CommandsEventSource() { }
 
         public static class Keywords
         {

@@ -25,7 +25,7 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory, IEnvironmentVariableReader environmentVariableReader)
         {
-            if (NuGetEventSourceCommon.Instance.IsEnabled()) NuGetEventSourceCommon.Instance.MigrationRunner_RunStart();
+            if (CommonEventSource.Instance.IsEnabled()) CommonEventSource.Instance.MigrationRunner_RunStart();
 
             var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
@@ -65,7 +65,7 @@ namespace NuGet.Common.Migrations
             }
             finally
             {
-                if (NuGetEventSourceCommon.Instance.IsEnabled()) NuGetEventSourceCommon.Instance.MigrationRunner_RunStop(expectedMigrationFilename, migrationPerformed ? 1 : 0);
+                if (CommonEventSource.Instance.IsEnabled()) CommonEventSource.Instance.MigrationRunner_RunStop(expectedMigrationFilename, migrationPerformed ? 1 : 0);
             }
 
             static bool WaitForMutex(Mutex mutex)

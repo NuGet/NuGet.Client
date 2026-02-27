@@ -185,34 +185,34 @@ namespace NuGet.Commands
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteAssetsFileStart(LockFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteAssetsFileStart(LockFilePath);
             await CommitAssetsFileAsync(
                 lockFileFormat,
                 log: log,
                 toolCommit: isTool,
                 token: token);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteAssetsFileStop(LockFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteAssetsFileStop(LockFilePath);
 
             //Commit the cache file to disk
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteCacheFileStart(CacheFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteCacheFileStart(CacheFilePath);
             await CommitCacheFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteCacheFileStop(CacheFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteCacheFileStop(CacheFilePath);
 
             // Commit the lock file to disk
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WritePackagesLockFileStart(_newPackagesLockFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WritePackagesLockFileStart(_newPackagesLockFilePath);
             await CommitLockFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WritePackagesLockFileStop(_newPackagesLockFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WritePackagesLockFileStop(_newPackagesLockFilePath);
 
             // Commit the dg spec file to disk
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteDgSpecFileStart(_dependencyGraphSpecFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteDgSpecFileStart(_dependencyGraphSpecFilePath);
             await CommitDgSpecFileAsync(
                 log: log,
                 toolCommit: isTool);
-            if (NuGetEventSourceCommands.Instance.IsEnabled()) NuGetEventSourceCommands.Instance.RestoreResult_WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreResult_WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
         }
 
         private async Task CommitAssetsFileAsync(

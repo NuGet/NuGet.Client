@@ -240,7 +240,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
             string json;
 
-            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+            if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
 
             try
             {
@@ -279,7 +279,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+                if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
             }
         }
     }

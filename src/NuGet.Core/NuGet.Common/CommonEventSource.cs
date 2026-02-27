@@ -5,11 +5,11 @@ using System.Diagnostics.Tracing;
 namespace NuGet.Common
 {
     [EventSource(Name = "Microsoft-NuGet-Common")]
-    internal sealed class NuGetEventSourceCommon : EventSource
+    internal sealed class CommonEventSource : EventSource
     {
-        public static readonly NuGetEventSourceCommon Instance = new();
+        public static readonly CommonEventSource Instance = new();
 
-        private NuGetEventSourceCommon() { }
+        private CommonEventSource() { }
 
         public static class Keywords
         {

@@ -82,25 +82,25 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
             }
 
-            if (NuGetEventSourceSdkResolver.Instance.IsEnabled())
+            if (SdkResolverEventSource.Instance.IsEnabled())
             {
                 switch (level)
                 {
                     case LogLevel.Debug:
                     case LogLevel.Verbose:
-                        NuGetEventSourceSdkResolver.Instance.LogMessageVerbose((int)level, data);
+                        SdkResolverEventSource.Instance.LogMessageVerbose((int)level, data);
                         break;
                     case LogLevel.Information:
-                        NuGetEventSourceSdkResolver.Instance.LogMessageInformational((int)level, data);
+                        SdkResolverEventSource.Instance.LogMessageInformational((int)level, data);
                         break;
                     case LogLevel.Minimal:
-                        NuGetEventSourceSdkResolver.Instance.LogMessageAlways((int)level, data);
+                        SdkResolverEventSource.Instance.LogMessageAlways((int)level, data);
                         break;
                     case LogLevel.Warning:
-                        NuGetEventSourceSdkResolver.Instance.LogMessageWarning((int)level, data);
+                        SdkResolverEventSource.Instance.LogMessageWarning((int)level, data);
                         break;
                     case LogLevel.Error:
-                        NuGetEventSourceSdkResolver.Instance.LogMessageError((int)level, data);
+                        SdkResolverEventSource.Instance.LogMessageError((int)level, data);
                         break;
                 }
             }

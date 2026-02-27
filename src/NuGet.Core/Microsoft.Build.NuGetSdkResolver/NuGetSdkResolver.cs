@@ -87,7 +87,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_DisabledSdkResolver }, warnings: null);
             }
 
-            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.ResolveStart(sdkReference.Name, sdkReference.Version);
+            if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.ResolveStart(sdkReference.Name, sdkReference.Version);
 
             try
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.ResolveStop(sdkReference.Name, sdkReference.Version);
+                if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.ResolveStop(sdkReference.Name, sdkReference.Version);
             }
         }
 
@@ -158,13 +158,13 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
-                if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
+                if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
 
                 SdkResult result = null;
 
                 try
                 {
-                    if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LoadSettingsStart();
+                    if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.LoadSettingsStart();
 
                     // Load NuGet settings and a path resolver
                     ISettings settings;
@@ -182,7 +182,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                     finally
                     {
-                        if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.LoadSettingsStop();
+                        if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.LoadSettingsStop();
                     }
 
                     var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
@@ -200,7 +200,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                             X509TrustStore.InitializeForDotNetSdk(logger);
 #endif
 
-                            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.RestorePackageStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.RestorePackageStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
 
                             // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                             // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
@@ -212,7 +212,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                             var results = restoreTask.Result;
 
-                            if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.RestorePackageStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.RestorePackageStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
 
                             fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
@@ -265,7 +265,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 finally
                 {
-                    if (NuGetEventSourceSdkResolver.Instance.IsEnabled()) NuGetEventSourceSdkResolver.Instance.GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result?.Path, result == null ? 0 : (result.Success ? 1 : 0));
+                    if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result?.Path, result == null ? 0 : (result.Success ? 1 : 0));
                 }
             }
 

@@ -211,18 +211,18 @@ namespace NuGet.Commands
                     context,
                     token);
 
-                if (NuGetEventSourceCommands.Instance.IsEnabled())
+                if (CommandsEventSource.Instance.IsEnabled())
                 {
-                    NuGetEventSourceCommands.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStart(_request.Project.FilePath, frameworkRuntimeDefinition.ToString());
+                    CommandsEventSource.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStart(_request.Project.FilePath, frameworkRuntimeDefinition.ToString());
                 }
 
                 // Now that the graph has been resolved, we need to create walk all of the defined dependencies again to detect any cycles and downgrades.  The RestoreTargetGraph stores all of the
                 // information about the graph including the nodes with their parent/child relationships, cycles, downgrades, and conflicts.
                 (bool wasRestoreTargetGraphCreationSuccessful, RestoreTargetGraph restoreTargetGraph) = await CreateRestoreTargetGraphAsync(frameworkRuntimeDefinition, runtimeGraph, isCentralPackageTransitivePinningEnabled, unresolvedPackages, resolvedPackages, resolvedDependencyGraphItems, context);
 
-                if (NuGetEventSourceCommands.Instance.IsEnabled())
+                if (CommandsEventSource.Instance.IsEnabled())
                 {
-                    NuGetEventSourceCommands.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStop(_request.Project.FilePath, frameworkRuntimeDefinition.ToString(), wasRestoreTargetGraphCreationSuccessful ? 1 : 0, resolvedPackages.Count, unresolvedPackages.Count);
+                    CommandsEventSource.Instance.DependencyGraphResolver_CreateRestoreTargetGraphStop(_request.Project.FilePath, frameworkRuntimeDefinition.ToString(), wasRestoreTargetGraphCreationSuccessful ? 1 : 0, resolvedPackages.Count, unresolvedPackages.Count);
                 }
 
                 success &= wasRestoreTargetGraphCreationSuccessful;
@@ -915,9 +915,9 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
-            if (NuGetEventSourceCommands.Instance.IsEnabled())
+            if (CommandsEventSource.Instance.IsEnabled())
             {
-                NuGetEventSourceCommands.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStart(_request.Project.FilePath, pair.ToString());
+                CommandsEventSource.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStart(_request.Project.FilePath, pair.ToString());
             }
 
             // Stores the resolved dependency graph items
@@ -1404,9 +1404,9 @@ namespace NuGet.Commands
                 }
             }
 
-            if (NuGetEventSourceCommands.Instance.IsEnabled())
+            if (CommandsEventSource.Instance.IsEnabled())
             {
-                NuGetEventSourceCommands.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair.ToString(), resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
+                CommandsEventSource.Instance.DependencyGraphResolver_ResolveDependencyGraphItemsStop(_request.Project.FilePath, pair.ToString(), resolvedDependencyGraphItems.Count, restartCount, totalQueuedItemCount);
             }
 
             return resolvedDependencyGraphItems;

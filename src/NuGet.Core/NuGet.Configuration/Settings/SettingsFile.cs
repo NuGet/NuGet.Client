@@ -109,7 +109,7 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsFile_FileReadStart(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+            if (ConfigurationEventSource.Instance.IsEnabled()) ConfigurationEventSource.Instance.SettingsFile_FileReadStart(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
 
             try
             {
@@ -129,7 +129,7 @@ namespace NuGet.Configuration
             }
             finally
             {
-                if (NuGetEventSourceConfiguration.Instance.IsEnabled()) NuGetEventSourceConfiguration.Instance.SettingsFile_FileReadStop(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
+                if (ConfigurationEventSource.Instance.IsEnabled()) ConfigurationEventSource.Instance.SettingsFile_FileReadStop(ConfigFilePath, isMachineWide ? 1 : 0, isReadOnly ? 1 : 0);
             }
         }
 
