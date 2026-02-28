@@ -172,6 +172,8 @@ namespace NuGet.PackageManagement.UI
 
         public static object ListItemTextSelectedColorKey { get; private set; } = SystemColors.HighlightTextColorKey;
 
+        public static object Environment155PercentFontSizeKey { get; private set; } = SystemFonts.MessageFontSizeKey;
+
         public static void LoadVsBrushes(INuGetExperimentationService nuGetExperimentationService)
         {
             if (nuGetExperimentationService == null)
@@ -180,6 +182,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled(nuGetExperimentationService);
+
+            Environment155PercentFontSizeKey = VsFonts.Environment155PercentFontSizeKey;
 
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
             ActiveBorderKey = VsBrushes.ActiveBorderKey;
