@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using NuGet.Common;
 
 namespace NuGet.Packaging
@@ -11,6 +12,7 @@ namespace NuGet.Packaging
 
         public NuGetOperationStatus Status => (NuGetOperationStatus)(base[nameof(Status)]!);
 
+        [Obsolete("This seems to be unused and will be removed in a future version.")]
         public string? ExtractionId => base[nameof(ExtractionId)] as string;
 
         public const string EventName = "SigningInformation";
