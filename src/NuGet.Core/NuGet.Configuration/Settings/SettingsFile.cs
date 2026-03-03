@@ -244,5 +244,6 @@ namespace NuGet.Configuration
             return result;
 #pragma warning restore CS8603 // Possible null reference return.
         }
+
     }
 }
