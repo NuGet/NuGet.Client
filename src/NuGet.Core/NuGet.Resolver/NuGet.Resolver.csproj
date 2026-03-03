@@ -7,7 +7,7 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsAotCompatible Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</IsAotCompatible>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 

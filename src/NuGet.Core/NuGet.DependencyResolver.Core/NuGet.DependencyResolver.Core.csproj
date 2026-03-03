@@ -8,7 +8,7 @@
     <RootNamespace>NuGet.DependencyResolver</RootNamespace>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsAotCompatible Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</IsAotCompatible>
     <Description>NuGet's PackageReference dependency resolver implementation.</Description>
   </PropertyGroup>
 

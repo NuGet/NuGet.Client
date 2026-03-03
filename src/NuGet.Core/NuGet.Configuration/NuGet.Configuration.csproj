@@ -8,7 +8,7 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsAotCompatible Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

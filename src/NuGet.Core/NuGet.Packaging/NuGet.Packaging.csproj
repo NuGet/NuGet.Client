@@ -10,7 +10,6 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
-    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
