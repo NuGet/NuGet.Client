@@ -39,7 +39,6 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\AheadOfTimeCompileAttributes.cs" />
     <Compile Include="$(SharedDirectory)\EncodingUtility.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SimplePool.cs" />
