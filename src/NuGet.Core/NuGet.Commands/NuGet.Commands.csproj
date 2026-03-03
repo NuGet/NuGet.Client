@@ -11,6 +11,7 @@
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);IDE0055</WarningsNotAsErrors>
+    <IsAotCompatible Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +45,6 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\AheadOfTimeCompileAttributes.cs" />
     <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
