@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -21,7 +22,7 @@ namespace NuGet.Packaging
         public static readonly string UserInstalledAttributeName = "userInstalled";
 
         // Get an attribute that may or may not be present
-        public static bool TryGetAttribute(XElement node, string name, out string? value)
+        public static bool TryGetAttribute(XElement node, string name, [NotNullWhen(returnValue: true)] out string? value)
         {
             var attribute = node.Attributes(XName.Get(name)).FirstOrDefault();
 
@@ -39,12 +40,11 @@ namespace NuGet.Packaging
         /// <summary>
         /// Determine if the package node has the attribute value as the targetValue.
         /// </summary>
-        public static bool HasAttributeValue(XElement node, string attributeName, string targetValue, out XElement? element)
+        public static bool HasAttributeValue(XElement node, string attributeName, string targetValue, [NotNullWhen(returnValue: true)] out XElement? element)
         {
             foreach (var package in node.Elements(XName.Get(PackageNodeName)))
             {
-                string? value;
-                bool hasValue = TryGetAttribute(package, attributeName, out value);
+                bool hasValue = TryGetAttribute(package, attributeName, out var value);
                 if (hasValue && string.Equals(targetValue, value, StringComparison.OrdinalIgnoreCase))
                 {
                     element = package;

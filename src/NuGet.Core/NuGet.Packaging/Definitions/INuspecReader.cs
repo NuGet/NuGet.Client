@@ -10,7 +10,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// A development package nuspec reader
     /// </summary>
-    [Obsolete("This interface is unused and never implemented by any class. It will be removed in a future release.")]
+    [Obsolete("This interface is unused and does not contain any implementations. It will be removed in a future release.")]
     public interface INuspecReader : INuspecCoreReader
     {
         IEnumerable<PackageDependencyGroup> GetDependencyGroups();

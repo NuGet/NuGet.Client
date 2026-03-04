@@ -11,7 +11,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Core package resolver
     /// </summary>
-    [Obsolete("This interface is unused and contains no implementations in the NuGet libraries and will be removed in a future release.")]
+    [Obsolete("This interface is unused and does not contain any implementations. It will be removed in a future release.")]
     public interface IPackageResolver
     {
         /// <summary>

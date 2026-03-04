@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -77,6 +78,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// True if allowedVersions exists.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(AllowedVersions))]
         public bool HasAllowedVersions
         {
             get { return AllowedVersions != null; }
