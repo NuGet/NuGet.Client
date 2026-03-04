@@ -5,7 +5,10 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class McpServerConstants
     {
+        // This value must match the server name registered in mcp.json. Keep both in sync.
         public const string NuGetMcpServerName = "nuget";
+
+        // Tool names below must match their respective tool names defined in the NuGet MCP Server.
         public const string NuGetSolverToolName = "get-nuget-solver";
 
         // Fully qualified tool names are in the format of "{serverName}_{toolName}".
