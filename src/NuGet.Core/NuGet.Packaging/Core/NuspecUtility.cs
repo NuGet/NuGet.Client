@@ -120,7 +120,12 @@ namespace NuGet.Packaging.Core
                 return false;
             }
 
-            var value = element.Value.SafeTrim();
+            if (element.Value == null)
+            {
+                return false;
+            }
+
+            var value = element.Value.Trim();
             return System.Xml.XmlConvert.ToBoolean(value);
         }
 
