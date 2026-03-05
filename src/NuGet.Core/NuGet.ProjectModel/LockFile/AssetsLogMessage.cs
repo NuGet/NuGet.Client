@@ -76,7 +76,7 @@ namespace NuGet.ProjectModel
         }
 
         [JsonConstructor]
-        private AssetsLogMessage(
+        internal AssetsLogMessage(
             LogLevel level,
             NuGetLogCode code,
             string message,
