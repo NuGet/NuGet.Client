@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(LatestNETCoreTargetFramework)</TargetFramework>
+    <TargetFramework>sdkCurrent;sdkNext</TargetFramework>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
+    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
+    <TargetFrameworkMoniker>.NETCoreApp,Version=v10.0</TargetFrameworkMoniker>
   </PropertyGroup>
 
   <ItemGroup>
