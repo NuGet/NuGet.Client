@@ -1822,12 +1822,17 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_WithMissingTargetFramework_AliasRemainsEmpty()
+        public async Task NominateProjectAsync_SimulatedCPPProject_WithMissingTargetFramework_AliasRemainsEmpty()
         {
             var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
-                .WithTargetFrameworkInfo("netcoreapp1.0", builder =>
+                .WithTargetFrameworkInfo(CommonFrameworks.Native.GetShortFolderName(), builder =>
                 {
                     builder
+                    .WithProperty(ProjectBuildProperties.MSBuildProjectExtensionsPath, @"y:\src\some\project\obj")
+                    .WithProperty("MSBuildProjectFullPath", @"y:\src\some\project\project.vcxproj")
+                    .WithProperty("TargetFrameworkIdentifier", "NETFramework")
+                    .WithProperty("TargetFrameworkMoniker", ".NETFramework,Version=v4.8")
+                    .WithProperty("UsingMicrosoftNETSdk", "false")
                     .WithProperty("TargetFramework", null!);
                 })
                 .Build();
@@ -1847,12 +1852,61 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Single(actualProjectSpec.TargetFrameworks);
             var actualTfi = actualProjectSpec.TargetFrameworks.Single();
 
-            var expectedFramework = NuGetFramework.Parse("netcoreapp1.0");
+            var expectedFramework = CommonFrameworks.Native;
             Assert.Equal(expectedFramework, actualTfi.FrameworkName);
             Assert.Equal(string.Empty, actualTfi.TargetAlias);
 
+            Assert.Single(actualProjectSpec.RestoreMetadata.TargetFrameworks);
+            var actualPRMFI = actualProjectSpec.RestoreMetadata.TargetFrameworks.Single();
+            Assert.Equal(expectedFramework, actualPRMFI.FrameworkName);
+            Assert.Equal(string.Empty, actualPRMFI.TargetAlias);
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_SimulatedCPPProject_WithMissingTargetFrameworkAndAssetTargetFallback_AliasRemainsEmpty()
+        {
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo(CommonFrameworks.Native.GetShortFolderName(), builder =>
+                {
+                    builder
+                    .WithProperty(ProjectBuildProperties.MSBuildProjectExtensionsPath, @"y:\src\some\project\obj")
+                    .WithProperty("MSBuildProjectFullPath", @"y:\src\some\project\project.vcxproj")
+                    .WithProperty("TargetFrameworkIdentifier", "NETFramework")
+                    .WithProperty("TargetFrameworkMoniker", ".NETFramework,Version=v4.8")
+                    .WithProperty("UsingMicrosoftNETSdk", "false")
+                    .WithProperty("TargetFramework", null!)
+                    .WithProperty("AssetTargetFallback", "net48");
+                })
+                .Build();
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.Projects.Single();
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = CommonFrameworks.Native;
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+            Assert.Equal(string.Empty, actualTfi.TargetAlias);
+            Assert.IsType<AssetTargetFallbackFramework>(actualTfi.FrameworkName);
+            var assetTargetFallback = (AssetTargetFallbackFramework)actualTfi.FrameworkName;
+            Assert.Equal(expectedFramework, assetTargetFallback.RootFramework);
+            Assert.Equal([CommonFrameworks.Net48], assetTargetFallback.Fallback);
+
+            Assert.Single(actualProjectSpec.RestoreMetadata.TargetFrameworks);
+            var actualPRMFI = actualProjectSpec.RestoreMetadata.TargetFrameworks.Single();
+            Assert.Equal(expectedFramework, actualPRMFI.FrameworkName);
+            Assert.Equal(string.Empty, actualPRMFI.TargetAlias);
+        }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             IVsProjectRestoreInfo3 pri,
