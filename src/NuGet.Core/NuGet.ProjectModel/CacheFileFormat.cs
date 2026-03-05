@@ -30,7 +30,9 @@ namespace NuGet.ProjectModel
             Converters = { new AssetsLogMessageConverter() },
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
             AllowTrailingCommas = true,
-            TypeInfoResolver = CacheFileSourceGen.Default
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                CacheFileSourceGen.Default,
+                AssetsLogMessage.AssetsLogMessageSourceGen.Default)
         };
 
         /// <summary>
@@ -40,12 +42,12 @@ namespace NuGet.ProjectModel
         {
             public override IAssetsLogMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                return JsonSerializer.Deserialize(ref reader, AssetsLogMessage.AssetsLogMessageSourceGen.Default.AssetsLogMessage);
+                return JsonSerializer.Deserialize(ref reader, (JsonTypeInfo<AssetsLogMessage>)options.GetTypeInfo(typeof(AssetsLogMessage)));
             }
 
             public override void Write(Utf8JsonWriter writer, IAssetsLogMessage value, JsonSerializerOptions options)
             {
-                JsonSerializer.Serialize(writer, (AssetsLogMessage)value, AssetsLogMessage.AssetsLogMessageSourceGen.Default.AssetsLogMessage);
+                JsonSerializer.Serialize(writer, (AssetsLogMessage)value, (JsonTypeInfo<AssetsLogMessage>)options.GetTypeInfo(typeof(AssetsLogMessage)));
             }
         }
 
