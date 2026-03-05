@@ -31,7 +31,7 @@ namespace NuGet.Test.Utility
 
 #if !IS_DESKTOP
         // For non fullframework code path, we could dynamically determine which SDK version to copy by checking the TFM of test project assembly and the dotnet.dll.
-        public static TestDirectory CopyAndPatchLatestDotnetCli(string testAssemblyPath)
+        public static TestDirectory CopyAndPatchLatestDotnetCli(string testAssemblyPath, int preferredMajorVersion)
         {
             CliDirSource = Path.GetDirectoryName(TestFileSystemUtility.GetDotnetCli());
             SdkDirSource = Path.Combine(CliDirSource, "sdk" + Path.DirectorySeparatorChar);

@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>sdkCurrent;sdkNext</TargetFramework>
+    <TargetFrameworks>sdkCurrent;sdkNext</TargetFrameworks>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
     <TargetFrameworkMoniker>.NETCoreApp,Version=v10.0</TargetFrameworkMoniker>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'sdkCurrent'">
+    <DefineConstants>$(DefineConstants);SDK_CURRENT</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'sdkNext'">
+    <DefineConstants>$(DefineConstants);SDK_NEXT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

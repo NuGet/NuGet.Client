@@ -44,7 +44,11 @@ namespace Dotnet.Integration.Test
         public DotnetIntegrationTestFixture()
         {
             string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath);
+#if SDK_CURRENT
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath, preferredMajorVersion: 10);
+#elif SDK_NEXT
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath, preferredMajorVersion: 11);
+#endif
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
