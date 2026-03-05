@@ -63,9 +63,5 @@
     </ItemGroup>
   </Target>
   
-  <PropertyGroup Condition="'$(EnableAotAnalyzer)' == 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-
   <Import Project="eng\dotnet-build\ExcludeFromDotNetBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuild)' == 'true'" />
 </Project>
