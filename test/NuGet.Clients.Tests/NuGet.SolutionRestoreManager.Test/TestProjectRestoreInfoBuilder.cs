@@ -22,7 +22,7 @@ internal class TestProjectRestoreInfoBuilder
             throw new InvalidOperationException("At least one target framework must be added before building the project restore info.");
         }
 
-        var originalTargetFrameworks = string.Join(";", _targetFrameworks.Select(tf => tf.Properties[ProjectBuildProperties.TargetFramework]));
+        var originalTargetFrameworks = _targetFrameworks.Count > 1 ? string.Join(";", _targetFrameworks.Select(tf => tf.Properties[ProjectBuildProperties.TargetFramework])) : null;
 
         var pri = new VsProjectRestoreInfo3
         {
@@ -118,7 +118,7 @@ internal class TestProjectRestoreInfoBuilder
 
         public TargetFrameworkBuilder WithProperty(string key, string value)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(value))
             {
                 Properties.Remove(key);
             }

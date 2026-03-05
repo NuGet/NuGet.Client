@@ -1821,6 +1821,39 @@ namespace NuGet.SolutionRestoreManager.Test
             resultB.Value.VersionRange.Should().Be(VersionRange.Parse("(, 1.0.0]"));
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_WithMissingTargetFramework_AliasRemainsEmpty()
+        {
+            var projectRestoreInfo = new TestProjectRestoreInfoBuilder()
+                .WithTargetFrameworkInfo("netcoreapp1.0", builder =>
+                {
+                    builder
+                    .WithProperty("TargetFramework", null!);
+                })
+                .Build();
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectRestoreInfo);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.Projects.Single();
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = NuGetFramework.Parse("netcoreapp1.0");
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+            Assert.Equal(string.Empty, actualTfi.TargetAlias);
+
+        }
+
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             IVsProjectRestoreInfo3 pri,
             Mock<IProjectSystemCache>? cache = null)
