@@ -7,7 +7,6 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
