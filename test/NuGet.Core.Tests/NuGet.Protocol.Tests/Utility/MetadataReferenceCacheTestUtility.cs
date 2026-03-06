@@ -31,25 +31,40 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(first);
             Assert.NotNull(second);
 
-            // Get all reference-type properties (except Version, which differs between packages).
+            // Get all properties that can be cached and are not Version (because the version of the two packages is different).
             var properties =
                 typeof(T).GetTypeInfo()
                     .DeclaredProperties.Where(
                         p =>
                             p.Name != nameof(PackageIdentity.Version) &&
-                            !p.PropertyType.GetTypeInfo().IsValueType &&
-                            p.GetMethod != null);
+                            MetadataReferenceCache.CachableTypes.Contains(p.PropertyType) && p.GetMethod != null);
 
             // Check that all cached references between the two packages are identical.
             foreach (var property in properties)
             {
                 var firstValue = property.GetMethod.Invoke(first, null);
                 var secondValue = property.GetMethod.Invoke(second, null);
+                Assert.Same(firstValue, secondValue);
+            }
 
-                if (firstValue != null && secondValue != null)
-                {
-                    Assert.Same(firstValue, secondValue);
-                }
+            // Get all properties that are IEnumerables of a type that can be cached.
+            var enumerableProperties =
+                typeof(T).GetTypeInfo()
+                    .DeclaredProperties.Where(
+                        p =>
+                            p.PropertyType.IsConstructedGenericType &&
+                            p.PropertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>) &&
+                            p.PropertyType.GenericTypeArguments.Length == 1 &&
+                            MetadataReferenceCache.CachableTypes.Contains(p.PropertyType.GenericTypeArguments[0]) &&
+                            p.GetMethod != null);
+
+            // Check that all cached references stored in IEnumerables between the two packages are identical.
+            foreach (var enumerableProperty in enumerableProperties)
+            {
+                var firstEnumerable = enumerableProperty.GetMethod.Invoke(first, null);
+                var secondEnumerable = enumerableProperty.GetMethod.Invoke(second, null);
+                Assert.Equal((IEnumerable<string>)firstEnumerable, (IEnumerable<string>)secondEnumerable,
+                    new ReferenceEqualityComparer<string>());
             }
         }
     }

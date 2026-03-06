@@ -66,6 +66,19 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
+        /// Mapping of input parameter type to caching method.
+        /// </summary>
+        private static readonly IDictionary<Type, string> CachableTypesMap = new Dictionary<Type, string>
+        {
+            {typeof(string), nameof(GetString)}
+        };
+
+        /// <summary>
+        /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
+        /// </summary>
+        internal static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+
+        /// <summary>
         /// Iterates through the cacheable properties of <paramref name="input"/> and replaces their values with cached equivalents.
         /// </summary>
         public T GetObject<T>(T input) where T : ICacheable
