@@ -80,16 +80,35 @@ namespace NuGet.Commands
 
                     if (signArgs.TrustAnchorFingerprints != null && signArgs.TrustAnchorFingerprints.Count > 0)
                     {
+                        X509Certificate2 rootFromChain = GetChainRoot(cert, signRequest.AdditionalCertificates);
+                        if (rootFromChain == null)
+                        {
+                            throw new SignCommandException(
+                                LogMessage.CreateError(NuGetLogCode.NU3001,
+                                Strings.SignCommandTrustAnchorChainBuildFailed));
+                        }
+
                         foreach (string fingerprint in signArgs.TrustAnchorFingerprints)
                         {
-                            X509Certificate2 anchorCert = FindCertificateByFingerprint(fingerprint);
-                            if (anchorCert == null)
+                            if (!CertificateUtility.TryDeduceHashAlgorithm(fingerprint, out HashAlgorithmName fingerprintAlgorithm) ||
+                                fingerprintAlgorithm == HashAlgorithmName.Unknown)
+                            {
+                                throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandInvalidTrustAnchorFingerprint, fingerprint)));
+                            }
+
+                            string rootFingerprint = CertificateUtility.GetHashString(rootFromChain, fingerprintAlgorithm);
+                            if (string.Equals(rootFingerprint, fingerprint, StringComparison.OrdinalIgnoreCase))
+                            {
+                                signRequest.AdditionalTrustAnchors.Add(rootFromChain);
+                            }
+                            else
                             {
                                 throw new SignCommandException(
                                     LogMessage.CreateError(NuGetLogCode.NU3001,
                                     string.Format(CultureInfo.CurrentCulture, Strings.SignCommandTrustAnchorNotFound, fingerprint)));
                             }
-                            signRequest.AdditionalTrustAnchors.Add(anchorCert);
                         }
                     }
 #endif
@@ -279,69 +298,33 @@ namespace NuGet.Commands
 #endif
 
 #if NET5_0_OR_GREATER
-        private static X509Certificate2 FindCertificateByFingerprint(string fingerprint)
+        /// <summary>
+        /// Builds a preliminary certificate chain from the signing certificate and returns
+        /// the root element. The chain may not fully validate (e.g., untrusted root), but
+        /// the chain elements will still be populated with the discovered certificates.
+        /// </summary>
+        private static X509Certificate2 GetChainRoot(X509Certificate2 signingCert, X509Certificate2Collection additionalCertificates)
         {
-            if (!CertificateUtility.TryDeduceHashAlgorithm(fingerprint, out HashAlgorithmName hashAlgorithmName) ||
-                hashAlgorithmName == HashAlgorithmName.Unknown)
+            using (var chain = new X509Chain())
             {
-                throw new SignCommandException(
-                    LogMessage.CreateError(NuGetLogCode.NU3001,
-                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandInvalidTrustAnchorFingerprint, fingerprint)));
-            }
+                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
-            // Search common stores for the certificate
-            var storeSearches = new[]
-            {
-                (StoreName.My, StoreLocation.CurrentUser),
-                (StoreName.My, StoreLocation.LocalMachine),
-                (StoreName.Root, StoreLocation.CurrentUser),
-                (StoreName.Root, StoreLocation.LocalMachine),
-                (StoreName.CertificateAuthority, StoreLocation.CurrentUser),
-                (StoreName.CertificateAuthority, StoreLocation.LocalMachine),
-            };
-
-            foreach (var (storeName, storeLocation) in storeSearches)
-            {
-                try
+                if (additionalCertificates != null)
                 {
-                    using (var store = new X509Store(storeName, storeLocation))
-                    {
-                        store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-
-                        X509Certificate2 found = FindInStore(store, fingerprint, hashAlgorithmName);
-                        if (found != null)
-                        {
-                            return found;
-                        }
-                    }
+                    chain.ChainPolicy.ExtraStore.AddRange(additionalCertificates);
                 }
-                catch (System.Security.Cryptography.CryptographicException)
+
+                // Build may return false (untrusted root), but chain elements are still populated
+                chain.Build(signingCert);
+
+                if (chain.ChainElements.Count > 0)
                 {
-                    // Store may not exist or may not be accessible; skip it
+                    // The last element in the chain is the root CA
+                    return new X509Certificate2(chain.ChainElements[chain.ChainElements.Count - 1].Certificate);
                 }
+
+                return null;
             }
-
-            return null;
-        }
-
-        private static X509Certificate2 FindInStore(X509Store store, string fingerprint, HashAlgorithmName hashAlgorithmName)
-        {
-            if (hashAlgorithmName == HashAlgorithmName.SHA1)
-            {
-                var results = store.Certificates.Find(X509FindType.FindByThumbprint, fingerprint, validOnly: false);
-                return results.Count > 0 ? results[0] : null;
-            }
-
-            foreach (var cert in store.Certificates)
-            {
-                string actualFingerprint = CertificateUtility.GetHashString(cert, hashAlgorithmName);
-                if (string.Equals(actualFingerprint, fingerprint, StringComparison.OrdinalIgnoreCase))
-                {
-                    return cert;
-                }
-            }
-
-            return null;
         }
 #endif
     }

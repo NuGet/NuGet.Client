@@ -1164,9 +1164,14 @@ Per usare questa funzionalità, aggiornare .NET SDK o rimuovere RestoreUseLegacy
         <target state="translated">I pacchetti sono stati firmati.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorChainBuildFailed">
+        <source>Unable to build a certificate chain from the signing certificate. Ensure the signing certificate and any intermediate certificates are available.</source>
+        <target state="new">Unable to build a certificate chain from the signing certificate. Ensure the signing certificate and any intermediate certificates are available.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandTrustAnchorNotFound">
-        <source>No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</source>
-        <target state="new">No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</target>
+        <source>The root certificate of the signing certificate chain does not match the specified trust anchor fingerprint '{0}'.</source>
+        <target state="new">The root certificate of the signing certificate chain does not match the specified trust anchor fingerprint '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceNotConsidered">

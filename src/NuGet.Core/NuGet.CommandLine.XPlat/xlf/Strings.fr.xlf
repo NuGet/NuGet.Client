@@ -1228,8 +1228,8 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
         <note />
       </trans-unit>
       <trans-unit id="SignCommandTrustAnchorFingerprintDescription">
-        <source>Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times.</source>
-        <target state="new">Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times.</target>
+        <source>Fingerprint (SHA256/SHA384/SHA512) of the expected root certificate. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches. This option can be specified multiple times.</source>
+        <target state="new">Fingerprint (SHA256/SHA384/SHA512) of the expected root certificate. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches. This option can be specified multiple times.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandTrustAnchorsDescription">

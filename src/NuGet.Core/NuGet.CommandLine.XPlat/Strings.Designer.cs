@@ -2242,7 +2242,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times..
+        ///   Looks up a localized string similar to Fingerprint (SHA256/SHA384/SHA512) of the expected root certificate. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches. This option can be specified multiple times..
         /// </summary>
         internal static string SignCommandTrustAnchorFingerprintDescription {
             get {

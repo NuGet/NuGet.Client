@@ -2034,11 +2034,20 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificate with fingerprint &apos;{0}&apos; was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine)..
+        ///   Looks up a localized string similar to The root certificate of the signing certificate chain does not match the specified trust anchor fingerprint &apos;{0}&apos;..
         /// </summary>
         internal static string SignCommandTrustAnchorNotFound {
             get {
                 return ResourceManager.GetString("SignCommandTrustAnchorNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to build a certificate chain from the signing certificate..
+        /// </summary>
+        internal static string SignCommandTrustAnchorChainBuildFailed {
+            get {
+                return ResourceManager.GetString("SignCommandTrustAnchorChainBuildFailed", resourceCulture);
             }
         }
         
