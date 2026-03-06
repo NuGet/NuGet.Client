@@ -680,7 +680,7 @@ NuGet.Protocol.LocalV3FindPackageByIdResourceProvider.LocalV3FindPackageByIdReso
 NuGet.Protocol.MetadataFieldConverter
 NuGet.Protocol.MetadataFieldConverter.MetadataFieldConverter() -> void
 NuGet.Protocol.MetadataReferenceCache
-NuGet.Protocol.MetadataReferenceCache.GetObject<T>(T input) -> T
+~NuGet.Protocol.MetadataReferenceCache.GetObject<T>(T input) -> T
 ~NuGet.Protocol.MetadataReferenceCache.GetString(string s) -> string
 ~NuGet.Protocol.MetadataReferenceCache.GetVersion(string s) -> NuGet.Versioning.NuGetVersion
 NuGet.Protocol.MetadataReferenceCache.MetadataReferenceCache() -> void

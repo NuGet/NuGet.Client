@@ -1,1 +1,5 @@
 #nullable enable
+NuGet.Protocol.ICacheable
+NuGet.Protocol.ICacheable.CacheStrings(NuGet.Protocol.MetadataReferenceCache! cache) -> void
+~virtual NuGet.Protocol.PackageSearchMetadata.CacheStrings(NuGet.Protocol.MetadataReferenceCache cache) -> void
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.CacheStrings(NuGet.Protocol.MetadataReferenceCache cache) -> void

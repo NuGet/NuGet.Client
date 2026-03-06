@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Core.Types
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
 
-        public class ClonedPackageSearchMetadata : IPackageSearchMetadata
+        public class ClonedPackageSearchMetadata : IPackageSearchMetadata, ICacheable
         {
             private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
                 AsyncLazy.New(Enumerable.Empty<VersionInfo>());
@@ -62,6 +62,19 @@ namespace NuGet.Protocol.Core.Types
             [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
             public string PackagePath { get; set; }
+
+            /// <inheritdoc />
+            public void CacheStrings(MetadataReferenceCache cache)
+            {
+                Authors = cache.GetString(Authors);
+                Description = cache.GetString(Description);
+                Owners = cache.GetString(Owners);
+                ReadmeFileUrl = cache.GetString(ReadmeFileUrl);
+                Summary = cache.GetString(Summary);
+                Tags = cache.GetString(Tags);
+                Title = cache.GetString(Title);
+                PackagePath = cache.GetString(PackagePath);
+            }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
