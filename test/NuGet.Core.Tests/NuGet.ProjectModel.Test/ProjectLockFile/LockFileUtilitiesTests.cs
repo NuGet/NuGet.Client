@@ -508,7 +508,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                         .WithType(PackageDependencyType.Transitive)))
                         .Build();
 
-            // The central package version cpvm2 has was changed from transitive to central 
+            // The central package version cpvm2 has was changed from transitive to central
             var actual = PackagesLockFileUtilities.IsLockFileValid(dgSpec, lockFile);
             Assert.False(actual.IsValid);
             Assert.Contains("Transitive dependency cpvm2 moved to be centraly managed invalidated the lock file.", actual.InvalidReasons);
@@ -932,7 +932,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             var projectB = ProjectTestHelpers.GetPackageSpec("B", framework: frameworkShortName).WithTestRestoreMetadata();
             var projectC = ProjectTestHelpers.GetPackageSpec("C", framework: frameworkShortName).WithTestRestoreMetadata();
 
-            // B (PrivateAssets.All) -> C 
+            // B (PrivateAssets.All) -> C
             projectB = projectB.WithTestProjectReference(projectC, privateAssets: LibraryIncludeFlags.All);
 
             // A -> B
@@ -982,7 +982,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: null,
                 versionOverride: null);
 
-            // B (PrivateAssets.All) -> C 
+            // B (PrivateAssets.All) -> C
             projectB = projectB.WithTestProjectReference(projectC, privateAssets: LibraryIncludeFlags.All);
 
             // A -> B
@@ -1056,7 +1056,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: null,
                 versionOverride: null);
 
-            // B -> C 
+            // B -> C
             projectB = projectB.WithTestProjectReference(projectC);
 
             // A -> B
@@ -1161,6 +1161,75 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             Assert.Equal(1, actual.InvalidReasons.Count);
             var invalidReason = actual.InvalidReasons.Single();
             Assert.Contains("PackageA", invalidReason);
+        }
+
+        /// <summary>
+        /// A(PR) -> B(PR), where A targets netstandard2.0 and B targets net46 (incompatible frameworks).
+        /// The lock file records B with no deps, consistent with what restore produces for an incompatible TFM.
+        /// Regression for https://github.com/NuGet/Home/issues/12010
+        /// </summary>
+        [Fact]
+        public void IsLockFileValid_WithPackageReferenceP2PAndIncompatibleFramework_WithNoDepsInLockFile_IsValid()
+        {
+            // Arrange
+            var parentFramework = CommonFrameworks.NetStandard20;
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: parentFramework.GetShortFolderName()).WithTestRestoreMetadata();
+            var projectB = ProjectTestHelpers.GetPackageSpec("B", framework: "net46").WithTestRestoreMetadata();
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForFirstProject(projectA, projectB);
+
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(parentFramework)
+                    .WithDependency(dep => dep
+                        .WithId("B")
+                        .WithType(PackageDependencyType.Project)
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))))
+                .Build();
+
+            // Act
+            var actual = PackagesLockFileUtilities.IsLockFileValid(dgSpec, lockFile);
+
+            // Assert
+            actual.IsValid.Should().BeTrue();
+            actual.InvalidReasons.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// A(PR) -> B(PR), where A targets netstandard2.0 and B targets net46 (incompatible frameworks).
+        /// A lock file with non-empty deps for an incompatible-TFM P2P is stale and must be detected as invalid.
+        /// </summary>
+        [Fact]
+        public void IsLockFileValid_WithPackageReferenceP2PAndIncompatibleFramework_WithNonEmptyDepsInLockFile_IsInvalid()
+        {
+            // Arrange
+            var parentFramework = CommonFrameworks.NetStandard20;
+            var projectA = ProjectTestHelpers.GetPackageSpec("A", framework: parentFramework.GetShortFolderName()).WithTestRestoreMetadata();
+            var projectB = ProjectTestHelpers.GetPackageSpec("B", framework: "net46").WithTestRestoreMetadata();
+
+            // A -> B
+            projectA = projectA.WithTestProjectReference(projectB);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForFirstProject(projectA, projectB);
+
+            // B has a stale transitive dependency from when it previously had a compatible TFM.
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(parentFramework)
+                    .WithDependency(dep => dep
+                        .WithId("B")
+                        .WithType(PackageDependencyType.Project)
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithDependency(new PackageDependency("SomePackage", VersionRange.Parse("1.0.0")))))
+                .Build();
+
+            // Act
+            var actual = PackagesLockFileUtilities.IsLockFileValid(dgSpec, lockFile);
+
+            // Assert
+            actual.IsValid.Should().BeFalse();
+            actual.InvalidReasons.Should().ContainSingle().Which.Should().Contain("The project B has no compatible target framework");
         }
     }
 }

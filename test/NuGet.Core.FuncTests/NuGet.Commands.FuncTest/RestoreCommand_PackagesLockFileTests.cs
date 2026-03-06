@@ -512,14 +512,13 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenANewDirectProjectReferenceChangesFramework_FailsWithNU1004()
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenANewDirectProjectReferenceChangesFramework_FailsWithNU1201()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
                 var packageA = new SimpleTestPackageContext("a", "1.0.0");
-                var packageB = new SimpleTestPackageContext("b", "1.0.0");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
@@ -556,29 +555,30 @@ namespace NuGet.Commands.FuncTest
                     restoreLockedMode: true);
                 logger.Clear();
 
+                // Change the P2P to an incompatible framework.
                 PackageSpecOperationsUtility.RemoveTargetFramework(projectReferenceSpec, "net46");
                 PackageSpecOperationsUtility.AddTargetFramework(projectReferenceSpec, "net47");
 
                 // Act.
                 result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, rootPackageSpec, projectReferenceSpec)).ExecuteAsync();
 
-                // Assert.
+                // Assert: the lock file remains valid (no transitive dep change), so failure is NU1201,
+                // not NU1004.
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
-                logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project IntermediateProject has no compatible target framework.");
+                logger.ErrorMessages.Single().Should().Contain("NU1201");
+                logger.ErrorMessages.Single().Should().Contain("Project IntermediateProject is not compatible");
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenANewTransitiveProjectReferenceChangesFramework_FailsWithNU1004()
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenANewTransitiveProjectReferenceChangesFramework_FailsWithNU1201()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
                 var packageA = new SimpleTestPackageContext("a", "1.0.0");
-                var packageB = new SimpleTestPackageContext("b", "1.0.0");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
@@ -622,17 +622,19 @@ namespace NuGet.Commands.FuncTest
                     restoreLockedMode: true);
                 logger.Clear();
 
+                // Change the leaf P2P to an incompatible framework.
                 PackageSpecOperationsUtility.RemoveTargetFramework(leafProjectReferenceSpec, "net46");
                 PackageSpecOperationsUtility.AddTargetFramework(leafProjectReferenceSpec, "net47");
 
                 // Act.
                 result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, rootPackageSpec, intermediateProjectReferenceSpec, leafProjectReferenceSpec)).ExecuteAsync();
 
-                // Assert.
+                // Assert: the lock file remains valid (no transitive dep change), so failure is NU1201,
+                // not NU1004.
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
-                logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain($"The project LeafProject has no compatible target framework.");
+                logger.ErrorMessages.Single().Should().Contain("NU1201");
+                logger.ErrorMessages.Single().Should().Contain("Project LeafProject is not compatible");
             }
         }
 
@@ -1677,6 +1679,61 @@ namespace NuGet.Commands.FuncTest
             logger.ErrorMessages.Should().ContainSingle();
             logger.ErrorMessages.Single().Should().Contain("NU1004");
             logger.ErrorMessages.Single().Should().Contain("The project reference project2 has changed");
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenP2PProjectHasNoCompatibleTargetFramework_Succeeds()
+        {
+            // Arrange
+            // Root uses an AssetTargetFallback (ATF) framework. IsLockFileValid does not expand ATF
+            // when checking P2P compatibility, so the lock file sees the P2P as contributing 0 deps —
+            // which is valid with this fix. The actual restore does expand ATF and succeeds.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+
+                var rootProjectName = "RootProject";
+                var rootProjectDirectory = Path.Combine(pathContext.SolutionRoot, rootProjectName);
+
+                var atfFramework = new AssetTargetFallbackFramework(
+                    CommonFrameworks.NetStandard20,
+                    new List<NuGetFramework> { CommonFrameworks.Net46 });
+                var rootTFI = new TargetFrameworkInformation { FrameworkName = atfFramework, TargetAlias = "netstandard2.0" };
+
+                var rootPackageSpec = PackageReferenceSpecBuilder.Create(rootProjectName, rootProjectDirectory)
+                    .WithTargetFrameworks(new[] { rootTFI })
+                    .WithPackagesLockFile()
+                    .Build();
+
+                var p2pProjectName = "P2PProject";
+                var p2pProjectDirectory = Path.Combine(pathContext.SolutionRoot, p2pProjectName);
+
+                // P2P targets net46, which is only reachable from the root via ATF fallback.
+                var p2pPackageSpec = PackageReferenceSpecBuilder.Create(p2pProjectName, p2pProjectDirectory)
+                    .WithTargetFrameworks(["net46"])
+                    .Build();
+
+                PackageSpecOperationsUtility.AddProjectReference(rootPackageSpec, p2pPackageSpec, atfFramework);
+
+                // Preconditions: initial restore uses ATF expansion to resolve the P2P.
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, rootPackageSpec, p2pPackageSpec)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue();
+
+                // Enable locked mode and clear the logger.
+                rootPackageSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                    restorePackagesWithLockFile: "true",
+                    rootPackageSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                    restoreLockedMode: true);
+                logger.Clear();
+
+                // Act
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, rootPackageSpec, p2pPackageSpec)).ExecuteAsync();
+
+                // Assert: the lock file is valid (P2P contributes 0 deps, which is correct), so locked restore succeeds.
+                result.Success.Should().BeTrue();
+                logger.ErrorMessages.Should().BeEmpty();
+            }
         }
     }
 }

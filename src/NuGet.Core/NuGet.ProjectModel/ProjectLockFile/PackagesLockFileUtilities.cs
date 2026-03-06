@@ -244,7 +244,7 @@ namespace NuGet.ProjectModel
 
                                             if (hasChanged)
                                             {
-                                                // P2P transitive package dependencies have changed                                            
+                                                // P2P transitive package dependencies have changed
                                                 invalidReasons.Add(message);
                                             }
 
@@ -265,12 +265,20 @@ namespace NuGet.ProjectModel
                                     }
                                     else
                                     {
-                                        invalidReasons.Add(string.Format(
-                                               CultureInfo.CurrentCulture,
-                                               Strings.PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework,
-                                               p2pProjectName,
-                                               useAliasForMessages ? restoreMetadataFramework.TargetAlias : restoreMetadataFramework.FrameworkName.GetShortFolderName()
-                                               ));
+                                        // When no compatible TFM is found, restore contributes no transitive dependencies
+                                        // for this P2P project. Non-empty deps in the lock file indicate a stale entry
+                                        // from when the P2P previously had a compatible TFM.
+                                        if (projectDependency.Dependencies.Count > 0)
+                                        {
+                                            invalidReasons.Add(
+                                                string.Format(
+                                                    CultureInfo.CurrentCulture,
+                                                    Strings.PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework,
+                                                    p2pProjectName,
+                                                    useAliasForMessages ? restoreMetadataFramework.TargetAlias : restoreMetadataFramework.FrameworkName.GetShortFolderName()
+                                                )
+                                            );
+                                        }
                                     }
                                 }
                                 else // This can't happen. When adding the queue, the referenceSpec HAS to be discovered. If the project is otherwise missing, it will be discovered in HasP2PDependencyChanged
