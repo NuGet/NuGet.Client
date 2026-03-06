@@ -228,6 +228,5 @@ namespace NuGet.Protocol
             // get the readme url
             return builder.Uri.AbsoluteUri;
         }
-
     }
 }

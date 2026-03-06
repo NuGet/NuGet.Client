@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using NuGet.Versioning;
 using Xunit;
@@ -118,6 +119,19 @@ namespace NuGet.Protocol.Tests
             public string StringCachedDuring2 { get; private set; } = TestStringCachedDuring;
             public string StringCachedOnce { get; private set; } = TestStringCachedOnce;
 
+            public static NuGetVersion TestVersionCachedBefore => new NuGetVersion(9, 8, 7);
+            public static NuGetVersion TestVersionCachedDuring => new NuGetVersion(8, 7, 6);
+            public static NuGetVersion TestVersionCachedOnce => new NuGetVersion(7, 6, 5);
+
+            public NuGetVersion VersionCachedBefore { get; private set; } = TestVersionCachedBefore;
+            public NuGetVersion VersionCachedDuring1 { get; private set; } = TestVersionCachedDuring;
+            public NuGetVersion VersionCachedDuring2 { get; private set; } = TestVersionCachedDuring;
+            public NuGetVersion VersionCachedOnce { get; private set; } = TestVersionCachedOnce;
+
+            public static DateTimeOffset TestDateTimeNeverCached => DateTimeOffset.MinValue;
+
+            public DateTimeOffset DateTimeNeverCached { get; private set; } = TestDateTimeNeverCached;
+
             public void CacheStrings(MetadataReferenceCache cache)
             {
                 StringCachedBefore = cache.GetString(StringCachedBefore);
@@ -154,6 +168,10 @@ namespace NuGet.Protocol.Tests
             Assert.NotSame(objectToCache.StringCachedOnce, stringCachedOnce);
             Assert.Equal(objectToCache.StringCachedOnce, stringCachedOnce);
 
+            // Versions
+            Assert.NotSame(objectToCache.VersionCachedDuring1, objectToCache.VersionCachedDuring2);
+            Assert.Equal(objectToCache.VersionCachedDuring1, objectToCache.VersionCachedDuring2);
+
             //// Act 2
             var cachedObject = cache.GetObject(objectToCache);
             var cachedStringCachedOnce = cache.GetString(stringCachedOnce);
@@ -172,6 +190,9 @@ namespace NuGet.Protocol.Tests
 
             Assert.Same(objectToCache.StringCachedOnce, cachedStringCachedOnce);
             Assert.Equal(objectToCache.StringCachedOnce, ObjectCacheTest.TestStringCachedOnce);
+
+            // Check that uncached fields are untouched.
+            Assert.Equal(objectToCache.DateTimeNeverCached, ObjectCacheTest.TestDateTimeNeverCached);
         }
 
         [Fact]
