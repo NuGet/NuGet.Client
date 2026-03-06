@@ -60,18 +60,30 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.GetDependencyGraphSpec(string, string?)"/>
-    public DependencyGraphSpec? GetDependencyGraphSpec(string project, string? projectContentFile = null)
+    /// <inheritdoc cref="IPackageUpdateIO.GetDependencyGraphSpec(string)"/>
+    public DependencyGraphSpec? GetDependencyGraphSpec(string project)
     {
         string tempFile = Path.GetTempFileName();
         try
         {
-            if (!RunMsbuildTarget(project, tempFile, projectContentFile))
+            if (!RunMsbuildTarget(project, tempFile))
             {
                 return null;
             }
 
             DependencyGraphSpec result = DependencyGraphSpec.Load(tempFile);
+
+            // Fixup virtual project paths.
+            if (IVirtualProjectBuilder.GetInstance()?.GetVirtualProjectPath(project) is { } virtualProjectPath)
+            {
+                foreach (var packageSpec in result.Projects)
+                {
+                    if (packageSpec.FilePath == virtualProjectPath)
+                    {
+                        packageSpec.FilePath = project;
+                    }
+                }
+            }
 
             return result;
         }
@@ -80,11 +92,13 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             File.Delete(tempFile);
         }
 
-        bool RunMsbuildTarget(string project, string tempFile, string? projectContentFile)
+        bool RunMsbuildTarget(string project, string tempFile)
         {
             // When being run from the dotnet CLI, use the same dotnet executable, just in case the dotnet on the PATH is different
             // But when NuGet.CommandLine.XPlat is being called directly, call dotnet on the path, so this code is debuggable.
             string dotnetPath = _environmentVariableReader.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+
+            bool isFileBasedApp = IVirtualProjectBuilder.GetInstance()?.IsValidEntryPointPath(project) == true;
 
             // don't redirect stdout or stderr, so errors are output. But use quiet verbosity, so that success has no output.
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
@@ -96,7 +110,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +
                 $"-property:RestoreRecursive=false " +
                 $"-verbosity:quiet " +
-                (projectContentFile is null ? $"-noautoresponse" : null), // currently not supported for file-based apps
+                (!isFileBasedApp ? $"-noautoresponse" : null), // currently not supported for file-based apps
                 UseShellExecute = false,
                 Environment =
                 {
@@ -165,8 +179,8 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         }
     }
 
-    /// <inheritdoc cref="IPackageUpdateIO.UpdatePackageReference(PackageSpec, IPackageUpdateIO.RestoreResult, List{string}, PackageToUpdate, ILogger, string?)"/>
-    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<string> packageTfmAliases, PackageToUpdate packageToUpdate, ILogger logger, string? projectContentFile = null)
+    /// <inheritdoc cref="IPackageUpdateIO.UpdatePackageReference(PackageSpec, IPackageUpdateIO.RestoreResult, List{string}, PackageToUpdate, ILogger)"/>
+    public void UpdatePackageReference(PackageSpec updatedPackageSpec, IPackageUpdateIO.RestoreResult restorePreviewResult, List<string> packageTfmAliases, PackageToUpdate packageToUpdate, ILogger logger)
     {
         PackageDependency packageDependency = new PackageDependency(packageToUpdate.Id, packageToUpdate.NewVersion);
 
@@ -197,11 +211,11 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         if (packageTfmAliases.Count == updatedPackageSpec.TargetFrameworks.Count)
         {
             // package is used by all project TFMs (no condition)
-            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, noVersion, projectContentFile);
+            _msbuildUtility.AddPackageReference(updatedPackageSpec.FilePath, libraryDependency, noVersion);
         }
         else
         {
-            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, packageTfmAliases, noVersion, projectContentFile);
+            _msbuildUtility.AddPackageReferencePerTFM(updatedPackageSpec.FilePath, libraryDependency, packageTfmAliases, noVersion);
         }
     }
 

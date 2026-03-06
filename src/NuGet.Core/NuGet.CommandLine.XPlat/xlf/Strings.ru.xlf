@@ -1059,11 +1059,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">Обновление пакетов с предупреждениями по безопасности в {0}</target>
         <note>{0} - the project/solution being checked</note>
       </trans-unit>
-      <trans-unit id="Pkg_ProjectContentFileDescription">
-        <source>Path to a file with the XML content of the project (used for virtual projects).</source>
-        <target state="new">Path to a file with the XML content of the project (used for virtual projects).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>
         <target state="translated">Нет доступных стабильных версий. Наилучшей из доступных является {0}. Попробуйте добавить параметр --prerelease.</target>

@@ -94,14 +94,9 @@ namespace Dotnet.Integration.Test
             // Restore.
             _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
-            // Write the project XML to a temp file.
+            // Get project content.
             var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-
-            var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
-            Directory.CreateDirectory(tempDir);
-
-            var projectContentFile = Path.Join(tempDir, "app.csproj");
-            File.WriteAllText(projectContentFile, projectContent);
+            using var _ = new TestVirtualProjectBuilder(projectContent);
 
             // Run "why" command.
             var console = new TestConsole();
@@ -114,7 +109,6 @@ namespace Dotnet.Integration.Test
                 WhyCommandRunner.ExecuteCommand);
             int result = rootCommand.Parse([
                 "why", appFile, "PackageB",
-                "--project-content-file", projectContentFile,
             ]).Invoke(new() { Output = outWriter, Error = errorWriter });
 
             var output = outWriter.ToString() + console.Output;

@@ -101,14 +101,9 @@ namespace Dotnet.Integration.Test
             // Restore.
             _fixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
-            // Write the project XML to a temp file.
+            // Get project content.
             var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-
-            var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
-            Directory.CreateDirectory(tempDir);
-
-            var projectContentFile = Path.Join(tempDir, "app.csproj");
-            File.WriteAllText(projectContentFile, projectContent);
+            using var _ = new TestVirtualProjectBuilder(projectContent);
 
             // List packages.
             using var outWriter = new StringWriter();
@@ -126,7 +121,6 @@ namespace Dotnet.Integration.Test
             int result = testApp.Execute([
                 "list", appFile,
                 "--source", pathContext.PackageSource,
-                "--project-content-file", projectContentFile,
                 "--format", "json",
             ]);
 

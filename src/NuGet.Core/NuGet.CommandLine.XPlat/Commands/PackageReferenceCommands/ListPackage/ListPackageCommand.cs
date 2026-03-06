@@ -82,11 +82,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_HighestMinorDescription,
                     CommandOptionType.NoValue);
 
-                var projectContentFile = listpkg.Option(
-                    "--project-content-file",
-                    Strings.Pkg_ProjectContentFileDescription,
-                    CommandOptionType.SingleValue);
-
                 var source = listpkg.Option(
                     "--source",
                     Strings.ListPkg_SourceDescription,
@@ -137,10 +132,8 @@ namespace NuGet.CommandLine.XPlat
 
                     IReportRenderer reportRenderer = GetOutputType(app.Out, app.Error, outputFormat.Value(), outputVersionOption: outputVersion.Value());
                     var provider = new PackageSourceProvider(settings);
-                    var projectContentFileValue = projectContentFile.Value();
-                    var pathValue = MSBuildAPIUtility.ChangeProjectPath(path.Value, projectContentFileValue);
                     var packageRefArgs = new ListPackageArgs(
-                        pathValue,
+                        path.Value,
                         packageSources,
                         framework.Values,
                         reportType,
@@ -151,10 +144,7 @@ namespace NuGet.CommandLine.XPlat
                         highestMinor.HasValue(),
                         provider.LoadAuditSources(),
                         logger,
-                        CancellationToken.None)
-                    {
-                        ProjectContentFile = projectContentFileValue,
-                    };
+                        CancellationToken.None);
 
                     WarnAboutIncompatibleOptions(packageRefArgs, reportRenderer);
 

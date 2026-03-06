@@ -32,16 +32,11 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
             Console.WriteLine();
             """);
 
-        // Write the project XML to a temp file.
+        // Get project content.
         var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-
-        var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
-        Directory.CreateDirectory(tempDir);
-
-        var projectContentFile = Path.Join(tempDir, "app.csproj");
         _testOutputHelper.WriteLine("before:\n" + projectContent);
         Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", projectContent);
-        File.WriteAllText(projectContentFile, projectContent);
+        using var builder = new TestVirtualProjectBuilder(projectContent);
 
         // Remove the package.
         using var outWriter = new StringWriter();
@@ -59,7 +54,6 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
             "remove",
             "--project", appFile,
             "--package", "packageX",
-            "--project-content-file", projectContentFile,
         ]);
 
         var output = outWriter.ToString();
@@ -72,7 +66,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
 
         Assert.Empty(error);
 
-        var modifiedProjectContent = File.ReadAllText(projectContentFile);
+        var modifiedProjectContent = builder.CreatedElement.RawXml;
         _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
         Assert.DoesNotContain("PackageReference", modifiedProjectContent);
 

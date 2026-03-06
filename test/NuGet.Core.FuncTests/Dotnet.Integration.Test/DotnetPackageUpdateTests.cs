@@ -123,16 +123,11 @@ namespace Dotnet.Integration.Test
                 Console.WriteLine();
                 """);
 
-            // Write the project XML to a temp file.
+            // Get project content.
             var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-
-            var tempDir = Path.Join(pathContext.WorkingDirectory, "temp");
-            Directory.CreateDirectory(tempDir);
-
-            var projectContentFile = Path.Join(tempDir, "app.csproj");
             _testOutputHelper.WriteLine("before:\n" + projectContent);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", projectContent);
-            File.WriteAllText(projectContentFile, projectContent);
+            using var builder = new TestVirtualProjectBuilder(projectContent);
 
             // Update the package.
             using var outWriter = new StringWriter();
@@ -150,7 +145,6 @@ namespace Dotnet.Integration.Test
             int result = rootCommand.Parse([
                 "update",
                 "--project", appFile,
-                "--project-content-file", projectContentFile,
             ]).Invoke(new() { Output = outWriter, Error = errorWriter });
 
             var output = outWriter.ToString();
@@ -163,7 +157,7 @@ namespace Dotnet.Integration.Test
 
             Assert.Empty(error);
 
-            var modifiedProjectContent = File.ReadAllText(projectContentFile);
+            var modifiedProjectContent = builder.CreatedElement.RawXml;
             _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="2.0.0" />""", modifiedProjectContent);
 

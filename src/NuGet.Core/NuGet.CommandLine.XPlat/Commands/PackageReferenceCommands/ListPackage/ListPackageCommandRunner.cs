@@ -50,7 +50,8 @@ namespace NuGet.CommandLine.XPlat
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
-            if (listPackageArgs.ProjectContentFile is null && !File.Exists(listPackageArgs.Path))
+            if (!File.Exists(listPackageArgs.Path)
+                && IVirtualProjectBuilder.GetInstance()?.IsValidEntryPointPath(listPackageArgs.Path) != true)
             {
                 listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
                     text: string.Format(CultureInfo.CurrentCulture,
@@ -95,7 +96,7 @@ namespace NuGet.CommandLine.XPlat
         {
             //Open project to evaluate properties for the assets
             //file and the name of the project
-            Project project = MSBuildAPIUtility.GetProject(projectPath, projectPath == listPackageArgs.Path ? listPackageArgs.ProjectContentFile : null).Project;
+            Project project = MSBuildAPIUtility.GetProject(projectPath).Project;
             var projectName = project.GetPropertyValue(ProjectName);
             ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, projectName);
 

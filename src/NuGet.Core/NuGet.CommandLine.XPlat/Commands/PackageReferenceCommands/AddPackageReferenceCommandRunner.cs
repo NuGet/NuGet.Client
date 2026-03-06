@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.XPlat
                         typeConstraint: LibraryDependencyTarget.Package)
                 };
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion, packageReferenceArgs.ProjectContentFile);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
                 return 0;
             }
 
@@ -77,6 +77,12 @@ namespace NuGet.CommandLine.XPlat
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
             var projectFullPath = Path.GetFullPath(packageReferenceArgs.ProjectPath);
+
+            if (IVirtualProjectBuilder.GetInstance() is { } virtualProjectBuilder &&
+                virtualProjectBuilder.IsValidEntryPointPath(projectFullPath))
+            {
+                projectFullPath = virtualProjectBuilder.GetVirtualProjectPath(projectFullPath);
+            }
 
             var matchingPackageSpecs = dgSpec
                 .Projects
@@ -247,7 +253,7 @@ namespace NuGet.CommandLine.XPlat
                 // generate a library dependency with all the metadata like Include, Exclude and SuppressParent
                 var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, packageDependency, resolvedVersion);
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion, packageReferenceArgs.ProjectContentFile);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
             }
             else
             {
@@ -265,8 +271,7 @@ namespace NuGet.CommandLine.XPlat
                 msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
                     libraryDependency,
                     compatibleFrameworks,
-                    packageReferenceArgs.NoVersion,
-                    packageReferenceArgs.ProjectContentFile);
+                    packageReferenceArgs.NoVersion);
             }
 
             // 6. Commit restore result

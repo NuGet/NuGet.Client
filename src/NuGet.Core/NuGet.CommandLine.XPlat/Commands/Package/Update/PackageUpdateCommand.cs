@@ -36,14 +36,6 @@ internal static class PackageUpdateCommand
         projectOption.Description = Strings.PackageUpdateCommand_ProjectOptionDescription;
         command.Options.Add(projectOption);
 
-        var projectContentFileOption = new Option<FileSystemInfo>("--project-content-file")
-        {
-            Description = Strings.Pkg_ProjectContentFileDescription,
-            Arity = ArgumentArity.ZeroOrOne,
-        }
-        .AcceptExistingOnly();
-        command.Options.Add(projectContentFileOption);
-
         var vulnerableOption = new Option<bool>("--vulnerable");
         vulnerableOption.Description = Strings.PackageUpdateCommand_VulnerableOptionDescription;
         command.Options.Add(vulnerableOption);
@@ -63,20 +55,13 @@ internal static class PackageUpdateCommand
             LogLevel logLevel = verbosity.ToLogLevel();
             bool vulnerable = args.GetValue(vulnerableOption);
 
-            var projectPath = project?.FullName ?? Environment.CurrentDirectory;
-            var originalProjectPath = projectPath;
-            var projectContentFile = args.GetValue(projectContentFileOption)?.FullName;
-            projectPath = MSBuildAPIUtility.ChangeProjectPath(projectPath, projectContentFile);
-
             var commandArgs = new PackageUpdateArgs
             {
-                Project = projectPath,
+                Project = project?.FullName ?? Environment.CurrentDirectory,
                 Packages = packages,
                 Interactive = interactive,
                 LogLevel = logLevel,
                 Vulnerable = vulnerable,
-                ProjectContentFile = projectContentFile,
-                OriginalProject = originalProjectPath,
             };
 
             return await action(commandArgs, cancellationToken);

@@ -101,13 +101,11 @@ namespace Dotnet.Integration.Test
             var dgFile = Path.Join(tempDir, "dg.json");
             _fixture.RunDotnetExpectSuccess(fbaDir, $"build app.cs -t:GenerateRestoreGraphFile -p:RestoreGraphOutputPath={ArgumentEscaper.EscapeAndConcatenate([dgFile])}", testOutputHelper: _testOutputHelper);
 
-            // Write the project XML to a temp file.
+            // Get project content.
             var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-
-            var projectContentFile = Path.Join(tempDir, "app.csproj");
             _testOutputHelper.WriteLine("before:\n" + projectContent);
             Assert.DoesNotContain("PackageReference", projectContent);
-            File.WriteAllText(projectContentFile, projectContent);
+            using var builder = new TestVirtualProjectBuilder(projectContent);
 
             // Create a package.
             var packageX = XPlatTestUtils.CreatePackage();
@@ -129,7 +127,6 @@ namespace Dotnet.Integration.Test
                 "add",
                 "--project", appFile,
                 "--package", "packageX",
-                "--project-content-file", projectContentFile,
                 "--dg-file", dgFile,
             ]);
 
@@ -143,7 +140,7 @@ namespace Dotnet.Integration.Test
 
             Assert.Empty(error);
 
-            var modifiedProjectContent = File.ReadAllText(projectContentFile);
+            var modifiedProjectContent = builder.CreatedElement.RawXml;
             _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
             Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", modifiedProjectContent);
 

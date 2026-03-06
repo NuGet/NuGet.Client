@@ -56,15 +56,14 @@ namespace NuGet.CommandLine.XPlat
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
-        /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects)</param>
-        internal static SaveableProject GetProject(string projectCSProjPath, string projectContentFile)
+        internal static SaveableProject GetProject(string projectCSProjPath)
         {
-            var projectRootElement = TryOpenProjectRootElement(projectCSProjPath, projectContentFile);
-            if (projectCSProjPath == null)
+            var (projectRootElement, isVirtual) = TryOpenProjectRootElement(projectCSProjPath);
+            if (projectRootElement is null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
-            return new SaveableProject { Project = new Project(projectRootElement), ProjectContentFile = projectContentFile };
+            return new SaveableProject { Project = new Project(projectRootElement), IsVirtualProject = isVirtual };
         }
 
         /// <summary>
@@ -72,15 +71,14 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
-        /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
-        internal static SaveableProject GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties, string projectContentFile)
+        private static SaveableProject GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
-            var projectRootElement = TryOpenProjectRootElement(projectCSProjPath, projectContentFile);
-            if (projectCSProjPath == null)
+            var (projectRootElement, isVirtual) = TryOpenProjectRootElement(projectCSProjPath);
+            if (projectRootElement is null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
-            return new SaveableProject { Project = new Project(projectRootElement, globalProperties, toolsVersion: null), ProjectContentFile = projectContentFile };
+            return new SaveableProject { Project = new Project(projectRootElement, globalProperties, toolsVersion: null), IsVirtualProject = isVirtual };
         }
 
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
@@ -112,11 +110,11 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <returns>List of project paths. Returns null if path was a directory with none or multiple project/solution files.</returns>
         /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
-        internal static IEnumerable<string> GetListOfProjectsFromPathArgument(string path, string projectContentFile = null)
+        internal static IEnumerable<string> GetListOfProjectsFromPathArgument(string path)
         {
             string fullPath = Path.GetFullPath(path);
 
-            if (projectContentFile != null)
+            if (IVirtualProjectBuilder.GetInstance()?.IsValidEntryPointPath(fullPath) == true)
             {
                 return [fullPath];
             }
@@ -152,10 +150,9 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be removed.</param>
-        /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
-        public int RemovePackageReference(string projectPath, LibraryDependency libraryDependency, string projectContentFile)
+        public int RemovePackageReference(string projectPath, LibraryDependency libraryDependency)
         {
-            var project = GetProject(projectPath, projectContentFile);
+            var project = GetProject(projectPath);
 
             var existingPackageReferences = project.Project.ItemsIgnoringCondition
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
@@ -194,7 +191,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         public static bool AreCentralVersionRequirementsSatisfied(PackageReferenceArgs packageReferenceArgs, PackageSpec packageSpec)
         {
-            var project = GetProject(packageReferenceArgs.ProjectPath, packageReferenceArgs.ProjectContentFile).Project;
+            var project = GetProject(packageReferenceArgs.ProjectPath).Project;
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
 
             // Get VersionOverride if it exisits in the package reference.
@@ -277,16 +274,15 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
-        /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
-        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool noVersion, string projectContentFile)
+        public void AddPackageReference(string projectPath, LibraryDependency libraryDependency, bool noVersion)
         {
-            var project = GetProject(projectPath, projectContentFile);
+            var project = GetProject(projectPath);
 
             // Here we get package references for any framework.
             // If the project has a conditional reference, then an unconditional reference is not added.
 
             var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, libraryDependency);
-            AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, projectContentFile);
+            AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion);
             ProjectCollection.GlobalProjectCollection.UnloadProject(project.Project);
         }
 
@@ -297,15 +293,14 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
         /// <param name="noVersion">If a version is passed in as a CLI argument.</param>
-        /// <param name="projectContentFile">Path to a file with the XML content of the project (used for virtual projects).</param>
         public void AddPackageReferencePerTFM(string projectPath, LibraryDependency libraryDependency,
-            IEnumerable<string> frameworks, bool noVersion, string projectContentFile)
+            IEnumerable<string> frameworks, bool noVersion)
         {
             foreach (var framework in frameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 { { "TargetFramework", framework } };
-                var project = GetProject(projectPath, globalProperties, projectContentFile);
+                var project = GetProject(projectPath, globalProperties);
                 var existingPackageReferences = GetPackageReferences(project.Project, libraryDependency);
                 AddPackageReference(project, libraryDependency, existingPackageReferences, noVersion, framework);
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project.Project);
@@ -1046,37 +1041,25 @@ namespace NuGet.CommandLine.XPlat
             return frameworks;
         }
 
-        internal static string ChangeProjectPath(string projectPath, string projectContentFile)
+        private static (ProjectRootElement, bool isVirtual) TryOpenProjectRootElement(string filename)
         {
-            return projectContentFile != null
-                ? Path.Join(Path.GetDirectoryName(projectPath), Path.GetFileName(projectContentFile))
-                : projectPath;
-        }
-
-        private static ProjectRootElement TryOpenProjectRootElement(string filename, string projectContentFile)
-        {
-            if (projectContentFile is not null)
+            try
             {
-                Debug.Assert(filename.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase));
-                var rootElement = Open(projectContentFile);
-                rootElement.FullPath = filename;
-                return rootElement;
+                if (IVirtualProjectBuilder.GetInstance() is { } virtualProjectBuilder &&
+                    virtualProjectBuilder.IsValidEntryPointPath(filename))
+                {
+                    var fullPath = Path.GetFullPath(filename);
+                    var element = virtualProjectBuilder.CreateProjectRootElement(fullPath, ProjectCollection.GlobalProjectCollection);
+                    return (element, true);
+                }
+
+                // There is ProjectRootElement.TryOpen but it does not work as expected
+                // I.e. it returns null for some valid projects
+                return (ProjectRootElement.Open(filename, ProjectCollection.GlobalProjectCollection, preserveFormatting: true), false);
             }
-
-            return Open(filename);
-
-            static ProjectRootElement Open(string path)
+            catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
             {
-                try
-                {
-                    // There is ProjectRootElement.TryOpen but it does not work as expected
-                    // I.e. it returns null for some valid projects
-                    return ProjectRootElement.Open(path, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
-                }
-                catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
-                {
-                    return null;
-                }
+                return (null, false);
             }
         }
 
@@ -1092,22 +1075,16 @@ namespace NuGet.CommandLine.XPlat
         public required Project Project { get; init; }
 
         /// <summary>
-        /// Path to a file with the XML content of the project (used for virtual projects).
+        /// Whether this project represents a virtual project (e.g., a file-based app).
+        /// When true, <see cref="Save()"/> is a no-op (the caller reads changes from the in-memory <see cref="Project"/> instance).
         /// </summary>
-        public string? ProjectContentFile { get; init; }
+        public bool IsVirtualProject { get; init; }
 
         public void Save()
         {
-            if (ProjectContentFile is null)
+            if (!IsVirtualProject)
             {
                 Project.Save();
-            }
-            else
-            {
-                var previousFullPath = Project.FullPath;
-                Project.FullPath = ProjectContentFile;
-                Project.Save();
-                Project.FullPath = previousFullPath;
             }
         }
 
