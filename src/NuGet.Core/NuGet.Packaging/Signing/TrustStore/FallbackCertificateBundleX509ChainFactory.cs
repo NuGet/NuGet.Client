@@ -6,6 +6,7 @@
 #if NET5_0_OR_GREATER
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -58,6 +59,10 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
+        [UnconditionalSuppressMessage(
+            "SingleFile",
+            "IL3000",
+            Justification = "NuGet assemblies are deployed as separate files in the .NET SDK. Assembly.Location is used to locate the trustedroots bundle next to the assembly.")]
         private static string GetThisAssemblyDirectoryPath()
         {
             string location = typeof(FallbackCertificateBundleX509ChainFactory).Assembly.Location;
