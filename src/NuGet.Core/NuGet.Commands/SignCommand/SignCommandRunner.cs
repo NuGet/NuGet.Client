@@ -74,7 +74,11 @@ namespace NuGet.Commands
                     {
                         foreach (string anchorPath in signArgs.TrustAnchorPaths)
                         {
+#if NET9_0_OR_GREATER
+                            signRequest.AdditionalTrustAnchors.Add(X509CertificateLoader.LoadCertificateFromFile(anchorPath));
+#else
                             signRequest.AdditionalTrustAnchors.Add(new X509Certificate2(anchorPath));
+#endif
                         }
                     }
 
