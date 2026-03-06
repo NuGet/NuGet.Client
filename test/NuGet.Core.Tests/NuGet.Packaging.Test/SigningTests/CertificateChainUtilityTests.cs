@@ -198,5 +198,77 @@ namespace NuGet.Packaging.Test
 
             Assert.Equal("certificate", exception.ParamName);
         }
+
+#if NET5_0_OR_GREATER
+        [Fact]
+        public void GetCertificateChain_WithAdditionalTrustAnchors_UntrustedRootSucceeds()
+        {
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            {
+                var extraStore = new X509Certificate2Collection() { intermediateCertificate };
+                var trustAnchors = new X509Certificate2Collection() { rootCertificate };
+                var logger = new TestLogger();
+
+                // Without trust anchors, this would throw SignatureException (NU3018)
+                // because the root is not in the trusted root store.
+                // With trust anchors, the root is trusted via CustomRootTrust and chain building succeeds.
+                using (var chain = CertificateChainUtility.GetCertificateChain(
+                    leafCertificate,
+                    extraStore,
+                    logger,
+                    CertificateType.Signature,
+                    trustAnchors))
+                {
+                    Assert.Equal(3, chain.Count);
+                    Assert.Equal(leafCertificate.Thumbprint, chain[0].Thumbprint);
+                    Assert.Equal(intermediateCertificate.Thumbprint, chain[1].Thumbprint);
+                    Assert.Equal(rootCertificate.Thumbprint, chain[2].Thumbprint);
+                }
+
+                Assert.Equal(0, logger.Errors);
+            }
+        }
+
+        [Fact]
+        public void GetCertificateChain_WithEmptyTrustAnchors_BehavesLikeOriginal()
+        {
+            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            {
+                var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
+                var emptyTrustAnchors = new X509Certificate2Collection();
+                var logger = new TestLogger();
+
+                // With empty trust anchors, behavior should be identical to the original overload:
+                // untrusted root should cause a SignatureException.
+                var exception = Assert.Throws<SignatureException>(
+                    () => CertificateChainUtility.GetCertificateChain(
+                        leafCertificate,
+                        extraStore,
+                        logger,
+                        CertificateType.Signature,
+                        emptyTrustAnchors));
+
+                Assert.Equal(NuGetLogCode.NU3018, exception.Code);
+            }
+        }
+
+        [Fact]
+        public void SignPackageRequest_AdditionalTrustAnchors_InitializedEmpty()
+        {
+            using (var certificate = _fixture.GetDefaultCertificate())
+            using (var request = new AuthorSignPackageRequest(
+                certificate,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256))
+            {
+                Assert.NotNull(request.AdditionalTrustAnchors);
+                Assert.Equal(0, request.AdditionalTrustAnchors.Count);
+            }
+        }
+#endif
     }
 }

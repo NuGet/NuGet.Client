@@ -36,6 +36,20 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public X509Certificate2Collection AdditionalCertificates { get; }
 
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// Gets a collection of additional root certificates to trust during chain building.
+        /// When non-empty, these roots are used as custom trust anchors alongside the system-trusted
+        /// roots, allowing signing with certificates whose root CA is not in the machine or user
+        /// trusted root store (e.g., when NoTrustedRootStore is enabled).
+        /// </summary>
+        /// <remarks>
+        /// This property is only available on .NET 5+ where <see cref="X509ChainTrustMode.CustomRootTrust"/>
+        /// and <see cref="X509ChainPolicy.CustomTrustStore"/> are supported.
+        /// </remarks>
+        public X509Certificate2Collection AdditionalTrustAnchors { get; }
+#endif
+
         /// <summary>
         /// Gets the signature type.
         /// </summary>
@@ -74,6 +88,9 @@ namespace NuGet.Packaging.Signing
             SignatureHashAlgorithm = signatureHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
             AdditionalCertificates = new X509Certificate2Collection();
+#if NET5_0_OR_GREATER
+            AdditionalTrustAnchors = new X509Certificate2Collection();
+#endif
         }
 
         /// <summary>
@@ -106,11 +123,20 @@ namespace NuGet.Packaging.Signing
         {
             if (Chain == null)
             {
+#if NET5_0_OR_GREATER
+                Chain = CertificateChainUtility.GetCertificateChain(
+                    Certificate,
+                    AdditionalCertificates,
+                    logger,
+                    CertificateType.Signature,
+                    AdditionalTrustAnchors);
+#else
                 Chain = CertificateChainUtility.GetCertificateChain(
                     Certificate,
                     AdditionalCertificates,
                     logger,
                     CertificateType.Signature);
+#endif
             }
         }
     }

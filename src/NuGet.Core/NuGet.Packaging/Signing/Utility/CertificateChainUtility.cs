@@ -35,6 +35,40 @@ namespace NuGet.Packaging.Signing
             ILogger logger,
             CertificateType certificateType)
         {
+            return GetCertificateChain(certificate, extraStore, logger, certificateType, additionalTrustAnchors: null);
+        }
+
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// Create a list of certificates in chain order with the leaf first and root last,
+        /// with optional additional trust anchors for custom root trust.
+        /// </summary>
+        /// <param name="certificate">The certificate for which a chain should be built.</param>
+        /// <param name="extraStore">A certificate store containing additional certificates necessary
+        /// for chain building.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="certificateType">The certificate type.</param>
+        /// <param name="additionalTrustAnchors">Optional collection of root certificates to trust
+        /// in addition to the system-trusted roots. When non-empty, enables
+        /// <see cref="X509ChainTrustMode.CustomRootTrust"/> for chain building.</param>
+        /// <returns>A certificate chain.</returns>
+        /// <remarks>This is intended to be used only during signing and timestamping operations,
+        /// not verification.</remarks>
+        public static IX509CertificateChain GetCertificateChain(
+            X509Certificate2 certificate,
+            X509Certificate2Collection extraStore,
+            ILogger logger,
+            CertificateType certificateType,
+            X509Certificate2Collection additionalTrustAnchors)
+#else
+        private static IX509CertificateChain GetCertificateChain(
+            X509Certificate2 certificate,
+            X509Certificate2Collection extraStore,
+            ILogger logger,
+            CertificateType certificateType,
+            X509Certificate2Collection additionalTrustAnchors)
+#endif
+        {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
@@ -64,7 +98,8 @@ namespace NuGet.Packaging.Signing
                     chain.ChainPolicy,
                     extraStore,
                     DateTime.Now,
-                    certificateType);
+                    certificateType,
+                    additionalTrustAnchors);
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
 
@@ -167,6 +202,16 @@ namespace NuGet.Packaging.Signing
             DateTime verificationTime,
             CertificateType certificateType)
         {
+            SetCertBuildChainPolicy(policy, additionalCertificates, verificationTime, certificateType, additionalTrustAnchors: null);
+        }
+
+        internal static void SetCertBuildChainPolicy(
+            X509ChainPolicy policy,
+            X509Certificate2Collection additionalCertificates,
+            DateTime verificationTime,
+            CertificateType certificateType,
+            X509Certificate2Collection additionalTrustAnchors)
+        {
             if (certificateType == CertificateType.Timestamp)
             {
                 policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
@@ -177,6 +222,32 @@ namespace NuGet.Packaging.Signing
             }
 
             policy.ExtraStore.AddRange(additionalCertificates);
+
+#if NET5_0_OR_GREATER
+            // When additional trust anchors are provided, use CustomRootTrust mode to trust
+            // both the system-trusted roots and the caller-supplied roots. This enables signing
+            // with certificates whose root CA is not in the machine or user trusted root store.
+            if (additionalTrustAnchors != null && additionalTrustAnchors.Count > 0)
+            {
+                policy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+
+                // Include system-trusted roots so existing trust relationships are preserved.
+                using (X509Store systemRoots = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
+                {
+                    systemRoots.Open(OpenFlags.ReadOnly);
+                    policy.CustomTrustStore.AddRange(systemRoots.Certificates);
+                }
+
+                using (X509Store machineRoots = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+                {
+                    machineRoots.Open(OpenFlags.ReadOnly);
+                    policy.CustomTrustStore.AddRange(machineRoots.Certificates);
+                }
+
+                // Add the caller-supplied trust anchors.
+                policy.CustomTrustStore.AddRange(additionalTrustAnchors);
+            }
+#endif
 
             policy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
 
