@@ -1,33 +1,33 @@
 #nullable enable
 NuGet.Client.ManagedCodeConventions
-~NuGet.Client.ManagedCodeConventions.Criteria.get -> NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria
-~NuGet.Client.ManagedCodeConventions.ManagedCodeConventions(NuGet.RuntimeModel.RuntimeGraph runtimeGraph) -> void
+NuGet.Client.ManagedCodeConventions.Criteria.get -> NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria!
+NuGet.Client.ManagedCodeConventions.ManagedCodeConventions(NuGet.RuntimeModel.RuntimeGraph? runtimeGraph) -> void
 NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria
-~NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForFramework(NuGet.Frameworks.NuGetFramework framework) -> NuGet.ContentModel.SelectionCriteria
-~NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForFrameworkAndRuntime(NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria
-~NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForRuntime(string runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria
+NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForFramework(NuGet.Frameworks.NuGetFramework! framework) -> NuGet.ContentModel.SelectionCriteria!
+NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForFrameworkAndRuntime(NuGet.Frameworks.NuGetFramework! framework, string? runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria!
+NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForRuntime(string! runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria!
 NuGet.Client.ManagedCodeConventions.ManagedCodePatterns
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.AnyTargettedFile.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileLibAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileRefAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ContentFiles.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.EmbedAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildFiles.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildMultiTargetingFiles.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildTransitiveFiles.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.NativeLibraries.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ResourceAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.RuntimeAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ToolsAssemblies.get -> NuGet.ContentModel.PatternSet
-~NuGet.Client.ManagedCodeConventions.Patterns.get -> NuGet.Client.ManagedCodeConventions.ManagedCodePatterns
-~NuGet.Client.ManagedCodeConventions.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string, NuGet.ContentModel.ContentPropertyDefinition>
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.AnyTargettedFile.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileLibAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileRefAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ContentFiles.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.EmbedAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildFiles.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildMultiTargetingFiles.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.MSBuildTransitiveFiles.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.NativeLibraries.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ResourceAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.RuntimeAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ToolsAssemblies.get -> NuGet.ContentModel.PatternSet!
+NuGet.Client.ManagedCodeConventions.Patterns.get -> NuGet.Client.ManagedCodeConventions.ManagedCodePatterns!
+NuGet.Client.ManagedCodeConventions.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string!, NuGet.ContentModel.ContentPropertyDefinition!>!
 NuGet.Client.ManagedCodeConventions.PropertyNames
 NuGet.ContentModel.Asset
 NuGet.ContentModel.Asset.Asset() -> void
-~NuGet.ContentModel.Asset.Link.get -> string
-~NuGet.ContentModel.Asset.Link.set -> void
-~NuGet.ContentModel.Asset.Path.get -> string
-~NuGet.ContentModel.Asset.Path.set -> void
+NuGet.ContentModel.Asset.Link.get -> string?
+NuGet.ContentModel.Asset.Link.set -> void
+NuGet.ContentModel.Asset.Path.get -> string!
+NuGet.ContentModel.Asset.Path.set -> void
 NuGet.ContentModel.ContentItem
 NuGet.ContentModel.ContentItem.ContentItem() -> void
 NuGet.ContentModel.ContentItem.Path.get -> string!
@@ -45,13 +45,13 @@ NuGet.ContentModel.ContentItemGroup.ContentItemGroup() -> void
 NuGet.ContentModel.ContentItemGroup.Items.get -> System.Collections.Generic.IList<NuGet.ContentModel.ContentItem!>!
 NuGet.ContentModel.ContentItemGroup.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
 NuGet.ContentModel.ContentPropertyDefinition
-~NuGet.ContentModel.ContentPropertyDefinition.CompareTest.get -> System.Func<object, object, object, int>
-~NuGet.ContentModel.ContentPropertyDefinition.CompatibilityTest.get -> System.Func<object, object, bool>
+NuGet.ContentModel.ContentPropertyDefinition.CompareTest.get -> System.Func<object?, object?, object?, int>?
+NuGet.ContentModel.ContentPropertyDefinition.CompatibilityTest.get -> System.Func<object?, object?, bool>!
 NuGet.ContentModel.ContentPropertyDefinition.FileExtensionAllowSubFolders.get -> bool
-~NuGet.ContentModel.ContentPropertyDefinition.FileExtensions.get -> System.Collections.Generic.List<string>
-~NuGet.ContentModel.ContentPropertyDefinition.Name.get -> string
+NuGet.ContentModel.ContentPropertyDefinition.FileExtensions.get -> System.Collections.Generic.List<string!>?
+NuGet.ContentModel.ContentPropertyDefinition.Name.get -> string!
 NuGet.ContentModel.Infrastructure.PatternExpression
-~NuGet.ContentModel.Infrastructure.PatternExpression.PatternExpression(NuGet.ContentModel.PatternDefinition pattern) -> void
+NuGet.ContentModel.Infrastructure.PatternExpression.PatternExpression(NuGet.ContentModel.PatternDefinition! pattern) -> void
 NuGet.ContentModel.PatternDefinition
 NuGet.ContentModel.PatternDefinition.Defaults.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 NuGet.ContentModel.PatternDefinition.Pattern.get -> string!
@@ -67,28 +67,28 @@ NuGet.ContentModel.PatternSet.PropertyDefinitions.get -> System.Collections.Gene
 NuGet.ContentModel.PatternSet.PropertyDefinitions.set -> void
 NuGet.ContentModel.PatternTable
 NuGet.ContentModel.PatternTable.PatternTable() -> void
-~NuGet.ContentModel.PatternTable.PatternTable(System.Collections.Generic.IEnumerable<NuGet.ContentModel.PatternTableEntry> entries) -> void
+NuGet.ContentModel.PatternTable.PatternTable(System.Collections.Generic.IEnumerable<NuGet.ContentModel.PatternTableEntry!>! entries) -> void
 NuGet.ContentModel.PatternTableEntry
-~NuGet.ContentModel.PatternTableEntry.Name.get -> string
-~NuGet.ContentModel.PatternTableEntry.PatternTableEntry(string propertyName, string name, object value) -> void
-~NuGet.ContentModel.PatternTableEntry.PropertyName.get -> string
-~NuGet.ContentModel.PatternTableEntry.Value.get -> object
+NuGet.ContentModel.PatternTableEntry.Name.get -> string!
+NuGet.ContentModel.PatternTableEntry.PatternTableEntry(string! propertyName, string! name, object! value) -> void
+NuGet.ContentModel.PatternTableEntry.PropertyName.get -> string!
+NuGet.ContentModel.PatternTableEntry.Value.get -> object!
 NuGet.ContentModel.SelectionCriteria
-~NuGet.ContentModel.SelectionCriteria.Entries.get -> System.Collections.Generic.IList<NuGet.ContentModel.SelectionCriteriaEntry>
-~NuGet.ContentModel.SelectionCriteria.Entries.set -> void
+NuGet.ContentModel.SelectionCriteria.Entries.get -> System.Collections.Generic.IList<NuGet.ContentModel.SelectionCriteriaEntry!>!
+NuGet.ContentModel.SelectionCriteria.Entries.set -> void
 NuGet.ContentModel.SelectionCriteria.SelectionCriteria() -> void
 NuGet.ContentModel.SelectionCriteriaBuilder
-~NuGet.ContentModel.SelectionCriteriaBuilder.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string, NuGet.ContentModel.ContentPropertyDefinition>
-~NuGet.ContentModel.SelectionCriteriaBuilder.SelectionCriteriaBuilder(System.Collections.Generic.IReadOnlyDictionary<string, NuGet.ContentModel.ContentPropertyDefinition> properties) -> void
+NuGet.ContentModel.SelectionCriteriaBuilder.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string!, NuGet.ContentModel.ContentPropertyDefinition!>!
+NuGet.ContentModel.SelectionCriteriaBuilder.SelectionCriteriaBuilder(System.Collections.Generic.IReadOnlyDictionary<string!, NuGet.ContentModel.ContentPropertyDefinition!>! properties) -> void
 NuGet.ContentModel.SelectionCriteriaEntry
-~NuGet.ContentModel.SelectionCriteriaEntry.Properties.get -> System.Collections.Generic.IDictionary<string, object>
-~NuGet.ContentModel.SelectionCriteriaEntry.Properties.set -> void
+NuGet.ContentModel.SelectionCriteriaEntry.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
+NuGet.ContentModel.SelectionCriteriaEntry.Properties.set -> void
 NuGet.ContentModel.SelectionCriteriaEntry.SelectionCriteriaEntry() -> void
 NuGet.ContentModel.SelectionCriteriaEntryBuilder
-~NuGet.ContentModel.SelectionCriteriaEntryBuilder.Builder.get -> NuGet.ContentModel.SelectionCriteriaBuilder
-~NuGet.ContentModel.SelectionCriteriaEntryBuilder.Entry.get -> NuGet.ContentModel.SelectionCriteriaEntry
-~NuGet.ContentModel.SelectionCriteriaEntryBuilder.this[string key, object value].get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder
-~NuGet.ContentModel.SelectionCriteriaEntryBuilder.this[string key, string value].get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder
+NuGet.ContentModel.SelectionCriteriaEntryBuilder.Builder.get -> NuGet.ContentModel.SelectionCriteriaBuilder!
+NuGet.ContentModel.SelectionCriteriaEntryBuilder.Entry.get -> NuGet.ContentModel.SelectionCriteriaEntry!
+NuGet.ContentModel.SelectionCriteriaEntryBuilder.this[string! key, object! value].get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
+NuGet.ContentModel.SelectionCriteriaEntryBuilder.this[string! key, string? value].get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
 NuGet.Packaging.CollectionExtensions
 NuGet.Packaging.Core.ContentFilesEntry
 NuGet.Packaging.Core.ContentFilesEntry.BuildAction.get -> string?
@@ -1373,10 +1373,10 @@ const NuGet.Packaging.PackageSigningTelemetryEvent.EventName = "SigningInformati
 ~const NuGet.Packaging.Signing.Oids.SubjectKeyIdentifier = "2.5.29.14" -> string
 ~const NuGet.Packaging.Signing.Oids.TSTInfoContentType = "1.2.840.113549.1.9.16.1.4" -> string
 ~const NuGet.Packaging.Signing.Oids.TimeStampingEku = "1.3.6.1.5.5.7.3.8" -> string
-~override NuGet.ContentModel.Asset.ToString() -> string
+override NuGet.ContentModel.Asset.ToString() -> string?
 override NuGet.ContentModel.ContentItem.ToString() -> string!
-~override NuGet.ContentModel.SelectionCriteriaEntryBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder
-~override NuGet.ContentModel.SelectionCriteriaEntryBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria
+override NuGet.ContentModel.SelectionCriteriaEntryBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
+override NuGet.ContentModel.SelectionCriteriaEntryBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria!
 override NuGet.Packaging.Core.PackageDependency.Equals(object? obj) -> bool
 override NuGet.Packaging.Core.PackageDependency.GetHashCode() -> int
 override NuGet.Packaging.Core.PackageDependency.ToString() -> string!
@@ -1730,14 +1730,14 @@ static NuGet.Packaging.Signing.VerificationUtility.IsVerificationTarget(NuGet.Pa
 ~static NuGet.RuntimeModel.JsonRuntimeFormat.WriteRuntimeGraph(string filePath, NuGet.RuntimeModel.RuntimeGraph runtimeGraph) -> void
 static NuGet.RuntimeModel.RuntimeDescription.Merge(NuGet.RuntimeModel.RuntimeDescription! left, NuGet.RuntimeModel.RuntimeDescription! right) -> NuGet.RuntimeModel.RuntimeDescription!
 static NuGet.RuntimeModel.RuntimeGraph.Merge(NuGet.RuntimeModel.RuntimeGraph! left, NuGet.RuntimeModel.RuntimeGraph! right) -> NuGet.RuntimeModel.RuntimeGraph!
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.AnyValue -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.CodeLanguage -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.Locale -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.MSBuild -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.ManagedAssembly -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.RuntimeIdentifier -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.SatelliteAssembly -> string
-~static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker -> string
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.AnyValue -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.CodeLanguage -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.Locale -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.MSBuild -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.ManagedAssembly -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.RuntimeIdentifier -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.SatelliteAssembly -> string!
+static readonly NuGet.Client.ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker -> string!
 static readonly NuGet.Packaging.Core.NuspecUtility.FrameworkReference -> string!
 static readonly NuGet.Packaging.Core.NuspecUtility.FrameworkReferences -> string!
 static readonly NuGet.Packaging.Core.NuspecUtility.Group -> string!
@@ -1810,10 +1810,10 @@ static readonly NuGet.Packaging.PackagingConstants.TargetFrameworkPropertyKey ->
 ~static readonly NuGet.Packaging.Signing.SigningSpecifications.V1 -> NuGet.Packaging.Signing.SigningSpecificationsV1
 static readonly NuGet.RuntimeModel.RuntimeGraph.Empty -> NuGet.RuntimeModel.RuntimeGraph!
 static readonly NuGet.RuntimeModel.RuntimeGraph.RuntimeGraphFileName -> string!
-~virtual NuGet.ContentModel.ContentPropertyDefinition.Compare(object criteriaValue, object candidateValue1, object candidateValue2) -> int
-~virtual NuGet.ContentModel.ContentPropertyDefinition.IsCriteriaSatisfied(object critieriaValue, object candidateValue) -> bool
-~virtual NuGet.ContentModel.SelectionCriteriaBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder
-~virtual NuGet.ContentModel.SelectionCriteriaBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria
+virtual NuGet.ContentModel.ContentPropertyDefinition.Compare(object? criteriaValue, object? candidateValue1, object? candidateValue2) -> int
+virtual NuGet.ContentModel.ContentPropertyDefinition.IsCriteriaSatisfied(object? critieriaValue, object? candidateValue) -> bool
+virtual NuGet.ContentModel.SelectionCriteriaBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
+virtual NuGet.ContentModel.SelectionCriteriaBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria!
 ~virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency>
 virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetDevelopmentDependency() -> bool
 ~virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetId() -> string
