@@ -93,7 +93,6 @@ namespace NuGetVSExtension
                     // Requests from this session will be visible in the Chat window
                     CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
                     {
-                        Intent = CopilotIntent.None,
                         Guidance = "Use absolute paths when invoking MCP Tools.",
                         DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
                     };

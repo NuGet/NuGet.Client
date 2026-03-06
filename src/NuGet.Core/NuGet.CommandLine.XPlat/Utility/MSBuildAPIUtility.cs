@@ -81,6 +81,13 @@ namespace NuGet.CommandLine.XPlat
             return new SaveableProject { Project = new Project(projectRootElement, globalProperties, toolsVersion: null), IsVirtualProject = isVirtual };
         }
 
+        private static bool IsCentralPackageManagementEnabled(Project project)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(
+                project.GetPropertyValue("ManagePackageVersionsCentrally"),
+                "true");
+        }
+
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
         {
             var sln = SolutionFile.Parse(solutionPath);
@@ -321,8 +328,11 @@ namespace NuGet.CommandLine.XPlat
             bool noVersion,
             string framework = null)
         {
+            // Determine CPM status from the loaded project so callers don't need to check separately.
+            bool isCentralPackageManagementEnabled = IsCentralPackageManagementEnabled(project);
+
             // Add packageReference to the project file only if it does not exist.
-            if (!libraryDependency.VersionCentrallyManaged)
+            if (!isCentralPackageManagementEnabled)
             {
                 if (!existingPackageReferences.Any())
                 {
