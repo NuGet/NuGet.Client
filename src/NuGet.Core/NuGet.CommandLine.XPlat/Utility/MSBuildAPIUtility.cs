@@ -329,7 +329,7 @@ namespace NuGet.CommandLine.XPlat
             string framework = null)
         {
             // Determine CPM status from the loaded project so callers don't need to check separately.
-            bool isCentralPackageManagementEnabled = IsCentralPackageManagementEnabled(project);
+            bool isCentralPackageManagementEnabled = IsCentralPackageManagementEnabled(project.Project);
 
             // Add packageReference to the project file only if it does not exist.
             if (!isCentralPackageManagementEnabled)
