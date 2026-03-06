@@ -14,6 +14,7 @@ internal class TestProjectRestoreInfoBuilder
 {
     List<IVsTargetFrameworkInfo4> _targetFrameworks = new();
     List<VsReferenceItem2>? _toolReferences = null;
+    bool _useTargetFrameworks;
 
     public IVsProjectRestoreInfo3 Build()
     {
@@ -22,7 +23,7 @@ internal class TestProjectRestoreInfoBuilder
             throw new InvalidOperationException("At least one target framework must be added before building the project restore info.");
         }
 
-        var originalTargetFrameworks = _targetFrameworks.Count > 1 ? string.Join(";", _targetFrameworks.Select(tf => tf.Properties[ProjectBuildProperties.TargetFramework])) : null;
+        var originalTargetFrameworks = (_useTargetFrameworks || _targetFrameworks.Count > 1) ? string.Join(";", _targetFrameworks.Select(tf => tf.Properties[ProjectBuildProperties.TargetFramework])) : null;
 
         var pri = new VsProjectRestoreInfo3
         {
@@ -32,6 +33,11 @@ internal class TestProjectRestoreInfoBuilder
             OriginalTargetFrameworks = originalTargetFrameworks
         };
         return pri;
+    }
+
+    public void WithTargetFrameworksProperty()
+    {
+        _useTargetFrameworks = true;
     }
 
     public TestProjectRestoreInfoBuilder WithTargetFrameworkInfo(

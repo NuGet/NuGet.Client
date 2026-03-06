@@ -255,6 +255,7 @@ namespace NuGet.SolutionRestoreManager.Test
             {
                 builder.WithTargetFrameworkInfo(targetFramework);
             }
+            builder.WithTargetFrameworksProperty();
 
             var projectRestoreInfo = builder.Build();
 
