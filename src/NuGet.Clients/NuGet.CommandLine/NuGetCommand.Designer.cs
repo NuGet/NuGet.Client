@@ -1708,6 +1708,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Semicolon-separated fingerprints (SHA256/SHA384/SHA512) of certificates in the certificate store to use as additional trust anchors during chain building. The certificates are searched in the My, Root, and CA stores..
+        /// </summary>
+        internal static string SignCommandTrustAnchorFingerprintDescription {
+            get {
+                return ResourceManager.GetString("SignCommandTrustAnchorFingerprintDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signs a NuGet package..
         /// </summary>
         internal static string SignCommandSummary {

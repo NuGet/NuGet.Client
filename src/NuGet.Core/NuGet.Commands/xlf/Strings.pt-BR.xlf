@@ -1139,6 +1139,11 @@ Atualize o SDK do .NET ou remova RestoreUseLegacyDependencyResolver para usar es
         <note>0 - certificate file path
 1 - certificate password option</note>
       </trans-unit>
+      <trans-unit id="SignCommandInvalidTrustAnchorFingerprint">
+        <source>Invalid trust anchor fingerprint '{0}'. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string.</source>
+        <target state="new">Invalid trust anchor fingerprint '{0}'. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandMultipleCertException">
         <source>Multiple certificates were found that meet all the given criteria. Use the '-{0}' option with the hash of the desired certificate.</source>
         <target state="translated">Foram encontrados vários certificados que atendem aos critérios fornecidos. Use a opção '-{0}' com o hash do certificado desejado.</target>
@@ -1157,6 +1162,11 @@ Atualize o SDK do .NET ou remova RestoreUseLegacyDependencyResolver para usar es
       <trans-unit id="SignCommandSuccess">
         <source>Package(s) signed successfully.</source>
         <target state="translated">Pacotes assinados com êxito.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorNotFound">
+        <source>No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</source>
+        <target state="new">No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceNotConsidered">

@@ -507,6 +507,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="SignCommandNoCertException" xml:space="preserve">
     <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
+  <data name="SignCommandTrustAnchorNotFound" xml:space="preserve">
+    <value>No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</value>
+  </data>
+  <data name="SignCommandInvalidTrustAnchorFingerprint" xml:space="preserve">
+    <value>Invalid trust anchor fingerprint '{0}'. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string.</value>
+  </data>
   <data name="SignCommandSuccess" xml:space="preserve">
     <value>Package(s) signed successfully.</value>
   </data>

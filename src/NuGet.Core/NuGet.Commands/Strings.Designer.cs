@@ -2034,6 +2034,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No certificate with fingerprint &apos;{0}&apos; was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine)..
+        /// </summary>
+        internal static string SignCommandTrustAnchorNotFound {
+            get {
+                return ResourceManager.GetString("SignCommandTrustAnchorNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid trust anchor fingerprint &apos;{0}&apos;. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string..
+        /// </summary>
+        internal static string SignCommandInvalidTrustAnchorFingerprint {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidTrustAnchorFingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signed package(s) output path:.
         /// </summary>
         internal static string SignCommandOutputPath {

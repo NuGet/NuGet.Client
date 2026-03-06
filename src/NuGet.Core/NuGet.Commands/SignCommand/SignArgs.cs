@@ -103,5 +103,12 @@ namespace NuGet.Commands
         /// is not in the machine or user trusted root store.
         /// </summary>
         public IReadOnlyList<string> TrustAnchorPaths { get; set; }
+
+        /// <summary>
+        /// Fingerprints (SHA256/SHA384/SHA512) of certificates in the certificate store to use
+        /// as additional trust anchors during chain building. The certificates are searched in
+        /// the My and Root stores in both CurrentUser and LocalMachine locations.
+        /// </summary>
+        public IReadOnlyList<string> TrustAnchorFingerprints { get; set; }
     }
 }

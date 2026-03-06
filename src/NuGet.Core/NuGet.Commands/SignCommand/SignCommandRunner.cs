@@ -77,6 +77,21 @@ namespace NuGet.Commands
                             signRequest.AdditionalTrustAnchors.Add(new X509Certificate2(anchorPath));
                         }
                     }
+
+                    if (signArgs.TrustAnchorFingerprints != null && signArgs.TrustAnchorFingerprints.Count > 0)
+                    {
+                        foreach (string fingerprint in signArgs.TrustAnchorFingerprints)
+                        {
+                            X509Certificate2 anchorCert = FindCertificateByFingerprint(fingerprint);
+                            if (anchorCert == null)
+                            {
+                                throw new SignCommandException(
+                                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandTrustAnchorNotFound, fingerprint)));
+                            }
+                            signRequest.AdditionalTrustAnchors.Add(anchorCert);
+                        }
+                    }
 #endif
                     return await ExecuteCommandAsync(
                         packagesToSign,
@@ -260,6 +275,73 @@ namespace NuGet.Commands
             }
 
             return filteredCollection;
+        }
+#endif
+
+#if NET5_0_OR_GREATER
+        private static X509Certificate2 FindCertificateByFingerprint(string fingerprint)
+        {
+            if (!CertificateUtility.TryDeduceHashAlgorithm(fingerprint, out HashAlgorithmName hashAlgorithmName) ||
+                hashAlgorithmName == HashAlgorithmName.Unknown)
+            {
+                throw new SignCommandException(
+                    LogMessage.CreateError(NuGetLogCode.NU3001,
+                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandInvalidTrustAnchorFingerprint, fingerprint)));
+            }
+
+            // Search common stores for the certificate
+            var storeSearches = new[]
+            {
+                (StoreName.My, StoreLocation.CurrentUser),
+                (StoreName.My, StoreLocation.LocalMachine),
+                (StoreName.Root, StoreLocation.CurrentUser),
+                (StoreName.Root, StoreLocation.LocalMachine),
+                (StoreName.CertificateAuthority, StoreLocation.CurrentUser),
+                (StoreName.CertificateAuthority, StoreLocation.LocalMachine),
+            };
+
+            foreach (var (storeName, storeLocation) in storeSearches)
+            {
+                try
+                {
+                    using (var store = new X509Store(storeName, storeLocation))
+                    {
+                        store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+
+                        X509Certificate2 found = FindInStore(store, fingerprint, hashAlgorithmName);
+                        if (found != null)
+                        {
+                            return found;
+                        }
+                    }
+                }
+                catch (System.Security.Cryptography.CryptographicException)
+                {
+                    // Store may not exist or may not be accessible; skip it
+                }
+            }
+
+            return null;
+        }
+
+        private static X509Certificate2 FindInStore(X509Store store, string fingerprint, HashAlgorithmName hashAlgorithmName)
+        {
+            if (hashAlgorithmName == HashAlgorithmName.SHA1)
+            {
+                var results = store.Certificates.Find(X509FindType.FindByThumbprint, fingerprint, validOnly: false);
+                return results.Count > 0 ? results[0] : null;
+            }
+
+            foreach (var cert in store.Certificates)
+            {
+                string actualFingerprint = CertificateUtility.GetHashString(cert, hashAlgorithmName);
+                if (string.Equals(actualFingerprint, fingerprint, StringComparison.OrdinalIgnoreCase))
+                {
+                    return cert;
+                }
+            }
+
+            return null;
         }
 #endif
     }

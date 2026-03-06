@@ -1227,6 +1227,11 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">RFC 3161 時間戳記伺服器的 URL。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorFingerprintDescription">
+        <source>Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times.</source>
+        <target state="new">Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandTrustAnchorsDescription">
         <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
         <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>

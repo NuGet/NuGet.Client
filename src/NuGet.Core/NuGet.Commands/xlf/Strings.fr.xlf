@@ -1139,6 +1139,11 @@ Mettez à niveau votre Kit de développement logiciel (SDK) .NET ou supprimez Re
         <note>0 - certificate file path
 1 - certificate password option</note>
       </trans-unit>
+      <trans-unit id="SignCommandInvalidTrustAnchorFingerprint">
+        <source>Invalid trust anchor fingerprint '{0}'. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string.</source>
+        <target state="new">Invalid trust anchor fingerprint '{0}'. The fingerprint must be a valid SHA256 (64 chars), SHA384 (96 chars), or SHA512 (128 chars) hex string.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandMultipleCertException">
         <source>Multiple certificates were found that meet all the given criteria. Use the '-{0}' option with the hash of the desired certificate.</source>
         <target state="translated">Plusieurs certificats répondent à tous les critères indiqués. Utilisez l'option « -{0} » avec la valeur de hachage du certificat souhaité.</target>
@@ -1157,6 +1162,11 @@ Mettez à niveau votre Kit de développement logiciel (SDK) .NET ou supprimez Re
       <trans-unit id="SignCommandSuccess">
         <source>Package(s) signed successfully.</source>
         <target state="translated">Le ou les packages ont été signés.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorNotFound">
+        <source>No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</source>
+        <target state="new">No certificate with fingerprint '{0}' was found in any certificate store (My, Root, CA in CurrentUser and LocalMachine).</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceNotConsidered">

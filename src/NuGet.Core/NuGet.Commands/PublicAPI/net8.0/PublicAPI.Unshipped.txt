@@ -1,3 +1,5 @@
 #nullable enable
+~NuGet.Commands.SignArgs.TrustAnchorFingerprints.get -> System.Collections.Generic.IReadOnlyList<string>
+~NuGet.Commands.SignArgs.TrustAnchorFingerprints.set -> void
 ~NuGet.Commands.SignArgs.TrustAnchorPaths.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Commands.SignArgs.TrustAnchorPaths.set -> void

@@ -663,6 +663,9 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="SignCommandTrustAnchorsDescription" xml:space="preserve">
     <value>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</value>
   </data>
+  <data name="SignCommandTrustAnchorFingerprintDescription" xml:space="preserve">
+    <value>Fingerprint (SHA256/SHA384/SHA512) of a certificate in the certificate store to use as an additional trust anchor during chain building. The certificate is searched in the My, Root, and CA stores. This option can be specified multiple times.</value>
+  </data>
   <data name="SignCommandPackagePathDescription" xml:space="preserve">
     <value>Signs NuGet packages at &lt;package-paths&gt; with the specified certificate.</value>
     <comment>Please don't localize '&lt;package-paths&gt;'</comment>

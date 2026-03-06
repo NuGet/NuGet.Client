@@ -91,6 +91,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.SignCommandTrustAnchorsDescription,
                     CommandOptionType.MultipleValue);
 
+                CommandOption trustAnchorFingerprints = signCmd.Option(
+                    "--trust-anchor-fingerprint",
+                    Strings.SignCommandTrustAnchorFingerprintDescription,
+                    CommandOptionType.MultipleValue);
+
                 CommandOption verbosity = signCmd.Option(
                     "-v|--verbosity",
                     Strings.Verbosity_Description,
@@ -132,7 +137,8 @@ namespace NuGet.CommandLine.XPlat
                         NonInteractive = true,
                         Timestamper = timestamper.Value(),
                         TimestampHashAlgorithm = timestampHashAlgorithm,
-                        TrustAnchorPaths = trustAnchors.Values
+                        TrustAnchorPaths = trustAnchors.Values,
+                        TrustAnchorFingerprints = trustAnchorFingerprints.Values
                     };
 
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
