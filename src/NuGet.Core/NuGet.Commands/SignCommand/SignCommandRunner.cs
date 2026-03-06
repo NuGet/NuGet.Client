@@ -69,6 +69,15 @@ namespace NuGet.Commands
 
                 using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
                 {
+#if NET5_0_OR_GREATER
+                    if (signArgs.TrustAnchorPaths != null && signArgs.TrustAnchorPaths.Count > 0)
+                    {
+                        foreach (string anchorPath in signArgs.TrustAnchorPaths)
+                        {
+                            signRequest.AdditionalTrustAnchors.Add(new X509Certificate2(anchorPath));
+                        }
+                    }
+#endif
                     return await ExecuteCommandAsync(
                         packagesToSign,
                         signRequest,

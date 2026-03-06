@@ -660,6 +660,9 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="SignCommandOverwriteDescription" xml:space="preserve">
     <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
   </data>
+  <data name="SignCommandTrustAnchorsDescription" xml:space="preserve">
+    <value>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</value>
+  </data>
   <data name="SignCommandPackagePathDescription" xml:space="preserve">
     <value>Signs NuGet packages at &lt;package-paths&gt; with the specified certificate.</value>
     <comment>Please don't localize '&lt;package-paths&gt;'</comment>

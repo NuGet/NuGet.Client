@@ -86,6 +86,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.SignCommandOverwriteDescription,
                     CommandOptionType.NoValue);
 
+                CommandOption trustAnchors = signCmd.Option(
+                    "--trust-anchors",
+                    Strings.SignCommandTrustAnchorsDescription,
+                    CommandOptionType.MultipleValue);
+
                 CommandOption verbosity = signCmd.Option(
                     "-v|--verbosity",
                     Strings.Verbosity_Description,
@@ -126,7 +131,8 @@ namespace NuGet.CommandLine.XPlat
                         //The interactive option is not enabled at first, so the NonInteractive is always set to true. This is tracked by https://github.com/NuGet/Home/issues/10620
                         NonInteractive = true,
                         Timestamper = timestamper.Value(),
-                        TimestampHashAlgorithm = timestampHashAlgorithm
+                        TimestampHashAlgorithm = timestampHashAlgorithm,
+                        TrustAnchorPaths = trustAnchors.Values
                     };
 
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));

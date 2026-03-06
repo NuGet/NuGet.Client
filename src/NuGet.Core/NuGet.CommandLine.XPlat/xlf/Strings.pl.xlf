@@ -1227,6 +1227,11 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
         <target state="translated">Adres URL do serwera znaczników czasu RFC 3161.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
+        <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Source_Description">
         <source>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</source>
         <target state="translated">Źródło pakietu (adres URL, ścieżka UNC/folderu lub nazwa źródła pakietu) do użycia. Domyślnie wartość DefaultPushSource, jeśli określono ją w pliku NuGet.Config.</target>

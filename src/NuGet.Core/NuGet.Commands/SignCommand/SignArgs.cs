@@ -95,5 +95,13 @@ namespace NuGet.Commands
         /// Cancellation Token.
         /// </summary>
         public CancellationToken Token { get; set; }
+
+        /// <summary>
+        /// Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors
+        /// during certificate chain building. When provided, these root certificates are trusted
+        /// alongside the system-trusted roots, allowing signing with certificates whose root CA
+        /// is not in the machine or user trusted root store.
+        /// </summary>
+        public IReadOnlyList<string> TrustAnchorPaths { get; set; }
     }
 }

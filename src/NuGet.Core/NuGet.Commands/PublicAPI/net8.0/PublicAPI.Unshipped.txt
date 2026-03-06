@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.Commands.SignArgs.TrustAnchorPaths.get -> System.Collections.Generic.IReadOnlyList<string>
+~NuGet.Commands.SignArgs.TrustAnchorPaths.set -> void

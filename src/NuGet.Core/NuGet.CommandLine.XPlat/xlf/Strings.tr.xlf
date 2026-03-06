@@ -1228,6 +1228,11 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
         <target state="translated">RFC 3161 zaman damgası sunucusunun URL'si.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
+        <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Source_Description">
         <source>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</source>
         <target state="translated">Kullanılacak paket kaynağı (URL, UNC/klasör yolu veya paket kaynağı adı). NuGet. config dosyasında belirtilmişse DefaultPushSource varsayılan değeri olur.</target>

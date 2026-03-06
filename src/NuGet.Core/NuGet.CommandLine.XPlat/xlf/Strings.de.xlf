@@ -1227,6 +1227,11 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <target state="translated">URL zu einem RFC 3161-Zeitstempelserver.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
+        <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Source_Description">
         <source>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</source>
         <target state="translated">Die Paketquelle (URL, UNC/Ordnerpfad oder Name der Paketquelle), die verwendet werden soll. Der Standardwert ist "DefaultPushSource", wenn in "NuGet.config" angegeben.</target>

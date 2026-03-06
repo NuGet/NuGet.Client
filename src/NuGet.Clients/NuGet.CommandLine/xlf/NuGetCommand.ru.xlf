@@ -1031,6 +1031,11 @@ nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -Outp
         <target state="translated">URL-адрес сервера меток времени RFC 3161.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Semicolon-separated paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots.</source>
+        <target state="new">Semicolon-separated paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandUsageDescription">
         <source>Signs a NuGet package.</source>
         <target state="translated">Подписывает пакет NuGet.</target>

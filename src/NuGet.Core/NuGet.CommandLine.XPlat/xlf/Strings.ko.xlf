@@ -1228,6 +1228,11 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">RFC 3161 타임스탬핑 서버의 URL입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
+        <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Source_Description">
         <source>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</source>
         <target state="translated">사용할 패키지 소스(URL, UNC/폴더 경로 또는 패키지 소스 이름)입니다. 패키지 소스가 NuGet.Config에 지정된 경우 기본값은 DefaultPushSource로 설정됩니다.</target>

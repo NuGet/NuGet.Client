@@ -1227,6 +1227,11 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
         <target state="translated">URL d'un serveur d'horodatage RFC 3161.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandTrustAnchorsDescription">
+        <source>Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</source>
+        <target state="new">Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Source_Description">
         <source>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</source>
         <target state="translated">Source de package (URL, chemin UNC/chemin de dossier ou nom de source de package) à utiliser. La valeur par défaut est celle de DefaultPushSource, si elle est spécifiée dans NuGet.Config.</target>

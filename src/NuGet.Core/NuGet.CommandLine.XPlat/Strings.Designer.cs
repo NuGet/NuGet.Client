@@ -2233,6 +2233,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots. This option can be specified multiple times..
+        /// </summary>
+        internal static string SignCommandTrustAnchorsDescription {
+            get {
+                return ResourceManager.GetString("SignCommandTrustAnchorsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signs NuGet packages at &lt;package-paths&gt; with the specified certificate..
         /// </summary>
         internal static string SignCommandPackagePathDescription {
