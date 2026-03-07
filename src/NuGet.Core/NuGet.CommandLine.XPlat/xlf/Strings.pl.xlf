@@ -1134,6 +1134,11 @@ Aby uzyskać więcej informacji, odwiedź stronę https://docs.nuget.org/docs/re
         <target state="translated">Usuń źródło pakietu NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedSigningDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
         <target state="translated">Odcisk cyfrowy certyfikatu SHA-256, SHA-384 lub SHA-512 używany do przeszukiwania lokalnego magazynu certyfikatów w zakresie danego certyfikatu. Magazyn certyfikatów można określić za pomocą opcji --certificate-store-name i --certificate-store-location.</target>

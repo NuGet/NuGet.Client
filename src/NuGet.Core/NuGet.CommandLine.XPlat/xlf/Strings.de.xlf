@@ -1134,6 +1134,11 @@ Weitere Informationen finden Sie unter: https://docs.nuget.org/docs/reference/co
         <target state="translated">Hiermit entfernen Sie eine NuGet-Quelle.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedSigningDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
         <target state="translated">SHA-256-, SHA-384- oder SHA-512-Fingerabdruck des Zertifikats, das zum Durchsuchen eines lokalen Zertifikatspeichers nach dem Zertifikat verwendet wird. Der Zertifikatspeicher kann mit den Optionen --certificate-store-name und --certificate-store-location angegeben werden.</target>

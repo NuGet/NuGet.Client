@@ -35,6 +35,20 @@ namespace NuGet.Packaging.Signing
             ILogger logger,
             CertificateType certificateType)
         {
+            return GetCertificateChain(certificate, extraStore, logger, certificateType, allowUntrustedRoot: false);
+        }
+
+        /// <summary>
+        /// Create a list of certificates in chain order with the leaf first and root last.
+        /// When allowUntrustedRoot is true, UntrustedRoot chain status is treated as a warning.
+        /// </summary>
+        public static IX509CertificateChain GetCertificateChain(
+            X509Certificate2 certificate,
+            X509Certificate2Collection extraStore,
+            ILogger logger,
+            CertificateType certificateType,
+            bool allowUntrustedRoot)
+        {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
@@ -76,7 +90,7 @@ namespace NuGet.Packaging.Signing
                 X509ChainStatusFlags errorStatusFlags;
                 X509ChainStatusFlags warningStatusFlags;
 
-                GetChainStatusFlags(certificate, certificateType, out errorStatusFlags, out warningStatusFlags);
+                GetChainStatusFlags(certificate, certificateType, allowUntrustedRoot, out errorStatusFlags, out warningStatusFlags);
 
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
@@ -142,6 +156,7 @@ namespace NuGet.Packaging.Signing
         private static void GetChainStatusFlags(
             X509Certificate2 certificate,
             CertificateType certificateType,
+            bool allowUntrustedRoot,
             out X509ChainStatusFlags errorStatusFlags,
             out X509ChainStatusFlags warningStatusFlags)
         {
@@ -152,7 +167,7 @@ namespace NuGet.Packaging.Signing
 
             warningStatusFlags = X509ChainStatusFlags.RevocationStatusUnknown | X509ChainStatusFlags.OfflineRevocation;
 
-            if (certificateType == CertificateType.Signature && CertificateUtility.IsSelfIssued(certificate))
+            if (certificateType == CertificateType.Signature && (CertificateUtility.IsSelfIssued(certificate) || allowUntrustedRoot))
             {
                 warningStatusFlags |= X509ChainStatusFlags.UntrustedRoot;
             }

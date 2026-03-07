@@ -1134,6 +1134,11 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
         <target state="translated">Odebere zdroj NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedSigningDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
         <target state="translated">Otisk SHA-256, SHA-384 nebo SHA-512 certifikátu použitý k hledání místního úložiště certifikátů tohoto certifikátu Úložiště certifikátů lze zadat pomocí parametrů --certificate-store-name a --certificate-store-location.</target>

@@ -1699,6 +1699,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow signing with certificates whose root certificate is not in a trusted root store...
+        /// </summary>
+        internal static string SignCommandAllowUntrustedSigningDescription {
+            get {
+                return ResourceManager.GetString("SignCommandAllowUntrustedSigningDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signs a NuGet package..
         /// </summary>
         internal static string SignCommandSummary {

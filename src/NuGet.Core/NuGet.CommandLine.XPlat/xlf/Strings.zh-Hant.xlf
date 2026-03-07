@@ -1134,6 +1134,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">移除 NuGet 來源。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedSigningDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
         <target state="translated">要用來在本機憑證存放區搜尋憑證的憑證 SHA-256、SHA-384 或 SHA-512 指紋。憑證存放區可由 --certificate-store-name 以及 --certificate-store-location 選項指定。</target>

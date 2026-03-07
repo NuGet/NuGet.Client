@@ -1134,6 +1134,11 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
         <target state="translated">Rimuove un'origine NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedSigningDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
         <target state="translated">Impronta digitale SHA-256, SHA-384 o SHA-512 del certificato usata per effettuare ricerche in un archivio certificati locale. L'archivio certificati può essere specificato nelle opzioni --certificate-store-name e --certificate-store-location.</target>
