@@ -8531,8 +8531,8 @@ namespace NuGet.CommandLine.Test
            string[] initialFrameworks,
            string[] updatedFrameworks)
         {
-            // A project with RestoreLockedMode should fail restore if the frameworks of a dependent project were changed
-            // with incompatible frameworks between restores.
+            // In locked mode, restore should fail when a dependent project's frameworks change to be incompatible.
+            // B has no packages, so the lock file is still valid (0 deps), and failure comes from NU1201 not NU1004.
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
@@ -8574,9 +8574,9 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();
-                Assert.Contains("NU1004", r.Errors);
+                Assert.Contains("NU1201", r.Errors);
                 var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
-                Assert.Contains(NuGetLogCode.NU1004, logCodes);
+                Assert.Contains(NuGetLogCode.NU1201, logCodes);
             }
         }
 
