@@ -239,6 +239,32 @@ namespace NuGet.Commands
                 Token = signArgs.Token
             };
 
+            // When trust anchor fingerprints are provided, allow certs with untrusted roots
+            // through discovery. The actual fingerprint verification happens after the cert is found.
+            if (signArgs.TrustAnchorFingerprints != null && signArgs.TrustAnchorFingerprints.Count > 0)
+            {
+                certFindOptions.AllowUntrustedRoot = true;
+            }
+
+#if NET5_0_OR_GREATER
+            // Load path-based trust anchors before cert discovery so CertificateProvider
+            // can use them during chain validation when finding certs from the store.
+            if (signArgs.TrustAnchorPaths != null && signArgs.TrustAnchorPaths.Count > 0)
+            {
+                var trustAnchors = new X509Certificate2Collection();
+                foreach (string anchorPath in signArgs.TrustAnchorPaths)
+                {
+#if NET9_0_OR_GREATER
+                    trustAnchors.Add(X509CertificateLoader.LoadCertificateFromFile(anchorPath));
+#else
+                    trustAnchors.Add(new X509Certificate2(anchorPath));
+#endif
+                }
+                certFindOptions.AdditionalTrustAnchors = trustAnchors;
+                certFindOptions.AllowUntrustedRoot = true;
+            }
+#endif
+
             // get matching certificates
             var matchingCertCollection = await CertificateProvider.GetCertificatesAsync(certFindOptions);
 

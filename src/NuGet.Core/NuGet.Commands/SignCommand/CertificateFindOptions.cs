@@ -60,5 +60,20 @@ namespace NuGet.Commands
         /// </summary>
         public CancellationToken Token { get; set; }
 
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// Additional root certificates to trust during certificate chain validation.
+        /// When provided, these are passed to <see cref="CertificateProvider"/> so that
+        /// certificates with non-system-trusted roots can be discovered from stores.
+        /// </summary>
+        public X509Certificate2Collection AdditionalTrustAnchors { get; set; }
+#endif
+
+        /// <summary>
+        /// When true, certificates with untrusted roots are allowed through store discovery.
+        /// Used when trust anchor fingerprints will be verified later during signing.
+        /// </summary>
+        public bool AllowUntrustedRoot { get; set; }
+
     }
 }

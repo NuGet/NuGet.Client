@@ -217,7 +217,11 @@ namespace NuGet.Commands
 
             store.Close();
 
-            resultCollection = GetValidCertificates(resultCollection);
+            resultCollection = GetValidCertificates(resultCollection, options.AllowUntrustedRoot
+#if NET5_0_OR_GREATER
+                , options.AdditionalTrustAnchors
+#endif
+                );
 
             return resultCollection;
         }
@@ -244,13 +248,23 @@ namespace NuGet.Commands
             }
         }
 
-        private static X509Certificate2Collection GetValidCertificates(X509Certificate2Collection certificates)
+        private static X509Certificate2Collection GetValidCertificates(
+            X509Certificate2Collection certificates,
+            bool allowUntrustedRoot
+#if NET5_0_OR_GREATER
+            , X509Certificate2Collection additionalTrustAnchors
+#endif
+            )
         {
             var validCertificates = new X509Certificate2Collection();
 
             foreach (var certificate in certificates)
             {
-                if (IsValid(certificate, certificates))
+                if (IsValid(certificate, certificates, allowUntrustedRoot
+#if NET5_0_OR_GREATER
+                    , additionalTrustAnchors
+#endif
+                    ))
                 {
                     validCertificates.Add(certificate);
                 }
@@ -259,10 +273,33 @@ namespace NuGet.Commands
             return validCertificates;
         }
 
-        private static bool IsValid(X509Certificate2 certificate, X509Certificate2Collection extraStore)
+        private static bool IsValid(
+            X509Certificate2 certificate,
+            X509Certificate2Collection extraStore,
+            bool allowUntrustedRoot
+#if NET5_0_OR_GREATER
+            , X509Certificate2Collection additionalTrustAnchors
+#endif
+            )
         {
             try
             {
+#if NET5_0_OR_GREATER
+                // When trust anchors are provided, use the overload that applies CustomRootTrust
+                if (additionalTrustAnchors != null && additionalTrustAnchors.Count > 0)
+                {
+                    using (var chain = CertificateChainUtility.GetCertificateChain(
+                        certificate,
+                        extraStore,
+                        NullLogger.Instance,
+                        CertificateType.Signature,
+                        additionalTrustAnchors))
+                    {
+                        return chain != null && chain.Count > 0;
+                    }
+                }
+#endif
+
                 using (var chain = CertificateChainUtility.GetCertificateChain(
                     certificate,
                     extraStore,
@@ -272,10 +309,42 @@ namespace NuGet.Commands
                     return chain != null && chain.Count > 0;
                 }
             }
+            catch (SignatureException) when (allowUntrustedRoot)
+            {
+                // When trust anchor fingerprints are specified, the actual root verification
+                // happens later in SignCommandRunner after the cert is found. Allow the cert
+                // through discovery if the only chain issue is an untrusted root.
+                return HasValidChainStructure(certificate, extraStore);
+            }
             catch (SignatureException)
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Checks if a certificate has a valid chain structure aside from the root not being trusted.
+        /// Used when trust anchor fingerprints will be verified later during signing.
+        /// </summary>
+        private static bool HasValidChainStructure(X509Certificate2 certificate, X509Certificate2Collection extraStore)
+        {
+            using var chain = new X509Chain();
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            chain.ChainPolicy.ExtraStore.AddRange(extraStore);
+            chain.Build(certificate);
+
+            foreach (var status in chain.ChainStatus)
+            {
+                if (status.Status != X509ChainStatusFlags.NoError &&
+                    status.Status != X509ChainStatusFlags.UntrustedRoot &&
+                    status.Status != X509ChainStatusFlags.RevocationStatusUnknown &&
+                    status.Status != X509ChainStatusFlags.OfflineRevocation)
+                {
+                    return false;
+                }
+            }
+
+            return chain.ChainElements.Count > 0;
         }
     }
 }
