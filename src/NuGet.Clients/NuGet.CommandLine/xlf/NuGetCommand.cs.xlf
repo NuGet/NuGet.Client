@@ -1031,16 +1031,6 @@ nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -Outp
         <target state="translated">Adresa URL serveru časového razítka podle standardu RFC 3161</target>
         <note />
       </trans-unit>
-      <trans-unit id="SignCommandTrustAnchorFingerprintDescription">
-        <source>Semicolon-separated fingerprints (SHA256/SHA384/SHA512) of expected root certificates. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches.</source>
-        <target state="new">Semicolon-separated fingerprints (SHA256/SHA384/SHA512) of expected root certificates. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SignCommandTrustAnchorsDescription">
-        <source>Semicolon-separated paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots.</source>
-        <target state="new">Semicolon-separated paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SignCommandUsageDescription">
         <source>Signs a NuGet package.</source>
         <target state="translated">Podepíše balíček NuGet.</target>

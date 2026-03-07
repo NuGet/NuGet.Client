@@ -1699,24 +1699,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Semicolon-separated paths to certificate files (.cer, .crt, .pem, .der) to use as additional trust anchors during certificate chain building. When provided, these root certificates are trusted alongside the system-trusted roots..
-        /// </summary>
-        internal static string SignCommandTrustAnchorsDescription {
-            get {
-                return ResourceManager.GetString("SignCommandTrustAnchorsDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Semicolon-separated fingerprints (SHA256/SHA384/SHA512) of expected root certificates. The signing certificate's chain is built and the root is used as a trust anchor if its fingerprint matches..
-        /// </summary>
-        internal static string SignCommandTrustAnchorFingerprintDescription {
-            get {
-                return ResourceManager.GetString("SignCommandTrustAnchorFingerprintDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Signs a NuGet package..
         /// </summary>
         internal static string SignCommandSummary {

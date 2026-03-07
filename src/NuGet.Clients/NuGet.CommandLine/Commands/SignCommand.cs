@@ -60,12 +60,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 
-        [Option(typeof(NuGetCommand), "SignCommandTrustAnchorsDescription")]
-        public string TrustAnchors { get; set; }
-
-        [Option(typeof(NuGetCommand), "SignCommandTrustAnchorFingerprintDescription")]
-        public string TrustAnchorFingerprints { get; set; }
-
         public override async Task ExecuteCommandAsync()
         {
             var signArgs = GetSignArgs();
@@ -111,13 +105,7 @@ namespace NuGet.CommandLine
                 NonInteractive = NonInteractive,
                 Timestamper = Timestamper,
                 TimestampHashAlgorithm = timestampHashAlgorithm,
-                PasswordProvider = new ConsolePasswordProvider(Console),
-                TrustAnchorPaths = string.IsNullOrEmpty(TrustAnchors)
-                    ? Array.Empty<string>()
-                    : TrustAnchors.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
-                TrustAnchorFingerprints = string.IsNullOrEmpty(TrustAnchorFingerprints)
-                    ? Array.Empty<string>()
-                    : TrustAnchorFingerprints.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                PasswordProvider = new ConsolePasswordProvider(Console)
             };
         }
 
