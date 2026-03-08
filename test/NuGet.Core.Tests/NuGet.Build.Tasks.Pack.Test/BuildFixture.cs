@@ -20,7 +20,8 @@ namespace NuGet.Build.Tasks.Pack.Test
         internal const string Name = "Build Tests";
     }
 
-    public class BuildFixture : IDisposable
+    public class BuildFixture
+        : IDisposable
     {
 #if DEBUG
         const string CONFIGURATION = "Debug";
@@ -67,8 +68,8 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var artifactsDirectory = NuGet.Test.Utility.TestFileSystemUtility.GetArtifactsDirectoryInRepo();
             var dllLocation = typeof(NuGet.Build.Tasks.Pack.GetPackOutputItemsTask).Assembly.Location;
-            var dllDirectory = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks.Pack", "bin", CONFIGURATION, _testFrameworkMoniker);
-            if (!System.IO.Directory.Exists(dllDirectory))
+            var dllDirectory = Path.Combine(dllLocation, "NuGet.Build.Tasks.Pack", "bin", CONFIGURATION, _testFrameworkMoniker);
+            if (!Directory.Exists(dllDirectory))
             {
                 dllDirectory = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks.Pack", "bin", CONFIGURATION, _testFrameworkMoniker);
             }
@@ -80,10 +81,10 @@ namespace NuGet.Build.Tasks.Pack.Test
             // Therefore, NuGet.Build.Tasks project must be built before running this test.
             var tfmTargets = GetFrameworkMoniker(typeof(PackageFileNameTests), out var _);
             _pathTargetsFile = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks", "bin", CONFIGURATION, tfmTargets, FILENAME_TARGETS);
-            if (!System.IO.File.Exists(_pathTargetsFile))
+            if (!File.Exists(_pathTargetsFile))
             {
                 _pathTargetsFile = Path.Combine(artifactsDirectory, "NuGet.Build.Tasks", "bin", CONFIGURATION, _testFrameworkMoniker, FILENAME_TARGETS);
-                if (!System.IO.File.Exists(_pathTargetsFile))
+                if (!File.Exists(_pathTargetsFile))
                 {
                     _pathTargetsFile = Path.Combine(dllDirectory, FILENAME_TARGETS);
                 }
@@ -117,19 +118,22 @@ namespace NuGet.Build.Tasks.Pack.Test
 
         private static string GetMsBuildExePath()
         {
-            if (System.Environment.OSVersion.Platform == System.PlatformID.Win32NT)
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                var msbuildexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "Microsoft.NET", "Framework", "v4.0.30319", "msbuild.exe");
+                var msbuildexe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Microsoft.NET", "Framework", "v4.0.30319", "msbuild.exe");
+                var vswhereexe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "Installer", "vswhere.exe");
+                Assert.True(File.Exists(vswhereexe), "vswhere not found");
 
-                var vswhereexe = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "Installer", "vswhere.exe");
                 var runresult = CommandRunner.Run(
                         vswhereexe,
-                        System.Environment.CurrentDirectory,
+                        Environment.CurrentDirectory,
                         @" -latest -find MSBuild\**\Bin\MSBuild.exe");
                 if (runresult.Success)
                 {
-                    msbuildexe = new System.IO.StringReader(runresult.Output).ReadLine() ?? "";
+                    msbuildexe = new StringReader(runresult.Output).ReadLine() ?? "";
                 }
+
+                Assert.True(File.Exists(msbuildexe), "msbuild not found");
                 return msbuildexe;
             }
             else
