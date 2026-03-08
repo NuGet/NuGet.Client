@@ -2,48 +2,36 @@ parameters:
 - name: isOfficialBuild
   type: boolean
   default: false
-- name: DartLabEnvironment
-  displayName: DartLab Environment
+- name: RunBuildForPublishing
+  displayName: Build bits for publishing
+  type: boolean
+  default: true
+# - name: RunCrossFrameworkTestsOnWindows
+#   displayName: Run cross framweork tests on Windows
+#   type: boolean
+#   default: false
+# - name: RunFunctionalTestsOnWindows
+#   displayName: Run functional tests on Windows
+#   type: boolean
+#   default: false
+# - name: RunSourceBuild
+#   displayName: Run source build
+#   type: boolean
+#   default: true
+# - name: RunTestsOnLinux
+#   displayName: Run tests on Linux
+#   type: boolean
+#   default: false
+# - name: RunTestsOnMac
+#   displayName: Run tests on Mac
+#   type: boolean
+#   default: false
+- name: SigningType
+  displayName: Type of signing to use
   type: string
-  default: Production
   values:
-  - Production
-  - Staging
-- name: E2EPart1AgentCleanup
-  displayName: Delete or keep E2E Part 1 machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-- name: E2EPart2AgentCleanup
-  displayName: Delete or keep E2E Part 2 machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-- name: ApexAgentCleanup
-  displayName: Delete or keep VS Apex test machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-
-resources:
-  pipelines:
-  - pipeline: DartLab
-    source: DartLab
-    branch: main
-  repositories:
-  - repository: DartLabTemplates
-    type: git
-    name: DartLab.Templates
-    ref: refs/heads/main
-
-variables:
-  DOTNET_NOLOGO: 1
+  - Real
+  - Test
 
 stages:
 - stage: Initialize
@@ -52,9 +40,11 @@ stages:
     displayName: Get NuGet.Client semantic version
     timeoutInMinutes: 10
     pool:
-      vmImage: windows-latest
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
     steps:
-    - template: Initialize_Build_SemanticVersion.yml
+    - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
 
   - job: Initialize_Build
     dependsOn: GetSemanticVersion
@@ -63,9 +53,11 @@ stages:
       SemanticVersion: $[dependencies.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
       BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
     pool:
-      vmImage: windows-latest
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
     steps:
-    - template: Initialize_Build.yml
+    - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
@@ -75,9 +67,11 @@ stages:
     displayName: Run Static Source Analysis
     timeoutInMinutes: 15
     pool:
-      vmImage: windows-latest
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
     steps:
-    - template: Static_Source_Analysis.yml
+    - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
@@ -96,12 +90,112 @@ stages:
       LocalizedLanguageCount: "13"
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+      isOfficialBuild: ${{ parameters.isOfficialBuild }}
+      ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
     pool:
       name: VSEngSS-MicroBuild2022-1ES
+    templateContext:
+      mb:
+        localization:
+          enabled: true
+        signing:
+          enabled: true
+          signType: "${{ parameters.SigningType }}"
+        swix:
+          enabled: true
+        optprof:
+          enabled: false
+          # OptimizationInputsLookupMethod: DropPrefix
+          # DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+          # ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
+          # AccessToken: $(System.AccessToken)
+      outputs:
+      - output: pipelineArtifact
+        displayName: 'Publish buildinfo.json as an artifact'
+        condition: "succeeded()"
+        targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
+        artifactName: 'BuildInfo'
+
+      - output: pipelineArtifact
+        displayName: 'Publish nupkgs'
+        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+        artifactName: "nupkgs - $(RtmLabel)"
+
+      # - output: pipelineArtifact
+      #   displayName: 'Publish BootstrapperInfo.json as a build artifact'
+      #   condition: "succeeded()"
+      #   targetPath: $(MicroBuildOutputFolderOverride)\MicroBuild\Output
+      #   artifactName: MicroBuildOutputs
+
+      # - output: artifactsDrop
+      #   displayName: 'Publish the .runsettings files to artifact services'
+      #   condition: "succeeded()"
+      #   dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+      #   buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+      #   sourcePath: 'artifacts\RunSettings'
+      #   toLowerCase: false
+      #   usePat: true
+      #   dropMetadataContainerName: 'DropMetadata-RunSettings'
+
+      # - output: artifactsDrop
+      #   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
+      #   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+      #   dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+      #   buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+      #   sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
+      #   toLowerCase: false
+      #   usePat: true
+      #   dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
+
+      # - output: pipelineArtifact
+      #   displayName: 'Publish NuGet.exe VSIX and EndToEnd.zip as artifact'
+      #   targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+      #   artifactName: "$(VsixPublishDir)"
+
+      - output: pipelineArtifact
+        displayName: 'Publish localizationArtifacts artifact'
+        condition: "or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true')))"
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
+        artifactName: "localizationArtifacts"
+
+      - output: pipelineArtifact
+        displayName: 'Publish symbols as pipeline artifacts'
+        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+        artifactName: "symbols - $(RtmLabel)"
+
+      - output: artifactsDrop
+        displayName: 'Upload VSTS Drop'
+        condition: "succeeded()"
+        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+        sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+        toLowerCase: false
+        usePat: true
+        dropMetadataContainerName: "DropMetadata-Product"
+
+      - output: pipelineArtifact
+        displayName: 'LocValidation: Publish Logs as an artifact'
+        condition: "succeeded()"
+        artifactName: LocValidationLogs
+        targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
+
+      - output: pipelineArtifact
+        displayName: 'Publish binlogs'
+        condition: "or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true'))"
+        artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+        targetPath: $(Build.StagingDirectory)\binlog
+
+      - output: pipelineArtifact
+        displayName: Publish SBOM manifest
+        artifactName: $(ARTIFACT_NAME)
+        targetPath: '$(Build.ArtifactStagingDirectory)/sbom'
     steps:
-    - template: Build_and_UnitTest.yml
+    - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: false
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -119,92 +213,138 @@ stages:
       BuildRTM: "true"
     pool:
       name: VSEngSS-MicroBuild2022-1ES
+    templateContext:
+      mb:
+        localization:
+          enabled: true
+        signing:
+          enabled: true
+          signType: "${{ parameters.SigningType }}"
+        swix:
+          enabled: true
+        optprof:
+          enabled: false
+      outputs:
+      - output: pipelineArtifact
+        displayName: 'Publish nupkgs'
+        condition: "succeeded()"
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+        artifactName: "nupkgs - $(RtmLabel)"
+
+      - output: pipelineArtifact
+        displayName: 'Publish NuGet.exe VSIX and EndToEnd.zip as artifact'
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+        artifactName: "$(VsixPublishDir)"
+
+      - output: pipelineArtifact
+        displayName: 'Publish symbols as pipeline artifacts'
+        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+        artifactName: "symbols - $(RtmLabel)"
+
+      - output: pipelineArtifact
+        displayName: 'Publish binlogs'
+        condition: "or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true'))"
+        artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+        targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: Build_and_UnitTest.yml
+    - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: true
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
-- stage: Source_Build
-  dependsOn: Initialize
-  jobs:
-  - job: Build_Source_Build
-    timeoutInMinutes: 120
-    variables:
-      BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-      BuildRTM: "false"
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - template: Source_Build.yml
+# - stage: Source_Build
+#   dependsOn: Initialize
+#   jobs:
+#   - job: Build_Source_Build
+#     displayName: "Source Build"
+#     condition: "and(succeeded(), ne(variables['RunSourceBuild'], 'false'))"
+#     timeoutInMinutes: 120
+#     variables:
+#       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+#       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+#       BuildRTM: "false"
+#     pool:
+#       name: AzurePipelines-EO
+#       image: 1ESPT-Ubuntu22.04
+#       os: linux
+#     templateContext:
+#       outputs:
+#       - output: pipelineArtifact
+#         displayName: 'Upload source-build log'
+#         condition: "or(failed(), eq(variables['System.debug'], 'true'))"
+#         targetPath: "artifacts/sb/log/source-build.binlog"
+#         artifactName: "Source-build log"
+#     steps:
+#     - template: /eng/pipelines/templates/Source_Build.yml@self
 
-- stage: CLI_Func_Tests
-  dependsOn: Initialize
-  jobs:
-  - job: Functional_Tests_On_Windows
-    timeoutInMinutes: 120
-    variables:
-      BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-    condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
-    strategy:
-      matrix:
-        IsDesktop:
-          SkipCoreAssemblies: "true"
-        IsCore:
-          SkipDesktopAssemblies: "true"
-    steps:
-    - template: Functional_Tests_On_Windows.yml
+# - stage: CLI_Func_Tests
+#   dependsOn: Initialize
+#   jobs:
+#   - job: Functional_Tests_On_Windows
+#     timeoutInMinutes: 120
+#     variables:
+#       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+#       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+#        # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+#       MSBuildEnableWorkloadResolver: false
+#     condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+#     pool:
+#       name: VSEngSS-MicroBuild2022-1ES
+#     strategy:
+#       matrix:
+#         IsDesktop:
+#           SkipCoreAssemblies: "true"
+#         IsCore:
+#           SkipDesktopAssemblies: "true"
+#     steps:
+#     - template: Functional_Tests_On_Windows.yml
 
-  - job: Tests_On_Linux
-    timeoutInMinutes: 45
-    variables:
-      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-      MSBUILDDISABLENODEREUSE: 1
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-    condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - template: Tests_On_Linux.yml
+#   - job: Tests_On_Linux
+#     timeoutInMinutes: 45
+#     variables:
+#       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+#       MSBUILDDISABLENODEREUSE: 1
+#       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+#       MSBuildEnableWorkloadResolver: false
+#     condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
+#     pool:
+#       vmImage: ubuntu-latest
+#     steps:
+#     - template: Tests_On_Linux.yml
 
-  - job: CrossFramework_Tests_On_Windows
-    timeoutInMinutes: 30
-    variables:
-      BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-    condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
-    pool:
-      vmImage: windows-latest
-    steps:
-    - template: CrossFramework_Tests_On_Windows.yml
+#   - job: CrossFramework_Tests_On_Windows
+#     timeoutInMinutes: 30
+#     variables:
+#       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+#       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+#     condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
+#     pool:
+#       vmImage: windows-latest
+#     steps:
+#     - template: CrossFramework_Tests_On_Windows.yml
 
-- stage: MacTests
-  dependsOn:
-  - Initialize
-  - Build_Insertable
-  condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
-  jobs:
-  - job: Tests_On_Mac
-    timeoutInMinutes: 90
-    variables:
-      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-    pool:
-      vmImage: macos-latest
-    steps:
-    - template: Tests_On_Mac.yml
+# - stage: MacTests
+#   dependsOn:
+#   - Initialize
+#   - Build_Insertable
+#   condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
+#   jobs:
+#   - job: Tests_On_Mac
+#     timeoutInMinutes: 90
+#     variables:
+#       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+#       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+#       MSBuildEnableWorkloadResolver: false
+#     pool:
+#       vmImage: macos-latest
+#     steps:
+#     - template: Tests_On_Mac.yml
 
 # disable for 'release-6.3.x'
 # Dartlab's template defines this in its own stage

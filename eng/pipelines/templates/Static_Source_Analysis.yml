@@ -62,10 +62,3 @@ steps:
     msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution /bl:$(Build.StagingDirectory)\\binlog\\02.EnsurePackageReferenceVersionsInSolution.binlog"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)\binlog
-  condition: " failed() "

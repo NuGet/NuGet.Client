@@ -33,28 +33,3 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
     mergeTestResults: "true"
   condition: "succeededOrFailed()"
-
-- task: PublishBuildArtifacts@1
-  displayName: "Publish Test Freeze Dump"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-    ArtifactName: "$(Agent.JobName)"
-    ArtifactType: "Container"
-  condition: "or(failed(), canceled())"
-
-- task: PowerShell@2
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    targetType: "inline"
-    script: |
-      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Linux"
-    failOnStderr: "true"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)/binlog
-  condition: " failed() "
