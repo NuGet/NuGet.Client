@@ -55,10 +55,12 @@ namespace NuGet.Build.Tasks.Pack
             if (!string.IsNullOrWhiteSpace(NuspecFile))
             {
                 bool hasVersionInNuspecProperties = false;
+                bool hasIdInNuspecProperties = false;
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
                 {
-                    PackArgs packArgs = new PackArgs();
+                    PackArgs packArgs = new PackArgs() { Version = packageVersion };
                     PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
+                    // If the logic depends only on checking for a non-null value, it may incorrectly  detect cases where the parsing logic changes the version based on a key other than the "version" key.
                     if (packArgs.Properties.ContainsKey("version"))
                     {
                         packageVersion = packArgs.Version;
@@ -67,11 +69,15 @@ namespace NuGet.Build.Tasks.Pack
                     if (packArgs.Properties.TryGetValue("id", out var idTemp))
                     {
                         packageId = idTemp;
+                        hasIdInNuspecProperties = true;
                     }
                 }
 
                 var nuspecReader = new NuGet.Packaging.NuspecReader(NuspecFile);
-                packageId = nuspecReader.GetId();
+                if (!hasIdInNuspecProperties)
+                {
+                    packageId = nuspecReader.GetId();
+                }
                 if (!hasVersionInNuspecProperties)
                 {
                     packageVersion = nuspecReader.GetVersion().ToNormalizedString();
