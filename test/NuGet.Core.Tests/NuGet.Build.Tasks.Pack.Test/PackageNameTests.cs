@@ -142,19 +142,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                 {
                     // As noted in #6703, since the .NetStandard2.0 library has been removed,
                     // running tests on .net Framework requires invoking msbuild.exe.
-
-                    var runresultDotnetRestore = CommandRunner.Run(
-                                        _testFixture._pathMSBuildExe,
-                                        testDirectory,
-                                        $"/t:Restore {FILENAME_PROJECT_FILE}",
-                                        environmentVariables: _testFixture._dotnetEnvironments,
-                                        testOutputHelper: _testOutputHelper);
-                    Assert.True(0 == runresultDotnetRestore.ExitCode, runresultDotnetRestore.Output + " " + runresultDotnetRestore.Errors);
-
                     runresultDotnetPack = CommandRunner.Run(
                                         _testFixture._pathMSBuildExe,
                                         testDirectory,
-                                        $"/t:Build;Pack /p:Configuration={CONFIGURATION} /p:UsingMicrosoftNetSdk=true {FILENAME_PROJECT_FILE} ",
+                                        $"/t:Restore;Build;Pack /p:Configuration={CONFIGURATION} /p:UsingMicrosoftNetSdk=true {FILENAME_PROJECT_FILE} ",
                                         testOutputHelper: _testOutputHelper);
                 }
                 else
