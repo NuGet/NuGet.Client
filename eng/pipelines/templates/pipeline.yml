@@ -43,7 +43,7 @@ parameters:
     values:
       - Real
       - Test
-  
+
 stages:
   - stage: Initialize
     jobs:
@@ -404,7 +404,7 @@ stages:
         condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
         pool:
           name: "Azure Pipelines"
-          vmImage: macos-13
+          vmImage: macos-latest
           os: macOS
         strategy:
           matrix:

@@ -448,6 +448,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expected package {0} {1}, but got package {2} {3}.
+        /// </summary>
+        internal static string ErrorPackageIdentityDoesNotMatch {
+            get {
+                return ResourceManager.GetString("ErrorPackageIdentityDoesNotMatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The package is not signed..
         /// </summary>
         internal static string ErrorPackageNotSigned {
