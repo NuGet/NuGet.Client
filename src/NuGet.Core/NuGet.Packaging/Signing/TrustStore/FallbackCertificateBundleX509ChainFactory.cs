@@ -62,7 +62,7 @@ namespace NuGet.Packaging.Signing
         [UnconditionalSuppressMessage(
             "SingleFile",
             "IL3000",
-            Justification = "NuGet assemblies are deployed as separate files in the .NET SDK. Assembly.Location is used to locate the trustedroots bundle next to the assembly.")]
+            Justification = "The code does not require Assembly.Location to be non-empty.")]
         private static string GetThisAssemblyDirectoryPath()
         {
             string location = typeof(FallbackCertificateBundleX509ChainFactory).Assembly.Location;
