@@ -101,6 +101,8 @@ stages:
         signing:
           enabled: true
           signType: "${{ parameters.SigningType }}"
+          ${{ if and(eq(parameters.isOfficialBuild, true), eq(parameters.SigningType, 'Real')) }}:
+            signWithProd: true
         swix:
           enabled: true
         optprof:
@@ -220,6 +222,8 @@ stages:
         signing:
           enabled: true
           signType: "${{ parameters.SigningType }}"
+          ${{ if and(eq(parameters.isOfficialBuild, true), eq(parameters.SigningType, 'Real')) }}:
+            signWithProd: true
         swix:
           enabled: true
         optprof:
