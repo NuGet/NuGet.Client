@@ -55,6 +55,31 @@ namespace NuGet.LibraryModel.Tests
             Assert.Equal(LibraryIncludeFlags.Compile, flags);
         }
 
+
+        public static TheoryData<LibraryIncludeFlags> GetFlags_RoundTrip_Data()
+        {
+            var data = new TheoryData<LibraryIncludeFlags>();
+
+            for (int i = 0; i <= (int)LibraryIncludeFlags.All; i++)
+            {
+                data.Add((LibraryIncludeFlags)i);
+            }
+
+            return data;
+        }
+
+        [Theory]
+        //[InlineData(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile | LibraryIncludeFlags.Native | LibraryIncludeFlags.BuildTransitive)]
+        //[InlineData(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile | LibraryIncludeFlags.Native | LibraryIncludeFlags.Build)]
+        [MemberData(nameof(GetFlags_RoundTrip_Data))]
+        public void GetFlags_RoundTrip(LibraryIncludeFlags flag)
+        {
+            var stringRep = flag.ToString();
+            LibraryIncludeFlags fromGeneratedStringRep = LibraryIncludeFlagUtils.GetFlags(stringRep.Split(',').Select(e => e.Trim()));
+
+            Assert.Equal(flag, fromGeneratedStringRep);
+        }
+
         [Fact]
         public void GetFlags_WhenFlagsIsMultipleValues_ReturnsCombinationOfValues()
         {

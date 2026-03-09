@@ -156,16 +156,17 @@ namespace NuGet.LibraryModel
                 return true;
             }
 
-            return AutoReferenced == other.AutoReferenced &&
-                   EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
-                   IncludeType == other.IncludeType &&
-                   SuppressParent == other.SuppressParent &&
-                   NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
-                   GeneratePathProperty == other.GeneratePathProperty &&
-                   VersionCentrallyManaged == other.VersionCentrallyManaged &&
-                   Aliases == other.Aliases &&
-                   EqualityUtility.EqualsWithNullCheck(VersionOverride, other.VersionOverride) &&
-                   ReferenceType == other.ReferenceType;
+            bool result = AutoReferenced == other.AutoReferenced;
+            result &= EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange);
+            result &= IncludeType == other.IncludeType;
+            result &= SuppressParent == other.SuppressParent;
+            result &= NoWarn.SequenceEqualWithNullCheck(other.NoWarn);
+            result &= GeneratePathProperty == other.GeneratePathProperty;
+            result &= VersionCentrallyManaged == other.VersionCentrallyManaged;
+            result &= Aliases == other.Aliases;
+            result &= EqualityUtility.EqualsWithNullCheck(VersionOverride, other.VersionOverride);
+            result &= ReferenceType == other.ReferenceType;
+            return result;
         }
     }
 }

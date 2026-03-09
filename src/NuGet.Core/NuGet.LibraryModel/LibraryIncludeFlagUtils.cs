@@ -58,7 +58,7 @@ namespace NuGet.LibraryModel
                     case "analyzers":
                         result |= LibraryIncludeFlags.Analyzers;
                         break;
-                    case "buildtransitive":
+                    case "buildtransitive": // This is the root of all evil. It makes it not round trippable 
                         result |= LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Build;
                         break;
 
@@ -86,7 +86,7 @@ namespace NuGet.LibraryModel
 
             var flagStrings = new List<string>();
 
-            foreach (LibraryIncludeFlags value in EnumUtility.GetValues<LibraryIncludeFlags>())
+            foreach (LibraryIncludeFlags value in Enum.GetValues(typeof(LibraryIncludeFlags)))
             {
                 if (value != LibraryIncludeFlags.None && flags.HasFlag(value))
                 {
