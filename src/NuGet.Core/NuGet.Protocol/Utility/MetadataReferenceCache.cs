@@ -81,9 +81,13 @@ namespace NuGet.Protocol
         /// <summary>
         /// Iterates through the cacheable properties of <paramref name="input"/> and replaces their values with cached equivalents.
         /// </summary>
-        public T GetObject<T>(T input) where T : ICacheable
+        internal T GetObject<T>(T input)
         {
-            input.CacheStrings(this);
+            if (input is ICacheable cacheable)
+            {
+                cacheable.CacheStrings(this);
+            }
+
             return input;
         }
     }

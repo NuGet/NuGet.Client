@@ -258,7 +258,7 @@ namespace NuGet.Protocol
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
 
         /// <inheritdoc />
-        public virtual void CacheStrings(MetadataReferenceCache cache)
+        void ICacheable.CacheStrings(MetadataReferenceCache cache)
         {
             Authors = cache.GetString(Authors);
             Description = cache.GetString(Description);

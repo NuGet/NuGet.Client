@@ -7,7 +7,7 @@ namespace NuGet.Protocol
     /// Implemented by types whose string properties can be deduplicated
     /// via <see cref="MetadataReferenceCache"/>.
     /// </summary>
-    public interface ICacheable
+    internal interface ICacheable
     {
         /// <summary>
         /// Replaces all string property values with cached equivalents.

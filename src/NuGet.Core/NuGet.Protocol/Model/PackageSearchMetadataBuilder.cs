@@ -64,7 +64,7 @@ namespace NuGet.Protocol.Core.Types
             public string PackagePath { get; set; }
 
             /// <inheritdoc />
-            public void CacheStrings(MetadataReferenceCache cache)
+            void ICacheable.CacheStrings(MetadataReferenceCache cache)
             {
                 Authors = cache.GetString(Authors);
                 Description = cache.GetString(Description);
