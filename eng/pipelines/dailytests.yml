@@ -15,6 +15,15 @@ parameters:
     - Always
     - Never
     - OnSuccess
+- name: testMachineHoldStrategy
+  type: string
+  default: None
+  values:
+    - None
+    - Completion
+    - Execution
+    - Failure
+    - Timeout
 
 resources:
   pipelines:
@@ -62,3 +71,4 @@ stages:
     testExecutionJobTimeoutInMinutes: 380 # cloud test minimum
     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
     VsBootstrapperBranch: $(VsBootstrapperBranch)
+    testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
