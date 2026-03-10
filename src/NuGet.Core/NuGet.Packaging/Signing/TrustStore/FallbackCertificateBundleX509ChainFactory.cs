@@ -9,7 +9,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 
 namespace NuGet.Packaging.Signing
 {
@@ -19,8 +18,6 @@ namespace NuGet.Packaging.Signing
         internal const string SubdirectoryName = "trustedroots";
         internal const string CodeSigningFileName = "codesignctl.pem";
         internal const string TimestampingFileName = "timestampctl.pem";
-
-        private static readonly Lazy<string> ThisAssemblyDirectoryPath = new(GetThisAssemblyDirectoryPath, LazyThreadSafetyMode.ExecutionAndPublication);
 
         private FallbackCertificateBundleX509ChainFactory(X509Certificate2Collection certificates, string filePath)
             : base(certificates, filePath)
@@ -34,6 +31,11 @@ namespace NuGet.Packaging.Signing
         {
             factory = null;
 
+            if (!TryGetThisAssemblyDirectoryPath(out string assemblyDirectoryPath))
+            {
+                return false;
+            }
+
             if (string.IsNullOrEmpty(fileName))
             {
                 fileName = storePurpose switch
@@ -45,7 +47,7 @@ namespace NuGet.Packaging.Signing
             }
 
             string fullFilePath = Path.Combine(
-                ThisAssemblyDirectoryPath.Value,
+                assemblyDirectoryPath,
                 SubdirectoryName,
                 fileName);
 
@@ -62,13 +64,19 @@ namespace NuGet.Packaging.Signing
         [UnconditionalSuppressMessage(
             "SingleFile",
             "IL3000",
-            Justification = "The code does not require Assembly.Location to be non-empty.")]
-        private static string GetThisAssemblyDirectoryPath()
+            Justification = "Assembly.Location may be empty in single file scenarios. When empty, TryCreate will return false.")]
+        private static bool TryGetThisAssemblyDirectoryPath(out string directoryPath)
         {
             string location = typeof(FallbackCertificateBundleX509ChainFactory).Assembly.Location;
-            FileInfo thisAssembly = new(location);
 
-            return thisAssembly.DirectoryName;
+            if (string.IsNullOrEmpty(location))
+            {
+                directoryPath = null;
+                return false;
+            }
+
+            directoryPath = Path.GetDirectoryName(location);
+            return true;
         }
     }
 }
