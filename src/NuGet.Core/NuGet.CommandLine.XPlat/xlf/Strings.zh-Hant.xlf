@@ -582,9 +582,9 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">無法剖析其中一個指定的 Framework。請確認指定的架構均有效。</target>
-        <note />
+        <source>The provided TargetFramework '{0}'is not found in the project '{1}'.</source>
+        <target state="new">The provided TargetFramework '{0}'is not found in the project '{1}'.</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>

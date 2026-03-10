@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
@@ -126,6 +127,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("--format json")]
         [InlineData("--format JSON")]
         [InlineData("--format json --output-version 1")]
+        [InlineData("--format json --output-version 2")]
         [InlineData("--format console")]
         public void BasicListPackage_OutputFormat_CorrectInput_Parsing_Succeeds(string outputFormatCommmand)
         {
@@ -154,7 +156,7 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("--format xml")]
         [InlineData("--format json --output-version 0")]
-        [InlineData("--format json --output-version 2")]
+        [InlineData("--format json --output-version 3")]
         [InlineData("--format console --output-version 1")]
         [InlineData("--output-version 0")]
         [InlineData("--output-version 1")]
@@ -235,6 +237,7 @@ namespace NuGet.XPlat.FuncTest
                                         highestPatch: false,
                                         highestMinor: false,
                                         auditSources: null,
+                                        outputVersion: null,
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
@@ -344,6 +347,7 @@ namespace NuGet.XPlat.FuncTest
                                         highestPatch: false,
                                         highestMinor: false,
                                         auditSources: null,
+                                        outputVersion: null,
                                         logger: logger,
                                         cancellationToken: CancellationToken.None);
 
@@ -376,6 +380,7 @@ namespace NuGet.XPlat.FuncTest
                 highestPatch: false,
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
+                outputVersion: null,
                 mockLogger.Object,
                 CancellationToken.None
             );
@@ -422,6 +427,7 @@ namespace NuGet.XPlat.FuncTest
                 highestPatch: false,
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
+                outputVersion: null,
                 mockLogger.Object,
                 CancellationToken.None
             );
@@ -477,6 +483,7 @@ namespace NuGet.XPlat.FuncTest
                 highestPatch: false,
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
+                outputVersion: null,
                 mockLogger.Object,
                 CancellationToken.None
             );
@@ -540,7 +547,7 @@ namespace NuGet.XPlat.FuncTest
         {
             Type listPackageArgsType = typeof(ListPackageArgs);
             FieldInfo[] fields = listPackageArgsType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.True(13 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
+            fields.Length.Should().Be(14, because: "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
 
         private static SimpleTestSolutionContext SetupTestSolution(SimpleTestPathContext pathContext)

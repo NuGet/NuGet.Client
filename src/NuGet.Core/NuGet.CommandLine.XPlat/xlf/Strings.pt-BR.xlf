@@ -582,9 +582,9 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">Falha ao analisar uma das estruturas fornecidas. Verifique se as estruturas determinadas são válidas.</target>
-        <note />
+        <source>The provided TargetFramework '{0}'is not found in the project '{1}'.</source>
+        <target state="new">The provided TargetFramework '{0}'is not found in the project '{1}'.</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>

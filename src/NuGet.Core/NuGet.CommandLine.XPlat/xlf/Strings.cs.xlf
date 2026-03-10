@@ -582,9 +582,9 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">Jednu z daných architektur se nepovedlo parsovat. Ujistěte se prosím, že dané architektury jsou platné.</target>
-        <note />
+        <source>The provided TargetFramework '{0}'is not found in the project '{1}'.</source>
+        <target state="new">The provided TargetFramework '{0}'is not found in the project '{1}'.</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>

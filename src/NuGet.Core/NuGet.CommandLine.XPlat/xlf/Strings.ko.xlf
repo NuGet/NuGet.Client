@@ -582,9 +582,9 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">지정된 프레임워크 중 하나를 구문 분석하지 못했습니다. 지정된 프레임워크가 유효한지 확인하세요.</target>
-        <note />
+        <source>The provided TargetFramework '{0}'is not found in the project '{1}'.</source>
+        <target state="new">The provided TargetFramework '{0}'is not found in the project '{1}'.</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>

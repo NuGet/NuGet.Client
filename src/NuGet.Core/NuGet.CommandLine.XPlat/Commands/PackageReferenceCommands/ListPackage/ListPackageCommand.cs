@@ -15,7 +15,6 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -123,8 +122,6 @@ namespace NuGet.CommandLine.XPlat
 
                     var packageSources = GetPackageSources(settings, sources, config);
 
-                    VerifyValidFrameworks(framework);
-
                     var reportType = GetReportType(
                         isOutdated: outdatedReport.HasValue(),
                         isDeprecated: deprecatedReport.HasValue(),
@@ -132,6 +129,7 @@ namespace NuGet.CommandLine.XPlat
 
                     IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
                     var provider = new PackageSourceProvider(settings);
+                    int? parsedOutputVersion = ParseOutputVersion(outputFormat.Value(), outputVersion.Value());
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
@@ -143,6 +141,7 @@ namespace NuGet.CommandLine.XPlat
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
                         provider.LoadAuditSources(),
+                        parsedOutputVersion,
                         logger,
                         CancellationToken.None);
 
@@ -195,7 +194,7 @@ namespace NuGet.CommandLine.XPlat
 
             IReportRenderer jsonReportRenderer;
 
-            var currentlySupportedReportVersions = new List<string> { "1" };
+            var currentlySupportedReportVersions = new List<string> { "1", "2" };
             // If customer pass unsupported version then error out instead of defaulting to version probably unsupported by customer machine.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
@@ -205,7 +204,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 jsonReportRenderer = new ListPackageJsonRenderer();
             }
-
             return jsonReportRenderer;
         }
 
@@ -218,14 +216,19 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void VerifyValidFrameworks(CommandOption framework)
+        private static int? ParseOutputVersion(string outputFormatOption, string outputVersionOption)
         {
-            var frameworks = framework.Values.Select(f =>
-                                NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
-            if (frameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrEmpty(outputFormatOption) || !Enum.TryParse(outputFormatOption, ignoreCase: true, out ReportOutputFormat format) || format == ReportOutputFormat.Console)
             {
-                throw new ArgumentException(Strings.ListPkg_InvalidFramework, nameof(framework));
+                return null;
             }
+
+            if (string.IsNullOrEmpty(outputVersionOption))
+            {
+                return null;
+            }
+
+            return int.Parse(outputVersionOption, CultureInfo.InvariantCulture);
         }
 
         private static ISettings ProcessConfigFile(string configFile, string projectOrSolution)

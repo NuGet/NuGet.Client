@@ -582,9 +582,9 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">指定されたフレームワークの 1 つを解析できませんでした。指定されたフレームワークが正しいことをご確認ください。</target>
-        <note />
+        <source>The provided TargetFramework '{0}'is not found in the project '{1}'.</source>
+        <target state="new">The provided TargetFramework '{0}'is not found in the project '{1}'.</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
