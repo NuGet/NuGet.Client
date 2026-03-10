@@ -23,9 +23,9 @@
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</note>
       </trans-unit>
       <trans-unit id="InfoBar_HyperlinkFixVulnerabilitiesWithCopilot">
-        <source>Fix with GitHub Copilot</source>
-        <target state="translated">GitHub Copilot を使用して修正する</target>
-        <note>Do not translate GitHub or Copilot</note>
+        <source>Fix</source>
+        <target state="needs-review-translation">GitHub Copilot を使用して修正する</target>
+        <note />
       </trans-unit>
       <trans-unit id="InfoBar_HyperlinkMessage">
         <source>Manage NuGet Packages</source>

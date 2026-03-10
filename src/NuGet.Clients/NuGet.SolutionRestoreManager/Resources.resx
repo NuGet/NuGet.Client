@@ -198,7 +198,6 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
     <comment>{0} - MSBuild item type. For example, NuGetAuditSuppress</comment>
   </data>
   <data name="InfoBar_HyperlinkFixVulnerabilitiesWithCopilot" xml:space="preserve">
-    <value>Fix with GitHub Copilot</value>
-    <comment>Do not translate GitHub or Copilot</comment>
+    <value>Fix</value>
   </data>
 </root>
