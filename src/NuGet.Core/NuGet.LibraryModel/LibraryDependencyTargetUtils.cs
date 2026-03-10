@@ -125,7 +125,7 @@ namespace NuGet.LibraryModel
 
             var flagStrings = new List<string>();
 
-            foreach (LibraryDependencyTarget value in EnumUtility.GetValues<LibraryDependencyTarget>())
+            foreach (LibraryDependencyTarget value in Enum.GetValues(typeof(LibraryDependencyTarget)))
             {
                 if (value != LibraryDependencyTarget.None && flags.HasFlag(value))
                 {
