@@ -24,11 +24,8 @@ namespace NuGet.XPlat.FuncTest
     [Collection(XPlatCollection.Name)]
     public class XplatListPackageJsonRendererTests
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Default;
@@ -45,7 +42,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -57,9 +54,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -123,10 +119,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // Below one doesn't include any transitive packages.
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '',
                   'projects': [
                     {{
@@ -134,7 +129,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -150,7 +144,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'B',
@@ -161,7 +154,6 @@ namespace NuGet.XPlat.FuncTest
                         }},
                         {{
                           'framework': 'net5.0',
-                          {AliasLine(effectiveVersion, frameWork5)}
                           'topLevelPackages': [
                             {{
                               'id': 'B',
@@ -181,11 +173,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_PackageWithAutoReference_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_PackageWithAutoReference_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Default;
@@ -200,7 +189,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -212,9 +201,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -249,10 +237,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // autoReferenced is set to true
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '',
                   'projects': [
                     {{
@@ -260,7 +247,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -286,11 +272,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Outdated_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Outdated_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Outdated;
@@ -305,7 +288,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -317,9 +300,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -347,10 +329,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--outdated',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -361,7 +342,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -382,11 +362,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Deprecated_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Deprecated_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Deprecated;
@@ -401,7 +378,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -413,9 +390,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -451,10 +427,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--deprecated',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -465,7 +440,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -492,11 +466,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Vulnerable_WithVulnerability_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Vulnerable_WithVulnerability_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Vulnerable;
@@ -511,7 +482,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -523,9 +494,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -566,10 +536,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--vulnerable',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -580,7 +549,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -595,7 +563,7 @@ namespace NuGet.XPlat.FuncTest
                                   'severity': 'Moderate',
                                   'advisoryurl': 'https://github.com/advisories/GHSA-v76m-f5cx-8rg4'
                                 }}
-                              ]
+	                          ]
                             }}
                           ]
                         }}
@@ -610,11 +578,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Vulnerable_WithoutVulnerability_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Vulnerable_WithoutVulnerability_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Vulnerable;
@@ -629,7 +594,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -641,9 +606,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -665,10 +629,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--vulnerable',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -679,7 +642,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                           ]
                         }}
@@ -694,11 +656,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_IncludeTransitives_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_IncludeTransitives_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Default;
@@ -716,7 +675,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -728,9 +687,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -804,10 +762,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // Below one doesn't include any transitive packages.
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                    'version': {effectiveVersion},
+                    'version': 1,
                     'parameters': '--include-transitive',
                     'projects': [
                     {{
@@ -815,7 +772,6 @@ namespace NuGet.XPlat.FuncTest
                         'frameworks': [
                         {{
                             'framework': 'netcoreapp3.1',
-                            {AliasLine(effectiveVersion, frameWork31)}
                             'topLevelPackages': [
                             {{
                                 'id': 'A',
@@ -837,7 +793,6 @@ namespace NuGet.XPlat.FuncTest
                         'frameworks': [
                         {{
                             'framework': 'netcoreapp3.1',
-                            {AliasLine(effectiveVersion, frameWork31)}
                             'topLevelPackages': [
                             {{
                                 'id': 'B',
@@ -848,7 +803,6 @@ namespace NuGet.XPlat.FuncTest
                         }},
                         {{
                             'framework': 'net5.0',
-                            {AliasLine(effectiveVersion, frameWork5)}
                             'topLevelPackages': [
                             {{
                                 'id': 'B',
@@ -874,11 +828,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Outdated_IncludeTransitive_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Outdated_IncludeTransitive_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Outdated;
@@ -895,7 +846,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -907,9 +858,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -959,10 +909,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // Transitive packages have `latestVersion` property.
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--outdated --include-transitive',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -973,7 +922,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -985,7 +933,6 @@ namespace NuGet.XPlat.FuncTest
                         }},
                         {{
                           'framework': 'net5.0',
-                          {AliasLine(effectiveVersion, frameWork5)}
                           'topLevelPackages': [
                             {{
                               'id': 'B',
@@ -1013,11 +960,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_Vulnerable_IncludeTransitive_SucceedsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_Vulnerable_IncludeTransitive_SucceedsAsync()
         {
             // Arrange
             var reportType = ReportType.Vulnerable;
@@ -1033,7 +977,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -1045,9 +989,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1106,10 +1049,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // Vulnerabilities in transitive dependencies are detected.
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--vulnerable --include-transitive',
                   'sources': [
                     '{pathContext.PackageSource}'
@@ -1120,7 +1062,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -1162,11 +1103,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_ListPackage_NoAssetFile_FailsAsync(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_ListPackage_NoAssetFile_FailsAsync()
         {
             // Arrange
             var reportType = ReportType.Default;
@@ -1182,7 +1120,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -1194,9 +1132,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1229,10 +1166,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 // autoReferenced is set to true
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                     {{
-                      'version': {effectiveVersion},
+                      'version': 1,
                       'parameters': '',
                       'problems': [
                         {{
@@ -1247,7 +1183,6 @@ namespace NuGet.XPlat.FuncTest
                           'frameworks': [
                             {{
                               'framework': 'netcoreapp3.1',
-                              {AliasLine(effectiveVersion, frameWork31)}
                               'topLevelPackages': [
                                 {{
                                   'id': 'A',
@@ -1270,11 +1205,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_VulnerableReprotTypeWithSourcesUsed_WritesSourcesUsedList(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_VulnerableReprotTypeWithSourcesUsed_WritesSourcesUsedList()
         {
             // Arrange
             var reportType = ReportType.Vulnerable;
@@ -1290,7 +1222,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>(),
@@ -1302,9 +1234,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1334,10 +1265,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--vulnerable',
                   'sources': [
                     '{source.Name}'
@@ -1348,7 +1278,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -1374,11 +1303,8 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void JsonRenderer_NotVulnerableReprotTypeAndSourcesUsed_DoesNotWritesSourcesUsedList(int? outputVersion)
+        [Fact]
+        public void JsonRenderer_NotVulnerableReprotTypeAndSourcesUsed_DoesNotWritesSourcesUsedList()
         {
             // Arrange
             var reportType = ReportType.Outdated;
@@ -1394,7 +1320,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(textWriter: writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>(),
@@ -1406,9 +1332,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestPatch: false,
                                 highestMinor: false,
                                 auditSources: null,
-                                outputVersion: outputVersion,
-                                logger: NullLogger.Instance,
-                                cancellationToken: CancellationToken.None);
+                                NullLogger.Instance,
+                                CancellationToken.None);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1438,10 +1363,9 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 // Assert
-                int effectiveVersion = outputVersion ?? 1;
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
-                  'version': {effectiveVersion},
+                  'version': 1,
                   'parameters': '--outdated',
                   'sources': [],
                   'projects': [
@@ -1450,7 +1374,6 @@ namespace NuGet.XPlat.FuncTest
                       'frameworks': [
                         {{
                           'framework': 'netcoreapp3.1',
-                          {AliasLine(effectiveVersion, frameWork31)}
                           'topLevelPackages': [
                             {{
                               'id': 'A',
@@ -1470,9 +1393,6 @@ namespace NuGet.XPlat.FuncTest
                 actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
-
-        private static string AliasLine(int effectiveVersion, string alias) =>
-            effectiveVersion >= 2 ? $"'alias': '{alias}'," : "";
 
         internal ListPackageReportModel CreateListReportModel(ListPackageArgs packageRefArgs,
             params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)

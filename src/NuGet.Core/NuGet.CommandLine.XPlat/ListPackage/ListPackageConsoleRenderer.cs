@@ -69,9 +69,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 WriteSources(_consoleOut, listPackageReportModel.ListPackageArgs);
             }
 
-            int effectiveOutputVersion = listPackageReportModel.DetermineOutputVersion();
-
-            WriteProjects(_consoleOut, _consoleError, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs, effectiveOutputVersion);
+            WriteProjects(_consoleOut, _consoleError, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
 
             // Print a legend message for auto-reference markers used
             if (listPackageReportModel.Projects.Any(p => p.AutoReferenceFound))
@@ -92,7 +90,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private static void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs, int effectiveOutputVersion)
+        private static void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
         {
             foreach (ListPackageProjectModel project in projects)
             {
@@ -142,7 +140,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     List<ListReportPackage> frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
                     List<ListReportPackage> frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
-                    string frameworkHeader = effectiveOutputVersion >= 2 ? frameworkPackages.TargetAlias : frameworkPackages.Framework;
+                    string frameworkHeader = frameworkPackages.TargetAlias;
 
                     // If no packages exist for this framework, print the appropriate message
                     if (frameworkTopLevelPackages?.Any() != true && frameworkTransitivePackages?.Any() != true)

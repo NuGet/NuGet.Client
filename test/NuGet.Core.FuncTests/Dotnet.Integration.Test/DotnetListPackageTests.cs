@@ -1384,7 +1384,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             ShouldContainIgnoringSpaces(listResult.AllOutput, "PackageX1.0.01.0.0");
-            ShouldContainIgnoringSpaces(listResult.AllOutput, "net10.0"); // In 11.0.1xx, this will be banana.
+            ShouldContainIgnoringSpaces(listResult.AllOutput, "banana");
 
         }
 
@@ -1403,8 +1403,8 @@ namespace Dotnet.Integration.Test
             // Assert
             ShouldContainIgnoringSpaces(listResult.AllOutput, "PackageX1.0.01.0.0");
             // In 11.0.1xx, this will be apple & banana.
-            ShouldContainIgnoringSpaces(listResult.AllOutput, "net10.0");
-            ShouldContainIgnoringSpaces(listResult.AllOutput, "net9.0");
+            ShouldContainIgnoringSpaces(listResult.AllOutput, "apple");
+            ShouldContainIgnoringSpaces(listResult.AllOutput, "banana");
         }
 
         [Fact]
@@ -1415,6 +1415,11 @@ namespace Dotnet.Integration.Test
             var (projectDirectory, projectPath) = await CreateMultiTargetSameAliasProjectAsync(pathContext);
 
             // Act
+
+            CommandRunnerResult restore = _fixture.RunDotnetExpectSuccess(projectDirectory,
+               $"restore {projectPath}",
+               testOutputHelper: _testOutputHelper);
+
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
                 $"list {projectPath} package",
                 testOutputHelper: _testOutputHelper);
@@ -1425,10 +1430,8 @@ namespace Dotnet.Integration.Test
             ShouldContainIgnoringSpaces(listResult.AllOutput, "banana");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("--output-version 2")]
-        public async Task DotnetListPackage_SingleTargetWithAlias_FormatJson_Succeeds(string outputVersionArg)
+        [Fact]
+        public async Task DotnetListPackage_SingleTargetWithAlias_FormatJson_Succeeds()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -1436,7 +1439,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
-                $"list {projectPath} package --format json {outputVersionArg}",
+                $"list {projectPath} package --format json",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -1444,12 +1447,7 @@ namespace Dotnet.Integration.Test
             var frameworks = (JArray)json.SelectToken("$.projects[0].frameworks");
             frameworks.Should().NotBeNull();
             frameworks.Count.Should().Be(1);
-            frameworks[0]["framework"].ToString().Should().Be(TestConstants.ProjectTargetFramework);
-            if (outputVersionArg.Length > 0)
-            {
-                frameworks[0]["alias"].ToString().Should().Be("banana");
-            }
-
+            frameworks[0]["framework"].ToString().Should().Be("banana");
             var topLevelPackages = (JArray)frameworks[0]["topLevelPackages"];
             topLevelPackages.Should().NotBeNull();
             topLevelPackages.Count.Should().Be(1);
@@ -1459,7 +1457,7 @@ namespace Dotnet.Integration.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData("--output-version 2")]
+        [InlineData("--output-version 1")]
         public async Task DotnetListPackage_MultiTargetWithAliases_DifferentFrameworks_FormatJson_Succeeds(string outputVersionArg)
         {
             // Arrange
@@ -1477,11 +1475,7 @@ namespace Dotnet.Integration.Test
             var frameworks = (JArray)json.SelectToken("$.projects[0].frameworks");
             frameworks.Should().NotBeNull();
             frameworks.Count.Should().Be(2);
-            if (outputVersionArg.Length > 0)
-            {
-                frameworks.Select(f => f["alias"].ToString()).Should().BeEquivalentTo(["apple", "banana"]);
-            }
-            frameworks.Select(f => f["framework"].ToString()).Should().BeEquivalentTo([$"net{frameworkVersion}.0", $"net{frameworkVersion - 1}.0",]);
+            frameworks.Select(f => f["framework"].ToString()).Should().BeEquivalentTo(["apple", "banana"]);
 
             foreach (var fw in frameworks)
             {
@@ -1493,10 +1487,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("--output-version 2")]
-        public async Task DotnetListPackage_MultiTargetWithAliases_SameFramework_FormatJson_Succeeds(string outputVersionArg)
+        [Fact]
+        public async Task DotnetListPackage_MultiTargetWithAliases_SameFramework_FormatJson_Succeeds()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -1504,7 +1496,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
-                $"list {projectPath} package --format json {outputVersionArg}",
+                $"list {projectPath} package --format json",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -1512,8 +1504,7 @@ namespace Dotnet.Integration.Test
             var frameworks = (JArray)json.SelectToken("$.projects[0].frameworks");
             frameworks.Should().NotBeNull();
             frameworks.Count.Should().Be(2);
-            frameworks.Select(f => f["alias"].ToString()).Should().BeEquivalentTo(["apple", "banana"]);
-            frameworks.Select(f => f["framework"].ToString()).Should().AllBe(TestConstants.ProjectTargetFramework);
+            frameworks.Select(f => f["framework"].ToString()).Should().BeEquivalentTo(["apple", "banana"]);
 
             foreach (var fw in frameworks)
             {
@@ -1542,7 +1533,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             ShouldContainIgnoringSpaces(listResult.AllOutput, "PackageX1.0.01.0.0");
-            ShouldContainIgnoringSpaces(listResult.AllOutput, alias == "apple" ? "net10.0" : "net9.0"); // In 11.0.1xx, this will be alias
+            ShouldContainIgnoringSpaces(listResult.AllOutput, alias); // In 11.0.1xx, this will be alias
 
             // The other alias should not appear
             string otherAlias = alias == "apple" ? "banana" : "apple";
@@ -1565,7 +1556,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             ShouldContainIgnoringSpaces(listResult.AllOutput, "PackageX1.0.01.0.0");
-            ShouldContainIgnoringSpaces(listResult.AllOutput, "net10.0"); // In 11.0.1xx, this will be alias
+            ShouldContainIgnoringSpaces(listResult.AllOutput, alias);
 
             // The other alias should not appear
             string otherAlias = alias == "apple" ? "banana" : "apple";
@@ -1573,11 +1564,9 @@ namespace Dotnet.Integration.Test
         }
 
         [Theory]
-        [InlineData("apple", "")]
-        [InlineData("apple", "--output-version 2")]
-        [InlineData("banana", "")]
-        [InlineData("banana", "--output-version 2")]
-        public async Task DotnetListPackage_MultiTargetWithAliases_DifferentFrameworks_FrameworkFilter_FormatJson_Succeeds(string alias, string outputVersionArg)
+        [InlineData("apple")]
+        [InlineData("banana")]
+        public async Task DotnetListPackage_MultiTargetWithAliases_DifferentFrameworks_FrameworkFilter_FormatJson_Succeeds(string alias)
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -1588,7 +1577,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
-                $"list {projectPath} package --framework {alias} --format json {outputVersionArg}",
+                $"list {projectPath} package --framework {alias} --format json",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -1596,11 +1585,7 @@ namespace Dotnet.Integration.Test
             var frameworks = (JArray)json.SelectToken("$.projects[0].frameworks");
             frameworks.Should().NotBeNull();
             frameworks.Count.Should().Be(1);
-            if (outputVersionArg.Length > 0)
-            {
-                frameworks[0]["alias"].ToString().Should().Be(alias);
-            }
-            frameworks[0]["framework"].ToString().Should().Be(expectedFramework);
+            frameworks[0]["framework"].ToString().Should().Be(alias);
 
             var topLevelPackages = (JArray)frameworks[0]["topLevelPackages"];
             topLevelPackages.Should().NotBeNull();
@@ -1610,11 +1595,9 @@ namespace Dotnet.Integration.Test
         }
 
         [Theory]
-        [InlineData("apple", "")]
-        [InlineData("apple", "--output-version 2")]
-        [InlineData("banana", "")]
-        [InlineData("banana", "--output-version 2")]
-        public async Task DotnetListPackage_MultiTargetWithAliases_SameFramework_FrameworkFilter_FormatJson_Succeeds(string alias, string outputVersionArg)
+        [InlineData("apple")]
+        [InlineData("banana")]
+        public async Task DotnetListPackage_MultiTargetWithAliases_SameFramework_FrameworkFilter_FormatJson_Succeeds(string alias)
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -1622,7 +1605,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
-                $"list {projectPath} package --framework {alias} --format json {outputVersionArg}",
+                $"list {projectPath} package --framework {alias} --format json",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
@@ -1630,11 +1613,7 @@ namespace Dotnet.Integration.Test
             var frameworks = (JArray)json.SelectToken("$.projects[0].frameworks");
             frameworks.Should().NotBeNull();
             frameworks.Count.Should().Be(1);
-            if (outputVersionArg.Length > 0)
-            {
-                frameworks[0]["alias"].ToString().Should().Be(alias);
-            }
-            frameworks[0]["framework"].ToString().Should().Be(TestConstants.ProjectTargetFramework);
+            frameworks[0]["framework"].ToString().Should().Be(alias);
 
             var topLevelPackages = (JArray)frameworks[0]["topLevelPackages"];
             topLevelPackages.Should().NotBeNull();

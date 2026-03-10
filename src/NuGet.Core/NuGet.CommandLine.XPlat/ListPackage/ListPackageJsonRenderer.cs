@@ -20,6 +20,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
     /// </summary>
     internal class ListPackageJsonRenderer : IReportRenderer
     {
+        private const int ReportOutputVersion = 1;
         private const string VersionProperty = "version";
         private const string ParametersProperty = "parameters";
         private const string ProblemsProperty = "problems";
@@ -28,7 +29,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string ProjectsProperty = "projects";
         private const string FrameworksProperty = "frameworks";
         private const string FrameworkProperty = "framework";
-        private const string AliasProperty = "alias";
         private const string PathProperty = "path";
         private const string TopLevelPackagesProperty = "topLevelPackages";
         private const string TransitivePackagesProperty = "transitivePackages";
@@ -91,11 +91,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private void WriteJson(JsonWriter writer, ListPackageReportModel listPackageReportModel)
         {
             ListPackageArgs listPackageArgs = listPackageReportModel.ListPackageArgs;
-            int effectiveOutputVersion = listPackageReportModel.DetermineOutputVersion();
             writer.WriteStartObject();
 
             writer.WritePropertyName(VersionProperty);
-            writer.WriteValue(effectiveOutputVersion);
+            writer.WriteValue(ReportOutputVersion);
 
             writer.WritePropertyName(ParametersProperty);
             writer.WriteValue(PathUtility.GetPathWithForwardSlashes(listPackageArgs.ArgumentText));
@@ -106,7 +105,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             WriteSources(writer, listPackageReportModel);
-            WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs, effectiveOutputVersion);
+            WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
             writer.WriteEndObject();
         }
 
@@ -164,7 +163,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WriteEndArray();
         }
 
-        private static void WriteProjects(JsonWriter writer, List<ListPackageProjectModel> reportProjects, ListPackageArgs listPackageArgs, int effectiveOutputVersion)
+        private static void WriteProjects(JsonWriter writer, List<ListPackageProjectModel> reportProjects, ListPackageArgs listPackageArgs)
         {
             writer.WritePropertyName(ProjectsProperty);
             writer.WriteStartArray();
@@ -180,7 +179,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 {
                     writer.WritePropertyName(FrameworksProperty);
 
-                    WriteFrameworkPackage(writer, reportProject.TargetFrameworkPackages, listPackageArgs, effectiveOutputVersion);
+                    WriteFrameworkPackage(writer, reportProject.TargetFrameworkPackages, listPackageArgs);
 
                 }
 
@@ -190,7 +189,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WriteEndArray();
         }
 
-        private static void WriteFrameworkPackage(JsonWriter writer, List<ListPackageReportFrameworkPackage> reportFrameworkPackages, ListPackageArgs listPackageArgs, int effectiveOutputVersion)
+        private static void WriteFrameworkPackage(JsonWriter writer, List<ListPackageReportFrameworkPackage> reportFrameworkPackages, ListPackageArgs listPackageArgs)
         {
             writer.WriteStartArray();
 
@@ -198,12 +197,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(FrameworkProperty);
-                writer.WriteValue(reportFrameworkPackage.Framework);
-                if (effectiveOutputVersion >= 2)
-                {
-                    writer.WritePropertyName(AliasProperty);
-                    writer.WriteValue(reportFrameworkPackage.TargetAlias);
-                }
+                writer.WriteValue(reportFrameworkPackage.TargetAlias);
                 WriteTopLevelPackages(writer, TopLevelPackagesProperty, reportFrameworkPackage.TopLevelPackages, listPackageArgs);
                 WriteTransitivePackages(writer, TransitivePackagesProperty, reportFrameworkPackage.TransitivePackages, listPackageArgs);
                 writer.WriteEndObject();

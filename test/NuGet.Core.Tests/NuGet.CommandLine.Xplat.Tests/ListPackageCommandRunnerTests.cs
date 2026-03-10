@@ -152,7 +152,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     auditSources: null,
-                    outputVersion: null,
                     logger: new Mock<ILogger>().Object,
                     cancellationToken: CancellationToken.None);
 
@@ -201,7 +200,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: true, highestMinor: true,
                     auditSources: null,
-                    outputVersion: null,
                     logger: new Mock<ILogger>().Object,
                     cancellationToken: CancellationToken.None);
 
@@ -280,7 +278,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: new List<string>(),
                     reportType: ReportType.Deprecated,
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, outputVersion: null, logger: new Mock<ILogger>().Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
                     cancellationToken: CancellationToken.None);
 
                 // Act
@@ -359,7 +357,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: new List<string>(),
                     reportType: ReportType.Vulnerable,
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, outputVersion: null, logger: new Mock<ILogger>().Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
                     cancellationToken: CancellationToken.None);
 
                 // Act
@@ -401,7 +399,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                 highestPatch: false,
                 highestMinor: false,
                 auditSources: null,
-                outputVersion: null,
                 logger: new Mock<ILogger>().Object,
                 cancellationToken: CancellationToken.None);
 
