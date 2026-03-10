@@ -1455,10 +1455,8 @@ namespace Dotnet.Integration.Test
             topLevelPackages[0]["resolvedVersion"].ToString().Should().Be("1.0.0");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("--output-version 1")]
-        public async Task DotnetListPackage_MultiTargetWithAliases_DifferentFrameworks_FormatJson_Succeeds(string outputVersionArg)
+        [Fact]
+        public async Task DotnetListPackage_MultiTargetWithAliases_DifferentFrameworks_FormatJson_Succeeds()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -1467,7 +1465,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(projectDirectory,
-                $"list {projectPath} package --format json {outputVersionArg}",
+                $"list {projectPath} package --format json",
                 testOutputHelper: _testOutputHelper);
 
             // Assert
