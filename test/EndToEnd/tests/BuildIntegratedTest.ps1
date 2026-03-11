@@ -433,7 +433,8 @@ function Test-InconsistencyBetweenAssetsAndProjectFile{
     SaveAs-Solution($solutionFile)
     Close-Solution
     Remove-PackageReference $projectFullName Newtonsoft.Json
-    Open-Solution $solutionFile    
+    Open-Solution $solutionFile
+    Wait-ForSolutionLoad
     $project = Get-Project
 
     #Pre-condition
