@@ -155,7 +155,7 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("--format xml")]
         [InlineData("--format json --output-version 0")]
-        [InlineData("--format json --output-version 3")]
+        [InlineData("--format json --output-version 2")]
         [InlineData("--format console --output-version 1")]
         [InlineData("--output-version 0")]
         [InlineData("--output-version 1")]

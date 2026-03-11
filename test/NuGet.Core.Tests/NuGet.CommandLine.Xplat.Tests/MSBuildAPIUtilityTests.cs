@@ -722,7 +722,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var pathContext = new SimpleTestPathContext();
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var net8 = NuGetFramework.Parse("net8.0");
-            string alias = net8.GetShortFolderName();
+            string targetAlias = net8.GetShortFolderName();
             var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
             solution.Projects.Add(projectA);
             solution.Create();
@@ -754,7 +754,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new LockFileTarget()
                     {
                         TargetFramework = net8,
-                        TargetAlias = alias,
+                        TargetAlias = targetAlias,
                         Libraries = new List<LockFileTargetLibrary>
                         {
                             new LockFileTargetLibrary()
@@ -771,7 +771,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        TargetAlias = alias,
+                        TargetAlias = targetAlias,
                         Dependencies =
                         [
                             new LibraryDependency
@@ -805,7 +805,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var pathContext = new SimpleTestPathContext();
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var net8 = NuGetFramework.Parse("net8.0");
-            string alias = net8.GetShortFolderName();
+            string targetAlias = net8.GetShortFolderName();
             var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
             solution.Projects.Add(projectA);
             solution.Create();
@@ -832,7 +832,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new LockFileTarget()
                     {
                         TargetFramework = net8,
-                        TargetAlias = alias,
+                        TargetAlias = targetAlias,
                         Libraries = new List<LockFileTargetLibrary>
                         {
                             new LockFileTargetLibrary()
@@ -849,7 +849,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        TargetAlias = alias,
+                        TargetAlias = targetAlias,
                         Dependencies =
                         [
                             new LibraryDependency
