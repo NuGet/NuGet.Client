@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../Strings.resx">
     <body>
@@ -1480,11 +1480,6 @@ Hledání porovnává řetězce bez rozlišování malých a velkých písmen po
         <source>Unable to run 'dotnet nuget why'. {0}</source>
         <target state="translated">Nepovedlo se spustit příkaz dotnet nuget why. {0}</target>
         <note>{0} - Exception mssage</note>
-      </trans-unit>
-      <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
-        <source>Internal error: Assets file is inconsistent</source>
-        <target state="translated">Vnitřní chyba: Soubor prostředků není konzistentní</target>
-        <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
