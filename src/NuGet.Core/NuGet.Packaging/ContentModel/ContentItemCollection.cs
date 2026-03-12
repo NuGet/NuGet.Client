@@ -98,7 +98,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var groupPattern in groupPatterns)
                     {
-                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        var item = groupPattern.Match(asset.Path!, definition.PropertyDefinitions);
                         if (item != null)
                         {
                             groupAssets ??= GroupAssetsPool.Allocate();
@@ -257,7 +257,7 @@ namespace NuGet.ContentModel
 
                 foreach (var pathPattern in pathPatterns)
                 {
-                    var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
+                    var contentItem = pathPattern.Match(path!, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
                         //If the item is assembly, populate the "related files extensions property".
@@ -341,7 +341,7 @@ namespace NuGet.ContentModel
 
             static ReadOnlyMemory<char> GetExtension(Asset asset)
             {
-                int lastIndexOfDot = asset.Path.LastIndexOf('.');
+                int lastIndexOfDot = asset.Path!.LastIndexOf('.');
                 if (lastIndexOfDot != -1)
                 {
                     return asset.Path.AsMemory(lastIndexOfDot);
