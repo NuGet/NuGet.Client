@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
         // This tells the operation execution part that it needs to trigger a refresh when done.
         private bool _isRefreshRequired;
         private bool _isExecutingAction; // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
+        private bool _isRestoreCompletedRefreshFallbackRequired = true;
         private RestartRequestBar _restartBar;
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
@@ -208,6 +209,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectUpdated += OnProjectUpdated;
             solutionManager.ProjectRenamed += OnProjectRenamed;
             solutionManager.AfterNuGetCacheUpdated += OnNuGetCacheUpdated;
+            solutionManager.SolutionRestoreCompleted += OnSolutionRestoreCompleted;
 
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
@@ -419,6 +421,39 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NoOp);
+            }
+        }
+
+        private void OnSolutionRestoreCompleted(object sender, bool restoreSucceeded)
+        {
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            bool shouldRefresh = _isRestoreCompletedRefreshFallbackRequired;
+            _isRestoreCompletedRefreshFallbackRequired = true;
+
+            if (!restoreSucceeded)
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NotApplicable);
+                return;
+            }
+
+            // File saves that nominate projects already refresh the PM UI through the CacheUpdated path.
+            // In that case, restore-completed is only a fallback signal and should not trigger a second refresh.
+            if (!shouldRefresh)
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
+                return;
+            }
+
+            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            if (IsVisible)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(async () => await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.RestoreCompleted, timeSpan))
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnSolutionRestoreCompleted));
+            }
+            else
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
             }
         }
 
@@ -1382,6 +1417,14 @@ namespace NuGet.PackageManagement.UI
             {
                 await runner();
                 refreshStatus = RefreshOperationStatus.Success;
+                if (source == RefreshOperationSource.CacheUpdated)
+                {
+                    _isRestoreCompletedRefreshFallbackRequired = false;
+                }
+                else if (source != RefreshOperationSource.RestoreCompleted)
+                {
+                    _isRestoreCompletedRefreshFallbackRequired = true;
+                }
             }
             catch
             {
@@ -1604,6 +1647,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectUpdated -= OnProjectUpdated;
             solutionManager.ProjectRenamed -= OnProjectRenamed;
             solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
+            solutionManager.SolutionRestoreCompleted -= OnSolutionRestoreCompleted;
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 

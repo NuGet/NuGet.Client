@@ -15,6 +15,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         event EventHandler<IProjectContextInfo> ProjectRemoved;
         event EventHandler<IProjectContextInfo> ProjectRenamed;
         event EventHandler<IProjectContextInfo> ProjectUpdated;
+        event EventHandler<bool> SolutionRestoreCompleted;
 
         ValueTask<string> GetSolutionDirectoryAsync(CancellationToken cancellationToken);
     }
