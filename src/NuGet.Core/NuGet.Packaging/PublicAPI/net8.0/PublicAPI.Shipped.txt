@@ -768,12 +768,12 @@ NuGet.Packaging.PhysicalPackageFile.PhysicalPackageFile() -> void
 ~NuGet.Packaging.PhysicalPackageFile.TargetPath.set -> void
 NuGet.Packaging.RepositorySignatureInfo
 NuGet.Packaging.RepositorySignatureInfo.AllRepositorySigned.get -> bool
-~NuGet.Packaging.RepositorySignatureInfo.RepositoryCertificateInfos.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo>
-~NuGet.Packaging.RepositorySignatureInfo.RepositorySignatureInfo(bool allRepositorySigned, System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo> repositoryCertificateInfos) -> void
+NuGet.Packaging.RepositorySignatureInfo.RepositoryCertificateInfos.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo!>!
+NuGet.Packaging.RepositorySignatureInfo.RepositorySignatureInfo(bool allRepositorySigned, System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo!>! repositoryCertificateInfos) -> void
 NuGet.Packaging.RepositorySignatureInfoProvider
-~NuGet.Packaging.RepositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(string source, NuGet.Packaging.RepositorySignatureInfo repositorySignatureInfo) -> void
+NuGet.Packaging.RepositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(string! source, NuGet.Packaging.RepositorySignatureInfo! repositorySignatureInfo) -> void
 NuGet.Packaging.RepositorySignatureInfoProvider.RepositorySignatureInfoProvider() -> void
-~NuGet.Packaging.RepositorySignatureInfoProvider.TryGetRepositorySignatureInfo(string source, out NuGet.Packaging.RepositorySignatureInfo repositorySignatureInfo) -> bool
+NuGet.Packaging.RepositorySignatureInfoProvider.TryGetRepositorySignatureInfo(string! source, out NuGet.Packaging.RepositorySignatureInfo? repositorySignatureInfo) -> bool
 NuGet.Packaging.Rules.AnalysisResources
 NuGet.Packaging.Rules.DefaultManifestValuesRule
 ~NuGet.Packaging.Rules.DefaultManifestValuesRule.DefaultManifestValuesRule(string messageFormat) -> void
@@ -998,28 +998,28 @@ NuGet.Packaging.Signing.SignatureContent.HashAlgorithm.get -> NuGet.Common.HashA
 ~NuGet.Packaging.Signing.SignatureContent.SignatureContent(NuGet.Packaging.Signing.SigningSpecifications signingSpecifications, NuGet.Common.HashAlgorithmName hashAlgorithm, string hashValue) -> void
 NuGet.Packaging.Signing.SignatureException
 NuGet.Packaging.Signing.SignatureException.Code.get -> NuGet.Common.NuGetLogCode
-~NuGet.Packaging.Signing.SignatureException.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity
-~NuGet.Packaging.Signing.SignatureException.Results.get -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.PackageVerificationResult>
-~NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string message) -> void
-~NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string message, NuGet.Packaging.Core.PackageIdentity package) -> void
-~NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string message, System.Exception innerException) -> void
-~NuGet.Packaging.Signing.SignatureException.SignatureException(System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.PackageVerificationResult> results, NuGet.Packaging.Core.PackageIdentity package) -> void
-~NuGet.Packaging.Signing.SignatureException.SignatureException(string message) -> void
+NuGet.Packaging.Signing.SignatureException.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity?
+NuGet.Packaging.Signing.SignatureException.Results.get -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.PackageVerificationResult!>?
+NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string! message) -> void
+NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string! message, NuGet.Packaging.Core.PackageIdentity! package) -> void
+NuGet.Packaging.Signing.SignatureException.SignatureException(NuGet.Common.NuGetLogCode code, string! message, System.Exception! innerException) -> void
+NuGet.Packaging.Signing.SignatureException.SignatureException(System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.PackageVerificationResult!>! results, NuGet.Packaging.Core.PackageIdentity! package) -> void
+NuGet.Packaging.Signing.SignatureException.SignatureException(string! message) -> void
 NuGet.Packaging.Signing.SignatureException.VerifyDuration.get -> System.TimeSpan
 NuGet.Packaging.Signing.SignatureException.VerifyDuration.set -> void
 NuGet.Packaging.Signing.SignatureLog
-~NuGet.Packaging.Signing.SignatureLog.AsRestoreLogMessage() -> NuGet.Common.RestoreLogMessage
+NuGet.Packaging.Signing.SignatureLog.AsRestoreLogMessage() -> NuGet.Common.RestoreLogMessage!
 NuGet.Packaging.Signing.SignatureLog.Code.get -> NuGet.Common.NuGetLogCode
 NuGet.Packaging.Signing.SignatureLog.Code.set -> void
-~NuGet.Packaging.Signing.SignatureLog.Equals(NuGet.Packaging.Signing.SignatureLog other) -> bool
+NuGet.Packaging.Signing.SignatureLog.Equals(NuGet.Packaging.Signing.SignatureLog? other) -> bool
 NuGet.Packaging.Signing.SignatureLog.Level.get -> NuGet.Common.LogLevel
 NuGet.Packaging.Signing.SignatureLog.Level.set -> void
-~NuGet.Packaging.Signing.SignatureLog.LibraryId.get -> string
-~NuGet.Packaging.Signing.SignatureLog.LibraryId.set -> void
-~NuGet.Packaging.Signing.SignatureLog.Message.get -> string
-~NuGet.Packaging.Signing.SignatureLog.Message.set -> void
-~NuGet.Packaging.Signing.SignatureLog.ProjectPath.get -> string
-~NuGet.Packaging.Signing.SignatureLog.ProjectPath.set -> void
+NuGet.Packaging.Signing.SignatureLog.LibraryId.get -> string?
+NuGet.Packaging.Signing.SignatureLog.LibraryId.set -> void
+NuGet.Packaging.Signing.SignatureLog.Message.get -> string!
+NuGet.Packaging.Signing.SignatureLog.Message.set -> void
+NuGet.Packaging.Signing.SignatureLog.ProjectPath.get -> string?
+NuGet.Packaging.Signing.SignatureLog.ProjectPath.set -> void
 NuGet.Packaging.Signing.SignatureLog.Time.get -> System.DateTimeOffset
 NuGet.Packaging.Signing.SignatureLog.Time.set -> void
 NuGet.Packaging.Signing.SignatureLog.WarningLevel.get -> NuGet.Common.WarningLevel
@@ -1344,35 +1344,35 @@ const NuGet.Packaging.PackageBuilder.MaxIconFileSize = 1048576 -> int
 const NuGet.Packaging.PackageExtractionTelemetryEvent.EventName = "PackageExtractionInformation" -> string!
 const NuGet.Packaging.PackageIdValidator.MaxPackageIdLength = 100 -> int
 const NuGet.Packaging.PackageSigningTelemetryEvent.EventName = "SigningInformation" -> string!
-~const NuGet.Packaging.Signing.Oids.AnyPolicy = "2.5.29.32.0" -> string
-~const NuGet.Packaging.Signing.Oids.AuthorityKeyIdentifier = "2.5.29.35" -> string
-~const NuGet.Packaging.Signing.Oids.BaselineTimestampPolicy = "0.4.0.2023.1.1" -> string
-~const NuGet.Packaging.Signing.Oids.CodeSigningEku = "1.3.6.1.5.5.7.3.3" -> string
-~const NuGet.Packaging.Signing.Oids.CommitmentTypeIdentifierProofOfOrigin = "1.2.840.113549.1.9.16.6.1" -> string
-~const NuGet.Packaging.Signing.Oids.CommitmentTypeIdentifierProofOfReceipt = "1.2.840.113549.1.9.16.6.2" -> string
-~const NuGet.Packaging.Signing.Oids.CommitmentTypeIndication = "1.2.840.113549.1.9.16.2.16" -> string
-~const NuGet.Packaging.Signing.Oids.Countersignature = "1.2.840.113549.1.9.6" -> string
-~const NuGet.Packaging.Signing.Oids.EnhancedKeyUsage = "2.5.29.37" -> string
-~const NuGet.Packaging.Signing.Oids.IdQtCps = "1.3.6.1.5.5.7.2.1" -> string
-~const NuGet.Packaging.Signing.Oids.IdQtUnotice = "1.3.6.1.5.5.7.2.2" -> string
-~const NuGet.Packaging.Signing.Oids.LifetimeSigningEku = "1.3.6.1.4.1.311.10.3.13" -> string
-~const NuGet.Packaging.Signing.Oids.NuGetPackageOwners = "1.3.6.1.4.1.311.84.2.1.1.2" -> string
-~const NuGet.Packaging.Signing.Oids.NuGetV3ServiceIndexUrl = "1.3.6.1.4.1.311.84.2.1.1.1" -> string
-~const NuGet.Packaging.Signing.Oids.Pkcs7Data = "1.2.840.113549.1.7.1" -> string
-~const NuGet.Packaging.Signing.Oids.Sha1 = "1.3.14.3.2.26" -> string
-~const NuGet.Packaging.Signing.Oids.Sha256 = "2.16.840.1.101.3.4.2.1" -> string
-~const NuGet.Packaging.Signing.Oids.Sha256WithRSAEncryption = "1.2.840.113549.1.1.11" -> string
-~const NuGet.Packaging.Signing.Oids.Sha384 = "2.16.840.1.101.3.4.2.2" -> string
-~const NuGet.Packaging.Signing.Oids.Sha384WithRSAEncryption = "1.2.840.113549.1.1.12" -> string
-~const NuGet.Packaging.Signing.Oids.Sha512 = "2.16.840.1.101.3.4.2.3" -> string
-~const NuGet.Packaging.Signing.Oids.Sha512WithRSAEncryption = "1.2.840.113549.1.1.13" -> string
-~const NuGet.Packaging.Signing.Oids.SignatureTimeStampTokenAttribute = "1.2.840.113549.1.9.16.2.14" -> string
-~const NuGet.Packaging.Signing.Oids.SigningCertificate = "1.2.840.113549.1.9.16.2.12" -> string
-~const NuGet.Packaging.Signing.Oids.SigningCertificateV2 = "1.2.840.113549.1.9.16.2.47" -> string
-~const NuGet.Packaging.Signing.Oids.SigningTime = "1.2.840.113549.1.9.5" -> string
-~const NuGet.Packaging.Signing.Oids.SubjectKeyIdentifier = "2.5.29.14" -> string
-~const NuGet.Packaging.Signing.Oids.TSTInfoContentType = "1.2.840.113549.1.9.16.1.4" -> string
-~const NuGet.Packaging.Signing.Oids.TimeStampingEku = "1.3.6.1.5.5.7.3.8" -> string
+const NuGet.Packaging.Signing.Oids.AnyPolicy = "2.5.29.32.0" -> string!
+const NuGet.Packaging.Signing.Oids.AuthorityKeyIdentifier = "2.5.29.35" -> string!
+const NuGet.Packaging.Signing.Oids.BaselineTimestampPolicy = "0.4.0.2023.1.1" -> string!
+const NuGet.Packaging.Signing.Oids.CodeSigningEku = "1.3.6.1.5.5.7.3.3" -> string!
+const NuGet.Packaging.Signing.Oids.CommitmentTypeIdentifierProofOfOrigin = "1.2.840.113549.1.9.16.6.1" -> string!
+const NuGet.Packaging.Signing.Oids.CommitmentTypeIdentifierProofOfReceipt = "1.2.840.113549.1.9.16.6.2" -> string!
+const NuGet.Packaging.Signing.Oids.CommitmentTypeIndication = "1.2.840.113549.1.9.16.2.16" -> string!
+const NuGet.Packaging.Signing.Oids.Countersignature = "1.2.840.113549.1.9.6" -> string!
+const NuGet.Packaging.Signing.Oids.EnhancedKeyUsage = "2.5.29.37" -> string!
+const NuGet.Packaging.Signing.Oids.IdQtCps = "1.3.6.1.5.5.7.2.1" -> string!
+const NuGet.Packaging.Signing.Oids.IdQtUnotice = "1.3.6.1.5.5.7.2.2" -> string!
+const NuGet.Packaging.Signing.Oids.LifetimeSigningEku = "1.3.6.1.4.1.311.10.3.13" -> string!
+const NuGet.Packaging.Signing.Oids.NuGetPackageOwners = "1.3.6.1.4.1.311.84.2.1.1.2" -> string!
+const NuGet.Packaging.Signing.Oids.NuGetV3ServiceIndexUrl = "1.3.6.1.4.1.311.84.2.1.1.1" -> string!
+const NuGet.Packaging.Signing.Oids.Pkcs7Data = "1.2.840.113549.1.7.1" -> string!
+const NuGet.Packaging.Signing.Oids.Sha1 = "1.3.14.3.2.26" -> string!
+const NuGet.Packaging.Signing.Oids.Sha256 = "2.16.840.1.101.3.4.2.1" -> string!
+const NuGet.Packaging.Signing.Oids.Sha256WithRSAEncryption = "1.2.840.113549.1.1.11" -> string!
+const NuGet.Packaging.Signing.Oids.Sha384 = "2.16.840.1.101.3.4.2.2" -> string!
+const NuGet.Packaging.Signing.Oids.Sha384WithRSAEncryption = "1.2.840.113549.1.1.12" -> string!
+const NuGet.Packaging.Signing.Oids.Sha512 = "2.16.840.1.101.3.4.2.3" -> string!
+const NuGet.Packaging.Signing.Oids.Sha512WithRSAEncryption = "1.2.840.113549.1.1.13" -> string!
+const NuGet.Packaging.Signing.Oids.SignatureTimeStampTokenAttribute = "1.2.840.113549.1.9.16.2.14" -> string!
+const NuGet.Packaging.Signing.Oids.SigningCertificate = "1.2.840.113549.1.9.16.2.12" -> string!
+const NuGet.Packaging.Signing.Oids.SigningCertificateV2 = "1.2.840.113549.1.9.16.2.47" -> string!
+const NuGet.Packaging.Signing.Oids.SigningTime = "1.2.840.113549.1.9.5" -> string!
+const NuGet.Packaging.Signing.Oids.SubjectKeyIdentifier = "2.5.29.14" -> string!
+const NuGet.Packaging.Signing.Oids.TSTInfoContentType = "1.2.840.113549.1.9.16.1.4" -> string!
+const NuGet.Packaging.Signing.Oids.TimeStampingEku = "1.3.6.1.5.5.7.3.8" -> string!
 override NuGet.ContentModel.Asset.ToString() -> string?
 override NuGet.ContentModel.ContentItem.ToString() -> string!
 override NuGet.ContentModel.SelectionCriteriaEntryBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
@@ -1608,7 +1608,7 @@ static NuGet.Packaging.PackagesConfig.BoolAttribute(System.Xml.Linq.XElement! no
 static NuGet.Packaging.PackagesConfig.HasAttributeValue(System.Xml.Linq.XElement! node, string! attributeName, string! targetValue, out System.Xml.Linq.XElement? element) -> bool
 static NuGet.Packaging.PackagesConfig.TryGetAttribute(System.Xml.Linq.XElement! node, string! name, out string? value) -> bool
 static NuGet.Packaging.PackagingConstants.Folders.Known.get -> string![]!
-~static NuGet.Packaging.RepositorySignatureInfoProvider.Instance.get -> NuGet.Packaging.RepositorySignatureInfoProvider
+static NuGet.Packaging.RepositorySignatureInfoProvider.Instance.get -> NuGet.Packaging.RepositorySignatureInfoProvider!
 ~static NuGet.Packaging.Rules.AnalysisResources.AssemblyDirectlyUnderLibWarning.get -> string
 ~static NuGet.Packaging.Rules.AnalysisResources.AssemblyOutsideLibWarning.get -> string
 ~static NuGet.Packaging.Rules.AnalysisResources.BuildConventionIsViolatedWarning.get -> string
@@ -1713,12 +1713,12 @@ static NuGet.Packaging.Signing.PrimarySignature.ThrowForInvalidPrimarySignature(
 ~static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetRepositoryAllowList(System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo> repositoryCertificateInfos) -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.CertificateHashAllowListEntry>
 ~static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(NuGet.Packaging.RepositorySignatureInfo repoSignatureInfo, NuGet.Packaging.Signing.SignedPackageVerifierSettings fallbackSettings) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings
 ~static NuGet.Packaging.Signing.SignatureContent.Load(byte[] bytes, NuGet.Packaging.Signing.SigningSpecifications signingSpecifications) -> NuGet.Packaging.Signing.SignatureContent
-~static NuGet.Packaging.Signing.SignatureLog.DebugLog(string message) -> NuGet.Packaging.Signing.SignatureLog
-~static NuGet.Packaging.Signing.SignatureLog.DetailedLog(string message) -> NuGet.Packaging.Signing.SignatureLog
-~static NuGet.Packaging.Signing.SignatureLog.Error(NuGet.Common.NuGetLogCode code, string message) -> NuGet.Packaging.Signing.SignatureLog
-~static NuGet.Packaging.Signing.SignatureLog.InformationLog(string message) -> NuGet.Packaging.Signing.SignatureLog
-~static NuGet.Packaging.Signing.SignatureLog.Issue(bool fatal, NuGet.Common.NuGetLogCode code, string message) -> NuGet.Packaging.Signing.SignatureLog
-~static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string message) -> NuGet.Packaging.Signing.SignatureLog
+static NuGet.Packaging.Signing.SignatureLog.DebugLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
+static NuGet.Packaging.Signing.SignatureLog.DetailedLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
+static NuGet.Packaging.Signing.SignatureLog.Error(NuGet.Common.NuGetLogCode code, string! message) -> NuGet.Packaging.Signing.SignatureLog!
+static NuGet.Packaging.Signing.SignatureLog.InformationLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
+static NuGet.Packaging.Signing.SignatureLog.Issue(bool fatal, NuGet.Common.NuGetLogCode code, string! message) -> NuGet.Packaging.Signing.SignatureLog!
+static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
 ~static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain
 ~static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain
 ~static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain

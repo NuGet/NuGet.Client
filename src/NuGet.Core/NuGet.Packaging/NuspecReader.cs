@@ -642,11 +642,8 @@ namespace NuGet.Packaging
             // PERF: Avoid Linq on hot paths
             var splitFlags = flags!.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries);
 
-#if NETSTANDARD2_0
-            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-#elif NET472_OR_GREATER || NET5_0_OR_GREATER
             var set = new HashSet<string>(splitFlags.Length, StringComparer.OrdinalIgnoreCase);
-#endif
+
             foreach (string flag in splitFlags)
             {
                 set.Add(flag.Trim());
