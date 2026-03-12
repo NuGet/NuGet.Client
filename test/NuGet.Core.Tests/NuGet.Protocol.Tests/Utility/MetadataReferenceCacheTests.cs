@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using FluentAssertions;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
 
@@ -208,6 +212,22 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.True(ReferenceEquals(cachedObject, objectToCache));
             Assert.Equal(objectToCache.StringCachedBefore, ObjectCacheTest.TestStringCachedBefore);
+        }
+
+        [Theory]
+        [InlineData(typeof(PackageSearchMetadata), 10)]
+        [InlineData(typeof(PackageSearchMetadataBuilder.ClonedPackageSearchMetadata), 8)]
+        public void ICacheable_Verify_AllStringProperties_Accounted(Type cacheableType, int expectedStringPropertyCount)
+        {
+            var stringProperties = cacheableType
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => p.PropertyType == typeof(string))
+                .ToArray();
+
+            stringProperties.Should().HaveCount(expectedStringPropertyCount,
+                $"the number of string properties changed in {cacheableType.Name} " +
+                $"[{string.Join(", ", stringProperties.Select(p => p.Name))}]. " +
+                "Please make sure this change is accounted for in the CacheStrings method");
         }
     }
 }
