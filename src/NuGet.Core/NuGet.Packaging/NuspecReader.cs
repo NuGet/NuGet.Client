@@ -482,7 +482,7 @@ namespace NuGet.Packaging
                             {
                                 try
                                 {
-                                    var expression = NuGetLicenseExpression.Parse(license);
+                                    var expression = NuGetLicenseExpression.Parse(license!);
 
                                     var invalidLicenseIdentifiers = GetNonStandardLicenseIdentifiers(expression);
                                     if (invalidLicenseIdentifiers != null)
@@ -502,7 +502,7 @@ namespace NuGet.Packaging
                                         errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_UnlicensedPackageWarning));
                                     }
 
-                                    return new LicenseMetadata(type: licenseType, license: license, expression: expression, warningsAndErrors: errors, version: version);
+                                    return new LicenseMetadata(type: licenseType, license: license!, expression: expression, warningsAndErrors: errors, version: version);
                                 }
                                 catch (NuGetLicenseExpressionParsingException e)
                                 {
@@ -512,7 +512,7 @@ namespace NuGet.Packaging
                                     }
                                     errors.Add(e.Message);
                                 }
-                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                                return new LicenseMetadata(type: licenseType, license: license!, expression: null, warningsAndErrors: errors, version: version);
                             }
                             else
                             {
@@ -528,11 +528,11 @@ namespace NuGet.Packaging
                                         version,
                                         LicenseMetadata.CurrentVersion));
 
-                                return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                                return new LicenseMetadata(type: licenseType, license: license!, expression: null, warningsAndErrors: errors, version: version);
                             }
                         }
                     }
-                    return new LicenseMetadata(type: licenseType, license: license, expression: null, warningsAndErrors: errors, version: version);
+                    return new LicenseMetadata(type: licenseType, license: license!, expression: null, warningsAndErrors: errors, version: version);
                 }
             }
             return null;
