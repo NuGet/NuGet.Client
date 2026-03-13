@@ -284,12 +284,12 @@ NuGet.Packaging.IPackageDownloader.SetThrottle(System.Threading.SemaphoreSlim? t
 NuGet.Packaging.IPackageDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader!
 NuGet.Packaging.IPackageDownloader.Source.get -> string!
 NuGet.Packaging.IPackageFile
-~NuGet.Packaging.IPackageFile.EffectivePath.get -> string
-~NuGet.Packaging.IPackageFile.GetStream() -> System.IO.Stream
+NuGet.Packaging.IPackageFile.EffectivePath.get -> string?
+NuGet.Packaging.IPackageFile.GetStream() -> System.IO.Stream!
 NuGet.Packaging.IPackageFile.LastWriteTime.get -> System.DateTimeOffset
-~NuGet.Packaging.IPackageFile.NuGetFramework.get -> NuGet.Frameworks.NuGetFramework
-~NuGet.Packaging.IPackageFile.Path.get -> string
-~NuGet.Packaging.IPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName
+NuGet.Packaging.IPackageFile.NuGetFramework.get -> NuGet.Frameworks.NuGetFramework?
+NuGet.Packaging.IPackageFile.Path.get -> string!
+NuGet.Packaging.IPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName?
 NuGet.Packaging.IPackageMetadata
 ~NuGet.Packaging.IPackageMetadata.Authors.get -> System.Collections.Generic.IEnumerable<string>
 ~NuGet.Packaging.IPackageMetadata.ContentFiles.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.ManifestContentFiles>
@@ -754,18 +754,18 @@ NuGet.Packaging.PackagesConfigWriterException.PackagesConfigWriterException(stri
 NuGet.Packaging.PackagingConstants
 NuGet.Packaging.PackagingConstants.Folders
 NuGet.Packaging.PhysicalPackageFile
-~NuGet.Packaging.PhysicalPackageFile.EffectivePath.get -> string
-~NuGet.Packaging.PhysicalPackageFile.GetStream() -> System.IO.Stream
+NuGet.Packaging.PhysicalPackageFile.EffectivePath.get -> string?
+NuGet.Packaging.PhysicalPackageFile.GetStream() -> System.IO.Stream!
 NuGet.Packaging.PhysicalPackageFile.LastWriteTime.get -> System.DateTimeOffset
-~NuGet.Packaging.PhysicalPackageFile.NuGetFramework.get -> NuGet.Frameworks.NuGetFramework
-~NuGet.Packaging.PhysicalPackageFile.Path.get -> string
+NuGet.Packaging.PhysicalPackageFile.NuGetFramework.get -> NuGet.Frameworks.NuGetFramework?
+NuGet.Packaging.PhysicalPackageFile.Path.get -> string!
 NuGet.Packaging.PhysicalPackageFile.PhysicalPackageFile() -> void
-~NuGet.Packaging.PhysicalPackageFile.PhysicalPackageFile(System.IO.MemoryStream stream) -> void
-~NuGet.Packaging.PhysicalPackageFile.SourcePath.get -> string
-~NuGet.Packaging.PhysicalPackageFile.SourcePath.set -> void
-~NuGet.Packaging.PhysicalPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName
-~NuGet.Packaging.PhysicalPackageFile.TargetPath.get -> string
-~NuGet.Packaging.PhysicalPackageFile.TargetPath.set -> void
+NuGet.Packaging.PhysicalPackageFile.PhysicalPackageFile(System.IO.MemoryStream! stream) -> void
+NuGet.Packaging.PhysicalPackageFile.SourcePath.get -> string?
+NuGet.Packaging.PhysicalPackageFile.SourcePath.set -> void
+NuGet.Packaging.PhysicalPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName?
+NuGet.Packaging.PhysicalPackageFile.TargetPath.get -> string!
+NuGet.Packaging.PhysicalPackageFile.TargetPath.set -> void
 NuGet.Packaging.RepositorySignatureInfo
 NuGet.Packaging.RepositorySignatureInfo.AllRepositorySigned.get -> bool
 NuGet.Packaging.RepositorySignatureInfo.RepositoryCertificateInfos.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo!>!
@@ -1447,9 +1447,9 @@ override NuGet.Packaging.PackageFolderReader.GetStream(string! path) -> System.I
 override NuGet.Packaging.PackageFolderReader.IsSignedAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 override NuGet.Packaging.PackageFolderReader.ValidateIntegrityAsync(NuGet.Packaging.Signing.SignatureContent! signatureContent, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
 override NuGet.Packaging.PackageReference.ToString() -> string!
-~override NuGet.Packaging.PhysicalPackageFile.Equals(object obj) -> bool
+override NuGet.Packaging.PhysicalPackageFile.Equals(object? obj) -> bool
 override NuGet.Packaging.PhysicalPackageFile.GetHashCode() -> int
-~override NuGet.Packaging.PhysicalPackageFile.ToString() -> string
+override NuGet.Packaging.PhysicalPackageFile.ToString() -> string?
 ~override NuGet.Packaging.Signing.AuthorPrimarySignature.FriendlyName.get -> string
 ~override NuGet.Packaging.Signing.AuthorPrimarySignature.Verify(NuGet.Packaging.Signing.Timestamp timestamp, NuGet.Packaging.Signing.SignatureVerifySettings settings, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, System.Security.Cryptography.X509Certificates.X509Certificate2Collection certificateExtraStore) -> NuGet.Packaging.Signing.SignatureVerificationSummary
 override NuGet.Packaging.Signing.AuthorSignPackageRequest.SignatureType.get -> NuGet.Packaging.Signing.SignatureType
