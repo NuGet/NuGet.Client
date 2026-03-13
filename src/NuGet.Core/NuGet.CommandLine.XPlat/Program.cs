@@ -302,14 +302,15 @@ namespace NuGet.CommandLine.XPlat
             Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
 
             var app = new CommandLineApplication();
+            var msbuild = new MSBuildAPIUtility(log, IVirtualProjectBuilder.GetInstance());
 
             if (args.Any() && args[0] == "package")
             {
                 // "dotnet * package" commands
                 app.Name = DotnetPackageAppName;
-                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
-                RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
-                ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
+                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner(), () => msbuild.VirtualProjectBuilder);
+                RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner(), () => msbuild.VirtualProjectBuilder);
+                ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner(msbuild));
             }
             else
             {

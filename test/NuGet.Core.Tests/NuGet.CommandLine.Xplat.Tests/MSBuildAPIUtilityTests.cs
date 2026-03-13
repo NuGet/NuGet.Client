@@ -555,8 +555,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             projectA.Save();
 
+            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+
             // Act
-            var projectList = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(projectA.ProjectPath);
+            var projectList = msObject.GetListOfProjectsFromPathArgument(projectA.ProjectPath);
 
             // Assert
             Assert.Equal(projectList.Count(), 1);
@@ -574,8 +576,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             projectA.Save();
 
+            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+
             // Act
-            var projectList = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(Path.GetDirectoryName(projectA.ProjectPath));
+            var projectList = msObject.GetListOfProjectsFromPathArgument(Path.GetDirectoryName(projectA.ProjectPath));
 
             // Assert
             Assert.Equal(projectList.Count(), 1);
@@ -597,8 +601,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             solution.Projects.Add(projectB);
             solution.Create();
 
+            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+
             // Act
-            var projectList = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(Path.GetDirectoryName(solution.SolutionPath));
+            var projectList = msObject.GetListOfProjectsFromPathArgument(Path.GetDirectoryName(solution.SolutionPath));
 
             // Assert
             Assert.Equal(projectList.Count(), 2);
@@ -621,8 +627,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             solution.Projects.Add(projectB);
             solution.Create();
 
+            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+
             // Act
-            var projectList = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(pathContext.SolutionRoot);
+            var projectList = msObject.GetListOfProjectsFromPathArgument(pathContext.SolutionRoot);
 
             // Assert
             Assert.Equal(projectList.Count(), 2);
@@ -711,8 +719,10 @@ namespace NuGet.CommandLine.Xplat.Tests
                 File.Create(filePath);
             }
 
+            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => MSBuildAPIUtility.GetListOfProjectsFromPathArgument(pathContext.SolutionRoot));
+            Assert.Throws<ArgumentException>(() => msObject.GetListOfProjectsFromPathArgument(pathContext.SolutionRoot));
         }
 
         [Fact]

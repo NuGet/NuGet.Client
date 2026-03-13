@@ -105,7 +105,7 @@ namespace Dotnet.Integration.Test
             var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
             _testOutputHelper.WriteLine("before:\n" + projectContent);
             Assert.DoesNotContain("PackageReference", projectContent);
-            using var builder = new TestVirtualProjectBuilder(projectContent);
+            var builder = new TestVirtualProjectBuilder(projectContent);
 
             // Create a package.
             var packageX = XPlatTestUtils.CreatePackage();
@@ -122,7 +122,8 @@ namespace Dotnet.Integration.Test
             AddPackageReferenceCommand.Register(
                 testApp,
                 () => new TestLogger(_testOutputHelper),
-                () => new AddPackageReferenceCommandRunner());
+                () => new AddPackageReferenceCommandRunner(),
+                () => builder);
             int result = testApp.Execute([
                 "add",
                 "--project", appFile,

@@ -42,11 +42,6 @@ public interface IVirtualProjectBuilder
         return Instance ??= LoadFromDotnetDll();
     }
 
-    internal static void SetInstanceForTesting(IVirtualProjectBuilder? instance)
-    {
-        Instance = instance;
-    }
-
     private static IVirtualProjectBuilder? LoadFromDotnetDll()
     {
         var assemblyPath = Path.Join(AppContext.BaseDirectory, "dotnet.dll");

@@ -103,7 +103,6 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-            using var _ = new TestVirtualProjectBuilder(projectContent);
 
             // List packages.
             using var outWriter = new StringWriter();
@@ -113,11 +112,13 @@ namespace Dotnet.Integration.Test
                 Out = outWriter,
                 Error = errorWriter,
             };
+            var logger = new TestLogger(_testOutputHelper);
+            var msbuild = new MSBuildAPIUtility(logger, new TestVirtualProjectBuilder(projectContent));
             ListPackageCommand.Register(
                 testApp,
-                () => new TestLogger(_testOutputHelper),
+                () => logger,
                 (_) => { },
-                () => new ListPackageCommandRunner());
+                () => new ListPackageCommandRunner(msbuild));
             int result = testApp.Execute([
                 "list", appFile,
                 "--source", pathContext.PackageSource,

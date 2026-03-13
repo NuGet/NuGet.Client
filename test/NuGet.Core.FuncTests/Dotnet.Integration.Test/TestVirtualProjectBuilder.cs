@@ -13,7 +13,7 @@ namespace Dotnet.Integration.Test;
 /// <summary>
 /// Test implementation of <see cref="IVirtualProjectBuilder"/>.
 /// </summary>
-internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder, IDisposable
+internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
 {
     private readonly string _projectContent;
 
@@ -27,7 +27,6 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder, IDispo
     public TestVirtualProjectBuilder(string projectContent)
     {
         _projectContent = projectContent;
-        IVirtualProjectBuilder.SetInstanceForTesting(this);
     }
 
     public bool IsValidEntryPointPath(string entryPointFilePath)
@@ -48,10 +47,5 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder, IDispo
         element.FullPath = GetVirtualProjectPath(entryPointFilePath);
         CreatedElement = element;
         return element;
-    }
-
-    public void Dispose()
-    {
-        IVirtualProjectBuilder.SetInstanceForTesting(null);
     }
 }

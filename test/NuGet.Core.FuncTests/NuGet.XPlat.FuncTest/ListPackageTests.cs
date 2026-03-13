@@ -223,7 +223,7 @@ namespace NuGet.XPlat.FuncTest
             using TextWriter consoleOut = new StringWriter(output);
             using TextWriter consoleError = new StringWriter(error);
             var logger = new TestLogger(_testOutputHelper);
-            ListPackageCommandRunner listPackageCommandRunner = new();
+            ListPackageCommandRunner listPackageCommandRunner = new(new MSBuildAPIUtility(logger));
             var packageRefArgs = new ListPackageArgs(
                                         path: Path.Combine(pathContext.SolutionRoot, "solution.sln"),
                                         packageSources: [new(mockServer.ServiceIndexUri)],
@@ -332,7 +332,7 @@ namespace NuGet.XPlat.FuncTest
             using TextWriter consoleOut = new StringWriter(output);
             using TextWriter consoleError = new StringWriter(error);
             var logger = new TestLogger(_testOutputHelper);
-            ListPackageCommandRunner listPackageCommandRunner = new();
+            ListPackageCommandRunner listPackageCommandRunner = new(new MSBuildAPIUtility(logger));
             var packageRefArgs = new ListPackageArgs(
                                         path: solution.SolutionPath,
                                         packageSources: [new PackageSource(pathContext.PackageSource)],
@@ -380,7 +380,7 @@ namespace NuGet.XPlat.FuncTest
                 CancellationToken.None
             );
 
-            var listPackageCommandRunner = new ListPackageCommandRunner();
+            var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object));
 
 
             // Act
@@ -426,7 +426,7 @@ namespace NuGet.XPlat.FuncTest
                 CancellationToken.None
             );
 
-            var listPackageCommandRunner = new ListPackageCommandRunner();
+            var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object));
 
             // Act
             var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);
@@ -481,7 +481,7 @@ namespace NuGet.XPlat.FuncTest
                 CancellationToken.None
             );
 
-            var listPackageCommandRunner = new ListPackageCommandRunner();
+            var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object));
 
             // Act
             var result = await listPackageCommandRunner.GetReportDataAsync(listPackageArgs);

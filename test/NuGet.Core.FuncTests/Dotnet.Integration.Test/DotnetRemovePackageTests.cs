@@ -36,7 +36,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
         var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
         _testOutputHelper.WriteLine("before:\n" + projectContent);
         Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", projectContent);
-        using var builder = new TestVirtualProjectBuilder(projectContent);
+        var builder = new TestVirtualProjectBuilder(projectContent);
 
         // Remove the package.
         using var outWriter = new StringWriter();
@@ -49,7 +49,8 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
         RemovePackageReferenceCommand.Register(
             testApp,
             () => new TestLogger(_testOutputHelper),
-            () => new RemovePackageReferenceCommandRunner());
+            () => new RemovePackageReferenceCommandRunner(),
+            () => builder);
         int result = testApp.Execute([
             "remove",
             "--project", appFile,

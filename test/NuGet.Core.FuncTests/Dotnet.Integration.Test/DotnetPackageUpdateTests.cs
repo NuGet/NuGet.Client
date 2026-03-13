@@ -127,7 +127,7 @@ namespace Dotnet.Integration.Test
             var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
             _testOutputHelper.WriteLine("before:\n" + projectContent);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", projectContent);
-            using var builder = new TestVirtualProjectBuilder(projectContent);
+            var builder = new TestVirtualProjectBuilder(projectContent);
 
             // Update the package.
             using var outWriter = new StringWriter();
@@ -138,8 +138,8 @@ namespace Dotnet.Integration.Test
                 new Option<bool>("--interactive"),
                 (args, ct) =>
                 {
-                    var msbuildUtility = new MSBuildAPIUtility(new TestLogger(_testOutputHelper));
-                    var packageUpdateIO = new PackageUpdateIO(args.Project, msbuildUtility, new TestEnvironmentVariableReader(_envVars), builder);
+                    var msbuildUtility = new MSBuildAPIUtility(new TestLogger(_testOutputHelper), builder);
+                    var packageUpdateIO = new PackageUpdateIO(args.Project, msbuildUtility, new TestEnvironmentVariableReader(_envVars));
                     return PackageUpdateCommandRunner.Run(args, new TestCommandOutputLogger(_testOutputHelper), packageUpdateIO, ct);
                 });
             int result = rootCommand.Parse([

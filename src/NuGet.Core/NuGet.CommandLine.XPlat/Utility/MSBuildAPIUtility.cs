@@ -47,16 +47,19 @@ namespace NuGet.CommandLine.XPlat
 
         public ILogger Logger { get; }
 
-        public MSBuildAPIUtility(ILogger logger)
+        public IVirtualProjectBuilder VirtualProjectBuilder { get; }
+
+        public MSBuildAPIUtility(ILogger logger, IVirtualProjectBuilder virtualProjectBuilder = null)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            VirtualProjectBuilder = virtualProjectBuilder;
         }
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
-        internal static SaveableProject GetProject(string projectCSProjPath)
+        internal SaveableProject GetProject(string projectCSProjPath)
         {
             var (projectRootElement, isVirtual) = TryOpenProjectRootElement(projectCSProjPath);
             if (projectRootElement is null)
@@ -71,7 +74,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
-        private static SaveableProject GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
+        private SaveableProject GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
             var (projectRootElement, isVirtual) = TryOpenProjectRootElement(projectCSProjPath);
             if (projectRootElement is null)
@@ -117,11 +120,11 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <returns>List of project paths. Returns null if path was a directory with none or multiple project/solution files.</returns>
         /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
-        internal static IEnumerable<string> GetListOfProjectsFromPathArgument(string path)
+        internal IEnumerable<string> GetListOfProjectsFromPathArgument(string path)
         {
             string fullPath = Path.GetFullPath(path);
 
-            if (IVirtualProjectBuilder.GetInstance()?.IsValidEntryPointPath(fullPath) == true)
+            if (VirtualProjectBuilder?.IsValidEntryPointPath(fullPath) == true)
             {
                 return [fullPath];
             }
@@ -196,7 +199,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageReferenceArgs">Arguments used in the command</param>
         /// <param name="packageSpec"></param>
         /// <returns></returns>
-        public static bool AreCentralVersionRequirementsSatisfied(PackageReferenceArgs packageReferenceArgs, PackageSpec packageSpec)
+        public bool AreCentralVersionRequirementsSatisfied(PackageReferenceArgs packageReferenceArgs, PackageSpec packageSpec)
         {
             var project = GetProject(packageReferenceArgs.ProjectPath).Project;
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
@@ -1051,15 +1054,14 @@ namespace NuGet.CommandLine.XPlat
             return frameworks;
         }
 
-        private static (ProjectRootElement, bool isVirtual) TryOpenProjectRootElement(string filename)
+        private (ProjectRootElement, bool isVirtual) TryOpenProjectRootElement(string filename)
         {
             try
             {
-                if (IVirtualProjectBuilder.GetInstance() is { } virtualProjectBuilder &&
-                    virtualProjectBuilder.IsValidEntryPointPath(filename))
+                if (VirtualProjectBuilder?.IsValidEntryPointPath(filename) == true)
                 {
                     var fullPath = Path.GetFullPath(filename);
-                    var element = virtualProjectBuilder.CreateProjectRootElement(fullPath, ProjectCollection.GlobalProjectCollection);
+                    var element = VirtualProjectBuilder.CreateProjectRootElement(fullPath, ProjectCollection.GlobalProjectCollection);
                     return (element, true);
                 }
 

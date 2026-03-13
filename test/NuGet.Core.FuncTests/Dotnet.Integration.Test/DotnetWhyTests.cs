@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Why;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
@@ -96,7 +97,6 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-            using var _ = new TestVirtualProjectBuilder(projectContent);
 
             // Run "why" command.
             var console = new TestConsole();
@@ -106,7 +106,7 @@ namespace Dotnet.Integration.Test
             WhyCommand.Register(
                 rootCommand,
                 new Lazy<IAnsiConsole>(console),
-                WhyCommandRunner.ExecuteCommand);
+                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, new TestVirtualProjectBuilder(projectContent))));
             int result = rootCommand.Parse([
                 "why", appFile, "PackageB",
             ]).Invoke(new() { Output = outWriter, Error = errorWriter });

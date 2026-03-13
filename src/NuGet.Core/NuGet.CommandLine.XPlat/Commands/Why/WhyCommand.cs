@@ -11,6 +11,7 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Common;
 using Spectre.Console;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -27,7 +28,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
         internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console)
         {
-            Register(rootCommand, console, WhyCommandRunner.ExecuteCommand);
+            Register(rootCommand, console,
+                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, IVirtualProjectBuilder.GetInstance())));
         }
 
         /// <summary>
@@ -38,8 +40,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         public static void GetWhyCommand(Command rootCommand)
         {
             Register(rootCommand,
-                new Lazy<IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console),
-                WhyCommandRunner.ExecuteCommand);
+                new Lazy<IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console));
+        }
+
+        internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console, Func<WhyCommandRunner> getCommandRunner)
+        {
+            Register(rootCommand, console, action: (args) => getCommandRunner().ExecuteCommand(args));
         }
 
         // console must be lazy, because Spectre.Console's AnsiConsole will send VT sequences to the output
