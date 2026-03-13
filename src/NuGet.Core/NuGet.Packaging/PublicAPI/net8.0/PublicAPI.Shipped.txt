@@ -776,29 +776,29 @@ NuGet.Packaging.RepositorySignatureInfoProvider.RepositorySignatureInfoProvider(
 NuGet.Packaging.RepositorySignatureInfoProvider.TryGetRepositorySignatureInfo(string! source, out NuGet.Packaging.RepositorySignatureInfo? repositorySignatureInfo) -> bool
 NuGet.Packaging.Rules.AnalysisResources
 NuGet.Packaging.Rules.DefaultManifestValuesRule
-~NuGet.Packaging.Rules.DefaultManifestValuesRule.DefaultManifestValuesRule(string messageFormat) -> void
-~NuGet.Packaging.Rules.DefaultManifestValuesRule.MessageFormat.get -> string
-~NuGet.Packaging.Rules.DefaultManifestValuesRule.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
+NuGet.Packaging.Rules.DefaultManifestValuesRule.DefaultManifestValuesRule(string! messageFormat) -> void
+NuGet.Packaging.Rules.DefaultManifestValuesRule.MessageFormat.get -> string!
+NuGet.Packaging.Rules.DefaultManifestValuesRule.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Rules.IPackageRule
 NuGet.Packaging.Rules.IPackageRule.MessageFormat.get -> string!
 NuGet.Packaging.Rules.IPackageRule.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Rules.IconUrlDeprecationWarning
-~NuGet.Packaging.Rules.IconUrlDeprecationWarning.IconUrlDeprecationWarning(string messageFormat) -> void
-~NuGet.Packaging.Rules.IconUrlDeprecationWarning.MessageFormat.get -> string
-~NuGet.Packaging.Rules.IconUrlDeprecationWarning.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
+NuGet.Packaging.Rules.IconUrlDeprecationWarning.IconUrlDeprecationWarning(string! messageFormat) -> void
+NuGet.Packaging.Rules.IconUrlDeprecationWarning.MessageFormat.get -> string!
+NuGet.Packaging.Rules.IconUrlDeprecationWarning.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Rules.LicenseUrlDeprecationWarning
-~NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.LicenseUrlDeprecationWarning(string messageFormat) -> void
-~NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.MessageFormat.get -> string
-~NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
+NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.LicenseUrlDeprecationWarning(string! messageFormat) -> void
+NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.MessageFormat.get -> string!
+NuGet.Packaging.Rules.LicenseUrlDeprecationWarning.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Rules.PathTooLongRule
-~NuGet.Packaging.Rules.PathTooLongRule.MessageFormat.get -> string
-~NuGet.Packaging.Rules.PathTooLongRule.PathTooLongRule(string messageFormat) -> void
-~NuGet.Packaging.Rules.PathTooLongRule.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
+NuGet.Packaging.Rules.PathTooLongRule.MessageFormat.get -> string!
+NuGet.Packaging.Rules.PathTooLongRule.PathTooLongRule(string! messageFormat) -> void
+NuGet.Packaging.Rules.PathTooLongRule.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Rules.RuleSet
 NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule
-~NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.MessageFormat.get -> string
-~NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.UnspecifiedDependencyVersionRule(string messageFormat) -> void
-~NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
+NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.MessageFormat.get -> string!
+NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.UnspecifiedDependencyVersionRule(string! messageFormat) -> void
+NuGet.Packaging.Rules.UnspecifiedDependencyVersionRule.Validate(NuGet.Packaging.PackageArchiveReader! builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage!>!
 NuGet.Packaging.Sha512HashFunction
 NuGet.Packaging.Sha512HashFunction.Dispose() -> void
 NuGet.Packaging.Sha512HashFunction.GetHash() -> string!
@@ -1652,8 +1652,8 @@ static NuGet.Packaging.RepositorySignatureInfoProvider.Instance.get -> NuGet.Pac
 ~static NuGet.Packaging.Rules.AnalysisResources.UnrecognizedScriptWarning.get -> string
 ~static NuGet.Packaging.Rules.AnalysisResources.UnspecifiedDependencyVersionWarning.get -> string
 ~static NuGet.Packaging.Rules.AnalysisResources.WinRTObsoleteWarning.get -> string
-~static NuGet.Packaging.Rules.RuleSet.PackageCreationRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule>
-~static NuGet.Packaging.Rules.RuleSet.PackagesConfigToPackageReferenceMigrationRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule>
+static NuGet.Packaging.Rules.RuleSet.PackageCreationRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule!>!
+static NuGet.Packaging.Rules.RuleSet.PackagesConfigToPackageReferenceMigrationRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule!>!
 ~static NuGet.Packaging.Signing.Accuracy.Read(byte[] bytes) -> NuGet.Packaging.Signing.Accuracy
 ~static NuGet.Packaging.Signing.AlgorithmIdentifier.Read(byte[] bytes) -> NuGet.Packaging.Signing.AlgorithmIdentifier
 ~static NuGet.Packaging.Signing.AttributeUtility.CreateCommitmentTypeIndication(NuGet.Packaging.Signing.SignatureType type) -> System.Security.Cryptography.CryptographicAttributeObject
