@@ -2235,9 +2235,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Allow signing with certificates whose root certificate is not in a trusted root store...
         /// </summary>
-        internal static string SignCommandAllowUntrustedSigningDescription {
+        internal static string SignCommandAllowUntrustedRootDescription {
             get {
-                return ResourceManager.GetString("SignCommandAllowUntrustedSigningDescription", resourceCulture);
+                return ResourceManager.GetString("SignCommandAllowUntrustedRootDescription", resourceCulture);
             }
         }
         

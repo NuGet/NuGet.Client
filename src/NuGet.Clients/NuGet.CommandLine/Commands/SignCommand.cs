@@ -60,8 +60,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SignCommandOverwriteDescription")]
         public bool Overwrite { get; set; }
 
-        [Option(typeof(NuGetCommand), "SignCommandAllowUntrustedSigningDescription")]
-        public bool AllowUntrustedSigning { get; set; }
+        [Option(typeof(NuGetCommand), "SignCommandAllowUntrustedRootDescription")]
+        public bool AllowUntrustedRoot { get; set; }
 
         public override async Task ExecuteCommandAsync()
         {
@@ -105,7 +105,7 @@ namespace NuGet.CommandLine
                 SignatureHashAlgorithm = hashAlgorithm,
                 Logger = Console,
                 Overwrite = Overwrite,
-                AllowUntrustedRoot = AllowUntrustedSigning,
+                AllowUntrustedRoot = AllowUntrustedRoot,
                 NonInteractive = NonInteractive,
                 Timestamper = Timestamper,
                 TimestampHashAlgorithm = timestampHashAlgorithm,

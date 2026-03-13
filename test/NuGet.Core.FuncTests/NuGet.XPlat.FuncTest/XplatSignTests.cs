@@ -486,7 +486,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void SignCommandArgParsing_AllowUntrustedSigning_SetsAllowUntrustedRoot()
+        public void SignCommandArgParsing_AllowUntrustedRoot_SetsAllowUntrustedRoot()
         {
             var packagePath = @"\\path\package.nupkg";
             var certificateFingerprint = Sha256Hash;
@@ -495,7 +495,7 @@ namespace NuGet.XPlat.FuncTest
                 (mockCommandRunner, testApp, getLogLevel, getParsedArg, _) =>
                 {
                     //Arrange
-                    var argList = new List<string>() { "sign", packagePath, "--certificate-fingerprint", certificateFingerprint, "--allow-untrusted-signing" };
+                    var argList = new List<string>() { "sign", packagePath, "--certificate-fingerprint", certificateFingerprint, "--allow-untrusted-root" };
 
                     //Act
                     testApp.Execute(argList.ToArray());
@@ -506,7 +506,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void SignCommandArgParsing_DefaultAllowUntrustedSigning_IsFalse()
+        public void SignCommandArgParsing_DefaultAllowUntrustedRoot_IsFalse()
         {
             var packagePath = @"\\path\package.nupkg";
             var certificateFingerprint = Sha256Hash;

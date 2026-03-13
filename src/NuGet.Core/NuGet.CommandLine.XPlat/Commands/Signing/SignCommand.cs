@@ -86,9 +86,9 @@ namespace NuGet.CommandLine.XPlat
                     Strings.SignCommandOverwriteDescription,
                     CommandOptionType.NoValue);
 
-                CommandOption allowUntrustedSigning = signCmd.Option(
-                    "--allow-untrusted-signing",
-                    Strings.SignCommandAllowUntrustedSigningDescription,
+                CommandOption allowUntrustedRoot = signCmd.Option(
+                    "--allow-untrusted-root",
+                    Strings.SignCommandAllowUntrustedRootDescription,
                     CommandOptionType.NoValue);
 
                 CommandOption verbosity = signCmd.Option(
@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.XPlat
                         SignatureHashAlgorithm = hashAlgorithm,
                         Logger = logger,
                         Overwrite = overwrite.HasValue(),
-                        AllowUntrustedRoot = allowUntrustedSigning.HasValue(),
+                        AllowUntrustedRoot = allowUntrustedRoot.HasValue(),
                         //The interactive option is not enabled at first, so the NonInteractive is always set to true. This is tracked by https://github.com/NuGet/Home/issues/10620
                         NonInteractive = true,
                         Timestamper = timestamper.Value(),

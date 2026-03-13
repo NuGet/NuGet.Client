@@ -507,7 +507,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void SignCommandArgParsing_AllowUntrustedSigning_SetsAllowUntrustedRoot()
+        public void SignCommandArgParsing_AllowUntrustedRoot_SetsAllowUntrustedRoot()
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
@@ -520,7 +520,7 @@ namespace NuGet.CommandLine.Test
                 Console = mockConsole.Object,
                 CertificateFingerprint = certificateFingerprint,
                 NonInteractive = true,
-                AllowUntrustedSigning = true,
+                AllowUntrustedRoot = true,
             };
 
             signCommand.Arguments.Add(packagePath);
@@ -533,7 +533,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void SignCommandArgParsing_DefaultAllowUntrustedSigning_IsFalse()
+        public void SignCommandArgParsing_DefaultAllowUntrustedRoot_IsFalse()
         {
             // Arrange
             var packagePath = @"\\path\package.nupkg";
