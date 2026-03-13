@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -28,6 +29,8 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly PackageSourceMapping _packageSourceMappingConfiguration;
 
         internal const string EventName = "PackageSourceDiagnostics";
+
+        private static readonly Regex s_nonstandardIdCharRegex = new Regex(@"[^A-Za-z0-9.\-]", RegexOptions.Compiled);
 
         public enum TelemetryAction
         {
@@ -203,7 +206,17 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 data.NupkgCount++;
                 data.NupkgSize += ncEvent.FileSize;
+
+                if (!data.HasNonstandardId && ncEvent.PackageId != null && HasNonstandardCharacters(ncEvent.PackageId))
+                {
+                    data.HasNonstandardId = true;
+                }
             }
+        }
+
+        private static bool HasNonstandardCharacters(string packageId)
+        {
+            return s_nonstandardIdCharRegex.IsMatch(packageId);
         }
 
         public void Dispose()
@@ -261,6 +274,7 @@ namespace NuGet.VisualStudio.Telemetry
                 telemetry[PropertyNames.Duration.Total] = data.Resources.Values.Sum(r => r.duration.TotalMilliseconds);
                 telemetry[PropertyNames.Nupkgs.Copied] = data.NupkgCount;
                 telemetry[PropertyNames.Nupkgs.Bytes] = data.NupkgSize;
+                telemetry[PropertyNames.Nupkgs.HasNonstandardId] = data.HasNonstandardId;
                 AddResourceProperties(telemetry, data.Resources);
 
                 if (data.Http.Requests > 0)
@@ -426,6 +440,7 @@ namespace NuGet.VisualStudio.Telemetry
             internal HttpData Http { get; }
             internal int NupkgCount { get; set; }
             internal long NupkgSize { get; set; }
+            internal bool HasNonstandardId { get; set; }
 
             internal Data()
             {
@@ -475,6 +490,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 internal const string Copied = "nupkgs.copied";
                 internal const string Bytes = "nupkgs.bytes";
+                internal const string HasNonstandardId = "nupkgs.hasnonstandard_id";
             }
 
             internal static class Resources

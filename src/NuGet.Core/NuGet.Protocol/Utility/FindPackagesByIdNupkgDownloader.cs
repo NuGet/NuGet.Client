@@ -137,7 +137,7 @@ namespace NuGet.Protocol
                         try
                         {
                             await stream.CopyToAsync(destination, token);
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length, identity.Id));
                         }
                         catch when (!token.IsCancellationRequested)
                         {

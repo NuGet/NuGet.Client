@@ -137,6 +137,79 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(sizes.Sum(), result.NupkgSize);
         }
 
+        [Theory]
+        [InlineData("Newtonsoft.Json")]
+        [InlineData("NuGet.Protocol")]
+        [InlineData("My-Package.1")]
+        [InlineData("ALLCAPS")]
+        [InlineData("alllower")]
+        [InlineData("123Numeric")]
+        [InlineData("a")]
+        public void AddNupkgCopiedData_StandardPackageId_HasNonstandardIdIsFalse(string packageId)
+        {
+            // Arrange
+            var data = CreateDataDictionary(SampleSource);
+            var nce = new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, packageId);
+
+            // Act
+            PackageSourceTelemetry.AddNupkgCopiedData(nce, data);
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            Assert.False(result.HasNonstandardId);
+        }
+
+        [Theory]
+        [InlineData("My_Package")]
+        [InlineData("Package@1.0")]
+        [InlineData("Ünïcödé")]
+        [InlineData("Package Name")]
+        [InlineData("package+extra")]
+        public void AddNupkgCopiedData_NonstandardPackageId_HasNonstandardIdIsTrue(string packageId)
+        {
+            // Arrange
+            var data = CreateDataDictionary(SampleSource);
+            var nce = new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, packageId);
+
+            // Act
+            PackageSourceTelemetry.AddNupkgCopiedData(nce, data);
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            Assert.True(result.HasNonstandardId);
+        }
+
+        [Fact]
+        public void AddNupkgCopiedData_MultiplePackagesOneNonstandard_HasNonstandardIdIsTrue()
+        {
+            // Arrange
+            var data = CreateDataDictionary(SampleSource);
+
+            // Act
+            PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Standard.Package"), data);
+            PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Nonstandard_Package"), data);
+            PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Another.Standard"), data);
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            Assert.True(result.HasNonstandardId);
+        }
+
+        [Fact]
+        public void AddNupkgCopiedData_NullPackageId_HasNonstandardIdIsFalse()
+        {
+            // Arrange
+            var data = CreateDataDictionary(SampleSource);
+            var nce = new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000);
+
+            // Act
+            PackageSourceTelemetry.AddNupkgCopiedData(nce, data);
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            Assert.False(result.HasNonstandardId);
+        }
+
         [Fact]
         public async Task AddData_IsThreadSafe()
         {
@@ -308,6 +381,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             Assert.Equal(data.NupkgCount, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Copied]);
             Assert.Equal(data.NupkgSize, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Bytes]);
+            Assert.Equal(data.HasNonstandardId, result[PackageSourceTelemetry.PropertyNames.Nupkgs.HasNonstandardId]);
 
             Assert.Equal(data.Resources.Sum(r => r.Value.count), result[PackageSourceTelemetry.PropertyNames.Resources.Calls]);
             foreach (var resource in data.Resources)
