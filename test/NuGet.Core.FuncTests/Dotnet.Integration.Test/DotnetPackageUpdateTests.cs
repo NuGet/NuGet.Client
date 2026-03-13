@@ -139,7 +139,7 @@ namespace Dotnet.Integration.Test
                 (args, ct) =>
                 {
                     var msbuildUtility = new MSBuildAPIUtility(new TestLogger(_testOutputHelper));
-                    var packageUpdateIO = new PackageUpdateIO(args.Project, msbuildUtility, new TestEnvironmentVariableReader(_envVars));
+                    var packageUpdateIO = new PackageUpdateIO(args.Project, msbuildUtility, new TestEnvironmentVariableReader(_envVars), builder);
                     return PackageUpdateCommandRunner.Run(args, new TestCommandOutputLogger(_testOutputHelper), packageUpdateIO, ct);
                 });
             int result = rootCommand.Parse([

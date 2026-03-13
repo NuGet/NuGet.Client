@@ -19,6 +19,12 @@ namespace NuGet.CommandLine.XPlat;
 /// </summary>
 public interface IVirtualProjectBuilder
 {
+    /// <summary>
+    /// Whether the given file path can be a file-based app.
+    /// </summary>
+    /// <remarks>
+    /// Currently, files that exist and have the <c>.cs</c> file extension or <c>#!</c> (shebang) are valid file-based apps.
+    /// </remarks>
     bool IsValidEntryPointPath(string entryPointFilePath);
 
     /// <summary>

@@ -41,7 +41,7 @@ internal static class PackageUpdateCommandRunner
         // in order to meet deadlines, we'll suppress its output, and leave improvements for later.
         MSBuildAPIUtility msBuild = new(NullLogger.Instance);
 
-        var restoreHelper = new PackageUpdateIO(args.Project, msBuild, EnvironmentVariableWrapper.Instance);
+        var restoreHelper = new PackageUpdateIO(args.Project, msBuild, EnvironmentVariableWrapper.Instance, IVirtualProjectBuilder.GetInstance());
 
         return Run(args, logger, restoreHelper, cancellationToken);
     }

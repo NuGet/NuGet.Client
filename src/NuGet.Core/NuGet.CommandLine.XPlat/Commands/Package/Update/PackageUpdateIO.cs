@@ -32,16 +32,22 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
 {
     private readonly MSBuildAPIUtility _msbuildUtility;
     private readonly IEnvironmentVariableReader _environmentVariableReader;
+    private readonly IVirtualProjectBuilder? _virtualProjectBuilder;
     private readonly ISettings _settings;
     private readonly IPackageSourceProvider _sourceProvider;
     private readonly CachingSourceProvider _cachingSourceProvider;
     private readonly IReadOnlyList<PackageSource> _enabledSources;
     private readonly SourceCacheContext _sourceCacheContext;
 
-    public PackageUpdateIO(string solutionDirectory, MSBuildAPIUtility msbuildUtility, IEnvironmentVariableReader environmentVariableReader)
+    public PackageUpdateIO(
+        string solutionDirectory,
+        MSBuildAPIUtility msbuildUtility,
+        IEnvironmentVariableReader environmentVariableReader,
+        IVirtualProjectBuilder? virtualProjectBuilder = null)
     {
         _msbuildUtility = msbuildUtility;
         _environmentVariableReader = environmentVariableReader;
+        _virtualProjectBuilder = virtualProjectBuilder;
 
         // the CommandLine option validates that an existing filesystem object is provided, so we can be confident that
         // we either have a directory or a file here.
@@ -74,7 +80,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             DependencyGraphSpec result = DependencyGraphSpec.Load(tempFile);
 
             // Fixup virtual project paths.
-            if (IVirtualProjectBuilder.GetInstance()?.GetVirtualProjectPath(project) is { } virtualProjectPath)
+            if (_virtualProjectBuilder?.GetVirtualProjectPath(project) is { } virtualProjectPath)
             {
                 foreach (var packageSpec in result.Projects)
                 {
@@ -98,7 +104,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             // But when NuGet.CommandLine.XPlat is being called directly, call dotnet on the path, so this code is debuggable.
             string dotnetPath = _environmentVariableReader.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
 
-            bool isFileBasedApp = IVirtualProjectBuilder.GetInstance()?.IsValidEntryPointPath(project) == true;
+            bool isFileBasedApp = _virtualProjectBuilder?.IsValidEntryPointPath(project) == true;
 
             // don't redirect stdout or stderr, so errors are output. But use quiet verbosity, so that success has no output.
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
