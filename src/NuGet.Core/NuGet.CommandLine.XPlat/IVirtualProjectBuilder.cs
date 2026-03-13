@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -42,18 +43,29 @@ public interface IVirtualProjectBuilder
         return Instance ??= LoadFromDotnetDll();
     }
 
+    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "The target type in dotnet CLI is marked as non-trimmable.")]
+    [SuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private static IVirtualProjectBuilder? LoadFromDotnetDll()
     {
-        var assemblyPath = Path.Join(AppContext.BaseDirectory, "dotnet.dll");
+        try
+        {
+            var assemblyPath = Path.Join(AppContext.BaseDirectory, "dotnet.dll");
 
-        if (!File.Exists(assemblyPath))
+            if (!File.Exists(assemblyPath))
+            {
+                return null;
+            }
+
+            var type = Assembly.LoadFile(assemblyPath)
+                .GetExportedTypes()
+                .FirstOrDefault(static t => t.IsAssignableTo(typeof(IVirtualProjectBuilder)));
+            return type != null ? (IVirtualProjectBuilder?)Activator.CreateInstance(type) : null;
+        }
+        catch
         {
             return null;
         }
-
-        var type = Assembly.LoadFile(assemblyPath)
-            .GetExportedTypes()
-            .FirstOrDefault(static t => t.IsAssignableTo(typeof(IVirtualProjectBuilder)));
-        return type != null ? (IVirtualProjectBuilder?)Activator.CreateInstance(type) : null;
     }
 }
