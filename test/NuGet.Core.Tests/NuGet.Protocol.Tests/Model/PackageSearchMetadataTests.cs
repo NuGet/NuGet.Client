@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -16,8 +17,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var cache = new MetadataReferenceCache();
-            var metadata1 = new JObject { ["authors"] = "Microsoft", ["description"] = "desc" }.FromJToken<PackageSearchMetadata>();
-            var metadata2 = new JObject { ["authors"] = "Microsoft", ["description"] = "other" }.FromJToken<PackageSearchMetadata>();
+            var authors1 = new StringBuilder().Append("Contoso").ToString();
+            var authors2 = new StringBuilder().Append("Contoso").ToString();
+            var metadata1 = new JObject { ["authors"] = authors1, ["description"] = "desc" }.FromJToken<PackageSearchMetadata>();
+            var metadata2 = new JObject { ["authors"] = authors2, ["description"] = "other" }.FromJToken<PackageSearchMetadata>();
+            Assert.NotSame(metadata1.Authors, metadata2.Authors);
 
             // Act
             metadata1.CacheStrings(cache);

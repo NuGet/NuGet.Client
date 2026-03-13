@@ -54,6 +54,7 @@ namespace NuGet.Protocol.Core.Types.Tests
                 Authors = new StringBuilder().Append("Microsoft").ToString(),
                 Description = "other",
             };
+            Assert.NotSame(metadata1.Authors, metadata2.Authors);
 
             // Act
             metadata1.CacheStrings(cache);
