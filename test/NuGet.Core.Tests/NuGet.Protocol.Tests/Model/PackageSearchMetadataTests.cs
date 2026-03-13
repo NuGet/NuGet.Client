@@ -3,7 +3,6 @@
 
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -17,24 +16,15 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var cache = new MetadataReferenceCache();
-            var authors = new StringBuilder().Append("Microsoft").ToString();
-            var json = new JObject
-            {
-                ["authors"] = authors,
-                ["description"] = "desc",
-                ["summary"] = "sum",
-            };
-            var metadata = json.FromJToken<PackageSearchMetadata>();
-
-            // Pre-condition: deserialized string is equal but not same reference
-            Assert.Equal(authors, metadata.Authors);
+            var metadata1 = new JObject { ["authors"] = "Microsoft", ["description"] = "desc" }.FromJToken<PackageSearchMetadata>();
+            var metadata2 = new JObject { ["authors"] = "Microsoft", ["description"] = "other" }.FromJToken<PackageSearchMetadata>();
 
             // Act
-            metadata.CacheStrings(cache);
+            metadata1.CacheStrings(cache);
+            metadata2.CacheStrings(cache);
 
-            // Assert — after caching, the same content resolves to the same reference
-            var cachedAuthors = cache.GetString(new StringBuilder().Append("Microsoft").ToString());
-            Assert.Same(cachedAuthors, metadata.Authors);
+            // Assert
+            Assert.Same(metadata1.Authors, metadata2.Authors);
         }
 
         [Fact]

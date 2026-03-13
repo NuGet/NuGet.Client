@@ -44,22 +44,23 @@ namespace NuGet.Protocol.Core.Types.Tests
         {
             // Arrange
             var cache = new MetadataReferenceCache();
-            var authors1 = new StringBuilder().Append("Microsoft").ToString();
-            var authors2 = new StringBuilder().Append("Microsoft").ToString();
-            Assert.NotSame(authors1, authors2);
-
-            var metadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+            var metadata1 = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
             {
-                Authors = authors1,
+                Authors = new StringBuilder().Append("Microsoft").ToString(),
                 Description = "desc",
-                Summary = "sum",
+            };
+            var metadata2 = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+            {
+                Authors = new StringBuilder().Append("Microsoft").ToString(),
+                Description = "other",
             };
 
             // Act
-            metadata.CacheStrings(cache);
+            metadata1.CacheStrings(cache);
+            metadata2.CacheStrings(cache);
 
             // Assert
-            Assert.Same(cache.GetString(authors2), metadata.Authors);
+            Assert.Same(metadata1.Authors, metadata2.Authors);
         }
 
         [Fact]
