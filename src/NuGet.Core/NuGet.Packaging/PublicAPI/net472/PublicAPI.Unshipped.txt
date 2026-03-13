@@ -1,4 +1,29 @@
 #nullable enable
+NuGet.Packaging.IPackageMetadata.Authors.get -> System.Collections.Generic.IEnumerable<string!>!
+NuGet.Packaging.IPackageMetadata.ContentFiles.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.ManifestContentFiles!>!
+NuGet.Packaging.IPackageMetadata.Copyright.get -> string?
+NuGet.Packaging.IPackageMetadata.DependencyGroups.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageDependencyGroup!>!
+NuGet.Packaging.IPackageMetadata.Description.get -> string?
+NuGet.Packaging.IPackageMetadata.FrameworkReferenceGroups.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkReferenceGroup!>!
+NuGet.Packaging.IPackageMetadata.FrameworkReferences.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkAssemblyReference!>!
+NuGet.Packaging.IPackageMetadata.Icon.get -> string?
+NuGet.Packaging.IPackageMetadata.IconUrl.get -> System.Uri?
+NuGet.Packaging.IPackageMetadata.Id.get -> string?
+NuGet.Packaging.IPackageMetadata.Language.get -> string?
+NuGet.Packaging.IPackageMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata?
+NuGet.Packaging.IPackageMetadata.LicenseUrl.get -> System.Uri?
+NuGet.Packaging.IPackageMetadata.MinClientVersion.get -> System.Version?
+NuGet.Packaging.IPackageMetadata.Owners.get -> System.Collections.Generic.IEnumerable<string!>!
+NuGet.Packaging.IPackageMetadata.PackageAssemblyReferences.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReferenceSet!>!
+NuGet.Packaging.IPackageMetadata.PackageTypes.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageType!>!
+NuGet.Packaging.IPackageMetadata.ProjectUrl.get -> System.Uri?
+NuGet.Packaging.IPackageMetadata.Readme.get -> string?
+NuGet.Packaging.IPackageMetadata.ReleaseNotes.get -> string?
+NuGet.Packaging.IPackageMetadata.Repository.get -> NuGet.Packaging.Core.RepositoryMetadata?
+NuGet.Packaging.IPackageMetadata.Summary.get -> string?
+NuGet.Packaging.IPackageMetadata.Tags.get -> string?
+NuGet.Packaging.IPackageMetadata.Title.get -> string?
+NuGet.Packaging.IPackageMetadata.Version.get -> NuGet.Versioning.NuGetVersion?
 ~NuGet.Packaging.PackageBuilder.PackageBuilder(string path, string basePath, System.Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, NuGet.Common.ILogger logger, string versionOverride) -> void
 ~NuGet.Packaging.PackageBuilder.PackageBuilder(string path, string basePath, System.Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, string versionOverride) -> void
 ~NuGet.Packaging.PackageBuilder.PackageBuilder(string path, System.Func<string, string> propertyProvider, bool includeEmptyDirectories, bool deterministic, NuGet.Common.ILogger logger, string versionOverride) -> void

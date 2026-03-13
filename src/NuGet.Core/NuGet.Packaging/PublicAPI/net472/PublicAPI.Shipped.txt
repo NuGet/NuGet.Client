@@ -331,7 +331,7 @@ NuGet.Packaging.LicenseMetadata.Equals(NuGet.Packaging.LicenseMetadata? other) -
 NuGet.Packaging.LicenseMetadata.License.get -> string!
 NuGet.Packaging.LicenseMetadata.LicenseExpression.get -> NuGet.Packaging.Licenses.NuGetLicenseExpression?
 NuGet.Packaging.LicenseMetadata.LicenseMetadata(NuGet.Packaging.LicenseType type, string! license, NuGet.Packaging.Licenses.NuGetLicenseExpression? expression, System.Collections.Generic.IReadOnlyList<string!>? warningsAndErrors, System.Version! version) -> void
-NuGet.Packaging.LicenseMetadata.LicenseUrl.get -> System.Uri?
+NuGet.Packaging.LicenseMetadata.LicenseUrl.get -> System.Uri!
 NuGet.Packaging.LicenseMetadata.Type.get -> NuGet.Packaging.LicenseType
 NuGet.Packaging.LicenseMetadata.Version.get -> System.Version!
 NuGet.Packaging.LicenseMetadata.WarningsAndErrors.get -> System.Collections.Generic.IReadOnlyList<string!>?
@@ -1538,11 +1538,11 @@ static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.OnEachLeafNode(
 ~static NuGet.Packaging.Manifest.ReadFrom(System.IO.Stream stream, System.Func<string, string> propertyProvider, bool validateSchema) -> NuGet.Packaging.Manifest
 ~static NuGet.Packaging.Manifest.ReadFrom(System.IO.Stream stream, bool validateSchema) -> NuGet.Packaging.Manifest
 ~static NuGet.Packaging.Manifest.Validate(NuGet.Packaging.Manifest manifest) -> void
-~static NuGet.Packaging.ManifestSchemaUtility.GetManifestSchemaSet(string schemaNamespace) -> System.Xml.Schema.XmlSchemaSet
-~static NuGet.Packaging.ManifestSchemaUtility.GetSchemaNamespace(int version) -> string
-~static NuGet.Packaging.ManifestSchemaUtility.GetVersionFromNamespace(string namespace) -> int
-~static NuGet.Packaging.ManifestSchemaUtility.IsKnownSchema(string schemaNamespace) -> bool
-~static NuGet.Packaging.ManifestVersionUtility.GetManifestVersion(NuGet.Packaging.ManifestMetadata metadata) -> int
+static NuGet.Packaging.ManifestSchemaUtility.GetManifestSchemaSet(string! schemaNamespace) -> System.Xml.Schema.XmlSchemaSet!
+static NuGet.Packaging.ManifestSchemaUtility.GetSchemaNamespace(int version) -> string!
+static NuGet.Packaging.ManifestSchemaUtility.GetVersionFromNamespace(string! namespace) -> int
+static NuGet.Packaging.ManifestSchemaUtility.IsKnownSchema(string! schemaNamespace) -> bool
+static NuGet.Packaging.ManifestVersionUtility.GetManifestVersion(NuGet.Packaging.ManifestMetadata! metadata) -> int
 static NuGet.Packaging.MinClientVersionUtility.GetNuGetClientVersion() -> NuGet.Versioning.NuGetVersion!
 static NuGet.Packaging.MinClientVersionUtility.IsMinClientVersionCompatible(NuGet.Packaging.Core.NuspecCoreReaderBase! nuspecReader) -> bool
 static NuGet.Packaging.MinClientVersionUtility.IsMinClientVersionCompatible(NuGet.Versioning.NuGetVersion! packageMinClientVersion) -> bool
