@@ -66,28 +66,12 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Mapping of input parameter type to caching method.
+        /// This method is a no-op retained for API compatibility.
         /// </summary>
-        private static readonly IDictionary<Type, string> CachableTypesMap = new Dictionary<Type, string>
-        {
-            {typeof(string), nameof(GetString)}
-        };
-
-        /// <summary>
-        /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
-        /// </summary>
-        internal static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
-
-        /// <summary>
-        /// Iterates through the cacheable properties of <paramref name="input"/> and replaces their values with cached equivalents.
-        /// </summary>
+#pragma warning disable CA1822 // Member does not access instance data - retained as instance method for API compatibility
         public T GetObject<T>(T input)
+#pragma warning restore CA1822
         {
-            if (input is ICacheable cacheable)
-            {
-                cacheable.CacheStrings(this);
-            }
-
             return input;
         }
     }

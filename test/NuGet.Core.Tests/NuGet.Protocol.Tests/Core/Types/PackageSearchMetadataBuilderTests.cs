@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -33,6 +37,43 @@ namespace NuGet.Protocol.Core.Types.Tests
             var clone2 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy2;
             Assert.NotNull(clone2.PackagePath);
             Assert.Equal(clone1.PackagePath, clone2.PackagePath);
+        }
+
+        [Fact]
+        public void CacheStrings_DeduplicatesStringsOnClonedMetadata()
+        {
+            // Arrange
+            var cache = new MetadataReferenceCache();
+            var authors1 = new StringBuilder().Append("Microsoft").ToString();
+            var authors2 = new StringBuilder().Append("Microsoft").ToString();
+            Assert.NotSame(authors1, authors2);
+
+            var metadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+            {
+                Authors = authors1,
+                Description = "desc",
+                Summary = "sum",
+            };
+
+            // Act
+            metadata.CacheStrings(cache);
+
+            // Assert
+            Assert.Same(cache.GetString(authors2), metadata.Authors);
+        }
+
+        [Fact]
+        public void Verify_AllStringProperties_AccountedInCacheStrings()
+        {
+            var stringProperties = typeof(PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => p.PropertyType == typeof(string))
+                .ToArray();
+
+            stringProperties.Should().HaveCount(8,
+                $"the number of string properties changed in ClonedPackageSearchMetadata " +
+                $"[{string.Join(", ", stringProperties.Select(p => p.Name))}]. " +
+                "Please make sure this change is accounted for in the CacheStrings method");
         }
     }
 }

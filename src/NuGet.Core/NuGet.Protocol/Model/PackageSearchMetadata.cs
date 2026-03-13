@@ -18,7 +18,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
-    public class PackageSearchMetadata : IPackageSearchMetadata, ICacheable
+    public class PackageSearchMetadata : IPackageSearchMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.Authors)]
         [JsonConverter(typeof(MetadataFieldConverter))]
@@ -257,8 +257,7 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
 
-        /// <inheritdoc />
-        void ICacheable.CacheStrings(MetadataReferenceCache cache)
+        internal void CacheStrings(MetadataReferenceCache cache)
         {
             Authors = cache.GetString(Authors);
             Description = cache.GetString(Description);
