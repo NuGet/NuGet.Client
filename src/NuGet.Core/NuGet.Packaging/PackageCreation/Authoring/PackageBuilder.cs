@@ -160,7 +160,8 @@ namespace NuGet.Packaging
         {
             get;
             set;
-        } = string.Empty; // Set to empty to satisfy the nullability contract.
+        } = string.Empty; // Set to empty to enforce a stricter nullability contract.
+                          // This would get validate in the Save() method before writing the manifest
 
         public NuGetVersion? Version
         {
@@ -432,7 +433,7 @@ namespace NuGet.Packaging
                 throw new PackagingException(NuGetLogCode.NU5017, NuGetResources.CannotCreateEmptyPackage);
             }
 
-            ValidateDependencies(Version!, DependencyGroups);
+            ValidateDependencies(Version, DependencyGroups);
             ValidateFilesUnique(Files);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateFrameworkAssemblies(FrameworkReferences, FrameworkReferenceGroups);
@@ -595,7 +596,7 @@ namespace NuGet.Packaging
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
 
-        private static void ValidateDependencies(SemanticVersion version,
+        private static void ValidateDependencies(SemanticVersion? version,
             IEnumerable<PackageDependencyGroup> dependencies)
         {
             var frameworksMissingPlatformVersion = new HashSet<string>(dependencies

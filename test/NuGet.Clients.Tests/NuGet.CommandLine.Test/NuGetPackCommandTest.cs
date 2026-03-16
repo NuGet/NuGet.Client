@@ -4626,7 +4626,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
-    <license>{licenseExpr}</license>
+    <license type=""expression"">{licenseExpr}</license>
     <dependencies>
       <dependency id='p1' version='1.5.11' />
     </dependencies>
