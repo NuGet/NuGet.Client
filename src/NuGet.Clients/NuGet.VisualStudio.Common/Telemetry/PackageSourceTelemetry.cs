@@ -207,9 +207,9 @@ namespace NuGet.VisualStudio.Telemetry
                 data.NupkgCount++;
                 data.NupkgSize += ncEvent.FileSize;
 
-                if (!data.HasNonstandardId && ncEvent.PackageId != null && HasNonstandardCharacters(ncEvent.PackageId))
+                if (!data.IdContainsNonAsciiCharacter && ncEvent.PackageId != null && HasNonstandardCharacters(ncEvent.PackageId))
                 {
-                    data.HasNonstandardId = true;
+                    data.IdContainsNonAsciiCharacter = true;
                 }
             }
         }
@@ -274,7 +274,7 @@ namespace NuGet.VisualStudio.Telemetry
                 telemetry[PropertyNames.Duration.Total] = data.Resources.Values.Sum(r => r.duration.TotalMilliseconds);
                 telemetry[PropertyNames.Nupkgs.Copied] = data.NupkgCount;
                 telemetry[PropertyNames.Nupkgs.Bytes] = data.NupkgSize;
-                telemetry[PropertyNames.Nupkgs.HasNonstandardId] = data.HasNonstandardId;
+                telemetry[PropertyNames.Nupkgs.IdContainsNonAsciiCharacter] = data.IdContainsNonAsciiCharacter;
                 AddResourceProperties(telemetry, data.Resources);
 
                 if (data.Http.Requests > 0)
@@ -440,7 +440,7 @@ namespace NuGet.VisualStudio.Telemetry
             internal HttpData Http { get; }
             internal int NupkgCount { get; set; }
             internal long NupkgSize { get; set; }
-            internal bool HasNonstandardId { get; set; }
+            internal bool IdContainsNonAsciiCharacter { get; set; }
 
             internal Data()
             {
@@ -490,7 +490,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 internal const string Copied = "nupkgs.copied";
                 internal const string Bytes = "nupkgs.bytes";
-                internal const string HasNonstandardId = "nupkgs.hasnonstandard_id";
+                internal const string IdContainsNonAsciiCharacter = "nupkgs.idcontainsnonasciicharacter";
             }
 
             internal static class Resources

@@ -145,7 +145,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         [InlineData("alllower")]
         [InlineData("123Numeric")]
         [InlineData("a")]
-        public void AddNupkgCopiedData_StandardPackageId_HasNonstandardIdIsFalse(string packageId)
+        public void AddNupkgCopiedData_StandardPackageId_IdContainsNonAsciiCharacterIsFalse(string packageId)
         {
             // Arrange
             var data = CreateDataDictionary(SampleSource);
@@ -156,7 +156,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Assert
             var result = Assert.Single(data).Value;
-            Assert.False(result.HasNonstandardId);
+            Assert.False(result.IdContainsNonAsciiCharacter);
         }
 
         [Theory]
@@ -165,7 +165,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         [InlineData("Ünïcödé")]
         [InlineData("Package Name")]
         [InlineData("package+extra")]
-        public void AddNupkgCopiedData_NonstandardPackageId_HasNonstandardIdIsTrue(string packageId)
+        public void AddNupkgCopiedData_NonstandardPackageId_IdContainsNonAsciiCharacterIsTrue(string packageId)
         {
             // Arrange
             var data = CreateDataDictionary(SampleSource);
@@ -176,11 +176,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Assert
             var result = Assert.Single(data).Value;
-            Assert.True(result.HasNonstandardId);
+            Assert.True(result.IdContainsNonAsciiCharacter);
         }
 
         [Fact]
-        public void AddNupkgCopiedData_MultiplePackagesOneNonstandard_HasNonstandardIdIsTrue()
+        public void AddNupkgCopiedData_MultiplePackagesOneNonstandard_IdContainsNonAsciiCharacterIsTrue()
         {
             // Arrange
             var data = CreateDataDictionary(SampleSource);
@@ -192,11 +192,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Assert
             var result = Assert.Single(data).Value;
-            Assert.True(result.HasNonstandardId);
+            Assert.True(result.IdContainsNonAsciiCharacter);
         }
 
         [Fact]
-        public void AddNupkgCopiedData_NullPackageId_HasNonstandardIdIsFalse()
+        public void AddNupkgCopiedData_NullPackageId_IdContainsNonAsciiCharacterIsFalse()
         {
             // Arrange
             var data = CreateDataDictionary(SampleSource);
@@ -207,7 +207,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Assert
             var result = Assert.Single(data).Value;
-            Assert.False(result.HasNonstandardId);
+            Assert.False(result.IdContainsNonAsciiCharacter);
         }
 
         [Fact]
@@ -381,7 +381,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             Assert.Equal(data.NupkgCount, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Copied]);
             Assert.Equal(data.NupkgSize, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Bytes]);
-            Assert.Equal(data.HasNonstandardId, result[PackageSourceTelemetry.PropertyNames.Nupkgs.HasNonstandardId]);
+            Assert.Equal(data.IdContainsNonAsciiCharacter, result[PackageSourceTelemetry.PropertyNames.Nupkgs.IdContainsNonAsciiCharacter]);
 
             Assert.Equal(data.Resources.Sum(r => r.Value.count), result[PackageSourceTelemetry.PropertyNames.Resources.Calls]);
             foreach (var resource in data.Resources)
