@@ -36,10 +36,6 @@
                 FileMatch="*"
                 DestinationFolder="$([MSBuild]::NormalizeDirectory($(WorkingDirectory), 'Packages'))" />
 
-      <Artifact Include="$([MSBuild]::NormalizeDirectory($(EnlistmentRoot), 'test', 'EndToEnd', 'Packages'))"
-                FileMatch="*"
-                DestinationFolder="$([MSBuild]::NormalizeDirectory($(WorkingDirectory), 'Packages'))" />
-
       <Artifact Include="$([MSBuild]::NormalizeDirectory(%(APITestOutput.RootDir), %(APITestOutput.Directory)))"
                 FileMatch="API.Test.*"
                 DestinationFolder="$(WorkingDirectory)" />
