@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -234,65 +233,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 version: null,
                 expectedVersion: null,
                 sdkResolverContext);
-        }
-
-        /// <summary>
-        /// Verifies that two concurrent <see cref="NuGetSdkResolver" /> instances can successfully resolve the same
-        /// package. This exercises the race condition where a concurrent restore installs the package to the global
-        /// packages folder before this resolver's restore performs dependency resolution, causing some APIs
-        /// <c>GetAllInstalled()</c> to return an empty set even though the package is on disk.
-        /// </summary>
-        [Fact]
-        public async Task Resolve_WhenTwoResolversResolveSamePackageConcurrently_BothSucceed()
-        {
-            using var pathContext = new SimpleTestPathContext();
-            var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
-            var package = new SimpleTestPackageContext(sdkReference.Name, sdkReference.Version);
-            package.AddFile("Sdk/Sdk.props", "<Project />");
-            package.AddFile("Sdk/Sdk.targets", "<Project />");
-            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, package);
-
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, addedDelayOnDownloadOperations: TimeSpan.FromSeconds(2));
-            pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
-            pathContext.Settings.Save();
-            mockServer.Start();
-
-            var task1 = Task.Run(() =>
-            {
-                var resolver = new NuGetSdkResolver();
-                var context = new MockSdkResolverContext(pathContext.WorkingDirectory);
-                var factory = new MockSdkResultFactory();
-                return resolver.Resolve(sdkReference, context, factory) as MockSdkResult;
-            });
-
-            var task2 = Task.Run(() =>
-            {
-                var resolver = new NuGetSdkResolver();
-                var context = new MockSdkResolverContext(pathContext.WorkingDirectory);
-                var factory = new MockSdkResultFactory();
-                return resolver.Resolve(sdkReference, context, factory) as MockSdkResult;
-            });
-
-            MockSdkResult[] results = await Task.WhenAll(task1, task2);
-
-            mockServer.Stop();
-            if (results[0].Success)
-            {
-                results[0].Success.Should().BeTrue(because: $" {results[0]} {results[1]}");
-                results[1].Success.Should().BeFalse(because: $" {results[0]} {results[1]}");
-            }
-            else
-            {
-                results[1].Success.Should().BeTrue(because: $" {results[0]} {results[1]}");
-                results[0].Success.Should().BeFalse(because: $" {results[0]} {results[1]}");
-            }
-            //results[0].Should().NotBeNull();
-            //results[0].Success.Should().BeTrue(
-            //    $"First resolver failed with errors: {string.Join(", ", results[0]?.Errors ?? Array.Empty<string>())}");
-            //results[1].Should().NotBeNull();
-            //results[1].Success.Should().BeTrue(
-            //    $"Second resolver failed with errors: {string.Join(", ", results[1]?.Errors ?? Array.Empty<string>())}");
         }
 
         private void VerifyTryGetNuGetVersionForSdk(Dictionary<string, string> allVersions, string version, NuGetVersion expectedVersion, SdkResolverContext context)

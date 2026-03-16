@@ -25,7 +25,6 @@ namespace NuGet.Commands
     /// </summary>
     internal static class RestoreRunnerEx
     {
-        static bool first = false;
         // NuGet requires at least one framework, we use .NET Standard here just to get the API to do work.  The framework is not actually used.
         private static readonly List<NuGetFramework> TargetFrameworks = new List<NuGetFramework>
         {
@@ -117,11 +116,6 @@ namespace NuGet.Commands
                     Log = logger,
                 };
 
-                if (first == false)
-                {
-                    first = true;
-                    System.Threading.Thread.Sleep(5000);
-                }
                 // Create requests from the arguments
                 var requests = requestProvider.CreateRequests(restoreArgs).Result;
 

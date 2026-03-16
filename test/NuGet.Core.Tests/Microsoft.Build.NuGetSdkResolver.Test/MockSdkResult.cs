@@ -47,17 +47,5 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         /// Gets an <see cref="IEnumerable{T}" /> representing any warnings that were logged.
         /// </summary>
         public IEnumerable<string> Warnings { get; } = Enumerable.Empty<string>();
-
-        public override string ToString()
-        {
-            if (Success)
-            {
-                return $"Success: Path='{Path}', Version='{Version}', Warnings=[{string.Join(", ", Warnings)}]";
-            }
-            else
-            {
-                return $"Failure: Errors=[{string.Join(", ", Errors)}], Warnings=[{string.Join(", ", Warnings)}]";
-            }
-        }
     }
 }

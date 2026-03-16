@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -23,20 +22,17 @@ namespace Test.Utility
         private readonly MockResponseBuilder _builder;
         private readonly bool _isPrivateFeed;
 
-        private readonly TimeSpan _timeout;
-
         /// <summary>Does the source support the VulnerabilityInfo resource</summary>
         /// <remarks>Sources can provide vulnerability info on registration pages without supporting the vulnerability info resource.</remarks>
         private readonly bool _sourceReportsVulnerabilities;
 
-        public FileSystemBackedV3MockServer(string packageDirectory, bool isPrivateFeed = false, bool sourceReportsVulnerabilities = false, TimeSpan addedDelayOnDownloadOperations = default)
+        public FileSystemBackedV3MockServer(string packageDirectory, bool isPrivateFeed = false, bool sourceReportsVulnerabilities = false)
         {
             _packageDirectory = packageDirectory;
             _builder = new MockResponseBuilder(Uri.TrimEnd(new[] { '/' }));
             _isPrivateFeed = isPrivateFeed;
             InitializeServer();
             _sourceReportsVulnerabilities = sourceReportsVulnerabilities;
-            _timeout = addedDelayOnDownloadOperations;
         }
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
@@ -109,10 +105,6 @@ namespace Test.Utility
             }
             else if (path.StartsWith("/flat/") && path.EndsWith(".nupkg"))
             {
-                if (_timeout != default)
-                {
-                    Thread.Sleep(_timeout);
-                }
                 var requestedFileName = parts.Last();
                 var directory = new DirectoryInfo(_packageDirectory);
                 FileInfo file = null;
