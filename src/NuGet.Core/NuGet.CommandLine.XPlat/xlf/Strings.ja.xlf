@@ -583,7 +583,7 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
+        <target state="translated">指定された TargetFramework '{0}' がプロジェクト '{1}' に見つかりません。</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">

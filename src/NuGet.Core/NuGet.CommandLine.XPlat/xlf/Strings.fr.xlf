@@ -583,7 +583,7 @@ NuGet nécessite des sources HTTPS. Pour utiliser des sources HTTP, vous devez d
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
+        <target state="translated">Le TargetFramework spécifié « {0} » est introuvable dans le projet « {1} ».</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">

@@ -584,7 +584,7 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
+        <target state="translated">Belirtilen '{0}' TargetFramework, '{1}' projesinde bulunamadı.</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
