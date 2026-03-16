@@ -1536,36 +1536,12 @@ static NuGet.Packaging.MinClientVersionUtility.GetNuGetClientVersion() -> NuGet.
 static NuGet.Packaging.MinClientVersionUtility.IsMinClientVersionCompatible(NuGet.Packaging.Core.NuspecCoreReaderBase! nuspecReader) -> bool
 static NuGet.Packaging.MinClientVersionUtility.IsMinClientVersionCompatible(NuGet.Versioning.NuGetVersion! packageMinClientVersion) -> bool
 static NuGet.Packaging.MinClientVersionUtility.VerifyMinClientVersion(NuGet.Packaging.Core.NuspecCoreReaderBase! nuspecReader) -> void
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-~static NuGet.Packaging.NupkgMetadataFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.Packaging.NupkgMetadataFile
-~static NuGet.Packaging.NupkgMetadataFileFormat.Read(string filePath) -> NuGet.Packaging.NupkgMetadataFile
-~static NuGet.Packaging.NupkgMetadataFileFormat.Read(string filePath, NuGet.Common.ILogger log) -> NuGet.Packaging.NupkgMetadataFile
-~static NuGet.Packaging.NupkgMetadataFileFormat.Write(System.IO.Stream stream, NuGet.Packaging.NupkgMetadataFile hashFile) -> void
-~static NuGet.Packaging.NupkgMetadataFileFormat.Write(string filePath, NuGet.Packaging.NupkgMetadataFile hashFile) -> void
-=======
->>>>>>> 333c58ec6 (more packaging annotations)
-=======
->>>>>>> 33c9d54c7 (cleanup)
 static NuGet.Packaging.NupkgMetadataFileFormat.Read(System.IO.Stream! stream, NuGet.Common.ILogger! log, string! path) -> NuGet.Packaging.NupkgMetadataFile!
 static NuGet.Packaging.NupkgMetadataFileFormat.Read(string! filePath) -> NuGet.Packaging.NupkgMetadataFile!
 static NuGet.Packaging.NupkgMetadataFileFormat.Read(string! filePath, NuGet.Common.ILogger! log) -> NuGet.Packaging.NupkgMetadataFile!
 static NuGet.Packaging.NupkgMetadataFileFormat.Write(System.IO.Stream! stream, NuGet.Packaging.NupkgMetadataFile! hashFile) -> void
 static NuGet.Packaging.NupkgMetadataFileFormat.Write(string! filePath, NuGet.Packaging.NupkgMetadataFile! hashFile) -> void
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5a6e72242 (more packaging annotations)
->>>>>>> 333c58ec6 (more packaging annotations)
-=======
->>>>>>> 33c9d54c7 (cleanup)
-~static NuGet.Packaging.PackageBuilder.ValidateReferenceAssemblies(System.Collections.Generic.IEnumerable<NuGet.Packaging.IPackageFile> files, System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReferenceSet> packageAssemblyReferences) -> void
-=======
 static NuGet.Packaging.PackageBuilder.ValidateReferenceAssemblies(System.Collections.Generic.IEnumerable<NuGet.Packaging.IPackageFile!>! files, System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReferenceSet!>! packageAssemblyReferences) -> void
->>>>>>> 24732990b (cleanup)
 static NuGet.Packaging.PackageExtraction.PackageExtractionBehavior.XmlDocFileSaveMode.get -> NuGet.Packaging.XmlDocFileSaveMode
 static NuGet.Packaging.PackageExtraction.PackageExtractionBehavior.XmlDocFileSaveMode.set -> void
 static NuGet.Packaging.PackageExtractor.CopySatelliteFilesAsync(NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Packaging.PackagePathResolver! packagePathResolver, NuGet.Packaging.PackageSaveMode packageSaveMode, NuGet.Packaging.PackageExtractionContext! packageExtractionContext, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
@@ -1586,31 +1562,11 @@ static NuGet.Packaging.PackageIdValidator.IsValidPackageId(string! packageId) ->
 static NuGet.Packaging.PackageIdValidator.ValidatePackageId(string! packageId) -> void
 static NuGet.Packaging.PackagePathHelper.GetInstalledPackageFilePath(NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Packaging.PackagePathResolver! packagePathResolver) -> string?
 static NuGet.Packaging.PackagePathHelper.GetPackageLookupPaths(NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Packaging.PackagePathResolver! packagePathResolver) -> System.Collections.Generic.IEnumerable<string!>!
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-~static NuGet.Packaging.PackageReaderBase.GetNuspecFile(System.Collections.Generic.IEnumerable<string> files) -> string
-~static NuGet.Packaging.PackageReaderBase.IsAllowedBuildFile(string packageId, string path) -> bool
-~static NuGet.Packaging.PackageReaderBase.IsReferenceAssembly(string path) -> bool
-~static NuGet.Packaging.PackageReaderBase.ValidatePackageEntries(string normalizedDestination, System.Collections.Generic.IEnumerable<string> packageFiles, NuGet.Packaging.Core.PackageIdentity packageIdentity) -> void
-~static NuGet.Packaging.PackageReaderBase.ValidatePackageEntry(string normalizedDestination, string normalizedFilePath, NuGet.Packaging.Core.PackageIdentity packageIdentity) -> void
-=======
->>>>>>> 333c58ec6 (more packaging annotations)
-=======
->>>>>>> 33c9d54c7 (cleanup)
 static NuGet.Packaging.PackageReaderBase.GetNuspecFile(System.Collections.Generic.IEnumerable<string!>! files) -> string!
 static NuGet.Packaging.PackageReaderBase.IsAllowedBuildFile(string! packageId, string! path) -> bool
 static NuGet.Packaging.PackageReaderBase.IsReferenceAssembly(string! path) -> bool
 static NuGet.Packaging.PackageReaderBase.ValidatePackageEntries(string! normalizedDestination, System.Collections.Generic.IEnumerable<string!>! packageFiles, NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> void
 static NuGet.Packaging.PackageReaderBase.ValidatePackageEntry(string! normalizedDestination, string! normalizedFilePath, NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> void
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5a6e72242 (more packaging annotations)
->>>>>>> 333c58ec6 (more packaging annotations)
-=======
->>>>>>> 33c9d54c7 (cleanup)
 static NuGet.Packaging.PackageReaderExtensions.GetPackageFilesAsync(this NuGet.Packaging.Core.IAsyncPackageCoreReader! packageReader, NuGet.Packaging.PackageSaveMode packageSaveMode, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
 static NuGet.Packaging.PackageReaderExtensions.GetSatelliteFilesAsync(this NuGet.Packaging.IAsyncPackageContentReader! packageReader, string! packageLanguage, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
 static NuGet.Packaging.PackagesConfig.BoolAttribute(System.Xml.Linq.XElement! node, string! name, bool defaultValue = false) -> bool
@@ -1863,19 +1819,7 @@ virtual NuGet.ContentModel.ContentPropertyDefinition.Compare(object? criteriaVal
 virtual NuGet.ContentModel.ContentPropertyDefinition.IsCriteriaSatisfied(object? critieriaValue, object? candidateValue) -> bool
 virtual NuGet.ContentModel.SelectionCriteriaBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder!
 virtual NuGet.ContentModel.SelectionCriteriaBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria!
-<<<<<<< HEAD
-<<<<<<< HEAD
 virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency!>!
-=======
-<<<<<<< HEAD
-~virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency>
-=======
-virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency!>!
->>>>>>> 5a6e72242 (more packaging annotations)
->>>>>>> 333c58ec6 (more packaging annotations)
-=======
-virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency!>!
->>>>>>> 33c9d54c7 (cleanup)
 virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetDevelopmentDependency() -> bool
 virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetId() -> string!
 virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetIdentity() -> NuGet.Packaging.Core.PackageIdentity!
