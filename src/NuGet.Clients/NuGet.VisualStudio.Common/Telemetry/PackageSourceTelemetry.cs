@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
+
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -29,8 +29,6 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly PackageSourceMapping _packageSourceMappingConfiguration;
 
         internal const string EventName = "PackageSourceDiagnostics";
-
-        private static readonly Regex s_nonstandardIdCharRegex = new Regex(@"[^A-Za-z0-9.\-]", RegexOptions.Compiled);
 
         public enum TelemetryAction
         {
@@ -216,7 +214,14 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static bool HasNonstandardCharacters(string packageId)
         {
-            return s_nonstandardIdCharRegex.IsMatch(packageId);
+            foreach (char c in packageId.AsSpan())
+            {
+                if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-'))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void Dispose()
