@@ -281,7 +281,7 @@ namespace NuGet.Packaging
             {
                 var dependenciesList = dependencyGroup.Packages.Select(dependency =>
                     new PackageDependency(
-                        dependency.Id.SafeTrim()!,
+                        dependency.Id.Trim(),
                         dependency.VersionRange,
                         dependency.Include,
                         dependency.Exclude)).ToList();

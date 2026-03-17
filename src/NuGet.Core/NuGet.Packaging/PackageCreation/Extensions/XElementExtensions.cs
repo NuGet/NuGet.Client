@@ -22,7 +22,7 @@ namespace NuGet.Packaging
             {
                 attr = element.Attribute(XName.Get(localName, namespaceName!));
             }
-            return attr != null ? attr.Value : null;
+            return attr?.Value;
         }
 
         public static IEnumerable<XElement> ElementsNoNamespace(this XContainer container, string localName)

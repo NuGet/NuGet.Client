@@ -156,130 +156,51 @@ namespace NuGet.Packaging
             Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public string Id
-        {
-            get;
-            set;
-        } = string.Empty; // Set to empty to enforce a stricter nullability contract.
-                          // This would get validate in the Save() method before writing the manifest
+        // Set to empty to enforce a stricter nullability contract.
+        // This would get validate in the Save() method before writing the manifest
+        public string Id { get; set; } = string.Empty;
 
-        public NuGetVersion? Version
-        {
-            get;
-            set;
-        }
+        public NuGetVersion? Version { get; set; }
 
         public RepositoryMetadata? Repository { get; set; }
 
         public LicenseMetadata? LicenseMetadata { get; set; }
 
-        public bool HasSnapshotVersion
-        {
-            get;
-            set;
-        }
+        public bool HasSnapshotVersion { get; set; }
 
-        public string? Title
-        {
-            get;
-            set;
-        }
+        public string? Title { get; set; }
 
-        public ISet<string> Authors
-        {
-            get;
-            private set;
-        }
+        public ISet<string> Authors { get; private set; }
 
-        public ISet<string> Owners
-        {
-            get;
-            private set;
-        }
+        public ISet<string> Owners { get; private set; }
 
-        public Uri? IconUrl
-        {
-            get;
-            set;
-        }
+        public Uri? IconUrl { get; set; }
 
-        public string? Icon
-        {
-            get;
-            set;
-        }
+        public string? Icon { get; set; }
 
-        public Uri? LicenseUrl
-        {
-            get;
-            set;
-        }
+        public Uri? LicenseUrl { get; set; }
 
-        public Uri? ProjectUrl
-        {
-            get;
-            set;
-        }
+        public Uri? ProjectUrl { get; set; }
 
-        public bool RequireLicenseAcceptance
-        {
-            get;
-            set;
-        }
+        public bool RequireLicenseAcceptance { get; set; }
 
-        public bool EmitRequireLicenseAcceptance
-        {
-            get;
-            set;
-        } = true;
+        public bool EmitRequireLicenseAcceptance { get; set; } = true;
 
-        public bool Serviceable
-        {
-            get;
-            set;
-        }
+        public bool Serviceable { get; set; }
 
-        public bool DevelopmentDependency
-        {
-            get;
-            set;
-        }
+        public bool DevelopmentDependency { get; set; }
 
-        public string? Description
-        {
-            get;
-            set;
-        }
+        public string? Description { get; set; }
 
-        public string? Summary
-        {
-            get;
-            set;
-        }
+        public string? Summary { get; set; }
 
-        public string? ReleaseNotes
-        {
-            get;
-            set;
-        }
+        public string? ReleaseNotes { get; set; }
 
-        public string? Language
-        {
-            get;
-            set;
-        }
+        public string? Language { get; set; }
 
-        public string? OutputName
-        {
-            get;
-            set;
-        }
+        public string? OutputName { get; set; }
 
-        public ISet<string> Tags
-        {
-            get;
-            private set;
-        }
+        public ISet<string> Tags { get; private set; }
 
         public string? Readme { get; set; }
 
@@ -287,140 +208,48 @@ namespace NuGet.Packaging
         /// Exposes the additional properties extracted by the metadata
         /// extractor or received from the command line.
         /// </summary>
-        public Dictionary<string, string> Properties
-        {
-            get;
-            private set;
-        }
+        public Dictionary<string, string> Properties { get; private set; }
 
-        public string? Copyright
-        {
-            get;
-            set;
-        }
+        public string? Copyright { get; set; }
 
-        public Collection<PackageDependencyGroup> DependencyGroups
-        {
-            get;
-            private set;
-        }
+        public Collection<PackageDependencyGroup> DependencyGroups { get; private set; }
 
-        public ICollection<IPackageFile> Files
-        {
-            get;
-            private set;
-        }
+        public ICollection<IPackageFile> Files { get; private set; }
 
-        public Collection<FrameworkAssemblyReference> FrameworkReferences
-        {
-            get;
-            private set;
-        }
+        public Collection<FrameworkAssemblyReference> FrameworkReferences { get; private set; }
 
-        public Collection<FrameworkReferenceGroup> FrameworkReferenceGroups
-        {
-            get;
-            private set;
-        }
+        public Collection<FrameworkReferenceGroup> FrameworkReferenceGroups { get; private set; }
 
-        public IList<NuGetFramework> TargetFrameworks
-        {
-            get;
-            set;
-        }
+        public IList<NuGetFramework> TargetFrameworks { get; set; }
 
         /// <summary>
         /// ContentFiles section from the manifest for content v2
         /// </summary>
-        public ICollection<ManifestContentFiles> ContentFiles
-        {
-            get;
-            private set;
-        }
+        public ICollection<ManifestContentFiles> ContentFiles { get; private set; }
 
-        public ICollection<PackageReferenceSet> PackageAssemblyReferences
-        {
-            get;
-            set;
-        }
+        public ICollection<PackageReferenceSet> PackageAssemblyReferences { get; set; }
 
-        public ICollection<PackageType> PackageTypes
-        {
-            get;
-            set;
-        }
+        public ICollection<PackageType> PackageTypes { get; set; }
 
-        IEnumerable<string> IPackageMetadata.Authors
-        {
-            get
-            {
-                return Authors;
-            }
-        }
+        IEnumerable<string> IPackageMetadata.Authors => Authors;
 
-        IEnumerable<string> IPackageMetadata.Owners
-        {
-            get
-            {
-                return Owners;
-            }
-        }
+        IEnumerable<string> IPackageMetadata.Owners => Owners;
 
-        string IPackageMetadata.Tags
-        {
-            get
-            {
-                return string.Join(" ", Tags);
-            }
-        }
+        string IPackageMetadata.Tags => string.Join(" ", Tags);
 
-        IEnumerable<PackageReferenceSet> IPackageMetadata.PackageAssemblyReferences
-        {
-            get
-            {
-                return PackageAssemblyReferences;
-            }
-        }
+        IEnumerable<PackageReferenceSet> IPackageMetadata.PackageAssemblyReferences => PackageAssemblyReferences;
 
-        IEnumerable<PackageDependencyGroup> IPackageMetadata.DependencyGroups
-        {
-            get
-            {
-                return DependencyGroups;
-            }
-        }
+        IEnumerable<PackageDependencyGroup> IPackageMetadata.DependencyGroups => DependencyGroups;
 
-        IEnumerable<FrameworkAssemblyReference> IPackageMetadata.FrameworkReferences
-        {
-            get
-            {
-                return FrameworkReferences;
-            }
-        }
+        IEnumerable<FrameworkAssemblyReference> IPackageMetadata.FrameworkReferences => FrameworkReferences;
 
-        IEnumerable<ManifestContentFiles> IPackageMetadata.ContentFiles
-        {
-            get
-            {
-                return ContentFiles;
-            }
-        }
+        IEnumerable<ManifestContentFiles> IPackageMetadata.ContentFiles => ContentFiles;
 
-        IEnumerable<PackageType> IPackageMetadata.PackageTypes
-        {
-            get
-            {
-                return PackageTypes;
-            }
-        }
+        IEnumerable<PackageType> IPackageMetadata.PackageTypes => PackageTypes;
 
         IEnumerable<FrameworkReferenceGroup> IPackageMetadata.FrameworkReferenceGroups => FrameworkReferenceGroups;
 
-        public Version? MinClientVersion
-        {
-            get;
-            set;
-        }
+        public Version? MinClientVersion { get; set; }
 
         public void Save(Stream stream)
         {

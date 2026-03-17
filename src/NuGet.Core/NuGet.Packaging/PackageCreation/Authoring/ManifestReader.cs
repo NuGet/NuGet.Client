@@ -79,7 +79,7 @@ namespace NuGet.Packaging
             string? value = null;
             try
             {
-                value = element.Value.SafeTrim();
+                value = element.Value?.Trim();
                 switch (element.Name.LocalName)
                 {
                     case "id":
@@ -180,9 +180,9 @@ namespace NuGet.Packaging
 
         private static LicenseMetadata ReadLicenseMetadata(XElement licenseNode)
         {
-            var type = licenseNode.Attribute(NuspecUtility.Type)!.Value.SafeTrim();
-            var license = licenseNode.Value.SafeTrim();
-            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
+            var type = licenseNode.Attribute(NuspecUtility.Type)!.Value?.Trim();
+            var license = licenseNode.Value?.Trim();
+            var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value?.Trim();
 
             if (!Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType))
             {
@@ -257,7 +257,7 @@ namespace NuGet.Packaging
                                    let flattenAttribute = element.Attribute("flatten")
                                    select new ManifestContentFiles
                                    {
-                                       Include = includeAttribute.Value.SafeTrim()!,
+                                       Include = includeAttribute.Value.Trim(),
                                        Exclude = excludeAttribute == null ? null : excludeAttribute.Value,
                                        BuildAction = buildActionAttribute == null ? null : buildActionAttribute.Value,
                                        CopyToOutput = copyToOutputAttribute == null ? null : copyToOutputAttribute.Value,
@@ -415,14 +415,14 @@ namespace NuGet.Packaging
                 }
 
                 var slashes = new[] { '\\', '/' };
-                var target = file.GetOptionalAttributeValue("target").SafeTrim()?.TrimStart(slashes);
-                var exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
+                var target = file.GetOptionalAttributeValue("target")?.Trim()?.TrimStart(slashes);
+                var exclude = file.GetOptionalAttributeValue("exclude")?.Trim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
                 files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s =>
                     new ManifestFile
                     {
-                        Source = s.SafeTrim(),
+                        Source = s?.Trim(),
                         Target = target,
                         Exclude = exclude
                     }));

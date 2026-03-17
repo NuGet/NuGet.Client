@@ -437,9 +437,9 @@ namespace NuGet.Packaging
 
             if (licenseNode != null)
             {
-                var type = licenseNode.Attribute(NuspecUtility.Type)?.Value.SafeTrim();
-                var license = licenseNode.Value.SafeTrim();
-                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value.SafeTrim();
+                var type = licenseNode.Attribute(NuspecUtility.Type)?.Value?.Trim();
+                var license = licenseNode.Value?.Trim();
+                var versionValue = licenseNode.Attribute(NuspecUtility.Version)?.Value?.Trim();
 
                 var isKnownType = Enum.TryParse(type, ignoreCase: true, result: out LicenseType licenseType);
 
