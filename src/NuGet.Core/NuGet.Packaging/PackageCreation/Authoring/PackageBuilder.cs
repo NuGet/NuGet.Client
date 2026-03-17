@@ -157,7 +157,7 @@ namespace NuGet.Packaging
         }
 
         // Set to empty to enforce a stricter nullability contract.
-        // This would get validate in the Save() method before writing the manifest
+        // This will be validated in the Save() method before writing the manifest
         public string Id { get; set; } = string.Empty;
 
         public NuGetVersion? Version { get; set; }
