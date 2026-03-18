@@ -52,8 +52,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
-            if (!File.Exists(listPackageArgs.Path)
-                && _msbuildUtility.VirtualProjectBuilder?.IsValidEntryPointPath(listPackageArgs.Path) != true)
+            if (!File.Exists(listPackageArgs.Path))
             {
                 listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
                     text: string.Format(CultureInfo.CurrentCulture,
