@@ -1091,10 +1091,10 @@ NuGet.Packaging.Signing.SignatureVerifySettings.ReportUntrustedRoot.get -> bool
 NuGet.Packaging.Signing.SignatureVerifySettings.RevocationMode.get -> NuGet.Common.RevocationMode
 NuGet.Packaging.Signing.SignatureVerifySettings.SignatureVerifySettings(bool allowIllegal, bool allowUntrusted, bool allowUnknownRevocation, bool reportUnknownRevocation, bool reportUntrustedRoot, NuGet.Common.RevocationMode revocationMode) -> void
 NuGet.Packaging.Signing.SignedPackageArchive
-~NuGet.Packaging.Signing.SignedPackageArchive.AddSignatureAsync(System.IO.Stream signatureStream, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-~NuGet.Packaging.Signing.SignedPackageArchive.IsZip64Async(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
-~NuGet.Packaging.Signing.SignedPackageArchive.RemoveSignatureAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-~NuGet.Packaging.Signing.SignedPackageArchive.SignedPackageArchive(System.IO.Stream packageReadStream, System.IO.Stream packageWriteStream) -> void
+NuGet.Packaging.Signing.SignedPackageArchive.AddSignatureAsync(System.IO.Stream! signatureStream, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+NuGet.Packaging.Signing.SignedPackageArchive.IsZip64Async(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+NuGet.Packaging.Signing.SignedPackageArchive.RemoveSignatureAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+NuGet.Packaging.Signing.SignedPackageArchive.SignedPackageArchive(System.IO.Stream! packageReadStream, System.IO.Stream! packageWriteStream) -> void
 NuGet.Packaging.Signing.SignedPackageArchiveIOUtility
 NuGet.Packaging.Signing.SignedPackageArchiveMetadata
 NuGet.Packaging.Signing.SignedPackageArchiveMetadata.CentralDirectoryHeaders.get -> System.Collections.Generic.List<NuGet.Packaging.Signing.CentralDirectoryHeaderMetadata!>!
@@ -1685,14 +1685,14 @@ static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string! message) -> NuGet
 ~static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain
 ~static NuGet.Packaging.Signing.SignatureUtility.HasRepositoryCountersignature(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> bool
 static NuGet.Packaging.Signing.SignatureVerifySettings.Default.get -> NuGet.Packaging.Signing.SignatureVerifySettings!
-~static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.HashBytes(System.Security.Cryptography.HashAlgorithm hashAlgorithm, byte[] bytes) -> void
-~static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(System.IO.BinaryReader reader, System.Security.Cryptography.HashAlgorithm hashAlgorithm, long position) -> void
-~static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(System.IO.BinaryReader reader, System.IO.BinaryWriter writer, long position) -> void
-~static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(System.IO.BinaryReader reader, bool validateSignatureEntry = true) -> NuGet.Packaging.Signing.SignedPackageArchiveMetadata
-~static NuGet.Packaging.Signing.SignedPackageArchiveUtility.IsSigned(System.IO.BinaryReader reader) -> bool
-~static NuGet.Packaging.Signing.SignedPackageArchiveUtility.IsZip64(System.IO.BinaryReader reader) -> bool
-~static NuGet.Packaging.Signing.SignedPackageArchiveUtility.OpenPackageSignatureFileStream(System.IO.BinaryReader reader) -> System.IO.Stream
-~static NuGet.Packaging.Signing.SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(System.IO.Stream input, System.IO.Stream output, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
+static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.HashBytes(System.Security.Cryptography.HashAlgorithm! hashAlgorithm, byte[]! bytes) -> void
+static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(System.IO.BinaryReader! reader, System.Security.Cryptography.HashAlgorithm! hashAlgorithm, long position) -> void
+static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(System.IO.BinaryReader! reader, System.IO.BinaryWriter! writer, long position) -> void
+static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(System.IO.BinaryReader! reader, bool validateSignatureEntry = true) -> NuGet.Packaging.Signing.SignedPackageArchiveMetadata!
+static NuGet.Packaging.Signing.SignedPackageArchiveUtility.IsSigned(System.IO.BinaryReader! reader) -> bool
+static NuGet.Packaging.Signing.SignedPackageArchiveUtility.IsZip64(System.IO.BinaryReader! reader) -> bool
+static NuGet.Packaging.Signing.SignedPackageArchiveUtility.OpenPackageSignatureFileStream(System.IO.BinaryReader! reader) -> System.IO.Stream!
+static NuGet.Packaging.Signing.SignedPackageArchiveUtility.RemoveRepositorySignaturesAsync(System.IO.Stream! input, System.IO.Stream! output, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static NuGet.Packaging.Signing.SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy(NuGet.Common.IEnvironmentVariableReader? environmentVariableReader = null) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings!
 static NuGet.Packaging.Signing.SignedPackageVerifierSettings.GetDefault(NuGet.Common.IEnvironmentVariableReader? environmentVariableReader = null) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings!
 static NuGet.Packaging.Signing.SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(NuGet.Common.IEnvironmentVariableReader? environmentVariableReader = null) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings!

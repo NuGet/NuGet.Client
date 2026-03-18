@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -347,9 +345,8 @@ namespace NuGet.Packaging.Signing
             reader.BaseStream.Seek(endOfCentralDirectoryRecord.OffsetOfStartOfCentralDirectory, SeekOrigin.Begin);
 
             var centralDirectoryRecords = new List<CentralDirectoryHeaderMetadata>();
-            CentralDirectoryHeader header;
 
-            while (CentralDirectoryHeader.TryRead(reader, out header))
+            while (CentralDirectoryHeader.TryRead(reader, out var header))
             {
                 var centralDirectoryMetadata = new CentralDirectoryHeaderMetadata()
                 {
