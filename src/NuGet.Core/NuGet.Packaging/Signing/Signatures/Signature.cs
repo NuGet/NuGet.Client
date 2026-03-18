@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -39,7 +37,7 @@ namespace NuGet.Packaging.Signing
 
         public abstract byte[] GetSignatureValue();
 
-        private IDictionary<HashAlgorithmName, string> _signingCertificateFingerprintLookup;
+        private IDictionary<HashAlgorithmName, string>? _signingCertificateFingerprintLookup;
 
         protected Signature(SignerInfo signerInfo, SignatureType type)
         {
@@ -73,7 +71,7 @@ namespace NuGet.Packaging.Signing
             HashAlgorithmName fingerprintAlgorithm,
             List<SignatureLog> issues,
             out SignatureVerificationStatusFlags verificationFlags,
-            out Timestamp validTimestamp)
+            out Timestamp? validTimestamp)
         {
             if (issues == null)
             {
@@ -267,7 +265,7 @@ namespace NuGet.Packaging.Signing
                     {
                         if (settings.ReportUnknownRevocation)
                         {
-                            string unknownRevocationMessage = null;
+                            string? unknownRevocationMessage = null;
 
                             if (unknownRevocationErrors)
                             {

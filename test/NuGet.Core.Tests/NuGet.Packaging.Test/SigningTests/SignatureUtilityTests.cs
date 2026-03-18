@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
         {
             PrimarySignature primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
-            RepositoryCountersignature repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+            RepositoryCountersignature? repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             primarySignature = RemoveRepositoryCountersignature(primarySignature);
 
@@ -104,7 +104,7 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_WithRepositoryCountersignature_ReturnsCertificates()
         {
             PrimarySignature primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
-            RepositoryCountersignature repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+            RepositoryCountersignature? repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             using (IX509CertificateChain certificates = SignatureUtility.GetCertificateChain(primarySignature, repositoryCountersignature))
             {
@@ -156,7 +156,7 @@ namespace NuGet.Packaging.Test
         public void GetTimestampCertificateChain_WithUnrelatedRepositoryCountersignature_Throws()
         {
             PrimarySignature primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
-            RepositoryCountersignature repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+            RepositoryCountersignature? repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             primarySignature = RemoveRepositoryCountersignature(primarySignature);
 
@@ -174,7 +174,7 @@ namespace NuGet.Packaging.Test
 
             primarySignature = RemoveRepositoryCountersignatureTimestamp(primarySignature);
 
-            RepositoryCountersignature repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+            RepositoryCountersignature? repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             SignatureException exception = Assert.Throws<SignatureException>(
                 () => SignatureUtility.GetTimestampCertificateChain(primarySignature, repositoryCountersignature));
@@ -187,7 +187,7 @@ namespace NuGet.Packaging.Test
         public void GetTimestampCertificateChain_WithRepositoryCountersignatureTimestamp_ReturnsCertificates()
         {
             PrimarySignature primarySignature = PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s"));
-            RepositoryCountersignature repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
+            RepositoryCountersignature? repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
 
             using (IX509CertificateChain certificates = SignatureUtility.GetTimestampCertificateChain(primarySignature, repositoryCountersignature))
             {

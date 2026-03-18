@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,7 +32,7 @@ namespace NuGet.Packaging.Signing
             PackageOwners = packageOwners;
         }
 
-        public static RepositoryCountersignature GetRepositoryCountersignature(PrimarySignature primarySignature)
+        public static RepositoryCountersignature? GetRepositoryCountersignature(PrimarySignature primarySignature)
         {
             if (primarySignature == null)
             {
@@ -42,7 +40,7 @@ namespace NuGet.Packaging.Signing
             }
 
             var countersignatures = primarySignature.SignerInfo.CounterSignerInfos;
-            RepositoryCountersignature repositoryCountersignature = null;
+            RepositoryCountersignature? repositoryCountersignature = null;
 
             // Only look for repository countersignatures.
             foreach (var countersignature in countersignatures)
