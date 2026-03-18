@@ -24,13 +24,13 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks. 
+        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105.
+        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks.
         #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
-    
+        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
+
         Write-Host "The new VSIX Version is: $finalVersion"
-        return $finalVersion    
+        return $finalVersion
 }
 
 Function Update-VsixVersion {
@@ -105,7 +105,7 @@ $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 # NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
-# Check if there is a localization branch associated with this branch repo 
+# Check if there is a localization branch associated with this branch repo
 $currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
 if (Get-LocBranchExists $currentNuGetBranch)
 {
@@ -170,7 +170,7 @@ else
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
-    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_REPOSITORY_LOCALPATH\artifacts", 'buildinfo.json')
+    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_STAGINGDIRECTORY\BuildInfo", 'buildinfo.json')
 
     New-Item $localBuildInfoJsonFilePath -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
