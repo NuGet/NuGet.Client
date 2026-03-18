@@ -95,7 +95,7 @@ namespace Dotnet.Integration.Test
             _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
             // Get project content.
-            var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
+            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
 
             // Run "why" command.
             var console = new TestConsole();
@@ -105,7 +105,7 @@ namespace Dotnet.Integration.Test
             WhyCommand.Register(
                 rootCommand,
                 new Lazy<IAnsiConsole>(console),
-                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, new TestVirtualProjectBuilder(projectContent))));
+                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, new TestVirtualProjectBuilder(virtualProject))));
             int result = rootCommand.Parse([
                 "why", appFile, "PackageB",
             ]).Invoke(new() { Output = outWriter, Error = errorWriter });

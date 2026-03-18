@@ -102,10 +102,10 @@ namespace Dotnet.Integration.Test
             _fixture.RunDotnetExpectSuccess(fbaDir, $"build app.cs -t:GenerateRestoreGraphFile -p:RestoreGraphOutputPath={ArgumentEscaper.EscapeAndConcatenate([dgFile])}", testOutputHelper: _testOutputHelper);
 
             // Get project content.
-            var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-            _testOutputHelper.WriteLine("before:\n" + projectContent);
-            Assert.DoesNotContain("PackageReference", projectContent);
-            var builder = new TestVirtualProjectBuilder(projectContent);
+            var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
+            Assert.DoesNotContain("PackageReference", virtualProject.Content);
+            var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Create a package.
             var packageX = XPlatTestUtils.CreatePackage();

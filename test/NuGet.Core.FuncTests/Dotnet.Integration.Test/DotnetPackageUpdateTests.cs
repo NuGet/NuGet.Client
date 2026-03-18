@@ -124,10 +124,10 @@ namespace Dotnet.Integration.Test
                 """);
 
             // Get project content.
-            var projectContent = _testFixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-            _testOutputHelper.WriteLine("before:\n" + projectContent);
-            Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", projectContent);
-            var builder = new TestVirtualProjectBuilder(projectContent);
+            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
+            Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", virtualProject.Content);
+            var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Update the package.
             using var outWriter = new StringWriter();

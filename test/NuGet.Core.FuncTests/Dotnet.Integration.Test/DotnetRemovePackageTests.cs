@@ -33,10 +33,10 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
             """);
 
         // Get project content.
-        var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
-        _testOutputHelper.WriteLine("before:\n" + projectContent);
-        Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", projectContent);
-        var builder = new TestVirtualProjectBuilder(projectContent);
+        var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+        _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
+        Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", virtualProject.Content);
+        var builder = new TestVirtualProjectBuilder(virtualProject);
 
         // Remove the package.
         using var outWriter = new StringWriter();

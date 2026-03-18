@@ -102,7 +102,7 @@ namespace Dotnet.Integration.Test
             _fixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
             // Get project content.
-            var projectContent = _fixture.GetFileBasedAppVirtualProjectContent(appFile, _testOutputHelper);
+            var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
 
             // List packages.
             using var outWriter = new StringWriter();
@@ -113,7 +113,7 @@ namespace Dotnet.Integration.Test
                 Error = errorWriter,
             };
             var logger = new TestLogger(_testOutputHelper);
-            var msbuild = new MSBuildAPIUtility(logger, new TestVirtualProjectBuilder(projectContent));
+            var msbuild = new MSBuildAPIUtility(logger, new TestVirtualProjectBuilder(virtualProject));
             ListPackageCommand.Register(
                 testApp,
                 () => logger,

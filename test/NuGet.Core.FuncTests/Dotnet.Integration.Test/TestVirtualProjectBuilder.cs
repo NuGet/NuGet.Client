@@ -15,7 +15,7 @@ namespace Dotnet.Integration.Test;
 /// </summary>
 internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
 {
-    private readonly string _projectContent;
+    private readonly (string Content, string ProjectPath) _virtualProject;
 
     /// <summary>
     /// The <see cref="ProjectRootElement"/> created by the last call to <see cref="CreateProjectRootElement"/>.
@@ -24,9 +24,9 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
     /// </summary>
     public ProjectRootElement CreatedElement { get; private set; } = null!;
 
-    public TestVirtualProjectBuilder(string projectContent)
+    public TestVirtualProjectBuilder((string Content, string ProjectPath) virtualProject)
     {
-        _projectContent = projectContent;
+        _virtualProject = virtualProject;
     }
 
     public bool IsValidEntryPointPath(string entryPointFilePath)
@@ -36,12 +36,12 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
 
     public string GetVirtualProjectPath(string entryPointFilePath)
     {
-        return Path.ChangeExtension(entryPointFilePath, ".csproj");
+        return _virtualProject.ProjectPath;
     }
 
     public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
     {
-        using var stringReader = new StringReader(_projectContent);
+        using var stringReader = new StringReader(_virtualProject.Content);
         using var xmlReader = XmlReader.Create(stringReader);
         var element = ProjectRootElement.Create(xmlReader, projectCollection, preserveFormatting: true);
         element.FullPath = GetVirtualProjectPath(entryPointFilePath);
