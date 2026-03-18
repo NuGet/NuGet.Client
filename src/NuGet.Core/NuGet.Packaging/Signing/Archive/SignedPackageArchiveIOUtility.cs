@@ -230,10 +230,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            var metadata = new SignedPackageArchiveMetadata()
-            {
-                StartOfLocalFileHeaders = reader.BaseStream.Length
-            };
+            long startOfLocalFileHeaders = reader.BaseStream.Length;
 
             var endOfCentralDirectoryRecord = EndOfCentralDirectoryRecord.Read(reader);
 
@@ -245,7 +242,7 @@ namespace NuGet.Packaging.Signing
 
             while (CentralDirectoryHeader.TryRead(reader, out var header))
             {
-                metadata.StartOfLocalFileHeaders = Math.Min(metadata.StartOfLocalFileHeaders, header.RelativeOffsetOfLocalHeader);
+                startOfLocalFileHeaders = Math.Min(startOfLocalFileHeaders, header.RelativeOffsetOfLocalHeader);
 
                 var isPackageSignatureFile = SignedPackageArchiveUtility.IsPackageSignatureFileEntry(
                     header.FileName,
@@ -290,9 +287,13 @@ namespace NuGet.Packaging.Signing
 
             UpdateLocalFileHeadersTotalSize(centralDirectoryRecords, endOfLocalFileHeadersPosition);
 
-            metadata.EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize;
-            metadata.CentralDirectoryHeaders = centralDirectoryRecords;
-            metadata.SignatureCentralDirectoryHeaderIndex = packageSignatureFileMetadataIndex;
+            var metadata = new SignedPackageArchiveMetadata
+            {
+                StartOfLocalFileHeaders = startOfLocalFileHeaders,
+                EndOfCentralDirectory = lastCentralDirectoryRecord.Position + lastCentralDirectoryRecord.HeaderSize,
+                CentralDirectoryHeaders = centralDirectoryRecords,
+                SignatureCentralDirectoryHeaderIndex = packageSignatureFileMetadataIndex
+            };
 
             if (validateSignatureEntry)
             {
