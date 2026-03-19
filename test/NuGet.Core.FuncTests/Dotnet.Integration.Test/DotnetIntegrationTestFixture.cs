@@ -360,7 +360,7 @@ namespace Dotnet.Integration.Test
             return RunDotnet(workingDirectory, $"msbuild {file} {args}", expectSuccess, testOutputHelper: testOutputHelper);
         }
 
-        internal (string Content, string ProjectPath) GetFileBasedAppVirtualProject(string entryPointFileFullPath, ITestOutputHelper testOutputHelper)
+        internal (string Content, string ProjectPath, string FilePath) GetFileBasedAppVirtualProject(string entryPointFileFullPath, ITestOutputHelper testOutputHelper)
         {
             var runApi = RunDotnetExpectSuccess(Path.GetDirectoryName(entryPointFileFullPath), "run-api", testOutputHelper: testOutputHelper, inputAction: writer =>
             {
@@ -368,7 +368,8 @@ namespace Dotnet.Integration.Test
             });
             var node = JsonNode.Parse(runApi.AllOutput);
             return (Content: node["Content"].GetValue<string>(),
-                ProjectPath: node["ProjectPath"].GetValue<string>());
+                ProjectPath: node["ProjectPath"].GetValue<string>(),
+                FilePath: entryPointFileFullPath);
         }
 
         internal TestDirectory CreateTestDirectory()

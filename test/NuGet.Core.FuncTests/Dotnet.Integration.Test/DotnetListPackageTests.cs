@@ -103,6 +103,7 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // List packages.
             using var outWriter = new StringWriter();
@@ -113,7 +114,7 @@ namespace Dotnet.Integration.Test
                 Error = errorWriter,
             };
             var logger = new TestLogger(_testOutputHelper);
-            var msbuild = new MSBuildAPIUtility(logger, new TestVirtualProjectBuilder(virtualProject));
+            var msbuild = new MSBuildAPIUtility(logger, builder);
             ListPackageCommand.Register(
                 testApp,
                 () => logger,
@@ -137,6 +138,9 @@ namespace Dotnet.Integration.Test
 
             Assert.Contains("packageX", output);
             Assert.Contains("1.0.0", output);
+
+            Assert.Null(builder.ModifiedContent);
+            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [PlatformFact(Platform.Windows)]

@@ -157,7 +157,7 @@ namespace Dotnet.Integration.Test
 
             Assert.Empty(error);
 
-            var modifiedProjectContent = builder.CreatedElement.RawXml;
+            var modifiedProjectContent = builder.ModifiedContent;
             _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="2.0.0" />""", modifiedProjectContent);
 

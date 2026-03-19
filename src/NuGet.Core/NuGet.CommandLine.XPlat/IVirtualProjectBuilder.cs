@@ -30,4 +30,6 @@ public interface IVirtualProjectBuilder
     string GetVirtualProjectPath(string entryPointFilePath);
 
     ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection);
+
+    void SaveProject(string entryPointFilePath, ProjectRootElement projectRootElement);
 }

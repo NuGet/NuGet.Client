@@ -7,6 +7,7 @@ using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat;
+using Xunit;
 
 namespace Dotnet.Integration.Test;
 
@@ -15,16 +16,11 @@ namespace Dotnet.Integration.Test;
 /// </summary>
 internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
 {
-    private readonly (string Content, string ProjectPath) _virtualProject;
+    private readonly (string Content, string ProjectPath, string FilePath) _virtualProject;
 
-    /// <summary>
-    /// The <see cref="ProjectRootElement"/> created by the last call to <see cref="CreateProjectRootElement"/>.
-    /// In the real SDK flow, the builder retains this reference so it can read back modifications
-    /// after NuGet returns (since <see cref="SaveableProject.Save()"/> is a no-op for virtual projects).
-    /// </summary>
-    public ProjectRootElement CreatedElement { get; private set; } = null!;
+    public string? ModifiedContent { get; private set; }
 
-    public TestVirtualProjectBuilder((string Content, string ProjectPath) virtualProject)
+    public TestVirtualProjectBuilder((string Content, string ProjectPath, string FilePath) virtualProject)
     {
         _virtualProject = virtualProject;
     }
@@ -45,7 +41,13 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
         using var xmlReader = XmlReader.Create(stringReader);
         var element = ProjectRootElement.Create(xmlReader, projectCollection, preserveFormatting: true);
         element.FullPath = GetVirtualProjectPath(entryPointFilePath);
-        CreatedElement = element;
         return element;
+    }
+
+    public void SaveProject(string entryPointFilePath, ProjectRootElement projectRootElement)
+    {
+        Assert.Equal(_virtualProject.FilePath, entryPointFilePath);
+        Assert.Null(ModifiedContent); // ideally we should not be saving twice
+        ModifiedContent = projectRootElement.RawXml;
     }
 }

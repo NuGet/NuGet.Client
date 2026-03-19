@@ -96,6 +96,7 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Run "why" command.
             var console = new TestConsole();
@@ -105,7 +106,7 @@ namespace Dotnet.Integration.Test
             WhyCommand.Register(
                 rootCommand,
                 new Lazy<IAnsiConsole>(console),
-                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, new TestVirtualProjectBuilder(virtualProject))));
+                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, builder)));
             int result = rootCommand.Parse([
                 "why", appFile, "PackageB",
             ]).Invoke(new() { Output = outWriter, Error = errorWriter });
@@ -122,6 +123,9 @@ namespace Dotnet.Integration.Test
 
             Assert.Contains("PackageA (v1.0.0)", output);
             Assert.Contains("packageB (v1.0.1)", output);
+
+            Assert.Null(builder.ModifiedContent);
+            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [Fact]

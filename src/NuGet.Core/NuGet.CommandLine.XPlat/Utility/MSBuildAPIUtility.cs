@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
-            return new SaveableProject { Project = new Project(projectRootElement), IsVirtualProject = isVirtual };
+            return new SaveableProject { Project = new Project(projectRootElement), VirtualProject = isVirtual ? (projectCSProjPath, VirtualProjectBuilder) : null };
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
-            return new SaveableProject { Project = new Project(projectRootElement, globalProperties, toolsVersion: null), IsVirtualProject = isVirtual };
+            return new SaveableProject { Project = new Project(projectRootElement, globalProperties, toolsVersion: null), VirtualProject = isVirtual ? (projectCSProjPath, VirtualProjectBuilder) : null };
         }
 
         private static bool IsCentralPackageManagementEnabled(Project project)
@@ -1091,14 +1091,17 @@ namespace NuGet.CommandLine.XPlat
         public required Project Project { get; init; }
 
         /// <summary>
-        /// Whether this project represents a virtual project (e.g., a file-based app).
-        /// When true, <see cref="Save()"/> is a no-op (the caller reads changes from the in-memory <see cref="Project"/> instance).
+        /// Set when this project represents a virtual project (e.g., a file-based app).
         /// </summary>
-        public bool IsVirtualProject { get; init; }
+        public (string EntryPointFilePath, IVirtualProjectBuilder Builder)? VirtualProject { get; init; }
 
         public void Save()
         {
-            if (!IsVirtualProject)
+            if (VirtualProject is { } virtualProject)
+            {
+                virtualProject.Builder.SaveProject(virtualProject.EntryPointFilePath, Project.Xml);
+            }
+            else
             {
                 Project.Save();
             }

@@ -67,7 +67,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
 
         Assert.Empty(error);
 
-        var modifiedProjectContent = builder.CreatedElement.RawXml;
+        var modifiedProjectContent = builder.ModifiedContent;
         _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
         Assert.DoesNotContain("PackageReference", modifiedProjectContent);
 
