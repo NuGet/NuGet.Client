@@ -229,20 +229,14 @@ namespace NuGet.ProjectModel
                                     else
                                     {
                                         // This does not consider ATF.
-                                        p2pSpecTargetFrameworkInformation = p2pSpec.GetNearestTargetFramework(targetFrameworkInformation.FrameworkName, targetFrameworkInformation.TargetAlias);
-                                        if (p2pSpecTargetFrameworkInformation.FrameworkName == null)
-                                        {
-                                            if (targetFrameworkInformation.FrameworkName is AssetTargetFallbackFramework atfFramework)
-                                            {
-                                                p2pSpecTargetFrameworkInformation = p2pSpec.GetNearestTargetFramework(atfFramework.AsFallbackFramework(), targetFrameworkInformation.TargetAlias);
-                                            }
-                                        }
+                                        p2pSpecTargetFrameworkInformation = NuGetFrameworkUtility.GetNearest(p2pSpec.TargetFrameworks, restoreMetadataFramework.FrameworkName, e => e.FrameworkName);
                                     }
                                     // No compatible framework found
-                                    if (p2pSpecTargetFrameworkInformation != null && p2pSpecTargetFrameworkInformation.FrameworkName != null)
+                                    if (p2pSpecTargetFrameworkInformation != null)
                                     {
                                         // We need to compare the main framework only. Ignoring fallbacks.
-                                        var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(e => e.TargetAlias == p2pSpecTargetFrameworkInformation.TargetAlias);
+                                        var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
+                                            t => NuGetFramework.Comparer.Equals(p2pSpecTargetFrameworkInformation.FrameworkName, t.FrameworkName));
 
                                         if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
                                         {
