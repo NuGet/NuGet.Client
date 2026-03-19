@@ -68,7 +68,7 @@ stages:
       - output: pipelineArtifact
         displayName: "Publish buildinfo.json as an artifact"
         condition: "succeeded()"
-        targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
+        targetPath: '$(Build.StagingDirectory)\BuildInfo'
         artifactName: "BuildInfo"
 
       - output: pipelineArtifact
