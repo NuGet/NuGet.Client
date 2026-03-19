@@ -813,8 +813,8 @@ NuGet.Packaging.Signing.Accuracy.Seconds.get -> int?
 NuGet.Packaging.Signing.AlgorithmIdentifier
 NuGet.Packaging.Signing.AlgorithmIdentifier.Algorithm.get -> System.Security.Cryptography.Oid!
 NuGet.Packaging.Signing.AllowListVerificationProvider
-~NuGet.Packaging.Signing.AllowListVerificationProvider.AllowListVerificationProvider(System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.VerificationAllowListEntry> allowList, bool requireNonEmptyAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "") -> void
-~NuGet.Packaging.Signing.AllowListVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader package, NuGet.Packaging.Signing.PrimarySignature signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult>
+NuGet.Packaging.Signing.AllowListVerificationProvider.AllowListVerificationProvider(System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.VerificationAllowListEntry!>? allowList, bool requireNonEmptyAllowList = false, string! emptyListErrorMessage = "", string! noMatchErrorMessage = "") -> void
+NuGet.Packaging.Signing.AllowListVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader! package, NuGet.Packaging.Signing.PrimarySignature! signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings! settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult!>!
 NuGet.Packaging.Signing.AttributeUtility
 NuGet.Packaging.Signing.AuthorPrimarySignature
 NuGet.Packaging.Signing.AuthorPrimarySignature.AuthorPrimarySignature(System.Security.Cryptography.Pkcs.SignedCms! signedCms) -> void
@@ -847,9 +847,9 @@ NuGet.Packaging.Signing.CertificateType.Signature = 0 -> NuGet.Packaging.Signing
 NuGet.Packaging.Signing.CertificateType.Timestamp = 1 -> NuGet.Packaging.Signing.CertificateType
 NuGet.Packaging.Signing.CertificateUtility
 NuGet.Packaging.Signing.ClientPolicyContext
-~NuGet.Packaging.Signing.ClientPolicyContext.AllowList.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.TrustedSignerAllowListEntry>
+NuGet.Packaging.Signing.ClientPolicyContext.AllowList.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.TrustedSignerAllowListEntry!>!
 NuGet.Packaging.Signing.ClientPolicyContext.Policy.get -> NuGet.Common.SignatureValidationMode
-~NuGet.Packaging.Signing.ClientPolicyContext.VerifierSettings.get -> NuGet.Packaging.Signing.SignedPackageVerifierSettings
+NuGet.Packaging.Signing.ClientPolicyContext.VerifierSettings.get -> NuGet.Packaging.Signing.SignedPackageVerifierSettings!
 NuGet.Packaging.Signing.CommitmentTypeIndication
 NuGet.Packaging.Signing.CommitmentTypeIndication.CommitmentTypeId.get -> System.Security.Cryptography.Oid!
 NuGet.Packaging.Signing.CommitmentTypeIndication.Qualifiers.get -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.CommitmentTypeQualifier!>?
@@ -907,7 +907,7 @@ NuGet.Packaging.Signing.ITrustedSignersProvider.GetTrustedSigners() -> System.Co
 NuGet.Packaging.Signing.ITrustedSignersProvider.Remove(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.TrustedSignerItem!>! trustedSigners) -> void
 NuGet.Packaging.Signing.IX509CertificateChain
 NuGet.Packaging.Signing.IntegrityVerificationProvider
-~NuGet.Packaging.Signing.IntegrityVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader package, NuGet.Packaging.Signing.PrimarySignature signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult>
+NuGet.Packaging.Signing.IntegrityVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader! package, NuGet.Packaging.Signing.PrimarySignature! signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings! settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult!>!
 NuGet.Packaging.Signing.IntegrityVerificationProvider.IntegrityVerificationProvider() -> void
 NuGet.Packaging.Signing.InvalidSignaturePackageVerificationResult
 NuGet.Packaging.Signing.InvalidSignaturePackageVerificationResult.InvalidSignaturePackageVerificationResult(NuGet.Packaging.Signing.SignatureVerificationStatus trust, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>! issues) -> void
@@ -937,8 +937,8 @@ NuGet.Packaging.Signing.NuGetV3ServiceIndexUrl.NuGetV3ServiceIndexUrl(System.Uri
 NuGet.Packaging.Signing.NuGetV3ServiceIndexUrl.V3ServiceIndexUrl.get -> System.Uri!
 NuGet.Packaging.Signing.Oids
 NuGet.Packaging.Signing.PackageSignatureVerifier
-~NuGet.Packaging.Signing.PackageSignatureVerifier.PackageSignatureVerifier(System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.ISignatureVerificationProvider> verificationProviders) -> void
-~NuGet.Packaging.Signing.PackageSignatureVerifier.VerifySignaturesAsync(NuGet.Packaging.Signing.ISignedPackageReader package, NuGet.Packaging.Signing.SignedPackageVerifierSettings settings, System.Threading.CancellationToken token, System.Guid parentId = default(System.Guid)) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.VerifySignaturesResult>
+NuGet.Packaging.Signing.PackageSignatureVerifier.PackageSignatureVerifier(System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.ISignatureVerificationProvider!>! verificationProviders) -> void
+NuGet.Packaging.Signing.PackageSignatureVerifier.VerifySignaturesAsync(NuGet.Packaging.Signing.ISignedPackageReader! package, NuGet.Packaging.Signing.SignedPackageVerifierSettings! settings, System.Threading.CancellationToken token, System.Guid parentId = default(System.Guid)) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.VerifySignaturesResult!>!
 NuGet.Packaging.Signing.PackageVerificationResult
 NuGet.Packaging.Signing.PackageVerificationResult.GetErrorIssues() -> System.Collections.Generic.IEnumerable<NuGet.Common.ILogMessage!>!
 NuGet.Packaging.Signing.PackageVerificationResult.GetWarningIssues() -> System.Collections.Generic.IEnumerable<NuGet.Common.ILogMessage!>!
@@ -1029,8 +1029,8 @@ NuGet.Packaging.Signing.SignaturePlacement.Any = NuGet.Packaging.Signing.Signatu
 NuGet.Packaging.Signing.SignaturePlacement.Countersignature = 2 -> NuGet.Packaging.Signing.SignaturePlacement
 NuGet.Packaging.Signing.SignaturePlacement.PrimarySignature = 1 -> NuGet.Packaging.Signing.SignaturePlacement
 NuGet.Packaging.Signing.SignatureTrustAndValidityVerificationProvider
-~NuGet.Packaging.Signing.SignatureTrustAndValidityVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader package, NuGet.Packaging.Signing.PrimarySignature signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult>
-~NuGet.Packaging.Signing.SignatureTrustAndValidityVerificationProvider.SignatureTrustAndValidityVerificationProvider(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, NuGet.Common.HashAlgorithmName>> allowUntrustedRootList = null) -> void
+NuGet.Packaging.Signing.SignatureTrustAndValidityVerificationProvider.GetTrustResultAsync(NuGet.Packaging.Signing.ISignedPackageReader! package, NuGet.Packaging.Signing.PrimarySignature! signature, NuGet.Packaging.Signing.SignedPackageVerifierSettings! settings, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PackageVerificationResult!>!
+NuGet.Packaging.Signing.SignatureTrustAndValidityVerificationProvider.SignatureTrustAndValidityVerificationProvider(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, NuGet.Common.HashAlgorithmName>>? allowUntrustedRootList = null) -> void
 NuGet.Packaging.Signing.SignatureType
 NuGet.Packaging.Signing.SignatureType.Author = 1 -> NuGet.Packaging.Signing.SignatureType
 NuGet.Packaging.Signing.SignatureType.Repository = 2 -> NuGet.Packaging.Signing.SignatureType
@@ -1074,14 +1074,14 @@ NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UntrustedRoot = 32768 -
 NuGet.Packaging.Signing.SignatureVerificationSummary
 NuGet.Packaging.Signing.SignatureVerificationSummary.ExpirationTime.get -> System.DateTimeOffset?
 NuGet.Packaging.Signing.SignatureVerificationSummary.Flags.get -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
-~NuGet.Packaging.Signing.SignatureVerificationSummary.Issues.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog>
-~NuGet.Packaging.Signing.SignatureVerificationSummary.Issues.set -> void
+NuGet.Packaging.Signing.SignatureVerificationSummary.Issues.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>!
+NuGet.Packaging.Signing.SignatureVerificationSummary.Issues.set -> void
 NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureType.get -> NuGet.Packaging.Signing.SignatureType
-~NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, NuGet.Packaging.Signing.Timestamp timestamp, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog> issues) -> void
-~NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, NuGet.Packaging.Signing.Timestamp timestamp, System.DateTimeOffset? expirationTime, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog> issues) -> void
-~NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog> issues) -> void
+NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, NuGet.Packaging.Signing.Timestamp? timestamp, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>! issues) -> void
+NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, NuGet.Packaging.Signing.Timestamp? timestamp, System.DateTimeOffset? expirationTime, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>! issues) -> void
+NuGet.Packaging.Signing.SignatureVerificationSummary.SignatureVerificationSummary(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.SignatureVerificationStatus status, NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>! issues) -> void
 NuGet.Packaging.Signing.SignatureVerificationSummary.Status.get -> NuGet.Packaging.Signing.SignatureVerificationStatus
-~NuGet.Packaging.Signing.SignatureVerificationSummary.Timestamp.get -> NuGet.Packaging.Signing.Timestamp
+NuGet.Packaging.Signing.SignatureVerificationSummary.Timestamp.get -> NuGet.Packaging.Signing.Timestamp?
 NuGet.Packaging.Signing.SignatureVerifySettings
 NuGet.Packaging.Signing.SignatureVerifySettings.AllowIllegal.get -> bool
 NuGet.Packaging.Signing.SignatureVerifySettings.AllowUnknownRevocation.get -> bool
@@ -1109,8 +1109,8 @@ NuGet.Packaging.Signing.SignedPackageArchiveMetadata.StartOfLocalFileHeaders.get
 NuGet.Packaging.Signing.SignedPackageArchiveMetadata.StartOfLocalFileHeaders.set -> void
 NuGet.Packaging.Signing.SignedPackageArchiveUtility
 NuGet.Packaging.Signing.SignedPackageVerificationResult
-~NuGet.Packaging.Signing.SignedPackageVerificationResult.Signature.get -> NuGet.Packaging.Signing.PrimarySignature
-~NuGet.Packaging.Signing.SignedPackageVerificationResult.SignedPackageVerificationResult(NuGet.Packaging.Signing.SignatureVerificationStatus trust, NuGet.Packaging.Signing.PrimarySignature signature, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog> issues) -> void
+NuGet.Packaging.Signing.SignedPackageVerificationResult.Signature.get -> NuGet.Packaging.Signing.PrimarySignature!
+NuGet.Packaging.Signing.SignedPackageVerificationResult.SignedPackageVerificationResult(NuGet.Packaging.Signing.SignatureVerificationStatus trust, NuGet.Packaging.Signing.PrimarySignature! signature, System.Collections.Generic.IEnumerable<NuGet.Packaging.Signing.SignatureLog!>! issues) -> void
 NuGet.Packaging.Signing.SignedPackageVerifierSettings
 NuGet.Packaging.Signing.SignedPackageVerifierSettings.AllowIgnoreTimestamp.get -> bool
 NuGet.Packaging.Signing.SignedPackageVerifierSettings.AllowIllegal.get -> bool
@@ -1644,7 +1644,7 @@ static NuGet.Packaging.Signing.CertificateUtility.TryDeduceHashAlgorithm(string!
 static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2CollectionToString(System.Security.Cryptography.X509Certificates.X509Certificate2Collection! certCollection, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
 static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2ToString(System.Security.Cryptography.X509Certificates.X509Certificate2! cert, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
 static NuGet.Packaging.Signing.CertificateUtility.X509ChainToString(System.Security.Cryptography.X509Certificates.X509Chain! chain, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
-~static NuGet.Packaging.Signing.ClientPolicyContext.GetClientPolicy(NuGet.Configuration.ISettings settings, NuGet.Common.ILogger logger) -> NuGet.Packaging.Signing.ClientPolicyContext
+static NuGet.Packaging.Signing.ClientPolicyContext.GetClientPolicy(NuGet.Configuration.ISettings! settings, NuGet.Common.ILogger! logger) -> NuGet.Packaging.Signing.ClientPolicyContext!
 static NuGet.Packaging.Signing.CommitmentTypeIndication.Create(System.Security.Cryptography.Oid! commitmentTypeId) -> NuGet.Packaging.Signing.CommitmentTypeIndication!
 static NuGet.Packaging.Signing.CommitmentTypeIndication.Read(byte[]! bytes) -> NuGet.Packaging.Signing.CommitmentTypeIndication!
 static NuGet.Packaging.Signing.CommitmentTypeQualifier.Read(byte[]! bytes) -> NuGet.Packaging.Signing.CommitmentTypeQualifier!

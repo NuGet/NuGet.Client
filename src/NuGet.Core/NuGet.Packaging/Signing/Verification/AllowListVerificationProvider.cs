@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,12 +12,12 @@ namespace NuGet.Packaging.Signing
 {
     public class AllowListVerificationProvider : ISignatureVerificationProvider
     {
-        private readonly IReadOnlyCollection<VerificationAllowListEntry> _allowList;
+        private readonly IReadOnlyCollection<VerificationAllowListEntry>? _allowList;
         private readonly string _emptyListErrorMessage;
         private readonly string _noMatchErrorMessage;
         private readonly bool _requireNonEmptyAllowList;
 
-        public AllowListVerificationProvider(IReadOnlyCollection<VerificationAllowListEntry> allowList, bool requireNonEmptyAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "")
+        public AllowListVerificationProvider(IReadOnlyCollection<VerificationAllowListEntry>? allowList, bool requireNonEmptyAllowList = false, string emptyListErrorMessage = "", string noMatchErrorMessage = "")
         {
             _allowList = allowList;
             _requireNonEmptyAllowList = requireNonEmptyAllowList;
@@ -66,7 +64,7 @@ namespace NuGet.Packaging.Signing
         {
             var primarySignatureCertificateFingerprintLookUp = new Dictionary<HashAlgorithmName, string>();
             var countersignatureCertificateFingerprintLookUp = new Dictionary<HashAlgorithmName, string>();
-            var repositoryCountersignature = new Lazy<RepositoryCountersignature>(() => RepositoryCountersignature.GetRepositoryCountersignature(signature));
+            var repositoryCountersignature = new Lazy<RepositoryCountersignature?>(() => RepositoryCountersignature.GetRepositoryCountersignature(signature));
 
             foreach (var allowedEntry in allowList)
             {
@@ -87,7 +85,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, signature as IRepositorySignature, out var allowedOwners, out var actualOwners))
                             {
-                                if (allowedOwners.Intersect(actualOwners).Any())
+                                if (allowedOwners!.Intersect(actualOwners!).Any())
                                 {
                                     return true;
                                 }
@@ -114,7 +112,7 @@ namespace NuGet.Packaging.Signing
                             {
                                 if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, repositoryCountersignature.Value, out var allowedOwners, out var actualOwners))
                                 {
-                                    if (allowedOwners.Intersect(actualOwners).Any())
+                                    if (allowedOwners!.Intersect(actualOwners!).Any())
                                     {
                                         return true;
                                     }
@@ -132,7 +130,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        private static bool ShouldVerifyOwners(TrustedSignerAllowListEntry entry, IRepositorySignature repoSignature, out IReadOnlyList<string> allowedOwners, out IReadOnlyList<string> actualOwners)
+        private static bool ShouldVerifyOwners(TrustedSignerAllowListEntry? entry, IRepositorySignature? repoSignature, out IReadOnlyList<string>? allowedOwners, out IReadOnlyList<string>? actualOwners)
         {
             allowedOwners = null;
             actualOwners = null;
@@ -162,7 +160,7 @@ namespace NuGet.Packaging.Signing
         {
             if (!CertificateFingerprintLookUp.TryGetValue(fingerprintAlgorithm, out var fingerprintString))
             {
-                fingerprintString = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, fingerprintAlgorithm);
+                fingerprintString = CertificateUtility.GetHashString(signature.SignerInfo.Certificate!, fingerprintAlgorithm);
                 CertificateFingerprintLookUp[fingerprintAlgorithm] = fingerprintString;
             }
 
