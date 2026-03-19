@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
+using NuGet.XPlat.FuncTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,6 +18,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
     private readonly DotnetIntegrationTestFixture _fixture = fixture;
     private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
+    // This should use `dotnet package remove` when it supports file-based apps.
     [Fact]
     public async Task RemovePkg_FileBasedApp()
     {
@@ -36,7 +38,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
         var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
         _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
         Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", virtualProject.Content);
-        var builder = new TestVirtualProjectBuilder(virtualProject);
+        using var builder = new TestVirtualProjectBuilder(virtualProject);
 
         // Remove the package.
         using var outWriter = new StringWriter();
@@ -70,7 +72,5 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
         var modifiedProjectContent = builder.ModifiedContent;
         _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
         Assert.DoesNotContain("PackageReference", modifiedProjectContent);
-
-        Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
     }
 }

@@ -79,6 +79,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        // This should use `dotnet package add` when it supports file-based apps.
         [Fact]
         public async Task AddPkg_FileBasedApp()
         {
@@ -105,7 +106,7 @@ namespace Dotnet.Integration.Test
             var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
             _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
             Assert.DoesNotContain("PackageReference", virtualProject.Content);
-            var builder = new TestVirtualProjectBuilder(virtualProject);
+            using var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Create a package.
             var packageX = XPlatTestUtils.CreatePackage();
@@ -144,8 +145,6 @@ namespace Dotnet.Integration.Test
             var modifiedProjectContent = builder.ModifiedContent;
             _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
             Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", modifiedProjectContent);
-
-            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [Fact]

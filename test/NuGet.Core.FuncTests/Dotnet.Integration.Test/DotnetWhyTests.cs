@@ -69,6 +69,7 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
+        // This should use `dotnet nuget why` when it supports file-based apps.
         [Fact]
         public async Task WhyCommand_FileBasedApp()
         {
@@ -96,7 +97,7 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
-            var builder = new TestVirtualProjectBuilder(virtualProject);
+            using var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Run "why" command.
             var console = new TestConsole();
@@ -125,7 +126,6 @@ namespace Dotnet.Integration.Test
             Assert.Contains("packageB (v1.0.1)", output);
 
             Assert.Null(builder.ModifiedContent);
-            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [Fact]

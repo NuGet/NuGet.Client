@@ -79,6 +79,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        // This should use `dotnet package list` when it supports file-based apps.
         [Fact]
         public async Task DotnetListPackage_FileBasedApp()
         {
@@ -103,7 +104,7 @@ namespace Dotnet.Integration.Test
 
             // Get project content.
             var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
-            var builder = new TestVirtualProjectBuilder(virtualProject);
+            using var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // List packages.
             using var outWriter = new StringWriter();
@@ -140,7 +141,6 @@ namespace Dotnet.Integration.Test
             Assert.Contains("1.0.0", output);
 
             Assert.Null(builder.ModifiedContent);
-            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [PlatformFact(Platform.Windows)]

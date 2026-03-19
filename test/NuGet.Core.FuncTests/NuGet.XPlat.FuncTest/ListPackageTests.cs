@@ -353,6 +353,50 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public async Task CanListPackagesForFileBasedApp()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageA100);
+
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net6.0", fileBasedApp: true,
+                    project => project.AddPackageToAllFrameworks(packageA100));
+            var projectB = SimpleTestProjectContext.CreateNETCore("ProjectB", pathContext.SolutionRoot, "net6.0");
+
+            // List package command requires restore to be run before it can list packages.
+            await RestoreProjectsAsync(pathContext, projectA, projectB, _testOutputHelper);
+
+            var output = new StringBuilder();
+            var error = new StringBuilder();
+            using TextWriter consoleOut = new StringWriter(output);
+            using TextWriter consoleError = new StringWriter(error);
+            var logger = new TestLogger(_testOutputHelper);
+            using var builder = TestVirtualProjectBuilder.From(projectA);
+            ListPackageCommandRunner listPackageCommandRunner = new(new MSBuildAPIUtility(logger, builder));
+            var packageRefArgs = new ListPackageArgs(
+                                        path: builder.FilePath,
+                                        packageSources: [new PackageSource(pathContext.PackageSource)],
+                                        frameworks: ["net6.0"],
+                                        reportType: ReportType.Outdated,
+                                        renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
+                                        includeTransitive: false,
+                                        prerelease: false,
+                                        highestPatch: false,
+                                        highestMinor: false,
+                                        auditSources: null,
+                                        logger: logger,
+                                        cancellationToken: CancellationToken.None);
+
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+            Assert.True(result == 0, userMessage: $"{output}\n{error}\n{logger.ShowMessages()}");
+        }
+
+        [Fact]
         public async Task GetReportDataAsync_WhenReportTypeIsVulnerable_ShouldUseAuditSources()
         {
             // Arrange

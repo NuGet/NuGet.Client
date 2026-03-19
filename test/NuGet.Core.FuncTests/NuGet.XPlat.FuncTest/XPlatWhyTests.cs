@@ -27,20 +27,18 @@ namespace NuGet.XPlat.FuncTest
             _testOutputHelper = testOutputHelper;
         }
 
-        [Fact]
-        public async Task WhyCommand_ProjectHasTransitiveDependency_DependencyPathExists()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task WhyCommand_ProjectHasTransitiveDependency_DependencyPathExists(bool fileBasedApp)
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
-            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
             var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
             packageX.Dependencies.Add(packageY);
-
-            project.AddPackageToFramework(projectFramework, packageX);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -48,10 +46,19 @@ namespace NuGet.XPlat.FuncTest
                 packageX,
                 packageY);
 
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework, fileBasedApp,
+                project =>
+                {
+                    project.AddPackageToFramework(projectFramework, packageX);
+                });
+
             var logger = new TestCommandOutputLogger(_testOutputHelper);
+            using var builder = TestVirtualProjectBuilder.From(project);
+            var msbuild = new MSBuildAPIUtility(logger, builder);
             var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, msbuild);
 
             var console = new TestConsole();
             console.Width(100);
@@ -64,7 +71,7 @@ namespace NuGet.XPlat.FuncTest
                     CancellationToken.None);
 
             // Act
-            var result = await new WhyCommandRunner(new MSBuildAPIUtility(logger)).ExecuteCommand(whyCommandArgs);
+            var result = await new WhyCommandRunner(msbuild).ExecuteCommand(whyCommandArgs);
 
             // Assert
             var output = console.Output;

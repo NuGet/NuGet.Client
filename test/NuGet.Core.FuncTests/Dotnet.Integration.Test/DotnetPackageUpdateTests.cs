@@ -100,6 +100,7 @@ namespace Dotnet.Integration.Test
             version.Should().Be("2.0.0");
         }
 
+        // This should use `dotnet package update` when it supports file-based apps.
         [Fact]
         public async Task FileBasedApp()
         {
@@ -127,7 +128,7 @@ namespace Dotnet.Integration.Test
             var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
             _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", virtualProject.Content);
-            var builder = new TestVirtualProjectBuilder(virtualProject);
+            using var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Update the package.
             using var outWriter = new StringWriter();
@@ -160,8 +161,6 @@ namespace Dotnet.Integration.Test
             var modifiedProjectContent = builder.ModifiedContent;
             _testOutputHelper.WriteLine("after:\n" + modifiedProjectContent);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="2.0.0" />""", modifiedProjectContent);
-
-            Assert.False(File.Exists(Path.ChangeExtension(appFile, ".csproj")));
         }
 
         [Fact]

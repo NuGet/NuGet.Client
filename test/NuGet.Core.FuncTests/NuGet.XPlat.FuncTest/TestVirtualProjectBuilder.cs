@@ -7,14 +7,15 @@ using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat;
+using NuGet.Test.Utility;
 using Xunit;
 
-namespace Dotnet.Integration.Test;
+namespace NuGet.XPlat.FuncTest;
 
 /// <summary>
 /// Test implementation of <see cref="IVirtualProjectBuilder"/>.
 /// </summary>
-internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
+internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder, IDisposable
 {
     private readonly (string Content, string ProjectPath, string FilePath) _virtualProject;
 
@@ -24,6 +25,19 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
     {
         _virtualProject = virtualProject;
     }
+
+    public static TestVirtualProjectBuilder? From(SimpleTestProjectContext project)
+    {
+        if (project.VirtualProjectContent != null)
+        {
+            Assert.EndsWith(".cs", project.ProjectPath, StringComparison.OrdinalIgnoreCase);
+            return new TestVirtualProjectBuilder((project.VirtualProjectContent, project.VirtualProjectPath, project.ProjectPath));
+        }
+
+        return null;
+    }
+
+    public string FilePath => _virtualProject.FilePath;
 
     public bool IsValidEntryPointPath(string entryPointFilePath)
     {
@@ -49,5 +63,10 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder
         Assert.Equal(_virtualProject.FilePath, entryPointFilePath);
         Assert.Null(ModifiedContent); // ideally we should not be saving twice
         ModifiedContent = projectRootElement.RawXml;
+    }
+
+    public void Dispose()
+    {
+        Assert.False(File.Exists(_virtualProject.ProjectPath));
     }
 }
