@@ -35,7 +35,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public SignerInfo SignerInfo { get; }
 
-        public abstract byte[] GetSignatureValue();
+        public abstract byte[]? GetSignatureValue();
 
         private IDictionary<HashAlgorithmName, string>? _signingCertificateFingerprintLookup;
 

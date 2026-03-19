@@ -10,7 +10,7 @@ namespace NuGet.Packaging.Signing
     internal sealed class X509ChainWrapper : IX509Chain
     {
         private readonly X509Chain _chain;
-        private readonly Func<X509Chain, ILogMessage>? _getAdditionalContext;
+        private readonly Func<X509Chain, ILogMessage?>? _getAdditionalContext;
 
         public ILogMessage? AdditionalContext { get; private set; }
         public X509ChainElementCollection ChainElements => _chain.ChainElements;
@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Signing
         {
         }
 
-        internal X509ChainWrapper(X509Chain chain, Func<X509Chain, ILogMessage>? getAdditionalContext)
+        internal X509ChainWrapper(X509Chain chain, Func<X509Chain, ILogMessage?>? getAdditionalContext)
         {
             if (chain is null)
             {

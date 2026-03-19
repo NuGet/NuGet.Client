@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Signing
             return repositoryCountersignature;
         }
 
-        public override byte[] GetSignatureValue()
+        public override byte[]? GetSignatureValue()
         {
             using (ICms cms = CmsFactory.Create(_primarySignature.GetBytes()))
             {

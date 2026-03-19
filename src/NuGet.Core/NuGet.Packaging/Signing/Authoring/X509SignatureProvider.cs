@@ -204,7 +204,7 @@ namespace NuGet.Packaging.Signing
         {
             var repositoryCountersignature = RepositoryCountersignature.GetRepositoryCountersignature(primarySignature);
             var signatureValue = repositoryCountersignature!.GetSignatureValue();
-            var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue);
+            var messageHash = request.TimestampHashAlgorithm.ComputeHash(signatureValue!);
 
             var timestampRequest = new TimestampRequest(
                 signingSpecifications: SigningSpecifications.V1,

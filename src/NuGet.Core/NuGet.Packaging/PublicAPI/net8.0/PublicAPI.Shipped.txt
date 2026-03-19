@@ -667,10 +667,10 @@ NuGet.Packaging.PackageHelper
 NuGet.Packaging.PackageIdValidator
 NuGet.Packaging.PackagePathHelper
 NuGet.Packaging.PackagePathResolver
-~NuGet.Packaging.PackagePathResolver.GetManifestFileName(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~NuGet.Packaging.PackagePathResolver.GetPackageDownloadMarkerFileName(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~NuGet.Packaging.PackagePathResolver.PackagePathResolver(string rootDirectory, bool useSideBySidePaths = true) -> void
-~NuGet.Packaging.PackagePathResolver.Root.get -> string
+NuGet.Packaging.PackagePathResolver.GetManifestFileName(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string!
+NuGet.Packaging.PackagePathResolver.GetPackageDownloadMarkerFileName(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string!
+NuGet.Packaging.PackagePathResolver.PackagePathResolver(string! rootDirectory, bool useSideBySidePaths = true) -> void
+NuGet.Packaging.PackagePathResolver.Root.get -> string!
 NuGet.Packaging.PackagePathResolver.UseSideBySidePaths.get -> bool
 NuGet.Packaging.PackageReaderBase
 NuGet.Packaging.PackageReaderBase.CompatibilityProvider.get -> NuGet.Frameworks.IFrameworkCompatibilityProvider!
@@ -1320,7 +1320,7 @@ abstract NuGet.Packaging.PackageReaderBase.GetStream(string! path) -> System.IO.
 abstract NuGet.Packaging.PackageReaderBase.IsSignedAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 abstract NuGet.Packaging.PackageReaderBase.ValidateIntegrityAsync(NuGet.Packaging.Signing.SignatureContent! signatureContent, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
 abstract NuGet.Packaging.Signing.SignPackageRequest.SignatureType.get -> NuGet.Packaging.Signing.SignatureType
-abstract NuGet.Packaging.Signing.Signature.GetSignatureValue() -> byte[]!
+abstract NuGet.Packaging.Signing.Signature.GetSignatureValue() -> byte[]?
 abstract NuGet.Packaging.Signing.Signature.ThrowForInvalidSignature() -> void
 abstract NuGet.Packaging.Signing.SigningSpecifications.AllowedHashAlgorithmOids.get -> string![]!
 abstract NuGet.Packaging.Signing.SigningSpecifications.AllowedHashAlgorithms.get -> NuGet.Common.HashAlgorithmName[]!
@@ -1466,20 +1466,20 @@ override NuGet.Packaging.Signing.ReadOnlyBufferedStream.WriteByte(byte value) ->
 override NuGet.Packaging.Signing.ReadOnlyBufferedStream.WriteTimeout.get -> int
 override NuGet.Packaging.Signing.ReadOnlyBufferedStream.WriteTimeout.set -> void
 override NuGet.Packaging.Signing.RepositoryCountersignature.FriendlyName.get -> string!
-override NuGet.Packaging.Signing.RepositoryCountersignature.GetSignatureValue() -> byte[]!
+override NuGet.Packaging.Signing.RepositoryCountersignature.GetSignatureValue() -> byte[]?
 override NuGet.Packaging.Signing.RepositoryCountersignature.Verify(NuGet.Packaging.Signing.Timestamp! timestamp, NuGet.Packaging.Signing.SignatureVerifySettings! settings, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, System.Security.Cryptography.X509Certificates.X509Certificate2Collection! certificateExtraStore) -> NuGet.Packaging.Signing.SignatureVerificationSummary!
 override NuGet.Packaging.Signing.RepositoryPrimarySignature.FriendlyName.get -> string!
 override NuGet.Packaging.Signing.RepositoryPrimarySignature.Verify(NuGet.Packaging.Signing.Timestamp! timestamp, NuGet.Packaging.Signing.SignatureVerifySettings! settings, NuGet.Common.HashAlgorithmName fingerprintAlgorithm, System.Security.Cryptography.X509Certificates.X509Certificate2Collection! certificateExtraStore) -> NuGet.Packaging.Signing.SignatureVerificationSummary!
 override NuGet.Packaging.Signing.RepositorySignPackageRequest.SignatureType.get -> NuGet.Packaging.Signing.SignatureType
 override NuGet.Packaging.Signing.SignedPackageArchive.Dispose(bool disposing) -> void
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedHashAlgorithmOids.get -> string[]
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedHashAlgorithms.get -> NuGet.Common.HashAlgorithmName[]
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedSignatureAlgorithmOids.get -> string[]
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedSignatureAlgorithms.get -> NuGet.Common.SignatureAlgorithmName[]
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.Encoding.get -> System.Text.Encoding
+override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedHashAlgorithmOids.get -> string![]!
+override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedHashAlgorithms.get -> NuGet.Common.HashAlgorithmName[]!
+override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedSignatureAlgorithmOids.get -> string![]!
+override NuGet.Packaging.Signing.SigningSpecificationsV1.AllowedSignatureAlgorithms.get -> NuGet.Common.SignatureAlgorithmName[]!
+override NuGet.Packaging.Signing.SigningSpecificationsV1.Encoding.get -> System.Text.Encoding!
 override NuGet.Packaging.Signing.SigningSpecificationsV1.RSAPublicKeyMinLength.get -> int
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.SignaturePath.get -> string
-~override NuGet.Packaging.Signing.SigningSpecificationsV1.Version.get -> string
+override NuGet.Packaging.Signing.SigningSpecificationsV1.SignaturePath.get -> string!
+override NuGet.Packaging.Signing.SigningSpecificationsV1.Version.get -> string!
 override NuGet.Packaging.Signing.TrustedSignerAllowListEntry.Equals(object? obj) -> bool
 override NuGet.Packaging.Signing.TrustedSignerAllowListEntry.GetHashCode() -> int
 override NuGet.Packaging.UnsafePackageEntryException.AsLogMessage() -> NuGet.Common.ILogMessage!
@@ -1710,7 +1710,7 @@ static NuGet.Packaging.Signing.TrustedSignersProvider.GetAllowListEntries(NuGet.
 static NuGet.Packaging.Signing.TstInfo.Read(byte[]! bytes) -> NuGet.Packaging.Signing.TstInfo!
 static NuGet.Packaging.Signing.VerificationUtility.GetSignatureVerificationStatus(NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags) -> NuGet.Packaging.Signing.SignatureVerificationStatus
 static NuGet.Packaging.Signing.VerificationUtility.IsVerificationTarget(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.VerificationTarget target) -> bool
-~static NuGet.Packaging.Signing.X509TrustStore.InitializeForDotNetSdk(NuGet.Common.ILogger logger) -> void
+static NuGet.Packaging.Signing.X509TrustStore.InitializeForDotNetSdk(NuGet.Common.ILogger! logger) -> void
 static NuGet.Packaging.StreamExtensions.CopyToFile(this System.IO.Stream! inputStream, string! fileFullPath) -> string!
 static NuGet.Packaging.TopologicalSortUtility.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependencyInfo!>! packages) -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageDependencyInfo!>!
 static NuGet.Packaging.TopologicalSortUtility.SortPackagesByDependencyOrder<T>(System.Collections.Generic.IEnumerable<T!>! items, System.StringComparer! comparer, System.Func<T!, string!>! getId, System.Func<T!, string![]!>! getDependencies) -> System.Collections.Generic.IReadOnlyList<T!>!
@@ -1826,11 +1826,11 @@ virtual NuGet.Packaging.Core.NuspecCoreReaderBase.GetVersion() -> NuGet.Versioni
 virtual NuGet.Packaging.Core.NuspecCoreReaderBase.IsServiceable() -> bool
 virtual NuGet.Packaging.Core.PackageIdentity.Equals(NuGet.Packaging.Core.PackageIdentity? other, NuGet.Versioning.VersionComparison versionComparison) -> bool
 virtual NuGet.Packaging.Core.PackagingException.AsLogMessage() -> NuGet.Common.ILogMessage!
-~virtual NuGet.Packaging.PackagePathResolver.GetInstallPath(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~virtual NuGet.Packaging.PackagePathResolver.GetInstalledPackageFilePath(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~virtual NuGet.Packaging.PackagePathResolver.GetInstalledPath(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~virtual NuGet.Packaging.PackagePathResolver.GetPackageDirectoryName(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
-~virtual NuGet.Packaging.PackagePathResolver.GetPackageFileName(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> string
+virtual NuGet.Packaging.PackagePathResolver.GetInstallPath(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string!
+virtual NuGet.Packaging.PackagePathResolver.GetInstalledPackageFilePath(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string?
+virtual NuGet.Packaging.PackagePathResolver.GetInstalledPath(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string?
+virtual NuGet.Packaging.PackagePathResolver.GetPackageDirectoryName(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string!
+virtual NuGet.Packaging.PackagePathResolver.GetPackageFileName(NuGet.Packaging.Core.PackageIdentity! packageIdentity) -> string!
 virtual NuGet.Packaging.PackageReaderBase.CopyFilesAsync(string! destination, System.Collections.Generic.IEnumerable<string!>! packageFiles, NuGet.Packaging.Core.ExtractPackageFileDelegate! extractFile, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!
 virtual NuGet.Packaging.PackageReaderBase.CopyNupkgAsync(string! nupkgFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
 virtual NuGet.Packaging.PackageReaderBase.GetBuildItems() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.FrameworkSpecificGroup!>!

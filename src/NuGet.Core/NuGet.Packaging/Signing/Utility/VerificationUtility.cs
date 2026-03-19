@@ -151,7 +151,7 @@ namespace NuGet.Packaging.Signing
                 {
                     var hashAlgorithm = CryptoHashUtility.OidToHashAlgorithmName(timestamp.TstInfo!.HashAlgorithmId.Value!);
                     var signatureValue = signature.GetSignatureValue();
-                    var messageHash = hashAlgorithm.ComputeHash(signatureValue);
+                    var messageHash = hashAlgorithm.ComputeHash(signatureValue!);
 
                     if (!timestamp.TstInfo!.HasMessageHash(messageHash))
                     {
