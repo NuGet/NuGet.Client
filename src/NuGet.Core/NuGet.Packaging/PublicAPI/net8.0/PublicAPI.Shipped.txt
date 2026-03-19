@@ -972,8 +972,8 @@ NuGet.Packaging.Signing.RepositorySignPackageRequest.RepositorySignPackageReques
 NuGet.Packaging.Signing.RepositorySignPackageRequest.V3ServiceIndexUrl.get -> System.Uri!
 NuGet.Packaging.Signing.RepositorySignatureInfoUtility
 NuGet.Packaging.Signing.Rfc3161TimestampProvider
-~NuGet.Packaging.Signing.Rfc3161TimestampProvider.Rfc3161TimestampProvider(System.Uri timeStampServerUrl) -> void
-~NuGet.Packaging.Signing.Rfc3161TimestampProvider.TimestampSignatureAsync(NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Packaging.Signing.TimestampRequest request, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PrimarySignature>
+NuGet.Packaging.Signing.Rfc3161TimestampProvider.Rfc3161TimestampProvider(System.Uri! timeStampServerUrl) -> void
+NuGet.Packaging.Signing.Rfc3161TimestampProvider.TimestampSignatureAsync(NuGet.Packaging.Signing.PrimarySignature! primarySignature, NuGet.Packaging.Signing.TimestampRequest! request, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PrimarySignature!>!
 NuGet.Packaging.Signing.Rfc3161TimestampTokenInfo
 NuGet.Packaging.Signing.Rfc3161TimestampTokenInfo.Rfc3161TimestampTokenInfo() -> void
 NuGet.Packaging.Signing.SignPackageRequest
@@ -1148,10 +1148,10 @@ NuGet.Packaging.Signing.SigningUtility
 NuGet.Packaging.Signing.Timestamp
 NuGet.Packaging.Signing.Timestamp.GeneralizedTime.get -> System.DateTimeOffset
 NuGet.Packaging.Signing.Timestamp.LowerLimit.get -> System.DateTimeOffset
-~NuGet.Packaging.Signing.Timestamp.SignedCms.get -> System.Security.Cryptography.Pkcs.SignedCms
-~NuGet.Packaging.Signing.Timestamp.SignerInfo.get -> System.Security.Cryptography.Pkcs.SignerInfo
+NuGet.Packaging.Signing.Timestamp.SignedCms.get -> System.Security.Cryptography.Pkcs.SignedCms?
+NuGet.Packaging.Signing.Timestamp.SignerInfo.get -> System.Security.Cryptography.Pkcs.SignerInfo!
 NuGet.Packaging.Signing.Timestamp.Timestamp() -> void
-~NuGet.Packaging.Signing.Timestamp.Timestamp(System.Security.Cryptography.Pkcs.SignedCms timestampCms) -> void
+NuGet.Packaging.Signing.Timestamp.Timestamp(System.Security.Cryptography.Pkcs.SignedCms! timestampCms) -> void
 NuGet.Packaging.Signing.Timestamp.UpperLimit.get -> System.DateTimeOffset
 NuGet.Packaging.Signing.TimestampException
 NuGet.Packaging.Signing.TimestampException.TimestampException() -> void
@@ -1160,10 +1160,10 @@ NuGet.Packaging.Signing.TimestampException.TimestampException(NuGet.Common.NuGet
 NuGet.Packaging.Signing.TimestampException.TimestampException(string! message) -> void
 NuGet.Packaging.Signing.TimestampRequest
 NuGet.Packaging.Signing.TimestampRequest.HashAlgorithm.get -> NuGet.Common.HashAlgorithmName
-~NuGet.Packaging.Signing.TimestampRequest.HashedMessage.get -> byte[]
-~NuGet.Packaging.Signing.TimestampRequest.SigningSpecifications.get -> NuGet.Packaging.Signing.SigningSpecifications
+NuGet.Packaging.Signing.TimestampRequest.HashedMessage.get -> byte[]!
+NuGet.Packaging.Signing.TimestampRequest.SigningSpecifications.get -> NuGet.Packaging.Signing.SigningSpecifications!
 NuGet.Packaging.Signing.TimestampRequest.Target.get -> NuGet.Packaging.Signing.SignaturePlacement
-~NuGet.Packaging.Signing.TimestampRequest.TimestampRequest(NuGet.Packaging.Signing.SigningSpecifications signingSpecifications, byte[] hashedMessage, NuGet.Common.HashAlgorithmName hashAlgorithm, NuGet.Packaging.Signing.SignaturePlacement target) -> void
+NuGet.Packaging.Signing.TimestampRequest.TimestampRequest(NuGet.Packaging.Signing.SigningSpecifications! signingSpecifications, byte[]! hashedMessage, NuGet.Common.HashAlgorithmName hashAlgorithm, NuGet.Packaging.Signing.SignaturePlacement target) -> void
 NuGet.Packaging.Signing.TrustedSignerAllowListEntry
 NuGet.Packaging.Signing.TrustedSignerAllowListEntry.AllowUntrustedRoot.get -> bool
 NuGet.Packaging.Signing.TrustedSignerAllowListEntry.Owners.get -> System.Collections.Generic.IReadOnlyList<string!>?

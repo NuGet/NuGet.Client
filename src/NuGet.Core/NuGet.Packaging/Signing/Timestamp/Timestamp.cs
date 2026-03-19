@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,17 +32,17 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// A SignedCms object holding the timestamp and SignerInfo.
         /// </summary>
-        public SignedCms SignedCms { get; }
+        public SignedCms? SignedCms { get; }
 
         /// <summary>
         /// SignerInfo for this timestamp.
         /// </summary>
-        public SignerInfo SignerInfo => SignedCms.SignerInfos[0];
+        public SignerInfo SignerInfo => SignedCms!.SignerInfos[0];
 
         /// <summary>
         /// Timestamp token info for this timestamp.
         /// </summary>
-        internal IRfc3161TimestampTokenInfo TstInfo { get; }
+        internal IRfc3161TimestampTokenInfo? TstInfo { get; }
 
         /// <summary>
         /// Default constructor. Limits are set to current time.
@@ -139,7 +137,7 @@ namespace NuGet.Packaging.Signing
                     $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate, fingerprintAlgorithm)}")));
 
                 SignatureVerificationStatusFlags flags = SignatureVerificationStatusFlags.NoErrors;
-                var certificateExtraStore = SignedCms.Certificates;
+                var certificateExtraStore = SignedCms!.Certificates;
 
                 using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
                 {
@@ -221,7 +219,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (treatIssueAsError)
                             {
-                                string unknownRevocationMessage = null;
+                                string? unknownRevocationMessage = null;
 
                                 if (unknownRevocationErrors)
                                 {
