@@ -5,5 +5,6 @@ NuGet.CommandLine.XPlat.IVirtualProjectBuilder.GetVirtualProjectPath(string! ent
 NuGet.CommandLine.XPlat.IVirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool
 NuGet.CommandLine.XPlat.IVirtualProjectBuilder.SaveProject(string! entryPointFilePath, Microsoft.Build.Construction.ProjectRootElement! projectRootElement) -> void
 NuGet.CommandLine.XPlat.Program
+static NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(System.CommandLine.Command! rootCommand, NuGet.CommandLine.XPlat.IVirtualProjectBuilder? virtualProjectBuilder = null) -> void
 static NuGet.CommandLine.XPlat.NuGetCommands.Add(System.CommandLine.RootCommand! rootCommand, System.CommandLine.Option<bool>! interactiveOption, NuGet.CommandLine.XPlat.IVirtualProjectBuilder? virtualProjectBuilder = null) -> void
 static NuGet.CommandLine.XPlat.Program.Run(string![]! args, NuGet.CommandLine.XPlat.IVirtualProjectBuilder? virtualProjectBuilder = null) -> int

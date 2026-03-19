@@ -37,10 +37,18 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         /// For now, this allows the dotnet CLI to invoke why directly, instead of running NuGet.CommandLine.XPlat as a child process.
         /// </summary>
         /// <param name="rootCommand">The <c>dotnet nuget</c> command handler, to add <c>why</c> to.</param>
-        public static void GetWhyCommand(Command rootCommand)
+        /// <param name="virtualProjectBuilder">For handling file-based apps.</param>
+        public static void GetWhyCommand(Command rootCommand, IVirtualProjectBuilder? virtualProjectBuilder = null)
         {
             Register(rootCommand,
-                new Lazy<IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console));
+                new Lazy<IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console),
+                virtualProjectBuilder);
+        }
+
+        // For binary backcompat. To delete once the SDK starts using the other overload.
+        public static void GetWhyCommand(Command rootCommand)
+        {
+            GetWhyCommand(rootCommand, virtualProjectBuilder: null);
         }
 
         internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console, Func<WhyCommandRunner> getCommandRunner)
