@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
     public sealed class RepositoryPrimarySignature : PrimarySignature, IRepositorySignature
     {
         public Uri V3ServiceIndexUrl { get; }
-        public IReadOnlyList<string> PackageOwners { get; }
+        public IReadOnlyList<string>? PackageOwners { get; }
 
         public override string FriendlyName => Strings.RepositoryPrimarySignatureFriendlyName;
 

@@ -110,7 +110,7 @@ namespace NuGet.Packaging.Signing
             var signerInfo = timestampCms.SignerInfos[0];
 
             using (var chain = CertificateChainUtility.GetCertificateChain(
-                signerInfo.Certificate,
+                signerInfo.Certificate!,
                 timestampCms.Certificates,
                 logger,
                 CertificateType.Timestamp))

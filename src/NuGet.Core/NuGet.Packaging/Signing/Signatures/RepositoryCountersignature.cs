@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
         private readonly PrimarySignature _primarySignature;
 
         public Uri V3ServiceIndexUrl { get; }
-        public IReadOnlyList<string> PackageOwners { get; }
+        public IReadOnlyList<string>? PackageOwners { get; }
 
         public override string FriendlyName => Strings.RepositoryCountersignatureFriendlyName;
 
@@ -24,7 +24,7 @@ namespace NuGet.Packaging.Signing
             PrimarySignature primarySignature,
             SignerInfo counterSignerInfo,
             Uri v3ServiceIndexUrl,
-            IReadOnlyList<string> packageOwners)
+            IReadOnlyList<string>? packageOwners)
             : base(counterSignerInfo, SignatureType.Repository)
         {
             _primarySignature = primarySignature;

@@ -176,13 +176,12 @@ namespace NuGet.Packaging.Signing
                     else
                     {
                         var chainBuildingHasIssues = false;
-                        IEnumerable<string> messages;
 
                         var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out var messages))
                         {
-                            foreach (var message in messages)
+                            foreach (string message in messages)
                             {
                                 issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, message)));
                             }
@@ -207,7 +206,7 @@ namespace NuGet.Packaging.Signing
 
                         if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.Revoked, out messages))
                         {
-                            issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages.First())));
+                            issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages!.First())));
                             flags |= SignatureVerificationStatusFlags.CertificateRevoked;
 
                             return flags;
@@ -223,7 +222,7 @@ namespace NuGet.Packaging.Signing
 
                                 if (unknownRevocationErrors)
                                 {
-                                    unknownRevocationMessage = string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, unknownRevocationStatusMessages.First());
+                                    unknownRevocationMessage = string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, unknownRevocationStatusMessages!.First());
                                 }
 
                                 if (settings.RevocationMode == RevocationMode.Offline)

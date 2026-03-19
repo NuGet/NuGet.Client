@@ -877,7 +877,7 @@ NuGet.Packaging.Signing.GeneralName.DirectoryName.get -> System.Security.Cryptog
 NuGet.Packaging.Signing.IPackageSignatureVerifier
 NuGet.Packaging.Signing.IPackageSignatureVerifier.VerifySignaturesAsync(NuGet.Packaging.Signing.ISignedPackageReader! package, NuGet.Packaging.Signing.SignedPackageVerifierSettings! settings, System.Threading.CancellationToken token, System.Guid telemetryOperationId) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.VerifySignaturesResult!>!
 NuGet.Packaging.Signing.IRepositorySignature
-NuGet.Packaging.Signing.IRepositorySignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.Packaging.Signing.IRepositorySignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>?
 NuGet.Packaging.Signing.IRepositorySignature.V3ServiceIndexUrl.get -> System.Uri!
 NuGet.Packaging.Signing.ISignature
 NuGet.Packaging.Signing.ISignature.SignerInfo.get -> System.Security.Cryptography.Pkcs.SignerInfo!
@@ -960,10 +960,10 @@ NuGet.Packaging.Signing.ReadOnlyBufferedStream
 NuGet.Packaging.Signing.ReadOnlyBufferedStream.ReadOnlyBufferedStream(System.IO.Stream! stream, bool leaveOpen) -> void
 NuGet.Packaging.Signing.ReadOnlyBufferedStream.ReadOnlyBufferedStream(System.IO.Stream! stream, bool leaveOpen, int bufferSize) -> void
 NuGet.Packaging.Signing.RepositoryCountersignature
-NuGet.Packaging.Signing.RepositoryCountersignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.Packaging.Signing.RepositoryCountersignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>?
 NuGet.Packaging.Signing.RepositoryCountersignature.V3ServiceIndexUrl.get -> System.Uri!
 NuGet.Packaging.Signing.RepositoryPrimarySignature
-NuGet.Packaging.Signing.RepositoryPrimarySignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.Packaging.Signing.RepositoryPrimarySignature.PackageOwners.get -> System.Collections.Generic.IReadOnlyList<string!>?
 NuGet.Packaging.Signing.RepositoryPrimarySignature.RepositoryPrimarySignature(System.Security.Cryptography.Pkcs.SignedCms! signedCms) -> void
 NuGet.Packaging.Signing.RepositoryPrimarySignature.V3ServiceIndexUrl.get -> System.Uri!
 NuGet.Packaging.Signing.RepositorySignPackageRequest
@@ -1222,7 +1222,7 @@ NuGet.Packaging.Signing.X509CertificateChain
 NuGet.Packaging.Signing.X509CertificateChain.Dispose() -> void
 NuGet.Packaging.Signing.X509CertificateChain.X509CertificateChain() -> void
 NuGet.Packaging.Signing.X509ChainHolder
-~NuGet.Packaging.Signing.X509ChainHolder.Chain.get -> System.Security.Cryptography.X509Certificates.X509Chain
+NuGet.Packaging.Signing.X509ChainHolder.Chain.get -> System.Security.Cryptography.X509Certificates.X509Chain!
 NuGet.Packaging.Signing.X509ChainHolder.Dispose() -> void
 NuGet.Packaging.Signing.X509ChainHolder.X509ChainHolder() -> void
 NuGet.Packaging.Signing.X509SignatureProvider
@@ -1632,34 +1632,34 @@ static NuGet.Packaging.Rules.RuleSet.PackageCreationRuleSet.get -> System.Collec
 static NuGet.Packaging.Rules.RuleSet.PackagesConfigToPackageReferenceMigrationRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule!>!
 static NuGet.Packaging.Signing.Accuracy.Read(byte[]! bytes) -> NuGet.Packaging.Signing.Accuracy!
 static NuGet.Packaging.Signing.AlgorithmIdentifier.Read(byte[]! bytes) -> NuGet.Packaging.Signing.AlgorithmIdentifier!
-~static NuGet.Packaging.Signing.AttributeUtility.CreateCommitmentTypeIndication(NuGet.Packaging.Signing.SignatureType type) -> System.Security.Cryptography.CryptographicAttributeObject
-~static NuGet.Packaging.Signing.AttributeUtility.CreateNuGetPackageOwners(System.Collections.Generic.IReadOnlyList<string> packageOwners) -> System.Security.Cryptography.CryptographicAttributeObject
-~static NuGet.Packaging.Signing.AttributeUtility.CreateNuGetV3ServiceIndexUrl(System.Uri v3ServiceIndexUrl) -> System.Security.Cryptography.CryptographicAttributeObject
-~static NuGet.Packaging.Signing.AttributeUtility.CreateSigningCertificateV2(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> System.Security.Cryptography.CryptographicAttributeObject
-~static NuGet.Packaging.Signing.AttributeUtility.GetAttribute(this System.Security.Cryptography.CryptographicAttributeObjectCollection attributes, string oid) -> System.Security.Cryptography.CryptographicAttributeObject
-~static NuGet.Packaging.Signing.AttributeUtility.GetAttributes(this System.Security.Cryptography.CryptographicAttributeObjectCollection attributes, string oid) -> System.Collections.Generic.IEnumerable<System.Security.Cryptography.CryptographicAttributeObject>
-~static NuGet.Packaging.Signing.AttributeUtility.GetNuGetPackageOwners(System.Security.Cryptography.CryptographicAttributeObjectCollection signedAttributes) -> System.Collections.Generic.IReadOnlyList<string>
-~static NuGet.Packaging.Signing.AttributeUtility.GetNuGetV3ServiceIndexUrl(System.Security.Cryptography.CryptographicAttributeObjectCollection signedAttributes) -> System.Uri
-~static NuGet.Packaging.Signing.AttributeUtility.GetSignatureType(System.Security.Cryptography.CryptographicAttributeObjectCollection signedAttributes) -> NuGet.Packaging.Signing.SignatureType
-~static NuGet.Packaging.Signing.AttributeUtility.GetSignatureType(string oid) -> NuGet.Packaging.Signing.SignatureType
-~static NuGet.Packaging.Signing.AttributeUtility.GetSignatureTypeOid(NuGet.Packaging.Signing.SignatureType signatureType) -> string
-~static NuGet.Packaging.Signing.CertificateChainUtility.GetCertificateChain(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, System.Security.Cryptography.X509Certificates.X509Certificate2Collection extraStore, NuGet.Common.ILogger logger, NuGet.Packaging.Signing.CertificateType certificateType) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.CertificateChainUtility.GetCertificateChain(System.Security.Cryptography.X509Certificates.X509Chain x509Chain) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.CertificateUtility.GetHash(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> byte[]
-~static NuGet.Packaging.Signing.CertificateUtility.GetHashString(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> string
-~static NuGet.Packaging.Signing.CertificateUtility.GetRawDataForCollection(System.Security.Cryptography.X509Certificates.X509Certificate2Collection certificates) -> System.Collections.Generic.IReadOnlyList<byte[]>
-~static NuGet.Packaging.Signing.CertificateUtility.HasExtendedKeyUsage(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, string ekuOid) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.HasLifetimeSigningEku(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsCertificatePublicKeyValid(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsCertificateValidityPeriodInTheFuture(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsDateInsideValidityPeriod(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, System.DateTimeOffset date) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsSelfIssued(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsSignatureAlgorithmSupported(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.IsValidForPurposeFast(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, string ekuOid) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.TryDeduceHashAlgorithm(string certificateFingerprint, out NuGet.Common.HashAlgorithmName hashAlgorithmName) -> bool
-~static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2CollectionToString(System.Security.Cryptography.X509Certificates.X509Certificate2Collection certCollection, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string
-~static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2ToString(System.Security.Cryptography.X509Certificates.X509Certificate2 cert, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string
-~static NuGet.Packaging.Signing.CertificateUtility.X509ChainToString(System.Security.Cryptography.X509Certificates.X509Chain chain, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string
+static NuGet.Packaging.Signing.AttributeUtility.CreateCommitmentTypeIndication(NuGet.Packaging.Signing.SignatureType type) -> System.Security.Cryptography.CryptographicAttributeObject!
+static NuGet.Packaging.Signing.AttributeUtility.CreateNuGetPackageOwners(System.Collections.Generic.IReadOnlyList<string!>! packageOwners) -> System.Security.Cryptography.CryptographicAttributeObject!
+static NuGet.Packaging.Signing.AttributeUtility.CreateNuGetV3ServiceIndexUrl(System.Uri! v3ServiceIndexUrl) -> System.Security.Cryptography.CryptographicAttributeObject!
+static NuGet.Packaging.Signing.AttributeUtility.CreateSigningCertificateV2(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> System.Security.Cryptography.CryptographicAttributeObject!
+static NuGet.Packaging.Signing.AttributeUtility.GetAttribute(this System.Security.Cryptography.CryptographicAttributeObjectCollection! attributes, string! oid) -> System.Security.Cryptography.CryptographicAttributeObject?
+static NuGet.Packaging.Signing.AttributeUtility.GetAttributes(this System.Security.Cryptography.CryptographicAttributeObjectCollection! attributes, string! oid) -> System.Collections.Generic.IEnumerable<System.Security.Cryptography.CryptographicAttributeObject!>!
+static NuGet.Packaging.Signing.AttributeUtility.GetNuGetPackageOwners(System.Security.Cryptography.CryptographicAttributeObjectCollection! signedAttributes) -> System.Collections.Generic.IReadOnlyList<string!>?
+static NuGet.Packaging.Signing.AttributeUtility.GetNuGetV3ServiceIndexUrl(System.Security.Cryptography.CryptographicAttributeObjectCollection! signedAttributes) -> System.Uri!
+static NuGet.Packaging.Signing.AttributeUtility.GetSignatureType(System.Security.Cryptography.CryptographicAttributeObjectCollection! signedAttributes) -> NuGet.Packaging.Signing.SignatureType
+static NuGet.Packaging.Signing.AttributeUtility.GetSignatureType(string! oid) -> NuGet.Packaging.Signing.SignatureType
+static NuGet.Packaging.Signing.AttributeUtility.GetSignatureTypeOid(NuGet.Packaging.Signing.SignatureType signatureType) -> string!
+static NuGet.Packaging.Signing.CertificateChainUtility.GetCertificateChain(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, System.Security.Cryptography.X509Certificates.X509Certificate2Collection! extraStore, NuGet.Common.ILogger! logger, NuGet.Packaging.Signing.CertificateType certificateType) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.CertificateChainUtility.GetCertificateChain(System.Security.Cryptography.X509Certificates.X509Chain! x509Chain) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.CertificateUtility.GetHash(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> byte[]!
+static NuGet.Packaging.Signing.CertificateUtility.GetHashString(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, NuGet.Common.HashAlgorithmName hashAlgorithm) -> string!
+static NuGet.Packaging.Signing.CertificateUtility.GetRawDataForCollection(System.Security.Cryptography.X509Certificates.X509Certificate2Collection! certificates) -> System.Collections.Generic.IReadOnlyList<byte[]!>!
+static NuGet.Packaging.Signing.CertificateUtility.HasExtendedKeyUsage(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, string! ekuOid) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.HasLifetimeSigningEku(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsCertificatePublicKeyValid(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsCertificateValidityPeriodInTheFuture(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsDateInsideValidityPeriod(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, System.DateTimeOffset date) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsSelfIssued(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsSignatureAlgorithmSupported(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.IsValidForPurposeFast(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, string! ekuOid) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.TryDeduceHashAlgorithm(string! certificateFingerprint, out NuGet.Common.HashAlgorithmName hashAlgorithmName) -> bool
+static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2CollectionToString(System.Security.Cryptography.X509Certificates.X509Certificate2Collection! certCollection, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
+static NuGet.Packaging.Signing.CertificateUtility.X509Certificate2ToString(System.Security.Cryptography.X509Certificates.X509Certificate2! cert, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
+static NuGet.Packaging.Signing.CertificateUtility.X509ChainToString(System.Security.Cryptography.X509Certificates.X509Chain! chain, NuGet.Common.HashAlgorithmName fingerprintAlgorithm) -> string!
 ~static NuGet.Packaging.Signing.ClientPolicyContext.GetClientPolicy(NuGet.Configuration.ISettings settings, NuGet.Common.ILogger logger) -> NuGet.Packaging.Signing.ClientPolicyContext
 static NuGet.Packaging.Signing.CommitmentTypeIndication.Create(System.Security.Cryptography.Oid! commitmentTypeId) -> NuGet.Packaging.Signing.CommitmentTypeIndication!
 static NuGet.Packaging.Signing.CommitmentTypeIndication.Read(byte[]! bytes) -> NuGet.Packaging.Signing.CommitmentTypeIndication!
@@ -1686,8 +1686,8 @@ static NuGet.Packaging.Signing.PrimarySignature.Load(byte[]! data) -> NuGet.Pack
 static NuGet.Packaging.Signing.PrimarySignature.ThrowForInvalidPrimarySignature() -> void
 static NuGet.Packaging.Signing.PrimarySignatureFactory.CreateSignature(System.Security.Cryptography.Pkcs.SignedCms! signedCms) -> NuGet.Packaging.Signing.PrimarySignature!
 static NuGet.Packaging.Signing.RepositoryCountersignature.GetRepositoryCountersignature(NuGet.Packaging.Signing.PrimarySignature! primarySignature) -> NuGet.Packaging.Signing.RepositoryCountersignature?
-~static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetRepositoryAllowList(System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo> repositoryCertificateInfos) -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.CertificateHashAllowListEntry>
-~static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(NuGet.Packaging.RepositorySignatureInfo repoSignatureInfo, NuGet.Packaging.Signing.SignedPackageVerifierSettings fallbackSettings) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings
+static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetRepositoryAllowList(System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.IRepositoryCertificateInfo!>? repositoryCertificateInfos) -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Signing.CertificateHashAllowListEntry!>?
+static NuGet.Packaging.Signing.RepositorySignatureInfoUtility.GetSignedPackageVerifierSettings(NuGet.Packaging.RepositorySignatureInfo? repoSignatureInfo, NuGet.Packaging.Signing.SignedPackageVerifierSettings! fallbackSettings) -> NuGet.Packaging.Signing.SignedPackageVerifierSettings!
 static NuGet.Packaging.Signing.SignatureContent.Load(byte[]! bytes, NuGet.Packaging.Signing.SigningSpecifications! signingSpecifications) -> NuGet.Packaging.Signing.SignatureContent!
 static NuGet.Packaging.Signing.SignatureLog.DebugLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
 static NuGet.Packaging.Signing.SignatureLog.DetailedLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
@@ -1695,11 +1695,11 @@ static NuGet.Packaging.Signing.SignatureLog.Error(NuGet.Common.NuGetLogCode code
 static NuGet.Packaging.Signing.SignatureLog.InformationLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
 static NuGet.Packaging.Signing.SignatureLog.Issue(bool fatal, NuGet.Common.NuGetLogCode code, string! message) -> NuGet.Packaging.Signing.SignatureLog!
 static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string! message) -> NuGet.Packaging.Signing.SignatureLog!
-~static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain
-~static NuGet.Packaging.Signing.SignatureUtility.HasRepositoryCountersignature(NuGet.Packaging.Signing.PrimarySignature primarySignature) -> bool
+static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature! primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.SignatureUtility.GetCertificateChain(NuGet.Packaging.Signing.PrimarySignature! primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature! repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature! primarySignature) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.SignatureUtility.GetTimestampCertificateChain(NuGet.Packaging.Signing.PrimarySignature! primarySignature, NuGet.Packaging.Signing.RepositoryCountersignature! repositoryCountersignature) -> NuGet.Packaging.Signing.IX509CertificateChain!
+static NuGet.Packaging.Signing.SignatureUtility.HasRepositoryCountersignature(NuGet.Packaging.Signing.PrimarySignature! primarySignature) -> bool
 static NuGet.Packaging.Signing.SignatureVerifySettings.Default.get -> NuGet.Packaging.Signing.SignatureVerifySettings!
 static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.HashBytes(System.Security.Cryptography.HashAlgorithm! hashAlgorithm, byte[]! bytes) -> void
 static NuGet.Packaging.Signing.SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(System.IO.BinaryReader! reader, System.Security.Cryptography.HashAlgorithm! hashAlgorithm, long position) -> void
@@ -1717,11 +1717,11 @@ static NuGet.Packaging.Signing.SigningCertificate.Read(byte[]! bytes) -> NuGet.P
 static NuGet.Packaging.Signing.SigningCertificateV2.Create(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, NuGet.Common.HashAlgorithmName hashAlgorithmName) -> NuGet.Packaging.Signing.SigningCertificateV2!
 static NuGet.Packaging.Signing.SigningCertificateV2.Read(byte[]! bytes) -> NuGet.Packaging.Signing.SigningCertificateV2!
 static NuGet.Packaging.Signing.SigningOptions.CreateFromFilePaths(string! inputPackageFilePath, string! outputPackageFilePath, bool overwrite, NuGet.Packaging.Signing.ISignatureProvider! signatureProvider, NuGet.Common.ILogger! logger) -> NuGet.Packaging.Signing.SigningOptions!
-~static NuGet.Packaging.Signing.SigningUtility.CreateCmsSigner(NuGet.Packaging.Signing.SignPackageRequest request, NuGet.Common.ILogger logger) -> System.Security.Cryptography.Pkcs.CmsSigner
-~static NuGet.Packaging.Signing.SigningUtility.CreateSignedAttributes(NuGet.Packaging.Signing.RepositorySignPackageRequest request, System.Collections.Generic.IReadOnlyList<System.Security.Cryptography.X509Certificates.X509Certificate2> chainList) -> System.Security.Cryptography.CryptographicAttributeObjectCollection
-~static NuGet.Packaging.Signing.SigningUtility.CreateSignedAttributes(NuGet.Packaging.Signing.SignPackageRequest request, System.Collections.Generic.IReadOnlyList<System.Security.Cryptography.X509Certificates.X509Certificate2> chainList) -> System.Security.Cryptography.CryptographicAttributeObjectCollection
-~static NuGet.Packaging.Signing.SigningUtility.SignAsync(NuGet.Packaging.Signing.SigningOptions options, NuGet.Packaging.Signing.SignPackageRequest signRequest, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-~static NuGet.Packaging.Signing.SigningUtility.Verify(NuGet.Packaging.Signing.SignPackageRequest request, NuGet.Common.ILogger logger) -> void
+static NuGet.Packaging.Signing.SigningUtility.CreateCmsSigner(NuGet.Packaging.Signing.SignPackageRequest! request, NuGet.Common.ILogger! logger) -> System.Security.Cryptography.Pkcs.CmsSigner!
+static NuGet.Packaging.Signing.SigningUtility.CreateSignedAttributes(NuGet.Packaging.Signing.RepositorySignPackageRequest! request, System.Collections.Generic.IReadOnlyList<System.Security.Cryptography.X509Certificates.X509Certificate2!>! chainList) -> System.Security.Cryptography.CryptographicAttributeObjectCollection!
+static NuGet.Packaging.Signing.SigningUtility.CreateSignedAttributes(NuGet.Packaging.Signing.SignPackageRequest! request, System.Collections.Generic.IReadOnlyList<System.Security.Cryptography.X509Certificates.X509Certificate2!>! chainList) -> System.Security.Cryptography.CryptographicAttributeObjectCollection!
+static NuGet.Packaging.Signing.SigningUtility.SignAsync(NuGet.Packaging.Signing.SigningOptions! options, NuGet.Packaging.Signing.SignPackageRequest! signRequest, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+static NuGet.Packaging.Signing.SigningUtility.Verify(NuGet.Packaging.Signing.SignPackageRequest! request, NuGet.Common.ILogger! logger) -> void
 static NuGet.Packaging.Signing.TrustedSignersProvider.GetAllowListEntries(NuGet.Configuration.ISettings! settings, NuGet.Common.ILogger! logger) -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Signing.TrustedSignerAllowListEntry!>!
 static NuGet.Packaging.Signing.TstInfo.Read(byte[]! bytes) -> NuGet.Packaging.Signing.TstInfo!
 static NuGet.Packaging.Signing.VerificationUtility.GetSignatureVerificationStatus(NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags) -> NuGet.Packaging.Signing.SignatureVerificationStatus

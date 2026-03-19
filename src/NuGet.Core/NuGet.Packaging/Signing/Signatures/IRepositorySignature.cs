@@ -10,6 +10,6 @@ namespace NuGet.Packaging.Signing
     {
         Uri V3ServiceIndexUrl { get; }
 
-        IReadOnlyList<string> PackageOwners { get; }
+        IReadOnlyList<string>? PackageOwners { get; }
     }
 }
