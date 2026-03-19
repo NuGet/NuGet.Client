@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -41,12 +39,12 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         public abstract SignatureType SignatureType { get; }
 
-        internal IX509CertificateChain Chain { get; private set; }
+        internal IX509CertificateChain? Chain { get; private set; }
 
         /// <summary>
         /// PrivateKey is only used in mssign command.
         /// </summary>
-        public System.Security.Cryptography.CngKey PrivateKey { get; set; }
+        public System.Security.Cryptography.CngKey? PrivateKey { get; set; }
 
         protected SignPackageRequest(
             X509Certificate2 certificate,
