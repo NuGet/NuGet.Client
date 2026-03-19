@@ -144,6 +144,13 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\05.PackNupkgs.binlog"
 
+- task: PowerShell@1
+  displayName: "Check expected packages exist for publishing"
+  name: "EnsureAllPackagesExist"
+  inputs:
+    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\EnsureAllPackagesExist.ps1"
+    arguments: "-BuildRTM:$$(BuildRTM) -NupkgOutputPath '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'"
+
 - task: MSBuild@1
   displayName: "Pack VSIX"
   inputs:
