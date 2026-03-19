@@ -26,10 +26,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             });
         }
 
-        internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console)
+        internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console, IVirtualProjectBuilder? virtualProjectBuilder = null)
         {
             Register(rootCommand, console,
-                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, IVirtualProjectBuilder.GetInstance())));
+                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, virtualProjectBuilder)));
         }
 
         /// <summary>
