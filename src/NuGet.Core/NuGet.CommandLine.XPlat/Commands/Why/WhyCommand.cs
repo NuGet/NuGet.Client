@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         {
             var whyCommand = new DocumentedCommand("why", Strings.WhyCommand_Description, "https://aka.ms/dotnet/nuget/why");
 
-            Argument<string> path = new Argument<string>("PROJECT|SOLUTION")
+            Argument<string> path = new Argument<string>("PROJECT|SOLUTION|FILE")
             {
                 Description = Strings.WhyCommand_PathArgument_Description,
                 // We really want this to be zero or one, however, because this is the first argument, it doesn't work.

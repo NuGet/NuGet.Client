@@ -32,7 +32,7 @@ internal static class PackageUpdateCommand
         };
         command.Arguments.Add(packagesArguments);
 
-        var projectOption = new Option<FileSystemInfo>("--project").AcceptExistingOnly();
+        var projectOption = new Option<FileSystemInfo>("--project", "--file").AcceptExistingOnly();
         projectOption.Description = Strings.PackageUpdateCommand_ProjectOptionDescription;
         command.Options.Add(projectOption);
 
