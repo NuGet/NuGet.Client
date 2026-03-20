@@ -148,15 +148,15 @@ namespace NuGet.Packaging.Test
         public void GetCertificateChain_WithUntrustedRoot_AllowUntrustedRoot_ReturnsChain()
         {
             using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
-            using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
-            using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
-            using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
+            using (X509Certificate2 rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
+            using (X509Certificate2 intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
+            using (X509Certificate2 leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
-                var chain = chainHolder.Chain2;
+                IX509Chain chain = chainHolder.Chain2;
                 var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
                 var logger = new TestLogger();
 
-                using (var certificateChain = CertificateChainUtility.GetCertificateChain(
+                using (IX509CertificateChain certificateChain = CertificateChainUtility.GetCertificateChain(
                     leafCertificate,
                     extraStore,
                     logger,

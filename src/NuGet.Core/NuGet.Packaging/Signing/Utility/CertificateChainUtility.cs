@@ -40,8 +40,22 @@ namespace NuGet.Packaging.Signing
 
         /// <summary>
         /// Create a list of certificates in chain order with the leaf first and root last.
-        /// When allowUntrustedRoot is true, UntrustedRoot chain status is treated as a warning.
         /// </summary>
+        /// <param name="certificate">The certificate for which a chain should be built.</param>
+        /// <param name="extraStore">A certificate store containing additional certificates necessary
+        /// for chain building.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="certificateType">The certificate type.</param>
+        /// <param name="allowUntrustedRoot">When <see langword="true" />, an <see cref="X509ChainStatusFlags.UntrustedRoot" />
+        /// chain status is treated as a warning instead of an error for signature certificates.
+        /// This has no effect for timestamp certificate chains.</param>
+        /// <returns>A certificate chain.</returns>
+        /// <remarks>This is intended to be used only during signing and timestamping operations,
+        /// not verification.</remarks>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="certificateType" /> is undefined.</exception>
         public static IX509CertificateChain GetCertificateChain(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
