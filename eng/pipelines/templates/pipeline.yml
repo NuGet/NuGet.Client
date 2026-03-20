@@ -30,7 +30,7 @@ stages:
     timeoutInMinutes: 10
     variables:
       SemanticVersion: $[dependencies.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
-      BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 9)]
+      BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
     pool:
       name: VSEngSS-MicroBuild2017-1ES
       os: windows
