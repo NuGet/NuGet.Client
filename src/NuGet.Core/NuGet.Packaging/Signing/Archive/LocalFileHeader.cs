@@ -24,8 +24,8 @@ namespace NuGet.Packaging.Signing
         internal uint UncompressedSize { get; private set; }
         internal ushort FileNameLength { get; private set; }
         internal ushort ExtraFieldLength { get; private set; }
-        internal byte[] FileName { get; private set; } = null!;
-        internal byte[] ExtraField { get; private set; } = null!;
+        internal byte[] FileName { get; private set; } = null!; // Set to non-null in the static Read method.
+        internal byte[] ExtraField { get; private set; } = null!; // Set to non-null in the static Read method.
 
         internal static bool TryRead(BinaryReader reader, [NotNullWhen(returnValue: true)] out LocalFileHeader? header)
         {

@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Signing
         internal uint SizeOfCentralDirectory { get; private set; }
         internal uint OffsetOfStartOfCentralDirectory { get; private set; }
         internal ushort FileCommentLength { get; private set; }
-        internal byte[] FileComment { get; private set; } = null!;
+        internal byte[] FileComment { get; private set; } = null!; // Set to non-null in the static Read method.
 
         // This property is not part of the ZIP specification.
         internal long OffsetFromStart { get; private set; }
