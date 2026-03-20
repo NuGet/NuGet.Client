@@ -13,7 +13,6 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class Timestamp
     {
-
         /// <summary>
         /// Upper limit of Timestamp.
         /// </summary>
@@ -179,7 +178,7 @@ namespace NuGet.Packaging.Signing
 
                         var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out var messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out IEnumerable<string>? messages))
                         {
                             foreach (string message in messages)
                             {

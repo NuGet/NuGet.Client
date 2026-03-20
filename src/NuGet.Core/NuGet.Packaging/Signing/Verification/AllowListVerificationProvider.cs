@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using NuGet.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NuGet.Packaging.Signing
 {
@@ -85,7 +86,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, signature as IRepositorySignature, out var allowedOwners, out var actualOwners))
                             {
-                                if (allowedOwners!.Intersect(actualOwners!).Any())
+                                if (allowedOwners.Intersect(actualOwners).Any())
                                 {
                                     return true;
                                 }
@@ -112,7 +113,7 @@ namespace NuGet.Packaging.Signing
                             {
                                 if (ShouldVerifyOwners(certificateHashEntry as TrustedSignerAllowListEntry, repositoryCountersignature.Value, out var allowedOwners, out var actualOwners))
                                 {
-                                    if (allowedOwners!.Intersect(actualOwners!).Any())
+                                    if (allowedOwners.Intersect(actualOwners).Any())
                                     {
                                         return true;
                                     }
@@ -130,7 +131,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        private static bool ShouldVerifyOwners(TrustedSignerAllowListEntry? entry, IRepositorySignature? repoSignature, out IReadOnlyList<string>? allowedOwners, out IReadOnlyList<string>? actualOwners)
+        private static bool ShouldVerifyOwners(TrustedSignerAllowListEntry? entry, IRepositorySignature? repoSignature, [NotNullWhen(returnValue: true)] out IReadOnlyList<string>? allowedOwners, [NotNullWhen(returnValue: true)] out IReadOnlyList<string>? actualOwners)
         {
             allowedOwners = null;
             actualOwners = null;

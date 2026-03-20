@@ -220,7 +220,7 @@ namespace NuGet.Packaging.Signing
 
                     var statusFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, statusFlags, out var messages))
+                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, statusFlags, out IEnumerable<string>? messages))
                     {
                         foreach (string message in messages)
                         {
@@ -236,7 +236,7 @@ namespace NuGet.Packaging.Signing
                     // if we are combining checks for more than one, then we have to use the whole list.
                     if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, X509ChainStatusFlags.Revoked, out messages))
                     {
-                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages!.First())));
+                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages.First())));
                         flags |= SignatureVerificationStatusFlags.CertificateRevoked;
 
                         return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Suspect, flags, timestamp, issues);

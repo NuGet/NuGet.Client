@@ -138,9 +138,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         /// <returns>The encoded segments { tag, length, value }</returns>
         internal static byte[][] SegmentedEncodeUnsignedInteger(byte[] bigEndianBytes)
         {
-            Debug.Assert(bigEndianBytes != null);
-
-            return SegmentedEncodeUnsignedInteger(bigEndianBytes!, 0, bigEndianBytes!.Length);
+            return SegmentedEncodeUnsignedInteger(bigEndianBytes, 0, bigEndianBytes.Length);
         }
 
         /// <summary>
@@ -152,10 +150,9 @@ namespace NuGet.Packaging.Signing.DerEncoding
         /// <returns>The encoded segments { tag, length, value }</returns>
         internal static byte[][] SegmentedEncodeUnsignedInteger(byte[] bigEndianBytes, int offset, int count)
         {
-            Debug.Assert(bigEndianBytes != null);
             Debug.Assert(offset >= 0);
             Debug.Assert(count > 0);
-            Debug.Assert(bigEndianBytes!.Length > 0);
+            Debug.Assert(bigEndianBytes.Length > 0);
             Debug.Assert(bigEndianBytes.Length >= count - offset);
 
             int start = offset;

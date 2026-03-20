@@ -64,9 +64,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
 
         private DerSequenceReader(DerTag tagToEat, byte[] data, int offset, int length)
         {
-            Debug.Assert(data != null, "Data is null");
-
-            if (offset < 0 || length < 2 || length > data!.Length - offset)
+            if (offset < 0 || length < 2 || length > data.Length - offset)
                 throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
 
             _data = data;

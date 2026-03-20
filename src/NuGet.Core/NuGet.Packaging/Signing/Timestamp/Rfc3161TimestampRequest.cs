@@ -20,12 +20,12 @@ namespace NuGet.Packaging.Signing
     {
         private class DataType
         {
-            internal int _version;
-            internal byte[] _hash = null!;
-            internal Oid _hashAlgorithm = null!;
+            internal required int _version;
+            internal required byte[] _hash;
+            internal required Oid _hashAlgorithm;
             internal Oid? _requestedPolicyId;
-            internal byte[]? _nonce;
-            internal bool _requestSignerCertificate;
+            internal required byte[]? _nonce;
+            internal required bool _requestSignerCertificate;
             internal X509ExtensionCollection? _extensions;
         }
 
