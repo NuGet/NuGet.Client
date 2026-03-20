@@ -696,6 +696,208 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
+        // ========================
+        // Migrated tests from test\EndToEnd\tests\InstallPackageTest.ps1
+        // ========================
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithInvalidAbsoluteLocalSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithInvalidAbsoluteLocalSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = @"c:\temp\data";
+            var expectedMessage = $"Unable to find package '{packageName}' at source '{source}'. Source not found.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithValidAbsoluteLocalSource_PackageNotFound_Fails()
+        {
+            // Migrated from Test-InstallPackageWithValidAbsoluteLocalSource
+            // Uses the solution root as a valid existing directory that contains no packages.
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = testContext.SolutionRoot;
+            var expectedMessage = $"Unable to find package '{packageName}'";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source '{source}'");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithInvalidRelativeLocalSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithInvalidRelativeLocalSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = @"..\invalid_folder";
+            var expectedMessage = $"Unable to find package '{packageName}' at source '{source}'. Source not found.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithValidRelativeLocalSource_PackageNotFound_Fails()
+        {
+            // Migrated from Test-InstallPackageWithValidRelativeLocalSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = @"..\";
+            var expectedMessage = $"Unable to find package '{packageName}'";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithInvalidHttpSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithInvalidHttpSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = "http://example.com";
+            var expectedMessage = $"Unable to find package '{packageName}' at source '{source}'.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithIncompleteHttpSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithIncompleteHttpSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = "http://";
+            var expectedMessage = $"Unable to find package '{packageName}' at source '{source}'. Source not found.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithInvalidKnownSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithInvalidKnownSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = "nuget.random";
+            var expectedMessage = $"Unable to find package '{packageName}' at source '{source}'. Source not found.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithFtpProtocolSource_Fails()
+        {
+            // Migrated from Test-InstallPackageWithFtpProtocolSource
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = "ftp://Rules";
+            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an http or local source.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithInvalidSourceFormat_Fails()
+        {
+            // Migrated from Test-InstallPackageThrowsWhenSourceIsInvalid
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var source = "d:package";
+            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package jQuery -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWithWhatIf_DoesNotInstallPackageAsync()
+        {
+            // Migrated from Test-PackageInstallWhatIf
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Version {packageVersion} -WhatIf");
+
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
+        }
+
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
