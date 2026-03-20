@@ -103,13 +103,14 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             // don't redirect stdout or stderr, so errors are output. But use quiet verbosity, so that success has no output.
             ProcessStartInfo processStartInfo = new ProcessStartInfo(dotnetPath)
             {
-                Arguments = $"build " +
+                Arguments = (isFileBasedApp ? "build " : "msbuild ") +
                 $"\"{project}\" " +
-                $"--no-restore " +
-                $"-target:GenerateRestoreGraphFile " +
+                "--no-restore " +
+                "-target:GenerateRestoreGraphFile " +
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +
-                $"-property:RestoreRecursive=false " +
-                $"-verbosity:quiet " +
+                "-property:RestoreRecursive=false " +
+                "-nologo " +
+                "-verbosity:quiet " +
                 (!isFileBasedApp ? $"-noautoresponse" : null), // currently not supported for file-based apps
                 UseShellExecute = false,
                 Environment =

@@ -32,11 +32,16 @@ namespace NuGet.CommandLine.XPlat
 
         internal static int Main(string[] args)
         {
-            return Run(args, virtualProjectBuilder: null);
+            return MainInternal(args, virtualProjectBuilder: null);
         }
 
 #nullable enable
-        public static int Run(string[] args, IVirtualProjectBuilder? virtualProjectBuilder = null)
+        public static int Run(string[] args, IVirtualProjectBuilder virtualProjectBuilder)
+        {
+            return MainInternal(args, virtualProjectBuilder);
+        }
+
+        private static int MainInternal(string[] args, IVirtualProjectBuilder? virtualProjectBuilder)
         {
             var log = new CommandOutputLogger(LogLevel.Information);
             return MainInternal(args, log, EnvironmentVariableWrapper.Instance, virtualProjectBuilder);
