@@ -12,6 +12,12 @@
         <target state="translated">El archivo de recursos que ha generado la restauración no existe. Intente volver a restaurar el proyecto. La ubicación esperada del archivo de recursos es {0}.</target>
         <note>{0} is the path to the assets file.</note>
       </trans-unit>
+      <trans-unit id="DuplicateFrameworks">
+        <source>This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks '{0}'. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}</source>
+        <target state="new">This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks '{0}'. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}</target>
+        <note>0 - details about which framework 
+1 - Additional details</note>
+      </trans-unit>
       <trans-unit id="Error_FileNotFound">
         <source>The file '{0}' to be packed was not found on disk.</source>
         <target state="translated">El archivo "{0}" que se va a empaquetar no se encuentra en el disco.</target>

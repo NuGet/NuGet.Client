@@ -10,15 +10,15 @@ namespace NuGet.Commands
 {
     public class MSBuildPackTargetArgs
     {
-        public IEnumerable<OutputLibFile> TargetPathsToSymbols { get; set; }
-        public IEnumerable<OutputLibFile> TargetPathsToAssemblies { get; set; }
+        public IEnumerable<OutputLibFile> TargetPathsToSymbols { get; set; } // TODO NK - handle duplicates
+        public IEnumerable<OutputLibFile> TargetPathsToAssemblies { get; set; } // TODO NK - handle duplicates
         public HashSet<string> AllowedOutputExtensionsInPackageBuildOutputFolder { get; set; }
         public HashSet<string> AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder { get; set; }
         public string AssemblyName { get; set; }
         public string NuspecOutputPath { get; set; }
-        public Dictionary<string, IEnumerable<ContentMetadata>> ContentFiles { get; set; }
+        public Dictionary<string, IEnumerable<ContentMetadata>> ContentFiles { get; set; } // TODO NK - handle duplicates
         public ISet<NuGetFramework> TargetFrameworks { get; set; }
-        public IDictionary<string, string> SourceFiles { get; set; }
+        public IDictionary<string, string> SourceFiles { get; set; } // TODO NK - handle duplicates
         public bool IncludeBuildOutput { get; set; }
         public string[] BuildOutputFolder { get; set; }
 

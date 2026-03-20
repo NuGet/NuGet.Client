@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -124,6 +124,11 @@
   <data name="AssetsFileNotFound" xml:space="preserve">
     <value>The assets file produced by restore does not exist. Try restoring the project again. The expected location of the assets file is {0}.</value>
     <comment>{0} is the path to the assets file.</comment>
+  </data>
+  <data name="DuplicateFrameworks" xml:space="preserve">
+    <value>This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks '{0}'. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}</value>
+    <comment>0 - details about which framework 
+1 - Additional details</comment>
   </data>
   <data name="Error_FileNotFound" xml:space="preserve">
     <value>The file '{0}' to be packed was not found on disk.</value>

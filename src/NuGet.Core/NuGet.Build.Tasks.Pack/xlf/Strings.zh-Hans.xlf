@@ -12,6 +12,12 @@
         <target state="translated">还原操作生成的资产文件不存在。请再次尝试还原该项目。资产文件的位置应为 {0}。</target>
         <note>{0} is the path to the assets file.</note>
       </trans-unit>
+      <trans-unit id="DuplicateFrameworks">
+        <source>This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks '{0}'. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}</source>
+        <target state="new">This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks '{0}'. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}</target>
+        <note>0 - details about which framework 
+1 - Additional details</note>
+      </trans-unit>
       <trans-unit id="Error_FileNotFound">
         <source>The file '{0}' to be packed was not found on disk.</source>
         <target state="translated">磁盘上找不到要打包的文件“{0}”。</target>
