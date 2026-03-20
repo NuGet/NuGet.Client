@@ -105,7 +105,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             {
                 Arguments = (isFileBasedApp ? "build " : "msbuild ") +
                 $"\"{project}\" " +
-                "--no-restore " +
+                (isFileBasedApp ? "--no-restore " : "-restore:false ") +
                 "-target:GenerateRestoreGraphFile " +
                 $"-property:RestoreGraphOutputPath=\"{tempFile}\" " +
                 "-property:RestoreRecursive=false " +
