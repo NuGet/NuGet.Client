@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
         // This tells the operation execution part that it needs to trigger a refresh when done.
         private bool _isRefreshRequired;
         private bool _isExecutingAction; // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
+        private bool _projectUpdateOccurredDuringRestore;
         private IVsNuGetProjectUpdateEvents _projectUpdateEvents;
         private RestartRequestBar _restartBar;
         private bool _missingPackageStatus;
@@ -413,17 +414,18 @@ namespace NuGet.PackageManagement.UI
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
+            if (Model.IsSolution)
+            {
+                // Solution-level PM UI: record that a non-no-op project update occurred.
+                // The actual refresh will happen in OnSolutionRestoreFinished.
+                _projectUpdateOccurredDuringRestore = true;
+                return;
+            }
+
             if (!IsVisible)
             {
                 _isRefreshRequired = true;
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
-                return;
-            }
-
-            if (Model.IsSolution)
-            {
-                // Solution-level PM UI: skip per-project signals; wait for SolutionRestoreFinished instead
-                // to avoid N refreshes for N projects.
                 return;
             }
 
@@ -459,6 +461,15 @@ namespace NuGet.PackageManagement.UI
                 // Project-level PM UI handles refresh via OnProjectUpdateFinished.
                 return;
             }
+
+            // Only refresh if at least one project had a non-no-op restore.
+            if (!_projectUpdateOccurredDuringRestore)
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
+                return;
+            }
+
+            _projectUpdateOccurredDuringRestore = false;
 
             if (!IsVisible)
             {
