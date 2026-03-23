@@ -63,36 +63,7 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             LockFile assetsFile = GetAssetsFile(request);
-            bool duplicateFrameworks = false;
-            var targetAliasToNuGetFramework = new Dictionary<string, string>();
-            var nuGetFrameworkToDuplicateAliases = new Dictionary<string, List<string>>();
-            foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
-            {
-                var tfmShortName = tfm.FrameworkName.GetShortFolderName();
-                targetAliasToNuGetFramework[tfm.TargetAlias] = tfmShortName;
-                if (!nuGetFrameworkToDuplicateAliases.TryGetValue(tfmShortName, out List<string> list))
-                {
-                    list = [tfm.TargetAlias];
-                    nuGetFrameworkToDuplicateAliases[tfmShortName] = list;
-                }
-                else
-                {
-                    list.Add(tfm.TargetAlias);
-                    duplicateFrameworks = true;
-                }
-            }
-
-            if (!duplicateFrameworks)
-            {
-                nuGetFrameworkToDuplicateAliases = null;
-            }
-            else
-            {
-                foreach (var key in nuGetFrameworkToDuplicateAliases.Where(alias => alias.Value.Count <= 1).Select(alias => alias.Key).ToList())
-                {
-                    nuGetFrameworkToDuplicateAliases.Remove(key);
-                }
-            }
+            (Dictionary<string, string> targetAliasToNuGetFramework, Dictionary<string, List<string>> nuGetFrameworkToDuplicateAliases) = BuildAliasFrameworkMappings(assetsFile);
 
             InitCurrentDirectoryAndFileName(request, packArgs);
             InitNuspecOutputPath(request, packArgs);
@@ -255,36 +226,7 @@ namespace NuGet.Build.Tasks.Pack
                     msbuildItem => msbuildItem.GetProperty("ProjectVersion"), PathUtility.GetStringComparerBasedOnOS());
             }
 
-            bool duplicateFrameworks = false;
-            var targetAliasToNuGetFramework = new Dictionary<string, string>();
-            var nuGetFrameworkToDuplicateAliases = new Dictionary<string, List<string>>();
-            foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
-            {
-                var tfmShortName = tfm.FrameworkName.GetShortFolderName();
-                targetAliasToNuGetFramework[tfm.TargetAlias] = tfmShortName;
-                if (!nuGetFrameworkToDuplicateAliases.TryGetValue(tfmShortName, out List<string> list))
-                {
-                    list = [tfm.TargetAlias];
-                    nuGetFrameworkToDuplicateAliases[tfmShortName] = list;
-                }
-                else
-                {
-                    list.Add(tfm.TargetAlias);
-                    duplicateFrameworks = true;
-                }
-            }
-
-            if (!duplicateFrameworks)
-            {
-                nuGetFrameworkToDuplicateAliases = null;
-            }
-            else
-            {
-                foreach (var key in nuGetFrameworkToDuplicateAliases.Where(alias => alias.Value.Count <= 1).Select(alias => alias.Key).ToList())
-                {
-                    nuGetFrameworkToDuplicateAliases.Remove(key);
-                }
-            }
+            (Dictionary<string, string> _, Dictionary<string, List<string>> nuGetFrameworkToDuplicateAliases) = BuildAliasFrameworkMappings(assetsFile);
 
             var frameworksWithSuppressedDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (request.FrameworksWithSuppressedDependencies != null && request.FrameworksWithSuppressedDependencies.Any())
@@ -299,7 +241,7 @@ namespace NuGet.Build.Tasks.Pack
                 nuGetFrameworkToDuplicateAliases);
 
             PopulateFrameworkAssemblyReferences(builder, request); // Only one of 2 frameworks
-            PopulateFrameworkReferences(builder, assetsFile, nuGetFrameworkToDuplicateAliases); // Only one of 2 frameworks
+            PopulateFrameworkReferences(builder, assetsFile, nuGetFrameworkToDuplicateAliases);
 
             return builder;
         }
@@ -416,6 +358,52 @@ namespace NuGet.Build.Tasks.Pack
             return lockFileFormat.Read(assetsFilePath);
         }
 
+        /// <summary>
+        /// Builds mappings from target alias to NuGet framework short name, and identifies
+        /// frameworks that have multiple aliases resolving to the same NuGet framework.
+        /// </summary>
+        /// <returns>
+        /// A tuple of (targetAliasToNuGetFramework, duplicateAliases).
+        /// duplicateAliases is null when there are no duplicate frameworks; otherwise it contains
+        /// only the entries where multiple aliases map to the same framework.
+        /// </returns>
+        private static (Dictionary<string, string> targetAliasToNuGetFramework, Dictionary<string, List<string>> duplicateAliases)
+            BuildAliasFrameworkMappings(LockFile assetsFile)
+        {
+            var targetAliasToNuGetFramework = new Dictionary<string, string>();
+            var frameworkToAliases = new Dictionary<string, List<string>>();
+            bool hasDuplicates = false;
+
+            foreach (var tfm in assetsFile.PackageSpec.TargetFrameworks)
+            {
+                var tfmShortName = tfm.FrameworkName.GetShortFolderName();
+                targetAliasToNuGetFramework[tfm.TargetAlias] = tfmShortName;
+
+                if (!frameworkToAliases.TryGetValue(tfmShortName, out List<string> list))
+                {
+                    frameworkToAliases[tfmShortName] = [tfm.TargetAlias];
+                }
+                else
+                {
+                    list.Add(tfm.TargetAlias);
+                    hasDuplicates = true;
+                }
+            }
+
+            if (!hasDuplicates)
+            {
+                return (targetAliasToNuGetFramework, null);
+            }
+
+            // Keep only entries where more than one alias maps to the same framework.
+            foreach (var key in frameworkToAliases.Where(e => e.Value.Count <= 1).Select(e => e.Key).ToList())
+            {
+                frameworkToAliases.Remove(key);
+            }
+
+            return (targetAliasToNuGetFramework, frameworkToAliases);
+        }
+
         // TODO NK - Create issue here. In here we assume `TargetFramework` matches the tfm, but that is not always true.
         private static void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
         {
@@ -453,15 +441,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 var frameworkShortFolderName = framework.FrameworkName.GetShortFolderName();
 
-                bool hasDups = nuGetFrameworkToDuplicateAliases?.ContainsKey(frameworkShortFolderName) ?? false;
-                if (hasDups)
-                {
-                    if (!tfmSpecificRefs.ContainsKey(frameworkShortFolderName))
-                    {
-                        tfmSpecificRefs.Add(frameworkShortFolderName, new HashSet<string>(ComparisonUtility.FrameworkReferenceNameComparer));
-                    }
-                }
-                else
+                if (!tfmSpecificRefs.ContainsKey(frameworkShortFolderName))
                 {
                     tfmSpecificRefs.Add(frameworkShortFolderName, new HashSet<string>(ComparisonUtility.FrameworkReferenceNameComparer));
                 }
@@ -895,22 +875,17 @@ namespace NuGet.Build.Tasks.Pack
             {
                 foreach (var duplicates in nuGetFrameworkToDuplicateAliases)
                 {
-                    int aliasesLeftPerFramework = 0;
-                    foreach (var alias in duplicates.Value)
+                    var unsuppressedAliases = duplicates.Value
+                        .Where(alias => !frameworksWithSuppressedDependencies.Contains(alias))
+                        .ToList();
+
+                    if (unsuppressedAliases.Count > 1)
                     {
-                        if (!frameworksWithSuppressedDependencies.Contains(alias))
-                        {
-                            aliasesLeftPerFramework++;
-                        }
-                    }
-                    if (aliasesLeftPerFramework > 1)
-                    {
-                        HashSet<string> frameworksWithDuplicates = new HashSet<string>(duplicates.Value.Where(alias => !frameworksWithSuppressedDependencies.Contains(alias)));
                         throw new PackagingException(NuGetLogCode.NU5051,
                             string.Format(CultureInfo.CurrentCulture,
                                 Strings.DuplicateFrameworks,
                                 string.Join(", ", duplicates.Value) + " => " + duplicates.Key,
-                                string.Format(CultureInfo.CurrentCulture, Strings.AmbigiousPackageDependencies, string.Join(", ", frameworksWithDuplicates))));
+                                string.Format(CultureInfo.CurrentCulture, Strings.AmbigiousPackageDependencies, string.Join(", ", unsuppressedAliases))));
                     }
                 }
             }
