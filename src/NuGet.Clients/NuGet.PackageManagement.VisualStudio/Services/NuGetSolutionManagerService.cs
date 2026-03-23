@@ -9,7 +9,6 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
-using NuGet.Common;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -25,16 +24,12 @@ namespace NuGet.PackageManagement.VisualStudio
         [Import]
         private IVsSolutionManager? SolutionManager { get; set; }
 
-        [Import]
-        private IRestoreEvents? RestoreEvents { get; set; }
-
         public event EventHandler<string>? AfterNuGetCacheUpdated;
         public event EventHandler<IProjectContextInfo>? AfterProjectRenamed;
         public event EventHandler<IProjectContextInfo>? ProjectAdded;
         public event EventHandler<IProjectContextInfo>? ProjectRemoved;
         public event EventHandler<IProjectContextInfo>? ProjectRenamed;
         public event EventHandler<IProjectContextInfo>? ProjectUpdated;
-        public event EventHandler<bool>? SolutionRestoreCompleted;
 
         private NuGetSolutionManagerService(
             ServiceActivationOptions options,
@@ -52,7 +47,6 @@ namespace NuGet.PackageManagement.VisualStudio
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
             Assumes.NotNull(SolutionManager);
-            Assumes.NotNull(RestoreEvents);
 
             RegisterEventHandlers();
         }
@@ -96,7 +90,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private void RegisterEventHandlers()
         {
             Assumes.NotNull(SolutionManager);
-            Assumes.NotNull(RestoreEvents);
 
             SolutionManager!.AfterNuGetCacheUpdated += OnAfterNuGetCacheUpdated;
             SolutionManager!.AfterNuGetProjectRenamed += OnAfterProjectRenamed;
@@ -104,7 +97,6 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager!.NuGetProjectRemoved += OnProjectRemoved;
             SolutionManager!.NuGetProjectRenamed += OnProjectRenamed;
             SolutionManager!.NuGetProjectUpdated += OnProjectUpdated;
-            RestoreEvents!.SolutionRestoreCompleted += OnSolutionRestoreCompleted;
         }
 
         private void OnAfterNuGetCacheUpdated(object sender, NuGetEventArgs<string> e)
@@ -137,11 +129,6 @@ namespace NuGet.PackageManagement.VisualStudio
             OnProjectEvent(ProjectUpdated, nameof(OnProjectUpdated), sender, e);
         }
 
-        private void OnSolutionRestoreCompleted(SolutionRestoredEventArgs args)
-        {
-            SolutionRestoreCompleted?.Invoke(this, args.RestoreStatus == NuGetOperationStatus.Succeeded);
-        }
-
         private void OnProjectEvent(
             EventHandler<IProjectContextInfo>? eventHandler,
             string memberName,
@@ -165,7 +152,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private void UnregisterEventHandlers()
         {
             Assumes.NotNull(SolutionManager);
-            Assumes.NotNull(RestoreEvents);
 
             SolutionManager!.AfterNuGetCacheUpdated -= OnAfterNuGetCacheUpdated;
             SolutionManager!.AfterNuGetProjectRenamed -= OnAfterProjectRenamed;
@@ -173,7 +159,6 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager!.NuGetProjectRemoved -= OnProjectRemoved;
             SolutionManager!.NuGetProjectRenamed -= OnProjectRenamed;
             SolutionManager!.NuGetProjectUpdated -= OnProjectUpdated;
-            RestoreEvents!.SolutionRestoreCompleted -= OnSolutionRestoreCompleted;
         }
     }
 }

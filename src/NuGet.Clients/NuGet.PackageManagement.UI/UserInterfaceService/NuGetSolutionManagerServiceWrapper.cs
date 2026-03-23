@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.UI
         public event EventHandler<IProjectContextInfo>? ProjectRemoved;
         public event EventHandler<IProjectContextInfo>? ProjectRenamed;
         public event EventHandler<IProjectContextInfo>? ProjectUpdated;
-        public event EventHandler<bool>? SolutionRestoreCompleted;
 
         internal INuGetSolutionManagerService Service
         {
@@ -74,7 +73,6 @@ namespace NuGet.PackageManagement.UI
             _service.ProjectRemoved += OnProjectRemoved;
             _service.ProjectRenamed += OnProjectRenamed;
             _service.ProjectUpdated += OnProjectUpdated;
-            _service.SolutionRestoreCompleted += OnSolutionRestoreCompleted;
         }
 
         private void UnregisterEventHandlers()
@@ -85,7 +83,6 @@ namespace NuGet.PackageManagement.UI
             _service.ProjectRemoved -= OnProjectRemoved;
             _service.ProjectRenamed -= OnProjectRenamed;
             _service.ProjectUpdated -= OnProjectUpdated;
-            _service.SolutionRestoreCompleted -= OnSolutionRestoreCompleted;
         }
 
         private void OnAfterNuGetCacheUpdated(object sender, string e)
@@ -118,11 +115,6 @@ namespace NuGet.PackageManagement.UI
             ProjectUpdated?.Invoke(this, e);
         }
 
-        private void OnSolutionRestoreCompleted(object sender, bool e)
-        {
-            SolutionRestoreCompleted?.Invoke(this, e);
-        }
-
         private sealed class NullNuGetSolutionManagerService : INuGetSolutionManagerService
         {
             public event EventHandler<string> AfterNuGetCacheUpdated { add { } remove { } }
@@ -131,7 +123,6 @@ namespace NuGet.PackageManagement.UI
             public event EventHandler<IProjectContextInfo> ProjectRemoved { add { } remove { } }
             public event EventHandler<IProjectContextInfo> ProjectRenamed { add { } remove { } }
             public event EventHandler<IProjectContextInfo> ProjectUpdated { add { } remove { } }
-            public event EventHandler<bool> SolutionRestoreCompleted { add { } remove { } }
 
             internal static NullNuGetSolutionManagerService Instance { get; } = new NullNuGetSolutionManagerService();
 

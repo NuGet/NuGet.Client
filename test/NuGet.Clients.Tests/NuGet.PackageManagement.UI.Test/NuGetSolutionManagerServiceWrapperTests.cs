@@ -195,29 +195,6 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void SolutionRestoreCompleted_Always_ForwardsEvent()
-        {
-            var service = new TestNuGetSolutionManagerService();
-
-            using (_wrapper.Swap(service))
-            {
-                const bool expectedResult = true;
-                var eventRaised = false;
-
-                _wrapper.SolutionRestoreCompleted += (sender, e) =>
-                {
-                    Assert.Equal(expectedResult, e);
-
-                    eventRaised = true;
-                };
-
-                service.RaiseSolutionRestoreCompleted(expectedResult);
-
-                Assert.True(eventRaised);
-            }
-        }
-
-        [Fact]
         public async Task GetSolutionDirectoryAsync_Always_ReturnsSolutionDirectory()
         {
             var service = new TestNuGetSolutionManagerService();
@@ -242,7 +219,6 @@ namespace NuGet.PackageManagement.UI.Test
             public event EventHandler<IProjectContextInfo> ProjectRemoved;
             public event EventHandler<IProjectContextInfo> ProjectRenamed;
             public event EventHandler<IProjectContextInfo> ProjectUpdated;
-            public event EventHandler<bool> SolutionRestoreCompleted;
 
             internal string SolutionDirectory { get; set; }
 
@@ -283,11 +259,6 @@ namespace NuGet.PackageManagement.UI.Test
             internal void RaiseProjectUpdated(IProjectContextInfo project)
             {
                 ProjectUpdated?.Invoke(this, project);
-            }
-
-            internal void RaiseSolutionRestoreCompleted(bool restoreSucceeded)
-            {
-                SolutionRestoreCompleted?.Invoke(this, restoreSucceeded);
             }
         }
     }
