@@ -476,8 +476,12 @@ namespace NuGet.Build.Tasks.Pack
                             string.Format(CultureInfo.CurrentCulture,
                                 Strings.DuplicateFrameworks,
                                 string.Join(", ", duplicates) + " => " + frameworkShortFolderName,
-                                $"Ambigious which framework ref to pick from. {string.Join(", ", duplicates)}"));
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.AmbigiousFrameworkReferences,
+                                    string.Join(", ", duplicates))));
                 }
+
                 foreach (var frameworkRef in framework.FrameworkReferences.Where(e => e.PrivateAssets != FrameworkDependencyFlags.All))
                 {
                     frameworkRefNames.Add(frameworkRef.Name);
@@ -564,7 +568,7 @@ namespace NuGet.Build.Tasks.Pack
                         string.Format(CultureInfo.CurrentCulture,
                             Strings.DuplicateFrameworks,
                             existingTfm + ", " + targetFrameworkProperty + " => " + targetFramework,
-                            $"Ambigious packag content. All of the above frameworks have the same target path for {targetPath}"));
+                            string.Format(CultureInfo.CurrentCulture, Strings.AmbigiousPackageAssemblies, targetPath)));
                 }
 
                 duplicateTargetPath?.Add(targetPath, targetFrameworkProperty);
@@ -906,7 +910,7 @@ namespace NuGet.Build.Tasks.Pack
                             string.Format(CultureInfo.CurrentCulture,
                                 Strings.DuplicateFrameworks,
                                 string.Join(", ", duplicates.Value) + " => " + duplicates.Key,
-                                $"Cannot pick the appropriate dependencies. {string.Join(", ", frameworksWithDuplicates)}"));
+                                string.Format(CultureInfo.CurrentCulture, Strings.AmbigiousPackageDependencies, string.Join(", ", frameworksWithDuplicates))));
                     }
                 }
             }

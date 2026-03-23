@@ -61,6 +61,33 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ambiguous framework references. The following target frameworks are both declaring framework references for packing: {0}.
+        /// </summary>
+        internal static string AmbigiousFrameworkReferences {
+            get {
+                return ResourceManager.GetString("AmbigiousFrameworkReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ambiguous packaging content. The above frameworks have the same target path for {0}..
+        /// </summary>
+        internal static string AmbigiousPackageAssemblies {
+            get {
+                return ResourceManager.GetString("AmbigiousPackageAssemblies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ambiguous package dependencies. The following target frameworks are both declaring package dependencies for packing: {0}.
+        /// </summary>
+        internal static string AmbigiousPackageDependencies {
+            get {
+                return ResourceManager.GetString("AmbigiousPackageDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The assets file found does not contain a valid package spec. Try restoring the project again. The location of the assets file is {0}..
         /// </summary>
         internal static string AssetsFileDoesNotHaveValidPackageSpec {
@@ -79,7 +106,7 @@ namespace NuGet.Build.Tasks.Pack {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks &apos;{0}&apos;. Pack is unable to determine a way to disambiguate and as such packing cannot continue. {1}.
+        ///   Looks up a localized string similar to This project is using aliased frameworks, the following TargetFramework properties map to the same effective frameworks &apos;{0}&apos; and pack is unable to disambiguate and create a single package. {1}.
         /// </summary>
         internal static string DuplicateFrameworks {
             get {
