@@ -415,6 +415,7 @@ namespace NuGet.PackageManagement.UI
 
             if (!IsVisible)
             {
+                _isRefreshRequired = true;
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
                 return;
             }
@@ -461,6 +462,7 @@ namespace NuGet.PackageManagement.UI
 
             if (!IsVisible)
             {
+                _isRefreshRequired = true;
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.RestoreCompleted, RefreshOperationStatus.NoOp);
                 return;
             }
@@ -562,6 +564,11 @@ namespace NuGet.PackageManagement.UI
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 },
                 RefreshOperationSource.PackageManagerLoaded, timeSpan, sw);
+            }
+            else if (_isRefreshRequired)
+            {
+                _isRefreshRequired = false;
+                await RunAndEmitRefreshAsync(async () => await RefreshAsync(), RefreshOperationSource.PackageManagerLoaded, timeSpan, sw);
             }
             else
             {
