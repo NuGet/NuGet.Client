@@ -854,7 +854,7 @@ namespace NuGet.Tests.Apex
 
             var nugetConsole = GetConsole(testContext.Project);
 
-            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source \"{source}\"");
 
             Assert.IsTrue(
                 nugetConsole.IsMessageFoundInPMC(expectedMessage),
