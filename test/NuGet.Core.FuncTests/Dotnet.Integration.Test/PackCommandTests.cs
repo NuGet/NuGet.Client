@@ -6484,6 +6484,36 @@ namespace ClassLibrary
             dependencyGroups[0].TargetFramework.Should().Be(TestConstants.DefaultTargetFramework);
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_AliasedFrameworks_DifferentFrameworkReferences_FailsWithNU5051()
+        {
+            // Even with IncludeBuildOutput=false and SuppressDependenciesWhenPacking=true on banana,
+            // if the two aliases declare different FrameworkReference items, pack should fail with NU5051.
+            using var testDirectory = _dotnetFixture.CreateTestDirectory();
+            var projectName = "ClassLibrary1";
+            var workingDirectory = Path.Combine(testDirectory, projectName);
+
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            SetupAliasedFrameworkProject(workingDirectory, projectName,
+                bananaIncludeBuildOutput: "false",
+                bananaSuppressDependencies: "true");
+
+            // Add different FrameworkReference items per alias so the framework ref groups diverge.
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+            using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(xml, "FrameworkReference", "Microsoft.AspNetCore.App", "apple",
+                    new Dictionary<string, string>(), new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+
+            result.AllOutput.Should().Contain("NU5051");
+        }
+
         /// <summary>
         /// Modifies an existing classlib project to use two aliased TFMs (apple, banana) that both resolve
         /// to the current test framework. Per-alias IncludeBuildOutput and SuppressDependenciesWhenPacking

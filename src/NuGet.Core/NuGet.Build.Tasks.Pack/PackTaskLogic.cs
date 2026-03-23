@@ -404,7 +404,6 @@ namespace NuGet.Build.Tasks.Pack
             return (targetAliasToNuGetFramework, frameworkToAliases);
         }
 
-        // TODO NK - Create issue here. In here we assume `TargetFramework` matches the tfm, but that is not always true.
         private static void PopulateFrameworkAssemblyReferences(PackageBuilder builder, IPackTaskRequest<IMSBuildItem> request)
         {
             // First add all the assembly references which are not specific to a certain TFM.
@@ -545,7 +544,7 @@ namespace NuGet.Build.Tasks.Pack
                     targetPath = Path.GetFileName(finalOutputPath);
                 }
 
-                if (duplicateTargetPath?.TryGetValue(targetPath, out var existingTfm) == true)
+                if (duplicateTargetPath?.TryGetValue(targetPath, out string existingTfm) == true)
                 {
                     throw new PackagingException(NuGetLogCode.NU5051,
                         string.Format(CultureInfo.CurrentCulture,
