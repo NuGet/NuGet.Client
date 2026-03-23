@@ -208,8 +208,6 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectRemoved += OnProjectChanged;
             solutionManager.ProjectUpdated += OnProjectUpdated;
             solutionManager.ProjectRenamed += OnProjectRenamed;
-            solutionManager.AfterNuGetCacheUpdated += OnNuGetCacheUpdated;
-
             _projectUpdateEvents = await ServiceLocator.GetComponentModelServiceAsync<IVsNuGetProjectUpdateEvents>();
             _projectUpdateEvents.ProjectUpdateFinished += OnProjectUpdateFinished;
             _projectUpdateEvents.SolutionRestoreFinished += OnSolutionRestoreFinished;
@@ -411,22 +409,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void OnNuGetCacheUpdated(object sender, string e)
-        {
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
-            if (IsLoaded)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
-            }
-            else
-            {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NoOp);
-            }
-        }
-
         private void OnProjectUpdateFinished(string projectUniqueName, IReadOnlyList<string> updatedFiles)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -486,33 +468,6 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () => await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.RestoreCompleted, timeSpan))
                 .PostOnFailure(nameof(PackageManagerControl), nameof(OnSolutionRestoreFinished));
-        }
-
-        private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
-        {
-            if (Model.IsSolution)
-            {
-                await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
-            }
-            else
-            {
-                // This is a project package manager, so there is one and only one project.
-                IProjectContextInfo project = Model.Context.Projects.First();
-                IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                    Model.Context.ServiceBroker,
-                    CancellationToken.None);
-
-                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-                // We also refresh the UI if projectFullPath is not present.
-                if (projectMetadata.FullPath == eventProjectFullName)
-                {
-                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.CacheUpdated, timeSpan);
-                }
-                else
-                {
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NotApplicable);
-                }
-            }
         }
 
         private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
@@ -1669,7 +1624,6 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectRemoved -= OnProjectChanged;
             solutionManager.ProjectUpdated -= OnProjectUpdated;
             solutionManager.ProjectRenamed -= OnProjectRenamed;
-            solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
 
             if (_projectUpdateEvents != null)
             {
