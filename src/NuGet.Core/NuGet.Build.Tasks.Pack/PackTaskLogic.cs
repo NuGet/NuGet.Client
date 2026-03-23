@@ -461,7 +461,12 @@ namespace NuGet.Build.Tasks.Pack
                         tfmSpecificRefs.Add(frameworkShortFolderName, new HashSet<string>(ComparisonUtility.FrameworkReferenceNameComparer));
                     }
                 }
-                var frameworkRefNames = tfmSpecificRefs[frameworkShortFolderName];
+                else
+                {
+                    tfmSpecificRefs.Add(frameworkShortFolderName, new HashSet<string>(ComparisonUtility.FrameworkReferenceNameComparer));
+                }
+
+                ISet<string> frameworkRefNames = tfmSpecificRefs[frameworkShortFolderName];
 
                 if (frameworkRefNames.Count > 0)
                 {
