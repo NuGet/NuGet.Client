@@ -114,8 +114,8 @@ namespace NuGet.Build.Tasks.Pack
                 // This only needs to happen when packing via csproj, not nuspec.
                 packArgs.PackTargetArgs.AllowedOutputExtensionsInPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInPackageBuildOutputFolder);
                 packArgs.PackTargetArgs.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = InitOutputExtensions(request.AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);
-                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage, targetAliasToNuGetFramework); // TODO NK - Don't allow duplication. This should already be filtered out anyways, so raising a problem here is good.
-                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols, targetAliasToNuGetFramework); // TODO NK - Don't allow duplication.
+                packArgs.PackTargetArgs.TargetPathsToAssemblies = InitLibFiles(request.BuildOutputInPackage, targetAliasToNuGetFramework, nuGetFrameworkToDuplicateAliases);
+                packArgs.PackTargetArgs.TargetPathsToSymbols = InitLibFiles(request.TargetPathsToSymbols, targetAliasToNuGetFramework, nuGetFrameworkToDuplicateAliases);
                 packArgs.PackTargetArgs.AssemblyName = request.AssemblyName;
                 packArgs.PackTargetArgs.IncludeBuildOutput = request.IncludeBuildOutput;
                 packArgs.PackTargetArgs.BuildOutputFolder = request.BuildOutputFolders;
@@ -123,11 +123,11 @@ namespace NuGet.Build.Tasks.Pack
 
                 if (request.IncludeSource)
                 {
-                    packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);  // TODO NK - Don't allow duplicates by aliased frameworks
+                    packArgs.PackTargetArgs.SourceFiles = GetSourceFiles(request, packArgs.CurrentDirectory);
                     packArgs.Symbols = request.IncludeSource;
                 }
 
-                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs); // TODO NK - Don't allow duplicates by aliased frameworks
+                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
                 packArgs.PackTargetArgs.ContentFiles = contentFiles;
             }
 
@@ -444,7 +444,6 @@ namespace NuGet.Build.Tasks.Pack
                             )));
         }
 
-        // TODO NK - This one also assumes the incorrect framework reference does it?
         private static void PopulateFrameworkReferences(PackageBuilder builder, LockFile assetsFile, Dictionary<string, List<string>> nuGetFrameworkToDuplicateAliases)
         {
             var tfmSpecificRefs = new Dictionary<string, ISet<string>>();
@@ -511,15 +510,18 @@ namespace NuGet.Build.Tasks.Pack
             return runner.RunPackageBuild();
         }
 
-        private static IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles, IDictionary<string, string> targetAliasToNuGetFramework)
+        private static IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles, IDictionary<string, string> targetAliasToNuGetFramework, Dictionary<string, List<string>> nuGetFrameworkToDuplicateAliases)
         {
             var assemblies = new List<OutputLibFile>();
             if (libFiles == null)
             {
                 return assemblies;
             }
-
-
+            Dictionary<string, string> duplicateTargetPath = null;
+            if (nuGetFrameworkToDuplicateAliases != null)
+            {
+                duplicateTargetPath = new Dictionary<string, string>();
+            }
             foreach (var assembly in libFiles)
             {
                 var finalOutputPath = assembly.GetProperty("FinalOutputPath");
@@ -532,7 +534,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 var targetPath = assembly.GetProperty("TargetPath");
-                var targetFramework = assembly.GetProperty("TargetFramework");
+                var targetFrameworkProperty = assembly.GetProperty("TargetFramework");
 
                 if (!File.Exists(finalOutputPath))
                 {
@@ -540,11 +542,8 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 string translated = null;
-                var succeeded = targetAliasToNuGetFramework.TryGetValue(targetFramework, out translated);
-                if (succeeded)
-                {
-                    targetFramework = translated;
-                }
+                var succeeded = targetAliasToNuGetFramework.TryGetValue(targetFrameworkProperty, out translated);
+                string targetFramework = succeeded ? translated : targetFrameworkProperty;
 
                 // If target path is not set, default it to the file name. Only satellite DLLs have a special target path
                 // where culture is part of the target path. This condition holds true for files like runtimeconfig.json file
@@ -553,6 +552,17 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     targetPath = Path.GetFileName(finalOutputPath);
                 }
+
+                if (duplicateTargetPath?.TryGetValue(targetPath, out var existingTfm) == true)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5051,
+                        string.Format(CultureInfo.CurrentCulture,
+                            Strings.DuplicateFrameworks,
+                            existingTfm + ", " + targetFrameworkProperty + " => " + targetFramework,
+                            $"Ambigious packag content. All of the above frameworks have the same target path for {targetPath}"));
+                }
+
+                duplicateTargetPath?.Add(targetPath, targetFrameworkProperty);
 
                 if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
                 {
