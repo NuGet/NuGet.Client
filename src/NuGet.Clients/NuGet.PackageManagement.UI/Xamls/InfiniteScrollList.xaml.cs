@@ -66,6 +66,11 @@ namespace NuGet.PackageManagement.UI
         // if none are vulnerable while filtering by vulnerabilities.
         private readonly HashSet<PackageItemViewModel> _vulnerabilityCheckedPackages = new HashSet<PackageItemViewModel>();
 
+        // Set when packages are loaded with vuln filter but vulnerability data hasn't arrived yet.
+        // HandleItemLoaderStateChange can race with the finally block and override _loadingStatusIndicator.Status,
+        // so we use this flag instead of checking status to decide if Package_PropertyChanged should act.
+        private bool _awaitingVulnerabilityData;
+
         // The count of packages that are selected
         private int _selectedCount;
 
@@ -236,6 +241,7 @@ namespace NuGet.PackageManagement.UI
 
             _selectedCount = 0;
             _vulnerabilityCheckedPackages.Clear();
+            _awaitingVulnerabilityData = false;
 
             // triggers the package list loader
             await LoadItemsAsync(selectedPackageItem, token);
@@ -344,10 +350,11 @@ namespace NuGet.PackageManagement.UI
                         // When filtering by vulnerabilities, vulnerability data may be
                         // populated asynchronously after packages load. Check if any
                         // packages are already known to be vulnerable; if so, remove the
-                        // indicator. Otherwise keep it in Loading state so the spinner
-                        // shows while we wait for async vulnerability data to arrive.
-                        // Package_PropertyChanged will remove the indicator once a
-                        // vulnerable package is identified.
+                        // indicator. Otherwise set _awaitingVulnerabilityData so that
+                        // Package_PropertyChanged handles the indicator once async vuln
+                        // data arrives. We use a flag instead of relying on the indicator
+                        // status because HandleItemLoaderStateChange fires via RunAsync
+                        // and can race with this finally block, overriding the status.
                         bool hasVulnerablePackages = Items.OfType<PackageItemViewModel>().Any(i => i.IsPackageVulnerable);
 
                         if (hasVulnerablePackages)
@@ -356,7 +363,7 @@ namespace NuGet.PackageManagement.UI
                         }
                         else if (Items.Count > emptyListCount)
                         {
-                            _loadingStatusIndicator.Status = LoadingStatus.Loading;
+                            _awaitingVulnerabilityData = true;
                         }
                         else
                         {
@@ -505,15 +512,21 @@ namespace NuGet.PackageManagement.UI
                         _loadingStatusBar.Visibility = desiredVisibility;
                     }
 
-                    _loadingStatusIndicator.Status = state.LoadingStatus;
-
-                    if (!Items.Contains(_loadingStatusIndicator))
+                    // When awaiting async vulnerability data, don't let progress
+                    // callbacks override the indicator state or re-add it — the
+                    // Package_PropertyChanged handler owns the indicator lifecycle.
+                    if (!_awaitingVulnerabilityData)
                     {
-                        await _list.ItemsLock.ExecuteAsync(() =>
+                        _loadingStatusIndicator.Status = state.LoadingStatus;
+
+                        if (!Items.Contains(_loadingStatusIndicator))
                         {
-                            Items.Add(_loadingStatusIndicator);
-                            return Task.CompletedTask;
-                        });
+                            await _list.ItemsLock.ExecuteAsync(() =>
+                            {
+                                Items.Add(_loadingStatusIndicator);
+                                return Task.CompletedTask;
+                            });
+                        }
                     }
                 }
             }).PostOnFailure(nameof(InfiniteScrollList), nameof(HandleItemLoaderStateChange));
@@ -632,27 +645,25 @@ namespace NuGet.PackageManagement.UI
 
                 UpdateCheckBoxStatus();
             }
-            else if (e.PropertyName == nameof(package.IsPackageVulnerable) && _filterByVulnerabilities)
+            else if (e.PropertyName == nameof(package.IsPackageVulnerable) && _awaitingVulnerabilityData)
             {
                 // Vulnerability data arrives asynchronously after packages load.
                 // Track which packages have been checked so we can determine when
                 // all packages have been evaluated.
                 _vulnerabilityCheckedPackages.Add(package);
 
-                if (Items.Contains(_loadingStatusIndicator)
-                    && _loadingStatusIndicator.Status == LoadingStatus.Loading)
+                if (package.IsPackageVulnerable)
                 {
-                    if (package.IsPackageVulnerable)
-                    {
-                        // A vulnerable package was found — remove the loading indicator
-                        // since the list now has visible content.
-                        Items.Remove(_loadingStatusIndicator);
-                    }
-                    else if (_vulnerabilityCheckedPackages.Count >= PackageItems.Count())
-                    {
-                        // All packages have been checked and none are vulnerable.
-                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                    }
+                    // A vulnerable package was found — remove the loading indicator
+                    // since the list now has visible content.
+                    _awaitingVulnerabilityData = false;
+                    Items.Remove(_loadingStatusIndicator);
+                }
+                else if (_vulnerabilityCheckedPackages.Count >= PackageItems.Count())
+                {
+                    // All packages have been checked and none are vulnerable.
+                    _awaitingVulnerabilityData = false;
+                    _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                 }
             }
         }
