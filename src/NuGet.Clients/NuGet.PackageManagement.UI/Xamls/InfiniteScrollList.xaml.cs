@@ -97,8 +97,8 @@ namespace NuGet.PackageManagement.UI
             ItemsView.Filter = item =>
             {
                 return FilterLoadingIndicator(item)
-                    && FilterVulnerabilitiesIndicator(item)
-                    && FilterVulnerablePackage(item);
+                    && FilterVulnerablePackage(item)
+                    && FilterVulnerabilitiesIndicator(item);
             };
 
             DataContext = itemsView;
@@ -354,14 +354,14 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
-                if (VulnerablePackagesCount == 0)
-                {
-                    _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                }
-                else
-                {
-                    Items.Remove(_loadingVulnerabilitiesStatusIndicator);
-                }
+                //if (VulnerablePackagesCount == 0)
+                //{
+                //    _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                //}
+                //else
+                //{
+                //    Items.Remove(_loadingVulnerabilitiesStatusIndicator);
+                //}
 
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
                     && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
