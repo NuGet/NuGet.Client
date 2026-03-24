@@ -61,6 +61,11 @@ namespace NuGet.PackageManagement.UI
 
         private bool _filterByVulnerabilities = false;
 
+        // Tracks packages that have had their vulnerability data evaluated asynchronously.
+        // Used to determine when all packages have been checked so we can show "No packages found"
+        // if none are vulnerable while filtering by vulnerabilities.
+        private readonly HashSet<PackageItemViewModel> _vulnerabilityCheckedPackages = new HashSet<PackageItemViewModel>();
+
         // The count of packages that are selected
         private int _selectedCount;
 
@@ -230,6 +235,7 @@ namespace NuGet.PackageManagement.UI
             });
 
             _selectedCount = 0;
+            _vulnerabilityCheckedPackages.Clear();
 
             // triggers the package list loader
             await LoadItemsAsync(selectedPackageItem, token);
@@ -629,13 +635,24 @@ namespace NuGet.PackageManagement.UI
             else if (e.PropertyName == nameof(package.IsPackageVulnerable) && _filterByVulnerabilities)
             {
                 // Vulnerability data arrives asynchronously after packages load.
-                // When we detect a vulnerable package, remove the loading indicator
-                // since the list now has visible content.
-                if (package.IsPackageVulnerable
-                    && Items.Contains(_loadingStatusIndicator)
+                // Track which packages have been checked so we can determine when
+                // all packages have been evaluated.
+                _vulnerabilityCheckedPackages.Add(package);
+
+                if (Items.Contains(_loadingStatusIndicator)
                     && _loadingStatusIndicator.Status == LoadingStatus.Loading)
                 {
-                    Items.Remove(_loadingStatusIndicator);
+                    if (package.IsPackageVulnerable)
+                    {
+                        // A vulnerable package was found — remove the loading indicator
+                        // since the list now has visible content.
+                        Items.Remove(_loadingStatusIndicator);
+                    }
+                    else if (_vulnerabilityCheckedPackages.Count >= PackageItems.Count())
+                    {
+                        // All packages have been checked and none are vulnerable.
+                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                    }
                 }
             }
         }
