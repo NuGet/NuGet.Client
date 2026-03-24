@@ -696,15 +696,10 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
-        // ========================
-        // Migrated tests from test\EndToEnd\tests\InstallPackageTest.ps1
-        // ========================
-
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithInvalidAbsoluteLocalSource_Fails()
         {
-            // Migrated from Test-InstallPackageWithInvalidAbsoluteLocalSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -724,7 +719,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithValidAbsoluteLocalSource_PackageNotFound_Fails()
         {
-            // Migrated from Test-InstallPackageWithValidAbsoluteLocalSource
             // Uses the solution root as a valid existing directory that contains no packages.
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
@@ -745,7 +739,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithInvalidRelativeLocalSource_Fails()
         {
-            // Migrated from Test-InstallPackageWithInvalidRelativeLocalSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -765,7 +758,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithValidRelativeLocalSource_PackageNotFound_Fails()
         {
-            // Migrated from Test-InstallPackageWithValidRelativeLocalSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -785,7 +777,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithInvalidHttpSource_Fails()
         {
-            // Migrated from Test-InstallPackageWithInvalidHttpSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -805,7 +796,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithIncompleteHttpSource_Fails()
         {
-            // Migrated from Test-InstallPackageWithIncompleteHttpSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -825,7 +815,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithInvalidKnownSource_Fails()
         {
-            // Migrated from Test-InstallPackageWithInvalidKnownSource
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
@@ -843,29 +832,8 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void InstallPackageFromPMCWithFtpProtocolSource_Fails()
-        {
-            // Migrated from Test-InstallPackageWithFtpProtocolSource
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var packageName = "Rules";
-            var source = "ftp://Rules";
-            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an http or local source.";
-
-            var nugetConsole = GetConsole(testContext.Project);
-
-            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source \"{source}\"");
-
-            Assert.IsTrue(
-                nugetConsole.IsMessageFoundInPMC(expectedMessage),
-                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
         public void InstallPackageFromPMCWithInvalidSourceFormat_Fails()
         {
-            // Migrated from Test-InstallPackageThrowsWhenSourceIsInvalid
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var source = "d:package";
@@ -884,7 +852,6 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCWithWhatIf_DoesNotInstallPackageAsync()
         {
-            // Migrated from Test-PackageInstallWhatIf
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "TestPackage";

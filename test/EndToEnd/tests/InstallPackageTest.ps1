@@ -1,6 +1,16 @@
+function Test-InstallPackageWithFtpProtocolSource {
+    # Arrange
+    $package = "Rules"
+    $project = New-ConsoleApplication
+    $source = "ftp://Rules"
+    $message = "Unsupported type of source '$source'. Please provide an http or local source."
+
+    # Act & Assert
+    Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 # Verify Xunit 2.1.0 can be installed into a net45 project.
 # https://github.com/NuGet/Home/issues/1711
-
 function Test-InstallXunit210WithEmptyBuildFolderSucceeds
 {
     param($context)
