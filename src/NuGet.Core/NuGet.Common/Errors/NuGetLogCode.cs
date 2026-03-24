@@ -381,6 +381,11 @@ namespace NuGet.Common
         NU1703 = 1703,
 
         /// <summary>
+        /// Package uses the deprecated MonoAndroid framework.
+        /// </summary>
+        NU1704 = 1704,
+
+        /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,

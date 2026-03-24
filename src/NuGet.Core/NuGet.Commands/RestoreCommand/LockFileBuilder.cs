@@ -186,6 +186,8 @@ namespace NuGet.Commands
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
 
+                bool checkMonoAndroidDeprecation = MonoAndroidDeprecation.ShouldCheck(project, targetGraph.Framework);
+
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
                     var library = graphItem.Key;
@@ -279,6 +281,28 @@ namespace NuGet.Commands
                                 // only log the warning once per library
                                 librariesWithWarnings.Add(library);
                             }
+                        }
+
+                        // Log NU1704 warning if the package uses the deprecated MonoAndroid framework
+                        if (checkMonoAndroidDeprecation
+                            && !librariesWithWarnings.Contains(library)
+                            && MonoAndroidDeprecation.UsesMonoAndroidFramework(targetLibrary))
+                        {
+                            var message = string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_MonoAndroidFrameworkDeprecated,
+                                library.Name,
+                                library.Version);
+
+                            var logMessage = RestoreLogMessage.CreateWarning(
+                                NuGetLogCode.NU1704,
+                                message,
+                                library.Name,
+                                targetGraph.TargetGraphName);
+
+                            _logger.Log(logMessage);
+
+                            // only log the warning once per library
+                            librariesWithWarnings.Add(library);
                         }
                     }
                 }

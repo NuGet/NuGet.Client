@@ -34,6 +34,14 @@ namespace NuGet.Commands
         internal static readonly NuGetVersion V10_0_300 = new("10.0.300");
 
         /// <summary>
+        /// Minimum SDK Analysis Level required for:
+        /// <list type="bullet">
+        /// <item>warning when packages use the deprecated MonoAndroid framework</item>
+        /// </list>
+        /// </summary>
+        internal static readonly NuGetVersion V11_0_100 = new("11.0.100");
+
+        /// <summary>
         /// Determines whether the feature is enabled based on the SDK analysis level.
         /// </summary>
         /// <param name="sdkAnalysisLevel">The project SdkAnalysisLevel value </param>
