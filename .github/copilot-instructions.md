@@ -22,15 +22,17 @@ PowerShell E2E tests live in `test/EndToEnd/tests/`. Apex tests live in `test/Nu
 
 ### Template mapping
 
-| PowerShell function | Apex `ProjectTemplate` | Package management |
-|---|---|---|
-| `New-ConsoleApplication` | `ProjectTemplate.ConsoleApplication` | packages.config |
-| `New-ClassLibrary` | `ProjectTemplate.ClassLibrary` | packages.config |
-| `New-WebSite` | `ProjectTemplate.WebSiteEmpty` | packages.config |
-| `New-NetCoreConsoleApp` | `ProjectTemplate.NetCoreConsoleApp` | PackageReference |
-| `New-NetStandardClassLib` | `ProjectTemplate.NetStandardClassLib` | PackageReference |
-
-WebApplication, WPFApplication, MvcApplication, and FSharpLibrary have no direct Apex equivalents — skip those tests.
+| PowerShell function | Apex `ProjectTemplate` | Package management | Verified |
+|---|---|---|---|
+| `New-ConsoleApplication` | `ProjectTemplate.ConsoleApplication` | packages.config | ✅ |
+| `New-ClassLibrary` | `ProjectTemplate.ClassLibrary` | packages.config | ✅ |
+| `New-WebSite` | `ProjectTemplate.WebSiteEmpty` | packages.config | ✅ |
+| `New-WebApplication` | `ProjectTemplate.WebApplicationEmpty` | packages.config | ❌ |
+| `New-WPFApplication` | `ProjectTemplate.WPFApplication` | packages.config | ❌ |
+| `New-MvcApplication` | `ProjectTemplate.WebApplicationEmptyMvc` | packages.config | ❌ |
+| `New-FSharpLibrary` | `ProjectTemplate.FSharpLibrary` | PackageReference | ❌ |
+| `New-NetCoreConsoleApp` | `ProjectTemplate.NetCoreConsoleApp` | PackageReference | ✅ |
+| `New-NetStandardClassLib` | `ProjectTemplate.NetStandardClassLib` | PackageReference | ✅ |
 
 ### Command execution
 
@@ -54,13 +56,45 @@ WebApplication, WPFApplication, MvcApplication, and FSharpLibrary have no direct
 | `Assert-Throws { ... } $expectedMessage` | `nugetConsole.IsMessageFoundInPMC(expectedMessage)` — PMC errors appear as text, not C# exceptions |
 | `Assert-Null (Get-ProjectPackage ...)` / package not installed | `CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger)` |
 
-### Package source mapping
+### Package sources
 
 | PowerShell source | Apex equivalent |
 |---|---|
 | `$context.RepositoryRoot` or `$context.RepositoryPath` | `testContext.PackageSource` — create packages with `CommonUtility.CreatePackageInSourceAsync()` |
 | No `-Source` (uses nuget.org) | Create a local package with `CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, ...)` — never depend on nuget.org |
 | Hardcoded invalid sources (`http://example.com`, `ftp://...`) | Use the same hardcoded strings directly |
+
+### NuGet.Config manipulation
+
+PS tests that use `Get-VSComponentModel` + `ISettings` to modify NuGet config at runtime can be migrated by pre-configuring `SimpleTestPathContext` before passing it to `ApexTestContext`.
+
+**Via Settings API** (preferred):
+```csharp
+using var simpleTestPathContext = new SimpleTestPathContext();
+simpleTestPathContext.Settings.AddSource("PrivateRepo", privatePath);
+// ... then pass it in:
+using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger,
+    simpleTestPathContext: simpleTestPathContext);
+```
+
+**Via raw config file** (for settings not covered by the API like `dependencyVersion` or `bindingRedirects`):
+```csharp
+using var simpleTestPathContext = new SimpleTestPathContext();
+File.WriteAllText(simpleTestPathContext.NuGetConfig,
+    $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""dependencyVersion"" value=""HighestPatch"" />
+    </config>
+    <packageSources>
+        <clear />
+        <add key=""source"" value=""{simpleTestPathContext.PackageSource}"" />
+    </packageSources>
+</configuration>");
+
+using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger,
+    simpleTestPathContext: simpleTestPathContext);
+```
 
 ### Test structure patterns
 
@@ -115,10 +149,8 @@ public async Task DescriptiveTestNameAsync(/* or [DataTestMethod] with ProjectTe
 ### Tests that should NOT be migrated
 
 Skip PS tests that:
-- Use `WebApplication`/`WPFApplication`/`MvcApplication`/`FSharpLibrary` templates with no Apex equivalent (unless the scenario can be tested with `ConsoleApplication`, `ClassLibrary`, or `WebSiteEmpty`).
 - Assert PS script execution (`Test-Path function:\Get-World`, `init.ps1`, `install.ps1`).
 - Use `Assert-BindingRedirect` — binding redirect tests are already `[SkipTest]` in PS and not worth migrating.
-- Depend on `Get-VSComponentModel` or `ISettings` manipulation (NuGet config changes at runtime).
 - Use `Get-ProjectItem`, `Get-ProjectItemPath`, or other VS DTE project-item inspection not available in Apex.
 - Create `New-SolutionFolder` or multi-project topologies not supported by `ApexTestContext`.
 - Use `$context.TestRoot` for relative path manipulation that's specific to the E2E runner.
