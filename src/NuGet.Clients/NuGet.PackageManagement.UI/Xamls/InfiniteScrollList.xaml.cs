@@ -62,6 +62,8 @@ namespace NuGet.PackageManagement.UI
 
         private bool _filterByVulnerabilities = false;
         private readonly HashSet<PackageItemViewModel> _vulnerabilityEvaluatedPackages = [];
+        private readonly object _vulnerabilityEvaluationLock = new();
+        private int _pendingVulnerabilityRefresh;
 
         // The count of packages that are selected
         private int _selectedCount;
@@ -177,14 +179,14 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return GetVisiblePackageCount();
+                return GetVisiblePackageCount(GetPackageItemsSnapshot());
             }
         }
 
         /// <summary>
         /// All loaded Items (excluding Loading indicator) regardless of filtering.
         /// </summary>
-        public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
+        public IEnumerable<PackageItemViewModel> PackageItems => GetPackageItemsSnapshot();
 
         public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
@@ -210,14 +212,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private int GetLoadedPackageCount()
+        private PackageItemViewModel[] GetPackageItemsSnapshot()
         {
-            return PackageItems.Count();
+            return Items.OfType<PackageItemViewModel>().ToArray();
         }
 
-        private int GetVisiblePackageCount()
+        private static int GetLoadedPackageCount(PackageItemViewModel[] packageItems)
         {
-            return PackageItems.Count(IsPackageVisible);
+            return packageItems.Length;
+        }
+
+        private int GetVisiblePackageCount(IEnumerable<PackageItemViewModel> packageItems)
+        {
+            return packageItems.Count(IsPackageVisible);
         }
 
         private bool IsPackageVisible(PackageItemViewModel package)
@@ -225,7 +232,15 @@ namespace NuGet.PackageManagement.UI
             return !_filterByVulnerabilities || package.IsPackageVulnerable;
         }
 
-        private void RefreshVulnerabilityIndicator()
+        private int GetEvaluatedVulnerabilityPackageCount(int loadedPackageCount)
+        {
+            lock (_vulnerabilityEvaluationLock)
+            {
+                return Math.Min(_vulnerabilityEvaluatedPackages.Count, loadedPackageCount);
+            }
+        }
+
+        private void RefreshVulnerabilityIndicator(PackageItemViewModel[] packageItems = null)
         {
             if (!_filterByVulnerabilities)
             {
@@ -233,9 +248,11 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            int loadedPackageCount = GetLoadedPackageCount();
-            int visiblePackageCount = GetVisiblePackageCount();
-            int evaluatedPackageCount = Math.Min(_vulnerabilityEvaluatedPackages.Count, loadedPackageCount);
+            packageItems ??= GetPackageItemsSnapshot();
+
+            int loadedPackageCount = GetLoadedPackageCount(packageItems);
+            int visiblePackageCount = GetVisiblePackageCount(packageItems);
+            int evaluatedPackageCount = GetEvaluatedVulnerabilityPackageCount(loadedPackageCount);
             bool vulnerabilitiesStillLoading = _loader?.State.LoadingStatus == LoadingStatus.Loading || evaluatedPackageCount < loadedPackageCount;
 
             if (visiblePackageCount > 0)
@@ -252,6 +269,33 @@ namespace NuGet.PackageManagement.UI
             _loadingVulnerabilitiesStatusIndicator.Status = vulnerabilitiesStillLoading
                 ? LoadingStatus.Loading
                 : LoadingStatus.NoItemsFound;
+        }
+
+        private void QueueVulnerabilityRefresh()
+        {
+            if (Interlocked.Exchange(ref _pendingVulnerabilityRefresh, 1) == 1)
+            {
+                return;
+            }
+
+            _joinableTaskFactory.Value.RunAsync(async delegate
+            {
+                while (true)
+                {
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    Interlocked.Exchange(ref _pendingVulnerabilityRefresh, 0);
+
+                    var packageItems = GetPackageItemsSnapshot();
+                    ItemsView.Refresh();
+                    RefreshVulnerabilityIndicator(packageItems);
+                    UpdateCheckBoxStatus(GetVisiblePackageCount(packageItems));
+
+                    if (Interlocked.CompareExchange(ref _pendingVulnerabilityRefresh, 0, 0) == 0)
+                    {
+                        break;
+                    }
+                }
+            }).PostOnFailure(nameof(InfiniteScrollList), nameof(Package_PropertyChanged));
         }
 
         // Load items using the specified loader
@@ -297,7 +341,10 @@ namespace NuGet.PackageManagement.UI
             });
 
             _selectedCount = 0;
-            _vulnerabilityEvaluatedPackages.Clear();
+            lock (_vulnerabilityEvaluationLock)
+            {
+                _vulnerabilityEvaluatedPackages.Clear();
+            }
 
             // triggers the package list loader
             await LoadItemsAsync(selectedPackageItem, token);
@@ -679,19 +726,20 @@ namespace NuGet.PackageManagement.UI
             }
             else if (package != null && e.PropertyName == nameof(package.IsPackageVulnerable))
             {
-                _joinableTaskFactory.Value.RunAsync(async delegate
+                lock (_vulnerabilityEvaluationLock)
                 {
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
                     _vulnerabilityEvaluatedPackages.Add(package);
-                    ItemsView.Refresh();
-                    RefreshVulnerabilityIndicator();
-                    UpdateCheckBoxStatus();
-                }).PostOnFailure(nameof(InfiniteScrollList), nameof(Package_PropertyChanged));
+                }
+
+                if (_filterByVulnerabilities)
+                {
+                    QueueVulnerabilityRefresh();
+                }
             }
         }
 
         // Update the status of the _selectAllPackages check box and the Update button.
-        private void UpdateCheckBoxStatus()
+        private void UpdateCheckBoxStatus(int? packageCount = null)
         {
             // The current tab is not "Updates".
             if (!CheckBoxesEnabled)
@@ -701,10 +749,10 @@ namespace NuGet.PackageManagement.UI
             }
 
             //Are any packages shown with the current filter?
-            int packageCount = FilteredItemsCount;
+            int visiblePackageCount = packageCount ?? FilteredItemsCount;
 
             _updateButtonContainer.Visibility =
-                packageCount > 0 ?
+                visiblePackageCount > 0 ?
                 Visibility.Visible :
                 Visibility.Collapsed;
 
@@ -713,7 +761,7 @@ namespace NuGet.PackageManagement.UI
                 _selectAllPackages.IsChecked = false;
                 _updateButton.IsEnabled = false;
             }
-            else if (_selectedCount < packageCount)
+            else if (_selectedCount < visiblePackageCount)
             {
                 _selectAllPackages.IsChecked = null;
                 _updateButton.IsEnabled = true;
