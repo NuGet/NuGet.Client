@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
     public partial class InfiniteScrollList : UserControl
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
+        private readonly LoadingStatusIndicator _loadingVulnerabilitiesStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
         private static TimeSpan PollingDelay = TimeSpan.FromMilliseconds(100);
 
@@ -60,16 +61,6 @@ namespace NuGet.PackageManagement.UI
         private const string LogEntrySource = "NuGet Package Manager";
 
         private bool _filterByVulnerabilities = false;
-
-        // Tracks packages that have had their vulnerability data evaluated asynchronously.
-        // Used to determine when all packages have been checked so we can show "No packages found"
-        // if none are vulnerable while filtering by vulnerabilities.
-        private readonly HashSet<PackageItemViewModel> _vulnerabilityCheckedPackages = new HashSet<PackageItemViewModel>();
-
-        // Set when packages are loaded with vuln filter but vulnerability data hasn't arrived yet.
-        // HandleItemLoaderStateChange can race with the finally block and override _loadingStatusIndicator.Status,
-        // so we use this flag instead of checking status to decide if Package_PropertyChanged should act.
-        private bool _awaitingVulnerabilityData;
 
         // The count of packages that are selected
         private int _selectedCount;
@@ -105,13 +96,35 @@ namespace NuGet.PackageManagement.UI
             itemsView.LiveGroupingProperties.Add(nameof(PackageItemViewModel.PackageLevel));
             ItemsView.Filter = item =>
             {
-                return FilterVulnerablePackage(item);
+                return FilterLoadingIndicator(item)
+                    && FilterVulnerabilitiesIndicator(item)
+                    && FilterVulnerablePackage(item);
             };
 
             DataContext = itemsView;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
+        }
+
+        private bool FilterVulnerabilitiesIndicator(object item)
+        {
+            if (item.Equals(_loadingVulnerabilitiesStatusIndicator))
+            {
+                return _filterByVulnerabilities && !(_loadingVulnerabilitiesStatusIndicator.Status == LoadingStatus.NoItemsFound && VulnerablePackagesCount > 0);
+            }
+
+            return true;
+        }
+
+        private bool FilterLoadingIndicator(object item)
+        {
+            if (item.Equals(_loadingStatusIndicator))
+            {
+                return !_filterByVulnerabilities;
+            }
+
+            return true;
         }
 
         private bool FilterVulnerablePackage(object item)
@@ -172,6 +185,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
 
+        private int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Count(i => i.IsPackageVulnerable);
 
         public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
@@ -225,9 +239,9 @@ namespace NuGet.PackageManagement.UI
             _loader = loader;
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
-            _loadingStatusIndicator.Reset(_filterByVulnerabilities
-                ? string.Format(CultureInfo.CurrentCulture, Resx.Resources.Vulnerabilities_Loading)
-                : loadingMessage);
+            _loadingStatusIndicator.Reset(loadingMessage);
+            _loadingVulnerabilitiesStatusIndicator.Reset(string.Format(CultureInfo.CurrentCulture, Resx.Resources.Vulnerabilities_Loading));
+            _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.Loading;
             _loadingStatusBar.Visibility = Visibility.Hidden;
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
@@ -240,8 +254,6 @@ namespace NuGet.PackageManagement.UI
             });
 
             _selectedCount = 0;
-            _vulnerabilityCheckedPackages.Clear();
-            _awaitingVulnerabilityData = false;
 
             // triggers the package list loader
             await LoadItemsAsync(selectedPackageItem, token);
@@ -287,6 +299,11 @@ namespace NuGet.PackageManagement.UI
                 {
                     Items.Add(_loadingStatusIndicator);
                     addedLoadingIndicator = true;
+                }
+
+                if (!Items.Contains(_loadingVulnerabilitiesStatusIndicator))
+                {
+                    Items.Add(_loadingVulnerabilitiesStatusIndicator);
                 }
 
                 await LoadItemsCoreAsync(currentLoader, loadCts.Token);
@@ -337,6 +354,15 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
+                if (VulnerablePackagesCount == 0)
+                {
+                    _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                }
+                else
+                {
+                    Items.Remove(_loadingVulnerabilitiesStatusIndicator);
+                }
+
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
                     && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                 {
@@ -344,33 +370,7 @@ namespace NuGet.PackageManagement.UI
                     // do not keep the LoadingStatus.Loading forever.
                     // This is a workaround.
                     var emptyListCount = addedLoadingIndicator ? 1 : 0;
-
-                    if (_filterByVulnerabilities)
-                    {
-                        // When filtering by vulnerabilities, vulnerability data may be
-                        // populated asynchronously after packages load. Check if any
-                        // packages are already known to be vulnerable; if so, remove the
-                        // indicator. Otherwise set _awaitingVulnerabilityData so that
-                        // Package_PropertyChanged handles the indicator once async vuln
-                        // data arrives. We use a flag instead of relying on the indicator
-                        // status because HandleItemLoaderStateChange fires via RunAsync
-                        // and can race with this finally block, overriding the status.
-                        bool hasVulnerablePackages = Items.OfType<PackageItemViewModel>().Any(i => i.IsPackageVulnerable);
-
-                        if (hasVulnerablePackages)
-                        {
-                            Items.Remove(_loadingStatusIndicator);
-                        }
-                        else if (Items.Count > emptyListCount)
-                        {
-                            _awaitingVulnerabilityData = true;
-                        }
-                        else
-                        {
-                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                        }
-                    }
-                    else if (Items.Count == emptyListCount)
+                    if (Items.Count == emptyListCount)
                     {
                         _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                     }
@@ -512,21 +512,15 @@ namespace NuGet.PackageManagement.UI
                         _loadingStatusBar.Visibility = desiredVisibility;
                     }
 
-                    // When awaiting async vulnerability data, don't let progress
-                    // callbacks override the indicator state or re-add it — the
-                    // Package_PropertyChanged handler owns the indicator lifecycle.
-                    if (!_awaitingVulnerabilityData)
-                    {
-                        _loadingStatusIndicator.Status = state.LoadingStatus;
+                    _loadingStatusIndicator.Status = state.LoadingStatus;
 
-                        if (!Items.Contains(_loadingStatusIndicator))
+                    if (!Items.Contains(_loadingStatusIndicator))
+                    {
+                        await _list.ItemsLock.ExecuteAsync(() =>
                         {
-                            await _list.ItemsLock.ExecuteAsync(() =>
-                            {
-                                Items.Add(_loadingStatusIndicator);
-                                return Task.CompletedTask;
-                            });
-                        }
+                            Items.Add(_loadingStatusIndicator);
+                            return Task.CompletedTask;
+                        });
                     }
                 }
             }).PostOnFailure(nameof(InfiniteScrollList), nameof(HandleItemLoaderStateChange));
@@ -645,27 +639,6 @@ namespace NuGet.PackageManagement.UI
 
                 UpdateCheckBoxStatus();
             }
-            else if (e.PropertyName == nameof(package.IsPackageVulnerable) && _awaitingVulnerabilityData)
-            {
-                // Vulnerability data arrives asynchronously after packages load.
-                // Track which packages have been checked so we can determine when
-                // all packages have been evaluated.
-                _vulnerabilityCheckedPackages.Add(package);
-
-                if (package.IsPackageVulnerable)
-                {
-                    // A vulnerable package was found — remove the loading indicator
-                    // since the list now has visible content.
-                    _awaitingVulnerabilityData = false;
-                    Items.Remove(_loadingStatusIndicator);
-                }
-                else if (_vulnerabilityCheckedPackages.Count >= PackageItems.Count())
-                {
-                    // All packages have been checked and none are vulnerable.
-                    _awaitingVulnerabilityData = false;
-                    _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                }
-            }
         }
 
         // Update the status of the _selectAllPackages check box and the Update button.
@@ -765,6 +738,11 @@ namespace NuGet.PackageManagement.UI
             int packagesCount = Items.Count;
 
             if (Items.Contains(_loadingStatusIndicator))
+            {
+                packagesCount--;
+            }
+
+            if (Items.Contains(_loadingVulnerabilitiesStatusIndicator))
             {
                 packagesCount--;
             }
