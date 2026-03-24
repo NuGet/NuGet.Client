@@ -50,13 +50,13 @@ Solution filters for focused development:
 
 ## Code Map
 
-This section describes the important projects and how they relate to each other. Pay attention to the **Architecture Invariant** sections. They often describe things that are deliberately _absent_ from the code.
+This section describes the important projects and how they relate to each other. Pay attention to the **Design Rule** sections. They often describe things that are deliberately _absent_ from the code.
 
 The dependency graph flows strictly downward: Visual Studio client code depends on core libraries, never the reverse. Within the core, lower-level libraries (versioning, frameworks) have no upward dependencies.
 
 ### Core Libraries (`src/NuGet.Core/`)
 
-These are the foundational libraries shared by all NuGet products. They are multi-targeted (`net472`, `netstandard2.0`, `net8.0`+) and have no dependency on Visual Studio or any specific host.
+These are the foundational libraries shared by all NuGet products. They are multi-targeted (`net472` and `net8.0`) and have no dependency on Visual Studio or any specific host.
 
 #### `NuGet.Versioning`
 
@@ -66,7 +66,7 @@ NuGet's implementation of Semantic Versioning. Defines `NuGetVersion`, `Semantic
 
 NuGet's understanding of .NET target frameworks. Defines `NuGetFramework`, `CompatibilityProvider`, `FrameworkReducer`, and framework name mappings. Another leaf dependency. The `def/` subdirectory contains the built-in framework compatibility definitions.
 
-**Architecture Invariant:** `NuGet.Versioning` and `NuGet.Frameworks` are leaf libraries with zero internal dependencies. They are usable in isolation.
+**Design Rule:** `NuGet.Versioning` and `NuGet.Frameworks` are leaf libraries with zero internal dependencies. They are usable in isolation.
 
 #### `NuGet.Common`
 
@@ -84,7 +84,7 @@ NuGet's understanding of `.nupkg` files and `.nuspec` metadata. Provides `Packag
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Frameworks`, `NuGet.Versioning`.
 
-**Architecture Invariant:** `NuGet.Packaging` knows how to read and write packages but knows nothing about where they come from (feeds, caches). Feed interaction is handled by `NuGet.Protocol`.
+**Design Rule:** `NuGet.Packaging` knows how to read and write packages but knows nothing about where they come from (feeds, caches). Feed interaction is handled by `NuGet.Protocol`.
 
 #### `NuGet.Protocol`
 
@@ -110,7 +110,7 @@ The dependency resolver for `packages.config` projects. Uses `PackageResolver` w
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Frameworks`, `NuGet.Packaging`, `NuGet.Protocol`, `NuGet.Versioning`.
 
-**Architecture Invariant:** There are two separate resolvers — `NuGet.DependencyResolver.Core` for PackageReference and `NuGet.Resolver` for packages.config. They share the same lower-level libraries but implement fundamentally different resolution strategies.
+**Design Rule:** There are two separate resolvers — `NuGet.DependencyResolver.Core` for PackageReference and `NuGet.Resolver` for packages.config. They share the same lower-level libraries but implement fundamentally different resolution strategies.
 
 #### `NuGet.ProjectModel`
 
@@ -130,7 +130,7 @@ High-level command implementations shared by all clients. `RestoreCommand`, `Pac
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Credentials`, `NuGet.DependencyResolver.Core`, `NuGet.Frameworks`, `NuGet.LibraryModel`, `NuGet.Packaging`, `NuGet.ProjectModel`, `NuGet.Protocol`, `NuGet.Versioning`.
 
-**Architecture Invariant:** `NuGet.Commands` is the **primary API boundary**. It contains the shared business logic for operations like restore, pack, and sign. The CLI executables, MSBuild tasks, and VS extension all call into this layer. Nothing in `NuGet.Commands` knows about MSBuild, Visual Studio, or any specific CLI framework.
+**Design Rule:** `NuGet.Commands` is the **primary API boundary**. It contains the shared business logic for operations like restore, pack, and sign. The CLI executables, MSBuild tasks, and VS extension all call into this layer. Nothing in `NuGet.Commands` knows about MSBuild, Visual Studio, or any specific CLI framework.
 
 #### `NuGet.PackageManagement`
 
@@ -146,21 +146,21 @@ Localization satellite assemblies for the dotnet CLI. Leaf dependency.
 
 #### `NuGet.Build.Tasks`
 
-MSBuild tasks and targets that implement `dotnet restore` and `msbuild /t:Restore`. The `RestoreTask` class implements `ICancelableTask` and delegates to `RestoreCommand` from `NuGet.Commands`. Ships the `NuGet.targets` and `NuGet.props` files that are imported by the .NET SDK into every project.
+MSBuild tasks and targets that implement `dotnet restore` and `msbuild /t:Restore`. The `RestoreTask` class delegates to `RestoreCommand` from `NuGet.Commands`. Ships the `NuGet.targets` and `NuGet.props` files that are imported by the .NET SDK into every project.
 
-Also contains the `NuGet.RestoreEx.targets` file used for static graph restore, which evaluates the entire project graph up-front for better performance.
+Also contains the `NuGet.RestoreEx.targets` file used for static graph restore, which uses MSBuild's static graph APIs to evaluate the project graph for better performance.
 
 Depends on: `NuGet.Commands`, `NuGet.Common`, `NuGet.Configuration`, `NuGet.Credentials`, `NuGet.Frameworks`, `NuGet.PackageManagement`, `NuGet.Packaging`, `NuGet.ProjectModel`, `NuGet.Protocol`, `NuGet.Versioning`.
 
 #### `NuGet.Build.Tasks.Console`
 
-A standalone console executable (`NuGet.Build.Tasks.Console.exe`) that runs restore using MSBuild's static graph functionality. This is the out-of-process restore host invoked by the `RestoreTaskEx` MSBuild task for improved performance and isolation.
+A standalone console executable (`NuGet.Build.Tasks.Console.exe`) that runs restore using MSBuild's static graph functionality. This is the out-of-process restore host invoked by the `RestoreTaskEx` MSBuild task for improved performance.
 
 Depends on: `NuGet.Build.Tasks` and all transitive core libraries.
 
 #### `NuGet.Build.Tasks.Pack`
 
-MSBuild tasks and targets for `dotnet pack`. The `PackTask` class creates `.nupkg` files from project metadata. Ships the `NuGet.Build.Tasks.Pack.targets` file. Supports multi-targeted projects, symbol packages, and deterministic packaging.
+MSBuild tasks and targets for `dotnet pack`. The `PackTask` class creates `.nupkg` files from project metadata. Ships the `NuGet.Build.Tasks.Pack.targets` file. Supports multi-targeted projects and symbol packages.
 
 Depends on: `NuGet.Commands`, `NuGet.Common`, `NuGet.Configuration`, `NuGet.Credentials`, `NuGet.Frameworks`, `NuGet.LibraryModel`, `NuGet.Packaging`, `NuGet.ProjectModel`, `NuGet.Protocol`, `NuGet.Versioning`.
 
@@ -180,7 +180,7 @@ The `Program` class is the entry point. `CommandManager` handles command registr
 
 Depends on: `NuGet.Build.Tasks`, `NuGet.Commands`, `NuGet.PackageManagement`, and all transitive core libraries.
 
-**Architecture Invariant:** `NuGet.CommandLine` is .NET Framework only. It is the legacy CLI tool. The cross-platform equivalent is `NuGet.CommandLine.XPlat`.
+**Design Rule:** `NuGet.CommandLine` is .NET Framework only. It is the legacy CLI tool. The cross-platform equivalent is `NuGet.CommandLine.XPlat`.
 
 #### `NuGet.CommandLine.XPlat` (`src/NuGet.Core/`)
 
@@ -188,7 +188,7 @@ The cross-platform CLI that powers `dotnet nuget` commands. Integrated into the 
 
 Depends on: `NuGet.Commands` (and transitive core libraries).
 
-**Architecture Invariant:** despite living under `src/NuGet.Core/`, this project is an executable entry point, not a reusable library. It lives in `NuGet.Core` because it targets modern .NET only and has no Visual Studio dependencies.
+**Design Rule:** despite living under `src/NuGet.Core/`, this project is an executable entry point, not a reusable library. It lives in `NuGet.Core` because it targets modern .NET only and has no Visual Studio dependencies.
 
 ### Visual Studio Extension (`src/NuGet.Clients/`)
 
@@ -240,13 +240,13 @@ Depends on: `NuGet.Commands`, `NuGet.PackageManagement`, `NuGet.VisualStudio`, `
 
 The public extensibility API for third-party VS extensions. Defines interfaces like `IVsPackageInstaller`, `IVsPackageUninstaller`, `IVsPackageRestorer`, `IVsFrameworkParser`, and `IVsPathContextProvider`. Also defines the `IVsSolutionRestoreService` interface for restore manager interop. This is an **API boundary** — it is a NuGet package consumed by third-party extensions.
 
-**Architecture Invariant:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack.
+**Design Rule:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack.
 
 #### `NuGet.VisualStudio.Contracts`
 
 Public Service Broker extensibility contracts. Defines `INuGetProjectService` for out-of-process VS extensions to query installed packages. Like `NuGet.VisualStudio`, this is a leaf dependency shipped as a NuGet package.
 
-**Architecture Invariant:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable.
+**Design Rule:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable.
 
 #### `NuGet.VisualStudio.Implementation`
 
@@ -290,12 +290,13 @@ The projects form a strict layering. Dependencies flow downward only:
 │  NuGet.VisualStudio.Common                                  │
 │  NuGet.VisualStudio.Implementation                          │
 │  NuGet.VisualStudio.Internal.Contracts                      │
+│  NuGet.VisualStudio.Interop                                 │
 │  NuGet.Indexing                                             │
 ├────────────────────┬──────────────────┬─────────────────────┤
 │    PUBLIC API      │   CLI HOSTS      │   MSBUILD HOSTS     │
 │  NuGet.VisualStudio│  NuGet.exe       │  NuGet.Build.Tasks  │
 │  NuGet.VS.Contracts│  NuGet.XPlat     │  NuGet.Build.Pack   │
-│  NuGet.VS.Interop  │  NuGet.MSSigning │  NuGet.Build.Console│
+│                    │  NuGet.MSSigning │  NuGet.Build.Console│
 │                    │                  │  NuGetSdkResolver   │
 ├────────────────────┴──────────────────┴─────────────────────┤
 │                   COMMAND LAYER                              │
@@ -331,7 +332,7 @@ The `build/Shared/` directory contains `.cs` files that are compiled directly in
 
 ### Multi-targeting
 
-Core libraries target `net472`, `netstandard2.0`, and modern .NET (currently `net8.0` / `net10.0`). The VS client projects target `net472` only (VS runs on .NET Framework). The XPlat CLI and Build.Tasks.Console target modern .NET only. Target framework constants are defined in `build/config.props`.
+Core libraries target `net472` and `net8.0` (defined as `TargetFrameworksLibrary` in `build/common.project.props`). Executable projects (XPlat CLI, Build.Tasks.Console) target `net472` and `net10.0` (`TargetFrameworksExe`). The VS client projects target `net472` only. The sole exception is `NuGet.VisualStudio.Contracts`, which targets `netstandard2.0` for maximum consumer compatibility.
 
 ### Central Package Management
 
