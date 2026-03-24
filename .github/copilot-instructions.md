@@ -34,6 +34,10 @@ PowerShell E2E tests live in `test/EndToEnd/tests/`. Apex tests live in `test/Nu
 | `New-NetCoreConsoleApp` | `ProjectTemplate.NetCoreConsoleApp` | PackageReference | ✅ |
 | `New-NetStandardClassLib` | `ProjectTemplate.NetStandardClassLib` | PackageReference | ✅ |
 
+| PowerShell function | Apex equivalent |
+|---|---|
+| `New-SolutionFolder 'Name'` | `testContext.SolutionService.AddSolutionFolder("Name")` |
+
 ### Command execution
 
 | Scenario | Apex API |
@@ -45,6 +49,8 @@ PowerShell E2E tests live in `test/EndToEnd/tests/`. Apex tests live in `test/Nu
 | Any raw PMC command | `nugetConsole.Execute(command)` |
 
 **Rule:** If the PS test does not use `-Version`, use `Execute()` with the raw command string. `InstallPackageFromPMC()` always adds `-Version`.
+
+**Important:** `nugetConsole.Execute()` runs in a live PMC PowerShell session. It can execute **any** PowerShell command, not just NuGet commands. This means PS session state — global variables (`$global:InstallVar`), registered functions (`Test-Path function:\Get-World`), environment checks — can all be queried and asserted via `Execute()` + `IsMessageFoundInPMC()`. Do not skip tests just because they assert PS session state.
 
 ### Assertion mapping
 
@@ -149,11 +155,8 @@ public async Task DescriptiveTestNameAsync(/* or [DataTestMethod] with ProjectTe
 ### Tests that should NOT be migrated
 
 Skip PS tests that:
-- Assert PS script execution (`Test-Path function:\Get-World`, `init.ps1`, `install.ps1`).
 - Use `Assert-BindingRedirect` — binding redirect tests are already `[SkipTest]` in PS and not worth migrating.
 - Use `Get-ProjectItem`, `Get-ProjectItemPath`, or other VS DTE project-item inspection not available in Apex.
-- Create `New-SolutionFolder` or multi-project topologies not supported by `ApexTestContext`.
-- Use `$context.TestRoot` for relative path manipulation that's specific to the E2E runner.
 
 ### After migration
 
