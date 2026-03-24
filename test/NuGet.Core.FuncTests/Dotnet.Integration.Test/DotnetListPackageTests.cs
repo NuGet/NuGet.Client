@@ -79,7 +79,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // This should use `dotnet package list` when it supports file-based apps.
+        // https://github.com/NuGet/Home/issues/14823: This should use `dotnet package list` when it supports file-based apps.
         [Fact]
         public async Task DotnetListPackage_FileBasedApp()
         {

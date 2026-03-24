@@ -69,7 +69,7 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
-        // This should use `dotnet nuget why` when it supports file-based apps.
+        // https://github.com/NuGet/Home/issues/14823: This should use `dotnet nuget why` when it supports file-based apps.
         [Fact]
         public async Task WhyCommand_FileBasedApp()
         {

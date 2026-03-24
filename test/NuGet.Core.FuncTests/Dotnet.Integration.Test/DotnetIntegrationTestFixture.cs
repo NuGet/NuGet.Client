@@ -57,6 +57,7 @@ namespace Dotnet.Integration.Test
             SdkDirectory = new DirectoryInfo(sdkPath);
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 
+            // https://github.com/NuGet/Home/issues/14823: This can be removed when we migrate to `dotnet.exe`-only integration tests for file-based apps.
             MSBuildLocator.RegisterMSBuildPath(sdkPath);
 
             _templateDirectory = new SimpleTestPathContext();

@@ -100,7 +100,7 @@ namespace Dotnet.Integration.Test
             version.Should().Be("2.0.0");
         }
 
-        // This should use `dotnet package update` when it supports file-based apps.
+        // https://github.com/NuGet/Home/issues/14823: This should use `dotnet package update` when it supports file-based apps.
         [Fact]
         public async Task FileBasedApp()
         {

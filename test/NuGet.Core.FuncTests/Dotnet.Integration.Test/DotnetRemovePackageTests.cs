@@ -18,7 +18,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
     private readonly DotnetIntegrationTestFixture _fixture = fixture;
     private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
-    // This should use `dotnet package remove` when it supports file-based apps.
+    // https://github.com/NuGet/Home/issues/14823: This should use `dotnet package remove` when it supports file-based apps.
     [Fact]
     public async Task RemovePkg_FileBasedApp()
     {
