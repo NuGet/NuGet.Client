@@ -30,9 +30,9 @@ namespace NuGet.Tests.Apex.NuGetEndToEndTests
             // 1. Create Directory.Build.props with suppression for package.A cve1 and cve2
             // 2. Create mock server with package.A with cve1, cve2, and cve3
             // 3. Add mock server to nuget.config
-            // 3. Create packages.config project
-            // 4. Install package.A
-            // 5. check error list to see if only cve3 is listed
+            // 4. Create packages.config project
+            // 5. Install package.A
+            // 6. check error list to see if only cve3 is listed
 
             // Arrange
             SimpleTestPathContext testPathContext = new();
