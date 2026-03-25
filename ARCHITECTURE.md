@@ -100,7 +100,7 @@ Depends on: `NuGet.Common`, `NuGet.Frameworks`, `NuGet.Versioning`.
 
 #### `NuGet.DependencyResolver.Core`
 
-The graph-based dependency resolution engine for PackageReference projects. Walks the dependency graph using `GraphNode<T>`, resolving version conflicts and computing the transitive closure. The `Remote/` subdirectory handles fetching dependency info from remote feeds.
+The **legacy** graph-based dependency resolution engine for PackageReference projects. Walks the dependency graph using `GraphNode<T>`, resolving version conflicts and computing the transitive closure. The `Remote/` subdirectory handles fetching dependency info from remote feeds. **This resolver is being deprecated** in favor of the new `DependencyGraphResolver` class in `NuGet.Commands` (see below).
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Frameworks`, `NuGet.LibraryModel`, `NuGet.Packaging`, `NuGet.Protocol`, `NuGet.Versioning`.
 
@@ -110,7 +110,7 @@ The dependency resolver for `packages.config` projects. Uses `PackageResolver` w
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Frameworks`, `NuGet.Packaging`, `NuGet.Protocol`, `NuGet.Versioning`.
 
-**Design Rule:** There are two separate resolvers — `NuGet.DependencyResolver.Core` for PackageReference and `NuGet.Resolver` for packages.config. They share the same lower-level libraries but implement fundamentally different resolution strategies.
+**Design Rule:** There are three resolvers. `NuGet.DependencyResolver.Core` is the **legacy** PackageReference resolver (being deprecated). `DependencyGraphResolver` in `NuGet.Commands` is its **replacement** — the new dependency resolution engine for PackageReference projects. `NuGet.Resolver` handles packages.config. All three share the same lower-level libraries but implement fundamentally different resolution strategies.
 
 #### `NuGet.ProjectModel`
 
@@ -126,7 +126,7 @@ Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Frameworks`, `NuGet.Pa
 
 #### `NuGet.Commands`
 
-High-level command implementations shared by all clients. `RestoreCommand`, `PackCommand`, `SignCommand`, `VerifyCommand`, `ListPackageCommand`, and others. This is the **API Boundary** between the core logic and the various hosts (CLI, VS, MSBuild). Each host translates its inputs into the command argument types defined here, then delegates to the command runners.
+High-level command implementations shared by all clients. `RestoreCommand`, `PackCommand`, `SignCommand`, `VerifyCommand`, `ListPackageCommand`, and others. This is the **API Boundary** between the core logic and the various hosts (CLI, VS, MSBuild). Each host translates its inputs into the command argument types defined here, then delegates to the command runners. Also contains `DependencyGraphResolver` (`RestoreCommand/DependencyGraphResolver.cs`), the **new dependency resolution engine** that is replacing the legacy resolver in `NuGet.DependencyResolver.Core`.
 
 Depends on: `NuGet.Common`, `NuGet.Configuration`, `NuGet.Credentials`, `NuGet.DependencyResolver.Core`, `NuGet.Frameworks`, `NuGet.LibraryModel`, `NuGet.Packaging`, `NuGet.ProjectModel`, `NuGet.Protocol`, `NuGet.Versioning`.
 
@@ -238,15 +238,15 @@ Depends on: `NuGet.Commands`, `NuGet.PackageManagement`, `NuGet.VisualStudio`, `
 
 #### `NuGet.VisualStudio`
 
-The public extensibility API for third-party VS extensions. Defines interfaces like `IVsPackageInstaller`, `IVsPackageUninstaller`, `IVsPackageRestorer`, `IVsFrameworkParser`, and `IVsPathContextProvider`. Also defines the `IVsSolutionRestoreService` interface for restore manager interop. This is an **API boundary** — it is a NuGet package consumed by third-party extensions.
+The public extensibility API for third-party VS extensions. Defines interfaces like `IVsPackageInstaller`, `IVsPackageUninstaller`, `IVsPackageRestorer`, `IVsFrameworkParser`, and `IVsPathContextProvider`. Also defines the `IVsSolutionRestoreService` interface for restore manager interop. This is an **API boundary** — it is a NuGet package consumed by third-party extensions. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
 
-**Design Rule:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack.
+**Design Rule:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack. Because this is a public SDK, any changes to its API surface constitute **breaking changes** and must follow the team's breaking-change process.
 
 #### `NuGet.VisualStudio.Contracts`
 
-Public Service Broker extensibility contracts. Defines `INuGetProjectService` for out-of-process VS extensions to query installed packages. Like `NuGet.VisualStudio`, this is a leaf dependency shipped as a NuGet package.
+Public Service Broker extensibility contracts. Defines `INuGetProjectService` for out-of-process VS extensions to query installed packages. Like `NuGet.VisualStudio`, this is a leaf dependency shipped as a NuGet package. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
 
-**Design Rule:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable.
+**Design Rule:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable. As with `NuGet.VisualStudio`, any API changes here are **breaking changes** and must follow the team's breaking-change process.
 
 #### `NuGet.VisualStudio.Implementation`
 
@@ -301,12 +301,13 @@ The projects form a strict layering. Dependencies flow downward only:
 ├────────────────────┴──────────────────┴─────────────────────┤
 │                   COMMAND LAYER                              │
 │  NuGet.Commands (restore, pack, sign, verify, list, ...)    │
+│    └─ DependencyGraphResolver (new PackageReference resolver)│
 │  NuGet.PackageManagement (install, update, uninstall)       │
 │  NuGet.Credentials                                          │
 ├─────────────────────────────────────────────────────────────┤
 │                   DATA MODEL LAYER                           │
 │  NuGet.ProjectModel (PackageSpec, LockFile, DependencyGraph)│
-│  NuGet.DependencyResolver.Core (graph-based resolution)     │
+│  NuGet.DependencyResolver.Core (legacy resolution, deprecated)│
 │  NuGet.Resolver (packages.config resolution)                │
 ├─────────────────────────────────────────────────────────────┤
 │                   PROTOCOL LAYER                             │
@@ -352,7 +353,9 @@ NuGet exposes two VS extensibility surfaces:
 - **In-process (MEF):** `NuGet.VisualStudio` interfaces (`IVsPackageInstaller`, etc.) — consumed by third-party extensions loading in the same VS process.
 - **Out-of-process (Service Broker):** `NuGet.VisualStudio.Contracts` (`INuGetProjectService`) — consumed by extensions that may run out-of-process.
 
-Both are leaf assemblies with no internal NuGet dependencies, ensuring a stable public API surface.
+Together these two packages form the **NuGet VS SDK** ([docs](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)). Both are leaf assemblies with no internal NuGet dependencies, ensuring a stable public API surface.
+
+**Design Rule:** Any changes to the APIs in `NuGet.VisualStudio` or `NuGet.VisualStudio.Contracts` are **breaking changes** for external consumers and must follow the team's breaking-change process. Treat these two assemblies with extreme care during code reviews.
 
 ### Build System
 
