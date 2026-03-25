@@ -34,24 +34,21 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework, fileBasedApp);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
             var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
             packageX.Dependencies.Add(packageY);
 
+            project.AddPackageToFramework(projectFramework, packageX);
+
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
                 packageX,
                 packageY);
-
-            var projectFramework = "net472";
-            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework, fileBasedApp,
-                project =>
-                {
-                    project.AddPackageToFramework(projectFramework, packageX);
-                });
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
             using var builder = TestVirtualProjectBuilder.From(project);

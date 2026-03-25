@@ -364,9 +364,12 @@ namespace NuGet.XPlat.FuncTest
                 pathContext.PackageSource,
                 packageA100);
 
-            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net6.0", fileBasedApp: true,
-                    project => project.AddPackageToAllFrameworks(packageA100));
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net6.0", fileBasedApp: true);
+            projectA.AddPackageToAllFrameworks(packageA100);
             var projectB = SimpleTestProjectContext.CreateNETCore("ProjectB", pathContext.SolutionRoot, "net6.0");
+
+            projectA.Save();
+            projectB.Save();
 
             // List package command requires restore to be run before it can list packages.
             await RestoreProjectsAsync(pathContext, projectA, projectB, _testOutputHelper);

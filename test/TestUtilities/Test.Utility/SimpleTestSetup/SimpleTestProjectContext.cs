@@ -371,7 +371,14 @@ namespace NuGet.Test.Utility
 
         public void Save()
         {
-            Save(ProjectPath);
+            if (VirtualProjectPath != null)
+            {
+                VirtualProjectContent = GetXML().ToString();
+            }
+            else
+            {
+                Save(ProjectPath);
+            }
         }
 
         public void Save(string path)

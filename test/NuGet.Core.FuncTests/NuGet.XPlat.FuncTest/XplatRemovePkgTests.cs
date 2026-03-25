@@ -93,8 +93,9 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46", fileBasedApp,
-                    project => project.AddPackageToAllFrameworks(packageX));
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46", fileBasedApp);
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Save();
                 var logger = new TestCommandOutputLogger(_testOutputHelper);
 
                 // Verify that the package reference exists before removing.

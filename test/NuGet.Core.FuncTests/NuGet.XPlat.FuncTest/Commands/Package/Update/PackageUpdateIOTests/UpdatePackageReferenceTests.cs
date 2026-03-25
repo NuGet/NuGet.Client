@@ -147,14 +147,13 @@ public class UpdatePackageReferenceTests
         var packageA_v2 = new SimpleTestPackageContext("PackageA", "2.0.0");
         await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packageA_v1, packageA_v2);
 
-        var project = XPlatTestUtils.CreateProject("TestProject1", testContext, "net9.0", fileBasedApp: true, project =>
-        {
-            project.AddPackageToAllFrameworks(packageA_v1);
-            project.Properties.Add("RestorePackagesPath", testContext.UserPackagesFolder);
-            project.Sources = new List<PackageSource> { new PackageSource(testContext.PackageSource) };
-            project.FallbackFolders = new List<string> { testContext.FallbackFolder };
-            project.GlobalPackagesFolder = testContext.UserPackagesFolder;
-        });
+        var project = XPlatTestUtils.CreateProject("TestProject1", testContext, "net9.0", fileBasedApp: true);
+
+        project.AddPackageToAllFrameworks(packageA_v1);
+        project.Properties.Add("RestorePackagesPath", testContext.UserPackagesFolder);
+        project.Sources = new List<PackageSource> { new PackageSource(testContext.PackageSource) };
+        project.FallbackFolders = new List<string> { testContext.FallbackFolder };
+        project.GlobalPackagesFolder = testContext.UserPackagesFolder;
 
         using var builder = TestVirtualProjectBuilder.From(project);
         using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot, builder);
