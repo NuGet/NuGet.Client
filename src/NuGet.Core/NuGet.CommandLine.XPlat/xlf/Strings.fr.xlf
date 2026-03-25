@@ -410,7 +410,7 @@ NuGet nécessite des sources HTTPS. Pour utiliser des sources HTTP, vous devez d
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="needs-review-translation">Entrée manquante ou incorrecte « {0} ». Veuillez fournir un chemin d’un projet, d’un fichier solution ou d’un répertoire.</target>
+        <target state="new">Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -973,7 +973,7 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_ProjectOptionDescription">
         <source>Path to a project or solution file or file-based app, or a project directory.</source>
-        <target state="needs-review-translation">Chemin d’accès à un fichier de projet ou de solution, ou à un répertoire.</target>
+        <target state="new">Path to a project or solution file or file-based app, or a project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
@@ -1528,7 +1528,7 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
         <source>A path to a project, solution file, file-based app, or project directory.</source>
-        <target state="needs-review-translation">Chemin d’un projet, d’un fichier solution ou d’un répertoire.</target>
+        <target state="new">A path to a project, solution file, file-based app, or project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">
