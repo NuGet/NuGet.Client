@@ -995,6 +995,11 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <target state="translated">{0} 中检测到版本冲突。直接安装/引用 {1} 到项目 {2} 可解决此问题。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Log_VersionConflictForCentralTransitive">
+        <source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</source>
+        <target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">
         <source>Writing assets file to disk. Path: {0}</source>
         <target state="translated">将资产文件写入磁盘。路径: {0}</target>

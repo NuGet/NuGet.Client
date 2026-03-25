@@ -1546,13 +1546,30 @@ namespace NuGet.Commands
             {
                 foreach (var versionConflict in graph.AnalyzeResult.VersionConflicts)
                 {
-                    var message = string.Format(
-                           CultureInfo.CurrentCulture,
-                           Strings.Log_VersionConflict,
-                           versionConflict.Selected.Key.Name,
-                           versionConflict.Selected.GetIdAndVersionOrRange(),
-                           _request.Project.Name)
-                       + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
+                    string message;
+
+                    bool isCentralTransitive = versionConflict.Selected.Item?.IsCentralTransitive == true ||
+                                               versionConflict.Conflicting.Item?.IsCentralTransitive == true;
+
+                    if (isCentralTransitive)
+                    {
+                        message = string.Format(
+                               CultureInfo.CurrentCulture,
+                               Strings.Log_VersionConflictForCentralTransitive,
+                               versionConflict.Selected.Key.Name,
+                               _request.Project.Name)
+                           + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
+                    }
+                    else
+                    {
+                        message = string.Format(
+                               CultureInfo.CurrentCulture,
+                               Strings.Log_VersionConflict,
+                               versionConflict.Selected.Key.Name,
+                               versionConflict.Selected.GetIdAndVersionOrRange(),
+                               _request.Project.Name)
+                           + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
+                    }
 
                     await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1107, message, versionConflict.Selected.Key.Name, graph.TargetGraphName));
                     return false;
