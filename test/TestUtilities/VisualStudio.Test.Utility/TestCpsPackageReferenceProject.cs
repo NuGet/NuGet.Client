@@ -51,7 +51,7 @@ namespace Test.Utility
             string projectUniqueName,
             string projectFullPath,
             IProjectSystemCache projectSystemCache,
-            UnconfiguredProject unconfiguredProject,
+            Microsoft.VisualStudio.Threading.AsyncLazy<UnconfiguredProject> unconfiguredProject,
             INuGetProjectServices projectServices,
             string projectId,
             string assetsFilePath,
