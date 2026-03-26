@@ -225,6 +225,11 @@ steps:
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
 
+          # Drop tests with build number instead of build ID to make it easier to find the drop
+          $testsDrop = "Tests/${env:System_TeamProject}/${env:Build_Repository_Name}/${env:Build_SourceBranchName}/${env:Build_BuildNumber}"
+          Write-Host "Tests Drop: $testsDrop"
+          Write-Host "##vso[task.setvariable variable=TestsDrop]$testsDrop"
+
           $vsBootstrapperBranch = dotnet msbuild -getProperty:VsTargetBranch build\config.props
           Write-Host "VS Bootstrapper Branch: $vsBootstrapperBranch"
           Write-Host "##vso[task.setvariable variable=VsBootstrapperBranch;isOutput=true]$vsBootstrapperBranch"
@@ -305,6 +310,16 @@ steps:
       toLowerCase: false
       usePat: true
       dropMetadataContainerName: "DropMetadata-RunSettings"
+
+  - task: artifactDropTask@0
+    displayName: "Publish mirrored test drop"
+    inputs:
+      dropServiceURI: "https://devdiv.artifacts.visualstudio.com"
+      buildNumber: "$(TestsDrop)"
+      sourcePath: '$(Build.StagingDirectory)\RunSettings'
+      toLowerCase: false
+      usePat: true
+      dropMetadataContainerName: "DropMetadata-Tests"
 
   - task: PublishPipelineArtifact@1
     displayName: "Publish E2E tests"
