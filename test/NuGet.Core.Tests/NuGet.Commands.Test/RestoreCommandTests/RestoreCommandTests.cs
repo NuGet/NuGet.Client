@@ -3747,3 +3747,4 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
     }
 }
+
