@@ -996,8 +996,8 @@ Actualice el SDK de .NET o quite RestoreUseLegacyDependencyResolver para usar es
         <note />
       </trans-unit>
       <trans-unit id="Log_VersionConflictForCentralTransitive">
-        <source>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</source>
-        <target state="new">Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</target>
+        <source>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue.</source>
+        <target state="new">Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">

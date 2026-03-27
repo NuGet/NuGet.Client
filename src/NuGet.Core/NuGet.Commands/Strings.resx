@@ -180,7 +180,7 @@
     <value>Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue.</value>
   </data>
   <data name="Log_VersionConflictForCentralTransitive" xml:space="preserve">
-    <value>Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version.</value>
+    <value>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue.</value>
   </data>
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>

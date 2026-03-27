@@ -2040,22 +2040,19 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             packageX.Dependencies.Add(new SimpleTestPackageContext("z", "[1.0.0]"));
 
             var packageY = new SimpleTestPackageContext("y", "1.0.0");
-            var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
             var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
-            var packageZ3 = new SimpleTestPackageContext("z", "3.0.0");
-
             packageY.Dependencies.Add(packageZ2);
 
             await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(
                 pathContext.PackageSource,
                 packageX,
                 packageY,
-                packageZ1,
+                new SimpleTestPackageContext("z", "1.0.0"),
                 packageZ2,
-                packageZ3
+                new SimpleTestPackageContext("z", "3.0.0")
                 );
 
-            var project1Json = @"
+            var packageSpec = @"
             {
               ""restore"": {
                 ""centralPackageVersionsManagementEnabled"": true,
@@ -2083,7 +2080,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
               }
             }";
 
-            var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, pathContext.SolutionRoot, project1Json);
+            var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, pathContext.SolutionRoot, packageSpec);
             spec.RestoreMetadata.UseLegacyDependencyResolver = true;
             var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger);
             var command = new RestoreCommand(request);
@@ -2097,8 +2094,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             result.LockFile.LogMessages.Should().Contain(e => e.Code == NuGetLogCode.NU1107);
 
             var errorMessage = result.LockFile.LogMessages[0].Message;
-            errorMessage.Should().Contain("transitively pinned centrally managed package");
-            errorMessage.Should().Contain("Update the centrally managed package version to a higher version");
+
+            var expectedMessage = string.Format(
+                                Strings.Log_VersionConflictForCentralTransitive,
+                               "z", "z 2.0.0");
+            errorMessage.Should().StartWith(expectedMessage);
         }
 
         [Theory]

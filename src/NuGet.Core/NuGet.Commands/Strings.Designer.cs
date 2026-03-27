@@ -1764,7 +1764,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Version conflict detected for {0} transitively pinned centrally managed package in project {1}. Update the centrally managed package version to a higher version..
+        ///   Looks up a localized string similar to Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue..
         /// </summary>
         internal static string Log_VersionConflictForCentralTransitive {
             get {
