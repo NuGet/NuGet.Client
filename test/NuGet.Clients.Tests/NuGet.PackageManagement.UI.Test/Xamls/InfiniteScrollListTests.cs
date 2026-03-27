@@ -12,6 +12,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.UI.Test.Models.Package;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -43,11 +44,11 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
-        public void CheckBoxesEnabled_Initialized_DefaultIsFalse()
+        public void IsUpdateMode_Initialized_DefaultIsFalse()
         {
             var list = new InfiniteScrollList();
 
-            Assert.False(list.CheckBoxesEnabled);
+            Assert.False(list.ViewModel.IsUpdateMode);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -55,7 +56,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var list = new InfiniteScrollList();
 
-            Assert.Same(list.DataContext, list.Items);
+            Assert.Same(list.DataContext, list.ViewModel.Items);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -63,7 +64,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var list = new InfiniteScrollList();
 
-            Assert.False(list.IsSolution);
+            Assert.False(list.ViewModel.IsSolution);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var list = new InfiniteScrollList();
 
-            Assert.Empty(list.Items);
+            Assert.Empty(list.ViewModel.Items);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -79,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var list = new InfiniteScrollList();
 
-            Assert.Empty(list.PackageItems);
+            Assert.Empty(list.ViewModel.PackageItems);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -87,7 +88,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var list = new InfiniteScrollList();
 
-            Assert.Null(list.SelectedPackageItem);
+            Assert.Null(list.ViewModel.SelectedPackageItem);
         }
 
         [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
@@ -98,7 +99,7 @@ namespace NuGet.PackageManagement.UI.Test
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 async () =>
                 {
-                    await list.LoadItemsAsync(
+                    await list.ViewModel.LoadItemsAsync(
                         loader: null,
                         loadingMessage: "a",
                         logger: null,
@@ -119,7 +120,7 @@ namespace NuGet.PackageManagement.UI.Test
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 async () =>
                 {
-                    await list.LoadItemsAsync(
+                    await list.ViewModel.LoadItemsAsync(
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage,
                         logger: null,
@@ -138,7 +139,7 @@ namespace NuGet.PackageManagement.UI.Test
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 async () =>
                 {
-                    await list.LoadItemsAsync(
+                    await list.ViewModel.LoadItemsAsync(
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage: "a",
                         logger: null,
@@ -157,7 +158,7 @@ namespace NuGet.PackageManagement.UI.Test
             await Assert.ThrowsAsync<OperationCanceledException>(
                 async () =>
                 {
-                    await list.LoadItemsAsync(
+                    await list.ViewModel.LoadItemsAsync(
                         Mock.Of<IPackageItemLoader>(),
                         loadingMessage: "a",
                         logger: null,
@@ -231,7 +232,7 @@ namespace NuGet.PackageManagement.UI.Test
             // Despite LoadItems(...) being a synchronous method, the method internally fires an asynchronous task.
             // We'll know when that task completes successfully when the LoadItemsCompleted event fires,
             // and to avoid infinite waits in exceptional cases, we'll interpret a call to reset as a failure.
-            list.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
+            list.ViewModel.LoadItemsCompleted += (sender, args) => taskCompletionSource.TrySetResult(null);
 
             loader.Setup(x => x.Reset());
             logger.Setup(x => x.Log(It.Is<ILogMessage>(lm => lm.Level == LogLevel.Error && lm.Message != null)))
@@ -251,7 +252,7 @@ namespace NuGet.PackageManagement.UI.Test
                     return Enumerable.Empty<PackageItemViewModel>();
                 });
 
-            await list.LoadItemsAsync(
+            await list.ViewModel.LoadItemsAsync(
                 loader.Object,
                 loadingMessage: "a",
                 logger: logger.Object,
@@ -312,15 +313,15 @@ namespace NuGet.PackageManagement.UI.Test
             loaderMock.Setup(x => x.GetCurrent())
                 .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel: packageModel)));
 
-            list.LoadItemsCompleted += (sender, args) =>
+            list.ViewModel.LoadItemsCompleted += (sender, args) =>
             {
-                var lst = (InfiniteScrollList)sender;
-                tcs.TrySetResult(lst.Items.Count);
+                var vm = (InfiniteScrollListViewModel)sender;
+                tcs.TrySetResult(vm.Items.Count);
                 _output.WriteLine("3. After assert");
             };
 
             _output.WriteLine("1. Init act");
-            await list.LoadItemsAsync(
+            await list.ViewModel.LoadItemsAsync(
                 loader: loaderMock.Object,
                 loadingMessage: "Test loading",
                 logger: testLogger,
