@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var packageSpec = GetPackageSpec();
             if (packageSpec == null)
-            { 
+            {
                 if (shouldThrow)
                 {
                     throw new ProjectNotNominatedException(
