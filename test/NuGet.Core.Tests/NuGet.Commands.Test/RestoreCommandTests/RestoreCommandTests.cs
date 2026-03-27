@@ -13,7 +13,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
@@ -2025,6 +2024,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
+        // P -> X -> Z [1.0.0]
+        // P -> Y -> Z >= 2.0.0
+        // This creates a conflict.
         [Fact]
         public async Task RestoreCommand_VersionConflict_CentralTransitive_ShowsCorrectErrorMessage()
         {
@@ -2034,41 +2036,24 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectName = "TestProject";
             var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
 
-            // Package x depends on z with exact version [1.0.0].
-            // Package y depends on z >= 2.0.0 (compatible with central pin).
-            // The central pin for z is [2.0.0,), so z resolves to 2.0.0.
-            // Since 2.0.0 does not satisfy [1.0.0], this creates a version conflict (NU1107)
-            // where the selected node is the CentralTransitive pin for z.
-            var packageX = new SimpleTestPackageContext("x", "1.0.0")
-            {
-                Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                    <package>
-                    <metadata>
-                        <id>x</id>
-                        <version>1.0.0</version>
-                        <title />
-                        <dependencies>
-                            <group>
-                                <dependency id=""z"" version=""[1.0.0]"" />
-                            </group>
-                        </dependencies>
-                    </metadata>
-                    </package>")
-            };
+            var packageX = new SimpleTestPackageContext("x", "1.0.0");
+            packageX.Dependencies.Add(new SimpleTestPackageContext("z", "[1.0.0]"));
 
             var packageY = new SimpleTestPackageContext("y", "1.0.0");
             var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
             var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+            var packageZ3 = new SimpleTestPackageContext("z", "3.0.0");
 
             packageY.Dependencies.Add(packageZ2);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageY,
                 packageZ1,
-                packageZ2);
+                packageZ2,
+                packageZ3
+                );
 
             var project1Json = @"
             {
@@ -2093,13 +2078,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                   ""centralPackageVersions"": {
                     ""x"": ""[1.0.0,)"",
                     ""y"": ""[1.0.0,)"",
-                    ""z"": ""[2.0.0,)""
                   }
                 }
               }
             }";
 
             var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, pathContext.SolutionRoot, project1Json);
+            spec.RestoreMetadata.UseLegacyDependencyResolver = true;
             var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger);
             var command = new RestoreCommand(request);
 
@@ -2107,14 +2092,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var result = await command.ExecuteAsync();
 
             // Assert
-            Assert.False(result.Success);
+            result.Success.Should().BeFalse(logger.ShowMessages());
 
-            var errorMessages = logger.LogMessages.Where(m => m.Level == LogLevel.Error && m.Code == NuGetLogCode.NU1107).ToList();
-            Assert.NotEmpty(errorMessages);
+            result.LockFile.LogMessages.Should().Contain(e => e.Code == NuGetLogCode.NU1107);
 
-            var errorMessage = errorMessages.First().Message;
-            Assert.Contains("transitively pinned centrally managed package", errorMessage);
-            Assert.Contains("Update the centrally managed package version to a higher version", errorMessage);
+            var errorMessage = result.LockFile.LogMessages[0].Message;
+            errorMessage.Should().Contain("transitively pinned centrally managed package");
+            errorMessage.Should().Contain("Update the centrally managed package version to a higher version");
         }
 
         [Theory]
