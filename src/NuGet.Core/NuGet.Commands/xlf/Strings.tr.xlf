@@ -996,8 +996,8 @@ Bu özelliği kullanmak için .NET SDK'nizi yükseltin veya RestoreUseLegacyDepe
         <note />
       </trans-unit>
       <trans-unit id="Log_VersionConflictForCentralTransitive">
-        <source>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue.</source>
-        <target state="new">Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion {1} to resolve this issue.</target>
+        <source>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</source>
+        <target state="new">Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">

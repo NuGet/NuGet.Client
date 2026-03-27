@@ -1556,20 +1556,20 @@ namespace NuGet.Commands
                     if (isPinningEnabled)
                     {
                         message = string.Format(
-                               CultureInfo.CurrentCulture,
-                               Strings.Log_VersionConflictForCentralTransitive,
-                               versionConflict.Selected.Key.Name,
-                               versionConflict.Selected.GetIdAndVersionOrRange())
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_VersionConflictForCentralTransitive,
+                                versionConflict.Selected.Key.Name,
+                                versionConflict.Selected.GetIdAndVersionOrRange())
                            + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
                     }
                     else
                     {
                         message = string.Format(
-                               CultureInfo.CurrentCulture,
-                               Strings.Log_VersionConflict,
-                               versionConflict.Selected.Key.Name,
-                               versionConflict.Selected.GetIdAndVersionOrRange(),
-                               _request.Project.Name)
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_VersionConflict,
+                                versionConflict.Selected.Key.Name,
+                                versionConflict.Selected.GetIdAndVersionOrRange(),
+                                _request.Project.Name)
                            + $" {Environment.NewLine} {versionConflict.Selected.GetPathWithLastRange()} {Environment.NewLine} {versionConflict.Conflicting.GetPathWithLastRange()}.";
                     }
 
