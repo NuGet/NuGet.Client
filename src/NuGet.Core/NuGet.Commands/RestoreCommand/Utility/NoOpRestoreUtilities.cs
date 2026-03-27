@@ -225,8 +225,9 @@ namespace NuGet.Commands
         /// <returns>The path for the dgspec.json. Null if not appropriate.</returns>
         internal static string GetPersistedDGSpecFilePath(RestoreRequest request)
         {
-            if (request.ProjectStyle == ProjectStyle.ProjectJson
+            if ((request.ProjectStyle == ProjectStyle.ProjectJson
                 || request.ProjectStyle == ProjectStyle.PackageReference)
+                && !request.Project.RestoreMetadata.RestoreDoNotWriteDependencyGraphSpec)
             {
                 var outputRoot = request.MSBuildProjectExtensionsPath ?? request.RestoreOutputPath;
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
