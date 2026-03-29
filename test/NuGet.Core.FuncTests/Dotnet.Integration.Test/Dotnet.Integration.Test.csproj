@@ -4,9 +4,23 @@
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);TEST_FOR_DOTNET</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test\PackageFileNameTestCase.cs" Link="PackageFileNameTestCase.cs" />
+    <Compile Include="..\Msbuild.Integration.Test\PackageFileNameTests.cs" Link="PackageFileNameTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

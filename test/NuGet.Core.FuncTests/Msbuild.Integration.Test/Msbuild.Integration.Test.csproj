@@ -1,13 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <Description>Integration tests for NuGet powered msbuild functionalities (restore/pack).</Description>
     <TestProjectType Condition="'$(IsXPlat)' == 'true'">None</TestProjectType>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);TEST_FOR_MSBUILD</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test\PackageFileNameTestCase.cs" Link="PackageFileNameTestCase.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,10 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.props"
-          CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
-          CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <!--<PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />-->
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.props" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
