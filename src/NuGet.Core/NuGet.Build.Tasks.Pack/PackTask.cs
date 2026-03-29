@@ -16,7 +16,7 @@ using System.Diagnostics;
 
 namespace NuGet.Build.Tasks.Pack
 {
-    public class PackTask : Microsoft.Build.Utilities.Task, IPackTaskRequest<ITaskItem>
+    public class PackTask : Microsoft.Build.Utilities.Task, IPackTaskRequest<ITaskItem>, IOutputFilePathProvider
     {
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
