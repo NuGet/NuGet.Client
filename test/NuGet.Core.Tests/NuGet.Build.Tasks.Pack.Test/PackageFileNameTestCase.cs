@@ -9,9 +9,9 @@ using Xunit.Abstractions;
 
 #if TEST_FOR_UNIT
 namespace NuGet.Build.Tasks.Pack.Test
-#elif TEST_FOR_MSBUILD
+#elif IS_DESKTOP
 namespace Msbuild.Integration.Test
-#else
+#elif IS_CORECLR
 namespace Dotnet.Integration.Test
 #endif
 {

@@ -13,9 +13,9 @@ using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
-#if TEST_FOR_MSBUILD
+#if IS_DESKTOP
 namespace Msbuild.Integration.Test
-#elif TEST_FOR_DOTNET
+#elif IS_CORECLR
 namespace Dotnet.Integration.Test
 #endif
 {

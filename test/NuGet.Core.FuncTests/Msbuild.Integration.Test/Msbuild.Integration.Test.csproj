@@ -5,10 +5,6 @@
     <TestProjectType Condition="'$(IsXPlat)' == 'true'">None</TestProjectType>
   </PropertyGroup>
   
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TEST_FOR_MSBUILD</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
