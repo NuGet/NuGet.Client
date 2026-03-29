@@ -456,7 +456,6 @@ namespace NuGet.Build.Tasks.Pack.Test
             {
                 string outputDir = System.IO.Path.Combine(testDirectory, "output");
                 System.IO.Directory.CreateDirectory(outputDir);
-                System.IO.Directory.SetCurrentDirectory(testDirectory);
 
                 string objDir = System.IO.Path.Combine(testDirectory, "obj");
                 System.IO.Directory.CreateDirectory(objDir);
