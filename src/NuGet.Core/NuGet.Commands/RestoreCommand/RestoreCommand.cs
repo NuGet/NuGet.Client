@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -41,6 +40,7 @@ namespace NuGet.Commands
         private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
             = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
+        internal IEnvironmentVariableReader EnvironmentVariableReader { get; init; }
         public Guid ParentId { get; }
 
         private const string ProjectRestoreInformation = nameof(ProjectRestoreInformation);
@@ -68,6 +68,7 @@ namespace NuGet.Commands
         private const string UpdatedMSBuildFiles = nameof(UpdatedMSBuildFiles);
         private const string IsPackageInstallationTrigger = nameof(IsPackageInstallationTrigger);
         private const string UsesLegacyPackagesDirectory = nameof(UsesLegacyPackagesDirectory);
+        private const string UsesLegacyAssetTargetFallback = nameof(UsesLegacyAssetTargetFallback);
 
         // no-op data names
         private const string NoOpDuration = nameof(NoOpDuration);
@@ -174,6 +175,7 @@ namespace NuGet.Commands
 
             _isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
             _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && ShouldUseNewResolverWithLockFile(_isLockFileEnabled, _request.Project) && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            EnvironmentVariableReader = EnvironmentVariableWrapper.Instance;
         }
 
         // Use the new resolver if lock files are not enabled, or if lock files are enabled and legacy projects or .NET 10 SDK is used.
@@ -263,7 +265,7 @@ namespace NuGet.Commands
                 telemetry.StartIntervalMeasure();
 
                 // Create assets file
-                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
+                if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_BuildAssetsFileStart(_request.Project.FilePath);
 
                 LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
@@ -272,7 +274,7 @@ namespace NuGet.Commands
                     localRepositories,
                     contextForProject);
 
-                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
+                if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_BuildAssetsFileStop(_request.Project.FilePath);
 
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
@@ -385,6 +387,8 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[NETSdkVersion] = _request.Project.RestoreSettings.SdkVersion;
             telemetry.TelemetryEvent[IsPackageInstallationTrigger] = !_request.IsRestoreOriginalAction;
             telemetry.TelemetryEvent[UsesLegacyPackagesDirectory] = !_request.IsLowercasePackagesDirectory;
+            telemetry.TelemetryEvent[UsesLegacyAssetTargetFallback] = MSBuildStringUtility.IsTrue(EnvironmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
+
             _operationId = telemetry.OperationId;
 
             var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
@@ -448,9 +452,9 @@ namespace NuGet.Commands
             bool noOpCacheFileEvaluation;
             TimeSpan? cacheFileAge;
 
-            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_CalcNoOpRestoreStart(_request.Project.FilePath);
             (cacheFile, noOpCacheFileEvaluation, cacheFileAge) = EvaluateCacheFile();
-            if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
+            if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_CalcNoOpRestoreStop(_request.Project.FilePath);
 
             telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOpCacheFileEvaluation;
             telemetry.TelemetryEvent[ForceRestore] = !_request.AllowNoOp;
@@ -579,8 +583,7 @@ namespace NuGet.Commands
             {
                 using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                 {
-                    if (NuGetEventSource.IsEnabled)
-                        TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
+                    if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_BuildRestoreGraphStart(_request.Project.FilePath);
 
                     bool resultSuccessful;
                     if (_enableNewDependencyResolver)
@@ -594,8 +597,7 @@ namespace NuGet.Commands
                     }
                     success &= resultSuccessful;
 
-                    if (NuGetEventSource.IsEnabled)
-                        TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                    if (CommandsEventSource.Instance.IsEnabled()) CommandsEventSource.Instance.RestoreCommand_BuildRestoreGraphStop(_request.Project.FilePath);
                 }
             }
             else
@@ -1316,7 +1318,13 @@ namespace NuGet.Commands
                                 .ToList();
 
                             // add lock file libraries into RemoteWalkContext so that it can be used during restore graph generation
-                            contextForProject.LockFileLibraries.Add(new LockFileCacheKey(target.TargetFramework, target.RuntimeIdentifier), libraries);
+                            contextForProject.LockFileLibraries.Add(new LockFileCacheKey(
+                                target.TargetFramework,
+                                target.RuntimeIdentifier,
+                                string.IsNullOrEmpty(target.TargetAlias) ?
+                                    _request.Project.GetTargetFramework(target.TargetFramework)?.TargetAlias :
+                                    target.TargetAlias
+                                ), libraries);
                         }
                     }
                     else if (_request.IsRestoreOriginalAction && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode)
@@ -1973,7 +1981,7 @@ namespace NuGet.Commands
         }
 
         private static NuGetVersion Version_11_WithAliasSupport = NuGetVersion.Parse("11.0.100-preview.2.26104");
-        private static NuGetVersion Version_10_WithAliasSupport = NuGetVersion.Parse("10.0.300-preview.1");
+        private static NuGetVersion Version_10_WithAliasSupport = NuGetVersion.Parse("10.0.300-preview.0.26159");
 
         private static bool DoesProjectToolsetSupportsDuplicateFrameworks(PackageSpec project)
         {
@@ -2030,23 +2038,32 @@ namespace NuGet.Commands
         // Returns true if duplicates exist, false otherwise.
         private static async ValueTask<bool> ErrorForDuplicateFrameworks(RestoreRequest request, ILogger logger)
         {
-            if (request.Project.TargetFrameworks.Count <= 1)
+            if (HasDuplicateFrameworks(request.Project))
+            {
+                // Duplicate found - log error and return immediately
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
+                await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool HasDuplicateFrameworks(PackageSpec packageSpec)
+        {
+            if (packageSpec.TargetFrameworks.Count <= 1)
             {
                 return false;
             }
 
-            var seenFrameworks = new HashSet<NuGetFramework>(request.Project.TargetFrameworks.Count);
-            for (int i = 0; i < request.Project.TargetFrameworks.Count; i++)
+            var seenFrameworks = new HashSet<NuGetFramework>(packageSpec.TargetFrameworks.Count);
+            for (int i = 0; i < packageSpec.TargetFrameworks.Count; i++)
             {
-                if (!seenFrameworks.Add(request.Project.TargetFrameworks[i].FrameworkName))
+                if (!seenFrameworks.Add(packageSpec.TargetFrameworks[i].FrameworkName))
                 {
-                    // Duplicate found - log error and return immediately
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasingSupportedInNewDependencyResolver, request.Project.Name, SdkAnalysisLevelMinimums.V10_0_300);
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1018, message));
                     return true;
                 }
             }
-
             return false;
         }
 
@@ -2166,85 +2183,6 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
-        }
-
-        private static class TraceEvents
-        {
-            private const string EventNameBuildAssetsFile = "RestoreCommand/BuildAssetsFile";
-            private const string EventNameBuildRestoreGraph = "RestoreCommand/BuildRestoreGraph";
-            private const string EventNameCalcNoOpRestore = "RestoreCommand/CalcNoOpRestore";
-
-            public static void BuildAssetsFileStart(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Start
-                };
-
-                NuGetEventSource.Instance.Write(EventNameBuildAssetsFile, eventOptions, new { FilePath = filePath });
-            }
-
-            public static void BuildAssetsFileStop(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Stop
-                };
-
-                NuGetEventSource.Instance.Write(EventNameBuildAssetsFile, eventOptions, new { FilePath = filePath });
-            }
-
-            public static void BuildRestoreGraphStart(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Start
-                };
-
-                NuGetEventSource.Instance.Write(EventNameBuildRestoreGraph, eventOptions, new { FilePath = filePath });
-            }
-
-            public static void BuildRestoreGraphStop(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Stop
-                };
-
-                NuGetEventSource.Instance.Write(EventNameBuildRestoreGraph, eventOptions, new { FilePath = filePath });
-            }
-
-            public static void CalcNoOpRestoreStart(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Start
-                };
-
-                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
-            }
-
-            public static void CalcNoOpRestoreStop(string filePath)
-            {
-                var eventOptions = new EventSourceOptions
-                {
-                    Keywords = NuGetEventSource.Keywords.Performance |
-                                NuGetEventSource.Keywords.Restore,
-                    Opcode = EventOpcode.Stop
-                };
-
-                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
-            }
         }
     }
 }

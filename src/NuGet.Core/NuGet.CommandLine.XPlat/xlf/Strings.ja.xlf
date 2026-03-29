@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
@@ -409,8 +409,8 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <note>{0} - package id</note>
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
-        <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</source>
-        <target state="translated">パス '{0}' が見つからないか無効です。プロジェクト、ソリューション ファイル、またはディレクトリへのパスを指定してください。</target>
+        <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
+        <target state="needs-review-translation">パス '{0}' が見つからないか無効です。プロジェクト、ソリューション ファイル、またはディレクトリへのパスを指定してください。</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -582,9 +582,9 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
-        <source>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</source>
-        <target state="translated">指定されたフレームワークの 1 つを解析できませんでした。指定されたフレームワークが正しいことをご確認ください。</target>
-        <note />
+        <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
+        <target state="translated">指定された TargetFramework '{0}' がプロジェクト '{1}' に見つかりません。</target>
+        <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
@@ -972,8 +972,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_ProjectOptionDescription">
-        <source>Path to a project or solution file, or a directory.</source>
-        <target state="translated">プロジェクトまたはソリューション ファイル、またはディレクトリへのパス。</target>
+        <source>Path to a project or solution file or file-based app, or a project directory.</source>
+        <target state="needs-review-translation">プロジェクトまたはソリューション ファイル、またはディレクトリへのパス。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
@@ -1132,6 +1132,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Remove_Description">
         <source>Remove a NuGet source.</source>
         <target state="translated">NuGet ソースを削除します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SignCommandAllowUntrustedRootDescription">
+        <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1481,11 +1486,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">'dotnet nuget why' を実行できません。{0}</target>
         <note>{0} - Exception mssage</note>
       </trans-unit>
-      <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
-        <source>Internal error: Assets file is inconsistent</source>
-        <target state="translated">内部エラー: 資産ファイルに整合性がありません</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
         <target state="translated">ファイル '{0}' は NuGet アセット ファイルではない可能性があります。このコマンドを実行する前に、プロジェクト '{1}' の復元を実行してください。</target>
@@ -1527,8 +1527,8 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
-        <source>A path to a project, solution file, or directory.</source>
-        <target state="translated">プロジェクト、プロジェクト ディレクトリ、またはディレクトリへのパスです。</target>
+        <source>A path to a project, solution file, file-based app, or project directory.</source>
+        <target state="needs-review-translation">プロジェクト、プロジェクト ディレクトリ、またはディレクトリへのパスです。</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">

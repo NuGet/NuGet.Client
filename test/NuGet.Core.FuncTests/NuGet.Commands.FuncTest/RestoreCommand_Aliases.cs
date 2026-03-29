@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Commands.Test;
 using NuGet.Common;
@@ -68,6 +70,110 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[1].TargetAlias.Should().Be("banana");
             result.LockFile.Targets[1].Libraries.Should().HaveCount(1);
             result.LockFile.Targets[1].Libraries[0].Name.Should().Be("y");
+        }
+
+        // P1 (apple) -> X (has build/x.targets and build/x.props)
+        // P1 (banana) -> Y (has build/y.targets and build/y.props)
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFramework_BuildPropsAndTargetsAreIncluded()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var rootProject = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                            ""y"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                }
+              }
+            }";
+
+            // Create packages with build props and targets
+            var packageX = new SimpleTestPackageContext("x", "1.0.0");
+            packageX.AddFile("build/x.targets");
+            packageX.AddFile("build/x.props");
+
+            var packageY = new SimpleTestPackageContext("y", "1.0.0");
+            packageY.AddFile("build/y.targets");
+            packageY.AddFile("build/y.props");
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageX,
+                packageY);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+
+            var appleTarget = result.LockFile.GetTarget("apple", null);
+            appleTarget.Should().NotBeNull();
+            appleTarget.Libraries.Should().HaveCount(1);
+            appleTarget.Libraries[0].Name.Should().Be("x");
+            appleTarget.Libraries[0].Build.Should().Contain(item => item.Path.Equals("build/x.props"));
+            appleTarget.Libraries[0].Build.Should().Contain(item => item.Path.Equals("build/x.targets"));
+
+            var bananaTarget = result.LockFile.GetTarget("banana", null);
+            bananaTarget.Should().NotBeNull();
+            bananaTarget.Libraries.Should().HaveCount(1);
+            bananaTarget.Libraries[0].Name.Should().Be("y");
+            bananaTarget.Libraries[0].Build.Should().Contain(item => item.Path.Equals("build/y.props"));
+            bananaTarget.Libraries[0].Build.Should().Contain(item => item.Path.Equals("build/y.targets"));
+
+            // Validate MSBuild output files contain correct ImportGroup conditions per alias
+            var targetsOutput = result.MSBuildOutputFiles.First(f => f.Path.EndsWith(".targets"));
+            var propsOutput = result.MSBuildOutputFiles.First(f => f.Path.EndsWith(".props"));
+
+            targetsOutput.Content.Should().NotBeNull();
+            propsOutput.Content.Should().NotBeNull();
+
+            var targetImportGroups = targetsOutput.Content!.Root!.Elements()
+                .Where(e => e.Name.LocalName == "ImportGroup")
+                .ToList();
+            var propsImportGroups = propsOutput.Content!.Root!.Elements()
+                .Where(e => e.Name.LocalName == "ImportGroup")
+                .ToList();
+
+            // There should be an ImportGroup per alias
+            targetImportGroups.Should().Contain(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("'$(TargetFramework)' == 'apple'"));
+            targetImportGroups.Should().Contain(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("'$(TargetFramework)' == 'banana'"));
+
+            propsImportGroups.Should().Contain(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("'$(TargetFramework)' == 'apple'"));
+            propsImportGroups.Should().Contain(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("'$(TargetFramework)' == 'banana'"));
+
+            // Verify the imports reference the correct packages per alias
+            var appleTargetsGroup = targetImportGroups.First(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("apple"));
+            appleTargetsGroup.Elements().Should().Contain(e => e.Attribute(XName.Get("Project"))!.Value.Contains("x.targets"));
+
+            var bananaTargetsGroup = targetImportGroups.First(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("banana"));
+            bananaTargetsGroup.Elements().Should().Contain(e => e.Attribute(XName.Get("Project"))!.Value.Contains("y.targets"));
+
+            var applePropsGroup = propsImportGroups.First(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("apple"));
+            applePropsGroup.Elements().Should().Contain(e => e.Attribute(XName.Get("Project"))!.Value.Contains("x.props"));
+
+            var bananaPropsGroup = propsImportGroups.First(g => g.Attribute(XName.Get("Condition"))!.Value.Contains("banana"));
+            bananaPropsGroup.Elements().Should().Contain(e => e.Attribute(XName.Get("Project"))!.Value.Contains("y.props"));
         }
 
         // P (apple)  -> Net472 package, with ATF, succeeds
@@ -500,24 +606,6 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_SDKProjectWithMissingAliases_UsesV3AssetsFile()
         {
             using var pathContext = new SimpleTestPathContext();
-            PackageSpec projectSpec = GetSDKPackageSpecWithMissingAlias(pathContext);
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                new SimpleTestPackageContext("x", "1.0.0"));
-
-            // Act & Assert
-            var result = await RunRestoreAsync(pathContext, projectSpec);
-            result.Success.Should().BeTrue();
-            result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].TargetAlias.Should().Be(string.Empty);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("x");
-            result.LockFile.Version.Should().Be(3);
-        }
-
-        private static PackageSpec GetSDKPackageSpecWithMissingAlias(SimpleTestPathContext pathContext)
-        {
             var rootProject = @"
             {
               ""frameworks"": {
@@ -544,7 +632,308 @@ namespace NuGet.Commands.FuncTest
                 TargetAlias = string.Empty
             };
             projectSpec.RestoreMetadata.TargetFrameworks[0].TargetAlias = string.Empty;
-            return projectSpec;
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("x", "1.0.0"));
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].TargetAlias.Should().Be(string.Empty);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("x");
+            result.LockFile.Version.Should().Be(3);
+        }
+
+        [Theory]
+        [InlineData("net9.0", "net9.0", "net10.0", "net10.0")]
+        [InlineData("apple", "net9.0", "banana", "net10.0")]
+        [InlineData("apple", "net10.0", "banana", "net10.0")]
+        [InlineData("banana", "net10.0", "apple", "net10.0")]
+        public async Task RestoreCommand_WithAliases_WithConditionalWarningSuppression_SuppressesWarningsCorrectly(string firstAlias, string firstFramework, string secondAlias, string secondFramework)
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var rootProject = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""TFM1"",
+                    ""targetAlias"": ""ALIAS1"",
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""TFM2"",
+                    ""targetAlias"": ""ALIAS2"",
+                    ""dependencies"": {
+                            ""x"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""]
+                            }
+                    }
+                }
+              }
+            }"
+            .Replace("ALIAS1", firstAlias)
+            .Replace("TFM1", firstFramework)
+            .Replace("ALIAS2", secondAlias)
+            .Replace("TFM2", secondFramework);
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("x", "1.0.1"));
+
+            // Act & Assert
+            var result = await RunRestoreAsync(pathContext, projectSpec);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[1].Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([firstAlias]);
+        }
+
+        // P (apple) -> Project2 (apple) -> Package A
+        // P (banana) -> Project2 (banana) -> Package B
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferences_WithConditionalWarningSuppression_SuppressesWarningsCorrectly()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Create packages
+            var pkgA = new SimpleTestPackageContext("PackageA", "1.0.1");
+            var pkgB = new SimpleTestPackageContext("PackageB", "1.0.1");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgA, pkgB);
+
+            string apple = nameof(apple);
+            string banana = nameof(banana);
+
+            // Create Project2 spec with different package dependencies per alias
+            var project2Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                            ""PackageA"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""] 
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                            ""PackageB"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                }
+              }
+            }";
+
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2Spec);
+
+            // Create Project1 spec that references Project2
+            var project1Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1Spec);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, project1, project2);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([banana]);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFrameworkAndProjectReferenceToASingleProject_WithConditionalWarningSuppression_SuppressesWarningsCorrectly()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Create packages
+            var pkgA = new SimpleTestPackageContext("PackageA", "1.0.1");
+            var pkgB = new SimpleTestPackageContext("PackageB", "1.0.1");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgA, pkgB);
+
+            string apple = nameof(apple);
+            string banana = nameof(banana);
+
+            var project2Spec = @"
+            {
+              ""frameworks"": {
+                ""net8.0"": {
+                    ""framework"": ""net8.0"",
+                    ""targetAlias"": ""net8.0"",
+                    ""dependencies"": {
+                            ""PackageA"": {
+                                ""version"": ""[,2.0.0)"",
+                                ""target"": ""Package"",
+                                ""noWarn"": [""NU1603""]
+                            }
+                    }
+                }
+              }
+            }";
+
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2Spec);
+
+            // Create Project1 spec that references Project2
+            var project1Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1Spec);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, project1, project2);
+
+            // Assert
+            result.Success.Should().BeTrue(because: string.Join(Environment.NewLine, result.LockFile.LogMessages.Select(e => e.Message)));
+            result.LockFile.Targets.Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1602);
+            result.LockFile.LogMessages[0].TargetGraphs.Should().BeEquivalentTo([apple, banana]);
+        }
+
+        // P (apple)  -> P2(net472) -> Net472 package
+        // P (banana) -> P2(net472) -> Net472 package
+        [Fact]
+        public async Task RestoreCommand_WithAliasesOfSameFramework_WithProjectReference_WithAssetTargetFallback_WarningsRaisedWhenApplicable()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var pkgA = new SimpleTestPackageContext("pkgA", "1.0.0");
+            pkgA.AddFile("lib/net472/pkgA.dll");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgA);
+
+            string apple = nameof(apple);
+            string banana = nameof(banana);
+
+            var project2Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net472"",
+                    ""targetAlias"": ""apple"",
+                    ""dependencies"": {
+                            ""pkgA"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net472"",
+                    ""targetAlias"": ""banana"",
+                    ""dependencies"": {
+                            ""pkgA"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                    }
+                }
+              }
+            }";
+
+            var project1Spec = @"
+            {
+              ""frameworks"": {
+                ""apple"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""apple"",
+                    ""assetTargetFallback"": true,
+                    ""imports"": [ ""net472"" ],
+                    ""warn"": true,
+                    ""dependencies"": {
+                    }
+                },
+                ""banana"": {
+                    ""framework"": ""net10.0"",
+                    ""targetAlias"": ""banana"",
+                    ""assetTargetFallback"": true,
+                    ""imports"": [ ""net472"" ],
+                    ""warn"": true,
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2Spec);
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1Spec);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act
+            var result = await RunRestoreAsync(pathContext, project1, project2);
+
+            // Assert - restore should fail overall due to banana
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(2);
+
+            // Apple alias should succeed with both the package and its transitive dependency
+            var appleTarget = result.LockFile.GetTarget(apple, null);
+            appleTarget.Should().NotBeNull();
+            appleTarget.Libraries.Should().HaveCount(2);
+            appleTarget.Libraries.Should().Contain(e => e.Name == pkgA.Id);
+            // Banana alias should have no compatible assets for either package
+            var bananaTarget = result.LockFile.GetTarget(banana, null);
+            bananaTarget.Should().NotBeNull();
+            bananaTarget.Libraries.Should().HaveCount(2);
+            bananaTarget.Libraries.Should().Contain(e => e.Name == pkgA.Id);
+
+            // Verify log messages
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].Level.Should().Be(LogLevel.Warning);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1701);
+            // result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(2); https://github.com/NuGet/Home/issues/14815
         }
 
         internal static Task<RestoreResult> RunRestoreAsync(SimpleTestPathContext pathContext, params PackageSpec[] projects)

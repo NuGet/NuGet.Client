@@ -45,7 +45,7 @@ namespace NuGet.Packaging.FuncTest
             using (var test = await VerifyTest.CreateAsync(_untrustedTestCertificate.Cert))
             {
                 var result = test.PrimarySignature.Verify(
-                    timestamp: null,
+                    timestamp: null!,
                     settings: settings,
                     fingerprintAlgorithm: Common.HashAlgorithmName.SHA256,
                     certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
@@ -71,7 +71,7 @@ namespace NuGet.Packaging.FuncTest
             using (var test = await VerifyTest.CreateAsync(_untrustedTestCertificate.Cert))
             {
                 var result = test.PrimarySignature.Verify(
-                    timestamp: null,
+                    timestamp: null!,
                     settings: settings,
                     fingerprintAlgorithm: Common.HashAlgorithmName.SHA256,
                     certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
@@ -96,7 +96,7 @@ namespace NuGet.Packaging.FuncTest
             using (var test = await VerifyTest.CreateAsync(_untrustedTestCertificate.Cert))
             {
                 var result = test.PrimarySignature.Verify(
-                    timestamp: null,
+                    timestamp: null!,
                     settings: settings,
                     fingerprintAlgorithm: Common.HashAlgorithmName.SHA256,
                     certificateExtraStore: test.PrimarySignature.SignedCms.Certificates);
@@ -230,7 +230,7 @@ namespace NuGet.Packaging.FuncTest
                     var package = new SignedPackageArchive(signedPackageReadStream, new MemoryStream());
                     var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                    return new VerifyTest(directory, signedPackageReadStream, package, primarySignature);
+                    return new VerifyTest(directory, signedPackageReadStream, package, primarySignature!);
                 }
             }
         }
