@@ -325,7 +325,7 @@ steps:
       sourcePath: '$(Build.StagingDirectory)\RunSettings'
       toLowerCase: false
       usePat: true
-      dropMetadataContainerName: "DropMetadata-Tests"
+      dropMetadataContainerName: "DropMetadata-TestGate"
 
   - task: PublishPipelineArtifact@1
     displayName: "Publish E2E tests"
