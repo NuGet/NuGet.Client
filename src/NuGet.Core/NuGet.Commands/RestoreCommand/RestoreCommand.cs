@@ -54,6 +54,7 @@ namespace NuGet.Commands
         private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
         private const string TotalUniquePackagesCount = nameof(TotalUniquePackagesCount);
         private const string NewPackagesInstalledCount = nameof(NewPackagesInstalledCount);
+        private const string AnyPackageIdContainsNonASCIICharacters = nameof(AnyPackageIdContainsNonASCIICharacters);
         private const string SourcesCount = nameof(SourcesCount);
         private const string HttpSourcesCount = nameof(HttpSourcesCount);
         private const string LocalSourcesCount = nameof(LocalSourcesCount);
@@ -743,6 +744,7 @@ namespace NuGet.Commands
                 }
 
                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
+                telemetry.TelemetryEvent[AnyPackageIdContainsNonASCIICharacters] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Flattened).Any(i => HasNonASCIICharacters(i.Key.Name));
                 telemetry.TelemetryEvent[RestoreSuccess] = success;
             }
 
@@ -755,6 +757,23 @@ namespace NuGet.Commands
                 packagesLockFile,
                 packagesLockFilePath,
                 cacheFile);
+
+            bool HasNonASCIICharacters(string packageId)
+            {
+                if (string.IsNullOrWhiteSpace(packageId))
+                {
+                    return false;
+                }
+
+                foreach (char c in packageId.AsSpan())
+                {
+                    if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-'))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         /// <summary>Run NuGetAudit on the project's resolved restore graphs, and log messages and telemetry with the results.</summary>

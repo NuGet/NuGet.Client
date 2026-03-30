@@ -204,24 +204,20 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 data.NupkgCount++;
                 data.NupkgSize += ncEvent.FileSize;
-
-                if (!data.IdContainsNonAsciiCharacter && ncEvent.PackageId != null && HasNonstandardCharacters(ncEvent.PackageId))
-                {
-                    data.IdContainsNonAsciiCharacter = true;
-                }
+                data.IdContainsNonAsciiCharacter = data.IdContainsNonAsciiCharacter || (ncEvent.PackageId != null && HasNonASCIICharacters(ncEvent.PackageId));
             }
-        }
 
-        private static bool HasNonstandardCharacters(string packageId)
-        {
-            foreach (char c in packageId.AsSpan())
+            bool HasNonASCIICharacters(string packageId)
             {
-                if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-'))
+                foreach (char c in packageId.AsSpan())
                 {
-                    return true;
+                    if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-'))
+                    {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public void Dispose()
