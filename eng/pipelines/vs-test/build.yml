@@ -225,14 +225,8 @@ steps:
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
 
-          # Publish test binaries under a Tests/ drop path for VS test gate consumption
-          $manifestDropName = "${env:MicroBuild_ManifestDropName}"
-          if ($manifestDropName -and $manifestDropName -match '^Products/') {
-              $testsDrop = $manifestDropName -replace '^Products/', 'Tests/'
-          } else {
-              # Fallback for PR/dev builds where MicroBuild.ManifestDropName may not be set
-              $testsDrop = "Tests/${env:System_TeamProject}/${env:Build_Repository_Name}/${env:Build_SourceBranchName}/${env:Build_BuildNumber}"
-          }
+          # Test gate drop — mirrors the product drop path with Tests/ prefix so the VS gate can find it by NuGet version
+          $testsDrop = "${env:MicroBuild_ManifestDropName}" -replace '^Products/', 'Tests/'
           Write-Host "Tests Drop: $testsDrop"
           Write-Host "##vso[task.setvariable variable=TestsDrop]$testsDrop"
 
