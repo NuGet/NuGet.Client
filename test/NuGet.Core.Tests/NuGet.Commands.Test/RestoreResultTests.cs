@@ -382,7 +382,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task CommitAsync_WhenRestoreWriteDependencyGraphSpecIsFalse_DoesNotWriteDgSpec()
+        public async Task CommitAsync_WhenDoNotWriteDependencyGraphSpecIsTrue_DoesNotWriteDgSpec()
         {
             // Arrange
             using var td = TestDirectory.Create();
@@ -414,10 +414,13 @@ namespace NuGet.Commands.Test
                 cacheFilePath: cachePath,
                 packagesLockFilePath: null,
                 packagesLockFile: null,
-                dependencyGraphSpecFilePath: null,
+                dependencyGraphSpecFilePath: dgSpecPath,
                 dependencyGraphSpec: dgSpec,
                 projectStyle: ProjectStyle.Unknown,
-                elapsedTime: TimeSpan.MinValue);
+                elapsedTime: TimeSpan.MinValue)
+            {
+                DoNotWriteDependencyGraphSpec = true
+            };
 
             // Act
             await result.CommitAsync(logger, CancellationToken.None);
