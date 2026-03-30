@@ -225,8 +225,14 @@ steps:
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
 
-          # Drop tests with build number instead of build ID to make it easier to find the drop
-          $testsDrop = "Tests/${env:System_TeamProject}/${env:Build_Repository_Name}/${env:Build_SourceBranchName}/${env:Build_BuildNumber}"
+          # Publish test binaries under a Tests/ drop path for VS test gate consumption
+          $manifestDropName = "${env:MicroBuild_ManifestDropName}"
+          if ($manifestDropName -and $manifestDropName -match '^Products/') {
+              $testsDrop = $manifestDropName -replace '^Products/', 'Tests/'
+          } else {
+              # Fallback for PR/dev builds where MicroBuild.ManifestDropName may not be set
+              $testsDrop = "Tests/${env:System_TeamProject}/${env:Build_Repository_Name}/${env:Build_SourceBranchName}/${env:Build_BuildNumber}"
+          }
           Write-Host "Tests Drop: $testsDrop"
           Write-Host "##vso[task.setvariable variable=TestsDrop]$testsDrop"
 
@@ -312,7 +318,7 @@ steps:
       dropMetadataContainerName: "DropMetadata-RunSettings"
 
   - task: artifactDropTask@0
-    displayName: "Publish mirrored test drop"
+    displayName: "Publish test gate drop"
     inputs:
       dropServiceURI: "https://devdiv.artifacts.visualstudio.com"
       buildNumber: "$(TestsDrop)"

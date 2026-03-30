@@ -20,7 +20,7 @@
             Properties="RunName=NuGet.Tests.Apex;
             FileName=NuGet.Tests.Apex.dll;" />
 
-        <!-- NuGet.Tests.Apex.Canary.runsettings. use Category=Canary -->
+        <!-- NuGet.Tests.Apex.Gate.runsettings (VS test gate - runs only [TestCategory("Gate")] tests) -->
         <MSBuild
             Projects="template.runsettingsproj"
             Properties="RunName=NuGet.Tests.Apex.Gate;
