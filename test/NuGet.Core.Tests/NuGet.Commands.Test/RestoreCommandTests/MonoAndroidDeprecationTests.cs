@@ -232,7 +232,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         #region Integration tests
 
         [Fact]
-        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel11_EmitsNU1704()
+        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel11_EmitsNU1703()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -261,7 +261,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.LogMessages.Should().HaveCount(1);
-            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1704);
+            result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1703);
             result.LockFile.LogMessages[0].Level.Should().Be(LogLevel.Warning);
             result.LockFile.LogMessages[0].LibraryId.Should().Be("a");
             result.LockFile.LogMessages[0].Message.Should().Contain("MonoAndroid");
@@ -270,7 +270,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task Restore_Net10Android_MonoAndroidPackage_SdkLevel11_DoesNotEmitNU1704()
+        public async Task Restore_Net10Android_MonoAndroidPackage_SdkLevel11_DoesNotEmitNU1703()
         {
             // net10.0-android has version major 10, below the 11 threshold
             using var pathContext = new SimpleTestPathContext();
@@ -298,11 +298,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1704);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1703);
         }
 
         [Fact]
-        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel10_DoesNotEmitNU1704()
+        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel10_DoesNotEmitNU1703()
         {
             // SDK analysis level too old
             using var pathContext = new SimpleTestPathContext();
@@ -330,11 +330,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1704);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1703);
         }
 
         [Fact]
-        public async Task Restore_Net11Android_NetAndroidPackage_SdkLevel11_DoesNotEmitNU1704()
+        public async Task Restore_Net11Android_NetAndroidPackage_SdkLevel11_DoesNotEmitNU1703()
         {
             // Package uses net6.0-android, not monoandroid - should not warn
             using var pathContext = new SimpleTestPathContext();
@@ -362,11 +362,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1704);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1703);
         }
 
         [Fact]
-        public async Task Restore_Net11iOS_MonoAndroidPackage_SdkLevel11_DoesNotEmitNU1704()
+        public async Task Restore_Net11iOS_MonoAndroidPackage_SdkLevel11_DoesNotEmitNU1703()
         {
             // iOS project, not android - should not warn even with monoandroid package
             using var pathContext = new SimpleTestPathContext();
@@ -396,13 +396,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1704);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1703);
         }
 
         [Fact]
-        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel11_NU1704_CanBeSuppressed()
+        public async Task Restore_Net11Android_MonoAndroidPackage_SdkLevel11_NU1703_CanBeSuppressed()
         {
-            // NoWarn for NU1704 should suppress the warning
+            // NoWarn for NU1703 should suppress the warning
             using var pathContext = new SimpleTestPathContext();
 
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
@@ -421,7 +421,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             spec.RestoreMetadata.UsingMicrosoftNETSdk = true;
             spec.RestoreMetadata.ProjectWideWarningProperties = new WarningProperties(
                 warningsAsErrors: new System.Collections.Generic.HashSet<NuGetLogCode>(),
-                noWarn: new System.Collections.Generic.HashSet<NuGetLogCode> { NuGetLogCode.NU1704 },
+                noWarn: new System.Collections.Generic.HashSet<NuGetLogCode> { NuGetLogCode.NU1703 },
                 allWarningsAsErrors: false,
                 warningsNotAsErrors: new System.Collections.Generic.HashSet<NuGetLogCode>());
 
@@ -433,12 +433,12 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1704);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1703);
             logger.Warnings.Should().Be(0);
         }
 
         [Fact]
-        public async Task Restore_Net11Android_MultiplePackages_OnlyMonoAndroidPackageGetsNU1704()
+        public async Task Restore_Net11Android_MultiplePackages_OnlyMonoAndroidPackageGetsNU1703()
         {
             // One package with monoandroid, one with netstandard - only monoandroid package should warn
             using var pathContext = new SimpleTestPathContext();
@@ -477,8 +477,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1704).Should().HaveCount(1);
-            result.LockFile.LogMessages.Single(m => m.Code == NuGetLogCode.NU1704).LibraryId.Should().Be("a");
+            result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1703).Should().HaveCount(1);
+            result.LockFile.LogMessages.Single(m => m.Code == NuGetLogCode.NU1703).LibraryId.Should().Be("a");
             logger.Warnings.Should().Be(1);
         }
 
@@ -512,7 +512,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            var logMessage = result.LockFile.LogMessages.Single(m => m.Code == NuGetLogCode.NU1704);
+            var logMessage = result.LockFile.LogMessages.Single(m => m.Code == NuGetLogCode.NU1703);
             var expectedMessage = string.Format(CultureInfo.CurrentCulture,
                 Strings.Warning_MonoAndroidFrameworkDeprecated,
                 "MyPackage",

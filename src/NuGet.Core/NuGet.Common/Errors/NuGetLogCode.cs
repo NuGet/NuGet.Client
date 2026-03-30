@@ -376,14 +376,10 @@ namespace NuGet.Common
         NU1702 = 1702,
 
         /// <summary>
-        /// MacCatalyst platform fell back to xamarin.ios - Added in 6.0, removed in 6.1.
+        /// Package uses a deprecated legacy Xamarin framework (e.g. MonoAndroid) instead of a modern .NET TFM.
+        /// Originally added in 6.0 for MacCatalyst/Xamarin.iOS (removed in 6.1), reused for MonoAndroid in 11.0.
         /// </summary>
         NU1703 = 1703,
-
-        /// <summary>
-        /// Package uses the deprecated MonoAndroid framework.
-        /// </summary>
-        NU1704 = 1704,
 
         /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.

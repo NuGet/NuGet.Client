@@ -283,7 +283,7 @@ namespace NuGet.Commands
                             }
                         }
 
-                        // Log NU1704 warning if the package uses the deprecated MonoAndroid framework
+                        // Log NU1703 warning if the package uses the deprecated MonoAndroid framework
                         if (checkMonoAndroidDeprecation
                             && !librariesWithWarnings.Contains(library)
                             && MonoAndroidDeprecation.UsesMonoAndroidFramework(targetLibrary))
@@ -294,7 +294,7 @@ namespace NuGet.Commands
                                 library.Version);
 
                             var logMessage = RestoreLogMessage.CreateWarning(
-                                NuGetLogCode.NU1704,
+                                NuGetLogCode.NU1703,
                                 message,
                                 library.Name,
                                 targetGraph.TargetGraphName);
