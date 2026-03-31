@@ -3654,5 +3654,124 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
         }
+
+        [Theory]
+        [InlineData("banana/3")]
+        [InlineData("foo\\bar")]
+        [InlineData("a/b/c")]
+        [InlineData("net10.0/linux-x64")]
+        public void EnsureNoAliasesWithPathSeparator_WithPathSeparatorInAlias_ReturnsFalseAndLogsNU1019(string invalidAlias)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = invalidAlias
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("10.0.300"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+
+            result.Should().BeFalse();
+            logger.ErrorMessages.Should().ContainSingle();
+            logger.ErrorMessages.Single().Should().Contain(invalidAlias);
+            logger.ErrorMessages.Single().Should().Contain("NU1019");
+        }
+
+        [Theory]
+        [InlineData("apple")]
+        [InlineData("banana")]
+        [InlineData("net10.0")]
+        [InlineData("net10.0-linux")]
+        public void EnsureNoAliasesWithPathSeparator_WithValidAlias_ReturnsTrueAndLogsNothing(string validAlias)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = validAlias
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("10.0.300"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+
+            result.Should().BeTrue();
+            logger.ErrorMessages.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("10.0.200")]
+        [InlineData("9.0.100")]
+        public void EnsureNoAliasesWithPathSeparator_WithOldSdkAnalysisLevel_ReturnsTrueRegardlessOfAlias(string sdkAnalysisLevel)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = "banana/3"
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse(sdkAnalysisLevel),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+
+            result.Should().BeTrue();
+            logger.ErrorMessages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void EnsureNoAliasesWithPathSeparator_WithMultipleInvalidAliases_LogsErrorForEach()
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = "foo/bar"
+                },
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = "baz\\qux"
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("10.0.300"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+
+            result.Should().BeFalse();
+            logger.ErrorMessages.Should().HaveCount(2);
+            logger.ErrorMessages.Should().Contain(m => m.Contains("foo/bar"));
+            logger.ErrorMessages.Should().Contain(m => m.Contains("baz\\qux"));
+        }
     }
 }

@@ -1215,6 +1215,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project {0} contains a TargetFramework &apos;{1}&apos; with a path separator character, which is not allowed. Remove the path separator characters from the TargetFramework..
+        /// </summary>
+        internal static string Log_AliasContainsPathSeparator {
+            get {
+                return ResourceManager.GetString("Log_AliasContainsPathSeparator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All projects are up-to-date for restore..
         /// </summary>
         internal static string Log_AllProjectsUpToDate {

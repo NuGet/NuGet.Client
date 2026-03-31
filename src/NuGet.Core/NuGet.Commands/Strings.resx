@@ -1171,4 +1171,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
     <value>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</value>
   </data>
+  <data name="Log_AliasContainsPathSeparator" xml:space="preserve">
+    <value>The project {0} contains a TargetFramework '{1}' with a path separator character, which is not allowed. Remove the path separator characters from the TargetFramework.</value>
+  </data>
 </root>

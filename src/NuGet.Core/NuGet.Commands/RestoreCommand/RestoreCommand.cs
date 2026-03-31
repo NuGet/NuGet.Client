@@ -363,6 +363,7 @@ namespace NuGet.Commands
             success &= EvaluateHttpSourceUsage();
             success &= HasValidPlatformVersions();
             success &= PackageReferencesHaveVersions();
+            success &= EnsureNoAliasesWithPathSeparator();
 
             return success;
         }
@@ -842,6 +843,35 @@ namespace NuGet.Commands
             {
                 return true;
             }
+        }
+
+        private bool EnsureNoAliasesWithPathSeparator()
+        {
+            return EnsureNoAliasesWithPathSeparator(_request.Project, _logger);
+        }
+
+        internal static bool EnsureNoAliasesWithPathSeparator(PackageSpec project, ILogger logger)
+        {
+            if (!SdkAnalysisLevelMinimums.IsEnabled(project.RestoreMetadata.SdkAnalysisLevel, project.RestoreMetadata.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V10_0_300))
+            {
+                return true;
+            }
+
+            var success = true;
+
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+            {
+                string alias = framework.TargetAlias;
+                if (!string.IsNullOrEmpty(alias) && (alias.Contains('/') || alias.Contains('\\')))
+                {
+                    logger.Log(RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1019,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Log_AliasContainsPathSeparator, project.Name, alias)));
+                    success = false;
+                }
+            }
+
+            return success;
         }
 
         internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)
