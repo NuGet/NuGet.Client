@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -231,6 +232,79 @@ namespace NuGet.Tests.Apex
                 // Assert
                 CommonUtility.AssertPackageReferenceDoesNotExist(testContext.SolutionService.Projects[0], packageName, packageVersion, Logger);
             }
+        }
+
+        // Migrated from Test-NetCoreProjectSystemCacheUpdateEvent in NetCoreProjectTest.ps1
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMC_TriggersNuGetCacheUpdatedEventAsync()
+        {
+            // Arrange
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
+
+            var packageName = "TestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            testContext.SolutionService.Build();
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Register for the ISolutionManager.AfterNuGetCacheUpdated event via PMC PowerShell session
+            nugetConsole.Execute("Get-Event | Remove-Event");
+            nugetConsole.Execute("$componentModel = Get-VSComponentModel");
+            nugetConsole.Execute("$solutionManager = $componentModel.GetService([NuGet.PackageManagement.ISolutionManager])");
+            nugetConsole.Execute("Register-ObjectEvent -InputObject $solutionManager -EventName AfterNuGetCacheUpdated -SourceIdentifier SolutionManagerCacheUpdated");
+
+            // Act
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+
+            // Assert - verify the cache update event was raised
+            nugetConsole.Execute("$cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10");
+            nugetConsole.Execute("Unregister-Event -SourceIdentifier SolutionManagerCacheUpdated");
+            nugetConsole.Execute("if ($cacheEvent) { Write-Host 'CACHE_EVENT_RECEIVED' } else { Write-Host 'CACHE_EVENT_NOT_RECEIVED' }");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC("CACHE_EVENT_RECEIVED"),
+                $"Cache update event should have been raised after package install. Actual PMC output: {nugetConsole.GetText()}");
+        }
+
+        // Migrated from Test-NetCoreVSandMSBuildNoOp in NetCoreProjectTest.ps1
+        [Ignore("https://github.com/NuGet/Home/issues/13003")]
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void NetCoreVSandMSBuildRestoreIsNoOp()
+        {
+            // Arrange
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
+
+            testContext.SolutionService.Build();
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+
+            var cacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
+            CommonUtility.WaitForFileExists(cacheFilePath);
+
+            var vsRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
+
+            // Act - run MSBuild restore externally
+            using var process = new Process();
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"msbuild /t:restore \"{testContext.Project.FullPath}\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.Start();
+            string standardError = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            Assert.AreEqual(0, process.ExitCode, $"MSBuild restore failed: {standardError}");
+
+            var msbuildRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
+
+            // Assert - MSBuild restore should be a no-op, cache file timestamp should not change
+            Assert.AreEqual(vsRestoreTimestamp, msbuildRestoreTimestamp,
+                "MSBuild restore should be a no-op after VS restore - cache file timestamp should not change.");
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
