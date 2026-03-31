@@ -274,7 +274,7 @@ namespace NuGet.Tests.Apex
         [Ignore("https://github.com/NuGet/Home/issues/13003")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void NetCoreVSandMSBuildRestoreIsNoOp()
+        public void NetCoreVSAndMSBuildRestoreIsNoOp()
         {
             // Arrange
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
@@ -292,7 +292,6 @@ namespace NuGet.Tests.Apex
             process.StartInfo.FileName = "dotnet";
             process.StartInfo.Arguments = $"msbuild /t:restore \"{testContext.Project.FullPath}\"";
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.Start();
             string standardError = process.StandardError.ReadToEnd();
