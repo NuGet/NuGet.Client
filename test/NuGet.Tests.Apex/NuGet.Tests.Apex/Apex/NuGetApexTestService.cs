@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.Console.TestContract;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI.TestContract;
 using NuGet.SolutionRestoreManager;
 using NuGet.Versioning;
@@ -55,6 +56,11 @@ namespace NuGet.Tests.Apex
         protected internal IVsUIShell UIShell => VisualStudioObjectProviders.GetService<SVsUIShell, IVsUIShell>();
 
         protected internal IVsPathContextProvider2 PathContextProvider2 => VisualStudioObjectProviders.GetComponentModelService<IVsPathContextProvider2>();
+
+        /// <summary>
+        /// Gets the NuGet ISolutionManager
+        /// </summary>
+        protected internal ISolutionManager SolutionManager => VisualStudioObjectProviders.GetComponentModelService<ISolutionManager>();
 
         /// <summary>
         /// Wait for all nominations and auto restore to complete.

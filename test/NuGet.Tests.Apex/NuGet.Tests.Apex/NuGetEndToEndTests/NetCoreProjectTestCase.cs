@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.PackageManagement;
 
 namespace NuGet.Tests.Apex
 {
@@ -249,25 +251,27 @@ namespace NuGet.Tests.Apex
             testContext.SolutionService.Build();
             testContext.NuGetApexTestService.WaitForAutoRestore();
 
-            var nugetConsole = GetConsole(testContext.Project);
+            // Subscribe to the ISolutionManager.AfterNuGetCacheUpdated event
+            using var cacheUpdatedEvent = new ManualResetEventSlim(false);
+            var solutionManager = testContext.NuGetApexTestService.SolutionManager;
+            void OnAfterNuGetCacheUpdated(object sender, NuGetEventArgs<string> e) => cacheUpdatedEvent.Set();
+            solutionManager.AfterNuGetCacheUpdated += OnAfterNuGetCacheUpdated;
 
-            // Register for the ISolutionManager.AfterNuGetCacheUpdated event via PMC PowerShell session
-            nugetConsole.Execute("Get-Event | Remove-Event");
-            nugetConsole.Execute("$componentModel = Get-VSComponentModel");
-            nugetConsole.Execute("$solutionManager = $componentModel.GetService([NuGet.PackageManagement.ISolutionManager])");
-            nugetConsole.Execute("Register-ObjectEvent -InputObject $solutionManager -EventName AfterNuGetCacheUpdated -SourceIdentifier SolutionManagerCacheUpdated");
+            try
+            {
+                // Act
+                var nugetConsole = GetConsole(testContext.Project);
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-            // Act
-            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-            // Assert - verify the cache update event was raised
-            nugetConsole.Execute("$cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10");
-            nugetConsole.Execute("Unregister-Event -SourceIdentifier SolutionManagerCacheUpdated");
-            nugetConsole.Execute("if ($cacheEvent) { Write-Host 'CACHE_EVENT_RECEIVED' } else { Write-Host 'CACHE_EVENT_NOT_RECEIVED' }");
-
-            Assert.IsTrue(
-                nugetConsole.IsMessageFoundInPMC("CACHE_EVENT_RECEIVED"),
-                $"Cache update event should have been raised after package install. Actual PMC output: {nugetConsole.GetText()}");
+                // Assert
+                Assert.IsTrue(
+                    cacheUpdatedEvent.Wait(TimeSpan.FromSeconds(10)),
+                    "Cache update event should have been raised after package install.");
+            }
+            finally
+            {
+                solutionManager.AfterNuGetCacheUpdated -= OnAfterNuGetCacheUpdated;
+            }
         }
 
         // Migrated from Test-NetCoreVSandMSBuildNoOp in NetCoreProjectTest.ps1
