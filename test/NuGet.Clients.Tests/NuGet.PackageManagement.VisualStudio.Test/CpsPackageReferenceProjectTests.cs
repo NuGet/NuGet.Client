@@ -4431,7 +4431,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 @"src\TestProject\TestProject.csproj",
                 @"c:\repo\src\TestProject\TestProject.csproj",
                 projectSystemCache.Object,
-                null,
+                unconfiguredProject: null,
                 nugetProjectServices.Object,
                 projectGuid.ToString());
 

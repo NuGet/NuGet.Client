@@ -28,6 +28,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
+using VSThreading = Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -43,14 +44,14 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string TargetFrameworkCondition = "TargetFramework";
 
         private readonly IProjectSystemCache _projectSystemCache;
-        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<UnconfiguredProject> _unconfiguredProject;
+        private readonly VSThreading.AsyncLazy<UnconfiguredProject> _unconfiguredProject;
 
         public CpsPackageReferenceProject(
             string projectName,
             string projectUniqueName,
             string projectFullPath,
             IProjectSystemCache projectSystemCache,
-            Microsoft.VisualStudio.Threading.AsyncLazy<UnconfiguredProject> unconfiguredProject,
+            VSThreading.AsyncLazy<UnconfiguredProject> unconfiguredProject,
             INuGetProjectServices projectServices,
             string projectId)
             : base(projectName,
