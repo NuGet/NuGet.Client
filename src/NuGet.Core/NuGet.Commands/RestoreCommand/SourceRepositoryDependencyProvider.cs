@@ -630,13 +630,11 @@ namespace NuGet.Commands
         {
             try
             {
+                await EnsureResource(cancellationToken);
+
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
-                }
-                if (_findPackagesByIdResource == null)
-                {
-                    return null;
                 }
                 return await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,
