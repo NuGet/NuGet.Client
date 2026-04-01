@@ -1215,11 +1215,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project {0} contains a TargetFramework &apos;{1}&apos; with a path separator character, which is not allowed. Remove the path separator characters from the TargetFramework..
+        ///   Looks up a localized string similar to The project {0} contains a TargetFramework &apos;{1}&apos; with disallowed characters. TargetFramework names must contain only ASCII characters and must not contain path separators..
         /// </summary>
-        internal static string Log_AliasContainsPathSeparator {
+        internal static string Log_AliasContainsDisallowedCharacters {
             get {
-                return ResourceManager.GetString("Log_AliasContainsPathSeparator", resourceCulture);
+                return ResourceManager.GetString("Log_AliasContainsDisallowedCharacters", resourceCulture);
             }
         }
         

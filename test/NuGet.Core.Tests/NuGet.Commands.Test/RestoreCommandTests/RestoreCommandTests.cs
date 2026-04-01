@@ -3660,7 +3660,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         [InlineData("foo\\bar")]
         [InlineData("a/b/c")]
         [InlineData("net10.0/linux-x64")]
-        public void EnsureNoAliasesWithPathSeparator_WithPathSeparatorInAlias_ReturnsFalseAndLogsNU1019(string invalidAlias)
+        public void EnsureNoAliasesWithDisallowedCharacters_WithPathSeparatorInAlias_ReturnsFalseAndLogsNU1019(string invalidAlias)
         {
             var logger = new TestLogger();
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
@@ -3678,7 +3678,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 UsingMicrosoftNETSdk = true,
             };
 
-            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
 
             result.Should().BeFalse();
             logger.ErrorMessages.Should().ContainSingle();
@@ -3691,7 +3691,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         [InlineData("banana")]
         [InlineData("net10.0")]
         [InlineData("net10.0-linux")]
-        public void EnsureNoAliasesWithPathSeparator_WithValidAlias_ReturnsTrueAndLogsNothing(string validAlias)
+        public void EnsureNoAliasesWithDisallowedCharacters_WithValidAlias_ReturnsTrueAndLogsNothing(string validAlias)
         {
             var logger = new TestLogger();
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
@@ -3709,16 +3709,17 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 UsingMicrosoftNETSdk = true,
             };
 
-            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
 
             result.Should().BeTrue();
             logger.ErrorMessages.Should().BeEmpty();
+            logger.WarningMessages.Should().BeEmpty();
         }
 
         [Theory]
         [InlineData("10.0.200")]
         [InlineData("9.0.100")]
-        public void EnsureNoAliasesWithPathSeparator_WithOldSdkAnalysisLevel_ReturnsTrueRegardlessOfAlias(string sdkAnalysisLevel)
+        public void EnsureNoAliasesWithDisallowedCharacters_WithOldSdkAnalysisLevel_ReturnsTrueRegardlessOfAlias(string sdkAnalysisLevel)
         {
             var logger = new TestLogger();
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
@@ -3736,14 +3737,14 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 UsingMicrosoftNETSdk = true,
             };
 
-            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
 
             result.Should().BeTrue();
             logger.ErrorMessages.Should().BeEmpty();
         }
 
         [Fact]
-        public void EnsureNoAliasesWithPathSeparator_WithMultipleInvalidAliases_LogsErrorForEach()
+        public void EnsureNoAliasesWithDisallowedCharacters_WithMultipleInvalidAliases_LogsErrorForEach()
         {
             var logger = new TestLogger();
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
@@ -3766,12 +3767,101 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 UsingMicrosoftNETSdk = true,
             };
 
-            var result = RestoreCommand.EnsureNoAliasesWithPathSeparator(packageSpec, logger);
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
 
             result.Should().BeFalse();
             logger.ErrorMessages.Should().HaveCount(2);
             logger.ErrorMessages.Should().Contain(m => m.Contains("foo/bar"));
             logger.ErrorMessages.Should().Contain(m => m.Contains("baz\\qux"));
+        }
+
+        [Theory]
+        [InlineData("café")]
+        [InlineData("net10.0-línux")]
+        [InlineData("日本語")]
+        public void EnsureNoAliasesWithDisallowedCharacters_WithNonAsciiAlias_AtV11_ReturnsErrorNU1019(string invalidAlias)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = invalidAlias
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("11.0.100"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
+
+            result.Should().BeFalse();
+            logger.ErrorMessages.Should().ContainSingle();
+            logger.ErrorMessages.Single().Should().Contain(invalidAlias);
+            logger.ErrorMessages.Single().Should().Contain("NU1019");
+        }
+
+        [Theory]
+        [InlineData("café")]
+        [InlineData("net10.0-línux")]
+        [InlineData("日本語")]
+        public void EnsureNoAliasesWithDisallowedCharacters_WithNonAsciiAlias_AtV10_0_300_ReturnsWarningNU1019(string invalidAlias)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = invalidAlias
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("10.0.300"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
+
+            result.Should().BeTrue();
+            logger.WarningMessages.Should().ContainSingle();
+            logger.WarningMessages.Single().Should().Contain(invalidAlias);
+            logger.WarningMessages.Single().Should().Contain("NU1019");
+            logger.ErrorMessages.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("café")]
+        [InlineData("日本語")]
+        public void EnsureNoAliasesWithDisallowedCharacters_WithNonAsciiAlias_AtOldSdk_ReturnsTrue(string alias)
+        {
+            var logger = new TestLogger();
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                    TargetAlias = alias
+                }
+            });
+            packageSpec.Name = "TestProject";
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                SdkAnalysisLevel = NuGetVersion.Parse("9.0.100"),
+                UsingMicrosoftNETSdk = true,
+            };
+
+            var result = RestoreCommand.EnsureNoAliasesWithDisallowedCharacters(packageSpec, logger);
+
+            result.Should().BeTrue();
+            logger.ErrorMessages.Should().BeEmpty();
+            logger.WarningMessages.Should().BeEmpty();
         }
     }
 }
