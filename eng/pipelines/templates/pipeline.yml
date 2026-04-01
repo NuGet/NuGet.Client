@@ -132,6 +132,17 @@ stages:
         codeSignValidationEnabled: false
 
       - output: artifactsDrop
+        displayName: 'Publish test gate drop'
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+        buildNumber: '$(NuGetTestGateDropName)'
+        sourcePath: '$(Build.StagingDirectory)\RunSettings'
+        toLowerCase: false
+        usePat: true
+        dropMetadataContainerName: 'DropMetadata-TestGate'
+        codeSignValidationEnabled: false
+
+      - output: artifactsDrop
         displayName: 'OptProfV2:  publish profiling inputs to artifact services'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'

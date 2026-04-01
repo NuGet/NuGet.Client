@@ -252,6 +252,16 @@ steps:
         }
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
+  - task: PowerShell@2
+    displayName: "Set test gate drop name"
+    inputs:
+      targetType: inline
+      script: |
+        $testsDropName = "$(MicroBuild.ManifestDropName)" -replace '^Products/', 'Tests/'
+        Write-Host "Tests Drop: $testsDropName"
+        Write-Host "##vso[task.setvariable variable=NuGetTestGateDropName]$testsDropName"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
   - task: MSBuild@1
     displayName: "Collect Build Symbols"
     inputs:
