@@ -275,7 +275,6 @@ namespace NuGet.Tests.Apex
         }
 
         // Migrated from Test-NetCoreVSandMSBuildNoOp in NetCoreProjectTest.ps1
-        [Ignore("https://github.com/NuGet/Home/issues/13003")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void NetCoreVSAndMSBuildRestoreIsNoOp()
