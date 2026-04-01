@@ -898,7 +898,7 @@ namespace NuGet.Commands
 
         internal static bool IsAscii(string value)
         {
-            foreach (char c in value)
+            foreach (char c in value.AsSpan())
             {
                 if (c > 127)
                 {
