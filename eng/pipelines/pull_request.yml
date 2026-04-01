@@ -27,6 +27,8 @@ variables:
 extends:
   template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive
     sdl:
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
@@ -42,6 +44,7 @@ extends:
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true
+      disableNetworkIsolation: true
     customBuildTags:
     - ES365AIMigrationTooling
     stages:

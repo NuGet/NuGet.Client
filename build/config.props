@@ -14,7 +14,7 @@
     <!-- when changing any of the NuGetVersion props below, run tools-local\ship-public-apis -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">7</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">4</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">1</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
 
     <!-- ** Change for each new preview/rc -->
@@ -33,8 +33,8 @@
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
     <!-- These branches are used for creating insertion PRs -->
-    <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
-    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">insiders</VsTargetChannel>
+    <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/oobstable</VsTargetBranch>
+    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">oobstable</VsTargetChannel>
 
     <!-- Run Apex/E2E tests on the target branch -->
     <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == ''">$(VsTargetChannel)</VsTargetChannelForTests>
