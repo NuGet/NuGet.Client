@@ -44,6 +44,7 @@ extends:
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true
+      disableNetworkIsolation: true
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
