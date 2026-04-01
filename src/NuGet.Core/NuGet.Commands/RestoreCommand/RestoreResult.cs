@@ -97,7 +97,6 @@ namespace NuGet.Commands
         /// </summary>
         internal bool DoNotWriteDependencyGraphSpec { get; init; }
 
-
         private readonly string _dependencyGraphSpecFilePath;
 
         private readonly DependencyGraphSpec _dependencyGraphSpec;
