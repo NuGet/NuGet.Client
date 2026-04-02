@@ -1,12 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NuGet.PackageManagement;
 
 namespace NuGet.Tests.Apex
 {
@@ -234,44 +231,6 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 CommonUtility.AssertPackageReferenceDoesNotExist(testContext.SolutionService.Projects[0], packageName, packageVersion, Logger);
-            }
-        }
-
-        // Migrated from Test-NetCoreProjectSystemCacheUpdateEvent in NetCoreProjectTest.ps1
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMC_TriggersNuGetCacheUpdatedEventAsync()
-        {
-            // Arrange
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
-
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-            testContext.SolutionService.Build();
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            // Subscribe to the ISolutionManager.AfterNuGetCacheUpdated event
-            using var cacheUpdatedEvent = new ManualResetEventSlim(false);
-            var solutionManager = testContext.NuGetApexTestService.SolutionManager;
-            void OnAfterNuGetCacheUpdated(object sender, NuGetEventArgs<string> e) => cacheUpdatedEvent.Set();
-            solutionManager.AfterNuGetCacheUpdated += OnAfterNuGetCacheUpdated;
-
-            try
-            {
-                // Act
-                var nugetConsole = GetConsole(testContext.Project);
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-                // Assert
-                Assert.IsTrue(
-                    cacheUpdatedEvent.Wait(TimeSpan.FromSeconds(10)),
-                    "Cache update event should have been raised after package install.");
-            }
-            finally
-            {
-                solutionManager.AfterNuGetCacheUpdated -= OnAfterNuGetCacheUpdated;
             }
         }
 

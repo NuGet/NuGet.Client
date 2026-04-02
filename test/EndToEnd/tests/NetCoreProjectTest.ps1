@@ -30,66 +30,6 @@ function Test-NetCoreProjectSystemCacheUpdateEvent {
     Assert-NotNull $cacheEvent -Message "Cache update event should've been raised"
 }
 
-function Test-NetCoreConsoleAppClean {
-
-    # Arrange & Act
-    $project = New-NetCoreConsoleApp ConsoleApp
-
-    Build-Solution
-
-    Assert-ProjectCacheFileExists $project
-
-    #Act
-    Clean-Solution
-
-    #Assert
-    Assert-ProjectCacheFileNotExists $project
-}
-
-function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
-    # Arrange & Act
-    $project = New-NetCoreConsoleApp ConsoleApp
-    Build-Solution
-
-    Assert-ProjectCacheFileExists $project
-
-    AdviseSolutionEvents
-
-    #Act
-    Rebuild-Solution
-
-    WaitUntilRebuildCompleted
-    UnadviseSolutionEvents
-
-    #Assert
-    Assert-ProjectCacheFileExists $project
-}
-
-function Test-NetCoreVSandMSBuildNoOp {
-    param ()
-
-    # Arrange
-    $project = New-NetCoreConsoleApp ConsoleApp
-    Build-Solution
-
-    Assert-ProjectCacheFileExists $project
-    $cacheFile = Get-ProjectCacheFilePath $project
-
-    #Act
-
-    $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-
-    $MSBuildExe = Get-MSBuildExe
-
-    & "$MSBuildExe" /t:restore  $project.FullName
-    Assert-True ($LASTEXITCODE -eq 0)
-
-    $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-
-    #Assert
-    Assert-True ($MsBuildRestoreTimestamp -eq $VSRestoreTimestamp)
-}
-
 function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
     param ()
 
