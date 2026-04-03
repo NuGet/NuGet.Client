@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -44,41 +43,16 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Checks whether the given lock file target library uses the deprecated MonoAndroid framework
-        /// by inspecting the paths of compile-time and runtime assemblies.
+        /// Checks whether the given framework is a MonoAndroid framework.
         /// </summary>
-        /// <param name="library">The lock file target library to check.</param>
-        /// <returns>True if the library uses MonoAndroid framework assets.</returns>
-        internal static bool UsesMonoAndroidFramework(LockFileTargetLibrary library)
+        /// <param name="framework">The framework to check, or null.</param>
+        /// <returns>True if the framework uses the MonoAndroid framework identifier.</returns>
+        internal static bool IsMonoAndroidFramework(NuGetFramework framework)
         {
-            return ContainsMonoAndroidItem(library.CompileTimeAssemblies)
-                || ContainsMonoAndroidItem(library.RuntimeAssemblies);
-        }
-
-        private static bool ContainsMonoAndroidItem(IList<LockFileItem> items)
-        {
-            for (int i = 0; i < items.Count; i++)
-            {
-                string path = items[i].Path;
-
-                // Paths are like "lib/monoandroid10.0/Assembly.dll" or "ref/monoandroid10.0/Assembly.dll"
-                // Extract the framework folder segment (between first and second '/').
-                int firstSlash = path.IndexOf('/');
-                if (firstSlash >= 0)
-                {
-                    int secondSlash = path.IndexOf('/', firstSlash + 1);
-                    if (secondSlash > firstSlash + 1)
-                    {
-                        var folderName = path.AsSpan(firstSlash + 1, secondSlash - firstSlash - 1);
-                        if (folderName.StartsWith("monoandroid".AsSpan(), StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
+            return framework != null
+                && StringComparer.OrdinalIgnoreCase.Equals(
+                    framework.Framework,
+                    FrameworkConstants.FrameworkIdentifiers.MonoAndroid);
         }
     }
 }

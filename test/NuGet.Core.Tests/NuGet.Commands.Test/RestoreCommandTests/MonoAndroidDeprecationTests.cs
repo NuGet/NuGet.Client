@@ -144,87 +144,44 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
         #endregion
 
-        #region UsesMonoAndroidFramework tests
+        #region IsMonoAndroidFramework tests
 
         [Fact]
-        public void UsesMonoAndroidFramework_CompileTimeAssemblyWithMonoAndroid_ReturnsTrue()
+        public void IsMonoAndroidFramework_MonoAndroid_ReturnsTrue()
         {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/monoandroid10.0/a.dll"));
+            var framework = NuGetFramework.Parse("monoandroid10.0");
 
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
+            MonoAndroidDeprecation.IsMonoAndroidFramework(framework).Should().BeTrue();
         }
 
         [Fact]
-        public void UsesMonoAndroidFramework_RuntimeAssemblyWithMonoAndroid_ReturnsTrue()
+        public void IsMonoAndroidFramework_MonoAndroidNoVersion_ReturnsTrue()
         {
-            var library = new LockFileTargetLibrary();
-            library.RuntimeAssemblies.Add(new LockFileItem("lib/monoandroid10.0/a.dll"));
+            var framework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.MonoAndroid);
 
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
+            MonoAndroidDeprecation.IsMonoAndroidFramework(framework).Should().BeTrue();
         }
 
         [Fact]
-        public void UsesMonoAndroidFramework_RefFolderWithMonoAndroid_ReturnsTrue()
+        public void IsMonoAndroidFramework_NetCoreApp_ReturnsFalse()
         {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("ref/monoandroid10.0/a.dll"));
+            var framework = NuGetFramework.Parse("net6.0-android31.0");
 
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
+            MonoAndroidDeprecation.IsMonoAndroidFramework(framework).Should().BeFalse();
         }
 
         [Fact]
-        public void UsesMonoAndroidFramework_MonoAndroidCaseInsensitive_ReturnsTrue()
+        public void IsMonoAndroidFramework_NetStandard_ReturnsFalse()
         {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/MonoAndroid10.0/a.dll"));
+            var framework = NuGetFramework.Parse("netstandard2.0");
 
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
+            MonoAndroidDeprecation.IsMonoAndroidFramework(framework).Should().BeFalse();
         }
 
         [Fact]
-        public void UsesMonoAndroidFramework_Net6Android_ReturnsFalse()
+        public void IsMonoAndroidFramework_Null_ReturnsFalse()
         {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/net6.0-android31.0/a.dll"));
-
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeFalse();
-        }
-
-        [Fact]
-        public void UsesMonoAndroidFramework_NetStandard_ReturnsFalse()
-        {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/netstandard2.0/a.dll"));
-
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeFalse();
-        }
-
-        [Fact]
-        public void UsesMonoAndroidFramework_EmptyAssemblies_ReturnsFalse()
-        {
-            var library = new LockFileTargetLibrary();
-
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeFalse();
-        }
-
-        [Fact]
-        public void UsesMonoAndroidFramework_MonoAndroidWithoutVersion_ReturnsTrue()
-        {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/monoandroid/a.dll"));
-
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
-        }
-
-        [Fact]
-        public void UsesMonoAndroidFramework_MultipleAssemblies_OneMonoAndroid_ReturnsTrue()
-        {
-            var library = new LockFileTargetLibrary();
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/monoandroid10.0/a.dll"));
-            library.CompileTimeAssemblies.Add(new LockFileItem("lib/monoandroid10.0/b.dll"));
-
-            MonoAndroidDeprecation.UsesMonoAndroidFramework(library).Should().BeTrue();
+            MonoAndroidDeprecation.IsMonoAndroidFramework(null).Should().BeFalse();
         }
 
         #endregion

@@ -228,7 +228,7 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework) = LockFileUtils.CreateLockFileTargetLibrary(
+                        (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework, NuGetFramework compileAssetFramework, NuGetFramework runtimeAssetFramework) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
                             libraries[ValueTuple.Create(library.Name, library.Version)],
                             package,
@@ -286,7 +286,8 @@ namespace NuGet.Commands
                         // Log NU1703 warning if the package uses the deprecated MonoAndroid framework
                         if (checkMonoAndroidDeprecation
                             && !librariesWithWarnings.Contains(library)
-                            && MonoAndroidDeprecation.UsesMonoAndroidFramework(targetLibrary))
+                            && (MonoAndroidDeprecation.IsMonoAndroidFramework(compileAssetFramework)
+                                || MonoAndroidDeprecation.IsMonoAndroidFramework(runtimeAssetFramework)))
                         {
                             var message = string.Format(CultureInfo.CurrentCulture,
                                 Strings.Warning_MonoAndroidFrameworkDeprecated,
