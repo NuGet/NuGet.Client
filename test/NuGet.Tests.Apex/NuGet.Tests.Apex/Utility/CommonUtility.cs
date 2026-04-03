@@ -559,19 +559,21 @@ namespace NuGet.Tests.Apex
 
         /// <summary>
         /// Gets the path to MSBuild.exe from the Visual Studio installation.
-        /// Uses the VSAPPIDDIR environment variable to find the VS root folder,
-        /// same approach as Get-MSBuildExe in the PS E2E test infrastructure.
+        /// Tries multiple strategies to locate the VS root:
+        /// 1. The current process (devenv.exe when running under Apex)
+        /// 2. The VisualStudio.InstallationUnderTest.Path environment variable (set by the Apex fixture)
+        /// 3. VSAPPIDDIR / DevEnvDir environment variables
         /// </summary>
         public static string GetMSBuildExePath()
         {
-            string vsAppIdDir = Environment.GetEnvironmentVariable("VSAPPIDDIR") ?? Environment.GetEnvironmentVariable("DevEnvDir");
-            if (string.IsNullOrEmpty(vsAppIdDir))
+            string vsRoot = GetVSRootDirectory();
+            if (string.IsNullOrEmpty(vsRoot))
             {
-                throw new InvalidOperationException("Could not determine Visual Studio installation path. Neither VSAPPIDDIR nor DevEnvDir environment variable is set.");
+                throw new InvalidOperationException(
+                    "Could not determine Visual Studio installation path. " +
+                    "The current process is not devenv.exe, and neither VisualStudio.InstallationUnderTest.Path, VSAPPIDDIR, nor DevEnvDir environment variable is set.");
             }
 
-            // VSAPPIDDIR is <VSRoot>\Common7\IDE\, go up 2 levels to get VS root
-            string vsRoot = Path.GetFullPath(Path.Combine(vsAppIdDir, "..", ".."));
             string msbuildPath = Path.Combine(vsRoot, "MSBuild", "Current", "bin", "MSBuild.exe");
 
             if (!File.Exists(msbuildPath))
@@ -580,6 +582,50 @@ namespace NuGet.Tests.Apex
             }
 
             return msbuildPath;
+        }
+
+        /// <summary>
+        /// Determines the VS root directory using multiple fallback strategies.
+        /// </summary>
+        private static string GetVSRootDirectory()
+        {
+            // Strategy 1: Apex tests run inside devenv.exe, so the current process path gives us the VS IDE directory.
+            try
+            {
+                string processPath = Process.GetCurrentProcess().MainModule.FileName;
+                if (!string.IsNullOrEmpty(processPath) &&
+                    Path.GetFileName(processPath).Equals("devenv.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    // devenv.exe is at <VSRoot>\Common7\IDE\devenv.exe, go up 2 levels
+                    return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(processPath), "..", ".."));
+                }
+            }
+            catch
+            {
+                // MainModule access can throw; fall through to next strategy
+            }
+
+            // Strategy 2: VisualStudio.InstallationUnderTest.Path is set by the Apex fixture to the devenv.exe path
+            string vsUnderTestPath = Environment.GetEnvironmentVariable("VisualStudio.InstallationUnderTest.Path");
+            if (!string.IsNullOrEmpty(vsUnderTestPath))
+            {
+                // This can be either the devenv.exe path or the VS root directory
+                if (vsUnderTestPath.EndsWith("devenv.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(vsUnderTestPath), "..", ".."));
+                }
+
+                return vsUnderTestPath;
+            }
+
+            // Strategy 3: VSAPPIDDIR or DevEnvDir environment variables (Common7\IDE\)
+            string vsAppIdDir = Environment.GetEnvironmentVariable("VSAPPIDDIR") ?? Environment.GetEnvironmentVariable("DevEnvDir");
+            if (!string.IsNullOrEmpty(vsAppIdDir))
+            {
+                return Path.GetFullPath(Path.Combine(vsAppIdDir, "..", ".."));
+            }
+
+            return null;
         }
     }
 }
