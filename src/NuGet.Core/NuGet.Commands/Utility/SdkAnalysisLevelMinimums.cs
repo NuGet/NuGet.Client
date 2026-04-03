@@ -29,6 +29,7 @@ namespace NuGet.Commands
         /// Minimum SDK Analysis Level required for:
         /// <list type="bullet">
         /// <item>.NET SDK version that supports aliased assets files.</item>
+        /// <item>error when TargetFramework alias contains path separators characters</item>
         /// </list>
         /// </summary>
         internal static readonly NuGetVersion V10_0_300 = new("10.0.300");
@@ -37,6 +38,7 @@ namespace NuGet.Commands
         /// Minimum SDK Analysis Level required for:
         /// <list type="bullet">
         /// <item>warning when packages use the deprecated MonoAndroid framework</item>
+        /// <item>error when TargetFramework alias contains non-ASCII characters</item>
         /// </list>
         /// </summary>
         internal static readonly NuGetVersion V11_0_100 = new("11.0.100");
