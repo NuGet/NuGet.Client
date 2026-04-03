@@ -556,5 +556,30 @@ namespace NuGet.Tests.Apex
                 CommonUtility.AssertPackageReferenceDoesNotExist(project, packageName, logger);
             }
         }
+
+        /// <summary>
+        /// Gets the path to MSBuild.exe from the Visual Studio installation.
+        /// Uses the VSAPPIDDIR environment variable to find the VS root folder,
+        /// same approach as Get-MSBuildExe in the PS E2E test infrastructure.
+        /// </summary>
+        public static string GetMSBuildExePath()
+        {
+            string vsAppIdDir = Environment.GetEnvironmentVariable("VSAPPIDDIR") ?? Environment.GetEnvironmentVariable("DevEnvDir");
+            if (string.IsNullOrEmpty(vsAppIdDir))
+            {
+                throw new InvalidOperationException("Could not determine Visual Studio installation path. Neither VSAPPIDDIR nor DevEnvDir environment variable is set.");
+            }
+
+            // VSAPPIDDIR is <VSRoot>\Common7\IDE\, go up 2 levels to get VS root
+            string vsRoot = Path.GetFullPath(Path.Combine(vsAppIdDir, "..", ".."));
+            string msbuildPath = Path.Combine(vsRoot, "MSBuild", "Current", "bin", "MSBuild.exe");
+
+            if (!File.Exists(msbuildPath))
+            {
+                throw new FileNotFoundException($"MSBuild.exe not found at expected path: {msbuildPath}");
+            }
+
+            return msbuildPath;
+        }
     }
 }

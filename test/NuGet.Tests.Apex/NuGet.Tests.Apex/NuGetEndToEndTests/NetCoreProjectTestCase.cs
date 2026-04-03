@@ -252,10 +252,11 @@ namespace NuGet.Tests.Apex
 
             var vsRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
 
-            // Act - run MSBuild restore externally
+            // Act - run MSBuild restore externally using VS MSBuild
+            var msbuildPath = CommonUtility.GetMSBuildExePath();
             using var process = new Process();
-            process.StartInfo.FileName = "dotnet";
-            process.StartInfo.Arguments = $"msbuild /t:restore \"{testContext.Project.FullPath}\"";
+            process.StartInfo.FileName = msbuildPath;
+            process.StartInfo.Arguments = $"/t:restore \"{testContext.Project.FullPath}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = true;
             process.Start();
@@ -305,10 +306,11 @@ namespace NuGet.Tests.Apex
 
             var vsRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
 
-            // Act - run MSBuild restore externally
+            // Act - run MSBuild restore externally using VS MSBuild
+            var msbuildPath = CommonUtility.GetMSBuildExePath();
             using var process = new Process();
-            process.StartInfo.FileName = "dotnet";
-            process.StartInfo.Arguments = $"msbuild /t:restore \"{testContext.Project.FullPath}\"";
+            process.StartInfo.FileName = msbuildPath;
+            process.StartInfo.Arguments = $"/t:restore \"{testContext.Project.FullPath}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = true;
             process.Start();
