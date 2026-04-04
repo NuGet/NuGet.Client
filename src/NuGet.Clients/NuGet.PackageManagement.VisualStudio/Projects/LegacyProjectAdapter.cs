@@ -143,7 +143,7 @@ internal class LegacyProjectAdapter : IProject
             List<IItem> references = new List<IItem>();
             foreach (Reference6 projectReference in _project4.References)
             {
-                if (projectReference.SourceProject != null && EnvDTEProjectUtility.IsSupported(projectReference.SourceProject, _projectAdapter.VsHierarchy))
+                if (projectReference.SourceProject != null && _projectAdapter.IsSupported(projectReference))
                 {
                     Array metadataElements;
                     Array metadataValues;

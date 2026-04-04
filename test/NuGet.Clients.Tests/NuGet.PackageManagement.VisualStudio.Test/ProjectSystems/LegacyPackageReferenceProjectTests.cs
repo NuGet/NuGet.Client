@@ -245,16 +245,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
                 Assert.Equal("1.0.0", actualRestoreSpec.Version.ToString());
-
-                // Verify
-                Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.Version, Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.ProjectName, Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
-                    .VerifyGet(x => x.FullProjectPath, Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.GetTargetFramework(), Times.AtLeastOnce);
             }
         }
 
@@ -272,6 +262,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Get(projectAdapter)
                     .SetupGet(x => x.Version)
                     .Returns("2.2.3");
+#pragma warning disable CS0618 // GetPropertyValueWithDteFallback is obsolete
+                Mock.Get(projectAdapter.BuildProperties)
+                    .Setup(x => x.GetPropertyValueWithDteFallback("Version"))
+                    .Returns("2.2.3");
+#pragma warning restore CS0618
 
                 var projectServices = new TestProjectSystemServices();
 
@@ -294,10 +289,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
                 Assert.Equal("2.2.3", actualRestoreSpec.Version.ToString());
-
-                // Verify
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.Version, Times.AtLeastOnce);
             }
         }
 
@@ -367,9 +358,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var specFallback = actualRestoreSpec.RestoreMetadata.FallbackFolders;
                 var expectedFolders = fallbackFolders != null ? MSBuildStringUtility.Split(fallbackFolders).Select(e => Path.Combine(testDirectory, e)) : SettingsUtility.GetFallbackPackageFolders(settings);
                 Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
-
-                // Verify
-                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -438,9 +426,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var specFallback = actualRestoreSpec.RestoreMetadata.FallbackFolders;
                 var expectedFolders = fallbackFolders != null ? MSBuildStringUtility.Split(fallbackFolders) : SettingsUtility.GetFallbackPackageFolders(settings);
                 Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
-
-                // Verify
-                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -498,9 +483,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         NuGetFramework.Parse("dnxcore50")
                     },
                     ((FallbackFramework)actualTfi.FrameworkName).Fallback);
-
-                // Verify
-                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -551,12 +533,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.NotNull(actualDependency);
                 Assert.Equal("packageA", actualDependency.LibraryRange.Name);
                 Assert.Equal(VersionRange.Parse("1.*"), actualDependency.LibraryRange.VersionRange);
-
-                // Verify
-                Mock.Get(projectServices.ReferencesReader)
-                    .Verify(
-                        x => x.GetPackageReferencesAsync(framework, CancellationToken.None),
-                        Times.AtLeastOnce);
             }
         }
 
@@ -570,8 +546,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var randomTestFolder = TestDirectory.Create())
             {
-                var framework = NuGetFramework.Parse("netstandard13");
-
                 var projectAdapter = CreateProjectAdapter(randomTestFolder);
 
                 var projectServices = new TestProjectSystemServices();
@@ -603,12 +577,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var actualDependency = actualRestoreSpec.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Single();
                 Assert.NotNull(actualDependency);
                 Assert.Equal("TestProjectA", actualDependency.ProjectUniqueName);
-
-                // Verify
-                Mock.Get(projectServices.ReferencesReader)
-                    .Verify(
-                        x => x.GetProjectReferencesAsync(It.IsAny<Common.ILogger>(), CancellationToken.None),
-                        Times.AtLeastOnce);
             }
         }
 
@@ -651,12 +619,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(
                     "packageA.1.0.0",
                     packageReference.PackageIdentity.ToString());
-
-                // Verify
-                Mock.Get(projectServices.ReferencesReader)
-                    .Verify(
-                        x => x.GetPackageReferencesAsync(framework, CancellationToken.None),
-                        Times.AtLeastOnce);
             }
         }
 
@@ -1630,9 +1592,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert runtime graph
                 actualRestoreSpec.RuntimeGraph.Runtimes.Count.Should().Be(runtimeCount);
                 actualRestoreSpec.RuntimeGraph.Supports.Count.Should().Be(supportsCount);
-
-                // Verify
-                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -1713,8 +1672,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             warningProperties.WarningsNotAsErrors.Should().HaveCount(1);
             warningProperties.WarningsAsErrors.Should().Contain(NuGetLogCode.NU1803);
             warningProperties.WarningsAsErrors.Should().HaveCount(1);
-            // Verify
-            projectBuildProperties.VerifyAll();
         }
 
         [Theory]

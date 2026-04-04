@@ -471,7 +471,7 @@ namespace NuGet.Commands.Restore.Utility
         {
             // Fallback folders
             var currentFallbackFolders = GetValue(
-                () => fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
+                () => string.IsNullOrEmpty(startupDirectory) ? null : fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders) ? Array.Empty<string>() : null,
                 () => fallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
                 () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
@@ -496,7 +496,10 @@ namespace NuGet.Commands.Restore.Utility
         {
             if (projectStyle == ProjectStyle.PackageReference)
             {
-                bool isEnabled = IsPropertyTrue(project, "_CentralPackageVersionsEnabled");
+                bool isEnabled =
+                    MSBuildStringUtility.IsTrue(project.GetProperty("BuildingInsideVisualStudio"))
+                    ? IsPropertyTrue(project, "ManagePackageVersionsCentrally")
+                    : IsPropertyTrue(project, "_CentralPackageVersionsEnabled");
                 bool isVersionOverrideDisabled = IsPropertyFalse(project, "CentralPackageVersionOverrideEnabled");
                 bool isCentralPackageTransitivePinningEnabled = IsPropertyTrue(project, "CentralPackageTransitivePinningEnabled");
                 bool isCentralPackageFloatingVersionsEnabled = IsPropertyTrue(project, "CentralPackageFloatingVersionsEnabled");
@@ -842,7 +845,7 @@ namespace NuGet.Commands.Restore.Utility
         {
             // Sources
             var currentSources = GetValue(
-                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
+                () => string.IsNullOrEmpty(startupDirectory) ? null : sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
                 () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
                 () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
@@ -930,7 +933,7 @@ namespace NuGet.Commands.Restore.Utility
                 return defaultValue;
             }
 
-            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(value!.Trim(), bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsPropertyFalse(this ITargetFramework project, string propertyName, bool defaultValue = false)
@@ -942,7 +945,7 @@ namespace NuGet.Commands.Restore.Utility
                 return defaultValue;
             }
 
-            return string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(value!.Trim(), bool.FalseString, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsMetadataTrue(this IItem item, string metadataName, bool defaultValue = false)
