@@ -1755,5 +1755,65 @@ namespace NuGet.XPlat.FuncTest
                 Assert.True(XPlatTestUtils.ValidateReference(itemGroup, "packageX", userInputVersion));
             }
         }
+
+        [Fact]
+        public async Task AddPkg_DevelopmentDependencyWithCPM_PrivateAssetsOnlyOnPackageReference()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+            var packageX = XPlatTestUtils.CreatePackage(developmentDependency: true);
+
+            // Generate Package
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX);
+
+            // Create Directory.Packages.props to enable CPM
+            var directoryPackagesPropsPath = Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props");
+            File.WriteAllText(directoryPackagesPropsPath,
+@"<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>");
+
+            // Build a DG file with CPM enabled so the restore-based code path detects the development dependency.
+            // Use the isolated UserPackagesFolder to avoid stale packages in the shared global cache.
+            var packageSpec = projectA.PackageSpec;
+            packageSpec.RestoreMetadata.CentralPackageVersionsEnabled = true;
+            packageSpec.RestoreMetadata.PackagesPath = pathContext.UserPackagesFolder;
+            var dgSpec = new DependencyGraphSpec();
+            var dgFilePath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath)!, "temp.dg");
+            dgSpec.AddRestore(projectA.ProjectName);
+            dgSpec.AddProject(packageSpec);
+            dgSpec.Save(dgFilePath);
+
+            var logger = new TestCommandOutputLogger(_testOutputHelper);
+            var packageArgs = new PackageReferenceArgs(projectA.ProjectPath, logger)
+            {
+                PackageId = packageX.Id,
+                PackageVersion = packageX.Version,
+                DgFilePath = dgFilePath,
+            };
+            var commandRunner = new AddPackageReferenceCommandRunner();
+
+            // Act
+            var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger, virtualProjectBuilder: null));
+            var projectXml = File.ReadAllText(projectA.ProjectPath);
+            var propsXml = File.ReadAllText(directoryPackagesPropsPath);
+
+            // Assert
+            Assert.Equal(0, result);
+
+            // .csproj PackageReference should have PrivateAssets
+            Assert.Contains("PrivateAssets", projectXml);
+
+            // Directory.Packages.props PackageVersion should NOT have PrivateAssets or IncludeAssets
+            Assert.Contains($"<PackageVersion Include=\"{packageX.Id}\" Version=\"{packageX.Version}\"", propsXml);
+            Assert.DoesNotContain("PrivateAssets", propsXml);
+            Assert.DoesNotContain("IncludeAssets", propsXml);
+        }
     }
 }
