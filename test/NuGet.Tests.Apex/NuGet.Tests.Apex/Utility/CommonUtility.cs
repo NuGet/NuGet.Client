@@ -556,6 +556,5 @@ namespace NuGet.Tests.Apex
                 CommonUtility.AssertPackageReferenceDoesNotExist(project, packageName, logger);
             }
         }
-
     }
 }
