@@ -1779,24 +1779,8 @@ namespace NuGet.XPlat.FuncTest
   </PropertyGroup>
 </Project>");
 
-            // Build a DG file with CPM enabled so the restore-based code path detects the development dependency.
-            // Use the isolated UserPackagesFolder to avoid stale packages in the shared global cache.
-            var packageSpec = projectA.PackageSpec;
-            packageSpec.RestoreMetadata.CentralPackageVersionsEnabled = true;
-            packageSpec.RestoreMetadata.PackagesPath = pathContext.UserPackagesFolder;
-            var dgSpec = new DependencyGraphSpec();
-            var dgFilePath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath)!, "temp.dg");
-            dgSpec.AddRestore(projectA.ProjectName);
-            dgSpec.AddProject(packageSpec);
-            dgSpec.Save(dgFilePath);
-
             var logger = new TestCommandOutputLogger(_testOutputHelper);
-            var packageArgs = new PackageReferenceArgs(projectA.ProjectPath, logger)
-            {
-                PackageId = packageX.Id,
-                PackageVersion = packageX.Version,
-                DgFilePath = dgFilePath,
-            };
+            var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, projectA);
             var commandRunner = new AddPackageReferenceCommandRunner();
 
             // Act
