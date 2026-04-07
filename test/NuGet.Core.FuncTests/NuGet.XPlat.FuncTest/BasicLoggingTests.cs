@@ -31,7 +31,8 @@ namespace NuGet.XPlat.FuncTest
             var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(args, log, TestEnvironmentVariableReader.EmptyInstance);
 
             // Assert
-            Assert.Equal(0, exitCode);
+            // System.CommandLine returns 1 when no subcommand is provided
+            Assert.Equal(1, exitCode);
         }
     }
 }

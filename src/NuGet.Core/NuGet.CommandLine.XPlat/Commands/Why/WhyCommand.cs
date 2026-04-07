@@ -10,7 +10,6 @@ using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using Spectre.Console;
 
@@ -18,14 +17,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 {
     public static class WhyCommand
     {
-        internal static void Register(CommandLineApplication app)
-        {
-            app.Command("why", whyCmd =>
-            {
-                whyCmd.Description = Strings.WhyCommand_Description;
-            });
-        }
-
         internal static void Register(Command rootCommand, Lazy<IAnsiConsole> console, IVirtualProjectBuilder? virtualProjectBuilder = null)
         {
             Register(rootCommand, console,

@@ -7,7 +7,6 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.Commands;
 using NuGet.Common;
 
@@ -78,15 +77,7 @@ namespace NuGet.CommandLine.XPlat
             log.LogVerbose(e.ToString());
         }
 
-        internal static void Register(CommandLineApplication app)
-        {
-            app.Command("config", configCmd =>
-            {
-                configCmd.Description = Strings.Config_Description;
-            });
-        }
-
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILoggerWithColor> getLogger)
         {
             var ConfigCmd = new DocumentedCommand(name: "config", description: Strings.Config_Description, "https://aka.ms/dotnet/nuget/config");
             ConfigCmd.Options.Add(HelpOption);
