@@ -67,6 +67,7 @@ stages:
         MirrorRepo: 'NuGet.Client'
         MirrorBranch: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
         GitHubOrg: 'NuGet'
+        xLocCustomPowerShellScript: 'eng/Localize/RemoveUtf8Bom.ps1'
 
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
