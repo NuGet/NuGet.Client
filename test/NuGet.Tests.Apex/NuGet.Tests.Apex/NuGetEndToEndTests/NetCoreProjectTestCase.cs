@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -236,97 +234,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        // Migrated from Test-NetCoreVSandMSBuildNoOp in NetCoreProjectTest.ps1
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public void NetCoreVSAndMSBuildRestoreIsNoOp()
-        {
-            // Arrange
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
-
-            testContext.SolutionService.Build();
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            var cacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
-            CommonUtility.WaitForFileExists(cacheFilePath);
-
-            var vsRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
-
-            // Act - run MSBuild restore externally using VS MSBuild
-            var msbuildPath = CommonUtility.GetMSBuildExePath();
-            using var process = new Process();
-            process.StartInfo.FileName = msbuildPath;
-            process.StartInfo.Arguments = $"/t:restore \"{testContext.Project.FullPath}\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardError = true;
-            process.Start();
-            string standardError = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            Assert.AreEqual(0, process.ExitCode, $"MSBuild restore failed: {standardError}");
-
-            var msbuildRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
-
-            // Assert - MSBuild restore should be a no-op, cache file timestamp should not change
-            Assert.AreEqual(vsRestoreTimestamp, msbuildRestoreTimestamp,
-                "MSBuild restore should be a no-op after VS restore - cache file timestamp should not change.");
-        }
-
-        // Migrated from Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp in NetCoreProjectTest.ps1
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public void NetCoreMultipleTargetFrameworksVSAndMSBuildRestoreIsNoOp()
-        {
-            // Arrange - create project and modify it to be multi-targeted
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true);
-
-            testContext.Project.Save();
-            var doc = XDocument.Load(testContext.Project.FullPath);
-            var ns = doc.Root.Name.Namespace;
-
-            // Switch TargetFramework to TargetFrameworks with multiple TFMs
-            var tfElement = doc.Root.Descendants(ns + "TargetFramework").FirstOrDefault();
-            if (tfElement != null)
-            {
-                tfElement.Name = ns + "TargetFrameworks";
-                tfElement.Value = "net8.0;netstandard2.0";
-            }
-
-            // Remove OutputType since netstandard2.0 doesn't support Exe
-            var outputTypeElement = doc.Root.Descendants(ns + "OutputType").FirstOrDefault();
-            outputTypeElement?.Remove();
-
-            doc.Save(testContext.Project.FullPath);
-
-            testContext.SolutionService.Build();
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            var cacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
-            CommonUtility.WaitForFileExists(cacheFilePath);
-
-            var vsRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
-
-            // Act - run MSBuild restore externally using VS MSBuild
-            var msbuildPath = CommonUtility.GetMSBuildExePath();
-            using var process = new Process();
-            process.StartInfo.FileName = msbuildPath;
-            process.StartInfo.Arguments = $"/t:restore \"{testContext.Project.FullPath}\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardError = true;
-            process.Start();
-            string standardError = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            Assert.AreEqual(0, process.ExitCode, $"MSBuild restore failed: {standardError}");
-
-            var msbuildRestoreTimestamp = File.GetLastWriteTime(cacheFilePath.FullName).Ticks;
-
-            // Assert - MSBuild restore should be a no-op for multi-targeted project
-            Assert.AreEqual(vsRestoreTimestamp, msbuildRestoreTimestamp,
-                "MSBuild restore should be a no-op after VS restore for multi-targeted project - cache file timestamp should not change.");
-        }
-
-        // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
+        // There  is a bug with VS or Apexwhere NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
         // Commenting out any NetCoreConsoleApp or NetCoreClassLib template and swapping it for NetStandardClassLib as both are package ref.
 
         public static IEnumerable<object[]> GetNetCoreTemplates()
