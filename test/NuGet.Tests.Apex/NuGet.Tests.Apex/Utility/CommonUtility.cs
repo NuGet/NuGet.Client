@@ -592,7 +592,7 @@ namespace NuGet.Tests.Apex
             // Strategy 1: Apex tests run inside devenv.exe, so the current process path gives us the VS IDE directory.
             try
             {
-                string processPath = Process.GetCurrentProcess().MainModule.FileName;
+                string processPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
                 if (!string.IsNullOrEmpty(processPath) &&
                     Path.GetFileName(processPath).Equals("devenv.exe", StringComparison.OrdinalIgnoreCase))
                 {
