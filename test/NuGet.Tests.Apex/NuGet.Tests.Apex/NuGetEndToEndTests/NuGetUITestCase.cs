@@ -23,6 +23,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
         public async Task SearchPackageFromUI()
         {
             // Arrange
@@ -49,6 +50,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
         public async Task InstallPackageFromUI()
         {
             // Arrange
@@ -107,6 +109,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
         public async Task UninstallPackageFromUI()
         {
             // Arrange
@@ -140,6 +143,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
         public async Task UpdatePackageFromUI()
         {
             // Arrange
