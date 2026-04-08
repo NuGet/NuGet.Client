@@ -154,6 +154,7 @@ namespace NuGet.Commands
             Dictionary<ValueTuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
+            var librariesWithMonoAndroidWarnings = new HashSet<LibraryIdentity>();
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
@@ -285,7 +286,7 @@ namespace NuGet.Commands
 
                         // Log NU1703 warning if the package uses the deprecated MonoAndroid framework
                         if (checkMonoAndroidDeprecation
-                            && !librariesWithWarnings.Contains(library)
+                            && !librariesWithMonoAndroidWarnings.Contains(library)
                             && (MonoAndroidDeprecation.IsMonoAndroidFramework(compileAssetFramework)
                                 || MonoAndroidDeprecation.IsMonoAndroidFramework(runtimeAssetFramework)))
                         {
@@ -303,7 +304,7 @@ namespace NuGet.Commands
                             _logger.Log(logMessage);
 
                             // only log the warning once per library
-                            librariesWithWarnings.Add(library);
+                            librariesWithMonoAndroidWarnings.Add(library);
                         }
                     }
                 }
