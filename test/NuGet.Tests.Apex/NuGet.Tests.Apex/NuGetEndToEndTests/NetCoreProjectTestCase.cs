@@ -233,7 +233,62 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
+        public async Task InstallPackageToNetCoreProjectFromUI_VerifiesRestore()
+        {
+            // Arrange
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetStandardClassLib, Logger, addNetStandardFeeds: true))
+            {
+                var packageName = "Contoso.A";
+                var packageVersion = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+                // Act
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+                var nugetTestService = GetNuGetTestService();
+                var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
+                uiwindow.InstallPackageFromUI(packageName, packageVersion);
+
+                // Assert
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersion, Logger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+            }
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
+        public async Task UpdatePackageToNetCoreProjectFromUI_VerifiesRestore()
+        {
+            // Arrange
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetStandardClassLib, Logger, addNetStandardFeeds: true))
+            {
+                var packageName = "Contoso.A";
+                var packageVersionV1 = "1.0.0";
+                var packageVersionV2 = "2.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersionV1);
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersionV2);
+
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+                var nugetTestService = GetNuGetTestService();
+                var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
+                uiwindow.InstallPackageFromUI(packageName, packageVersionV1);
+
+                // Act
+                VisualStudio.ClearWindows();
+                uiwindow.UpdatePackageFromUI(packageName, packageVersionV2);
+
+                // Assert
+                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersionV2, Logger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersionV2, Logger);
+            }
+        }
+
+
         // Commenting out any NetCoreConsoleApp or NetCoreClassLib template and swapping it for NetStandardClassLib as both are package ref.
 
         public static IEnumerable<object[]> GetNetCoreTemplates()

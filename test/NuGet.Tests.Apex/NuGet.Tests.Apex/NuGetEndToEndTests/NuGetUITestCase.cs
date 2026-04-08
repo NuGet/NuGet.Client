@@ -23,7 +23,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task SearchPackageFromUI()
         {
             // Arrange
