@@ -24,7 +24,7 @@ You can have multiple locked messages by repeating the blocks, for example `{Loc
 ## Fixing translation errors
 
 All translations go through Microsoft's [OneLocBuild][1] system, so do not create a pull request updating xlf files in this repo.
-Instead, file a bug at [https://github.com/NuGet/Home] and we'll file an internal bug with the OneLoc team to get it fixed.
+Instead, file a bug at [NuGet/Home](https://github.com/NuGet/Home) and we'll file an internal bug with the OneLoc team to get it fixed.
 After they action the change in their backend, an automated system will create a pull request updating the xlf files.
 
 ## Do's and Don'ts
