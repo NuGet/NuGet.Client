@@ -239,7 +239,7 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageToNetCoreProjectFromUI_VerifiesRestore()
         {
             // Arrange
-            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetStandardClassLib, Logger))
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger))
             {
                 var packageName = "Contoso.A";
                 var packageVersion = "1.0.0";
@@ -264,7 +264,7 @@ namespace NuGet.Tests.Apex
         public async Task UpdatePackageToNetCoreProjectFromUI_VerifiesRestore()
         {
             // Arrange
-            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetStandardClassLib, Logger))
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger))
             {
                 var packageName = "Contoso.A";
                 var packageVersionV1 = "1.0.0";
