@@ -40,6 +40,6 @@ namespace NuGet.Protocol
         }
 
         private static bool IsPackageIdValidationDisabled(IEnvironmentVariableReader env) =>
-            string.Equals(env.GetEnvironmentVariable(DisableValidationEnvVar), "true", StringComparison.OrdinalIgnoreCase);
+            string.Equals(env.GetEnvironmentVariable(DisableValidationEnvVar), bool.TrueString, StringComparison.OrdinalIgnoreCase);
     }
 }
