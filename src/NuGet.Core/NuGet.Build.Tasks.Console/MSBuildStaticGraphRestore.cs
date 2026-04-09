@@ -1123,15 +1123,15 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Recursively loads and evaluates MSBuild projects.
+        /// Recursively loads and evaluates MSBuild projects by walking ProjectReferences.
         /// </summary>
         /// <param name="entryProjects">An <see cref="IEnumerable{ProjectGraphEntryPoint}" /> containing the entry projects to load.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <param name="binaryLoggerParameters">Optional parameters to use for the MSBuild binary log.</param>
         /// <param name="createProjectFactory">A factory method that creates a project adapter from an MSBuild ProjectInstance.</param>
         /// <param name="updateProjectFactory">A factory method that updates a project adapter with a target framework and MSBuild ProjectInstance.</param>
-        /// <param name="projectFinalizeDelegate">An option delegate to finalize a project adapter once all projects have been evaluated.</param>
-        /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
+        /// <param name="projectFinalizeDelegate">An optional delegate to finalize a project adapter once all projects have been evaluated.</param>
+        /// <returns>A <see cref="ConcurrentDictionary{String, TProject}" /> containing projects keyed by their full path.</returns>
         private ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
             IEnumerable<ProjectGraphEntryPoint> entryProjects,
             bool interactive,
@@ -1180,24 +1180,9 @@ namespace NuGet.Build.Tasks.Console
 
                 EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
-                // Create a ProjectGraph object and pass a factory method which creates a ProjectInstance
-                ProjectGraph projectGraph = new ProjectGraph(entryProjects, projectCollection, (path, properties, collection) =>
-                {
-                    var projectOptions = new ProjectOptions
-                    {
-                        EvaluationContext = evaluationContext,
-                        GlobalProperties = properties,
-                        Interactive = interactive,
-                        // Ignore bad imports to maximize the chances of being able to load the project and restore
-                        LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
-                        ProjectCollection = collection
-                    };
-
-                    return ProjectInstance.FromFile(path, projectOptions);
-                });
-
                 int buildCount = 0;
                 int failedBuildSubmissionCount = 0;
+                int evaluationCount = 0;
 
                 var buildParameters = new BuildParameters(projectCollection)
                 {
@@ -1206,52 +1191,161 @@ namespace NuGet.Build.Tasks.Console
                     LogTaskInputs = logTaskInputs
                 };
 
+                var loadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
+
+                // Initialize the set of projects to process from entry points
+                var comparer = PathUtility.GetStringComparerBasedOnOS();
+                var processedProjects = new HashSet<string>(comparer);
+                var projectQueue = new Queue<string>();
+
+                // Extract global properties from entry points (all share the same set)
+                IDictionary<string, string> baseGlobalProperties = null;
+                foreach (var entryPoint in entryProjects)
+                {
+                    string fullPath = Path.GetFullPath(entryPoint.ProjectFile);
+                    if (processedProjects.Add(fullPath))
+                    {
+                        projectQueue.Enqueue(fullPath);
+                    }
+
+                    baseGlobalProperties ??= entryPoint.GlobalProperties;
+                }
+
+                // Create outer build global properties (base properties without TargetFramework)
+                var outerBuildGlobalProperties = baseGlobalProperties != null
+                    ? new Dictionary<string, string>(baseGlobalProperties)
+                    : new Dictionary<string, string>();
+                outerBuildGlobalProperties.Remove("TargetFramework");
+
                 try
                 {
                     // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
                     BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
 
-                    // Loop through each project and run the targets.  There is no need for this to run in parallel since there is only
-                    // one node in the process to run builds.
-                    foreach (ProjectGraphNode projectGraphItem in projectGraph.ProjectNodes)
+                    while (projectQueue.Count > 0)
                     {
-                        ProjectInstance projectInstance = projectGraphItem.ProjectInstance;
+                        string projectPath = projectQueue.Dequeue();
 
-                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || projectInstance.GlobalProperties == null || projectInstance.GlobalProperties.TryGetValue("TargetFramework", out string targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
+                        // Evaluate outer build (no TargetFramework global property)
+                        ProjectInstance outerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
                         {
-                            // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
-                            // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
-                            // with its actual TargetFramework.
-                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
+                            EvaluationContext = evaluationContext,
+                            GlobalProperties = outerBuildGlobalProperties,
+                            Interactive = interactive,
+                            // Ignore bad imports to maximize the chances of being able to load the project and restore
+                            LoadSettings = loadSettings,
+                            ProjectCollection = projectCollection
+                        });
+
+                        evaluationCount++;
+
+                        if (!outerProjectInstance.Targets.ContainsKey("_IsProjectRestoreSupported"))
+                        {
+                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(outerProjectInstance.FullPath);
                             MSBuildLogger.Log(message);
                             continue;
                         }
 
-                        // If the project supports restore, queue up a build of the targets needed for restore
-                        BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
-                            new BuildRequestData(
-                                projectInstance,
-                                TargetsToBuild,
-                                hostServices: null,
-                                // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
-                                BuildRequestDataFlags.SkipNonexistentTargets));
+                        // Add the outer build to projects
+                        projects.AddOrUpdate(
+                            projectPath,
+                            createProjectFactory,
+                            updateProjectFactory,
+                            (outerProjectInstance, (string)null));
 
-                        buildSubmission.ExecuteAsync((submission) =>
+                        string targetFrameworks = outerProjectInstance.GetPropertyValue("TargetFrameworks");
+                        var builtInstances = new List<ProjectInstance>();
+
+                        if (!string.IsNullOrWhiteSpace(targetFrameworks))
                         {
-                            BuildResult result = submission.BuildResult;
-                            if (result.OverallResult == BuildResultCode.Failure)
+                            // Multi-targeting: evaluate and build each inner build
+                            string[] tfms = targetFrameworks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string tfm in tfms)
+                            {
+                                string trimmedTfm = tfm.Trim();
+                                if (string.IsNullOrEmpty(trimmedTfm))
+                                {
+                                    continue;
+                                }
+
+                                var innerGlobalProperties = new Dictionary<string, string>(outerBuildGlobalProperties)
+                                {
+                                    ["TargetFramework"] = trimmedTfm
+                                };
+
+                                ProjectInstance innerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+                                {
+                                    EvaluationContext = evaluationContext,
+                                    GlobalProperties = innerGlobalProperties,
+                                    Interactive = interactive,
+                                    LoadSettings = loadSettings,
+                                    ProjectCollection = projectCollection
+                                });
+
+                                evaluationCount++;
+
+                                // Run _CollectRestoreInputs on the inner build
+                                BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                                    new BuildRequestData(
+                                        innerProjectInstance,
+                                        TargetsToBuild,
+                                        hostServices: null,
+                                        // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
+                                        BuildRequestDataFlags.SkipNonexistentTargets));
+
+                                buildSubmission.Execute();
+
+                                if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
+                                {
+                                    failedBuildSubmissionCount++;
+                                }
+
+                                buildCount++;
+
+                                projects.AddOrUpdate(
+                                    projectPath,
+                                    createProjectFactory,
+                                    updateProjectFactory,
+                                    (innerProjectInstance, trimmedTfm));
+
+                                builtInstances.Add(innerProjectInstance);
+                            }
+                        }
+                        else
+                        {
+                            // Single-targeting: run _CollectRestoreInputs on the outer build
+                            BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                                new BuildRequestData(
+                                    outerProjectInstance,
+                                    TargetsToBuild,
+                                    hostServices: null,
+                                    BuildRequestDataFlags.SkipNonexistentTargets));
+
+                            buildSubmission.Execute();
+
+                            if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
                             {
                                 failedBuildSubmissionCount++;
                             }
 
                             buildCount++;
 
-                            projects.AddOrUpdate(
-                                projectInstance.FullPath,
-                                createProjectFactory,
-                                updateProjectFactory,
-                                (projectInstance, targetFramework));
-                        }, context: null);
+                            builtInstances.Add(outerProjectInstance);
+                        }
+
+                        // Check all ProjectReferences across all builds and discover new projects
+                        foreach (ProjectInstance instance in builtInstances)
+                        {
+                            string projectDir = Path.GetDirectoryName(projectPath);
+                            foreach (ProjectItemInstance projectRef in instance.GetItems("ProjectReference"))
+                            {
+                                string refPath = Path.GetFullPath(Path.Combine(projectDir, projectRef.EvaluatedInclude));
+                                if (processedProjects.Add(refPath))
+                                {
+                                    projectQueue.Enqueue(refPath);
+                                }
+                            }
+                        }
                     }
                 }
                 finally
@@ -1270,7 +1364,7 @@ namespace NuGet.Build.Tasks.Console
                     }
                 }
 
-                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissionCount));
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, evaluationCount, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissionCount));
 
                 if (failedBuildSubmissionCount != 0)
                 {

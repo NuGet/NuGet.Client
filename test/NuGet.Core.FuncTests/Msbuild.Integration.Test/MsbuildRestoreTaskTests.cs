@@ -2216,5 +2216,150 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
             }
         }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public void MsbuildRestore_NonSdkProjectReferencingSdkMultiTargetedProject_WithSetTargetFramework_Succeeds(bool useStaticGraphRestore, bool usePackageSpecFactory)
+        {
+            // Arrange - reproduces https://github.com/NuGet/Home/issues/11680
+            // A non-SDK-style project references an SDK-style multi-targeted project using
+            // SetTargetFramework metadata on the ProjectReference. Static graph restore
+            // previously crashed with a NullReferenceException because the referenced project's
+            // OuterProject was null in MSBuildStaticGraphRestore.GetPackageSpec.
+            using var pathContext = new SimpleTestPathContext();
+
+            // SDK-style class library that multi-targets net472 and net8.0
+            string sdkProjectDir = Path.Combine(pathContext.SolutionRoot, "SdkLib");
+            Directory.CreateDirectory(sdkProjectDir);
+            string sdkProjectPath = Path.Combine(sdkProjectDir, "SdkLib.csproj");
+
+            File.WriteAllText(sdkProjectPath,
+@"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+  </PropertyGroup>
+</Project>");
+
+            // Non-SDK-style class library targeting net472 with a ProjectReference using SetTargetFramework
+            string nonSdkProjectDir = Path.Combine(pathContext.SolutionRoot, "NonSdkApp");
+            Directory.CreateDirectory(nonSdkProjectDir);
+            string nonSdkProjectPath = Path.Combine(nonSdkProjectDir, "NonSdkApp.csproj");
+
+            File.WriteAllText(nonSdkProjectPath,
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NonSdkApp</RootNamespace>
+    <AssemblyName>NonSdkApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <MSBuildProjectExtensionsPath>{Path.Combine(nonSdkProjectDir, "obj")}\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include=""{sdkProjectPath}"">
+      <SetTargetFramework>TargetFramework=net472</SetTargetFramework>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            // Create a solution containing both projects
+            var sdkTestProject = new SimpleTestProjectContext("SdkLib", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+            sdkTestProject.ProjectPath = sdkProjectPath;
+            var nonSdkTestProject = new SimpleTestProjectContext("NonSdkApp", ProjectStyle.Unknown, pathContext.SolutionRoot);
+            nonSdkTestProject.ProjectPath = nonSdkProjectPath;
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            solution.Projects.Add(sdkTestProject);
+            solution.Projects.Add(nonSdkTestProject);
+            solution.Create();
+
+            // Re-write both project files since solution.Create() may overwrite them
+            File.WriteAllText(sdkProjectPath,
+@"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+  </PropertyGroup>
+</Project>");
+
+            File.WriteAllText(nonSdkProjectPath,
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NonSdkApp</RootNamespace>
+    <AssemblyName>NonSdkApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <MSBuildProjectExtensionsPath>{Path.Combine(nonSdkProjectDir, "obj")}\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include=""{sdkProjectPath}"">
+      <SetTargetFramework>TargetFramework=net472</SetTargetFramework>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            var environmentVariables = new Dictionary<string, string>();
+            environmentVariables.AddRange(_msbuildFixture.DefaultProcessEnvironmentVariables);
+            environmentVariables["NUGET_USE_NEW_PACKAGESPEC_FACTORY"] = usePackageSpecFactory.ToString();
+
+            // Act - Restore
+            string staticGraphArg = useStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var restoreResult = _msbuildFixture.RunMsBuild(
+                pathContext.WorkingDirectory,
+                $"/t:restore {nonSdkProjectPath}{staticGraphArg}",
+                ignoreExitCode: true,
+                testOutputHelper: _testOutputHelper,
+                environmentVariables);
+
+            // Assert - Restore succeeds
+            restoreResult.Success.Should().BeTrue();
+
+            // Assert - SDK project assets file targets
+            var lockFileFormat = new LockFileFormat();
+            string sdkAssetsPath = Path.Combine(sdkProjectDir, "obj", "project.assets.json");
+            File.Exists(sdkAssetsPath).Should().BeTrue(because: "SDK project should have an assets file after restore");
+            var sdkAssetsFile = lockFileFormat.Read(sdkAssetsPath);
+            var sdkTargetFrameworks = sdkAssetsFile.Targets
+                .Where(t => string.IsNullOrEmpty(t.RuntimeIdentifier))
+                .Select(t => t.TargetFramework)
+                .ToList();
+            sdkTargetFrameworks.Should().Contain(NuGetFramework.Parse("net472"));
+            sdkTargetFrameworks.Should().Contain(NuGetFramework.Parse("net8.0"));
+
+            // Assert - Non-SDK project assets file has net472 target
+            string nonSdkAssetsPath = Path.Combine(nonSdkProjectDir, "obj", "project.assets.json");
+            File.Exists(nonSdkAssetsPath).Should().BeTrue(because: "non-SDK project should have an assets file after restore");
+            var nonSdkAssetsFile = lockFileFormat.Read(nonSdkAssetsPath);
+            var nonSdkTargetFrameworks = nonSdkAssetsFile.Targets
+                .Where(t => string.IsNullOrEmpty(t.RuntimeIdentifier))
+                .Select(t => t.TargetFramework)
+                .ToList();
+            nonSdkTargetFrameworks.Should().HaveCount(1);
+            nonSdkTargetFrameworks.Should().Contain(NuGetFramework.Parse("net472"));
+        }
     }
 }
