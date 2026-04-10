@@ -1,7 +1,7 @@
 #nullable enable
 NuGet.Protocol.AlternatePackageMetadata
 NuGet.Protocol.AlternatePackageMetadata.AlternatePackageMetadata() -> void
-NuGet.Protocol.AlternatePackageMetadata.PackageId.get -> string!
+NuGet.Protocol.AlternatePackageMetadata.PackageId.get -> string?
 NuGet.Protocol.AlternatePackageMetadata.Range.get -> NuGet.Versioning.VersionRange?
 NuGet.Protocol.AmbientAuthenticationState
 NuGet.Protocol.AmbientAuthenticationState.AmbientAuthenticationState() -> void
