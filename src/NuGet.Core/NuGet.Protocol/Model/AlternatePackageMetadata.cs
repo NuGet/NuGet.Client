@@ -8,7 +8,7 @@ namespace NuGet.Protocol
 {
     public class AlternatePackageMetadata
     {
-        [JsonProperty(PropertyName = JsonProperties.PackageId, Required = Required.Always)]
+        [JsonProperty(PropertyName = JsonProperties.PackageId)]
         public string PackageId { get; internal set; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.Range, ItemConverterType = typeof(VersionRangeConverter))]
