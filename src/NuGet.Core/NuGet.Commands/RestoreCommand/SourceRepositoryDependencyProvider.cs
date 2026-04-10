@@ -361,12 +361,12 @@ namespace NuGet.Commands
             FindPackageByIdDependencyInfo packageInfo = null;
             try
             {
-                await EnsureResource(cancellationToken);
-
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
                 }
+
+                await EnsureResource(cancellationToken);
 
                 // Read package info, this will download the package if needed.
                 packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(
@@ -459,12 +459,12 @@ namespace NuGet.Commands
 
             try
             {
-                await EnsureResource(cancellationToken);
-
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
                 }
+
+                await EnsureResource(cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -630,12 +630,13 @@ namespace NuGet.Commands
         {
             try
             {
-                await EnsureResource(cancellationToken);
-
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
                 }
+
+                await EnsureResource(cancellationToken);
+
                 return await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,
                     cacheContext,
