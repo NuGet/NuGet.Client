@@ -12,20 +12,12 @@ namespace NuGet.Test.Utility
     public class LocalOnlyFactAttribute
         : FactAttribute
     {
-        public override string Skip
+        public LocalOnlyFactAttribute()
         {
-            get
+            if (XunitAttributeUtility.IsCI)
             {
-                if (string.IsNullOrEmpty(base.Skip)
-                    && XunitAttributeUtility.IsCI)
-                {
-                    base.Skip = "This Fact only run on non-CI machines. To run it, set the env var CI=false";
-                }
-
-                return base.Skip;
+                Skip = "This Fact only run on non-CI machines. To run it, set the env var CI=false";
             }
-
-            set => base.Skip = value;
         }
     }
 }

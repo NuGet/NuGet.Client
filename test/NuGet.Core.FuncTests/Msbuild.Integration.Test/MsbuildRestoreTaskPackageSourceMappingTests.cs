@@ -10,7 +10,6 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Msbuild.Integration.Test
 {
@@ -125,7 +124,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -225,7 +224,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -335,7 +334,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -435,7 +434,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -547,7 +546,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -643,7 +642,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -737,7 +736,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -792,7 +791,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageContosoMvcReal);
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -874,7 +873,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 packageContosoMvcReal);
 
             // Act
-            var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+            var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(0, r.ExitCode);
@@ -960,7 +959,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 packageContosoMvcReal);
 
             // Act
-            var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+            var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(1, r.ExitCode);

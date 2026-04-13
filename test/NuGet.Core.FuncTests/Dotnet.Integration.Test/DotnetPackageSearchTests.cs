@@ -9,7 +9,6 @@ using FluentAssertions;
 using NuGet.CommandLine.Xplat.Tests;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -43,7 +42,7 @@ namespace Dotnet.Integration.Test
                 var args = $"package search json --take 10 --prerelease --source {_packageSearchRunnerFixture.ServerWithMultipleEndpoints.Uri}v3/index.json --format json";
 
                 // Act
-                var result = _testFixture.RunDotnetExpectSuccess(pathContext.PackageSource, args, testOutputHelper: _testOutputHelper);
+                var result = _testFixture.RunDotnetExpectSuccess(pathContext.PackageSource, args, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -65,7 +64,7 @@ namespace Dotnet.Integration.Test
                 var args = $"package search json --take 10 --prerelease --source {_packageSearchRunnerFixture.ServerWithMultipleEndpoints.Uri}v3/index.json";
 
                 // Act
-                var result = _testFixture.RunDotnetExpectSuccess(pathContext.PackageSource, args, testOutputHelper: _testOutputHelper);
+                var result = _testFixture.RunDotnetExpectSuccess(pathContext.PackageSource, args, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.ExitCode.Should().Be(0, result.AllOutput);
@@ -103,7 +102,7 @@ namespace Dotnet.Integration.Test
                 string help = "dotnet package search [<SearchTerm>] [options]";
 
                 // Act
-                var result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, args, testOutputHelper: _testOutputHelper);
+                var result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, args, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Contains(error, result.AllOutput);

@@ -13,7 +13,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -73,7 +72,7 @@ namespace NuGet.CommandLine.Test
                     pathContext.Settings.AddSource("http-feed", server.Uri + "nuget", allowInsecureConnectionsValue: "true");
                     server.Start();
 
-                    var result = Util.Restore(pathContext, inputPath, 0, _testOutputHelper, "-Source", server.Uri + "nuget");
+                    var result = Util.Restore(pathContext, inputPath, 0, _testOutputHelper.WriteLine, "-Source", server.Uri + "nuget");
 
                     result.Success.Should().BeTrue();
                     ids.All(s => !string.IsNullOrEmpty(s) && Guid.TryParse(s, out var r)).Should().BeTrue("the values should guids");

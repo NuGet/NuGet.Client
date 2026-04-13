@@ -9,59 +9,57 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using NuGet.Configuration;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace NuGet.Test.Utility
 {
     public sealed class PackageSourceTheoryAttribute : TheoryAttribute
     {
-        private string _skip;
+        private bool _ciOnly;
 
-        public bool CIOnly { get; set; }
+        public bool CIOnly
+        {
+            get => _ciOnly;
+            set { _ciOnly = value; EvaluateSkip(); }
+        }
 
         public string ConfigFile { get; set; } = TestSources.ConfigFile;
 
         public string Root { get; } = TestSources.GetConfigFileRoot();
 
-        public override string Skip
+        public PackageSourceTheoryAttribute()
         {
-            get
+            EvaluateSkip();
+        }
+
+        private void EvaluateSkip()
+        {
+            if (_ciOnly && !XunitAttributeUtility.IsCI)
             {
-                var skip = _skip;
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    if (CIOnly && !XunitAttributeUtility.IsCI)
-                    {
-                        skip = "This test only runs on the CI. To run it locally set the env var CI=true";
-                    }
-                    else
-                    {
-
-                        var fullPath = Path.Combine(Root, ConfigFile);
-                        // Skip if a file does not exist, otherwise run the test.
-                        if (!File.Exists(fullPath))
-                        {
-                            skip = $"Required file does not exist: '{fullPath}'.";
-                        }
-                    }
-                }
-
-                // If this is null the test will run.
-                return skip;
+                Skip = "This test only runs on the CI. To run it locally set the env var CI=true";
+                return;
             }
 
-            set => _skip = value;
+            var fullPath = Path.Combine(Root, ConfigFile);
+            if (!File.Exists(fullPath))
+            {
+                Skip = $"Required file does not exist: '{fullPath}'.";
+                return;
+            }
+
+            Skip = null;
         }
     }
 
-    [DataDiscoverer("NuGet.Test.Utility.PackageSourceDataDiscoverer", "Test.Utility")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public sealed class PackageSourceDataAttribute : DataAttribute
     {
+        private static readonly ConcurrentDictionary<string, PackageSource[]> _cachedSources = new ConcurrentDictionary<string, PackageSource[]>();
+
         public ISet<string> SourceNames { get; }
 
         public PackageSourceDataAttribute(params string[] sourceNames)
@@ -69,78 +67,62 @@ namespace NuGet.Test.Utility
             SourceNames = new HashSet<string>(sourceNames, StringComparer.OrdinalIgnoreCase);
         }
 
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override bool SupportsDiscoveryEnumeration() => true;
+
+        public override ValueTask<IReadOnlyCollection<ITheoryDataRow>> GetData(MethodInfo testMethod, DisposalTracker disposalTracker)
         {
-            throw new NotImplementedException();
-        }
-    }
-
-    public sealed class PackageSourceDataDiscoverer : IDataDiscoverer
-    {
-        private readonly ConcurrentDictionary<string, PackageSource[]> _cachedSources = new ConcurrentDictionary<string, PackageSource[]>();
-        private readonly string _root = TestSources.GetConfigFileRoot();
-
-        public IEnumerable<object[]> GetData(IAttributeInfo dataAttribute, IMethodInfo testMethod)
-        {
-            var reflectionDataAttribute = dataAttribute as IReflectionAttributeInfo;
-            var reflectionTestMethod = testMethod as IReflectionMethodInfo;
-
-            if (reflectionDataAttribute != null && reflectionTestMethod != null)
+            var theoryAttribute = testMethod.GetCustomAttribute<PackageSourceTheoryAttribute>();
+            if (theoryAttribute == null)
             {
-                var testMethodInfo = reflectionTestMethod.MethodInfo;
+                throw new ArgumentException("Theory attribute is required.");
+            }
 
-                var theoryAttribute = testMethodInfo.GetCustomAttribute<PackageSourceTheoryAttribute>();
-                if (theoryAttribute == null)
-                {
-                    throw new ArgumentException("Theory attribute is required.");
-                }
+            var parameters = testMethod.GetParameters();
+            if (parameters.Length != 1)
+            {
+                throw new ArgumentException("Invalid number of parameters. Should be 1.");
+            }
 
-                var parameters = testMethodInfo.GetParameters();
-                if (parameters.Length != 1)
-                {
-                    throw new ArgumentException("Invalid number of parameters. Should be 1.");
-                }
+            if (!string.IsNullOrEmpty(theoryAttribute.Skip))
+            {
+                return new ValueTask<IReadOnlyCollection<ITheoryDataRow>>(Array.Empty<ITheoryDataRow>());
+            }
 
-                if (!string.IsNullOrEmpty(theoryAttribute.Skip))
-                {
-                    return Enumerable.Empty<object[]>();
-                }
+            if (!string.IsNullOrEmpty(Skip))
+            {
+                return new ValueTask<IReadOnlyCollection<ITheoryDataRow>>(Array.Empty<ITheoryDataRow>());
+            }
 
-                var realDataAttribute = (PackageSourceDataAttribute)reflectionDataAttribute.Attribute;
+            var root = TestSources.GetConfigFileRoot();
+            var packageSources = GetTheorySources(root, theoryAttribute)
+                .Where(s => s.IsEnabled && SourceNames.Contains(s.Name))
+                .ToList();
 
-                if (!string.IsNullOrEmpty(realDataAttribute.Skip))
-                {
-                    return Enumerable.Empty<object[]>();
-                }
+            IReadOnlyCollection<ITheoryDataRow> result;
 
-                var packageSources = GetTheorySources(theoryAttribute)
-                    .Where(s => s.IsEnabled && realDataAttribute.SourceNames.Contains(s.Name))
-                    .ToList();
-
-                if (parameters[0].ParameterType == typeof(PackageSource))
-                {
-                    return packageSources.Select(s => new object[] { s });
-                }
-                else if (parameters[0].ParameterType == typeof(string))
-                {
-                    return packageSources.Select(s => new object[] { s.Source });
-                }
-
+            if (parameters[0].ParameterType == typeof(PackageSource))
+            {
+                result = packageSources.Select(s => (ITheoryDataRow)new TheoryDataRow(s)).ToArray();
+            }
+            else if (parameters[0].ParameterType == typeof(string))
+            {
+                result = packageSources.Select(s => (ITheoryDataRow)new TheoryDataRow(s.Source)).ToArray();
+            }
+            else
+            {
                 throw new ArgumentException("Unsupported parameter type.");
             }
 
-            return null;
+            return new ValueTask<IReadOnlyCollection<ITheoryDataRow>>(result);
         }
 
-        public bool SupportsDiscoveryEnumeration(IAttributeInfo dataAttribute, IMethodInfo testMethod) => true;
-
-        private PackageSource[] GetTheorySources(PackageSourceTheoryAttribute theoryAttribute)
+        private static PackageSource[] GetTheorySources(string root, PackageSourceTheoryAttribute theoryAttribute)
         {
             return _cachedSources.GetOrAdd(
                 theoryAttribute.ConfigFile,
                 configFile =>
                 {
-                    var settings = new Settings(_root, configFile);
+                    var settings = new Settings(root, configFile);
                     var provider = new PackageSourceProvider(settings);
                     return provider.LoadPackageSources().ToArray();
                 });

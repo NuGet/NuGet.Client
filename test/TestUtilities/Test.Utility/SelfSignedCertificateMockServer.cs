@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.TestServer;
 using Newtonsoft.Json;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Test.Utility
 {

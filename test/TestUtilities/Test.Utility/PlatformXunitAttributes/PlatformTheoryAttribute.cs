@@ -10,55 +10,55 @@ namespace NuGet.Test.Utility
     public class PlatformTheoryAttribute
         : TheoryAttribute
     {
-        private string _skip;
+        private IEnumerable<string> _platforms = new List<string>();
+        private string _platform;
+        private IEnumerable<string> _skipPlatforms = new List<string>();
+        private string _skipPlatform;
+        private bool _onlyOnMono;
+        private bool _skipMono;
+        private bool _ciOnly;
 
-        public override string Skip
+        public IEnumerable<string> Platforms
         {
-            get
-            {
-                var skip = _skip;
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    skip = XunitAttributeUtility.GetPlatformSkipMessageOrNull(GetAllPlatforms());
-                }
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono);
-                }
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    if (CIOnly && !XunitAttributeUtility.IsCI)
-                    {
-                        skip = "This test only runs on the CI. To run it locally set the env var CI=true";
-                    }
-                }
-
-                // If this is null the test will run.
-                return skip;
-            }
-
-            set
-            {
-                _skip = value;
-            }
+            get => _platforms;
+            set { _platforms = value; EvaluateSkip(); }
         }
 
-        public IEnumerable<string> Platforms { get; set; } = new List<string>();
+        public string Platform
+        {
+            get => _platform;
+            set { _platform = value; EvaluateSkip(); }
+        }
 
-        public string Platform { get; set; }
+        public IEnumerable<string> SkipPlatforms
+        {
+            get => _skipPlatforms;
+            set { _skipPlatforms = value; EvaluateSkip(); }
+        }
 
-        public IEnumerable<string> SkipPlatforms { get; set; } = new List<string>();
+        public string SkipPlatform
+        {
+            get => _skipPlatform;
+            set { _skipPlatform = value; EvaluateSkip(); }
+        }
 
-        public string SkipPlatform { get; set; }
+        public bool OnlyOnMono
+        {
+            get => _onlyOnMono;
+            set { _onlyOnMono = value; EvaluateSkip(); }
+        }
 
-        public bool OnlyOnMono { get; set; }
+        public bool SkipMono
+        {
+            get => _skipMono;
+            set { _skipMono = value; EvaluateSkip(); }
+        }
 
-        public bool SkipMono { get; set; }
-
-        public bool CIOnly { get; set; }
+        public bool CIOnly
+        {
+            get => _ciOnly;
+            set { _ciOnly = value; EvaluateSkip(); }
+        }
 
         /// <summary>
         /// Provide property values to use this attribute.
@@ -72,19 +72,40 @@ namespace NuGet.Test.Utility
         /// </summary>
         public PlatformTheoryAttribute(params string[] platforms)
         {
-            Platforms = platforms.ToList();
+            _platforms = platforms.ToList();
+            EvaluateSkip();
+        }
+
+        private void EvaluateSkip()
+        {
+            var skip = XunitAttributeUtility.GetPlatformSkipMessageOrNull(GetAllPlatforms());
+
+            if (string.IsNullOrEmpty(skip))
+            {
+                skip = XunitAttributeUtility.GetMonoMessage(_onlyOnMono, _skipMono);
+            }
+
+            if (string.IsNullOrEmpty(skip))
+            {
+                if (_ciOnly && !XunitAttributeUtility.IsCI)
+                {
+                    skip = "This test only runs on the CI. To run it locally set the env var CI=true";
+                }
+            }
+
+            Skip = skip;
         }
 
         private string[] GetAllPlatforms()
         {
-            var platforms = new HashSet<string>(Platforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
+            var platforms = new HashSet<string>(_platforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
-                Platform
+                _platform
             };
 
-            var skipPlatforms = new HashSet<string>(SkipPlatforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
+            var skipPlatforms = new HashSet<string>(_skipPlatforms ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
-                SkipPlatform
+                _skipPlatform
             };
 
             platforms.RemoveWhere(e => string.IsNullOrEmpty(e) || skipPlatforms.Contains(e));

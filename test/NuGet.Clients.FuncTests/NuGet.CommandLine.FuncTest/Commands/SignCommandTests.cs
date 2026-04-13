@@ -13,7 +13,6 @@ using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -71,7 +70,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -105,7 +104,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {invalidEkuCert.StoreName} -CertificateStoreLocation {invalidEkuCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -139,7 +138,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {expiredCert.StoreName} -CertificateStoreLocation {expiredCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -174,7 +173,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -209,7 +208,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Timestamper {timestampService.Url.OriginalString}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -243,7 +242,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -277,7 +276,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -311,7 +310,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -349,7 +348,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -OutputDirectory {outputDir}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -382,14 +381,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Act
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash}  -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -424,13 +423,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var secondResult = CommandRunner.Run(
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -465,7 +464,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificateFingerprint {certSha256Hash} -CertificateStoreName {_trustedTestCert.StoreName} -CertificateStoreLocation {_trustedTestCert.StoreLocation} -Overwrite",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -506,7 +505,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -CertificatePassword {password}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -551,7 +550,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     {
                         w.WriteLine(password);
                     },
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeTrue();
@@ -596,7 +595,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
                     },
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
@@ -637,7 +636,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"sign {packagePath} -CertificatePath {pfxPath} -NonInteractive",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
@@ -682,7 +681,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     {
                         w.WriteLine(Guid.NewGuid().ToString());
                     },
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.Success.Should().BeFalse();
@@ -706,7 +705,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         _nugetExePath,
                         directory,
                         $"sign {packageFile.FullName} -CertificateFingerprint {certSha256Hash}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                     Assert.True(result.Success);
                     Assert.Contains(_noTimestamperWarningCode, result.AllOutput);
@@ -737,7 +736,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         _nugetExePath,
                         directory,
                         $"sign {packageFile.FullName} -CertificateFingerprint {certSha256Hash} -Timestamper {timestampService.Url}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                     Assert.False(result.Success);
                     Assert.Contains(_timestampUnsupportedDigestAlgorithmCode, result.AllOutput);
@@ -794,7 +793,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     directory,
                     $"sign {packageFile.FullName} -CertificateFingerprint {certFingerprint} -Timestamper {timestampService.Url}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
                 return result;
             }

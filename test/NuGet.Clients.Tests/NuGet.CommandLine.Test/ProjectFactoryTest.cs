@@ -23,7 +23,6 @@ namespace NuGet.CommandLine
     using global::Test.Utility;
     using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
     using NuGet.Packaging;
-    using Xunit.Abstractions;
 
     public class ProjectFactoryTest
     {
@@ -487,7 +486,7 @@ namespace NuGet.CommandLine
                     nugetexe,
                     workingDirectory,
                     "pack Assembly.csproj -build",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Util.VerifyResultSuccess(r);
 
@@ -531,7 +530,7 @@ namespace NuGet.CommandLine
                     nugetexe,
                     workingDirectory,
                     $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Util.VerifyResultSuccess(r);
@@ -585,7 +584,7 @@ namespace NuGet.CommandLine
                     nugetexe,
                     workingDirectory,
                     $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Util.VerifyResultSuccess(r);

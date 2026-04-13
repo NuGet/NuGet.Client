@@ -15,7 +15,6 @@ using NuGet.Repositories;
 using NuGet.Test.Utility;
 using Test.Utility.Commands;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Commands.Test.RestoreCommandTests
 {

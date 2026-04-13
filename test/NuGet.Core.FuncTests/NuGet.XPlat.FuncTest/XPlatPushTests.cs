@@ -8,7 +8,6 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

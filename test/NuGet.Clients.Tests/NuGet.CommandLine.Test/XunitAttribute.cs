@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using NuGet.Common;
 using Xunit;
 
@@ -10,7 +11,10 @@ namespace NuGet.CommandLine.Test
     public class WindowsNTFactAttribute
         : FactAttribute
     {
-        public WindowsNTFactAttribute()
+        public WindowsNTFactAttribute(
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
@@ -22,7 +26,10 @@ namespace NuGet.CommandLine.Test
     public class UnixMonoFactAttribute
         : FactAttribute
     {
-        public UnixMonoFactAttribute()
+        public UnixMonoFactAttribute(
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (!RuntimeEnvironmentHelper.IsMono || RuntimeEnvironmentHelper.IsWindows)
             {
@@ -34,7 +41,10 @@ namespace NuGet.CommandLine.Test
     public class SkipMonoAttribute
         : FactAttribute
     {
-        public SkipMonoAttribute()
+        public SkipMonoAttribute(
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (RuntimeEnvironmentHelper.IsMono)
             {
@@ -46,7 +56,10 @@ namespace NuGet.CommandLine.Test
     public class SkipMonoTheoryAttribute
        : TheoryAttribute
     {
-        public SkipMonoTheoryAttribute()
+        public SkipMonoTheoryAttribute(
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (RuntimeEnvironmentHelper.IsMono)
             {

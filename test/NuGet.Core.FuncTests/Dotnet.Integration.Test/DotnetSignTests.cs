@@ -13,7 +13,6 @@ using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace Dotnet.Integration.Test
@@ -57,7 +56,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -84,7 +83,7 @@ namespace Dotnet.Integration.Test
                     $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)} " +
                     $"--certificate-store-name {storeCertificate.StoreName} " +
                     $"--certificate-store-location {storeCertificate.StoreLocation}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -108,7 +107,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -133,7 +132,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -158,7 +157,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -185,7 +184,7 @@ namespace Dotnet.Integration.Test
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate) +
                     $" --timestamper {timestampService.Url.OriginalString}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
@@ -209,7 +208,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -234,7 +233,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -264,7 +263,7 @@ namespace Dotnet.Integration.Test
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate) +
                     $" --output {outputDir}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 string signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
 
@@ -292,12 +291,12 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult firstResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     args,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 CommandRunnerResult secondResult = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     args,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -323,12 +322,12 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult firstResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     args,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 CommandRunnerResult secondResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     args + " --overwrite",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 firstResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -353,7 +352,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.PackageSource,
                     GetDefaultArgs(packageFilePath, storeCertificate) + " --overwrite",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -385,7 +384,7 @@ namespace Dotnet.Integration.Test
                     $"nuget sign {packageFilePath} " +
                     $"--certificate-path {pfxPath} " +
                     $"--certificate-password {password}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -418,7 +417,7 @@ namespace Dotnet.Integration.Test
                     $"nuget sign {packageFilePath} " +
                     $"--certificate-path .{Path.DirectorySeparatorChar}{pfxName} " +
                     $"--certificate-password {password}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -447,7 +446,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path {pfxPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
@@ -472,7 +471,7 @@ namespace Dotnet.Integration.Test
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} " +
                     $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -507,7 +506,7 @@ namespace Dotnet.Integration.Test
                         $"nuget sign {packageFilePath} " +
                         $"--certificate-fingerprint {SignatureTestUtility.GetFingerprint(storeCertificate.Certificate, HashAlgorithmName.SHA256)} " +
                         $"--timestamper {timestampService.Url}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                     // Assert
                     result.AllOutput.Should().Contain(_timestampUnsupportedDigestAlgorithmCode);
@@ -569,7 +568,7 @@ namespace Dotnet.Integration.Test
                     $"--certificate-fingerprint {certFingerprint} " +
                     $"--timestamper {timestampService.Url}",
                     expectSuccess: expectSuccess,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 return result;
             }

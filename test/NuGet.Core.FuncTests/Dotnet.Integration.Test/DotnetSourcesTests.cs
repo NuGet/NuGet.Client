@@ -15,7 +15,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -53,7 +52,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
@@ -124,7 +123,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
 
                 // Assert
@@ -200,7 +199,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
@@ -307,7 +306,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
@@ -369,7 +368,7 @@ namespace Dotnet.Integration.Test
                     null);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Contains(initialSource, result.AllOutput);
@@ -422,7 +421,7 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 settings = Settings.LoadDefaultSettings(
@@ -539,7 +538,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 settings = Settings.LoadDefaultSettings(
@@ -587,7 +586,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
@@ -637,7 +636,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var settings = Settings.LoadDefaultSettings(
@@ -693,7 +692,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -732,7 +731,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -773,7 +772,7 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 var command = string.Join(" ", args);
-                var result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(workingPath, command, testOutputHelper: _testOutputHelper) : _fixture.RunDotnetExpectFailure(workingPath, command, testOutputHelper: _testOutputHelper);
+                var result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(workingPath, command, logLine: _testOutputHelper.WriteLine) : _fixture.RunDotnetExpectFailure(workingPath, command, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 if (!shouldSucceed)
@@ -831,7 +830,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
@@ -893,7 +892,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
@@ -957,7 +956,7 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 var command = string.Join(" ", args);
-                CommandRunnerResult result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(configFileDirectory, command, testOutputHelper: _testOutputHelper) : _fixture.RunDotnetExpectFailure(configFileDirectory, command, testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(configFileDirectory, command, logLine: _testOutputHelper.WriteLine) : _fixture.RunDotnetExpectFailure(configFileDirectory, command, logLine: _testOutputHelper.WriteLine);
 
                 // Assert error message
                 if (!shouldSucceed)
@@ -1015,7 +1014,7 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 settings = Settings.LoadDefaultSettings(
@@ -1086,7 +1085,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 settings = Settings.LoadDefaultSettings(
@@ -1144,7 +1143,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Ensure that no messages are shown with Verbosity as Quiet
@@ -1187,7 +1186,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
@@ -1208,7 +1207,7 @@ namespace Dotnet.Integration.Test
             using (var testDirectory = _fixture.CreateTestDirectory())
             {
                 // Act
-                var result = _fixture.RunDotnetExpectFailure(testDirectory, command, testOutputHelper: _testOutputHelper);
+                var result = _fixture.RunDotnetExpectFailure(testDirectory, command, logLine: _testOutputHelper.WriteLine);
 
                 var commandSplit = command.Split(' ');
 

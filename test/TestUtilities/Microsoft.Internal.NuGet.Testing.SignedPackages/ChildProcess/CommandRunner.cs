@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Xunit.Abstractions;
 
 namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
 {
@@ -26,10 +25,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
         /// <param name="timeOutInMilliseconds">Optional amount of milliseconds to wait for the executable to exit before returning.</param>
         /// <param name="inputAction">An optional <see cref="Action{T}" /> to invoke against the executables input stream.</param>
         /// <param name="environmentVariables">An optional <see cref="Dictionary{TKey, TValue}" /> containing environment variables to specify when running the executable.</param>
-        /// <param name="testOutputHelper">An optional <see cref="ITestOutputHelper" /> to write output to.</param>
+        /// <param name="logLine">An optional action to write output to.</param>
         /// <param name="timeoutRetryCount">An optional number of times to retry running the command if it times out. Defaults to 1.</param>
         /// <returns>A <see cref="CommandRunnerResult" /> containing details about the result of the running the executable including the exit code and console output.</returns>
-        public static CommandRunnerResult Run(string filename, string workingDirectory = null, string arguments = null, int timeOutInMilliseconds = 60000, Action<StreamWriter> inputAction = null, IReadOnlyDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null, int timeoutRetryCount = 1)
+        public static CommandRunnerResult Run(string filename, string workingDirectory = null, string arguments = null, int timeOutInMilliseconds = 60000, Action<StreamWriter> inputAction = null, IReadOnlyDictionary<string, string> environmentVariables = null, Action<string> logLine = null, int timeoutRetryCount = 1)
         {
             if (workingDirectory is null)
             {
@@ -81,7 +80,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                     process.OutputDataReceived += OnOutputDataReceived;
                     process.ErrorDataReceived += OnErrorDataReceived;
 
-                    testOutputHelper?.WriteLine($"> {process.StartInfo.FileName} {process.StartInfo.Arguments}");
+                    logLine?.Invoke($"> {process.StartInfo.FileName} {process.StartInfo.Arguments}");
 
                     Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -108,12 +107,12 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                     process.WaitForExit();
 
                     stopwatch.Stop();
-                    testOutputHelper?.WriteLine($"└ Completed in {stopwatch.Elapsed.TotalSeconds:N2}s");
+                    logLine?.Invoke($"└ Completed in {stopwatch.Elapsed.TotalSeconds:N2}s");
 
                     process.OutputDataReceived -= OnOutputDataReceived;
                     process.ErrorDataReceived -= OnErrorDataReceived;
 
-                    testOutputHelper?.WriteLine(string.Empty);
+                    logLine?.Invoke(string.Empty);
                     exitCode = process.ExitCode;
                 }
 
@@ -123,7 +122,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                 {
                     if (args?.Data != null)
                     {
-                        testOutputHelper?.WriteLine($"│  {args.Data}");
+                        logLine?.Invoke($"│  {args.Data}");
 
                         lock (output)
                         {
@@ -136,7 +135,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                 {
                     if (args?.Data != null)
                     {
-                        testOutputHelper?.WriteLine($"│  {args.Data}");
+                        logLine?.Invoke($"│  {args.Data}");
 
                         lock (error)
                         {
@@ -146,7 +145,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                 }
             },
             timeoutRetryCount,
-            testOutputHelper);
+            logLine);
         }
     }
 }

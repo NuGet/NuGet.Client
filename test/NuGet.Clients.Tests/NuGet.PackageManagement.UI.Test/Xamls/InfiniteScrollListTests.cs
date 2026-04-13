@@ -18,7 +18,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {

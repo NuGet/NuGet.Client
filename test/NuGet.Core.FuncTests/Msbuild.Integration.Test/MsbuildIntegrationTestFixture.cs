@@ -10,7 +10,6 @@ using System.IO;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Common;
-using Xunit.Abstractions;
 
 namespace Msbuild.Integration.Test
 {
@@ -100,7 +99,7 @@ namespace Msbuild.Integration.Test
         /// <summary>
         /// msbuild.exe args
         /// </summary>
-        internal CommandRunnerResult RunMsBuild(string workingDirectory, string args, bool ignoreExitCode = false, ITestOutputHelper testOutputHelper = null, IReadOnlyDictionary<string, string> environmentVariables = null)
+        internal CommandRunnerResult RunMsBuild(string workingDirectory, string args, bool ignoreExitCode = false, Action<string> logLine = null, IReadOnlyDictionary<string, string> environmentVariables = null)
         {
             var restoreDllPath = Path.Combine(_testDir, "NuGet.Build.Tasks.dll");
             var nugetRestorePropsPath = Path.Combine(_testDir, "NuGet.props");
@@ -110,7 +109,7 @@ namespace Msbuild.Integration.Test
                 workingDirectory,
                 $"/p:NuGetPropsFile={nugetRestorePropsPath} /p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
                 environmentVariables: environmentVariables ?? DefaultProcessEnvironmentVariables,
-                testOutputHelper: testOutputHelper);
+                logLine: logLine);
 
             if (!ignoreExitCode)
             {

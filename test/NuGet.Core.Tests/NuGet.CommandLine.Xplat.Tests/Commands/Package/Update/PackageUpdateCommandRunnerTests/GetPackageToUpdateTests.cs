@@ -16,7 +16,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update.PackageUpdateCommandRunnerTests;
 

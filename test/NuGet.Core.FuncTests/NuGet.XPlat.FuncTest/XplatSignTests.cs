@@ -15,7 +15,6 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

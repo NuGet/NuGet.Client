@@ -5,7 +5,7 @@ using System;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {

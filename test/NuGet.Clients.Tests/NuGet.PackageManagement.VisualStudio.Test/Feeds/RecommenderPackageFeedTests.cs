@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Moq;
-using Xunit.Abstractions;
 using Xunit;
 using NuGet.Test.Utility;
 using NuGet.Protocol.Core.Types;

@@ -22,7 +22,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -48,7 +47,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "hello world");
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.props"), "<project />");
@@ -67,8 +66,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -98,8 +97,8 @@ namespace Dotnet.Integration.Test
                 var nuspecPath = Path.Combine(workingDirectory, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, nuspecOutputPath: null, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -116,16 +115,16 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // With default output path
                 var nupkgPath = Path.Combine(workingDirectory, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, "--no-build", nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, "--no-build", nuspecOutputPath: null, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -137,7 +136,7 @@ namespace Dotnet.Integration.Test
                 nuspecPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--no-build -o {publishDir}", publishDir, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--no-build -o {publishDir}", publishDir, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -165,14 +164,14 @@ namespace Dotnet.Integration.Test
                 var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
                 var referencedProject2RelativDir = Path.Combine(reference2Folder, referencedProject2, $"{referencedProject2}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib", logLine: _testOutputHelper.WriteLine);
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", logLine: _testOutputHelper.WriteLine);
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -187,13 +186,13 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, nuspecOutputPath: null, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -221,14 +220,14 @@ namespace Dotnet.Integration.Test
                 var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
                 var referencedProject2RelativDir = Path.Combine(reference2Folder, referencedProject2, $"{referencedProject2}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib", logLine: _testOutputHelper.WriteLine);
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", logLine: _testOutputHelper.WriteLine);
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -243,8 +242,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildSolutionExpectSuccess(testDirectory, solutionName, logLine: _testOutputHelper.WriteLine);
 
                 // With default output path within project folder
 
@@ -253,7 +252,7 @@ namespace Dotnet.Integration.Test
                 var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, "--no-build", nuspecOutputPath: null, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, "--no-build", nuspecOutputPath: null, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -269,9 +268,9 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -315,7 +314,7 @@ namespace Dotnet.Integration.Test
                 // Arrange
                 var projectName = "ConsoleApp1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -334,8 +333,8 @@ namespace Dotnet.Integration.Test
                 }
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().NotContain("NU5128");
@@ -350,9 +349,9 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
@@ -389,7 +388,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -399,8 +398,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
@@ -442,7 +441,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -452,9 +451,9 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 var args = includeSymbols ? $"-o {workingDirectory} --include-symbols" : $"-o {workingDirectory}";
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, args, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, args, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgExtension = includeSymbols ? ".symbols.nupkg" : ".nupkg";
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0{nupkgExtension}");
@@ -499,7 +498,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -520,10 +519,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -565,7 +564,7 @@ namespace Dotnet.Integration.Test
                 var availableVersions = "1.0.0;2.0.0";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 foreach (string version in availableVersions.Split(';'))
                 {
@@ -604,10 +603,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -652,7 +651,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -673,10 +672,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -786,10 +785,10 @@ namespace Dotnet.Integration.Test
                 File.WriteAllText(Path.Combine(topPath, $"{topName}.csproj"), topProjectContent);
 
                 // create the base package
-                _dotnetFixture.PackProjectExpectSuccess(basePackagePath, basePackageName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(basePackagePath, basePackageName, logLine: _testOutputHelper.WriteLine);
 
                 // create the top package
-                _dotnetFixture.PackProjectExpectSuccess(topPath, topName, $"-o {topPath}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(topPath, topName, $"-o {topPath}", logLine: _testOutputHelper.WriteLine);
 
                 var basePkgPath = Path.Combine(pkgsPath, "BasePackage.1.0.0.nupkg");
                 Assert.True(File.Exists(basePkgPath));
@@ -835,7 +834,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -870,10 +869,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -915,8 +914,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -936,10 +935,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -996,8 +995,8 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1037,10 +1036,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -1086,8 +1085,8 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1114,10 +1113,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -1163,8 +1162,8 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1199,10 +1198,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3-alpha.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3-alpha.nuspec");
@@ -1253,14 +1252,14 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -1294,7 +1293,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1304,11 +1303,11 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"ClassLibrary1.1.0.0.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -1341,8 +1340,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, "/restore", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, "/restore", logLine: _testOutputHelper.WriteLine);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
@@ -1355,7 +1354,7 @@ namespace Dotnet.Integration.Test
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} --no-build",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -1388,9 +1387,9 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.nupkg");
                 var nupkgSha512Path = Path.Combine(workingDirectory, $"{projectName}.nupkg.sha512");
@@ -1445,15 +1444,15 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
 
                 _dotnetFixture.PackProjectExpectSuccess(
                     workingDirectory,
                     projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nuspecFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nuspec");
                 var nupackageFilePath = Path.Combine(workingDirectory, "PackedFromNuspec.nupkg");
@@ -1517,14 +1516,14 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec " + nuspecProperties,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{expectedId}.{expectedVersion}.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -1572,14 +1571,14 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(basePathDirectory, "abc.txt"), "sample text");
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:NuspecBasePath={basePathDirectory.Path}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -1671,7 +1670,7 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1708,10 +1707,10 @@ namespace Dotnet.Integration.Test
 
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -1750,7 +1749,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1760,14 +1759,14 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var args = "" +
                            (versionPrefix != null ? $" /p:VersionPrefix={versionPrefix} " : string.Empty) +
                            (versionSuffix != null ? $" /p:VersionSuffix={versionSuffix} " : string.Empty) +
                            (packageVersion != null ? $" /p:PackageVersion={packageVersion} " : string.Empty);
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} {args}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} {args}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.{expectedVersion}.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.{expectedVersion}.nuspec");
@@ -1861,7 +1860,7 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1886,10 +1885,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -1957,7 +1956,7 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -1978,10 +1977,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2095,7 +2094,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2107,8 +2106,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
@@ -2164,7 +2163,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2175,8 +2174,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
@@ -2224,8 +2223,8 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(Path.Combine(workingDirectory, $"{projectName}.csproj"), FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2247,7 +2246,7 @@ namespace Dotnet.Integration.Test
 
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:IncludeBuildOutput=false",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2291,11 +2290,11 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:BuildOutputTargetFolder={buildOutputTargetFolder}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2327,7 +2326,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2338,8 +2337,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2349,7 +2348,7 @@ namespace Dotnet.Integration.Test
                 // Run the clean target
                 _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName,
                     $"/t:Clean /p:PackageOutputPath={workingDirectory}\\",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
                 Assert.True(!File.Exists(nuspecPath), "The intermediate nuspec file was not deleted by the Clean target");
@@ -2367,7 +2366,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2378,8 +2377,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2393,7 +2392,7 @@ namespace Dotnet.Integration.Test
                 // Run the clean target
                 _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName,
                     $"/t:Clean /p:PackageOutputPath={workingDirectory}\\",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
                 Assert.True(!File.Exists(nuspecPath), "The intermediate nuspec file was not deleted by the Clean target");
@@ -2468,7 +2467,7 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2501,10 +2500,10 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2533,7 +2532,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2544,8 +2543,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2614,7 +2613,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ExtensionMethods.cs"),
                     extensionSrcFileContent);
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2624,10 +2623,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"--include-source /p:PackageOutputPath={workingDirectory}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolsNupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
@@ -2667,7 +2666,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ext.txt"), "hello world again");
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "cs", "ext.cs.txt"), "hello world again");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2691,8 +2690,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2738,7 +2737,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(workingDirectory);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2758,7 +2757,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2786,7 +2785,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(workingDirectory);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2807,7 +2806,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2835,7 +2834,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(workingDirectory);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2856,7 +2855,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2882,7 +2881,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(workingDirectory);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2904,7 +2903,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2930,7 +2929,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(symbolPath);
                 File.WriteAllText(Path.Combine(symbolPath, "abc.pdb"), "hello world");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2951,7 +2950,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2984,7 +2983,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
                 var pathToDll = Path.Combine(workingDirectory, "abc.dll");
                 var pathToPdb = Path.Combine(workingDirectory, "abc.pdb");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3006,8 +3005,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:IncludeSymbols=true /p:SymbolPackageFormat=symbols.nupkg", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:IncludeSymbols=true /p:SymbolPackageFormat=symbols.nupkg", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3074,7 +3073,7 @@ namespace ClassLibrary
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3101,12 +3100,12 @@ namespace ClassLibrary
 
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderA.txt"), "hello world from subfolder A directory");
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderB", "folderB.txt"), "hello world from subfolder B directory");
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3144,7 +3143,7 @@ namespace ClassLibrary
                 // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3174,11 +3173,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3224,7 +3223,7 @@ namespace ClassLibrary
                 // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), Array.Empty<byte>());
 
@@ -3248,11 +3247,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3290,14 +3289,14 @@ namespace ClassLibrary
                 var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
                 var referencedProject2RelativDir = Path.Combine(rederence2Folder, referencedProject2, $"{referencedProject2}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
 
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {projectFileRelativ}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject1RelativDir}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.slnx add {referencedProject2RelativDir}", logLine: _testOutputHelper.WriteLine);
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -3326,9 +3325,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName, logLine: _testOutputHelper.WriteLine);
                 // Act
-                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackSolutionExpectSuccess(testDirectory, solutionName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(projectFolder, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(projectFolder, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3391,7 +3390,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3406,8 +3405,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
                 var indexOfHelloWorld = result.AllOutput.IndexOf("Hello World");
                 var indexOfPackSuccessful = result.AllOutput.IndexOf("Successfully created package");
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -3433,7 +3432,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3443,12 +3442,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:firstPack.binlog", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:firstPack.binlog", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgLastWriteTime = File.GetLastWriteTimeUtc(nupkgPath);
                 var nuspecLastWriteTime = File.GetLastWriteTimeUtc(nuspecPath);
@@ -3456,7 +3455,7 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:secondPack.binlog", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:secondPack.binlog", logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -3477,7 +3476,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3488,12 +3487,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -3523,7 +3522,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3534,14 +3533,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
 
                 var result = expectToError
-                    ? _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper)
-                    : _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper);
+                    ? _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", logLine: _testOutputHelper.WriteLine)
+                    : _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 if (expectToError)
@@ -3567,7 +3566,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3578,19 +3577,19 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
 
                 // Call once.
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", logLine: _testOutputHelper.WriteLine);
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
 
                 // Call twice.
-                result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", testOutputHelper: _testOutputHelper);
+                result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", logLine: _testOutputHelper.WriteLine);
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
@@ -3607,7 +3606,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3619,8 +3618,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3650,7 +3649,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 File.WriteAllText(
                     Path.Combine(workingDirectory, "Directory.Build.targets"),
@@ -3670,8 +3669,8 @@ namespace ClassLibrary
     </Target>
 </Project>");
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3704,7 +3703,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3738,8 +3737,8 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
 
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3770,7 +3769,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3800,8 +3799,8 @@ namespace ClassLibrary
 
                 File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3832,7 +3831,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3861,8 +3860,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3896,7 +3895,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3917,10 +3916,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3959,7 +3958,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3988,10 +3987,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4031,7 +4030,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4041,10 +4040,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4071,7 +4070,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4082,10 +4081,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4116,7 +4115,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4127,8 +4126,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4167,7 +4166,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4178,8 +4177,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4220,7 +4219,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4231,8 +4230,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4253,7 +4252,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4265,8 +4264,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4287,7 +4286,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4299,8 +4298,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4323,7 +4322,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
 
@@ -4353,8 +4352,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4390,7 +4389,7 @@ namespace ClassLibrary
                 var licenseFileName = "LICENSE.txt";
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
 
@@ -4406,8 +4405,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4427,7 +4426,7 @@ namespace ClassLibrary
                 var nuspecLicenseFileName = "License.txt";
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, realLicenseFileName);
 
@@ -4456,8 +4455,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5030.ToString(), result.Output);
                 Assert.Contains($"'{realLicenseFileName}'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'LICENSE.txt'?"
@@ -4473,7 +4472,7 @@ namespace ClassLibrary
                 // Set up
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
 
@@ -4489,8 +4488,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4510,7 +4509,7 @@ namespace ClassLibrary
                 var licenseExpr = "MIT";
                 var licenseFile = "LICENSE.txt";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4522,8 +4521,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4543,7 +4542,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var projectUrl = new Uri("https://www.coolproject.com/license.txt");
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4554,8 +4553,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4588,7 +4587,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var licenseFileName = "LICENSE.txt";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
                 File.WriteAllText(licenseFile, "Random licenseFile");
@@ -4614,9 +4613,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -4672,7 +4671,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var licenseFileName = "LICENSE.txt";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
                 File.WriteAllText(licenseFile, "Random licenseFile");
@@ -4698,9 +4697,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=symbols.nupkg -o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=symbols.nupkg -o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -4755,7 +4754,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var licenseExpr = "MIT";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup LicenseExpression
@@ -4767,8 +4766,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4786,7 +4785,7 @@ namespace ClassLibrary
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup BuildOutputTargetFolder
@@ -4799,8 +4798,8 @@ namespace ClassLibrary
                 }
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -4843,7 +4842,7 @@ namespace ClassLibrary
                     frameworkReftoPack.Add(frameworkRefs[i], pack[i]);
                 }
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4877,11 +4876,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -4937,7 +4936,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console", logLine: _testOutputHelper.WriteLine);
 
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -4947,7 +4946,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
                 // Assert
-                _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"publish {projectFile}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"publish {projectFile}", logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -4958,7 +4957,7 @@ namespace ClassLibrary
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -4968,7 +4967,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
                 // Act
                 byte[][] packageBytes = new byte[2][];
 
@@ -4979,7 +4978,7 @@ namespace ClassLibrary
                     var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
                     // Act
-                    _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {packageOutputPath}", testOutputHelper: _testOutputHelper);
+                    _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {packageOutputPath}", logLine: _testOutputHelper.WriteLine);
 
                     Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                     Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -5032,7 +5031,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 // Validate embedded icon in package
                 ValidatePackIcon(projectBuilder);
@@ -5061,7 +5060,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
             }
@@ -5084,7 +5083,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
                 Assert.Contains("'icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'icon.jpg'?"
@@ -5108,7 +5107,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
                 Assert.Contains("'folder/icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'folder/icon.jpg'?"
@@ -5138,7 +5137,7 @@ namespace ClassLibrary
                     projectBuilder.ProjectFolder,
                     projectBuilder.ProjectName,
                     $"--include-symbols /p:SymbolPackageFormat={symbolPackageFormat}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -5166,7 +5165,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
                 Assert.Contains("iconUrl", result.Output);
@@ -5183,7 +5182,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5193,12 +5192,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place. {result.AllOutput}");
                 Assert.True(File.Exists(nuspecPath), $"The intermediate nuspec file is not in the expected place. {result.AllOutput}");
@@ -5219,7 +5218,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5263,8 +5262,8 @@ namespace ClassLibrary
                     </Project>";
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", "obj", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", "obj", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5342,7 +5341,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 // Validate embedded readme in package
                 ValidatePackReadme(projectBuilder);
@@ -5374,7 +5373,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5039.ToString(), result.Output);
             }
@@ -5394,7 +5393,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5019.ToString(), result.Output);
             }
@@ -5417,7 +5416,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5038.ToString(), result.Output);
             }
@@ -5440,7 +5439,7 @@ namespace ClassLibrary
             using (var srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                var result = _dotnetFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Contains(NuGetLogCode.NU5040.ToString(), result.Output);
             }
@@ -5476,7 +5475,7 @@ namespace ClassLibrary
             using (TestDirectory srcDir = _dotnetFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(_dotnetFixture, srcDir.Path);
-                _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Validate embedded readme in package
@@ -5520,7 +5519,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5532,8 +5531,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5557,7 +5556,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 XDocument xml;
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -5568,10 +5567,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Test without a license
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5590,7 +5589,7 @@ namespace ClassLibrary
                 using (var stream = File.Create(projectFile))
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
                 document = XDocument.Load(nuspecPath);
 
                 Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance"));
@@ -5606,7 +5605,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 XDocument xml;
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -5619,10 +5618,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
 
                 // Test without a license
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5641,7 +5640,7 @@ namespace ClassLibrary
                 using (var stream = File.Create(projectFile))
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
 
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
                 document = XDocument.Load(nuspecPath);
 
                 Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance"));
@@ -5657,7 +5656,7 @@ namespace ClassLibrary
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5670,8 +5669,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5707,8 +5706,8 @@ namespace ClassLibrary
                 string nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
-                _dotnetFixture.CreateDotnetNewProject(workDirectory, projectName, template, testOutputHelper: _testOutputHelper);
-                _dotnetFixture.PackProjectExpectSuccess(solutionDirectory, projectName, string.Empty, null, testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(workDirectory, projectName, template, logLine: _testOutputHelper.WriteLine);
+                _dotnetFixture.PackProjectExpectSuccess(solutionDirectory, projectName, string.Empty, null, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Make sure restore action was success.
@@ -5735,7 +5734,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{TestConstants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5749,8 +5748,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5777,7 +5776,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{TestConstants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5790,8 +5789,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5846,7 +5845,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{TestConstants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5862,8 +5861,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5891,7 +5890,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{TestConstants.DefaultTargetFramework.GetShortFolderName()}</TargetFrameworks>
@@ -5907,8 +5906,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5968,7 +5967,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{TestConstants.ProjectTargetFramework};net45</TargetFrameworks>
@@ -5987,8 +5986,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6027,7 +6026,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{TestConstants.ProjectTargetFramework};net45</TargetFrameworks>
@@ -6046,8 +6045,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6109,7 +6108,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", logLine: _testOutputHelper.WriteLine);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{TestConstants.DefaultTargetFramework.GetShortFolderName()};net48</TargetFrameworks>
@@ -6126,7 +6125,7 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6166,7 +6165,7 @@ namespace ClassLibrary
             var workingDirectory = Path.Combine(testDirectory, projectName);
             Directory.CreateDirectory(workingDirectory);
             var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
 
             using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -6177,7 +6176,7 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
             Assert.True(File.Exists(Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg")), "The output .nupkg is not in the expected place");
             Assert.True(File.Exists(Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec")), "The intermediate nuspec file is not in the expected place");
             var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);
@@ -6200,7 +6199,7 @@ namespace ClassLibrary
                 },
                 new SimpleTestPackageContext("Z", "2.0.0"));
 
-            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", logLine: _testOutputHelper.WriteLine);
 
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -6234,13 +6233,13 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", logLine: _testOutputHelper.WriteLine);
             result.AllOutput.Should().NotContain("Warning");
             LockFile assetsFile = new LockFileFormat().Read(Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName));
             assetsFile.Targets.Should().HaveCount(1);
             assetsFile.Targets[0].Libraries.Should().HaveCount(3);
 
-            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
             var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
             using var nupkgReader = new PackageArchiveReader(nupkgPath);
             List<PackageDependencyGroup> dependencyGroups = nupkgReader.NuspecReader.GetDependencyGroups().ToList();
@@ -6274,7 +6273,7 @@ namespace ClassLibrary
                 },
                 new SimpleTestPackageContext("Z", "2.0.0"));
 
-            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", logLine: _testOutputHelper.WriteLine);
 
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -6309,14 +6308,14 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", logLine: _testOutputHelper.WriteLine);
             result.AllOutput.Should().NotContain("Warning");
             LockFile assetsFile = new LockFileFormat().Read(Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName));
             assetsFile.Targets.Should().HaveCount(2);
             assetsFile.Targets[0].Libraries.Should().HaveCount(3);
             assetsFile.Targets[1].Libraries.Should().HaveCount(3);
 
-            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
             var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
             using var nupkgReader = new PackageArchiveReader(nupkgPath);
             List<PackageDependencyGroup> dependencyGroups = nupkgReader.NuspecReader.GetDependencyGroups().ToList();
@@ -6342,7 +6341,7 @@ namespace ClassLibrary
                 },
                 new SimpleTestPackageContext("Z", "2.0.0"));
 
-            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.1", logLine: _testOutputHelper.WriteLine);
 
             using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
             {
@@ -6377,14 +6376,14 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectFile}", logLine: _testOutputHelper.WriteLine);
             result.AllOutput.Should().NotContain("Warning");
             LockFile assetsFile = new LockFileFormat().Read(Path.Combine(workingDirectory, "obj", LockFileFormat.AssetsFileName));
             assetsFile.Targets.Should().HaveCount(2);
             assetsFile.Targets[0].Libraries.Should().HaveCount(3);
             assetsFile.Targets[1].Libraries.Should().HaveCount(3);
 
-            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+            CommandRunnerResult packResult = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", logLine: _testOutputHelper.WriteLine);
             var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
             using var nupkgReader = new PackageArchiveReader(nupkgPath);
             List<PackageDependencyGroup> dependencyGroups = nupkgReader.NuspecReader.GetDependencyGroups().ToList();
@@ -6406,11 +6405,11 @@ namespace ClassLibrary
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(testDirectory, projectName);
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
             SetupAliasedFrameworkProject(workingDirectory, projectName);
 
-            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
             result.AllOutput.Should().Contain("NU5051");
         }
@@ -6424,12 +6423,12 @@ namespace ClassLibrary
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(testDirectory, projectName);
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
             SetupAliasedFrameworkProject(workingDirectory, projectName,
                 bananaIncludeBuildOutput: "false");
 
-            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
             result.AllOutput.Should().Contain("NU5051");
         }
@@ -6443,12 +6442,12 @@ namespace ClassLibrary
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(testDirectory, projectName);
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
             SetupAliasedFrameworkProject(workingDirectory, projectName,
                 bananaSuppressDependencies: "true");
 
-            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
             result.AllOutput.Should().Contain("NU5051");
         }
@@ -6462,13 +6461,13 @@ namespace ClassLibrary
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(testDirectory, projectName);
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
             SetupAliasedFrameworkProject(workingDirectory, projectName,
                 bananaIncludeBuildOutput: "false",
                 bananaSuppressDependencies: "true");
 
-            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-            _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+            _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
             var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
             Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -6493,7 +6492,7 @@ namespace ClassLibrary
             var projectName = "ClassLibrary1";
             var workingDirectory = Path.Combine(testDirectory, projectName);
 
-            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", logLine: _testOutputHelper.WriteLine);
             SetupAliasedFrameworkProject(workingDirectory, projectName,
                 bananaIncludeBuildOutput: "false",
                 bananaSuppressDependencies: "true");
@@ -6508,8 +6507,8 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
-            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, logLine: _testOutputHelper.WriteLine);
+            var result = _dotnetFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}", logLine: _testOutputHelper.WriteLine);
 
             result.AllOutput.Should().Contain("NU5051");
         }

@@ -21,7 +21,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -134,7 +133,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -217,7 +216,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -340,7 +339,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -435,7 +434,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
@@ -523,7 +522,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -605,7 +604,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -687,7 +686,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -776,7 +775,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -869,7 +868,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -962,7 +961,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -1045,7 +1044,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -1128,7 +1127,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
                 System.Console.WriteLine(r.Output);
@@ -1238,7 +1237,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
@@ -1335,7 +1334,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     solutionDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
                 Assert.Empty(r.Errors);
@@ -1426,7 +1425,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     solutionDirectory,
                     string.Join(" ", restoreArgs),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Act
                 var args = new[]
@@ -1521,7 +1520,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     solutionDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
                 Assert.Empty(r.Errors);
@@ -1650,7 +1649,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
             }
@@ -1743,7 +1742,7 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 //Assert
                 Assert.True(commandRunResult.ExitCode == 0, "Output is " + commandRunResult.Output + ". Error is " + commandRunResult.Errors);
@@ -1778,7 +1777,7 @@ namespace NuGet.CommandLine.Test
                 var nugetExe = Path.Combine(pathContext.WorkingDirectory, "NuGet.exe");
                 File.Copy(Util.GetNuGetExePath(), nugetExe);
 
-                Util.RunCommand(pathContext, nugetExe, 0, testOutputHelper: _testOutputHelper, "update", "-self", "-source", pathContext.PackageSource);
+                Util.RunCommand(pathContext, nugetExe, 0, logLine: _testOutputHelper.WriteLine, "update", "-self", "-source", pathContext.PackageSource);
 
                 Assert.Equal(expectedFileContent, File.ReadAllBytes(nugetExe));
             }
@@ -1793,7 +1792,7 @@ namespace NuGet.CommandLine.Test
                 var nugetExe = Path.Combine(pathContext.WorkingDirectory, "NuGet.exe");
                 File.Copy(Util.GetNuGetExePath(), nugetExe);
 
-                CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, testOutputHelper: _testOutputHelper, "update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
+                CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, logLine: _testOutputHelper.WriteLine, "update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
                 result.ExitCode.Equals(1);
                 result.AllOutput.Contains(NuGetResources.Error_UpdateSelf_Source);
             }

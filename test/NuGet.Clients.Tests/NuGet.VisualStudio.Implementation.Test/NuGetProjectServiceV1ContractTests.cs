@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.VisualStudio.Contracts;
 using Xunit;
-using Xunit.Abstractions;
 
 public class NuGetProjectServiceV1ContractTests : BrokeredServiceContractTestBase<INuGetProjectService, NuGetProjectServiceWithDummyValues>
 {

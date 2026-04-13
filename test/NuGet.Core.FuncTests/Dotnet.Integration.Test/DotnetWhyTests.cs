@@ -19,7 +19,6 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -57,12 +56,12 @@ namespace Dotnet.Integration.Test
                 packageY);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
@@ -93,10 +92,10 @@ namespace Dotnet.Integration.Test
                 """);
 
             // Restore.
-            _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
+            _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", logLine: _testOutputHelper.WriteLine);
 
             // Get project content.
-            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper.WriteLine);
             using var builder = new TestVirtualProjectBuilder(virtualProject);
 
             // Run "why" command.
@@ -146,12 +145,12 @@ namespace Dotnet.Integration.Test
                 packageZ);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             string whyCommandArgs = $"nuget why {project.ProjectPath} {packageZ.Id}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
@@ -178,12 +177,12 @@ namespace Dotnet.Integration.Test
                 packageY);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} --framework {TestConstants.ProjectTargetFramework}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
@@ -210,12 +209,12 @@ namespace Dotnet.Integration.Test
                 packageY);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} -f {TestConstants.ProjectTargetFramework}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
@@ -231,7 +230,7 @@ namespace Dotnet.Integration.Test
             string whyCommandArgs = $"nuget why";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
@@ -248,7 +247,7 @@ namespace Dotnet.Integration.Test
             string whyCommandArgs = $"nuget why {project.ProjectPath}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
@@ -275,13 +274,13 @@ namespace Dotnet.Integration.Test
                 packageY);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             var projectDirectory = Path.GetDirectoryName(project.ProjectPath);
             string whyCommandArgs = $"nuget why {projectDirectory} {packageY.Id}";
 
             // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
@@ -308,13 +307,13 @@ namespace Dotnet.Integration.Test
                 packageY);
 
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             var assetsFile = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "obj", "project.assets.json");
 
             // Act
             string whyCommandArgs = $"nuget why {assetsFile} {packageY.Id}";
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             result.AllOutput.Should().Contain(packageX.Id);
@@ -330,7 +329,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             string whyCommandArgs = $"nuget why {jsonFilePath} packageId";
-            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(testDirectory, whyCommandArgs, testOutputHelper: _testOutputHelper);
+            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(testDirectory, whyCommandArgs, logLine: _testOutputHelper.WriteLine);
 
             // Assert
             result.AllOutput.Should().Contain("https://aka.ms/dotnet/nuget/why");

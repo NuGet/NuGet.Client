@@ -11,7 +11,6 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
@@ -122,7 +121,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -232,7 +231,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -346,7 +345,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -460,7 +459,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -626,7 +625,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -736,7 +735,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -846,7 +845,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -915,7 +914,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     nugetexe,
                     config.WorkingDirectory,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 server.Stop();
 
@@ -983,7 +982,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 nugetexe,
                 config.WorkingDirectory,
                 string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
             server.Stop();
 
@@ -1094,7 +1093,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 nugetexe,
                 config.WorkingDirectory,
                 string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
             server1.Stop();
             server2.Stop();

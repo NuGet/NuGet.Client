@@ -6,7 +6,6 @@
 using System.Net.Http;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Protocol.Tests.Utility
 {

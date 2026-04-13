@@ -10,6 +10,7 @@
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta7.25374.102</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
+    <xunitv3PackageVersion>3.2.2</xunitv3PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -73,7 +74,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.Extensibility.Sdk" Version="17.14.40177" />
     <PackageVersion Include="Microsoft.VisualStudio.Extensibility.Build" Version=" 17.14.40177" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="18.0.2345-preview.1" />
-    <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.11.8" />
+    <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit.v3" Version="17.11.66" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.4.2244" />
     <PackageVersion Include="Microsoft.VisualStudio.Shell.Styles" Version="18.0.2345-preview.1" />
     <PackageVersion Include="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.10.40170" />
@@ -104,9 +105,11 @@
     -->
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
     <PackageVersion Include="VsWebSite.Interop" Version="17.10.40173" />
-    <PackageVersion Include="xunit" Version="2.9.0" />
+    <PackageVersion Include="xunit.v3" Version="$(xunitv3PackageVersion)" />
+    <PackageVersion Include="xunit.v3.assert" Version="$(xunitv3PackageVersion)" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(xunitv3PackageVersion)" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="Xunit.StaFact" Version="1.1.11" />
+    <PackageVersion Include="Xunit.StaFact" Version="3.0.13" />
   </ItemGroup>
 
   <!--

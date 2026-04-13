@@ -19,7 +19,6 @@ using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
-using Xunit.Abstractions;
 using static NuGet.Commands.TrustedSignersArgs;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -143,7 +142,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 _nugetExePath,
                 Directory.GetCurrentDirectory(),
                 $"trusted-signers {args}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
             // Assert
 
@@ -182,7 +181,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add -Name signer -CertificateFingerprint abcdefg -FingerprintAlgorithm SHA256 {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -229,7 +228,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add -Name signer -CertificateFingerprint hijklmn -FingerprintAlgorithm SHA256 {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -278,7 +277,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Author {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -329,7 +328,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {multiplePackagesPath} -Name signer -Author {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeFalse();
@@ -379,7 +378,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Repository {allowUntrustedRootArg} {ownersArgs} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -441,7 +440,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Repository {allowUntrustedRootArg} {ownersArgs} -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -486,7 +485,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers remove -Name signer -Config {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();

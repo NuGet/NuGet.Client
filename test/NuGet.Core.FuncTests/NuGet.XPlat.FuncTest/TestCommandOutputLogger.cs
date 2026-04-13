@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Test.Utility;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {

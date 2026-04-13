@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using NuGet.CommandLine.XPlat;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

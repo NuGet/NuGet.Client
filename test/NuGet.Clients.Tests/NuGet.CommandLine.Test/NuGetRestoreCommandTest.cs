@@ -3596,7 +3596,7 @@ EndProject";
         }
 
         [SkipMono()]
-        public async void RestoreCommand_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
+        public async Task RestoreCommand_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();

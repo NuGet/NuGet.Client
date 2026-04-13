@@ -14,7 +14,6 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
@@ -73,7 +72,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
                 // Assert
                 Assert.True(result.Success, $"{result.Output} {result.Errors}");
@@ -117,7 +116,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 1",
                         timeOutInMilliseconds: 20 * 1000,
-                        testOutputHelper: _testOutputHelper); // 20 seconds
+                        logLine: _testOutputHelper.WriteLine); // 20 seconds
                 }
 
                 // Assert
@@ -158,7 +157,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     //Run again so that it will be a duplicate push.
                     result2 = CommandRunner.Run(
@@ -166,14 +165,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     result3 = CommandRunner.Run(
                        nuget,
                        pathContext.WorkingDirectory,
                        $"push {sourcePath2} -Source {server.Uri}push -Timeout 110",
                        timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -224,7 +223,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     //Run again so that it will be a duplicate push but use the option to skip duplicate packages.
                     result2 = CommandRunner.Run(
@@ -232,7 +231,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     //Third run with a different package.
                     result3 = CommandRunner.Run(
@@ -240,7 +239,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {sourcePath2} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -287,7 +286,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -324,7 +323,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 //Assert
@@ -359,7 +358,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 //Assert
@@ -394,7 +393,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 //Assert
@@ -438,7 +437,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -479,7 +478,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {pushArgument} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -531,7 +530,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     //Second run with SkipDuplicate
                     result2 = CommandRunner.Run(
@@ -539,7 +538,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -599,7 +598,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -655,7 +654,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -SymbolSource {symbolSourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -711,7 +710,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -SymbolSource {symbolPushUrl} -noSymbol -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -766,7 +765,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -SymbolSource {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -830,7 +829,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -890,7 +889,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -953,7 +952,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
                 // Assert
 
@@ -1006,14 +1005,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         pathContext.WorkingDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
 
                     result2 = CommandRunner.Run(
                         nuget,
                         pathContext.WorkingDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -SkipDuplicate -Verbosity detailed",
                         timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                        logLine: _testOutputHelper.WriteLine); // 120 seconds
                 }
 
                 // Assert
@@ -1045,7 +1044,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageDirectory,
                 $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
                 timeOutInMilliseconds: 120000,
-                testOutputHelper: _testOutputHelper); // 120 seconds
+                logLine: _testOutputHelper.WriteLine); // 120 seconds
 
             // Assert
             Assert.False(result.Success, result.AllOutput);

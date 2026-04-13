@@ -5,7 +5,6 @@ using System;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest
 {
@@ -31,7 +30,7 @@ namespace NuGet.CommandLine.FuncTest
             };
 
             // Act
-            int result = RetryRunner.RunWithRetries<int, Exception>(func, maxRetries, _output);
+            int result = RetryRunner.RunWithRetries<int, Exception>(func, maxRetries, _output.WriteLine);
 
             // Assert
             result.Should().Be(42);
@@ -55,7 +54,7 @@ namespace NuGet.CommandLine.FuncTest
             };
 
             // Act
-            int result = RetryRunner.RunWithRetries<int, InvalidOperationException>(func, maxRetries, _output);
+            int result = RetryRunner.RunWithRetries<int, InvalidOperationException>(func, maxRetries, _output.WriteLine);
 
             // Assert
             result.Should().Be(42);
@@ -79,7 +78,7 @@ namespace NuGet.CommandLine.FuncTest
             };
 
             // Act
-            int result = RetryRunner.RunWithRetries<int, InvalidOperationException>(func, maxRetries, _output);
+            int result = RetryRunner.RunWithRetries<int, InvalidOperationException>(func, maxRetries, _output.WriteLine);
 
             // Assert
             result.Should().Be(42);
@@ -99,7 +98,7 @@ namespace NuGet.CommandLine.FuncTest
             };
 
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => RetryRunner.RunWithRetries<int, Exception>(func, maxRetries, _output));
+            Assert.Throws<InvalidOperationException>(() => RetryRunner.RunWithRetries<int, Exception>(func, maxRetries, _output.WriteLine));
             runCount.Should().Be(1);
         }
 

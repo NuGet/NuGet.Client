@@ -19,7 +19,6 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
@@ -435,7 +434,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 pathContext.WorkingDirectory,
                 string.Join(" ", args),
                 environmentVariables: envVars,
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);

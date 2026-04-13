@@ -13,29 +13,11 @@ namespace NuGet.Test.Utility
     public class CIOnlyTheoryAttribute
         : TheoryAttribute
     {
-        private string _skip;
-
-        public override string Skip
+        public CIOnlyTheoryAttribute()
         {
-            get
+            if (!XunitAttributeUtility.IsCI)
             {
-                var skip = _skip;
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    if (!XunitAttributeUtility.IsCI)
-                    {
-                        skip = "This test only runs on the CI. To run it locally set the env var CI=true";
-                    }
-                }
-
-                // If this is null the test will run.
-                return skip;
-            }
-
-            set
-            {
-                _skip = value;
+                Skip = "This test only runs on the CI. To run it locally set the env var CI=true";
             }
         }
     }

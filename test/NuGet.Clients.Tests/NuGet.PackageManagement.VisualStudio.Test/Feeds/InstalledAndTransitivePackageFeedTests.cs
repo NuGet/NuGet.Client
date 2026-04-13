@@ -17,7 +17,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
-using Xunit.Abstractions;
 using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.PackageManagement.VisualStudio.Test

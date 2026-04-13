@@ -26,7 +26,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -79,7 +78,7 @@ namespace NuGet.CommandLine.Test
                 doc.Save(projectA.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -116,7 +115,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(projectB.ProjectPath, "<Project ToolsVersion=\"15.0\"></Project>");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -149,7 +148,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(projectA.ProjectPath, "<Project ToolsVersion=\"15.0\"></Project>");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -470,14 +469,14 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 //Act
-                var r1 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r1 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r1.ExitCode);
                 Assert.Contains("Writing cache file", r1.Output);
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r2.ExitCode);
@@ -512,7 +511,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
-                var r3 = Util.RestoreSolution(pathContext, 0, _testOutputHelper, "-configFile", "NuGet.Config");
+                var r3 = Util.RestoreSolution(pathContext, 0, _testOutputHelper.WriteLine, "-configFile", "NuGet.Config");
 
 
                 //Assert.
@@ -551,14 +550,14 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 //Act
-                var r1 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r1 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r1.ExitCode);
                 Assert.Contains("Writing cache file", r1.Output);
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r2.ExitCode);
@@ -594,7 +593,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
-                var r3 = Util.RestoreSolution(pathContext, 0, testOutputHelper: _testOutputHelper, "-configFile", "NuGet.Config");
+                var r3 = Util.RestoreSolution(pathContext, 0, logLine: _testOutputHelper.WriteLine, "-configFile", "NuGet.Config");
 
 
                 //Assert.
@@ -633,14 +632,14 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 //Act
-                var r1 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r1 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r1.ExitCode);
                 Assert.Contains("Writing cache file", r1.Output);
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 //Assert.
                 Assert.Equal(0, r2.ExitCode);
@@ -673,7 +672,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
-                var r3 = Util.RestoreSolution(pathContext, 0, testOutputHelper: _testOutputHelper, "-configFile", "NuGet.Config");
+                var r3 = Util.RestoreSolution(pathContext, 0, logLine: _testOutputHelper.WriteLine, "-configFile", "NuGet.Config");
 
 
                 //Assert.
@@ -714,7 +713,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
@@ -773,7 +772,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 var propsXML = XDocument.Load(projectA.PropsOutput);
                 var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
@@ -837,7 +836,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -900,7 +899,7 @@ namespace NuGet.CommandLine.Test
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -950,7 +949,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -1002,7 +1001,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
                 var output = r.Output + " " + r.Errors;
 
                 // Assert
@@ -1047,7 +1046,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
@@ -1092,7 +1091,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
                 var output = r.Output + " " + r.Errors;
 
                 // Assert
@@ -1134,7 +1133,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -1183,7 +1182,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -1232,7 +1231,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var output = r.Output + r.Errors;
 
                 // Assert
@@ -1274,7 +1273,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -1352,7 +1351,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Version should not be used
@@ -1428,7 +1427,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Version should not be used
@@ -1439,7 +1438,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Version should not be used
@@ -1495,7 +1494,7 @@ namespace NuGet.CommandLine.Test
                     packageZ);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
@@ -1547,7 +1546,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.Equal(0, r.ExitCode);
                 Assert.True(File.Exists(project.PropsOutput), r.Output);
                 var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
@@ -1599,7 +1598,7 @@ namespace NuGet.CommandLine.Test
                     packageZ);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
@@ -1617,7 +1616,7 @@ namespace NuGet.CommandLine.Test
                 project2.Save();
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r2.ExitCode);
@@ -1663,7 +1662,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
@@ -1674,7 +1673,7 @@ namespace NuGet.CommandLine.Test
                 project.Save();
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, r2.ExitCode);
@@ -1733,7 +1732,7 @@ namespace NuGet.CommandLine.Test
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Output);
@@ -1791,7 +1790,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Output);
@@ -1861,20 +1860,20 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
                 // This is expected, because despite the fact that both projects resolve to the same tool, the version range they request is different so they will keep overwriting each other
                 // Basically, it is impossible for both tools to no-op.
                 Assert.Contains($"Writing tool assets file to disk", r2.Output);
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
             }
         }
@@ -1942,13 +1941,13 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
@@ -2030,7 +2029,7 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.5.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
@@ -2046,7 +2045,7 @@ namespace NuGet.CommandLine.Test
                 var cachePath20 = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "2.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(assetsPath));
@@ -2109,19 +2108,19 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
                 Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[1.0.0, )' have not changed. No further actions are required to complete the restore", r2.Output);
 
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
             }
         }
@@ -2181,7 +2180,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Output);
@@ -2244,19 +2243,19 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "z.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
                 Assert.Contains($"The restore inputs for 'z-netcoreapp1.0-[1.0.0, )' have not changed. No further actions are required to complete the restore.", r2.Output);
 
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -2303,7 +2302,7 @@ namespace NuGet.CommandLine.Test
 
                 solution.Create();
 
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
 
                 // Arrange
@@ -2367,13 +2366,13 @@ namespace NuGet.CommandLine.Test
                 var cachePath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "x.nuget.cache");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper, additionalArgs: "-Recursive");
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine, additionalArgs: "-Recursive");
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper, additionalArgs: "-Recursive");
+                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine, additionalArgs: "-Recursive");
                 // Assert
                 Assert.True(File.Exists(assetsPath));
                 Assert.True(File.Exists(cachePath));
@@ -2381,7 +2380,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains($"The restore inputs for 'a' have not changed. No further actions are required to complete the restore.", r2.Output);
                 Assert.Contains($"The restore inputs for 'b' have not changed. No further actions are required to complete the restore.", r2.Output);
 
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -2426,7 +2425,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper, additionalArgs: "-Recursive");
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine, additionalArgs: "-Recursive");
 
                 // Assert
                 Assert.True(File.Exists(path), r.Output);
@@ -2474,7 +2473,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "x", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.False(File.Exists(path), r.Output);
@@ -2535,7 +2534,7 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Contains("WARNING: NU1604", r.AllOutput);
@@ -2612,7 +2611,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
@@ -2688,7 +2687,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
@@ -2738,7 +2737,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
@@ -2789,7 +2788,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -2849,7 +2848,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -2895,7 +2894,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Restore one
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
                 var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
@@ -2907,7 +2906,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
 
                 msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
@@ -2964,11 +2963,11 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Restore one
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.Equal(0, r.ExitCode);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Output);
             }
@@ -3055,7 +3054,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targets = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.ToDictionary(e => e.Name);
@@ -3105,7 +3104,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -3152,7 +3151,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -3218,7 +3217,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var tfm = NuGetFramework.Parse("UAP10.0");
@@ -3690,7 +3689,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 // Verify failure
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 var targets = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
 
@@ -3734,7 +3733,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -3780,7 +3779,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var xTarget = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.Single();
 
                 // Assert
@@ -3824,7 +3823,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var xTarget = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.Single();
 
                 // Assert
@@ -3868,7 +3867,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -3898,7 +3897,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act && Assert
                 // Verify this is a noop and not a failure
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -3929,7 +3928,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetB = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "b");
@@ -3977,7 +3976,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetB = projectA.AssetsFile
@@ -4034,7 +4033,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act && Assert
                 // Missing projects are ignored during restore. These issues are reported at build time.
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -4079,7 +4078,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetX = projectA.AssetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries.SingleOrDefault(e => e.Name == "x");
@@ -4141,7 +4140,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetNet = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net46")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
@@ -4196,7 +4195,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var targetNet = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net46")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
@@ -4261,7 +4260,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var xLibraryInA = projectA.AssetsFile.Libraries.Single(x => x.Name == packageX.Id);
@@ -4308,7 +4307,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var xLibrary = projectA.AssetsFile.Libraries.Single();
 
                 // Assert
@@ -4351,7 +4350,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var xLibrary = projectA.AssetsFile.Libraries.Single();
 
                 // Assert
@@ -4395,7 +4394,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 var graph = projectA.AssetsFile.GetTarget(netcoreapp2, runtimeIdentifier: null);
                 var lib = graph.GetTargetLibrary("x");
 
@@ -4452,7 +4451,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 foreach (var graph in projectA.AssetsFile.Targets)
@@ -4503,7 +4502,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -4556,7 +4555,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -4599,7 +4598,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.AllOutput.Should().Contain("PackageTargetFallback and AssetTargetFallback cannot be used together.");
@@ -4684,7 +4683,7 @@ namespace NuGet.CommandLine.Test
                     packageZ);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "m", "x", "y", "z" });
@@ -4746,7 +4745,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
@@ -4808,7 +4807,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
@@ -4873,7 +4872,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x", "y" });
@@ -4922,7 +4921,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x" });
@@ -4970,7 +4969,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 projectA.AssetsFile.Libraries.Select(e => e.Name).OrderBy(e => e).Should().BeEquivalentTo(new[] { "x" });
@@ -5019,7 +5018,7 @@ namespace NuGet.CommandLine.Test
                 var unexpectedFolder = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "invalid");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, 0, testOutputHelper: _testOutputHelper, "-PackagesDirectory", "pkgs");
+                var r = Util.RestoreSolution(pathContext, 0, logLine: _testOutputHelper.WriteLine, "-PackagesDirectory", "pkgs");
 
                 // Assert
                 Directory.GetDirectories(expectedFolder).Should().NotBeEmpty();
@@ -5111,7 +5110,7 @@ namespace NuGet.CommandLine.Test
                     packageZ);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Directory.Exists(new ToolPathResolver(pathContext.UserPackagesFolder).GetToolDirectoryPath(packageM.Id, NuGetVersion.Parse(packageM.Version), netcoreapp2));
@@ -5160,7 +5159,7 @@ namespace NuGet.CommandLine.Test
                 var expectedFolder = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "valid");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Directory.GetDirectories(expectedFolder).Should().NotBeEmpty();
@@ -5227,7 +5226,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5271,7 +5270,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5317,7 +5316,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, 0, testOutputHelper: _testOutputHelper, "-Source", relativeSourceName);
+                var r = Util.RestoreSolution(pathContext, 0, logLine: _testOutputHelper.WriteLine, "-Source", relativeSourceName);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5362,7 +5361,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5434,7 +5433,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configPath, doc.ToString());
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r2.Success.Should().BeTrue();
@@ -5529,7 +5528,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configPath2, doc2.ToString());
 
                 // Act
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r2.Success.Should().BeTrue();
@@ -5582,7 +5581,7 @@ namespace NuGet.CommandLine.Test
                 var relativePathToConfig = PathUtility.GetRelativePath(pathContext.WorkingDirectory + Path.DirectorySeparatorChar, configPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, 0, testOutputHelper: _testOutputHelper, $"-ConfigFile {relativePathToConfig}");
+                var r = Util.RestoreSolution(pathContext, 0, logLine: _testOutputHelper.WriteLine, $"-ConfigFile {relativePathToConfig}");
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Output);
@@ -5649,14 +5648,14 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act && Assert
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Equal(0, r.ExitCode);
                 Assert.Contains("Writing cache file", r.Output);
 
                 // Do it again, it should no-op now.
                 // Act && Assert
-                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Equal(0, r2.ExitCode);
                 Assert.DoesNotContain("Writing cache file", r2.Output);
@@ -5696,7 +5695,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act && Assert
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Equal(0, r.ExitCode);
                 Assert.Contains("Writing cache file", r.Output);
@@ -5706,7 +5705,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(project.CacheFileOutputPath));
                 File.Delete(project.CacheFileOutputPath);
 
-                r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine);
 
                 Assert.Equal(0, r.ExitCode);
                 Assert.Contains("Writing cache file", r.Output);
@@ -5748,7 +5747,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5845,7 +5844,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5908,7 +5907,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5917,7 +5916,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Second Restore
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -5952,7 +5951,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -6053,7 +6052,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -6115,7 +6114,7 @@ namespace NuGet.CommandLine.Test
                     packageY);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -6482,7 +6481,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -6536,7 +6535,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -6605,7 +6604,7 @@ namespace NuGet.CommandLine.Test
                 xml.Save(projectA.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -6665,7 +6664,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -6730,7 +6729,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -6802,7 +6801,7 @@ namespace NuGet.CommandLine.Test
                 xml.Save(projectA.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.False(r.Success, r.AllOutput);
@@ -6842,7 +6841,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create();
 
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Preconditions
                 Assert.True(r.Success, r.AllOutput);
@@ -6861,7 +6860,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.True(r.Success, r.AllOutput);
 
                 Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
@@ -6900,7 +6899,7 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create();
 
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Preconditions
                 Assert.True(r.Success, r.AllOutput);
@@ -6916,7 +6915,7 @@ namespace NuGet.CommandLine.Test
 
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.True(r.Success, r.AllOutput);
 
                 Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
@@ -6961,7 +6960,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -7025,7 +7024,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -7099,7 +7098,7 @@ namespace NuGet.CommandLine.Test
                 xml.Save(projectB.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -7190,7 +7189,7 @@ namespace NuGet.CommandLine.Test
                 xml.Save(projectA.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
@@ -7307,7 +7306,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act & Assert
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
                 Assert.Contains(NuGetLogCode.NU1213.GetName(), r.AllOutput);
             }
         }
@@ -7345,7 +7344,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7362,7 +7361,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7413,7 +7412,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7433,7 +7432,7 @@ namespace NuGet.CommandLine.Test
                 projectB.Save();
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7489,7 +7488,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7509,7 +7508,7 @@ namespace NuGet.CommandLine.Test
                 File.Delete(projectA.AssetsFileOutputPath);
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7562,7 +7561,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7582,7 +7581,7 @@ namespace NuGet.CommandLine.Test
                 File.Delete(projectA.AssetsFileOutputPath);
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7629,7 +7628,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7654,7 +7653,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7716,7 +7715,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7739,7 +7738,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7793,7 +7792,7 @@ namespace NuGet.CommandLine.Test
 
                 doc.Save(projectA.ProjectPath);
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7861,7 +7860,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -7908,7 +7907,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(projectA.NuGetLockFileOutputPath, "");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -7961,7 +7960,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -7981,7 +7980,7 @@ namespace NuGet.CommandLine.Test
                 File.Delete(projectA.CacheFileOutputPath);
 
                 // Act
-                result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8032,7 +8031,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8094,7 +8093,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -8148,7 +8147,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var commandRunnerResult = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var commandRunnerResult = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 commandRunnerResult.Success.Should().BeTrue();
@@ -8172,7 +8171,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act & Assert
-                commandRunnerResult = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                commandRunnerResult = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 commandRunnerResult.Success.Should().BeTrue();
                 commandRunnerResult.AllOutput.Contains("Writing cache file");
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
@@ -8193,7 +8192,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act & Assert. The result should not be affected by the runtime json change.
-                commandRunnerResult = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                commandRunnerResult = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 commandRunnerResult.Success.Should().BeTrue();
                 Assert.Contains("No-Op restore", commandRunnerResult.AllOutput);
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
@@ -8238,7 +8237,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8295,7 +8294,7 @@ namespace NuGet.CommandLine.Test
                 _testOutputHelper.WriteLine($"InputFrameworks: {string.Join(",", lockFrameworkTransformed)}");
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8377,7 +8376,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8478,7 +8477,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8556,7 +8555,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8614,7 +8613,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8686,7 +8685,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
 
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
@@ -8715,7 +8714,7 @@ namespace NuGet.CommandLine.Test
 
 
                 //Run the restore and it should still properly restore.
-                var r2 = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r2 = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8763,7 +8762,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8813,7 +8812,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8825,7 +8824,7 @@ namespace NuGet.CommandLine.Test
                 projectA.Save();
 
                 // Act
-                result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8865,7 +8864,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -8942,7 +8941,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -8950,7 +8949,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Second Restore
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Update the cpvm
                 cpvmFile.SetPackageVersion("x", "2.0.0");
@@ -9027,7 +9026,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9102,7 +9101,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9176,7 +9175,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9249,7 +9248,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9332,7 +9331,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9344,7 +9343,7 @@ namespace NuGet.CommandLine.Test
                 cpvmFile.Save();
 
                 // the addition should not impact this restore
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9354,7 +9353,7 @@ namespace NuGet.CommandLine.Test
                 cpvmFile.Save();
 
                 // the removal should not impact this restore
-                r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9449,7 +9448,7 @@ namespace NuGet.CommandLine.Test
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
                 solution.Create();
 
-                var restoreResult = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var restoreResult = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 Assert.True(restoreResult.AllOutput.Contains("NU1605"));
             }
@@ -9641,7 +9640,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9694,7 +9693,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9739,7 +9738,7 @@ namespace NuGet.CommandLine.Test
                     packageX);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
                 Assert.Equal(0, r.ExitCode);
                 Assert.True(File.Exists(project.PropsOutput), r.Output);
                 var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
@@ -9803,7 +9802,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -9868,7 +9867,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                CommandRunnerResult result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -9926,7 +9925,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                CommandRunnerResult result = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeTrue();
@@ -10001,7 +10000,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, testOutputHelper: _testOutputHelper);
+                var r = Util.RestoreSolution(pathContext, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -10083,7 +10082,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create();
 
                 // Act
-                CommandRunnerResult result = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
+                CommandRunnerResult result = Util.RestoreSolution(pathContext, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.Success.Should().BeFalse();
@@ -10842,7 +10841,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 };
 
             // Act
-            var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 0, testOutputHelper: _testOutputHelper, args);
+            var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 0, logLine: _testOutputHelper.WriteLine, args);
 
             // Assert
             // If we pass source then log include actual path to repository instead of repository name.
@@ -10936,7 +10935,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 };
 
             // Act
-            var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1, testOutputHelper: _testOutputHelper, args);
+            var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1, logLine: _testOutputHelper.WriteLine, args);
 
             // Assert
             Assert.Contains("Package source mapping match not found for package ID 'Contoso.MVC.ASP'.", r.Output);

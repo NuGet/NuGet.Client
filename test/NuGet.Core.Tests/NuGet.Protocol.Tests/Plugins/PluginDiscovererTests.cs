@@ -16,7 +16,6 @@ using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
@@ -690,7 +689,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 CommandRunnerResult result = CommandRunner.Run(
                     filename: "/bin/bash",
                     arguments: $"-c \"chmod {(executable ? "+x" : "-x")} '{filePath}'\"",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 if (!result.Success)
                 {

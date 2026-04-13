@@ -14,7 +14,6 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -51,7 +50,7 @@ namespace Dotnet.Integration.Test
                 var result = _dotnetFixture.RunDotnetExpectFailure(
                     packageDir,
                     $"nuget verify {packageFile.FullName}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 result.Output.Should().Contain(_notSignedErrorCode);
             }
@@ -71,7 +70,7 @@ namespace Dotnet.Integration.Test
                 var result = _dotnetFixture.RunDotnetExpectFailure(
                     packageDir,
                     $"nuget verify {packageFile.FullName}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 string contentHash;
@@ -98,7 +97,7 @@ namespace Dotnet.Integration.Test
                 var result = _dotnetFixture.RunDotnetExpectSuccess(
                     testDirectory,
                     $"nuget verify {packageFile.FullName} --all",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 result.Output.Should().NotContain(_noTimestamperWarningCode);
                 result.Output.Should().NotContain(_primarySignatureInvalidErrorCode);
@@ -120,7 +119,7 @@ namespace Dotnet.Integration.Test
                     testDirectory,
                     $"nuget verify {packageFile.FullName} " +
                     $"--certificate-fingerprint 775AAB607AA76028A7CC7A873A9513FF0C3B40DF09B7B83D21689A3675B34D9A --certificate-fingerprint DEF",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 result.AllOutput.Should().Contain(_noMatchingCertErrorCode);
             }
@@ -141,7 +140,7 @@ namespace Dotnet.Integration.Test
                     testDirectory,
                     $"nuget verify {packageFile.FullName} " +
                     $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE --certificate-fingerprint def",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
             }
         }
 
@@ -165,7 +164,7 @@ namespace Dotnet.Integration.Test
                     var result = _dotnetFixture.RunDotnetExpectFailure(
                         testDirectory1,
                         $"nuget verify {packagX.FullName} {Path.Combine(testDirectory2, "*.nupkg")} --verbosity normal",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                     result.AllOutput.Should().Contain("Successfully verified package 'TestPackage.AuthorSigned.1.0.0'.");
                     result.AllOutput.Should().Contain($"Verifying Test.Reposigned.1.0.0");
@@ -210,7 +209,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // For certificate with trusted root setting allowUntrustedRoot to true/false doesn't matter
@@ -253,7 +252,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
@@ -299,7 +298,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
@@ -352,7 +351,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Unless allowUntrustedRoot is set true in nuget.config verify always fails for cert without trusted root.
@@ -397,7 +396,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectSuccess(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // If allowUntrustedRoot is set true in nuget.config then verify succeeds for cert with untrusted root.
@@ -447,7 +446,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Owners is casesensitive, owner info should be "nuget;contoso" not "Nuget;Contoso"
@@ -496,7 +495,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Owners is casesensitive, here owner "nuget" matches
@@ -550,7 +549,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // Owners is casesensitive, owner info should be "nuget;contoso" not "Nuget;Contoso"
@@ -602,7 +601,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectSuccess(
                     testDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // For certificate with trusted root setting allowUntrustedRoot value true/false doesn't matter.
@@ -645,7 +644,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} --all --certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def --configfile {nugetConfigPath2}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // allowUntrustedRoot is not set true in nuget2.config, but in nuget.config, so verify fails.
@@ -687,7 +686,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult verifyResult = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} --all --certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def --configfile {nugetConfigPath2}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 // allowUntrustedRoot is set true in nuget2.config, so verify succeeds.

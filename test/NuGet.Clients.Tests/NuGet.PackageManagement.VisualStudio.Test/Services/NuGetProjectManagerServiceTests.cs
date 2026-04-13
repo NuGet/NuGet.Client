@@ -42,7 +42,6 @@ using StreamJsonRpc;
 using Test.Utility;
 using Test.Utility.VisualStudio;
 using Xunit;
-using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;

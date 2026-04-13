@@ -21,7 +21,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {

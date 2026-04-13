@@ -16,7 +16,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Protocol.FuncTest
 {

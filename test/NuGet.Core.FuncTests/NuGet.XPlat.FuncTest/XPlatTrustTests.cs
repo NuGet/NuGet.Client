@@ -10,7 +10,6 @@ using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -40,7 +39,7 @@ namespace NuGet.XPlat.FuncTest
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
                     $"{XplatDll} trust {unrecognizedOption}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -65,7 +64,7 @@ namespace NuGet.XPlat.FuncTest
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
                     $"{XplatDll} trust {unrecognizedOption}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
@@ -91,7 +90,7 @@ namespace NuGet.XPlat.FuncTest
                     DotnetCli,
                     mockPackagesDirectory.FullName,
                     $"{XplatDll} {args}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, "There are no trusted signers.");

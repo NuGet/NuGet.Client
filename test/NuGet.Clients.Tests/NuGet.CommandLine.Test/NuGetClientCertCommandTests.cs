@@ -14,7 +14,6 @@ using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -52,7 +51,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
@@ -81,7 +80,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
@@ -112,7 +111,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "file that does not exist";
@@ -133,7 +132,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "Property 'PackageSource' should not be null or empty";
@@ -164,7 +163,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "was not found";
@@ -487,7 +486,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
@@ -520,7 +519,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "does not exist";
@@ -549,7 +548,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
@@ -679,7 +678,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "A fileCert path specified a file that does not exist";
@@ -715,7 +714,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "does not exist";
@@ -763,7 +762,7 @@ namespace NuGet.CommandLine.Test
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
                     string.Join(" ", args.Select(a => $"\"{a}\"")),
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 var expectedError = "was not found";
@@ -854,7 +853,7 @@ namespace NuGet.CommandLine.Test
                     NuGetExePath,
                     WorkingPath,
                     arguments,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 LogInstalledCertificates();
 

@@ -8,7 +8,6 @@ using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -41,7 +40,7 @@ namespace Dotnet.Integration.Test
             pathContext.Settings.AddSource("https-feed", $"{tcpListenerServer.URI}v3/index.json", "disableTLSCertificateValidation", "true");
 
             // Act & Assert
-            _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectA.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath}", testOutputHelper: _testOutputHelper);
+            _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectA.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath}", logLine: _testOutputHelper.WriteLine);
             tcpListenerServer.StopServer();
         }
 
@@ -62,7 +61,7 @@ namespace Dotnet.Integration.Test
             pathContext.Settings.AddSource("https-feed", $"{tcpListenerServer.URI}v3/index.json");
 
             // Act & Assert
-            var _result = _dotnetFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath} -v d", testOutputHelper: _testOutputHelper);
+            var _result = _dotnetFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath} -v d", logLine: _testOutputHelper.WriteLine);
             tcpListenerServer.StopServer();
         }
 
@@ -86,7 +85,7 @@ namespace Dotnet.Integration.Test
             pathContext.Settings.AddSource("https-feed2", $"{tcpListenerServer2.URI}v3/index.json", "disableTLSCertificateValidation", "true");
 
             // Act & Assert
-            var _result = _dotnetFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath}", testOutputHelper: _testOutputHelper);
+            var _result = _dotnetFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath}", logLine: _testOutputHelper.WriteLine);
             tcpListenerServer1.StopServer();
             tcpListenerServer2.StopServer();
         }
@@ -111,7 +110,7 @@ namespace Dotnet.Integration.Test
             pathContext.Settings.AddSource("https-feed2", $"{tcpListenerServer2.URI}v3/index.json", "disableTLSCertificateValidation", "true");
 
             // Act & Assert
-            var _result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath} --source {tcpListenerServer2.URI}v3/index.json", testOutputHelper: _testOutputHelper);
+            var _result = _dotnetFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile {pathContext.Settings.ConfigPath} --source {tcpListenerServer2.URI}v3/index.json", logLine: _testOutputHelper.WriteLine);
             tcpListenerServer1.StopServer();
             tcpListenerServer2.StopServer();
         }

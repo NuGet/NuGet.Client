@@ -13,7 +13,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {

@@ -13,7 +13,6 @@ using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -59,7 +58,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.WorkingDirectory,
                     $"nuget trust --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 SettingsTestUtils.RemoveWhitespace(result.Output).Should().Contain(SettingsTestUtils.RemoveWhitespace(expectedAuthorContent));
@@ -79,7 +78,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 //// Assert
                 result.Output.Should().Contain("There are no trusted signers.");
@@ -115,7 +114,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.WorkingDirectory,
                     $"nuget trust list --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 SettingsTestUtils.RemoveWhitespace(result.Output).Should().Contain(SettingsTestUtils.RemoveWhitespace(expectedAuthorContent));
@@ -150,7 +149,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust list --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 SettingsTestUtils.RemoveWhitespace(result.Output).Should().Contain(SettingsTestUtils.RemoveWhitespace(expectedAuthorContent));
@@ -194,7 +193,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -252,7 +251,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath} --configfile ..{Path.DirectorySeparatorChar}{nugetConfigFileName}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -306,7 +305,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -352,7 +351,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -361,7 +360,7 @@ namespace Dotnet.Integration.Test
                 resultAdd = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Main assert
                 resultAdd.AllOutput.Should().Contain("error: A trusted signer 'nuget' already exists.");
@@ -409,7 +408,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust repository nuget {signedPackagePath}  {allowUntrustedRootArg} {ownersArgs} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -453,7 +452,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust repository nuget {signedPackagePath} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -462,7 +461,7 @@ namespace Dotnet.Integration.Test
                 resultAdd = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.SolutionRoot,
                     $"nuget trust repository nuget {signedPackagePath} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Main assert
                 resultAdd.AllOutput.Should().Contain("error: A trusted signer 'nuget' already exists.");
@@ -500,7 +499,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", authorName));
@@ -548,7 +547,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", authorName));
@@ -557,7 +556,7 @@ namespace Dotnet.Integration.Test
                 result = _dotnetFixture.RunDotnetExpectFailure(
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Main assert
                 result.AllOutput.Should().Contain("The certificate finger you're trying to add is already in the certificate fingerprint list");
@@ -601,7 +600,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultAdd = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultAdd.Success.Should().BeTrue();
@@ -652,7 +651,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultSync = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust remove {repositoryName} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultSync.Success.Should().BeTrue();
@@ -698,7 +697,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult resultSync = _dotnetFixture.RunDotnetExpectSuccess(
                     pathContext.SolutionRoot,
                     $"nuget trust remove {repositoryWrongName} --configfile {nugetConfigPath}",
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 resultSync.Success.Should().BeTrue();

@@ -7,7 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using NuGet.Common;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace NuGet.Test.Utility
 {

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -72,7 +71,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             var args = $"nuget push {packagePath} --source {server.Uri}push --symbol-source {server.Uri}symbols";
-            var result = _fixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, environmentVariables, _testOutputHelper);
+            var result = _fixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, environmentVariables, _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal("EnvApiKey123", capturedApiKey);
@@ -125,7 +124,7 @@ namespace Dotnet.Integration.Test
 
             // Act
             var args = $"nuget push {packagePath} --source {server.Uri}push --symbol-source {server.Uri}symbols --api-key CommandLineKey --symbol-api-key CommandLineSymbolKey";
-            var result = _fixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, environmentVariables, _testOutputHelper);
+            var result = _fixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, environmentVariables, _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal("CommandLineKey", capturedApiKey);

@@ -24,7 +24,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -50,15 +49,15 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Restore a solution.
         /// </summary>
-        public static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int expectedExitCode = 0, ITestOutputHelper testOutputHelper = null, params string[] additionalArgs)
+        public static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int expectedExitCode = 0, Action<string> logLine = null, params string[] additionalArgs)
         {
-            return Restore(pathContext, pathContext.SolutionRoot, expectedExitCode, testOutputHelper, additionalArgs);
+            return Restore(pathContext, pathContext.SolutionRoot, expectedExitCode, logLine, additionalArgs);
         }
 
         /// <summary>
         /// Run nuget.exe restore {inputPath}
         /// </summary>
-        public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, ITestOutputHelper testOutputHelper = null, params string[] additionalArgs)
+        public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, Action<string> logLine = null, params string[] additionalArgs)
         {
             var nugetExe = GetNuGetExePath();
 
@@ -72,10 +71,10 @@ namespace NuGet.CommandLine.Test
 
             args = args.Concat(additionalArgs).ToArray();
 
-            return RunCommand(pathContext, nugetExe, expectedExitCode, testOutputHelper, args);
+            return RunCommand(pathContext, nugetExe, expectedExitCode, logLine, args);
         }
 
-        public static CommandRunnerResult RunCommand(SimpleTestPathContext pathContext, string nugetExe, int expectedExitCode = 0, ITestOutputHelper testOutputHelper = null, params string[] arguments)
+        public static CommandRunnerResult RunCommand(SimpleTestPathContext pathContext, string nugetExe, int expectedExitCode = 0, Action<string> logLine = null, params string[] arguments)
         {
             // Store the dg file for debugging
             var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
@@ -91,7 +90,7 @@ namespace NuGet.CommandLine.Test
                 pathContext.WorkingDirectory.Path,
                 string.Join(" ", arguments),
                 environmentVariables: envVars,
-                testOutputHelper: testOutputHelper);
+                logLine: logLine);
 
             // Assert
             Assert.True(expectedExitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);

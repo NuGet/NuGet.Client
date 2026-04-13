@@ -5,7 +5,6 @@ using System;
 using Microsoft.Win32;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {

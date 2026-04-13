@@ -11,7 +11,6 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Spectre.Console.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

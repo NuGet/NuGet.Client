@@ -12,7 +12,6 @@ using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest
 {
@@ -73,7 +72,7 @@ namespace NuGet.CommandLine.FuncTest
                 fileName,
                 arguments: args,
                 timeOutInMilliseconds: 10000,
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             result.ExitCode.Should().Be(16);
         }
@@ -103,7 +102,7 @@ namespace NuGet.CommandLine.FuncTest
                     writer.WriteLine("echo Hello & exit 0");
                 },
                 timeOutInMilliseconds: 5000,
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             result.Output.Should().Contain("Hello");
         }
@@ -154,7 +153,7 @@ namespace NuGet.CommandLine.FuncTest
                     fileName,
                     Directory.GetCurrentDirectory(),
                     args,
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -193,7 +192,7 @@ namespace NuGet.CommandLine.FuncTest
 
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            new Action(() => CommandRunner.Run(fileName, arguments: args, timeOutInMilliseconds: 1000, testOutputHelper: _testOutputHelper, timeoutRetryCount: 0))
+            new Action(() => CommandRunner.Run(fileName, arguments: args, timeOutInMilliseconds: 1000, logLine: _testOutputHelper.WriteLine, timeoutRetryCount: 0))
                 .Should().Throw<TimeoutException>();
 
             stopwatch.Stop();
@@ -224,7 +223,7 @@ namespace NuGet.CommandLine.FuncTest
                 fileName,
                 Directory.GetCurrentDirectory(),
                 args,
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             Assert.Equal(0, result.ExitCode);

@@ -13,7 +13,6 @@ using NuGet.CommandLine.XPlat;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

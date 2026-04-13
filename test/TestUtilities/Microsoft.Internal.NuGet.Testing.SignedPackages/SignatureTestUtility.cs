@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using Xunit;
 
 namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 {
@@ -43,7 +42,12 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 return Task.Delay(delay);
             }
 
-            Assert.True(DateTimeOffset.Now > notAfter);
+            if (DateTimeOffset.Now > notAfter)
+            {
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(certificate),
+                    message: $"The certificate with thumbprint {certificate.Thumbprint} has already expired.");
+            }
 
             return Task.CompletedTask;
         }

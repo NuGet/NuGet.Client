@@ -6,7 +6,6 @@ using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Msbuild.Integration.Test
 {

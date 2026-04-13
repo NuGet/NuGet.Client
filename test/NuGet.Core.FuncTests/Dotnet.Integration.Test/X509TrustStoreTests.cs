@@ -11,7 +11,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {

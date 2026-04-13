@@ -18,7 +18,6 @@ using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Protocol.Tests
 {

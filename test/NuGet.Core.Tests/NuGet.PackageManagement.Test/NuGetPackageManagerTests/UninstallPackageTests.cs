@@ -15,7 +15,6 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
 {

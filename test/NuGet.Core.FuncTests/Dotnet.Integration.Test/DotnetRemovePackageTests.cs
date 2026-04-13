@@ -8,7 +8,6 @@ using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test;
 
@@ -35,7 +34,7 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
             """);
 
         // Get project content.
-        var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+        var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper.WriteLine);
         _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
         Assert.Contains("""<PackageReference Include="packageX" Version="1.0.0" />""", virtualProject.Content);
         using var builder = new TestVirtualProjectBuilder(virtualProject);

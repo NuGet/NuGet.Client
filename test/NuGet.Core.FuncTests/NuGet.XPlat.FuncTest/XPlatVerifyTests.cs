@@ -10,7 +10,6 @@ using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Common;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {

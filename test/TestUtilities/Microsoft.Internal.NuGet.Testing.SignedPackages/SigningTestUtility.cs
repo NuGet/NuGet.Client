@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using Xunit;
 
 namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 {
@@ -780,7 +779,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void VerifyByteSequences(ReadOnlyMemory<byte> expected, ReadOnlyMemory<byte> actual)
         {
-            Assert.Equal(expected.Length, actual.Length);
+            if (expected.Length != actual.Length)
+            {
+                throw new InvalidOperationException($"Expected length is {expected.Length}, but actual length is {actual.Length}");
+            }
 
             VerifyByteArrays(expected.Span.ToArray(), actual.Span.ToArray());
         }
@@ -790,7 +792,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
             var expectedHex = BitConverter.ToString(expected).Replace("-", "");
             var actualHex = BitConverter.ToString(actual).Replace("-", "");
 
-            Assert.Equal(expectedHex, actualHex);
+            if (!expectedHex.Equals(actualHex))
+            {
+                throw new InvalidOperationException(message: $"Expected byte array is {expectedHex}, but actual byte array is {actualHex}");
+            }
         }
 
         //We will not change the original X509ChainStatus.StatusInformation of OfflineRevocation if we directly call API CertificateChainUtility.GetCertificateChain (or SigningUtility.Verify)
@@ -804,7 +809,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 issue.Level == logLevel &&
                 issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == offlineRevocation));
 
-            Assert.True(isOfflineRevocation);
+            if (!isOfflineRevocation)
+            {
+                throw new InvalidOperationException("Expected OfflineRevocation issue was not found.");
+            }
         }
 
         //We will change the original X509ChainStatus.StatusInformation of OfflineRevocation to VerifyCertTrustOfflineWhileRevocationModeOffline or VerifyCertTrustOfflineWhileRevocationModeOnline in Signature.cs and Timestamp.cs
@@ -816,10 +824,13 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
         {
-            Assert.Contains(issues, issue =>
+            if (!issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
+                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline)))
+            {
+                throw new InvalidOperationException("Expected OfflineRevocationOnlineMode issue was not found.");
+            }
         }
 
         public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
@@ -829,10 +840,13 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
         public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
         {
-            Assert.Contains(issues, issue =>
+            if (!issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
+                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline)))
+            {
+                throw new InvalidOperationException("Expected OfflineRevocationOfflineMode issue was not found.");
+            }
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -849,7 +863,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 issue.Level == logLevel &&
                 issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == revocationStatusUnknown));
 
-            Assert.True(isRevocationStatusUnknown);
+            if (!isRevocationStatusUnknown)
+            {
+                throw new InvalidOperationException("Expected RevocationStatusUnknown issue was not found.");
+            }
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
@@ -862,14 +879,20 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 (issue.Message.Contains("certificate is not trusted by the trust provider") ||
                  issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot)));
 
-            Assert.True(isUntrustedRoot);
+            if (!isUntrustedRoot)
+            {
+                throw new InvalidOperationException("Expected UntrustedRoot issue was not found.");
+            }
 
 #if NET5_0_OR_GREATER
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
                 bool hasNU3042 = issues.Any(issue => issue.Code == NuGetLogCode.NU3042);
 
-                Assert.True(hasNU3042);
+                if (!hasNU3042)
+                {
+                    throw new InvalidOperationException("Expected NU3042 issue was not found.");
+                }
             }
 #endif
         }
@@ -888,7 +911,10 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 issue.Level == logLevel &&
                 issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == notTimeValid));
 
-            Assert.True(isNotTimeValid);
+            if (!isNotTimeValid)
+            {
+                throw new InvalidOperationException("Expected NotTimeValid issue was not found.");
+            }
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)

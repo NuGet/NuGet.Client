@@ -9,7 +9,6 @@ using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -75,7 +74,7 @@ namespace NuGet.XPlat.FuncTest
                         { "NUGET_PLUGINS_CACHE_PATH", mockPluginsCacheDirectory.FullName },
                         { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
                     },
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
                 // Assert
@@ -136,7 +135,7 @@ namespace NuGet.XPlat.FuncTest
                         { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpDirectory.FullName },
                         { "NUGET_PLUGINS_CACHE_PATH", mockPluginsCacheDirectory.FullName }
                     },
-                    testOutputHelper: _testOutputHelper);
+                    logLine: _testOutputHelper.WriteLine);
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
                 // Assert
@@ -230,7 +229,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Path.GetDirectoryName(XplatDll),
                 $"{XplatDll} {args}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -254,7 +253,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Path.GetDirectoryName(XplatDll),
                 $"{XplatDll} {args}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -278,7 +277,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Path.GetDirectoryName(XplatDll),
                 $"{XplatDll} {args}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -303,7 +302,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Path.GetDirectoryName(XplatDll),
                 $"{XplatDll} {args}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -334,7 +333,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Path.GetDirectoryName(XplatDll),
                 $"{XplatDll} {args}",
-                testOutputHelper: _testOutputHelper);
+                logLine: _testOutputHelper.WriteLine);
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);

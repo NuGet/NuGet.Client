@@ -26,7 +26,6 @@ using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.Threading;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test.ViewModels
 {

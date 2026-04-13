@@ -22,7 +22,6 @@ using NuGet.Versioning;
 using NuGet.XPlat.FuncTest;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
@@ -90,7 +89,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -125,7 +124,7 @@ namespace Dotnet.Integration.Test
                 """);
 
             // Get project content.
-            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
+            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper.WriteLine);
             _testOutputHelper.WriteLine("before:\n" + virtualProject.Content);
             Assert.Contains("""<PackageReference Include="NuGet.Internal.Test.a" Version="1.0.0" />""", virtualProject.Content);
             using var builder = new TestVirtualProjectBuilder(virtualProject);
@@ -206,7 +205,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -249,7 +248,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -289,7 +288,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -332,7 +331,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -358,7 +357,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectFailure(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update NuGet.Internal.Test.a",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -402,7 +401,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: testContext.SolutionRoot,
                 args: $"package update",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             // Assert
@@ -420,7 +419,7 @@ namespace Dotnet.Integration.Test
             var result = _testFixture.RunDotnetExpectSuccess(
                 workingDirectory: Path.GetDirectoryName(projectPath),
                 args: $"msbuild {Path.GetFileName(projectPath)} -getItem:{itemType}",
-                testOutputHelper: _testOutputHelper,
+                logLine: _testOutputHelper.WriteLine,
                 environmentVariables: _envVars);
 
             using JsonDocument document = JsonDocument.Parse(result.Output);

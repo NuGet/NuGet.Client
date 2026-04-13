@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit.v3" />
     <PackageReference Include="Microsoft.Build.Framework" NoWarn="NU1605" />
   </ItemGroup>
 </Project>

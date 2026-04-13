@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Test
 
         public static void Throws<TException>(Action act, Action<TException> condition) where TException : Exception
         {
-            Exception ex = Record.Exception(act);
+            Exception? ex = Record.Exception(act);
             Assert.NotNull(ex);
             TException tex = Assert.IsAssignableFrom<TException>(ex);
             condition(tex);

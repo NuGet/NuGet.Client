@@ -7,7 +7,6 @@ using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Protocol.Tests
 {

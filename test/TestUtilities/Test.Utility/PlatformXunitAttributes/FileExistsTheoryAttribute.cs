@@ -14,37 +14,30 @@ namespace NuGet.Test.Utility
     public class FileExistsTheoryAttribute
         : TheoryAttribute
     {
-        private string _skip;
+        private IEnumerable<string> _paths = new List<string>();
+        private string _path;
+        private bool _allowCIToSkip;
 
-        public override string Skip
+        public IEnumerable<string> Paths
         {
-            get
-            {
-                var skip = _skip;
-
-                if (string.IsNullOrEmpty(skip))
-                {
-                    skip = XunitAttributeUtility.GetFileExistsSkipMessageOrNull(AllowCIToSkip, GetPaths());
-                }
-
-                // If this is null the test will run.
-                return skip;
-            }
-
-            set
-            {
-                _skip = value;
-            }
+            get => _paths;
+            set { _paths = value; EvaluateSkip(); }
         }
 
-        public IEnumerable<string> Paths { get; set; } = new List<string>();
-
-        public string Path { get; set; }
+        public string Path
+        {
+            get => _path;
+            set { _path = value; EvaluateSkip(); }
+        }
 
         /// <summary>
         /// If true the CI will be allowed to skip this test.
         /// </summary>
-        public bool AllowCIToSkip { get; set; }
+        public bool AllowCIToSkip
+        {
+            get => _allowCIToSkip;
+            set { _allowCIToSkip = value; EvaluateSkip(); }
+        }
 
         public FileExistsTheoryAttribute()
         {
@@ -52,14 +45,20 @@ namespace NuGet.Test.Utility
 
         public FileExistsTheoryAttribute(params string[] paths)
         {
-            Paths = paths.ToList();
+            _paths = paths.ToList();
+            EvaluateSkip();
+        }
+
+        private void EvaluateSkip()
+        {
+            Skip = XunitAttributeUtility.GetFileExistsSkipMessageOrNull(_allowCIToSkip, GetPaths());
         }
 
         private string[] GetPaths()
         {
-            var paths = new HashSet<string>(Paths ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
+            var paths = new HashSet<string>(_paths ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase)
             {
-                Path
+                _path
             };
 
             return paths.Where(e => !string.IsNullOrEmpty(e)).ToArray();

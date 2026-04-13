@@ -6,13 +6,12 @@
 #pragma warning disable CS1591
 
 using System;
-using Xunit.Abstractions;
 
 namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
 {
     public class RetryRunner
     {
-        public static T RunWithRetries<T, E>(Func<T> func, int maxRetries = 1, ITestOutputHelper logger = null) where E : Exception
+        public static T RunWithRetries<T, E>(Func<T> func, int maxRetries = 1, Action<string> logLine = null) where E : Exception
         {
             {
                 int retryCount = 0;
@@ -31,8 +30,8 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                         }
 
                         retryCount++;
-                        logger?.WriteLine($"Encountered exception during run attempt #{retryCount}: {exception.Message}");
-                        logger?.WriteLine($"Retrying {retryCount} of {maxRetries}");
+                        logLine?.Invoke($"Encountered exception during run attempt #{retryCount}: {exception.Message}");
+                        logLine?.Invoke($"Retrying {retryCount} of {maxRetries}");
                     }
                 }
             }

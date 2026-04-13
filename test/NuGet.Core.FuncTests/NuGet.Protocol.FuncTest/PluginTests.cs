@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Plugins;
-using Xunit.Abstractions;
+using Xunit;
 
 #if IS_DESKTOP
 using System.Globalization;
@@ -20,7 +20,6 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
-using Xunit;
 using PluginProtocolConstants = NuGet.Protocol.Plugins.ProtocolConstants;
 #endif
 

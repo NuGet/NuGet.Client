@@ -70,9 +70,9 @@ namespace NuGet.VisualStudio.Common.Test
             _outputConsoleLogger.Dispose();
         }
 
-        public Task DisposeAsync() => Task.CompletedTask;
+        public ValueTask DisposeAsync() => default;
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             await WaitForInitializationAsync();
         }
