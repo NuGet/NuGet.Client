@@ -349,6 +349,16 @@ Function Test-BuildEnvironment {
         # because dotnet-install script runs in configure.ps1 in previous build step
         $env:path = "$CLIRoot;${env:path}"
     }
+
+    # Point MSBuild to the .NET Core SDK installed in the cli directory,
+    # so msbuild.exe resolves SDK-style projects correctly.
+    $SdkVersionDirs = Get-ChildItem (Join-Path $CLIRoot 'sdk') -Directory -ErrorAction SilentlyContinue
+    if ($SdkVersionDirs) {
+        $SdksDir = Join-Path ($SdkVersionDirs | Select-Object -First 1).FullName 'Sdks'
+        if (Test-Path $SdksDir) {
+            $env:MSBuildSDKsPath = $SdksDir
+        }
+    }
 }
 
 function Enable-DelaySigningForDotNet {
@@ -412,15 +422,8 @@ Function Set-DelaySigning {
 }
 
 Function Get-BuildNumber() {
-    $SemanticVersionDate = '2018-05-30' # Date format - yyyy-mm-dd
-    try {
-        [uint16](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
-    }
-    catch {
-        # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
-        # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
-        Error-Log "Build number is out of range! Consider advancing SemanticVersionDate in common.ps1." -Fatal
-    }
+    # Hardcoded build number for local builds. CI provides an explicit build number via the -BuildNumber parameter.
+    9999
 }
 
 Function Format-BuildNumber([int]$BuildNumber) {

@@ -24,13 +24,16 @@ Function Get-Version {
         [string]$build
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
-        # Generate the new minor version: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor 99 at worst, otherwise the logic breaks. 
-        #The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $finalVersion = "15.0.$((-join ($ProductVersion -split '\.' | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
-    
+        # The major version is NuGetMajorVersion + 11, to match VS's number.
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105.
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks.
+        # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
+        $versionParts = $ProductVersion -split '\.'
+        $major = $($versionParts[0] / 1) + 11
+        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
+
         Write-Host "The new VSIX Version is: $finalVersion"
-        return $finalVersion    
+        return $finalVersion
 }
 
 Function Update-VsixVersion {
@@ -91,15 +94,10 @@ Set-RtmLabel -BuildRTM $BuildRTM
 
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
-# Turn off strong name verification for common DevDiv public keys so that people can execute things against
-# test-signed assemblies. One example would be running unit tests on a test-signed assembly during the build.
-$regKey = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,b03f5f7f11d50a3a"
-$regKey32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,b03f5f7f11d50a3a"
+# Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
+# will not fail because of strong name verification errors.
+. "$PSScriptRoot\..\utils\DisableStrongNameVerification.ps1"
 
-$regKeyNuGet = "HKLM:SOFTWARE\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
-$regKeyNuGet32 = "HKLM:SOFTWARE\Wow6432Node\Microsoft\StrongName\Verification\*,31bf3856ad364e35"
-
-$has32bitNode = Test-Path "HKLM:SOFTWARE\Wow6432Node"
 $regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
 $enableLongPathSupport = "LongPathsEnabled"
 
@@ -110,7 +108,7 @@ $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 # NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
-# Check if there is a localization branch associated with this branch repo 
+# Check if there is a localization branch associated with this branch repo
 $currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
 if (Get-LocBranchExists $currentNuGetBranch)
 {
@@ -142,29 +140,7 @@ Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 # Get the commit of the localization repository that will be used for this build.
 $LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
-if (-not (Test-Path $regKey) -or ($has32bitNode -and -not (Test-Path $regKey32)))
-{
-    Write-Host "Disabling StrongName Verification so that test-signed binaries can be used on the build machine"
-    New-Item -Path (Split-Path $regKey) -Name (Split-Path -Leaf $regKey) -Force | Out-Null
-
-    if ($has32bitNode)
-    {
-        New-Item -Path (Split-Path $regKey32) -Name (Split-Path -Leaf $regKey32) -Force | Out-Null
-    }
-}
-
-if (-not (Test-Path $regKeyNuGet) -or ($has32bitNode -and -not (Test-Path $regKeyNuGet32)))
-{
-    Write-Host "Disabling StrongName Verification for NuGet public key so that test-signed binaries can be used on the build machine"
-    New-Item -Path (Split-Path $regKeyNuGet) -Name (Split-Path -Leaf $regKeyNuGet) -Force | Out-Null
-
-    if ($has32bitNode)
-    {
-        New-Item -Path (Split-Path $regKeyNuGet32) -Name (Split-Path -Leaf $regKeyNuGet32) -Force | Out-Null
-    }
-}
-
-if (-not (Test-Path $regKeyFileSystem)) 
+if (-not (Test-Path $regKeyFileSystem))
 {
 	Write-Host "Enabling long path support on the build machine"
 	Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
@@ -197,7 +173,7 @@ else
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
-    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_REPOSITORY_LOCALPATH\artifacts", 'buildinfo.json')
+    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_STAGINGDIRECTORY\BuildInfo", 'buildinfo.json')
 
     New-Item $localBuildInfoJsonFilePath -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath

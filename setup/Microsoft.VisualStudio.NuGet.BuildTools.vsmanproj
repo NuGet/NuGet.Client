@@ -11,6 +11,7 @@
     <TargetName>$(MSBuildProjectName)</TargetName>
     <DropFolder>$(VsixPublishDestination)</DropFolder>
     <OutputPath Condition="'$(IsVsixBuild)' != 'true'">$(DropFolder)</OutputPath>
+    <SBOMFileLocation>$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json</SBOMFileLocation>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsVsixBuild)' == 'true'">
@@ -25,8 +26,9 @@
     <ProjectReference Include="Microsoft.VisualStudio.NuGet.BuildTools.swixproj" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <MergeManifest Include="$(OutputPath)$(MSBuildProjectName).json" />
+  <ItemGroup  Condition="'$(IsVsixBuild)' != 'true'">
+    <MergeManifest Include="$(OutputPath)$(MSBuildProjectName).json"
+                   SBOMFileLocation="$(SBOMFileLocation)" />
   </ItemGroup>
 
   <Target Name="CopyToDropFolder" AfterTargets="Build" Condition="'$(IsVsixBuild)' == 'true'">
@@ -35,6 +37,17 @@
   </Target>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
+
+  <!--
+    VS requires the generated vsman files to contain the path to an SBOM file, but this isn't validated until VS insertion.
+    So, check here that the file exists and fail our build, so we get early notice of build errors.
+  -->
+  <Target Name="_ensureSbomExists" BeforeTargets="AddSBOM" Condition=" '$(IsVsixBuild)' != 'true' ">
+    <Error Condition="!Exists($(SBOMFileLocation)) AND '$(SBOMFileLocation)' != ''"
+      Text="SBOM file '$(SBOMFileLocation)' does not exist" />
+    <Error Condition="'$(SBOMFileLocation)' == ''"
+      Text="Property 'SBOMFileLocation' is not defined" />
+  </Target>
 
   <Target Name="ValidateManifest" Condition="'$(IsVsixBuild)' == 'true'"/>
 </Project>
