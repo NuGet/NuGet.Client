@@ -31,24 +31,13 @@ steps:
       msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
   - task: MSBuild@1
-    displayName: "Run Functional Tests (continue on error)"
+    displayName: "Run Functional Tests"
     continueOnError: "true"
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
       maximumCpuCount: true
-    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
-
-  - task: MSBuild@1
-    displayName: "Run Functional Tests (stop on error)"
-    continueOnError: "false"
-    inputs:
-      solution: "build\\build.proj"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
-      maximumCpuCount: true
-    condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"

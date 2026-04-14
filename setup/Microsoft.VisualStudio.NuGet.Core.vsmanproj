@@ -9,7 +9,7 @@
       <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
       <TargetName>$(MSBuildProjectName)</TargetName>
       <OutputPath>$(VsixPublishDestination)</OutputPath>
-      <SBOMFileLocation>$(ManifestDirPath)\$(ARTIFACT_NAME)\_manifest\spdx_2.2\manifest.spdx.json</SBOMFileLocation>
+      <SBOMFileLocation>$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json</SBOMFileLocation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,4 +19,15 @@
   </ItemGroup>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets"/>
+
+  <!--
+    VS requires the generated vsman files to contain the path to an SBOM file, but this isn't validated until VS insertion.
+    So, check here that the file exists and fail our build, so we get early notice of build errors.
+  -->
+  <Target Name="_ensureSbomExists" BeforeTargets="AddSBOM">
+    <Error Condition="!Exists($(SBOMFileLocation)) AND '$(SBOMFileLocation)' != ''"
+      Text="SBOM file '$(SBOMFileLocation)' does not exist" />
+    <Error Condition="'$(SBOMFileLocation)' == ''"
+      Text="Property 'SBOMFileLocation' is not defined" />
+  </Target>
 </Project>

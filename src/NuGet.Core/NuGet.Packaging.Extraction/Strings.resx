@@ -882,4 +882,8 @@ Valid from:</comment>
     <value>The {0}'s timestamping certificate is not trusted by the trust provider.</value>
     <comment>0 -Signature friendly name</comment>
   </data>
+  <data name="ErrorPackageIdentityDoesNotMatch" xml:space="preserve">
+    <value>Expected package {0} {1}, but got package {2} {3}</value>
+    <comment>0 and 2 are package names, and 1 and 3 are versions numbers.</comment>
+  </data>
 </root>
