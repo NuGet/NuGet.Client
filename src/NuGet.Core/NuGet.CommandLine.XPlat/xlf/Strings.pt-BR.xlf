@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="translated">A chave de API do servidor. Se não estiver definida, a variável de ambiente NUGET_API_KEY será usada.</target>
+        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="App_FullName">
@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
         <source>{0} (y/N)</source>
-        <target state="translated">{0} (y/N)</target>
+        <target state="translated">{0} (s/N)</target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessageAccept">
@@ -330,7 +330,7 @@ Do not translate "PackageVersion"</note>
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}
 NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Você está executando a operação '{0}' com fontes 'HTTP': {1}
-O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicitamente 'allowInsecureConnections' como verdadeiro no seu arquivo NuGet.Config. Consulte [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) para mais informações.</target>
+O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicitamente 'allowInsecureConnections' como verdadeiro no seu arquivo NuGet.Config. Consulte https://aka.ms/nuget-https-everywhere para mais informações.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server uris</note>
       </trans-unit>
       <trans-unit id="Error_InvalidCultureInfo">
@@ -410,7 +410,7 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">Caminho "{0}" ausente ou inválido. Forneça um caminho para um projeto, arquivo de solução, aplicativo baseado em arquivo ou diretório de projeto.</target>
+        <target state="new">Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -437,7 +437,7 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
       </trans-unit>
       <trans-unit id="Error_ProjectAssetsFilePropertyNotFound">
         <source>Project '{0}' does not have MSBuild property ProjectAssetsFile defined. This may indicate that this project does not support NuGet PackageReference, or that project customization has prevented the .NET SDK setting default values.</source>
-        <target state="translated">O projeto "{0}" não tem a propriedade ProjectAssetsFile do MSBuild definida. Isso pode indicar que este projeto não dá suporte a PackageReference do NuGet ou que a personalização do projeto impediu os valores padrão de configuração do SDK do .NET.</target>
+        <target state="translated">O projeto "{0}" não tem a propriedade ProjectAssetsFile do MSBuild definida. Isso pode indicar que esse projeto não dá suporte à PackageReference do NuGet ou que a personalização do projeto impediu o SDK do .NET de configurar os valores padrão.</target>
         <note>{0} - Path to the project with the error</note>
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
@@ -583,7 +583,7 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="translated">O TargetFramework especificado '{0}' não foi encontrado no projeto '{1}'.</target>
+        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
@@ -973,7 +973,7 @@ Para obter mais informações, acesse https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_ProjectOptionDescription">
         <source>Path to a project or solution file or file-based app, or a project directory.</source>
-        <target state="translated">Caminho para um projeto ou arquivo de solução ou aplicativo baseado em arquivo ou um diretório de projeto.</target>
+        <target state="new">Path to a project or solution file or file-based app, or a project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
@@ -1136,7 +1136,7 @@ Para obter mais informações, acesse https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="translated">Permitir a assinatura com certificados cujo certificado raiz não está em um repositório raiz confiável. A cadeia de certificados ainda é construída e validada quanto à estrutura, mas o status UntrustedRoot é tratado como um aviso.</target>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1239,7 +1239,7 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Permite conexões HTTP para adicionar ou atualizar pacotes. Observação: esse método não é seguro. Para opções seguras, consulte https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
+        <target state="translated">Permite conexões HTTP para adicionar ou atualizar pacotes. Observação: esse método não é seguro. Para opções seguras, confira https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandFormatDescription">
@@ -1294,7 +1294,7 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="translated">A chave de API do servidor de símbolos. Se não estiver definida, a variável de ambiente NUGET_SYMBOL_API_KEY será usada.</target>
+        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="SymbolSource_Description">
@@ -1488,12 +1488,12 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
-        <target state="translated">O arquivo "{0}"não parece ser um arquivo de ativos do NuGet. Execute a restauração do projeto "{1}" antes de executar este comando.</target>
+        <target state="translated">O arquivo "{0}" não parece ser um arquivo de ativos do NuGet. Execute a restauração do projeto "{1}" antes de executar esse comando.</target>
         <note>{0} - Assets file path, {1} - Project name</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithoutProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet/nuget/why#older-project-format</source>
-        <target state="translated">O arquivo "{0}"não parece ser um arquivo de ativos do NuGet. Para obter mais informações, consulte https://aka.ms/dotnet/nuget/why#older-project-format</target>
+        <target state="translated">O arquivo "{0}" não parece ser um arquivo de ativos do NuGet. Para obter mais informações, confira https://aka.ms/dotnet/nuget/why#older-project-format</target>
         <note>{0} - Assets file path</note>
       </trans-unit>
       <trans-unit id="WhyCommand_FrameworksOption_Description">
@@ -1518,7 +1518,7 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
       </trans-unit>
       <trans-unit id="WhyCommand_Message_NonSDKStyleProjectsAreNotSupported">
         <source>Unable to run 'dotnet nuget why' for project '{0}'. See https://aka.ms/dotnet/nuget/why#older-project-format</source>
-        <target state="translated">Não foi possível executar o comando "dotnet nuget why" para o projeto "{0}". Consulte https://aka.ms/dotnet/nuget/why#older-project-format</target>
+        <target state="translated">Não foi possível executar o comando "dotnet nuget why" para o projeto "{0}". Confira https://aka.ms/dotnet/nuget/why#older-project-format</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_PackageArgument_Description">
@@ -1528,7 +1528,7 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
         <source>A path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">Um caminho para um projeto, arquivo de solução, aplicativo baseado em arquivo ou diretório de projeto.</target>
+        <target state="new">A path to a project, solution file, file-based app, or project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">

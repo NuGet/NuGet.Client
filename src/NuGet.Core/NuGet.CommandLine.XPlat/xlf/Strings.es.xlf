@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="translated">La clave de API del servidor. Si no se establece, se lee la variable de entorno NUGET_API_KEY.</target>
+        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="App_FullName">
@@ -329,8 +329,8 @@ Do not translate "PackageVersion"</note>
       <trans-unit id="Error_HttpServerUsage_MultipleSources">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}
 NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Está ejecutando la operación '{0}' con orígenes 'HTTP': {1}
-NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establecer explícitamente 'allowInsecureConnections' en verdadero en el archivo NuGet.Config. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+        <target state="translated">Está ejecutando la operación "{0}" con orígenes "HTTP": {1}
+NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establecer explícitamente "allowInsecureConnections" en verdadero en el archivo NuGet.Config. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server uris</note>
       </trans-unit>
       <trans-unit id="Error_InvalidCultureInfo">
@@ -410,7 +410,7 @@ NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establece
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">Falta la ruta de acceso "{0}" o no es válida. Proporcione una ruta de acceso a un proyecto, un archivo de solución, una aplicación basada en archivos o un directorio de proyecto.</target>
+        <target state="new">Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -583,7 +583,7 @@ NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establece
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="translated">El objeto TargetFramework ''{0}'' especificado no se encuentra en el proyecto ''{1}''.</target>
+        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
@@ -973,7 +973,7 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_ProjectOptionDescription">
         <source>Path to a project or solution file or file-based app, or a project directory.</source>
-        <target state="translated">Ruta de acceso a un archivo de proyecto o solución, una aplicación basada en archivos o un directorio de proyecto.</target>
+        <target state="new">Path to a project or solution file or file-based app, or a project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
@@ -1136,12 +1136,12 @@ Para obtener más información, visite https://docs.nuget.org/docs/reference/com
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="translated">Permite la firma con certificados cuyo certificado raíz no está en un almacén raíz de confianza. La cadena de certificados se sigue compilando y validando para la estructura, pero el estado UntrustedRoot se trata como una advertencia.</target>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</source>
-        <target state="translated">Huella digital SHA-256, SHA-384 o SHA-512 del certificado usado para buscar un almacén de certificados local para el certificado. El almacén de certificados se puede especificar por las opciones --certificate-store-name y --certificate-store-location.</target>
+        <target state="translated">Huella digital SHA-256, SHA-384 o SHA-512 del certificado utilizada para buscar el certificado en un almacén de certificados local. El almacén de certificados puede especificarse mediante las opciones --certificate-store-name y --certificate-store-location.</target>
         <note>Please don't localize '--certificate-store-name' and '--certificate-store-location'</note>
       </trans-unit>
       <trans-unit id="SignCommandCertificatePasswordDescription">
@@ -1239,7 +1239,7 @@ La búsqueda es una comparación de cadenas que no diferencia mayúsculas de min
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Permite conexiones HTTP para agregar o actualizar paquetes. Nota: este método no es seguro. Para opciones seguras, consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
+        <target state="translated">Permite conexiones HTTP para agregar o actualizar paquetes. Nota: Este método no es seguro. En referencia a opciones seguras, consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandFormatDescription">
@@ -1294,7 +1294,7 @@ La búsqueda es una comparación de cadenas que no diferencia mayúsculas de min
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="translated">La clave de API del servidor de símbolos. Si no se establece, se lee la variable de entorno NUGET_SYMBOL_API_KEY.</target>
+        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="SymbolSource_Description">
@@ -1528,7 +1528,7 @@ La búsqueda es una comparación de cadenas que no diferencia mayúsculas de min
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
         <source>A path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">Ruta de acceso a un proyecto, archivo de solución, aplicación basada en archivos o directorio de proyecto.</target>
+        <target state="new">A path to a project, solution file, file-based app, or project directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">
