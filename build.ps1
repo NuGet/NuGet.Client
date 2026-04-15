@@ -68,6 +68,8 @@ param (
 
 . "$PSScriptRoot\build\common.ps1"
 
+& "$PSScriptRoot\scripts\utils\DisableStrongNameVerification.ps1" -skipNoOpMessage
+
 if (-not $Configuration) {
     $Configuration = switch ($CI.IsPresent) {
         $True   { 'Release' } # CI build is Release by default

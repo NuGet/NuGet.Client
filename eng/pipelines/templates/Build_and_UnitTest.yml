@@ -1,3 +1,10 @@
+parameters:
+- name: BuildRTM
+  type: boolean
+- name: SigningType
+  displayName: Type of signing to use
+  type: string
+
 steps:
 - task: PowerShell@1
   displayName: "Update Build Number"
@@ -75,25 +82,13 @@ steps:
     inlineScript: |
       gci env:* | sort-object name
 
-- task: MicroBuildLocalizationPlugin@1
-  displayName: "Install Localization Plugin"
-
-- task: MicroBuildSigningPlugin@1
-  inputs:
-    signType: "$(SigningType)"
-    esrpSigning: "true"
-  displayName: "Install Signing Plugin"
-
-- task: MicroBuildSwixPlugin@1
-  displayName: "Install Swix Plugin"
-
 - task: MSBuild@1
   displayName: "Restore for VS2017"
   inputs:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
+    msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
 - task: MSBuild@1
   displayName: "Build for VS2017"
@@ -101,7 +96,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+    msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
 - task: MSBuild@1
   displayName: "Run unit tests"
@@ -111,7 +106,7 @@ steps:
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS15 /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk  /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'),not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
@@ -122,25 +117,7 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
     mergeTestResults: "true"
     publishRunAttachments: "false"
-  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
-  condition: "and(not(eq(variables['ManualGitHubChecks'], 'false')), eq(variables['BuildRTM'], 'true'))"
-
-- task: PublishBuildArtifacts@1
-  displayName: "Publish NuGet.CommandLine.Test as artifact"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net46\\win7-x64"
-    ArtifactName: "NuGet.CommandLine.Test"
-    ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'),not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: MSBuild@1
   displayName: "Localize Assemblies"
@@ -148,7 +125,7 @@ steps:
     solution: "build\\loc.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild"
+    msbuildArguments: "/t:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\03.LocalizeAssemblies.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
@@ -157,7 +134,7 @@ steps:
     solution: "build\\sign.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild"
+    msbuildArguments: "/t:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\04.SignAssemblies.binlog"
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
@@ -165,7 +142,14 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\05.PackNupkgs.binlog"
+
+- task: PowerShell@1
+  displayName: "Check expected packages exist for publishing"
+  name: "EnsureAllPackagesExist"
+  inputs:
+    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\EnsureAllPackagesExist.ps1"
+    arguments: "-BuildRTM:$$(BuildRTM) -NupkgOutputPath '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'"
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -173,16 +157,21 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
+    msbuildArguments: "/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\06.PackVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
+- ${{ if not(parameters.BuildRTM)}}:
+  - template: /eng/common/templates/steps/generate-sbom.yml@self
+    parameters:
+      PackageName: "NuGet.Client"
+      PackageVersion: "$(SemanticVersion)"
 
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true /p:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\07.GenerateBuildToolsPackage.binlog"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -191,7 +180,7 @@ steps:
     solution: "build\\sign.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+    msbuildArguments: "/t:AfterBuild /p:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.SignNupkgsAndVSIX.binlog"
 
 - task: NuGetCommand@2
   displayName: "Verify Nupkg Signatures"
@@ -204,72 +193,21 @@ steps:
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish nupkgs"
-  inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
-    artifactName: "nupkgs - $(RtmLabel)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
-    msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\09.GenerateVSManifestForVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\10.GenerateVSManifestForToolsVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: PowerShell@1
-  displayName: "Create EndToEnd Test Package"
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -tv 15 -out $(Build.Repository.LocalPath)\\artifacts\\VS15 -NuGetToolsPath $(NuGetCIToolsFolder)"
-    failOnStandardError: "false"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: PublishBuildArtifacts@1
-  displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-    ArtifactName: "$(VsixPublishDir)"
-    ArtifactType: "Container"
-
-- task: CopyFiles@2
-  displayName: "Copy LCG Files to staging (deprecated)"
-  inputs:
-    SourceFolder: "artifacts\\"
-    Contents: |
-      **\*.lcg
-      !localize\**\*
-    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
-- task: PowerShell@1
-  displayName: "Publish Artifacts to MyGet"
-  continueOnError: "true"
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\PublishArtifactsFromVsts.ps1"
-    arguments: "-NuGetBuildFeedUrl $(NuGetBuildFeed) -NuGetBuildSymbolsFeedUrl $(NuGetBuildSymbolsFeed) -DotnetCoreFeedUrl $(DotnetCoreBuildFeed) -DotnetCoreSymbolsFeedUrl $(DotnetCoreSymbolsFeed) -NuGetBuildFeedApiKey $(NuGetBuildApiKey) -DotnetCoreFeedApiKey $(DotnetCoreFeedApiKey)"
-    failOnStandardError: "true"
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
-- task: NuGetCommand@2
-  displayName: Publish public Nuget packages to nuget-build
-  inputs:
-    command: push
-    packagesToPush: 'artifacts\nupkgs\*.nupkg;!artifacts\nupkgs\*.symbols.nupkg'
-    nuGetFeedType: external
-    allowPackageConflicts: true
-    publishFeedCredentials : nuget-build-dnceng-public-feed
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
@@ -277,26 +215,8 @@ steps:
     solution: "build\\symbols.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
+    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\11.CollectBuildSymbols.binlog"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish symbols as pipeline artifacts"
-  inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    artifactName: "symbols - $(RtmLabel)"
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: artifactDropTask@0
-  displayName: "Upload VSTS Drop"
-  inputs:
-    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-    toLowerCase: false
-    usePat: true
-    dropMetadataContainerName: "DropMetadata-Product"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
   displayName: "LocValidation: Verify VSIX"
@@ -312,23 +232,3 @@ steps:
     arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PublishPipelineArtifact@1
-  displayName: "LocValidation: Publish Logs as an artifact"
-  inputs:
-    artifactName: LocValidationLogs
-    targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: MicroBuildCleanup@1
-  displayName: "Perform Cleanup Tasks"
-
-- task: PowerShell@1
-  displayName: "Cleanup on Failure"
-  inputs:
-    scriptType: "inlineScript"
-    arguments: "-BuildOutputTargetPath $(BuildOutputTargetPath)"
-    inlineScript: |
-      param([string]$BuildOutputTargetPath)
-      Get-ChildItem $(BuildOutputTargetPath) -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
-      Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
-  condition: "eq(variables['Agent.JobStatus'], 'Failed')"

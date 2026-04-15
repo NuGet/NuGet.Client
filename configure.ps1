@@ -54,6 +54,20 @@ Invoke-BuildStep 'Installing .NET CLI' {
     Install-DotnetCLI -Force:$Force    
 } -ev +BuildErrors
 
+# Point MSBuild to the .NET Core SDK installed in the cli directory,
+# so msbuild.exe resolves SDK-style projects correctly.
+$SdkVersionDirs = Get-ChildItem (Join-Path $CLIRoot 'sdk') -Directory -ErrorAction SilentlyContinue
+if ($SdkVersionDirs) {
+    $SdksDir = Join-Path ($SdkVersionDirs | Select-Object -First 1).FullName 'Sdks'
+    if (Test-Path $SdksDir) {
+        $env:MSBuildSDKsPath = $SdksDir
+        Trace-Log "MSBuildSDKsPath set to '$SdksDir'"
+        if ($CI) {
+            Write-Host "##vso[task.setvariable variable=MSBuildSDKsPath;]$SdksDir"
+        }
+    }
+}
+
 # Restoring tools required for build
 Invoke-BuildStep 'Restoring solution packages' {
     Restore-SolutionPackages

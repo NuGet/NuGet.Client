@@ -806,4 +806,8 @@ Valid from:</comment>
   <data name="NuGetLicenseExpression_UnlicensedPackageWarning" xml:space="preserve">
     <value>The owner has marked this package as 'UNLICENSED'. This means that there is no license that allows this package to be used outside of the copyright owner.</value>
   </data>
+  <data name="ErrorPackageIdentityDoesNotMatch" xml:space="preserve">
+    <value>Expected package {0} {1}, but got package {2} {3}</value>
+    <comment>0 and 2 are package names, and 1 and 3 are versions numbers.</comment>
+  </data>
 </root>

@@ -6,11 +6,21 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       try {
-        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
-        $version = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
-        $version = $version.Trim()
+        $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true'
+        $env:DOTNET_NOLOGO = '1'
+        $output = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+        if ($LASTEXITCODE -ne 0) {
+          throw "dotnet msbuild exited with code $LASTEXITCODE"
+        }
+        # dotnet may output multiple lines (e.g. first-run experience); the version is the last non-empty line
+        $lines = $output | Where-Object { $_ -match '\d+\.\d+\.\d+' }
+        if ($lines -is [array]) { $version = $lines[-1].Trim() } else { $version = "$lines".Trim() }
+        if (-not ($version -match '\d+\.\d+\.\d+')) {
+          throw "Unexpected version format: '$version'. Full output: $output"
+        }
+        Write-Host "SemanticVersion: $version"
         Write-Host "##vso[task.setvariable variable=SemanticVersion;isOutput=true]$version"
-        } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set product version"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set product version: $_"
         exit 1
       }
