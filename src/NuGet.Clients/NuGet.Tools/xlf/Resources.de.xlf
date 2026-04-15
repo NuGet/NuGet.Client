@@ -24,27 +24,27 @@
       </trans-unit>
       <trans-unit id="Error_CopilotAccessDenied">
         <source>Access denied. Please ensure you are signed in to GitHub Copilot.</source>
-        <target state="translated">Zugriff verweigert. Stellen Sie sicher, dass Sie bei GitHub Copilot angemeldet sind.</target>
+        <target state="new">Access denied. Please ensure you are signed in to GitHub Copilot.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_CopilotNotReady">
         <source>GitHub Copilot is not ready. Please ensure GitHub Copilot is installed and signed in.</source>
-        <target state="translated">GitHub Copilot nicht verfügbar. Stellen Sie sicher, dass GitHub Copilot installiert ist und eine Anmeldung erfolgt ist.</target>
+        <target state="new">GitHub Copilot is not ready. Please ensure GitHub Copilot is installed and signed in.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_CopilotServiceNotAvailable">
         <source>GitHub Copilot Service is not available. Please ensure GitHub Copilot is installed and signed in.</source>
-        <target state="translated">GitHub Copilot-Dienst nicht verfügbar. Stellen Sie sicher, dass GitHub Copilot installiert ist und eine Anmeldung erfolgt ist.</target>
+        <target state="new">GitHub Copilot Service is not available. Please ensure GitHub Copilot is installed and signed in.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_McpToolServiceNotAvailable">
         <source>MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.</source>
-        <target state="translated">MCP-Tooldienst nicht verfügbar. Stellen Sie sicher, dass GitHub Copilot installiert ist und eine Anmeldung erfolgt ist.</target>
+        <target state="new">MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_NuGetSolverNotAvailable">
         <source>The NuGet Solver tool is unavailable. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
-        <target state="translated">Das NuGet-Lösertool ist nicht verfügbar. Aktivieren Sie den NuGet MCP-Server im GitHub Copilot-Chatfenster, und versuchen Sie es noch mal.</target>
+        <target state="new">The NuGet Solver tool is unavailable. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="Error_ServiceBrokerNotAvailable">
         <source>Service Broker is not available. Please ensure Visual Studio is running correctly.</source>
-        <target state="translated">Service Broker ist nicht verfügbar. Bitte stellen Sie sicher, dass Visual Studio ordnungsgemäß ausgeführt wird.</target>
+        <target state="new">Service Broker is not available. Please ensure Visual Studio is running correctly.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectSelected">
@@ -149,7 +149,7 @@
       </trans-unit>
       <trans-unit id="Prompt_FixNuGetPackageVulnerabilities">
         <source>Fix my NuGet package vulnerabilities</source>
-        <target state="translated">Meine NuGet-Paketsicherheitsrisiken beheben</target>
+        <target state="new">Fix my NuGet package vulnerabilities</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
@@ -259,7 +259,7 @@
       </trans-unit>
       <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
         <source>Fix Vulnerabilities with GitHub Copilot</source>
-        <target state="translated">Sicherheitsrisiken mit GitHub Copilot beheben</target>
+        <target state="new">Fix Vulnerabilities with GitHub Copilot</target>
         <note />
       </trans-unit>
       <trans-unit id="clearLocalResources">
