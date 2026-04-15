@@ -156,8 +156,15 @@ steps:
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
   - ${{ if not(parameters.BuildRTM)}}:
+      - task: PowerShell@1
+        displayName: "Prepare for SBOM generation"
+        inputs:
+          scriptType: "inlineScript"
+          inlineScript: |
+            mkdir $(Build.ArtifactStagingDirectory)/sbom
+
       - task: ManifestGeneratorTask@0
-        displayName: 'Generation Task'
+        displayName: 'Generate SBOM'
         inputs:
           BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
           ManifestDirPath: '$(Build.ArtifactStagingDirectory)/sbom'
