@@ -224,6 +224,10 @@ public class ServerReturnsWrongPackageTests(ServerReturnsWrongPackageTests.Fixtu
 
             // now replace the two nupkgs with the bad package
             var packagesConfigNupkgPath = packagesConfigPathResolver.GetInstalledPackageFilePath(expectedPackageIdentity);
+            if (packagesConfigNupkgPath is null)
+            {
+                throw new InvalidOperationException($"Failed to find nupkg path for {expectedPackageIdentity} in packages.config layout");
+            }
             File.WriteAllBytes(packagesConfigNupkgPath, _packageBytes);
 
             var v3PathResolver = new VersionFolderPathResolver(LocalV3Path);
