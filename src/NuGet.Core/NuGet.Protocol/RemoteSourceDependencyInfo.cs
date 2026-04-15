@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,6 +38,11 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(dependencyGroups));
             }
 
+            if (contentUri == null)
+            {
+                throw new ArgumentNullException(nameof(contentUri));
+            }
+
             Identity = identity;
             Listed = listed;
             DependencyGroups = dependencyGroups.ToList();
@@ -66,7 +69,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public string ContentUri { get; set; }
 
-        public bool Equals(RemoteSourceDependencyInfo other)
+        public bool Equals(RemoteSourceDependencyInfo? other)
         {
             return other != null &&
                    Identity.Equals(other.Identity) &&
@@ -74,7 +77,7 @@ namespace NuGet.Protocol.Core.Types
                    string.Equals(ContentUri, other.ContentUri, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj) => Equals(obj as PackageDependencyInfo);
+        public override bool Equals(object? obj) => Equals(obj as RemoteSourceDependencyInfo);
 
         public override int GetHashCode()
         {
