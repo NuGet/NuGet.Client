@@ -179,7 +179,6 @@ namespace NuGet.XPlat.FuncTest
                     argList.Add(projectPath);
 
                     // Act & Assert
-                    // System.CommandLine catches handler exceptions; verify non-zero exit code instead
                     var result = testApp.Parse(argList.ToArray()).Invoke();
                     Assert.NotEqual(0, result);
                 });

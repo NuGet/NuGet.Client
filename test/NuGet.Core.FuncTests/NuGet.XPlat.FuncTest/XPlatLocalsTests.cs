@@ -291,7 +291,6 @@ namespace NuGet.XPlat.FuncTest
             XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
-            // System.CommandLine parses "-list" as "-l" (short alias for --list) + "ist" (leftover chars become the argument).
             var expectedResult = "An invalid local resource name was provided. Provide one of the following values: http-cache, temp, global-packages, all.";
 
             // Act
@@ -312,8 +311,6 @@ namespace NuGet.XPlat.FuncTest
             XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
-            // System.CommandLine parses "-clear" as bundled short options: -c (--clear) + -l (--list) + "ear".
-            // Both --clear and --list are set, triggering the "Both operations" error.
             var expectedResult = "Both operations, --list and --clear, are not supported in the same command.";
 
             // Act
