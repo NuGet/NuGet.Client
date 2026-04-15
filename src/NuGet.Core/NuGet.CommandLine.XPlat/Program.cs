@@ -97,6 +97,12 @@ namespace NuGet.CommandLine.XPlat
             Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
 
             RootCommand rootCommand = new RootCommand();
+            rootCommand.Options.Add(new Option<bool>(CommandConstants.ForceEnglishOutputOption)
+            {
+                Description = Strings.ForceEnglishOutput_Description,
+                Arity = ArgumentArity.Zero,
+                Recursive = true
+            });
             Option<bool> interactiveOption = new Option<bool>("--interactive")
             {
                 Description = Strings.AddPkg_InteractiveDescription,

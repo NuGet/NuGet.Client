@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -149,12 +150,12 @@ namespace NuGet.CommandLine.XPlat
                 SigningSpecificationsV1 signingSpec = SigningSpecifications.V1;
                 StoreLocation storeLocation = ValidateAndParseStoreLocation(locationValue);
                 StoreName storeName = ValidateAndParseStoreName(storeValue);
-                HashAlgorithmName hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(algorithmValue!, "--hash-algorithm", signingSpec);
-                HashAlgorithmName timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(timestamperAlgorithmValue!, "--timestamp-hash-algorithm", signingSpec);
+                HashAlgorithmName hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(algorithmValue, "--hash-algorithm", signingSpec);
+                HashAlgorithmName timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(timestamperAlgorithmValue, "--timestamp-hash-algorithm", signingSpec);
 
                 var args = new SignArgs()
                 {
-                    PackagePaths = new List<string>(packagePathValues!),
+                    PackagePaths = new List<string>(packagePathValues),
                     OutputDirectory = outputDirectoryValue,
                     CertificatePath = pathValue,
                     CertificateStoreName = storeName,
@@ -172,7 +173,7 @@ namespace NuGet.CommandLine.XPlat
                     TimestampHashAlgorithm = timestampHashAlgorithm
                 };
 
-                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(parseResult.GetValue(verbosity)!));
+                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(parseResult.GetValue(verbosity)));
 
                 X509TrustStore.InitializeForDotNetSdk(args.Logger);
 
@@ -184,7 +185,7 @@ namespace NuGet.CommandLine.XPlat
             parent.Subcommands.Add(signCmd);
         }
 
-        private static void ValidatePackagePaths(string[]? packagePaths, string argumentName)
+        private static void ValidatePackagePaths([NotNull] string[]? packagePaths, string argumentName)
         {
             if (packagePaths == null ||
                 packagePaths.Length == 0 ||

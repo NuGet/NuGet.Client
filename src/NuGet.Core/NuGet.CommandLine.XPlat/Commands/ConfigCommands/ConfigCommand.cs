@@ -5,7 +5,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Commands;
 using NuGet.Common;
@@ -33,7 +32,6 @@ namespace NuGet.CommandLine.XPlat
         internal static Command Register(Command app, Func<ILoggerWithColor> getLogger)
         {
             var ConfigCmd = new DocumentedCommand(name: "config", description: Strings.Config_Description, "https://aka.ms/dotnet/nuget/config");
-            ConfigCmd.Options.Add(new HelpOption() { Arity = ArgumentArity.Zero });
 
             // Options directly under the verb 'config'
 
@@ -83,7 +81,6 @@ namespace NuGet.CommandLine.XPlat
             };
 
             cmd.Options.Add(workingDirectory);
-            cmd.Options.Add(new HelpOption() { Arity = ArgumentArity.Zero });
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {
@@ -120,7 +117,6 @@ namespace NuGet.CommandLine.XPlat
             cmd.Arguments.Add(allOrConfigKeyArgument);
             cmd.Options.Add(workingDirectory);
             cmd.Options.Add(showPathOption);
-            cmd.Options.Add(new HelpOption() { Arity = ArgumentArity.Zero });
 
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
@@ -160,7 +156,6 @@ namespace NuGet.CommandLine.XPlat
             cmd.Arguments.Add(setConfigKeyArgument);
             cmd.Arguments.Add(configValueArgument);
             cmd.Options.Add(configFileOption);
-            cmd.Options.Add(new HelpOption() { Arity = ArgumentArity.Zero });
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {
@@ -192,7 +187,6 @@ namespace NuGet.CommandLine.XPlat
 
             cmd.Arguments.Add(unsetConfigKeyArgument);
             cmd.Options.Add(configFileOption);
-            cmd.Options.Add(new HelpOption() { Arity = ArgumentArity.Zero });
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {

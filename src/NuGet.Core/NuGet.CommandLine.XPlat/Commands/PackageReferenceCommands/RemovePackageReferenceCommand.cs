@@ -5,6 +5,7 @@
 
 using System;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 
@@ -49,12 +50,12 @@ namespace NuGet.CommandLine.XPlat
 
                 ValidateArgument(idValue, "--package", "remove");
                 ValidateArgument(projectPathValue, "--project", "remove");
-                ValidateProjectPath(projectPathValue!, "remove", virtualProjectBuilder);
+                ValidateProjectPath(projectPathValue, "remove", virtualProjectBuilder);
                 var logger = getLogger();
-                var packageRefArgs = new PackageReferenceArgs(projectPathValue!, logger)
+                var packageRefArgs = new PackageReferenceArgs(projectPathValue, logger)
                 {
                     Interactive = parseResult.GetValue(interactive),
-                    PackageId = idValue!
+                    PackageId = idValue
                 };
                 var msBuild = new MSBuildAPIUtility(logger, virtualProjectBuilder!);
                 var removePackageRefCommandRunner = getCommandRunner();
@@ -64,7 +65,7 @@ namespace NuGet.CommandLine.XPlat
             parent.Subcommands.Add(removeCommand);
         }
 
-        private static void ValidateArgument(string? value, string optionName, string commandName)
+        private static void ValidateArgument([NotNull] string? value, string optionName, string commandName)
         {
             if (string.IsNullOrEmpty(value))
             {

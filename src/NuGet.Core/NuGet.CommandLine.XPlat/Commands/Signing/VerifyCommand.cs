@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using NuGet.Commands;
@@ -66,14 +67,14 @@ namespace NuGet.CommandLine.XPlat
                 ValidatePackagePaths(packagePathValues, "package-paths");
 
                 VerifyArgs args = new VerifyArgs();
-                args.PackagePaths = new List<string>(packagePathValues!);
+                args.PackagePaths = new List<string>(packagePathValues);
                 args.Verifications = parseResult.GetValue(all) ?
                     new List<Verification>() { Verification.All } :
                     new List<Verification>() { Verification.Signatures };
                 args.CertificateFingerprint = new List<string>(parseResult.GetValue(fingerPrint) ?? Array.Empty<string>());
                 args.Logger = getLogger();
-                args.Settings = XPlatUtility.ProcessConfigFile(parseResult.GetValue(configFile)!);
-                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(parseResult.GetValue(verbosity)!));
+                args.Settings = XPlatUtility.ProcessConfigFile(parseResult.GetValue(configFile));
+                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(parseResult.GetValue(verbosity)));
 
                 X509TrustStore.InitializeForDotNetSdk(args.Logger);
 
@@ -86,7 +87,7 @@ namespace NuGet.CommandLine.XPlat
             parent.Subcommands.Add(verifyCmd);
         }
 
-        private static void ValidatePackagePaths(string[]? packagePaths, string argumentName)
+        private static void ValidatePackagePaths([NotNull] string[]? packagePaths, string argumentName)
         {
             if (packagePaths == null ||
                 packagePaths.Length == 0 ||

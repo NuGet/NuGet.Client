@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
@@ -100,15 +99,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.OneOrMore
             };
 
-            HelpOption help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-
             whyCommand.Arguments.Add(path);
             whyCommand.Arguments.Add(package);
             whyCommand.Options.Add(frameworks);
-            whyCommand.Options.Add(help);
 
             whyCommand.SetAction(async (parseResult, cancellationToken) =>
             {
