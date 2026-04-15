@@ -121,7 +121,7 @@ nuget client-certs List</target>
       </trans-unit>
       <trans-unit id="CommandApiKey">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="translated">服务器的 API 密钥。如果未设置，则读取 NUGET_API_KEY 环境变量。</target>
+        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDirectDownload">
@@ -911,7 +911,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -Source http://example.com/
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="translated">允许使用根证书不在受信任根存储中的证书进行签名。证书链仍会构建并进行结构验证，但 UntrustedRoot 状态被视为警告。</target>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1152,7 +1152,7 @@ nuget spec -a MyAssembly.dll</target>
       </trans-unit>
       <trans-unit id="SymbolApiKey">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="translated">符号服务器的 API 密钥。如果未设置，则读取 NUGET_SYMBOL_API_KEY 环境变量。</target>
+        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignersCommandAllowUntrustedRootDescription">

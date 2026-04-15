@@ -121,7 +121,7 @@ nuget client-certs List</target>
       </trans-unit>
       <trans-unit id="CommandApiKey">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="translated">Chiave API per il server. Se non impostata, viene letta la variabile di ambiente NUGET_API_KEY.</target>
+        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDirectDownload">
@@ -911,7 +911,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -Source http://example.com/
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="translated">Consente la firma con certificati il cui certificato radice non è presente in un archivio radici attendibile. La struttura della catena di certificati viene comunque creata e verificata, ma lo stato UntrustedRoot è considerato un avviso.</target>
+        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1059,7 +1059,7 @@ nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Consente le connessioni HTTP per aggiungere o aggiornare i pacchetti. Nota: questo metodo non è sicuro. Per ulteriori informazioni sulle opzioni di sicurezza, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Consente connessioni HTTP per l'aggiunta o l'aggiornamento di pacchetti. Nota: questo metodo non è sicuro. Per le opzioni di sicurezza, vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandDescription">
@@ -1152,7 +1152,7 @@ nuget spec -a MyAssembly.dll</target>
       </trans-unit>
       <trans-unit id="SymbolApiKey">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="translated">Chiave API per il server dei simboli. Se non impostata, viene letta la variabile di ambiente NUGET_SYMBOL_API_KEY.</target>
+        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignersCommandAllowUntrustedRootDescription">
