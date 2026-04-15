@@ -173,6 +173,7 @@ stages:
       parameters:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -235,6 +236,7 @@ stages:
       parameters:
         BuildRTM: true
         NuGetLocalizationType: Full
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
