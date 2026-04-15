@@ -3034,7 +3034,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["NoOpDuration"] = value => value.Should().NotBeNull(),
                 ["TotalUniquePackagesCount"] = value => value.Should().Be(1),
                 ["NewPackagesInstalledCount"] = value => value.Should().Be(1),
-                ["AnyPackageIdContainsNonASCIICharacters"] = value => value.Should().Be(false),
+                ["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"] = value => value.Should().Be(false),
                 ["EvaluateLockFileDuration"] = value => value.Should().NotBeNull(),
                 ["CreateRestoreTargetGraphDuration"] = value => value.Should().NotBeNull(),
                 ["GenerateRestoreGraphDuration"] = value => value.Should().NotBeNull(),
@@ -3723,7 +3723,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task ExecuteAsync_WithASCIIPackageId_AnyPackageIdContainsNonASCIICharactersIsFalse()
+        public async Task ExecuteAsync_WithASCIIPackageId_AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharactersIsFalse()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -3759,7 +3759,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-            projectInformationEvent["AnyPackageIdContainsNonASCIICharacters"].Should().Be(false);
+            projectInformationEvent["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"].Should().Be(false);
         }
 
         [Theory]
@@ -3768,7 +3768,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         [InlineData("Package\u03B1")]        // Greek lowercase alpha (U+03B1)
         [InlineData("Package\u00E9")]        // Latin small letter e with acute (U+00E9)
         [InlineData("\u0410.Package")]        // Cyrillic capital A (U+0410)
-        public async Task ExecuteAsync_WithNonASCIIPackageId_AnyPackageIdContainsNonASCIICharactersIsTrue(string packageId)
+        public async Task ExecuteAsync_WithNonAlphanumericDotDashOrUnderscorePackageId_AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharactersIsTrue(string packageId)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -3804,28 +3804,28 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-            projectInformationEvent["AnyPackageIdContainsNonASCIICharacters"].Should().Be(true);
+            projectInformationEvent["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"].Should().Be(true);
         }
 
         [Theory]
         [InlineData("My_Package")]         // underscore
         [InlineData("Pac\u212Bage")]         // Kelvin sign K (U+212A)
         [InlineData("Package\u03B1")]        // Greek lowercase alpha (U+03B1)
-        public async Task ExecuteAsync_WithMixedPackageIds_AnyPackageIdContainsNonASCIICharactersIsTrue(string packageId)
+        public async Task ExecuteAsync_WithMixedPackageIds_AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharactersIsTrue(string packageId)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             var asciiOnlyPkg = new SimpleTestPackageContext("Some.Package", "1.0.0");
-            var nonASCIIPkg = new SimpleTestPackageContext(packageId, "1.0.0");
-            asciiOnlyPkg.Dependencies.Add(nonASCIIPkg);
+            var NonAlphanumericDotDashOrUnderscorePkg = new SimpleTestPackageContext(packageId, "1.0.0");
+            asciiOnlyPkg.Dependencies.Add(NonAlphanumericDotDashOrUnderscorePkg);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
                 asciiOnlyPkg,
-                nonASCIIPkg);
+                NonAlphanumericDotDashOrUnderscorePkg);
 
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "Some.Package");
             var logger = new TestLogger();
@@ -3852,7 +3852,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-            projectInformationEvent["AnyPackageIdContainsNonASCIICharacters"].Should().Be(true);
+            projectInformationEvent["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"].Should().Be(true);
         }
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)
