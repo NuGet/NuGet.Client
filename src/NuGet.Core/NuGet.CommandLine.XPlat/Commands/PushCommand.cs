@@ -14,122 +14,122 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class PushCommand
     {
-        private static readonly Option<string> SourceOption = new Option<string>("--source", "-s")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.Source_Description,
-        };
-
-        private static readonly Option<bool> AllowInsecureConnectionsOption = new Option<bool>("--allow-insecure-connections")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.AllowInsecureConnections_Description,
-        };
-
-        private static readonly Option<string> SymbolSourceOption = new Option<string>("--symbol-source", "-ss")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.SymbolSource_Description,
-        };
-
-        private static readonly Option<string> TimeoutOption = new Option<string>("--timeout", "-t")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.Push_Timeout_Description,
-        };
-
-        private static readonly Option<string> ApiKeyOption = new Option<string>("--api-key", "-k")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.ApiKey_Description,
-        };
-
-        private static readonly Option<string> SymbolApiKeyOption = new Option<string>("--symbol-api-key", "-sk")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.SymbolApiKey_Description,
-        };
-
-        private static readonly Option<bool> DisableBufferingOption = new Option<bool>("--disable-buffering", "-d")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.DisableBuffering_Description,
-        };
-
-        private static readonly Option<bool> NoSymbolsOption = new Option<bool>("--no-symbols", "-n")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NoSymbols_Description,
-        };
-
-        private static readonly Option<bool> NoServiceEndpointOption = new Option<bool>("--no-service-endpoint")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NoServiceEndpoint_Description,
-        };
-
-        private static readonly Option<bool> InteractiveOption = new Option<bool>("--interactive")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NuGetXplatCommand_Interactive,
-        };
-
-        private static readonly Option<bool> SkipDuplicateOption = new Option<bool>("--skip-duplicate")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.PushCommandSkipDuplicateDescription,
-        };
-
-        private static readonly Option<string> ConfigFileOption = new Option<string>("--configfile")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.Option_ConfigFile,
-        };
-
-        private static readonly Argument<string[]> PackagePathsArgument = new Argument<string[]>("package-paths")
-        {
-            Arity = ArgumentArity.OneOrMore,
-            Description = Strings.Push_Package_ApiKey_Description,
-        };
-
         internal static void Register(Command parent, Func<ILoggerWithColor> getLogger)
         {
             var pushCmd = new Command("push", Strings.Push_Description);
 
-            pushCmd.Options.Add(SourceOption);
-            pushCmd.Options.Add(AllowInsecureConnectionsOption);
-            pushCmd.Options.Add(SymbolSourceOption);
-            pushCmd.Options.Add(TimeoutOption);
-            pushCmd.Options.Add(ApiKeyOption);
-            pushCmd.Options.Add(SymbolApiKeyOption);
-            pushCmd.Options.Add(DisableBufferingOption);
-            pushCmd.Options.Add(NoSymbolsOption);
-            pushCmd.Options.Add(NoServiceEndpointOption);
-            pushCmd.Options.Add(InteractiveOption);
-            pushCmd.Options.Add(SkipDuplicateOption);
-            pushCmd.Options.Add(ConfigFileOption);
-            pushCmd.Arguments.Add(PackagePathsArgument);
+            var sourceOption = new Option<string>("--source", "-s")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.Source_Description,
+            };
+
+            var allowInsecureConnectionsOption = new Option<bool>("--allow-insecure-connections")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.AllowInsecureConnections_Description,
+            };
+
+            var symbolSourceOption = new Option<string>("--symbol-source", "-ss")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.SymbolSource_Description,
+            };
+
+            var timeoutOption = new Option<string>("--timeout", "-t")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.Push_Timeout_Description,
+            };
+
+            var apiKeyOption = new Option<string>("--api-key", "-k")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.ApiKey_Description,
+            };
+
+            var symbolApiKeyOption = new Option<string>("--symbol-api-key", "-sk")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.SymbolApiKey_Description,
+            };
+
+            var disableBufferingOption = new Option<bool>("--disable-buffering", "-d")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.DisableBuffering_Description,
+            };
+
+            var noSymbolsOption = new Option<bool>("--no-symbols", "-n")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NoSymbols_Description,
+            };
+
+            var noServiceEndpointOption = new Option<bool>("--no-service-endpoint")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NoServiceEndpoint_Description,
+            };
+
+            var interactiveOption = new Option<bool>("--interactive")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NuGetXplatCommand_Interactive,
+            };
+
+            var skipDuplicateOption = new Option<bool>("--skip-duplicate")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.PushCommandSkipDuplicateDescription,
+            };
+
+            var configFileOption = new Option<string>("--configfile")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.Option_ConfigFile,
+            };
+
+            var packagePathsArgument = new Argument<string[]>("package-paths")
+            {
+                Arity = ArgumentArity.OneOrMore,
+                Description = Strings.Push_Package_ApiKey_Description,
+            };
+
+            pushCmd.Options.Add(sourceOption);
+            pushCmd.Options.Add(allowInsecureConnectionsOption);
+            pushCmd.Options.Add(symbolSourceOption);
+            pushCmd.Options.Add(timeoutOption);
+            pushCmd.Options.Add(apiKeyOption);
+            pushCmd.Options.Add(symbolApiKeyOption);
+            pushCmd.Options.Add(disableBufferingOption);
+            pushCmd.Options.Add(noSymbolsOption);
+            pushCmd.Options.Add(noServiceEndpointOption);
+            pushCmd.Options.Add(interactiveOption);
+            pushCmd.Options.Add(skipDuplicateOption);
+            pushCmd.Options.Add(configFileOption);
+            pushCmd.Arguments.Add(packagePathsArgument);
 
             pushCmd.SetAction(async (parseResult, cancellationToken) =>
             {
-                string[]? packagePaths = parseResult.GetValue(PackagePathsArgument);
+                string[]? packagePaths = parseResult.GetValue(packagePathsArgument);
                 if (packagePaths == null || packagePaths.Length < 1)
                 {
                     throw new ArgumentException(Strings.Push_MissingArguments);
                 }
 
-                string? sourcePath = parseResult.GetValue(SourceOption);
-                string? apiKeyValue = parseResult.GetValue(ApiKeyOption);
-                string? symbolSourcePath = parseResult.GetValue(SymbolSourceOption);
-                string? symbolApiKeyValue = parseResult.GetValue(SymbolApiKeyOption);
-                bool disableBufferingValue = parseResult.GetValue(DisableBufferingOption);
-                bool noSymbolsValue = parseResult.GetValue(NoSymbolsOption);
-                bool noServiceEndpoint = parseResult.GetValue(NoServiceEndpointOption);
-                bool skipDuplicateValue = parseResult.GetValue(SkipDuplicateOption);
-                bool allowInsecureConnectionsValue = parseResult.GetValue(AllowInsecureConnectionsOption);
-                bool interactiveValue = parseResult.GetValue(InteractiveOption);
-                string? timeoutValue = parseResult.GetValue(TimeoutOption);
-                string? configFile = parseResult.GetValue(ConfigFileOption);
+                string? sourcePath = parseResult.GetValue(sourceOption);
+                string? apiKeyValue = parseResult.GetValue(apiKeyOption);
+                string? symbolSourcePath = parseResult.GetValue(symbolSourceOption);
+                string? symbolApiKeyValue = parseResult.GetValue(symbolApiKeyOption);
+                bool disableBufferingValue = parseResult.GetValue(disableBufferingOption);
+                bool noSymbolsValue = parseResult.GetValue(noSymbolsOption);
+                bool noServiceEndpoint = parseResult.GetValue(noServiceEndpointOption);
+                bool skipDuplicateValue = parseResult.GetValue(skipDuplicateOption);
+                bool allowInsecureConnectionsValue = parseResult.GetValue(allowInsecureConnectionsOption);
+                bool interactiveValue = parseResult.GetValue(interactiveOption);
+                string? timeoutValue = parseResult.GetValue(timeoutOption);
+                string? configFile = parseResult.GetValue(configFileOption);
                 int timeoutSeconds = 0;
 
                 if (!string.IsNullOrEmpty(timeoutValue) && !int.TryParse(timeoutValue, out timeoutSeconds))

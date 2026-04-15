@@ -24,7 +24,9 @@ namespace NuGet.CommandLine.XPlat
             Command parent,
             Func<ILoggerWithColor> getLogger,
             Action<LogLevel> setLogLevel,
-            Func<IListPackageCommandRunner> getCommandRunner)
+            Func<IListPackageCommandRunner> getCommandRunner,
+            TextWriter? consoleOut = null,
+            TextWriter? consoleError = null)
         {
             var listCommand = new Command("list", Strings.ListPkg_Description);
 
@@ -155,7 +157,7 @@ namespace NuGet.CommandLine.XPlat
                     isDeprecated: parseResult.GetValue(deprecatedReport),
                     isVulnerable: parseResult.GetValue(vulnerableReport));
 
-                IReportRenderer reportRenderer = GetOutputType(Console.Out, Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
+                IReportRenderer reportRenderer = GetOutputType(consoleOut ?? Console.Out, consoleError ?? Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
                 var provider = new PackageSourceProvider(settings);
                 var frameworkValues = parseResult.GetValue(framework) ?? Array.Empty<string>();
                 var packageRefArgs = new ListPackageArgs(

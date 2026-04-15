@@ -5,6 +5,7 @@
 
 using System;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using NuGet.Packaging.Signing;
@@ -103,7 +104,7 @@ namespace NuGet.CommandLine.XPlat
 
                 ValidateArgument(idValue, "--package", "add");
                 ValidateArgument(projectPathValue, "--project", "add");
-                ValidateProjectPath(projectPathValue!, "add", virtualProjectBuilder);
+                ValidateProjectPath(projectPathValue, "add", virtualProjectBuilder);
                 if (!noRestoreValue)
                 {
                     ValidateArgument(dgFilePathValue, "--dg-file", "add");
@@ -116,18 +117,18 @@ namespace NuGet.CommandLine.XPlat
                 var frameworkValues = parseResult.GetValue(frameworks) ?? Array.Empty<string>();
                 var sourceValues = parseResult.GetValue(sources) ?? Array.Empty<string>();
 
-                var packageRefArgs = new PackageReferenceArgs(projectPathValue!, logger)
+                var packageRefArgs = new PackageReferenceArgs(projectPathValue, logger)
                 {
                     Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworkValues),
                     Sources = CommandLineUtility.SplitAndJoinAcrossMultipleValues(sourceValues),
                     PackageDirectory = parseResult.GetValue(packageDirectory) ?? string.Empty,
                     NoRestore = noRestoreValue,
                     NoVersion = noVersion,
-                    DgFilePath = dgFilePathValue ?? string.Empty,
+                    DgFilePath = dgFilePathValue,
                     Interactive = parseResult.GetValue(interactive),
                     Prerelease = prereleaseValue,
                     PackageVersion = packageVersion!,
-                    PackageId = idValue!
+                    PackageId = idValue
                 };
                 var msBuild = new MSBuildAPIUtility(logger, virtualProjectBuilder!);
 
@@ -149,7 +150,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void ValidateArgument(string? value, string optionName, string commandName)
+        private static void ValidateArgument([NotNull] string? value, string optionName, string commandName)
         {
             if (string.IsNullOrEmpty(value))
             {

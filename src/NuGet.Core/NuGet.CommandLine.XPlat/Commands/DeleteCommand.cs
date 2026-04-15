@@ -14,69 +14,69 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class DeleteCommand
     {
-        private static readonly Option<string> SourceOption = new Option<string>("--source", "-s")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.Source_Description,
-        };
-
-        private static readonly Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NonInteractive_Description,
-        };
-
-        private static readonly Option<string> ApiKeyOption = new Option<string>("--api-key", "-k")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.ApiKey_Description,
-        };
-
-        private static readonly Option<bool> NoServiceEndpointOption = new Option<bool>("--no-service-endpoint")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NoServiceEndpoint_Description,
-        };
-
-        private static readonly Option<bool> InteractiveOption = new Option<bool>("--interactive")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.NuGetXplatCommand_Interactive,
-        };
-
-        private static readonly Argument<string> PackageIdArgument = new Argument<string>("PackageId")
-        {
-            Arity = ArgumentArity.ExactlyOne,
-            Description = Strings.Delete_PackageIdAndVersion_Description,
-        };
-
-        private static readonly Argument<string> PackageVersionArgument = new Argument<string>("PackageVersion")
-        {
-            Arity = ArgumentArity.ExactlyOne,
-            Description = Strings.Delete_PackageIdAndVersion_Description,
-        };
-
         internal static void Register(Command parent, Func<ILoggerWithColor> getLogger)
         {
             var deleteCmd = new Command("delete", Strings.Delete_Description);
 
-            deleteCmd.Options.Add(SourceOption);
-            deleteCmd.Options.Add(NonInteractiveOption);
-            deleteCmd.Options.Add(ApiKeyOption);
-            deleteCmd.Options.Add(NoServiceEndpointOption);
-            deleteCmd.Options.Add(InteractiveOption);
-            deleteCmd.Arguments.Add(PackageIdArgument);
-            deleteCmd.Arguments.Add(PackageVersionArgument);
+            var sourceOption = new Option<string>("--source", "-s")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.Source_Description,
+            };
+
+            var nonInteractiveOption = new Option<bool>("--non-interactive")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NonInteractive_Description,
+            };
+
+            var apiKeyOption = new Option<string>("--api-key", "-k")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.ApiKey_Description,
+            };
+
+            var noServiceEndpointOption = new Option<bool>("--no-service-endpoint")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NoServiceEndpoint_Description,
+            };
+
+            var interactiveOption = new Option<bool>("--interactive")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.NuGetXplatCommand_Interactive,
+            };
+
+            var packageIdArgument = new Argument<string>("PackageId")
+            {
+                Arity = ArgumentArity.ExactlyOne,
+                Description = Strings.Delete_PackageIdAndVersion_Description,
+            };
+
+            var packageVersionArgument = new Argument<string>("PackageVersion")
+            {
+                Arity = ArgumentArity.ExactlyOne,
+                Description = Strings.Delete_PackageIdAndVersion_Description,
+            };
+
+            deleteCmd.Options.Add(sourceOption);
+            deleteCmd.Options.Add(nonInteractiveOption);
+            deleteCmd.Options.Add(apiKeyOption);
+            deleteCmd.Options.Add(noServiceEndpointOption);
+            deleteCmd.Options.Add(interactiveOption);
+            deleteCmd.Arguments.Add(packageIdArgument);
+            deleteCmd.Arguments.Add(packageVersionArgument);
 
             deleteCmd.SetAction(async (parseResult, cancellationToken) =>
             {
-                string packageId = parseResult.GetValue(PackageIdArgument);
-                string packageVersion = parseResult.GetValue(PackageVersionArgument);
-                string sourcePath = parseResult.GetValue(SourceOption);
-                string apiKeyValue = parseResult.GetValue(ApiKeyOption);
-                bool nonInteractiveValue = parseResult.GetValue(NonInteractiveOption);
-                bool noServiceEndpoint = parseResult.GetValue(NoServiceEndpointOption);
-                bool interactiveValue = parseResult.GetValue(InteractiveOption);
+                string packageId = parseResult.GetValue(packageIdArgument);
+                string packageVersion = parseResult.GetValue(packageVersionArgument);
+                string sourcePath = parseResult.GetValue(sourceOption);
+                string apiKeyValue = parseResult.GetValue(apiKeyOption);
+                bool nonInteractiveValue = parseResult.GetValue(nonInteractiveOption);
+                bool noServiceEndpoint = parseResult.GetValue(noServiceEndpointOption);
+                bool interactiveValue = parseResult.GetValue(interactiveOption);
 
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactiveValue);
 

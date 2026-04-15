@@ -14,40 +14,40 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class LocalsCommand
     {
-        private static readonly Option<bool> ClearOption = new Option<bool>("--clear", "-c")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.LocalsCommand_ClearDescription,
-        };
-
-        private static readonly Option<bool> ListOption = new Option<bool>("--list", "-l")
-        {
-            Arity = ArgumentArity.Zero,
-            Description = Strings.LocalsCommand_ListDescription,
-        };
-
-        private static readonly Argument<string> CacheLocationArgument = new Argument<string>("Cache Location(s)")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = Strings.LocalsCommand_ArgumentDescription,
-        };
-
         internal static void Register(Command parent, Func<ILoggerWithColor> getLogger)
         {
             var localsCmd = new Command("locals", Strings.LocalsCommand_Description);
 
-            localsCmd.Options.Add(ClearOption);
-            localsCmd.Options.Add(ListOption);
-            localsCmd.Arguments.Add(CacheLocationArgument);
+            var clearOption = new Option<bool>("--clear", "-c")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.LocalsCommand_ClearDescription,
+            };
+
+            var listOption = new Option<bool>("--list", "-l")
+            {
+                Arity = ArgumentArity.Zero,
+                Description = Strings.LocalsCommand_ListDescription,
+            };
+
+            var cacheLocationArgument = new Argument<string>("Cache Location(s)")
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                Description = Strings.LocalsCommand_ArgumentDescription,
+            };
+
+            localsCmd.Options.Add(clearOption);
+            localsCmd.Options.Add(listOption);
+            localsCmd.Arguments.Add(cacheLocationArgument);
 
             localsCmd.SetAction((parseResult, cancellationToken) =>
             {
                 var logger = getLogger();
                 var setting = XPlatUtility.GetSettingsForCurrentWorkingDirectory();
 
-                string? cacheLocation = parseResult.GetValue(CacheLocationArgument);
-                bool clear = parseResult.GetValue(ClearOption);
-                bool list = parseResult.GetValue(ListOption);
+                string? cacheLocation = parseResult.GetValue(cacheLocationArgument);
+                bool clear = parseResult.GetValue(clearOption);
+                bool list = parseResult.GetValue(listOption);
 
                 // Using both -clear and -list command options, or neither one of them, is not supported.
                 // We use MinArgs = 0 even though the first argument is required,

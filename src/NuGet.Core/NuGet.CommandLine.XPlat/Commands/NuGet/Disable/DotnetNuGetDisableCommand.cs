@@ -6,9 +6,9 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using NuGet.Commands;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.Commands.NuGet.Disable
 {
-    internal static class NuGetDisableCommand
+    internal static class DotnetNuGetDisableCommand
     {
         internal static void Register(Command parent, Func<ILoggerWithColor> getLogger)
         {

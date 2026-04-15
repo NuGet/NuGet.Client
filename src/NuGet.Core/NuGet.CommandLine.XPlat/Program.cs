@@ -6,6 +6,12 @@ using System.CommandLine;
 using System.Globalization;
 using System.Linq;
 using NuGet.CommandLine.XPlat.Commands;
+using NuGet.CommandLine.XPlat.Commands.NuGet.Add;
+using NuGet.CommandLine.XPlat.Commands.NuGet.Disable;
+using NuGet.CommandLine.XPlat.Commands.NuGet.Enable;
+using NuGet.CommandLine.XPlat.Commands.NuGet.List;
+using NuGet.CommandLine.XPlat.Commands.NuGet.Remove;
+using NuGet.CommandLine.XPlat.Commands.NuGet.Update;
 using NuGet.CommandLine.XPlat.Commands.Why;
 using NuGet.Commands;
 using NuGet.Common;
@@ -130,12 +136,12 @@ namespace NuGet.CommandLine.XPlat
                 TrustedSignersCommand.Register(rootCommand, getHidePrefixLogger, setLogLevel);
 
                 // Source/client-cert verb commands
-                NuGetAddCommand.Register(rootCommand, getHidePrefixLogger);
-                NuGetDisableCommand.Register(rootCommand, getHidePrefixLogger);
-                NuGetEnableCommand.Register(rootCommand, getHidePrefixLogger);
-                NuGetListCommand.Register(rootCommand, getHidePrefixLogger);
-                NuGetRemoveCommand.Register(rootCommand, getHidePrefixLogger);
-                NuGetUpdateCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetAddCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetDisableCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetEnableCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetListCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetRemoveCommand.Register(rootCommand, getHidePrefixLogger);
+                DotnetNuGetUpdateCommand.Register(rootCommand, getHidePrefixLogger);
 
                 // These commands have the same parser as the dotnet CLI, so they can be used interchangeably with "dotnet nuget *"
                 ConfigCommand.Register(nugetCommand, getHidePrefixLogger);

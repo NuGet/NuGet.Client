@@ -6,26 +6,26 @@ using System.CommandLine;
 using System.Threading.Tasks;
 using NuGet.Commands;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.Commands.NuGet.Add
 {
-    internal static class NuGetUpdateCommand
+    internal static class DotnetNuGetAddCommand
     {
         internal static void Register(Command parent, Func<ILoggerWithColor> getLogger)
         {
-            var updateCmd = new Command("update", Strings.Update_Description);
+            var addCmd = new Command("add", Strings.Add_Description);
 
-            RegisterUpdateSource(updateCmd, getLogger);
-            RegisterUpdateClientCert(updateCmd, getLogger);
+            RegisterAddSource(addCmd, getLogger);
+            RegisterAddClientCert(addCmd, getLogger);
 
-            parent.Subcommands.Add(updateCmd);
+            parent.Subcommands.Add(addCmd);
         }
 
-        private static void RegisterUpdateSource(Command parent, Func<ILoggerWithColor> getLogger)
+        private static void RegisterAddSource(Command parent, Func<ILoggerWithColor> getLogger)
         {
-            var sourceCmd = new Command("source", Strings.UpdateSourceCommandDescription);
+            var sourceCmd = new Command("source", Strings.AddSourceCommandDescription);
 
-            var nameArg = new Argument<string>("name") { Description = Strings.SourcesCommandNameDescription };
-            var source = new Option<string>("--source", "-s") { Description = Strings.SourcesCommandSourceDescription };
+            var sourceArg = new Argument<string>("PackageSourcePath") { Description = Strings.SourcesCommandSourceDescription };
+            var name = new Option<string>("--name", "-n") { Description = Strings.SourcesCommandNameDescription };
             var username = new Option<string>("--username", "-u") { Description = Strings.SourcesCommandUsernameDescription };
             var password = new Option<string>("--password", "-p") { Description = Strings.SourcesCommandPasswordDescription };
             var storePasswordInClearText = new Option<bool>("--store-password-in-clear-text") { Description = Strings.SourcesCommandStorePasswordInClearTextDescription };
@@ -34,8 +34,8 @@ namespace NuGet.CommandLine.XPlat
             var configfile = new Option<string>("--configfile") { Description = Strings.Option_ConfigFile };
             var allowInsecureConnections = new Option<bool>("--allow-insecure-connections") { Description = Strings.SourcesCommandAllowInsecureConnectionsDescription };
 
-            sourceCmd.Arguments.Add(nameArg);
-            sourceCmd.Options.Add(source);
+            sourceCmd.Arguments.Add(sourceArg);
+            sourceCmd.Options.Add(name);
             sourceCmd.Options.Add(username);
             sourceCmd.Options.Add(password);
             sourceCmd.Options.Add(storePasswordInClearText);
@@ -46,10 +46,10 @@ namespace NuGet.CommandLine.XPlat
 
             sourceCmd.SetAction((parseResult, cancellationToken) =>
             {
-                var args = new UpdateSourceArgs()
+                var args = new AddSourceArgs()
                 {
-                    Name = parseResult.GetValue(nameArg),
-                    Source = parseResult.GetValue(source),
+                    Source = parseResult.GetValue(sourceArg),
+                    Name = parseResult.GetValue(name),
                     Username = parseResult.GetValue(username),
                     Password = parseResult.GetValue(password),
                     StorePasswordInClearText = parseResult.GetValue(storePasswordInClearText),
@@ -59,16 +59,16 @@ namespace NuGet.CommandLine.XPlat
                     AllowInsecureConnections = parseResult.GetValue(allowInsecureConnections),
                 };
 
-                UpdateSourceRunner.Run(args, () => getLogger());
+                AddSourceRunner.Run(args, () => getLogger());
                 return Task.FromResult(0);
             });
 
             parent.Subcommands.Add(sourceCmd);
         }
 
-        private static void RegisterUpdateClientCert(Command parent, Func<ILoggerWithColor> getLogger)
+        private static void RegisterAddClientCert(Command parent, Func<ILoggerWithColor> getLogger)
         {
-            var clientCertCmd = new Command("client-cert", Strings.UpdateClientCertCommandDescription);
+            var clientCertCmd = new Command("client-cert", Strings.AddClientCertCommandDescription);
 
             var packagesource = new Option<string>("--package-source", "-s") { Description = Strings.Option_PackageSource };
             var path = new Option<string>("--path") { Description = Strings.Option_Path };
@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.XPlat
 
             clientCertCmd.SetAction((parseResult, cancellationToken) =>
             {
-                var args = new UpdateClientCertArgs()
+                var args = new AddClientCertArgs()
                 {
                     PackageSource = parseResult.GetValue(packagesource),
                     Path = parseResult.GetValue(path),
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
                     Configfile = parseResult.GetValue(configfile),
                 };
 
-                UpdateClientCertRunner.Run(args, () => getLogger());
+                AddClientCertRunner.Run(args, () => getLogger());
                 return Task.FromResult(0);
             });
 
