@@ -85,8 +85,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectServices = new CpsProjectSystemServices(vsProject, _scriptExecutor);
 
             // Ensure the EnvDTE.Project is initialized.
-            // Under the hood VSProjectAdapter actually has a Lazy<EnvDte.project>, which is really a bug, so if code like
-            // PMC is actually the first one that wants the EnvDTE.Project, it would fail because it's being called from the pipeline thread.
+            // Under the hood VSProjectAdapter actually has a Lazy<EnvDte.project>, which needs the UI thread to satisfy the cast.
+            // If PMC is actually the first one that wants the EnvDTE.Project, it would fail because it's being called from the pipeline thread.
             // This is a workaround to make sure the EnvDTE.Project is initialized before any PMC code tries to use it.
             _ = vsProject.Project;
             var lazyUnconfiguredProject = new AsyncLazy<UnconfiguredProject>(async () =>
