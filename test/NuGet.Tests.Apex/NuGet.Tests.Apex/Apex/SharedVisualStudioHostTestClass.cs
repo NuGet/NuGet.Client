@@ -48,7 +48,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.Stop();
         }
 
-        protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
+        protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project, bool waitForAutoRestore = true)
         {
             Logger.WriteMessage("GetConsole");
             VisualStudio.ClearWindows();
@@ -65,7 +65,10 @@ namespace NuGet.Tests.Apex
             // but not so large as to create memory problems.
             _console.SetConsoleWidth(consoleWidth: 1024);
 
-            nugetTestService.WaitForAutoRestore();
+            if (waitForAutoRestore)
+            {
+                nugetTestService.WaitForAutoRestore();
+            }
 
             Logger.WriteMessage("GetConsole complete");
 

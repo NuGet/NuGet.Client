@@ -51,7 +51,10 @@ namespace NuGet.Tests.Apex
 
             Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger);
 
-            NuGetApexTestService.WaitForAutoRestore();
+            if (!noAutoRestore)
+            {
+                NuGetApexTestService.WaitForAutoRestore();
+            }
         }
 
         public void Dispose()

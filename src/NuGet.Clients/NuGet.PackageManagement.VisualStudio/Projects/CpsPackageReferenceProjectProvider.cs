@@ -80,6 +80,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            // Ensure the EnvDTE.Project is initialized on the UI thread before PMC accesses it later.
+            //_ = vsProject.Project;
+
             var fullProjectPath = vsProject.FullProjectPath;
 
             var projectServices = new CpsProjectSystemServices(vsProject, _scriptExecutor);

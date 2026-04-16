@@ -53,5 +53,56 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Projects
             projectAdapter.Verify(a => a.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.Cps), Times.Once);
             projectAdapter.Verify(a => a.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences), Times.Once);
         }
+
+        [Fact]
+        public async Task TryCreateNuGetProject_CpsPackageReferenceProject_InitializesDteProject()
+        {
+            // Arrange
+            var hierarchy = new Mock<IVsHierarchy>();
+            var dteProject = new Mock<EnvDTE.Project>();
+            var buildProperties = new Mock<IVsProjectBuildProperties>();
+            string? restoreProjectStyle = null;
+#pragma warning disable CS0618 // Type or member is obsolete
+            buildProperties.Setup(x => x.GetPropertyValueWithDteFallback(ProjectBuildProperties.RestoreProjectStyle))
+                .Returns(restoreProjectStyle);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            var projectAdapter = new Mock<IVsProjectAdapter>();
+            projectAdapter.SetupGet(a => a.VsHierarchy)
+                .Returns(hierarchy.Object);
+            projectAdapter.SetupGet(a => a.BuildProperties)
+                .Returns(buildProperties.Object);
+            projectAdapter.SetupGet(a => a.Project)
+                .Returns(dteProject.Object);
+            projectAdapter.SetupGet(a => a.FullProjectPath)
+                .Returns(@"c:\test\project.csproj");
+            projectAdapter.SetupGet(a => a.ProjectName)
+                .Returns("TestProject");
+            projectAdapter.SetupGet(a => a.CustomUniqueName)
+                .Returns("TestProject");
+            projectAdapter.SetupGet(a => a.ProjectId)
+                .Returns(Guid.NewGuid().ToString());
+            projectAdapter.Setup(a => a.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.Cps))
+                .Returns(true);
+            projectAdapter.Setup(a => a.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences))
+                .Returns(true);
+
+            var nugetProjectContext = new Mock<INuGetProjectContext>();
+
+            var ppc = new ProjectProviderContext(nugetProjectContext.Object, packagesPathFactory: () => throw new NotImplementedException());
+
+            var projectSystemCache = new Mock<IProjectSystemCache>();
+            var scriptExecutor = new Mock<Lazy<IScriptExecutor>>();
+            var target = new CpsPackageReferenceProjectProvider(projectSystemCache.Object, scriptExecutor.Object);
+
+            // Act
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            NuGetProject actual = target.TryCreateNuGetProject(projectAdapter.Object, ppc, forceProjectType: false);
+
+            // Assert
+            Assert.NotNull(actual);
+            Assert.IsType<CpsPackageReferenceProject>(actual);
+            projectAdapter.VerifyGet(a => a.Project, Times.Once);
+        }
     }
 }
