@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
+        <target state="translated">Chiave API per il server. Se non impostata, viene letta la variabile di ambiente NUGET_API_KEY.</target>
         <note />
       </trans-unit>
       <trans-unit id="App_FullName">
@@ -410,7 +410,7 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="new">Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</target>
+        <target state="translated">Percorso mancante o non valido: '{0}'. Specificare il percorso di un progetto o di un file di soluzione, un'app basata su file o una directory di progetto.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -583,7 +583,7 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       </trans-unit>
       <trans-unit id="ListPkg_InvalidFramework">
         <source>The specified TargetFramework '{0}' is not found in the project '{1}'.</source>
-        <target state="new">The specified TargetFramework '{0}' is not found in the project '{1}'.</target>
+        <target state="translated">Non è possibile trovare l'oggetto TargetFramework '{0}' specificato nel progetto '{1}'.</target>
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
@@ -973,7 +973,7 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_ProjectOptionDescription">
         <source>Path to a project or solution file or file-based app, or a project directory.</source>
-        <target state="new">Path to a project or solution file or file-based app, or a project directory.</target>
+        <target state="translated">Percorso di un progetto o di un file di soluzione, un'app basata su file o una directory di progetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdateCommand_VulnerableOptionDescription">
@@ -1136,7 +1136,7 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <target state="translated">Consente la firma con certificati il cui certificato radice non è presente in un archivio radici attendibile. La struttura della catena di certificati viene comunque creata e verificata, ma lo stato UntrustedRoot è considerato un avviso.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1294,7 +1294,7 @@ La ricerca viene eseguita in un confronto di stringhe senza distinzione tra maiu
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
+        <target state="translated">Chiave API per il server dei simboli. Se non impostata, viene letta la variabile di ambiente NUGET_SYMBOL_API_KEY.</target>
         <note />
       </trans-unit>
       <trans-unit id="SymbolSource_Description">
@@ -1528,7 +1528,7 @@ La ricerca viene eseguita in un confronto di stringhe senza distinzione tra maiu
       </trans-unit>
       <trans-unit id="WhyCommand_PathArgument_Description">
         <source>A path to a project, solution file, file-based app, or project directory.</source>
-        <target state="new">A path to a project, solution file, file-based app, or project directory.</target>
+        <target state="translated">Il percorso di un progetto o di un file di soluzione, un'app basata su file o una directory di progetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget">
