@@ -6,10 +6,13 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -80,9 +83,12 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                var json = await httpSourceResult.Stream.AsJObjectAsync(token);
+                                RepositorySignatureModel model = await JsonSerializer.DeserializeAsync(
+                                    httpSourceResult.Stream,
+                                    JsonContext.Default.RepositorySignatureModel,
+                                    token);
 
-                                return new RepositorySignatureResource(json, source);
+                                return new RepositorySignatureResource(model, source);
                             },
                             log,
                             token);

@@ -12,12 +12,13 @@ namespace NuGet.Protocol.Utility
     [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
         GenerationMode = JsonSourceGenerationMode.Metadata,
-        Converters = [typeof(VersionRangeStjConverter)])]
+        Converters = [typeof(VersionRangeStjConverter), typeof(FingerprintsStjConverter)])]
 #pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
     [JsonSerializable(typeof(IReadOnlyList<V3VulnerabilityIndexEntry>), TypeInfoPropertyName = "VulnerabilityIndex")]
     [JsonSerializable(typeof(CaseInsensitiveDictionary<IReadOnlyList<PackageVulnerabilityInfo>>), TypeInfoPropertyName = "VulnerabilityPage")]
     [JsonSerializable(typeof(AutoCompleteModel))]
+    [JsonSerializable(typeof(RepositorySignatureModel))]
     internal partial class JsonContext : JsonSerializerContext
     {
     }

@@ -4,27 +4,34 @@
 using System;
 using Newtonsoft.Json;
 using NuGet.Packaging.Core;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol
 {
     public class RepositoryCertificateInfo : IRepositoryCertificateInfo
     {
         [JsonProperty(PropertyName = JsonProperties.Fingerprints, Required = Required.Always)]
-        public Fingerprints Fingerprints { get; private set; } = null!;
+        [JsonPropertyName(JsonProperties.Fingerprints)]
+        public Fingerprints Fingerprints { get; internal init; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.Subject, Required = Required.Always)]
-        public string Subject { get; private set; } = null!;
+        [JsonPropertyName(JsonProperties.Subject)]
+        public string Subject { get; internal init; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.Issuer, Required = Required.Always)]
-        public string Issuer { get; private set; } = null!;
+        [JsonPropertyName(JsonProperties.Issuer)]
+        public string Issuer { get; internal init; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.NotBefore, Required = Required.Always)]
-        public DateTimeOffset NotBefore { get; private set; }
+        [JsonPropertyName(JsonProperties.NotBefore)]
+        public DateTimeOffset NotBefore { get; internal init; }
 
         [JsonProperty(PropertyName = JsonProperties.NotAfter, Required = Required.Always)]
-        public DateTimeOffset NotAfter { get; private set; }
+        [JsonPropertyName(JsonProperties.NotAfter)]
+        public DateTimeOffset NotAfter { get; internal init; }
 
         [JsonProperty(PropertyName = JsonProperties.ContentUrl, Required = Required.Always)]
-        public string ContentUrl { get; private set; } = null!;
+        [JsonPropertyName(JsonProperties.ContentUrl)]
+        public string ContentUrl { get; internal init; } = null!;
     }
 }
