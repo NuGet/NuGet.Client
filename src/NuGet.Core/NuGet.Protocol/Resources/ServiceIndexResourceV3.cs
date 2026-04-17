@@ -6,11 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -21,6 +24,7 @@ namespace NuGet.Protocol
     public class ServiceIndexResourceV3 : INuGetResource
     {
         private readonly string _json;
+        private readonly ServiceIndexModel _model;
         private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
@@ -34,6 +38,13 @@ namespace NuGet.Protocol
         }
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime) : this(index, requestTime, null) { }
+
+        internal ServiceIndexResourceV3(ServiceIndexModel model, DateTime requestTime, PackageSource packageSource)
+        {
+            _model = model;
+            _index = MakeLookup(model, packageSource);
+            _requestTime = requestTime;
+        }
 
         /// <summary>
         /// Time the index was requested
@@ -56,10 +67,7 @@ namespace NuGet.Protocol
 
         public virtual string Json
         {
-            get
-            {
-                return _json;
-            }
+            get { return _json ?? JsonSerializer.Serialize(_model, JsonContext.Default.ServiceIndexModel); }
         }
 
         /// <summary>
@@ -146,6 +154,87 @@ namespace NuGet.Protocol
             }
 
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
+        }
+
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(ServiceIndexModel index, PackageSource packageSource)
+        {
+            var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
+
+            if (index?.Resources is null)
+            {
+                return result;
+            }
+
+            foreach (var resource in index.Resources)
+            {
+                var id = resource.Id;
+                if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out Uri uri))
+                {
+                    continue;
+                }
+
+                if (packageSource != null && uri.Scheme == Uri.UriSchemeHttp && packageSource.IsHttps)
+                {
+                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(source: packageSource.Source, httpsSourceHasHttpResource: true));
+                }
+
+                var types = GetStringValues(resource.Type).ToArray();
+
+                var clientVersions = new List<SemanticVersion>();
+                if (resource.ClientVersion.ValueKind == JsonValueKind.Undefined)
+                {
+                    clientVersions.Add(_defaultVersion);
+                }
+                else
+                {
+                    foreach (var versionString in GetStringValues(resource.ClientVersion))
+                    {
+                        if (SemanticVersion.TryParse(versionString, out SemanticVersion semVer))
+                        {
+                            clientVersions.Add(semVer);
+                        }
+                    }
+                }
+
+                foreach (var type in types)
+                {
+                    foreach (var clientVersion in clientVersions)
+                    {
+                        if (!result.TryGetValue(type, out List<ServiceIndexEntry> entries))
+                        {
+                            entries = new List<ServiceIndexEntry>();
+                            result.Add(type, entries);
+                        }
+
+                        entries.Add(new ServiceIndexEntry(uri, type, clientVersion));
+                    }
+                }
+            }
+
+            foreach (var type in result.Keys.ToArray())
+            {
+                result[type] = result[type].OrderByDescending(e => e.ClientVersion).ToList();
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<string> GetStringValues(JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        yield return item.GetString();
+                    }
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.String)
+            {
+                yield return element.GetString();
+            }
         }
 
         private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
