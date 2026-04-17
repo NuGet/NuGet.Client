@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Commands;
-using NuGet.Commands.Restore.Utility;
 using NuGet.Commands.Test;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -61,17 +60,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 framework,
                 pkgDependencies);
 
-            var environmentVariables = new TestEnvironmentVariableReader(new Dictionary<string, string>()
-                {
-                    { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
-                });
-
             var testProject = new LegacyPackageReferenceProject(
                 projectAdapter,
                 projectId,
                 projectServices,
                 threadingService,
-                environmentVariables);
+                usePackageSpecFactory);
 
             return testProject;
         }

@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectId,
             ILegacyPackageReferenceProjectServices projectServices,
             IVsProjectThreadingService threadingService,
-            IEnvironmentVariableReader environmentVariableReader)
+            bool usePackageSpecFactory)
             : base(vsProjectAdapter.ProjectName,
                 vsProjectAdapter.UniqueName,
                 vsProjectAdapter.FullProjectPath)
@@ -63,7 +63,6 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectId);
             Assumes.Present(projectServices);
             Assumes.Present(threadingService);
-            Assumes.Present(environmentVariableReader);
 
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
@@ -78,11 +77,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectServices = projectServices;
             _projectServices = projectServices;
 
-            var packageSpecFactoryEnvVar = environmentVariableReader.GetEnvironmentVariable(PackageSpecFactory.EnvironmentVariableName);
-            _usePackageSpecFactory =
-                bool.FalseString.Equals(packageSpecFactoryEnvVar, StringComparison.OrdinalIgnoreCase)
-                ? false
-                : true;
+            _usePackageSpecFactory = usePackageSpecFactory;
         }
 
         public LegacyPackageReferenceProject(
@@ -90,12 +85,13 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectId,
             ILegacyPackageReferenceProjectServices projectServices,
             IVsProjectThreadingService threadingService,
-            NuGetFramework targetFramework)
+            NuGetFramework targetFramework,
+            bool usePackageSpecFactory)
             : this(vsProjectAdapter,
                 projectId,
                 projectServices,
                 threadingService,
-                EnvironmentVariableWrapper.Instance)
+                usePackageSpecFactory)
         {
             Assumes.NotNull(targetFramework);
             TargetFramework = targetFramework;

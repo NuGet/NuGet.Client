@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Commands;
-using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -2418,17 +2417,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             IVsProjectThreadingService threadingService,
             bool usePackageSpecFactory)
         {
-            var environmentVariables = new TestEnvironmentVariableReader(new Dictionary<string, string>()
-            {
-                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
-            });
-
             var testProject = new LegacyPackageReferenceProject(
                 projectAdapter,
                 projectId,
                 projectServices,
                 threadingService,
-                environmentVariables);
+                usePackageSpecFactory);
 
             return testProject;
         }
