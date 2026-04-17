@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -55,32 +57,29 @@ namespace NuGet.Protocol
             Common.ILogger logger = log ?? Common.NullLogger.Instance;
 
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetJObjectAsync(
+            AutoCompleteModel results = await _client.ProcessStreamAsync(
                 new HttpSourceRequest(queryUri, logger),
+                async stream =>
+                {
+                    if (stream == null)
+                    {
+                        return null;
+                    }
+
+                    return await JsonSerializer.DeserializeAsync(stream, JsonContext.Default.AutoCompleteModel, token);
+                },
                 logger,
                 token);
+
             token.ThrowIfCancellationRequested();
-            if (results == null)
-            {
-                return Enumerable.Empty<string>();
-            }
-            var data = results.Value<JArray>("data");
-            if (data == null)
+
+            if (results?.Data == null)
             {
                 return Enumerable.Empty<string>();
             }
 
-            // Resolve all the objects
-            var outputs = new List<string>();
-            foreach (var result in data)
-            {
-                if (result != null)
-                {
-                    outputs.Add(result.ToString());
-                }
-            }
-
-            return outputs.Where(item => item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
+            return results.Data
+                .Where(item => item != null && item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
         }
 
         public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(

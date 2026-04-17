@@ -17,6 +17,11 @@ namespace NuGet.Protocol.Utility
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
     [JsonSerializable(typeof(IReadOnlyList<V3VulnerabilityIndexEntry>), TypeInfoPropertyName = "VulnerabilityIndex")]
     [JsonSerializable(typeof(CaseInsensitiveDictionary<IReadOnlyList<PackageVulnerabilityInfo>>), TypeInfoPropertyName = "VulnerabilityPage")]
+<<<<<<< Updated upstream
+=======
+    [JsonSerializable(typeof(AutoCompleteModel))]
+    [JsonSerializable(typeof(ServiceIndexModel))]
+>>>>>>> Stashed changes
     internal partial class JsonContext : JsonSerializerContext
     {
     }
