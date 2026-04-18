@@ -182,7 +182,7 @@ public class ServerReturnsWrongPackageTests(ServerReturnsWrongPackageTests.Fixtu
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             _packageBytes = await GetPackageBytesAsync(ActualPackageName);
             Responses = GetResponsesDictionary();
@@ -239,10 +239,10 @@ public class ServerReturnsWrongPackageTests(ServerReturnsWrongPackageTests.Fixtu
             File.WriteAllBytes(v2NupkgPath, _packageBytes);
         }
 
-        public Task DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             _testDirectory?.Dispose();
-            return Task.CompletedTask;
+            return default;
         }
 
         private static async Task<byte[]> GetPackageBytesAsync(string packageName)
