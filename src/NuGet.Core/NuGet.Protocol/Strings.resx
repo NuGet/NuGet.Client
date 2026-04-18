@@ -543,4 +543,11 @@ The "s" should be localized to the abbreviation for seconds.</comment>
     <value>Expected package {0} {1}, but got package {2} {3}</value>
     <comment>0 and 2 are package names, and 1 and 3 are version numbers</comment>
   </data>
+  <data name="Error_UnexpectedJsonToken" xml:space="preserve">
+    <value>Unexpected JSON token '{0}'.</value>
+  </data>
+  <data name="Error_RequiredJsonPropertyMissing" xml:space="preserve">
+    <value>Required JSON property '{0}' is missing.</value>
+    <comment>0 - property name</comment>
+  </data>
 </root>

@@ -84,6 +84,16 @@
         <target state="new">Expected package {0} {1}, but got package {2} {3}</target>
         <note>0 and 2 are package names, and 1 and 3 are version numbers</note>
       </trans-unit>
+      <trans-unit id="Error_RequiredJsonPropertyMissing">
+        <source>Required JSON property '{0}' is missing.</source>
+        <target state="new">Required JSON property '{0}' is missing.</target>
+        <note>0 - property name</note>
+      </trans-unit>
+      <trans-unit id="Error_UnexpectedJsonToken">
+        <source>Unexpected JSON token '{0}'.</source>
+        <target state="new">Unexpected JSON token '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
         <source>The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.</source>
         <target state="translated">'{0}' kaynağına erişilirken sunucu HTTP '403 Yasak' yanıtı döndürdü. Bu, sunucunun kimliğinizi doğruladığı, ancak size istenen kaynağa erişim izni vermediği anlamına gelir. Bu kaynağı görüntüleme iznine sahip kimlik bilgilerini sağlayın.</target>
