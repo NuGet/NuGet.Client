@@ -1,0 +1,46 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace NuGet.Protocol.Converters
+{
+    /// <summary>
+    /// Reads a JSON string or array of strings into a single comma-separated string.
+    /// Equivalent to <see cref="MetadataFieldConverter"/> for System.Text.Json.
+    /// </summary>
+    /// <remarks>NSJ equivalent: <see cref="MetadataFieldConverter"/>.</remarks>
+    internal sealed class MetadataFieldStjConverter : JsonConverter<string>
+    {
+        public override bool HandleNull => true;
+        public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return string.Empty;
+            }
+
+            if (reader.TokenType == JsonTokenType.StartArray)
+            {
+                var values = new List<string>();
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    var s = reader.GetString();
+                    if (!string.IsNullOrWhiteSpace(s))
+                    {
+                        values.Add(s!);
+                    }
+                }
+                return string.Join(", ", values);
+            }
+
+            return reader.GetString() ?? string.Empty;
+        }
+
+        public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+            => throw new NotSupportedException();
+    }
+}
