@@ -108,7 +108,14 @@ namespace Test.Utility
                     }
                     catch (Exception ex)
                     {
-                        _testOutputHelper.WriteLine($"[SelfSignedCertificateMockServer] Error processing request: {ex}");
+                        try
+                        {
+                            _testOutputHelper.WriteLine($"[SelfSignedCertificateMockServer] Error processing request: {ex}");
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // In xunit v3, ITestOutputHelper.WriteLine throws if no test is active.
+                        }
                     }
                 }
             }
@@ -129,7 +136,14 @@ namespace Test.Utility
             }
             catch (Exception ex)
             {
-                _testOutputHelper.WriteLine($"[SelfSignedCertificateMockServer] Error processing request: {ex}");
+                try
+                {
+                    _testOutputHelper.WriteLine($"[SelfSignedCertificateMockServer] Error processing request: {ex}");
+                }
+                catch (InvalidOperationException)
+                {
+                    // In xunit v3, ITestOutputHelper.WriteLine throws if no test is active.
+                }
             }
         }
 

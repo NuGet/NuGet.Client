@@ -313,6 +313,15 @@ namespace NuGet.Protocol.FuncTest
 
                         _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
                     }
+                    catch (HttpListenerException)
+                    {
+                        // The listener was stopped/disposed between the IsListening check and EndGetContext.
+                        return;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        return;
+                    }
                     catch (Exception ex)
                     {
                         if (context != null)
@@ -334,6 +343,10 @@ namespace NuGet.Protocol.FuncTest
                     catch (ObjectDisposedException)
                     {
                         // .NET 5 throws here, whereas .NET Framework triggers the callback where we can check IsListening == false
+                    }
+                    catch (HttpListenerException)
+                    {
+                        // The listener was stopped/disposed between the IsListening check and BeginGetContext.
                     }
                     catch (InvalidOperationException)
                     {

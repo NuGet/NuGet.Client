@@ -42,13 +42,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 return Task.Delay(delay);
             }
 
-            if (DateTimeOffset.Now > notAfter)
-            {
-                throw new ArgumentOutOfRangeException(
-                    paramName: nameof(certificate),
-                    message: $"The certificate with thumbprint {certificate.Thumbprint} has already expired.");
-            }
-
+            // The certificate has already expired, which is the desired state.
             return Task.CompletedTask;
         }
 

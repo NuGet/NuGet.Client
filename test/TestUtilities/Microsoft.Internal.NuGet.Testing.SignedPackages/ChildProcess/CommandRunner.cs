@@ -100,6 +100,12 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess
                             process.Kill();
                         }
 
+                        // Unsubscribe event handlers and flush async output before throwing,
+                        // to prevent callbacks from firing after the test has completed.
+                        process.OutputDataReceived -= OnOutputDataReceived;
+                        process.ErrorDataReceived -= OnErrorDataReceived;
+                        process.WaitForExit();
+
                         throw new TimeoutException($"{process.StartInfo.FileName} {process.StartInfo.Arguments} timed out after {stopwatch.Elapsed.TotalSeconds:N2} seconds");
                     }
 

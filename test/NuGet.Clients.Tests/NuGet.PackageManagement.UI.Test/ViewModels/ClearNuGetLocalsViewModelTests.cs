@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             Assert.Throws<ArgumentNullException>(() => new ClearNuGetLocalsViewModel(clearNuGetLocalsCommandExecute: null!));
         }
 
-        [Fact]
+        [WpfFact]
         public async Task Execute_TaskCompletedSuccessfully_PropertiesUpdated()
         {
             ClearNuGetLocalsViewModel viewModel = new ClearNuGetLocalsViewModel(clearNuGetLocalsCommandExecute: ClearNuGetLocalsCommandSuccessOnExecute);
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             viewModel.CommandCompleteText.Should().Contain("NuGet storage cleared at");
         }
 
-        [Fact]
+        [WpfFact]
         public async Task Execute_TaskFailedWithError_PropertiesUpdated()
         {
             ClearNuGetLocalsViewModel viewModel = new ClearNuGetLocalsViewModel(clearNuGetLocalsCommandExecute: ClearNuGetLocalsCommandErrorOnExecute);
