@@ -686,8 +686,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="new">The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
-Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</target>
+        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET не ниже {1}.
+Чтобы использовать эту функцию, установите более новую версию пакета SDK для .NET или удалите RestoreUseLegacyDependencyResolver.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">

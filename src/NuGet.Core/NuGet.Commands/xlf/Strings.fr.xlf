@@ -686,8 +686,8 @@ Pour plus d'informations, visitez https://docs.nuget.org/docs/reference/command-
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="new">The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
-Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</target>
+        <target state="translated">Le projet {0} tente de restaurer des frameworks en double, qui ne sont pris en charge par le résolveur de dépendances par défaut que si le SDK .NET est de la version spécifiée {1} ou ultérieure.
+Mettez à jour votre SDK .NET ou supprimez RestoreUseLegacyDependencyResolver pour utiliser cette fonctionnalité.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">
