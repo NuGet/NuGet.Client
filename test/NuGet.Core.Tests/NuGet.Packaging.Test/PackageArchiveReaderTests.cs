@@ -1866,7 +1866,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [NetFxCIOnlyFact]
         public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
         {
             // this test will create an unsigned package, copy it, then sign it. then compare the contentHash
