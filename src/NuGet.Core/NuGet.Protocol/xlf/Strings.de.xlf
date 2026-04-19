@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="Error_PackageIdentityDoesNotMatch">
         <source>Expected package {0} {1}, but got package {2} {3}</source>
-        <target state="new">Expected package {0} {1}, but got package {2} {3}</target>
+        <target state="translated">Paket {0} {1} erwartet, aber Paket {2} {3} erhalten</target>
         <note>0 and 2 are package names, and 1 and 3 are version numbers</note>
       </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
