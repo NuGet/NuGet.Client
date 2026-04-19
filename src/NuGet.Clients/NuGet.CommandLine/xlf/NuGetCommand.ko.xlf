@@ -121,7 +121,7 @@ nuget client-certs List</target>
       </trans-unit>
       <trans-unit id="CommandApiKey">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
+        <target state="translated">서버의 API 키입니다. 설정하지 않으면 NUGET_API_KEY 환경 변수를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDirectDownload">
@@ -911,7 +911,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9feedb3a -Source http://example.
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <target state="translated">루트 인증서가 신뢰할 수 있는 루트 저장소에 없는 인증서로 서명하는 것을 허용합니다. 인증서 체인은 여전히 구조에 대해 빌드되고 유효성이 검사되지만, UntrustedRoot 상태는 경고로 처리됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1152,7 +1152,7 @@ nuget spec -a MyAssembly.dll</target>
       </trans-unit>
       <trans-unit id="SymbolApiKey">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
+        <target state="translated">기호 서버의 API 키입니다. 설정하지 않으면 NUGET_SYMBOL_API_KEY 환경 변수를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignersCommandAllowUntrustedRootDescription">

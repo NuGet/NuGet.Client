@@ -121,7 +121,7 @@ nuget client-certs List</target>
       </trans-unit>
       <trans-unit id="CommandApiKey">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</target>
+        <target state="translated">サーバーの API キー。設定されていない場合は、NUGET_API_KEY 環境変数が読み取られます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDirectDownload">
@@ -911,7 +911,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -Source http://example.com/
       </trans-unit>
       <trans-unit id="SignCommandAllowUntrustedRootDescription">
         <source>Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</source>
-        <target state="new">Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning.</target>
+        <target state="translated">信頼されたルート ストアにルート証明書がない証明書での署名を許可します。証明書チェーンは引き続き構築され、構造の検証も行われますが、UntrustedRoot の状態は警告として扱われます。</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFingerprintDescription">
@@ -1152,7 +1152,7 @@ nuget spec -a MyAssembly.dll</target>
       </trans-unit>
       <trans-unit id="SymbolApiKey">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
-        <target state="new">The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</target>
+        <target state="translated">シンボル サーバーの API キー。設定されていない場合は、NUGET_SYMBOL_API_KEY 環境変数が読み取られます。</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignersCommandAllowUntrustedRootDescription">
