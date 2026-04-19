@@ -284,3 +284,20 @@ stages:
           displayName: Log Environment Variables
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
           displayName: Run dotnet format whitespace
+
+- stage:
+  displayName: AOT Compatibility
+  dependsOn: []
+  jobs:
+  - job:
+    displayName: AOT Publish Smoke Test (win-x64)
+    timeoutInMinutes: 20
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: PowerShell@2
+      displayName: Run configure.ps1
+      inputs:
+        filePath: configure.ps1
+    - script: dotnet publish test/NuGet.AotCompatibility.Test/NuGet.AotCompatibility.Test.csproj -r win-x64 -c Release
+      displayName: AOT publish NuGet libraries

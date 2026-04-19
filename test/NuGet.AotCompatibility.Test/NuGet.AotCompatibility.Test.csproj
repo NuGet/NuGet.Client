@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(LatestNETCoreTargetFramework)</TargetFramework>
+    <PublishAot>true</PublishAot>
+    <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
+    <PackProject>false</PackProject>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Common\NuGet.Common.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Credentials\NuGet.Credentials.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
+    <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
+  </ItemGroup>
+
+  <!--
+    Root all public types in each NuGet assembly so the ILC compiler analyzes
+    the full public surface of every library, not just what Program.cs reaches.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="NuGet.Commands" />
+    <TrimmerRootAssembly Include="NuGet.Common" />
+    <TrimmerRootAssembly Include="NuGet.Configuration" />
+    <TrimmerRootAssembly Include="NuGet.Credentials" />
+    <TrimmerRootAssembly Include="NuGet.DependencyResolver.Core" />
+    <TrimmerRootAssembly Include="NuGet.Frameworks" />
+    <TrimmerRootAssembly Include="NuGet.LibraryModel" />
+    <TrimmerRootAssembly Include="NuGet.Packaging" />
+    <TrimmerRootAssembly Include="NuGet.ProjectModel" />
+    <TrimmerRootAssembly Include="NuGet.Protocol" />
+    <TrimmerRootAssembly Include="NuGet.Resolver" />
+    <TrimmerRootAssembly Include="NuGet.Versioning" />
+  </ItemGroup>
+</Project>
