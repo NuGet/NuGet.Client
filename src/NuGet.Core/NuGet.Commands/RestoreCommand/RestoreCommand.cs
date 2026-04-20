@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -30,6 +31,7 @@ namespace NuGet.Commands
     public class RestoreCommand
     {
         private readonly RestoreCollectorLogger _logger;
+        private static readonly ConcurrentDictionary<NuGetFramework, string> _frameworkShortNameCache = new(NuGetFrameworkFullComparer.Instance);
 
         private readonly RestoreRequest _request;
 
@@ -58,6 +60,7 @@ namespace NuGet.Commands
         private const string HttpSourcesCount = nameof(HttpSourcesCount);
         private const string LocalSourcesCount = nameof(LocalSourcesCount);
         private const string FallbackFoldersCount = nameof(FallbackFoldersCount);
+        private const string TargetFrameworks = nameof(TargetFrameworks);
         private const string TargetFrameworksCount = nameof(TargetFrameworksCount);
         private const string RuntimeIdentifiersCount = nameof(RuntimeIdentifiersCount);
         private const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
@@ -381,7 +384,8 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[IsLockFileEnabled] = _isLockFileEnabled;
             telemetry.TelemetryEvent[UseLegacyDependencyResolver] = _request.Project.RestoreMetadata.UseLegacyDependencyResolver;
             telemetry.TelemetryEvent[UsedLegacyDependencyResolver] = !_enableNewDependencyResolver;
-            telemetry.TelemetryEvent[TargetFrameworksCount] = _request.Project.RestoreMetadata.TargetFrameworks.Count;
+            telemetry.TelemetryEvent[TargetFrameworks] = GetTargetFrameworksAsString(_request.Project.TargetFrameworks);
+            telemetry.TelemetryEvent[TargetFrameworksCount] = _request.Project.TargetFrameworks.Count;
             telemetry.TelemetryEvent[RuntimeIdentifiersCount] = _request.Project.RuntimeGraph.Runtimes.Count;
             telemetry.TelemetryEvent[TreatWarningsAsErrors] = _request.Project.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors;
             telemetry.TelemetryEvent[SDKAnalysisLevel] = _request.Project.RestoreMetadata.SdkAnalysisLevel;
@@ -1256,23 +1260,39 @@ namespace NuGet.Commands
 
             return true;
         }
-        private string ConcatAsString<T>(IEnumerable<T> enumerable)
+
+        private static string ConcatAsString<T>(HashSet<T> set)
         {
-            string result = null;
-
-            if (enumerable != null && enumerable.Any())
+            if (set == null || set.Count == 0)
             {
-                var builder = new StringBuilder();
-                foreach (var entry in enumerable)
-                {
-                    builder.Append(entry.ToString());
-                    builder.Append(";");
-                }
-
-                result = builder.ToString(0, builder.Length - 1);
+                return null;
             }
 
-            return result;
+            var builder = new StringBuilder();
+            foreach (T entry in set)
+            {
+                builder.Append(entry);
+                builder.Append(';');
+            }
+
+            return builder.ToString(0, builder.Length - 1);
+        }
+
+        internal static string GetTargetFrameworksAsString(IList<TargetFrameworkInformation> targetFrameworks)
+        {
+            var builder = new StringBuilder();
+
+            foreach (TargetFrameworkInformation targetFramework in targetFrameworks)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(';');
+                }
+
+                builder.Append(_frameworkShortNameCache.GetOrAdd(targetFramework.FrameworkName, static framework => framework.GetShortFolderName()));
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>

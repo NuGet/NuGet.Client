@@ -3082,6 +3082,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Duration.Total"] = value => value.Should().BeOfType<double>(),
                 ["UseLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
                 ["UsedLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["TargetFrameworks"] = value => value.Should().Be("net472"),
                 ["TargetFrameworksCount"] = value => value.Should().Be(1),
                 ["RuntimeIdentifiersCount"] = value => value.Should().Be(0),
                 ["TreatWarningsAsErrors"] = value => value.Should().Be(false),
@@ -3156,6 +3157,50 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
+        public async Task ExecuteAsync_WithMultiTargetedProject_PopulatesShortTargetFrameworkNamesTelemetry()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+            NuGetFramework secondFramework = NuGetFramework.Parse(".NETCoreApp,Version=v8.0");
+            packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = secondFramework });
+            packageSpec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(secondFramework) { TargetAlias = secondFramework.GetShortFolderName() });
+            packageSpec.RestoreMetadata.OriginalTargetFrameworks.Add(secondFramework.GetShortFolderName());
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+
+            var logger = new TestLogger();
+            var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+            telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
+
+            // Act
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+            projectInformationEvent["TargetFrameworks"].Should().Be("net472;net8.0");
+            projectInformationEvent["TargetFrameworksCount"].Should().Be(2);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_WithSinglePackage_WhenNoOping_PopulatesCorrectTelemetry()
         {
             // Arrange
@@ -3212,7 +3257,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(41);
+            projectInformationEvent.Count.Should().Be(42);
 
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
@@ -3239,6 +3284,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["UseLegacyDependencyResolver"].Should().BeOfType<bool>();
             projectInformationEvent["UsedLegacyDependencyResolver"].Should().BeOfType<bool>();
             projectInformationEvent["Audit.Enabled"].Should().BeOfType<string>();
+            projectInformationEvent["TargetFrameworks"].Should().Be("net472");
             projectInformationEvent["TargetFrameworksCount"].Should().Be(1);
             projectInformationEvent["RuntimeIdentifiersCount"].Should().Be(0);
             projectInformationEvent["TreatWarningsAsErrors"].Should().Be(true);
@@ -3312,11 +3358,12 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(49);
+            projectInformationEvent.Count.Should().Be(50);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
             projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
+            projectInformationEvent["TargetFrameworks"].Should().Be("net472");
             projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
             projectInformationEvent["UpdatedAssetsFile"].Should().Be(true);
             projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(true);
