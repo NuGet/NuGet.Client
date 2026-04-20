@@ -284,15 +284,17 @@ stages:
           displayName: Log Environment Variables
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
           displayName: Run dotnet format whitespace
+          condition: succeededOrFailed()
         - task: PowerShell@2
           displayName: Ensure all projects are in NuGet.sln
+          condition: succeededOrFailed()
           inputs:
             targetType: inline
             script: |
               try {
-                $slnProjects = & dotnet sln list | Select-Object -Skip 2 | ForEach-Object { "$PWD\$_" } | sort
+                $slnProjects = & dotnet sln NuGet.sln list | Select-Object -Skip 2 | ForEach-Object { "$PWD\$_" } | sort
                 "Solution contains $($slnProjects.Length) projects"
-                $fsProjects = gci -Recurse -Filter *.csproj | ForEach-Object { $_.FullName } | Where-Object { $_ -notlike "*\EndToEnd\*" -and $_ -notlike "*\bin\*" -and $_ -notlike "*\compiler\resources\*" -and $_ -notlike "*\Assets\*" } | sort
+                $fsProjects = gci -Recurse -Filter *.csproj | ForEach-Object { $_.FullName } | Where-Object { $_ -notlike "*\EndToEnd\*" -and $_ -notlike "*\bin\*" -and $_ -notlike "*\compiler\resources\*" -and $_ -notlike "*\Assets\*" -and $_ -notlike "*\eng\*" } | sort
                 "Repo contains $($fsProjects.Length) projects"
                 $diff = @(Compare-Object -ReferenceObject $fsProjects -DifferenceObject $slnProjects)
                 $diff
@@ -309,6 +311,7 @@ stages:
 
         - task: MSBuild@1
           displayName: Restore and Build
+          condition: "and(succeededOrFailed(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
           inputs:
             solution: build\build.proj
             msbuildArchitecture: x64
@@ -316,6 +319,7 @@ stages:
 
         - task: MSBuild@1
           displayName: Pack Nupkgs
+          condition: "and(succeeded(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
           inputs:
             solution: build\build.proj
             msbuildArchitecture: x64
@@ -323,6 +327,7 @@ stages:
 
         - task: PowerShell@2
           displayName: Check package dependencies
+          condition: "and(succeeded(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
           inputs:
             targetType: inline
             script: |
@@ -337,3 +342,4 @@ stages:
               ""
               "Running validation tool"
               dotnet run --project tools-local/ensure-nupkg-dependencies-on-source/ --no-build -- $nupkgs -s https://api.nuget.org/v3/index.json
+              if ($LASTEXITCODE -ne 0) { throw "Validation tool failed" }
