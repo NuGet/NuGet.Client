@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Model
 {
@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Model
     /// </summary>
     internal class RegistrationIndex
     {
-        [JsonProperty("items")]
+        [JsonPropertyName("items")]
         public List<RegistrationPage> Items { get; set; }
     }
 }

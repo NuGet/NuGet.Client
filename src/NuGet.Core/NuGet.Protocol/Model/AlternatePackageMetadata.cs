@@ -1,17 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using NuGet.Protocol.Converters;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
     public class AlternatePackageMetadata
     {
-        [JsonProperty(PropertyName = JsonProperties.PackageId)]
+        [JsonPropertyName(JsonProperties.PackageId)]
+        [JsonInclude]
         public string? PackageId { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.Range, ItemConverterType = typeof(VersionRangeConverter))]
+        [JsonPropertyName(JsonProperties.Range)]
+        [JsonConverter(typeof(VersionRangeStjConverter))]
+        [JsonInclude]
         public VersionRange? Range { get; internal set; }
     }
 }

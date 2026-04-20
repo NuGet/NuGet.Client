@@ -4,7 +4,8 @@
 #nullable disable
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using NuGet.Protocol.Converters;
 
 namespace NuGet.Protocol
 {
@@ -17,7 +18,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// The <see cref="Uri"/> of this package in the catalog.
         /// </summary>
-        [JsonProperty(PropertyName = JsonProperties.SubjectId)]
-        public Uri CatalogUri { get; private set; }
+        [JsonPropertyName(JsonProperties.SubjectId)]
+        [JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri CatalogUri { get; internal set; }
     }
 }

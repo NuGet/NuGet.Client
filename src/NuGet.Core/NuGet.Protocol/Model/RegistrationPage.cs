@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 namespace NuGet.Protocol.Model
 {
     /// <summary>
@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Model
     /// </summary>
     internal class RegistrationPage
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string Url { get; set; }
 
         /// <summary>
@@ -23,13 +23,13 @@ namespace NuGet.Protocol.Model
         /// the server decided not to inline the leaf items. In this case, the <see cref="Url"/> property can be used 
         /// fetch another <see cref="RegistrationPage"/> instance with the <see cref="Items"/> property filled in.
         /// </summary>
-        [JsonProperty("items")]
+        [JsonPropertyName("items")]
         public List<RegistrationLeafItem> Items { get; set; }
 
-        [JsonProperty("lower")]
+        [JsonPropertyName("lower")]
         public string Lower { get; set; }
 
-        [JsonProperty("upper")]
+        [JsonPropertyName("upper")]
         public string Upper { get; set; }
     }
 }

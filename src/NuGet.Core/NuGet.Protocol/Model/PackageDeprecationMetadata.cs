@@ -3,19 +3,22 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol
 {
     public class PackageDeprecationMetadata
     {
-        [JsonProperty(PropertyName = JsonProperties.DeprecationMessage)]
+        [JsonPropertyName(JsonProperties.DeprecationMessage)]
+        [JsonInclude]
         public string? Message { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.DeprecationReasons)]
+        [JsonPropertyName(JsonProperties.DeprecationReasons)]
+        [JsonInclude]
         public IEnumerable<string> Reasons { get; internal set; } = Array.Empty<string>();
 
-        [JsonProperty(PropertyName = JsonProperties.AlternatePackage)]
+        [JsonPropertyName(JsonProperties.AlternatePackage)]
+        [JsonInclude]
         public AlternatePackageMetadata? AlternatePackage { get; internal set; }
     }
 }

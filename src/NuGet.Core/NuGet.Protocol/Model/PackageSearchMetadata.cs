@@ -5,14 +5,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
+using NuGet.Protocol.Converters;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -20,12 +20,14 @@ namespace NuGet.Protocol
 {
     public class PackageSearchMetadata : IPackageSearchMetadata
     {
-        [JsonProperty(PropertyName = JsonProperties.Authors)]
-        [JsonConverter(typeof(MetadataFieldConverter))]
-        public string Authors { get; private set; }
+        [JsonPropertyName(JsonProperties.Authors)]
+        [JsonConverter(typeof(MetadataFieldStjConverter))]
+        [JsonInclude]
+        public string Authors { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.DependencyGroups)]
-        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; private set; }
+        [JsonPropertyName(JsonProperties.DependencyGroups)]
+        [JsonInclude]
+        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; internal set; }
 
         [JsonIgnore]
         public IEnumerable<PackageDependencyGroup> DependencySets
@@ -36,14 +38,17 @@ namespace NuGet.Protocol
             }
         }
 
-        [JsonProperty(PropertyName = JsonProperties.Description)]
-        public string Description { get; private set; }
+        [JsonPropertyName(JsonProperties.Description)]
+        [JsonInclude]
+        public string Description { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.DownloadCount)]
-        public long? DownloadCount { get; private set; }
+        [JsonPropertyName(JsonProperties.DownloadCount)]
+        [JsonInclude]
+        public long? DownloadCount { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.IconUrl)]
-        public Uri IconUrl { get; private set; }
+        [JsonPropertyName(JsonProperties.IconUrl)]
+        [JsonInclude]
+        public Uri IconUrl { get; internal set; }
 
         private PackageIdentity _packageIdentity = null;
 
@@ -60,18 +65,20 @@ namespace NuGet.Protocol
             }
         }
 
-        [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri LicenseUrl { get; private set; }
+        [JsonPropertyName(JsonProperties.LicenseUrl)]
+        [JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri LicenseUrl { get; internal set; }
 
         private IReadOnlyList<string> _ownersList;
 
-        [JsonProperty(PropertyName = JsonProperties.Owners)]
-        [JsonConverter(typeof(MetadataStringOrArrayConverter))]
+        [JsonPropertyName(JsonProperties.Owners)]
+        [JsonConverter(typeof(MetadataStringOrArrayStjConverter))]
+        [JsonInclude]
         public IReadOnlyList<string> OwnersList
         {
             get { return _ownersList; }
-            private set
+            internal set
             {
                 if (_ownersList != value)
                 {
@@ -94,19 +101,23 @@ namespace NuGet.Protocol
             }
         }
 
-        [JsonProperty(PropertyName = JsonProperties.PackageId)]
-        public string PackageId { get; private set; }
+        [JsonPropertyName(JsonProperties.PackageId)]
+        [JsonInclude]
+        public string PackageId { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.ProjectUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri ProjectUrl { get; private set; }
+        [JsonPropertyName(JsonProperties.ProjectUrl)]
+        [JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri ProjectUrl { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.Published)]
-        public DateTimeOffset? Published { get; private set; }
+        [JsonPropertyName(JsonProperties.Published)]
+        [JsonInclude]
+        public DateTimeOffset? Published { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.ReadmeUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri ReadmeUrl { get; private set; }
+        [JsonPropertyName(JsonProperties.ReadmeUrl)]
+        [JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri ReadmeUrl { get; internal set; }
 
         [JsonIgnore]
         public string ReadmeFileUrl { get; internal set; }
@@ -117,47 +128,55 @@ namespace NuGet.Protocol
         [JsonIgnore]
         public Uri PackageDetailsUrl { get; set; }
 
-        [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
-        [DefaultValue(false)]
-        [JsonConverter(typeof(SafeBoolConverter))]
-        public bool RequireLicenseAcceptance { get; private set; }
+        [JsonPropertyName(JsonProperties.RequireLicenseAcceptance)]
+        [JsonConverter(typeof(SafeBoolStjConverter))]
+        [JsonInclude]
+        public bool RequireLicenseAcceptance { get; internal set; }
 
         private string _summaryValue;
 
-        [JsonProperty(PropertyName = JsonProperties.Summary)]
+        [JsonPropertyName(JsonProperties.Summary)]
+        [JsonInclude]
         public string Summary
         {
             get { return !string.IsNullOrEmpty(_summaryValue) ? _summaryValue : Description; }
-            private set { _summaryValue = value; }
+            internal set { _summaryValue = value; }
         }
 
-        [JsonProperty(PropertyName = JsonProperties.Tags)]
-        [JsonConverter(typeof(MetadataFieldConverter))]
-        public string Tags { get; private set; }
+        [JsonPropertyName(JsonProperties.Tags)]
+        [JsonConverter(typeof(MetadataFieldStjConverter))]
+        [JsonInclude]
+        public string Tags { get; internal set; }
 
         private string _titleValue;
 
-        [JsonProperty(PropertyName = JsonProperties.Title)]
+        [JsonPropertyName(JsonProperties.Title)]
+        [JsonInclude]
         public string Title
         {
             get { return !string.IsNullOrEmpty(_titleValue) ? _titleValue : PackageId; }
-            private set { _titleValue = value; }
+            internal set { _titleValue = value; }
         }
 
-        [JsonProperty(PropertyName = JsonProperties.Version)]
-        public NuGetVersion Version { get; private set; }
+        [JsonPropertyName(JsonProperties.Version)]
+        [JsonInclude]
+        public NuGetVersion Version { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.Versions)]
-        public VersionInfo[] ParsedVersions { get; private set; }
+        [JsonPropertyName(JsonProperties.Versions)]
+        [JsonInclude]
+        public VersionInfo[] ParsedVersions { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.PrefixReserved)]
-        public bool PrefixReserved { get; private set; }
+        [JsonPropertyName(JsonProperties.PrefixReserved)]
+        [JsonInclude]
+        public bool PrefixReserved { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.LicenseExpression)]
-        public string LicenseExpression { get; private set; }
+        [JsonPropertyName(JsonProperties.LicenseExpression)]
+        [JsonInclude]
+        public string LicenseExpression { get; internal set; }
 
-        [JsonProperty(PropertyName = JsonProperties.LicenseExpressionVersion)]
-        public string LicenseExpressionVersion { get; private set; }
+        [JsonPropertyName(JsonProperties.LicenseExpressionVersion)]
+        [JsonInclude]
+        public string LicenseExpressionVersion { get; internal set; }
 
         [JsonIgnore]
         public LicenseMetadata LicenseMetadata
@@ -244,18 +263,21 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
-        [JsonProperty(PropertyName = JsonProperties.Listed)]
-        public bool IsListed { get; private set; } = true;
+        [JsonPropertyName(JsonProperties.Listed)]
+        [JsonInclude]
+        public bool IsListed { get; internal set; } = true;
 
-        [JsonProperty(PropertyName = JsonProperties.Deprecation)]
-        public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
+        [JsonPropertyName(JsonProperties.Deprecation)]
+        [JsonInclude]
+        public PackageDeprecationMetadata DeprecationMetadata { get; internal set; }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
-        [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
+        [JsonPropertyName(JsonProperties.Vulnerabilities)]
+        [JsonInclude]
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; internal set; }
 
         internal void CacheStrings(MetadataReferenceCache cache)
         {
