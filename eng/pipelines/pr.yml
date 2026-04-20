@@ -313,9 +313,9 @@ stages:
           displayName: Restore and Build
           condition: "and(succeededOrFailed(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
           inputs:
-            solution: build\build.proj
+            solution: NuGet.sln
             msbuildArchitecture: x64
-            msbuildArguments: "/target:BuildNoVSIX /property:BuildRTM=true /property:MicroBuild_SigningEnabled=false"
+            msbuildArguments: "/property:BuildRTM=true /property:MicroBuild_SigningEnabled=false"
 
         - task: MSBuild@1
           displayName: Pack Nupkgs
