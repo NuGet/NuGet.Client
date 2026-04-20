@@ -22,10 +22,7 @@
     <ProjectReference Include="..\..\src\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
 
-  <!--
-    Root all public types in each NuGet assembly so the ILC compiler analyzes
-    the full public surface of every library, not just what Program.cs reaches.
-  -->
+  <!-- Root all public types so ILC analyzes the full public API surface of each library. -->
   <ItemGroup>
     <TrimmerRootAssembly Include="NuGet.Commands" />
     <TrimmerRootAssembly Include="NuGet.Common" />
