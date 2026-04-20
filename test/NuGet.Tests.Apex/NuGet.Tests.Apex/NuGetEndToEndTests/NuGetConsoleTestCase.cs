@@ -488,6 +488,191 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageForPC_PackageSourceMapping_WithWrongMappedFeed_Fails(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var solutionDirectory = simpleTestPathContext.SolutionRoot;
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "SolutionLevelPkg";
+            var packageVersion = "1.0.0";
+
+            // Package exists in PackageSource but mapping routes SolutionLevelPkg to PrivateRepository where it doesn't exist.
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""LocalRepository"" value=""{simpleTestPathContext.PackageSource}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Solution*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Act
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+
+            // Assert
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageForPC_PackageSourceMapping_WithCorrectSourceOption_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var solutionDirectory = simpleTestPathContext.SolutionRoot;
+
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "Contoso.MVC.ASP";
+            var packageVersion = "1.0.0";
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion, "Thisisfromopensourcerepo1.txt");
+
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""OpensourceRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.MVC.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Act
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion, privateRepositoryPath);
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion, "lib", "net45", "Thisisfromprivaterepo1.txt");
+            Assert.IsTrue(File.Exists(uniqueContentFile), $"'{uniqueContentFile}' should exist");
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public void InstallPackageForPC_PackageSourceMapping_WithWrongSourceOption_Fails(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var solutionDirectory = simpleTestPathContext.SolutionRoot;
+
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "Contoso.MVC.ASP";
+            var packageVersion = "1.0.0";
+
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""OpensourceRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.MVC.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Act — Install from the opensourceRepo where the package doesn't match the source mapping
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion, opensourceRepositoryPath);
+
+            // Assert
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageForPC_PackageSourceMapping_WithCorrectSourceOption_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var solutionDirectory = simpleTestPathContext.SolutionRoot;
+
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "Contoso.MVC.ASP";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2, "Thisisfromopensourcerepo2.txt");
+
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""OpensourceRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.MVC.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Act
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion1, privateRepositoryPath);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, Logger);
+
+            nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, privateRepositoryPath);
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
+
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion2, "lib", "net45", "Thisisfromprivaterepo2.txt");
+            Assert.IsTrue(File.Exists(uniqueContentFile), $"'{uniqueContentFile}' should exist");
+        }
+
         [Ignore("https://github.com/NuGet/Home/issues/12899")]
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, false)]
