@@ -6,6 +6,7 @@ using NuGet.Protocol.Model;
 
 namespace NuGet.Protocol.Converters
 {
+#pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSourceGenerationOptions(
         PropertyNameCaseInsensitive = true,
         GenerationMode = JsonSourceGenerationMode.Metadata,
@@ -17,6 +18,7 @@ namespace NuGet.Protocol.Converters
             typeof(PackageDependencyStjConverter),
             typeof(VersionRangeStjConverter)
         })]
+#pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(RegistrationIndex))]
     [JsonSerializable(typeof(RegistrationPage))]
     internal partial class PackageMetadataJsonContext : JsonSerializerContext
