@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         #region Private members
 
         private readonly VsHierarchyItem _vsHierarchyItem;
-        private readonly Lazy<EnvDTE.Project> _dteProject;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<EnvDTE.Project> _dteProject;
         private readonly IVsProjectThreadingService _threadingService;
 
         #endregion Private members
@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return VsHierarchyUtility.IsNuGetSupported(VsHierarchy);
         }
 
-        public EnvDTE.Project Project => _dteProject.Value;
+        public EnvDTE.Project Project => _dteProject.GetValue();
 
         public string ProjectId
         {
@@ -133,7 +133,11 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsHierarchyItem);
 
             _vsHierarchyItem = vsHierarchyItem;
-            _dteProject = new Lazy<EnvDTE.Project>(() => loadDteProject(_vsHierarchyItem.VsHierarchy));
+            _dteProject = new Microsoft.VisualStudio.Threading.AsyncLazy<EnvDTE.Project>(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return loadDteProject(_vsHierarchyItem.VsHierarchy);
+            }, NuGetUIThreadHelper.JoinableTaskFactory);
             _threadingService = threadingService;
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
