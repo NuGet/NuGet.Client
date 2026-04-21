@@ -228,7 +228,6 @@ namespace NuGet.ProjectModel
                                     }
                                     else
                                     {
-                                        // This does not consider ATF.
                                         p2pSpecTargetFrameworkInformation = p2pSpec.GetNearestTargetFramework(targetFrameworkInformation.FrameworkName, targetFrameworkInformation.TargetAlias);
                                         if (p2pSpecTargetFrameworkInformation.FrameworkName == null)
                                         {
@@ -241,7 +240,7 @@ namespace NuGet.ProjectModel
                                     // No compatible framework found
                                     if (p2pSpecTargetFrameworkInformation != null && p2pSpecTargetFrameworkInformation.FrameworkName != null)
                                     {
-                                        // We need to compare the main framework only. Ignoring fallbacks.
+                                        // Get it based on the matching alias. The appropriate target framework information has already been calculated.
                                         var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(e => e.TargetAlias == p2pSpecTargetFrameworkInformation.TargetAlias);
 
                                         if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
