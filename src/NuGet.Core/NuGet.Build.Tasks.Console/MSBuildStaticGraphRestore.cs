@@ -1193,19 +1193,24 @@ namespace NuGet.Build.Tasks.Console
 
                 var loadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
 
-                // Initialize the set of projects to process from entry points
+                // Initialize the set of projects to process from entry points.
+                // Work items are (ProjectPath, TargetFramework) tuples. A null TargetFramework
+                // means "outer build" — evaluate the project and discover its TFMs.
+                // A non-null TargetFramework means "inner build" — evaluate with that TFM.
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
-                var processedProjects = new HashSet<string>(comparer);
-                var projectQueue = new Queue<string>();
+                var processedProjects = new ConcurrentDictionary<string, byte>(comparer);
+                using var workQueue = new BlockingCollection<(string ProjectPath, string TargetFramework)>();
+                int pendingCount = 0;
 
                 // Extract global properties from entry points (all share the same set)
                 IDictionary<string, string> baseGlobalProperties = null;
                 foreach (var entryPoint in entryProjects)
                 {
                     string fullPath = Path.GetFullPath(entryPoint.ProjectFile);
-                    if (processedProjects.Add(fullPath))
+                    if (processedProjects.TryAdd(fullPath, 0))
                     {
-                        projectQueue.Enqueue(fullPath);
+                        Interlocked.Increment(ref pendingCount);
+                        workQueue.Add((fullPath, (string)null));
                     }
 
                     baseGlobalProperties ??= entryPoint.GlobalProperties;
@@ -1217,136 +1222,63 @@ namespace NuGet.Build.Tasks.Console
                     : new Dictionary<string, string>();
                 outerBuildGlobalProperties.Remove("TargetFramework");
 
+                // If there are no entry projects, mark the queue as complete immediately
+                if (pendingCount == 0)
+                {
+                    workQueue.CompleteAdding();
+                }
+
                 try
                 {
                     // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
                     BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
 
-                    while (projectQueue.Count > 0)
+                    // Walk the project graph in parallel: each worker pulls work items from the
+                    // queue, evaluates them, and enqueues any newly discovered work (inner builds
+                    // for multi-targeted projects, or new outer builds for ProjectReferences).
+                    // When a worker finishes a work item and pendingCount reaches 0, all work is done.
+                    int workerCount = Environment.ProcessorCount;
+                    var workers = new Task[workerCount];
+                    for (int i = 0; i < workerCount; i++)
                     {
-                        string projectPath = projectQueue.Dequeue();
-
-                        // Evaluate outer build (no TargetFramework global property)
-                        ProjectInstance outerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+                        workers[i] = Task.Run(() =>
                         {
-                            EvaluationContext = evaluationContext,
-                            GlobalProperties = outerBuildGlobalProperties,
-                            Interactive = interactive,
-                            // Ignore bad imports to maximize the chances of being able to load the project and restore
-                            LoadSettings = loadSettings,
-                            ProjectCollection = projectCollection
+                            foreach ((string projectPath, string targetFramework) in workQueue.GetConsumingEnumerable())
+                            {
+                                try
+                                {
+                                    EvaluateProject(
+                                        projectPath,
+                                        targetFramework,
+                                        evaluationContext,
+                                        outerBuildGlobalProperties,
+                                        interactive,
+                                        loadSettings,
+                                        projectCollection,
+                                        projects,
+                                        createProjectFactory,
+                                        updateProjectFactory,
+                                        processedProjects,
+                                        workQueue,
+                                        ref pendingCount,
+                                        ref evaluationCount,
+                                        ref buildCount,
+                                        ref failedBuildSubmissionCount);
+                                }
+                                finally
+                                {
+                                    // Signal completion of this work item. If this was the last
+                                    // pending item, mark the queue complete so all workers exit.
+                                    if (Interlocked.Decrement(ref pendingCount) == 0)
+                                    {
+                                        workQueue.CompleteAdding();
+                                    }
+                                }
+                            }
                         });
-
-                        evaluationCount++;
-
-                        if (!outerProjectInstance.Targets.ContainsKey("_IsProjectRestoreSupported"))
-                        {
-                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(outerProjectInstance.FullPath);
-                            MSBuildLogger.Log(message);
-                            continue;
-                        }
-
-                        // Add the outer build to projects
-                        projects.AddOrUpdate(
-                            projectPath,
-                            createProjectFactory,
-                            updateProjectFactory,
-                            (outerProjectInstance, (string)null));
-
-                        string targetFrameworks = outerProjectInstance.GetPropertyValue("TargetFrameworks");
-                        var builtInstances = new List<ProjectInstance>();
-
-                        if (!string.IsNullOrWhiteSpace(targetFrameworks))
-                        {
-                            // Multi-targeting: evaluate and build each inner build
-                            string[] tfms = targetFrameworks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string tfm in tfms)
-                            {
-                                string trimmedTfm = tfm.Trim();
-                                if (string.IsNullOrEmpty(trimmedTfm))
-                                {
-                                    continue;
-                                }
-
-                                var innerGlobalProperties = new Dictionary<string, string>(outerBuildGlobalProperties)
-                                {
-                                    ["TargetFramework"] = trimmedTfm
-                                };
-
-                                ProjectInstance innerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
-                                {
-                                    EvaluationContext = evaluationContext,
-                                    GlobalProperties = innerGlobalProperties,
-                                    Interactive = interactive,
-                                    LoadSettings = loadSettings,
-                                    ProjectCollection = projectCollection
-                                });
-
-                                evaluationCount++;
-
-                                // Run _CollectRestoreInputs on the inner build
-                                BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
-                                    new BuildRequestData(
-                                        innerProjectInstance,
-                                        TargetsToBuild,
-                                        hostServices: null,
-                                        // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
-                                        BuildRequestDataFlags.SkipNonexistentTargets));
-
-                                buildSubmission.Execute();
-
-                                if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
-                                {
-                                    failedBuildSubmissionCount++;
-                                }
-
-                                buildCount++;
-
-                                projects.AddOrUpdate(
-                                    projectPath,
-                                    createProjectFactory,
-                                    updateProjectFactory,
-                                    (innerProjectInstance, trimmedTfm));
-
-                                builtInstances.Add(innerProjectInstance);
-                            }
-                        }
-                        else
-                        {
-                            // Single-targeting: run _CollectRestoreInputs on the outer build
-                            BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
-                                new BuildRequestData(
-                                    outerProjectInstance,
-                                    TargetsToBuild,
-                                    hostServices: null,
-                                    BuildRequestDataFlags.SkipNonexistentTargets));
-
-                            buildSubmission.Execute();
-
-                            if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
-                            {
-                                failedBuildSubmissionCount++;
-                            }
-
-                            buildCount++;
-
-                            builtInstances.Add(outerProjectInstance);
-                        }
-
-                        // Check all ProjectReferences across all builds and discover new projects
-                        foreach (ProjectInstance instance in builtInstances)
-                        {
-                            string projectDir = Path.GetDirectoryName(projectPath);
-                            foreach (ProjectItemInstance projectRef in instance.GetItems("ProjectReference"))
-                            {
-                                string refPath = Path.GetFullPath(Path.Combine(projectDir, projectRef.EvaluatedInclude));
-                                if (processedProjects.Add(refPath))
-                                {
-                                    projectQueue.Enqueue(refPath);
-                                }
-                            }
-                        }
                     }
+
+                    Task.WaitAll(workers);
                 }
                 finally
                 {
@@ -1382,6 +1314,258 @@ namespace NuGet.Build.Tasks.Console
                 LogErrorFromException(e);
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Evaluates a single work item: either an outer build (targetFramework is null) or an
+        /// inner build (targetFramework is set). Outer builds discover TFMs and enqueue inner
+        /// builds for multi-targeted projects, or run _CollectRestoreInputs for single-targeted
+        /// projects. Inner builds evaluate with a specific TFM, run _CollectRestoreInputs, and
+        /// discover new ProjectReferences.
+        /// This method is called from multiple threads by <see cref="LoadProjects{TProject}"/>.
+        /// Newly discovered work items are added to <paramref name="workQueue"/> with a corresponding
+        /// increment to <paramref name="pendingCount"/>.
+        /// </summary>
+        private void EvaluateProject<TProject>(
+            string projectPath,
+            string targetFramework,
+            EvaluationContext evaluationContext,
+            Dictionary<string, string> outerBuildGlobalProperties,
+            bool interactive,
+            ProjectLoadSettings loadSettings,
+            ProjectCollection projectCollection,
+            ConcurrentDictionary<string, TProject> projects,
+            Func<string, (ProjectInstance, string), TProject> createProjectFactory,
+            Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
+            ConcurrentDictionary<string, byte> processedProjects,
+            BlockingCollection<(string ProjectPath, string TargetFramework)> workQueue,
+            ref int pendingCount,
+            ref int evaluationCount,
+            ref int buildCount,
+            ref int failedBuildSubmissionCount)
+        {
+            if (targetFramework is null)
+            {
+                // Outer build: evaluate without TargetFramework, then either enqueue inner builds
+                // or run _CollectRestoreInputs directly for single-targeted projects.
+                EvaluateOuterBuild(
+                    projectPath,
+                    evaluationContext,
+                    outerBuildGlobalProperties,
+                    interactive,
+                    loadSettings,
+                    projectCollection,
+                    projects,
+                    createProjectFactory,
+                    updateProjectFactory,
+                    processedProjects,
+                    workQueue,
+                    ref pendingCount,
+                    ref evaluationCount,
+                    ref buildCount,
+                    ref failedBuildSubmissionCount);
+            }
+            else
+            {
+                // Inner build: evaluate with a specific TargetFramework, run _CollectRestoreInputs,
+                // and discover ProjectReferences.
+                EvaluateInnerBuild(
+                    projectPath,
+                    targetFramework,
+                    evaluationContext,
+                    outerBuildGlobalProperties,
+                    interactive,
+                    loadSettings,
+                    projectCollection,
+                    projects,
+                    updateProjectFactory,
+                    processedProjects,
+                    workQueue,
+                    ref pendingCount,
+                    ref evaluationCount,
+                    ref buildCount,
+                    ref failedBuildSubmissionCount);
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the outer build (no TargetFramework global property) for a project.
+        /// If the project is multi-targeted, enqueues inner build work items for each TFM.
+        /// If single-targeted, runs _CollectRestoreInputs and discovers ProjectReferences.
+        /// </summary>
+        private void EvaluateOuterBuild<TProject>(
+            string projectPath,
+            EvaluationContext evaluationContext,
+            Dictionary<string, string> outerBuildGlobalProperties,
+            bool interactive,
+            ProjectLoadSettings loadSettings,
+            ProjectCollection projectCollection,
+            ConcurrentDictionary<string, TProject> projects,
+            Func<string, (ProjectInstance, string), TProject> createProjectFactory,
+            Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
+            ConcurrentDictionary<string, byte> processedProjects,
+            BlockingCollection<(string ProjectPath, string TargetFramework)> workQueue,
+            ref int pendingCount,
+            ref int evaluationCount,
+            ref int buildCount,
+            ref int failedBuildSubmissionCount)
+        {
+            // Evaluate outer build (no TargetFramework global property)
+            ProjectInstance outerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+            {
+                EvaluationContext = evaluationContext,
+                GlobalProperties = outerBuildGlobalProperties,
+                Interactive = interactive,
+                // Ignore bad imports to maximize the chances of being able to load the project and restore
+                LoadSettings = loadSettings,
+                ProjectCollection = projectCollection
+            });
+
+            Interlocked.Increment(ref evaluationCount);
+
+            if (!outerProjectInstance.Targets.ContainsKey("_IsProjectRestoreSupported"))
+            {
+                var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(outerProjectInstance.FullPath);
+                MSBuildLogger.Log(message);
+                return;
+            }
+
+            // Add the outer build to projects
+            projects.AddOrUpdate(
+                projectPath,
+                createProjectFactory,
+                updateProjectFactory,
+                (outerProjectInstance, (string)null));
+
+            string targetFrameworks = outerProjectInstance.GetPropertyValue("TargetFrameworks");
+
+            if (!string.IsNullOrWhiteSpace(targetFrameworks))
+            {
+                // Multi-targeting: enqueue an inner build work item for each TFM
+                string[] tfms = targetFrameworks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string tfm in tfms)
+                {
+                    string trimmedTfm = tfm.Trim();
+                    if (!string.IsNullOrEmpty(trimmedTfm))
+                    {
+                        Interlocked.Increment(ref pendingCount);
+                        workQueue.Add((projectPath, trimmedTfm));
+                    }
+                }
+            }
+            else
+            {
+                // Single-targeting: run _CollectRestoreInputs on the outer build
+                BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                    new BuildRequestData(
+                        outerProjectInstance,
+                        TargetsToBuild,
+                        hostServices: null,
+                        BuildRequestDataFlags.SkipNonexistentTargets));
+
+                buildSubmission.Execute();
+
+                if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
+                {
+                    Interlocked.Increment(ref failedBuildSubmissionCount);
+                }
+
+                Interlocked.Increment(ref buildCount);
+
+                // Discover ProjectReferences from the outer build
+                DiscoverProjectReferences(projectPath, outerProjectInstance, processedProjects, workQueue, ref pendingCount);
+            }
+        }
+
+        /// <summary>
+        /// Evaluates an inner build (with a specific TargetFramework global property), runs
+        /// _CollectRestoreInputs, and discovers new ProjectReferences.
+        /// </summary>
+        private static void EvaluateInnerBuild<TProject>(
+            string projectPath,
+            string targetFramework,
+            EvaluationContext evaluationContext,
+            Dictionary<string, string> outerBuildGlobalProperties,
+            bool interactive,
+            ProjectLoadSettings loadSettings,
+            ProjectCollection projectCollection,
+            ConcurrentDictionary<string, TProject> projects,
+            Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
+            ConcurrentDictionary<string, byte> processedProjects,
+            BlockingCollection<(string ProjectPath, string TargetFramework)> workQueue,
+            ref int pendingCount,
+            ref int evaluationCount,
+            ref int buildCount,
+            ref int failedBuildSubmissionCount)
+        {
+            var innerGlobalProperties = new Dictionary<string, string>(outerBuildGlobalProperties)
+            {
+                ["TargetFramework"] = targetFramework
+            };
+
+            ProjectInstance innerProjectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+            {
+                EvaluationContext = evaluationContext,
+                GlobalProperties = innerGlobalProperties,
+                Interactive = interactive,
+                LoadSettings = loadSettings,
+                ProjectCollection = projectCollection
+            });
+
+            Interlocked.Increment(ref evaluationCount);
+
+            // Run _CollectRestoreInputs on the inner build
+            BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                new BuildRequestData(
+                    innerProjectInstance,
+                    TargetsToBuild,
+                    hostServices: null,
+                    // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
+                    BuildRequestDataFlags.SkipNonexistentTargets));
+
+            buildSubmission.Execute();
+
+            if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
+            {
+                Interlocked.Increment(ref failedBuildSubmissionCount);
+            }
+
+            Interlocked.Increment(ref buildCount);
+
+            projects.AddOrUpdate(
+                projectPath,
+                // The outer build should always have created the entry already, but provide a
+                // create factory for safety in case of unexpected ordering.
+                (string key, (ProjectInstance, string) args) => throw new InvalidOperationException(
+                    $"Inner build for '{key}' TFM '{targetFramework}' arrived before the outer build created the project entry."),
+                updateProjectFactory,
+                (innerProjectInstance, targetFramework));
+
+            // Discover ProjectReferences from the inner build
+            DiscoverProjectReferences(projectPath, innerProjectInstance, processedProjects, workQueue, ref pendingCount);
+        }
+
+        /// <summary>
+        /// Scans a built project instance for ProjectReference items and enqueues any newly
+        /// discovered projects as outer build work items.
+        /// </summary>
+        private static void DiscoverProjectReferences(
+            string projectPath,
+            ProjectInstance projectInstance,
+            ConcurrentDictionary<string, byte> processedProjects,
+            BlockingCollection<(string ProjectPath, string TargetFramework)> workQueue,
+            ref int pendingCount)
+        {
+            string projectDir = Path.GetDirectoryName(projectPath);
+            foreach (ProjectItemInstance projectRef in projectInstance.GetItems("ProjectReference"))
+            {
+                string refPath = Path.GetFullPath(Path.Combine(projectDir, projectRef.EvaluatedInclude));
+                if (processedProjects.TryAdd(refPath, 0))
+                {
+                    Interlocked.Increment(ref pendingCount);
+                    workQueue.Add((refPath, (string)null));
+                }
             }
         }
 
