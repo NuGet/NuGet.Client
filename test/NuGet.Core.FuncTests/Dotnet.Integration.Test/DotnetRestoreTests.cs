@@ -101,6 +101,58 @@ EndGlobal";
         }
 
         [Fact]
+        public async Task DotnetRestore_WhenSourceUsesConfiguredSourceName_RestoresFromConfigSource()
+        {
+            using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())
+            {
+                var package = new SimpleTestPackageContext()
+                {
+                    Id = "TestPackage",
+                    Version = "1.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    package);
+
+                pathContext.Settings.RemoveSource("source");
+                pathContext.Settings.AddSource("source_name", pathContext.PackageSource);
+
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
+
+                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>() { { "Version", package.Version } };
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        package.Id,
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                var result = _dotnetFixture.RunDotnetExpectSuccess(
+                    workingDirectory,
+                    $"restore {projectName}.csproj --source source_name --configfile \"{pathContext.Settings.ConfigPath}\"",
+                    testOutputHelper: _testOutputHelper);
+
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                File.Exists(Path.Combine(workingDirectory, "obj", "project.assets.json")).Should().BeTrue(because: result.AllOutput);
+            }
+        }
+
+        [Fact]
         public void DotnetRestore_WithAuthorSignedPackage_Succeeds()
         {
             using (SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext())

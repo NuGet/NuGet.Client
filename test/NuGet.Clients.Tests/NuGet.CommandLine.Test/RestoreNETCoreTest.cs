@@ -441,6 +441,47 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_WithNuGetExe_WhenSourceArgUsesConfiguredSourceName_RestoresFromConfigSourceAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var project = SimpleTestProjectContext.CreateNETCore(
+                    "projectA",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var package = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Version = "1.0.0"
+                };
+
+                project.AddPackageToAllFrameworks(package);
+                project.Properties.Clear();
+                solution.Projects.Add(project);
+                solution.Create();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    package);
+
+                pathContext.Settings.RemoveSource("source");
+                pathContext.Settings.AddSource("source_name", pathContext.PackageSource);
+
+                var result = Util.Restore(
+                    pathContext,
+                    project.ProjectPath,
+                    expectedExitCode: 0,
+                    additionalArgs: $"-Source source_name -ConfigFile \"{pathContext.Settings.ConfigPath}\"");
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                project.AssetsFile.Libraries.Select(e => e.Name).Should().Contain(package.Id);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_VerifyProjectConfigChangeTriggersARestoreAsync()
         {
             using (var pathContext = new SimpleTestPathContext())

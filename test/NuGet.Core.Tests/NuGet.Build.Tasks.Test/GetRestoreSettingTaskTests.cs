@@ -678,6 +678,44 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
+        public void GetRestoreSettingsTask_WithRestoreSourcesOverrideAndConfiguredSourceName_UsesConfiguredSourceValue()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var startupDirectory = Path.Combine(testDir, "innerPath");
+                var configuredSource = "https://configured-source/v3/index.json";
+
+                File.WriteAllText(
+                    Path.Combine(testDir, Settings.DefaultSettingsFileName),
+                    $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <clear />
+        <add key=""source_name"" value=""{configuredSource}"" />
+    </packageSources>
+</configuration>");
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreSourcesOverride = new[] { "source_name" },
+                    RestoreSettingsPerFramework = Array.Empty<ITaskItem>()
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.Should().BeEquivalentTo(new[] { configuredSource });
+            }
+        }
+
+        [Fact]
         public void GetRestoreSettingsTask_WithFallbackFoldersOverride_ResolvesAgainstWorkingDirectory()
         {
             using (var testDir = TestDirectory.CreateInTemp())

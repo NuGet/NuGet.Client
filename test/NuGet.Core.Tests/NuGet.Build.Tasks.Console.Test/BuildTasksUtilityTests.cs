@@ -135,6 +135,46 @@ namespace NuGet.Build.Tasks.Console.Test
             }
         }
 
+        [Fact]
+        public void GetSources_WithConfiguredSourceName_UsesConfiguredSourceValue()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var startupDirectory = Path.Combine(testDir, "startup");
+                var projectDirectory = Path.Combine(testDir, "project");
+                var configuredSource = "https://configured-source/v3/index.json";
+                Directory.CreateDirectory(projectDirectory);
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, Settings.DefaultSettingsFileName),
+                    $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <clear />
+        <add key=""source_name"" value=""{configuredSource}"" />
+    </packageSources>
+</configuration>");
+
+                var settings = Settings.LoadDefaultSettings(
+                    root: projectDirectory,
+                    configFileName: null,
+                    machineWideSettings: null);
+
+                // Act
+                var effectiveSources = BuildTasksUtility.GetSources(
+                     startupDirectory: startupDirectory,
+                     projectDirectory: projectDirectory,
+                     sources: new[] { "source_name" },
+                     sourcesOverride: new[] { "source_name" },
+                     additionalProjectSources: Array.Empty<string>(),
+                     settings: settings
+                     );
+
+                // Assert
+                effectiveSources.Should().BeEquivalentTo(new[] { configuredSource });
+            }
+        }
+
         [Theory]
         [InlineData("0", "false", 0)]
         [InlineData("0", "true", 0)]

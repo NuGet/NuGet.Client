@@ -740,6 +740,74 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task MsbuildRestore_WithConfiguredSourceName_ResolvesFromConfig(bool isStaticGraphRestore, bool usePackageSpecFactory)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net472");
+
+                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.Files.Clear();
+                project.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net472/a.dll");
+
+                solution.Projects.Add(project);
+                solution.Create();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                pathContext.Settings.RemoveSource("source");
+                pathContext.Settings.AddSource("source_name", pathContext.PackageSource);
+
+                var projectOutputPaths = new[]
+                {
+                    project.AssetsFileOutputPath,
+                    project.PropsOutput,
+                    project.TargetsOutput,
+                    project.CacheFileOutputPath,
+                };
+
+                var environmentVariables = new Dictionary<string, string>();
+                environmentVariables.AddRange(_msbuildFixture.DefaultProcessEnvironmentVariables);
+                environmentVariables["NUGET_USE_NEW_PACKAGESPEC_FACTORY"] = usePackageSpecFactory.ToString();
+
+                var result = _msbuildFixture.RunMsBuild(
+                    pathContext.WorkingDirectory,
+                    $"/t:restore {project.ProjectPath} /p:RestoreSources=\"source_name\" /p:RestoreConfigFile=\"{pathContext.Settings.ConfigPath}\"" +
+                    (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty),
+                    ignoreExitCode: true,
+                    testOutputHelper: _testOutputHelper,
+                    environmentVariables);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                foreach (var asset in projectOutputPaths)
+                {
+                    new FileInfo(asset).Exists.Should().BeTrue(because: result.AllOutput);
+                }
+            }
+        }
+
         [PlatformFact(Platform.Windows)]
         public Task MsbuildRestore_WithStaticGraphRestore_MessageLoggedAtDefaultVerbosityWhenThereAreNoProjectsToRestore()
         {

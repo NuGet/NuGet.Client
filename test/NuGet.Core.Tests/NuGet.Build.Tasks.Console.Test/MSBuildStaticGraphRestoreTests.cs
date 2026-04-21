@@ -697,6 +697,46 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Fact]
+        public void GetSources_WhenRestoreSourcesMatchesConfiguredSourceName_UsesConfiguredSourceValue()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                var configuredSource = "https://configured-source/v3/index.json";
+                var project = new MockMSBuildProject(
+                properties: new Dictionary<string, string>
+                {
+                    ["RestoreSources"] = "source_name",
+                },
+                globalProperties: new Dictionary<string, string>
+                {
+                    ["RestoreSources"] = "source_name"
+                });
+
+                File.WriteAllText(
+                    Path.Combine(testDir, Settings.DefaultSettingsFileName),
+                    $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <clear />
+        <add key=""source_name"" value=""{configuredSource}"" />
+    </packageSources>
+</configuration>");
+
+                var settings = Settings.LoadDefaultSettings(
+                    root: testDir,
+                    configFileName: null,
+                    machineWideSettings: null);
+
+                var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
+
+                actual.Should().BeEquivalentTo(new[]
+                {
+                    new PackageSource(configuredSource),
+                });
+            }
+        }
+
+        [Fact]
         public void GetSources_WhenRestoreSourcesSpecified_CorrectSourcesDetected()
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>

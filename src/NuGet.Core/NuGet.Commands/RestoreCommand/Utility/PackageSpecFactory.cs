@@ -831,12 +831,14 @@ namespace NuGet.Commands.Restore.Utility
 
         private static string[] GetSources(string startupDirectory, string projectDirectory, string[]? sources, string[]? sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
+            List<PackageSource> configuredSources = SettingsUtility.GetEnabledSources(settings).ToList();
+
             // Sources
             var currentSources = GetValue(
-                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
+                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => ResolveSourceValue(startupDirectory, e, configuredSources)).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
-                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
+                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => ResolveSourceValue(projectDirectory, e, configuredSources)).ToArray(),
+                () => configuredSources.Select(e => e.Source).ToArray());
 
             // Append additional sources
             // Escape strings to avoid xplat path issues with msbuild.
@@ -847,6 +849,20 @@ namespace NuGet.Commands.Restore.Utility
 
             // GetValue doesn't understand that the last func will always provide a non-null value.
             return AppendItems(projectDirectory, currentSources!, filteredAdditionalProjectSources);
+        }
+
+        private static string ResolveSourceValue(string rootDirectory, string source, IReadOnlyList<PackageSource> configuredSources)
+        {
+            PackageSource? configuredSource = configuredSources.FirstOrDefault(
+                e => string.Equals(e.Name, source, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(e.Source, source, StringComparison.OrdinalIgnoreCase));
+
+            if (configuredSource != null)
+            {
+                return configuredSource.Source;
+            }
+
+            return UriUtility.GetAbsolutePath(rootDirectory, source)!;
         }
 
         private static string[] AppendItems(string projectDirectory, string[] current, IEnumerable<string>? additional)
