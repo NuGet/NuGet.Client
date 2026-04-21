@@ -154,7 +154,6 @@ namespace NuGet.Commands
             Dictionary<ValueTuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
-            var librariesWithMonoAndroidWarnings = new HashSet<LibraryIdentity>();
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
@@ -163,6 +162,8 @@ namespace NuGet.Commands
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
                 .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
+                var librariesWithMonoAndroidWarnings = new HashSet<LibraryIdentity>();
+
                 var target = lockFile.Version >= LockFileFormat.AliasedVersion ?
                     new LockFileTarget
                     {
