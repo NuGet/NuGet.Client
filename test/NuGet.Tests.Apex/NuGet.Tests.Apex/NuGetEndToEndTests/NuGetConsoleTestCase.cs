@@ -495,8 +495,7 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             using var simpleTestPathContext = new SimpleTestPathContext();
-            var solutionDirectory = simpleTestPathContext.SolutionRoot;
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "SolutionLevelPkg";
@@ -504,20 +503,8 @@ namespace NuGet.Tests.Apex
 
             await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion);
             Assert.IsTrue(File.Exists(Path.Combine(simpleTestPathContext.PackageSource, $"{packageName}.{packageVersion}.nupkg")));
-
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-    <clear />
-    <add key=""LocalRepository"" value=""{simpleTestPathContext.PackageSource}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
-    </packageSources>
-    <packageSourceMapping>
-        <packageSource key=""PrivateRepository"">
-            <package pattern=""Solution*"" />
-        </packageSource>
-    </packageSourceMapping>
-</configuration>");
+            simpleTestPathContext.Settings.AddSource("PrivateRepository", privateRepositoryPath);
+            simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Solution*");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
@@ -538,31 +525,16 @@ namespace NuGet.Tests.Apex
             using var simpleTestPathContext = new SimpleTestPathContext();
             var solutionDirectory = simpleTestPathContext.SolutionRoot;
 
-            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
-            Directory.CreateDirectory(opensourceRepositoryPath);
-
             var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "Contoso.MVC.ASP";
             var packageVersion = "1.0.0";
 
-            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion, "Thisisfromopensourcerepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion, "Thisisfromprivaterepo1.txt");
-
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-    <clear />
-    <add key=""OpensourceRepository"" value=""{opensourceRepositoryPath}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
-    </packageSources>
-    <packageSourceMapping>
-        <packageSource key=""PrivateRepository"">
-            <package pattern=""Contoso.MVC.*"" />
-        </packageSource>
-    </packageSourceMapping>
-</configuration>");
+            simpleTestPathContext.Settings.AddSource("PrivateRepository", privateRepositoryPath);
+            simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Contoso.MVC.*");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
