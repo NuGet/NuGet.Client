@@ -503,6 +503,7 @@ namespace NuGet.Tests.Apex
             var packageVersion = "1.0.0";
 
             await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion);
+            Assert.IsTrue(File.Exists(Path.Combine(simpleTestPathContext.PackageSource, $"{packageName}.{packageVersion}.nupkg")));
 
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
