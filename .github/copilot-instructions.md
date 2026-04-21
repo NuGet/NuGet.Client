@@ -17,6 +17,16 @@
 
 - All files in the repository are nullable by default (project-level nullable enable). No need to add `#nullable enable` directives to individual files.
 
+## Bug Fixing Guidance
+
+- Prefer a test-first workflow for bug fixes. Write a focused repro test that fails for the correct reason before changing the implementation.
+- Make the failure details explicit in the assertion or expected message so the test proves the actual bug, not just that something failed.
+- Treat TDD as the default for bug fixing: reproduce the issue, fix it, and keep the regression test in place.
+- When a bug may flow through shared infrastructure or multiple entry points, add parity coverage across the affected surfaces instead of validating only one caller.
+- For restore bugs involving settings, source resolution, or command-line properties, preserve parity across `nuget.exe`, `dotnet restore`, and `msbuild /t:restore`.
+- When testing explicit restore source inputs (`-Source`, `--source`, `/p:RestoreSources`), cover both direct paths/URLs and named package sources defined in `NuGet.Config`. A source value may be a configured source name, not just a filesystem path.
+- Prefer a layered test strategy for restore and pack changes: add fast unit coverage around the shared helper or factory logic first, then add at least one integration/functional regression for the relevant client entry points.
+
 ## Nullable Migration Rules
 
 - **Shipped.txt format must be precise** — e.g. `string![]!` not `string![]`, `byte[]?` not `byte?[]`. Always match the format of existing base class entries in the same file.
