@@ -287,4 +287,9 @@ Skip PS tests that:
 - **`_pathContext` vs `testContext`**: `IVsServicesTestCase` uses a class-level
   `SimpleTestPathContext _pathContext` (initialized in constructor), not per-test `ApexTestContext`.
   PMC tests in `NuGetConsoleTestCase` use per-test `ApexTestContext`.
+- **Never overwrite `SimpleTestPathContext`'s NuGet.config**: Using `CreateConfigurationFile` to
+  write a full config replaces defaults like `globalPackagesFolder`, `fallbackPackageFolders`, and
+  `httpCacheFolder` — causing packages to pollute the user's real global packages folder. Instead
+  use `simpleTestPathContext.Settings.AddSource()` and `AddPackageSourceMapping()` to layer config
+  on top of the defaults.
 
