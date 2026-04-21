@@ -160,7 +160,6 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         }
 
         [Theory]
-        [InlineData("My_Package")]
         [InlineData("Package@1.0")]
         [InlineData("Ünïcödé")]
         [InlineData("Package Name")]
@@ -187,7 +186,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Act
             PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Standard.Package"), data);
-            PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Nonstandard_Package"), data);
+            PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Nonstandard@Package"), data);
             PackageSourceTelemetry.AddNupkgCopiedData(new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 1000, "Another.Standard"), data);
 
             // Assert
@@ -196,7 +195,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         }
 
         [Fact]
-        public void AddNupkgCopiedData_NullPackageId_IdContainsNonAlphanumericDotDashOrUnderscoreCharacterIsFalse()
+        public void AddNupkgCopiedData_EmptyPackageId_IdContainsNonAlphanumericDotDashOrUnderscoreCharacterIsFalse()
         {
             // Arrange
             var data = CreateDataDictionary(SampleSource);

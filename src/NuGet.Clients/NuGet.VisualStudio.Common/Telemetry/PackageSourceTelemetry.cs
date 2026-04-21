@@ -204,7 +204,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 data.NupkgCount++;
                 data.NupkgSize += ncEvent.FileSize;
-                data.IdContainsNonAlphanumericDotDashOrUnderscoreCharacter = data.IdContainsNonAlphanumericDotDashOrUnderscoreCharacter || (ncEvent.PackageId != null && HasNonAlphanumericDotDashOrUnderscoreCharacters(ncEvent.PackageId));
+                data.IdContainsNonAlphanumericDotDashOrUnderscoreCharacter = data.IdContainsNonAlphanumericDotDashOrUnderscoreCharacter || (ncEvent.PackageId.Length > 0 && HasNonAlphanumericDotDashOrUnderscoreCharacters(ncEvent.PackageId));
             }
 
             bool HasNonAlphanumericDotDashOrUnderscoreCharacters(string packageId)

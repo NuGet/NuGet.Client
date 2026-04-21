@@ -3763,7 +3763,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Theory]
-        [InlineData("My_Package")]           // underscore
         [InlineData("Pac\u212Bage")]         // Kelvin sign K (U+212A)
         [InlineData("Package\u03B1")]        // Greek lowercase alpha (U+03B1)
         [InlineData("Package\u00E9")]        // Latin small letter e with acute (U+00E9)
@@ -3808,7 +3807,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Theory]
-        [InlineData("My_Package")]         // underscore
         [InlineData("Pac\u212Bage")]         // Kelvin sign K (U+212A)
         [InlineData("Package\u03B1")]        // Greek lowercase alpha (U+03B1)
         public async Task ExecuteAsync_WithMixedPackageIds_AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharactersIsTrue(string packageId)

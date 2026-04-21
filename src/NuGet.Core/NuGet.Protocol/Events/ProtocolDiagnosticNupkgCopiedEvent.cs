@@ -9,21 +9,21 @@ namespace NuGet.Protocol.Events
         public long FileSize { get; }
 
         /// <summary>
-        /// Gets the package ID of the copied nupkg, or <see langword="null"/> if not available.
+        /// Gets the package ID of the copied nupkg.
         /// </summary>
-        public string? PackageId { get; }
+        public string PackageId { get; }
 
         public ProtocolDiagnosticNupkgCopiedEvent(
             string source,
             long fileSize)
-            : this(source, fileSize, packageId: null)
+            : this(source, fileSize, packageId: string.Empty)
         {
         }
 
         public ProtocolDiagnosticNupkgCopiedEvent(
             string source,
             long fileSize,
-            string? packageId)
+            string packageId)
         {
             Source = source;
             FileSize = fileSize;
