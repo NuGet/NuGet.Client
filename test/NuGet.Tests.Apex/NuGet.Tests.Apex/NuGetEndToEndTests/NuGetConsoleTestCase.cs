@@ -491,19 +491,32 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public void InstallPackageForPC_PackageSourceMapping_WithWrongMappedFeed_Fails(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageSourceMapping_WithWrongMappedFeed_Fails(ProjectTemplate projectTemplate)
         {
             // Arrange
             using var simpleTestPathContext = new SimpleTestPathContext();
-            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
+            var solutionDirectory = simpleTestPathContext.SolutionRoot;
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "SolutionLevelPkg";
             var packageVersion = "1.0.0";
 
-            // Package exists in default source but mapping routes Solution* to PrivateRepository where it doesn't exist.
-            simpleTestPathContext.Settings.AddSource("PrivateRepository", privateRepositoryPath);
-            simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Solution*");
+            await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion);
+
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""LocalRepository"" value=""{simpleTestPathContext.PackageSource}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Solution*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
@@ -524,18 +537,31 @@ namespace NuGet.Tests.Apex
             using var simpleTestPathContext = new SimpleTestPathContext();
             var solutionDirectory = simpleTestPathContext.SolutionRoot;
 
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
             var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "Contoso.MVC.ASP";
             var packageVersion = "1.0.0";
 
-            // Opensource package in default "source", private package in PrivateRepository
-            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion, "Thisisfromopensourcerepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion, "Thisisfromprivaterepo1.txt");
 
-            simpleTestPathContext.Settings.AddSource("PrivateRepository", privateRepositoryPath);
-            simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Contoso.MVC.*");
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key=""OpensourceRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.MVC.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
