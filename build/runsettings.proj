@@ -24,7 +24,7 @@
         <MSBuild
             Projects="template.runsettingsproj"
             Properties="RunName=NuGet.Tests.Apex.Gate;
-            FileName=NuGet.Tests.Apex.dll;
+            FileName=NuGet.Tests.Apex.dll;NuGet.Tests.Apex.Daily.dll;
             TestCaseFilter=TestCategory=Gate;" />
 
         <!-- NuGet.Tests.Apex.Daily.runsettings -->

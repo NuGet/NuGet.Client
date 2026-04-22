@@ -25,7 +25,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(LongerTimeout)]
-        [TestCategory("Gate")]
         public void SimpleInstallFromIVsInstaller()
         {
             // Arrange
