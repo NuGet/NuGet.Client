@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Converters
     /// <remarks>No NSJ equivalent.</remarks>
     internal sealed class PackageDependencyStjConverter : JsonConverter<PackageDependency>
     {
-        private static readonly VersionRangeStjConverter _versionRangeConverter = new();
+        private static readonly VersionRangeStjConverter VersionRangeConverter = new();
 
         public override PackageDependency Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -43,7 +43,7 @@ namespace NuGet.Protocol.Converters
                 {
                     if (reader.TokenType != JsonTokenType.Null)
                     {
-                        range = _versionRangeConverter.Read(ref reader, typeof(VersionRange), options);
+                        range = VersionRangeConverter.Read(ref reader, typeof(VersionRange), options);
                     }
                 }
                 else
@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Converters
 
             if (string.IsNullOrEmpty(id))
             {
-                throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_RequiredJsonPropertyMissing, JsonProperties.PackageId));
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_RequiredJsonPropertyMissing, JsonProperties.PackageId));
             }
 
             return new PackageDependency(id!, range);
@@ -65,7 +65,7 @@ namespace NuGet.Protocol.Converters
             writer.WriteStartObject();
             writer.WriteString(JsonProperties.PackageId, value.Id);
             writer.WritePropertyName(JsonProperties.Range);
-            _versionRangeConverter.Write(writer, value.VersionRange, options);
+            VersionRangeConverter.Write(writer, value.VersionRange, options);
             writer.WriteEndObject();
         }
     }
