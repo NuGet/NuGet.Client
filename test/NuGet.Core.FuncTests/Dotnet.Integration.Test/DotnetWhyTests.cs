@@ -3,20 +3,14 @@
 
 #nullable disable
 
-using System;
-using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Commands.Why;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
-using Spectre.Console;
-using Spectre.Console.Testing;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,7 +63,6 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput.Replace("\n", "").Replace("\r", ""));
         }
 
-        // https://github.com/NuGet/Home/issues/14823: This should use `dotnet nuget why` when it supports file-based apps.
         [Fact]
         public async Task WhyCommand_FileBasedApp()
         {
@@ -95,37 +88,11 @@ namespace Dotnet.Integration.Test
             // Restore.
             _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
-            // Get project content.
-            var virtualProject = _testFixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
-            using var builder = new TestVirtualProjectBuilder(virtualProject);
-
             // Run "why" command.
-            var console = new TestConsole();
-            using var outWriter = new StringWriter();
-            using var errorWriter = new StringWriter();
-            var rootCommand = new RootCommand();
-            WhyCommand.Register(
-                rootCommand,
-                new Lazy<IAnsiConsole>(console),
-                () => new WhyCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, builder)));
-            int result = rootCommand.Parse([
-                "why", appFile, "PackageB",
-            ]).Invoke(new() { Output = outWriter, Error = errorWriter });
+            var result = _testFixture.RunDotnetExpectSuccess(fbaDir, "nuget why app.cs PackageB", testOutputHelper: _testOutputHelper);
 
-            var output = outWriter.ToString() + console.Output;
-            var error = errorWriter.ToString();
-
-            _testOutputHelper.WriteLine(output);
-            _testOutputHelper.WriteLine(error);
-
-            Assert.Equal(0, result);
-
-            Assert.Empty(error);
-
-            Assert.Contains("PackageA (v1.0.0)", output);
-            Assert.Contains("packageB (v1.0.1)", output);
-
-            Assert.Null(builder.ModifiedContent);
+            Assert.Contains("PackageA (v1.0.0)", result.AllOutput);
+            Assert.Contains("packageB (v1.0.1)", result.AllOutput);
         }
 
         [Fact]

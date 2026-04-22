@@ -12,10 +12,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Newtonsoft.Json.Linq;
-using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -79,7 +77,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/14823: This should use `dotnet package list` when it supports file-based apps.
         [Fact]
         public async Task DotnetListPackage_FileBasedApp()
         {
@@ -102,45 +99,11 @@ namespace Dotnet.Integration.Test
             // Restore.
             _fixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
 
-            // Get project content.
-            var virtualProject = _fixture.GetFileBasedAppVirtualProject(appFile, _testOutputHelper);
-            using var builder = new TestVirtualProjectBuilder(virtualProject);
-
             // List packages.
-            using var outWriter = new StringWriter();
-            using var errorWriter = new StringWriter();
-            var testApp = new CommandLineApplication
-            {
-                Out = outWriter,
-                Error = errorWriter,
-            };
-            var logger = new TestLogger(_testOutputHelper);
-            var msbuild = new MSBuildAPIUtility(logger, builder);
-            ListPackageCommand.Register(
-                testApp,
-                () => logger,
-                (_) => { },
-                () => new ListPackageCommandRunner(msbuild));
-            int result = testApp.Execute([
-                "list", appFile,
-                "--source", pathContext.PackageSource,
-                "--format", "json",
-            ]);
+            var result = _fixture.RunDotnetExpectSuccess(fbaDir, "package list --file app.cs --format json", testOutputHelper: _testOutputHelper);
 
-            var output = outWriter.ToString();
-            var error = errorWriter.ToString();
-
-            _testOutputHelper.WriteLine(output);
-            _testOutputHelper.WriteLine(error);
-
-            Assert.Equal(0, result);
-
-            Assert.Empty(error);
-
-            Assert.Contains("packageX", output);
-            Assert.Contains("1.0.0", output);
-
-            Assert.Null(builder.ModifiedContent);
+            Assert.Contains("packageX", result.AllOutput);
+            Assert.Contains("1.0.0", result.AllOutput);
         }
 
         [PlatformFact(Platform.Windows)]
