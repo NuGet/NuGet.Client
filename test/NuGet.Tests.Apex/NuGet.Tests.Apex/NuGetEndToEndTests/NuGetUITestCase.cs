@@ -49,7 +49,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task InstallPackageFromUI()
         {
             // Arrange
@@ -108,7 +107,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task UninstallPackageFromUI()
         {
             // Arrange
@@ -142,7 +140,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task UpdatePackageFromUI()
         {
             // Arrange
@@ -372,6 +369,37 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, TestPackageVersionV2, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        [TestCategory("Gate")]
+        public async Task VerifyDeletedAssetsFileIsBackByReloadingProject()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            var assetsFilePath = CommonUtility.GetAssetsFilePath(project.FullPath);
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
+            File.Delete(assetsFilePath);
+
+            // Act
+            CommonUtility.AutoRestorePackageByReloadingProject(VisualStudio, project);
+
+            // Assert
+            CommonUtility.WaitForFileExists(new FileInfo(assetsFilePath));
         }
 
         public override void Dispose()

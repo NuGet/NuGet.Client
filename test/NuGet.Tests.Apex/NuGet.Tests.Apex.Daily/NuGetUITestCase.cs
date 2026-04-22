@@ -568,7 +568,6 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task InstallTopLevelPackageFromUI()
         {
             // Arrange
@@ -599,7 +598,6 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
         public async Task UninstallTopLevelPackageFromUI()
         {
             // Arrange
