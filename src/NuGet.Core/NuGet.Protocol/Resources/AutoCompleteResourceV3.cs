@@ -34,7 +34,6 @@ namespace NuGet.Protocol
             _regResource = regResource;
             _serviceIndex = serviceIndex;
             _client = client;
-            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
         }
 
         internal AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource, IEnvironmentVariableReader environmentVariableReader)
@@ -52,29 +51,24 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var searchUrl = _serviceIndex.GetServiceEntryUri(ServiceTypes.SearchAutocompleteService);
-
-            if (searchUrl == null)
+            if (NuGetFeatureFlags.UseLegacyJsonDeserializationFeatureSwitch || NuGetFeatureFlags.IsLegacyJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
-                throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+                return await IdStartsWithNsjAsync(packageIdPrefix, includePrerelease, log, token);
             }
+            else
+            {
+                return await IdStartsWithStjAsync(packageIdPrefix, includePrerelease, log, token);
+            }
+        }
 
-            // Construct the query
-            var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
-            var queryString =
-                "q=" + WebUtility.UrlEncode(packageIdPrefix) +
-                "&prerelease=" + includePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant() +
-                "&semVerLevel=2.0.0";
-
-            queryUrl.Query = queryString;
-
+        private async Task<IEnumerable<string>> IdStartsWithStjAsync(
+            string packageIdPrefix,
+            bool includePrerelease,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var queryUri = BuildQueryUri(packageIdPrefix, includePrerelease);
             Common.ILogger logger = log ?? Common.NullLogger.Instance;
-            var queryUri = queryUrl.Uri;
-
-            if (NuGetFeatureFlags.UseNSJDeserializationFeatureSwitch || NuGetFeatureFlags.IsNSJDeserializationEnabledByEnvironment(_environmentVariableReader))
-            {
-                return await IdStartsWithNsjAsync(packageIdPrefix, logger, queryUri, token);
-            }
 
             AutoCompleteModel results = await _client.ProcessStreamAsync(
                 new HttpSourceRequest(queryUri, logger),
@@ -98,22 +92,22 @@ namespace NuGet.Protocol
 
         private async Task<IEnumerable<string>> IdStartsWithNsjAsync(
             string packageIdPrefix,
-            Common.ILogger logger,
-            Uri queryUri,
+            bool includePrerelease,
+            Common.ILogger log,
             CancellationToken token)
         {
+            var queryUri = BuildQueryUri(packageIdPrefix, includePrerelease);
+            Common.ILogger logger = log ?? Common.NullLogger.Instance;
+
             var results = await _client.GetJObjectAsync(
                 new HttpSourceRequest(queryUri, logger),
                 logger,
                 token);
-
             token.ThrowIfCancellationRequested();
-
             if (results == null)
             {
                 return Enumerable.Empty<string>();
             }
-
             var data = results.Value<JArray>("data");
             if (data == null)
             {
@@ -131,6 +125,25 @@ namespace NuGet.Protocol
             }
 
             return outputs.Where(item => item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private Uri BuildQueryUri(string packageIdPrefix, bool includePrerelease)
+        {
+            var searchUrl = _serviceIndex.GetServiceEntryUri(ServiceTypes.SearchAutocompleteService);
+
+            if (searchUrl == null)
+            {
+                throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+            }
+
+            // Construct the query
+            var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
+            queryUrl.Query =
+                "q=" + WebUtility.UrlEncode(packageIdPrefix) +
+                "&prerelease=" + includePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant() +
+                "&semVerLevel=2.0.0";
+
+            return queryUrl.Uri;
         }
 
         public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(

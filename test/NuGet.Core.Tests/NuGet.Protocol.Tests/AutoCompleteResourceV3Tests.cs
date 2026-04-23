@@ -22,21 +22,24 @@ namespace NuGet.Protocol.Tests
         [InlineData("false")] // STJ path
         public async Task IdStartsWith_BothPaths_ReturnsResultsAsync(string useNsj)
         {
+            // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            responses.Add("http://testsource.test/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api-v3search-0.nuget.org/autocomplete?q=newt&prerelease=true&semVerLevel=2.0.0",
                 JsonData.AutoCompleteEndpointNewtResult);
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+            var repo = StaticHttpHandler.CreateSource("http://testsource.test/v3/index.json", Repository.Provider.GetCoreV3(), responses);
             var resource = (AutoCompleteResourceV3)await repo.GetResourceAsync<AutoCompleteResource>(CancellationToken.None);
 
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseNSJDeserializationEnvVar)).Returns(useNsj);
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseLegacyJsonDeserializationEnvVar)).Returns(useNsj);
             var testResource = new AutoCompleteResourceV3(resource._client, resource._serviceIndex, resource._regResource, envReader.Object);
-
             var logger = new TestLogger();
+
+            // Act
             var result = await testResource.IdStartsWith("newt", true, logger, CancellationToken.None);
 
+            // Assert
             Assert.Equal(10, result.Count());
             Assert.NotEmpty(logger.Messages);
         }

@@ -11,27 +11,27 @@ namespace NuGet.Protocol.Tests
     public class NuGetFeatureFlagsTests
     {
         [Fact]
-        public void UseNSJDeserializationFeatureSwitch_Default_ReturnsFalse()
+        public void UseLegacyJsonDeserializationFeatureSwitch_Default_ReturnsFalse()
         {
-            Assert.False(NuGetFeatureFlags.UseNSJDeserializationFeatureSwitch);
+            Assert.False(NuGetFeatureFlags.UseLegacyJsonDeserializationFeatureSwitch);
         }
 
         [Fact]
-        public void IsNSJDeserializationEnabledByEnvironment_WhenEnvVarNotSet_ReturnsFalse()
+        public void IsLegacyJsonDeserializationEnabledByEnvironment_WhenEnvVarNotSet_ReturnsFalse()
         {
-            Assert.False(NuGetFeatureFlags.IsNSJDeserializationEnabledByEnvironment(TestEnvironmentVariableReader.EmptyInstance));
+            Assert.False(NuGetFeatureFlags.IsLegacyJsonDeserializationEnabledByEnvironment(TestEnvironmentVariableReader.EmptyInstance));
         }
 
         [Theory]
         [InlineData("true")]
         [InlineData("True")]
         [InlineData("TRUE")]
-        public void IsNSJDeserializationEnabledByEnvironment_WhenEnvVarSetToTrue_ReturnsTrue(string value)
+        public void IsLegacyJsonDeserializationEnabledByEnvironment_WhenEnvVarSetToTrue_ReturnsTrue(string value)
         {
             var env = new TestEnvironmentVariableReader(
-                new Dictionary<string, string> { [NuGetFeatureFlags.UseNSJDeserializationEnvVar] = value });
+                new Dictionary<string, string> { [NuGetFeatureFlags.UseLegacyJsonDeserializationEnvVar] = value });
 
-            Assert.True(NuGetFeatureFlags.IsNSJDeserializationEnabledByEnvironment(env));
+            Assert.True(NuGetFeatureFlags.IsLegacyJsonDeserializationEnabledByEnvironment(env));
         }
 
         [Theory]
@@ -39,12 +39,12 @@ namespace NuGet.Protocol.Tests
         [InlineData("0")]
         [InlineData("1")]
         [InlineData("anything")]
-        public void IsNSJDeserializationEnabledByEnvironment_WhenEnvVarSetToFalseOrUnrecognized_ReturnsFalse(string value)
+        public void IsLegacyJsonDeserializationEnabledByEnvironment_WhenEnvVarSetToFalseOrUnrecognized_ReturnsFalse(string value)
         {
             var env = new TestEnvironmentVariableReader(
-                new Dictionary<string, string> { [NuGetFeatureFlags.UseNSJDeserializationEnvVar] = value });
+                new Dictionary<string, string> { [NuGetFeatureFlags.UseLegacyJsonDeserializationEnvVar] = value });
 
-            Assert.False(NuGetFeatureFlags.IsNSJDeserializationEnabledByEnvironment(env));
+            Assert.False(NuGetFeatureFlags.IsLegacyJsonDeserializationEnabledByEnvironment(env));
         }
     }
 }
