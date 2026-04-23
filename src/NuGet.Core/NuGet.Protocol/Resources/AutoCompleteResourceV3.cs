@@ -11,18 +11,22 @@ using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
 using NuGet.Protocol.Utility;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
     public class AutoCompleteResourceV3 : AutoCompleteResource
     {
-        private readonly RegistrationResourceV3 _regResource;
-        private readonly ServiceIndexResourceV3 _serviceIndex;
-        private readonly HttpSource _client;
+        internal readonly RegistrationResourceV3 _regResource;
+        internal readonly ServiceIndexResourceV3 _serviceIndex;
+        internal readonly HttpSource _client;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
             : base()
@@ -30,6 +34,16 @@ namespace NuGet.Protocol
             _regResource = regResource;
             _serviceIndex = serviceIndex;
             _client = client;
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+        }
+
+        internal AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource, IEnvironmentVariableReader environmentVariableReader)
+            : base()
+        {
+            _regResource = regResource;
+            _serviceIndex = serviceIndex;
+            _client = client;
+            _environmentVariableReader = environmentVariableReader;
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(
@@ -55,8 +69,13 @@ namespace NuGet.Protocol
             queryUrl.Query = queryString;
 
             Common.ILogger logger = log ?? Common.NullLogger.Instance;
-
             var queryUri = queryUrl.Uri;
+
+            if (NuGetFeatureFlags.UseNSJDeserializationFeatureSwitch || NuGetFeatureFlags.IsNSJDeserializationEnabledByEnvironment(_environmentVariableReader))
+            {
+                return await IdStartsWithNsjAsync(packageIdPrefix, logger, queryUri, token);
+            }
+
             AutoCompleteModel results = await _client.ProcessStreamAsync(
                 new HttpSourceRequest(queryUri, logger),
                 async stream =>
@@ -73,13 +92,45 @@ namespace NuGet.Protocol
 
             token.ThrowIfCancellationRequested();
 
-            if (results?.Data == null)
+            return results?.Data?.Where(item => item != null && item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase))
+                ?? [];
+        }
+
+        private async Task<IEnumerable<string>> IdStartsWithNsjAsync(
+            string packageIdPrefix,
+            Common.ILogger logger,
+            Uri queryUri,
+            CancellationToken token)
+        {
+            var results = await _client.GetJObjectAsync(
+                new HttpSourceRequest(queryUri, logger),
+                logger,
+                token);
+
+            token.ThrowIfCancellationRequested();
+
+            if (results == null)
             {
                 return Enumerable.Empty<string>();
             }
 
-            return results.Data
-                .Where(item => item != null && item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
+            var data = results.Value<JArray>("data");
+            if (data == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // Resolve all the objects
+            var outputs = new List<string>();
+            foreach (var result in data)
+            {
+                if (result != null)
+                {
+                    outputs.Add(result.ToString());
+                }
+            }
+
+            return outputs.Where(item => item.StartsWith(packageIdPrefix, StringComparison.OrdinalIgnoreCase));
         }
 
         public override async Task<IEnumerable<NuGetVersion>> VersionStartsWith(

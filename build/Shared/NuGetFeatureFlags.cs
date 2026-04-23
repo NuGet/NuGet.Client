@@ -9,18 +9,18 @@ namespace NuGet.Shared
 {
     internal static class NuGetFeatureFlags
     {
-        internal const string UsesNSJDeserializationSwitchName = "NuGet.UsesNSJDeserialization";
-        internal const string UsesNSJDeserializationEnvVar = "NUGET_USES_NSJ_DESERIALIZATION";
+        internal const string UseNSJDeserializationSwitchName = "NuGet.UseNSJDeserialization";
+        internal const string UseNSJDeserializationEnvVar = "NUGET_USE_NSJ_DESERIALIZATION";
 
         private static readonly Lazy<bool> _isNSJDeserializationEnabledByEnvironment =
             new Lazy<bool>(() => IsNSJDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
-        /// <summary>Feature switch for NSJ deserialization. Defaults to <see langword="true"/>.</summary>
-        [FeatureSwitchDefinition(UsesNSJDeserializationSwitchName)]
-        internal static bool NSJDeserializationFeatureSwitch { get; } =
-            !AppContext.TryGetSwitch(UsesNSJDeserializationSwitchName, out bool value) || value;
+        /// <summary>Feature switch for NSJ deserialization. Defaults to <see langword="false"/> (STJ is the default).</summary>
+        [FeatureSwitchDefinition(UseNSJDeserializationSwitchName)]
+        internal static bool UseNSJDeserializationFeatureSwitch { get; } =
+            AppContext.TryGetSwitch(UseNSJDeserializationSwitchName, out bool value) && value;
 
-        /// <summary>Returns <see langword="false"/> when env var <c>NUGET_USES_NSJ_DESERIALIZATION</c> is <c>false</c>.</summary>
+        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_NSJ_DESERIALIZATION</c> is <c>true</c>.</summary>
         internal static bool IsNSJDeserializationEnabledByEnvironment(IEnvironmentVariableReader? env = null)
         {
             if (env is null)
@@ -28,8 +28,8 @@ namespace NuGet.Shared
                 return _isNSJDeserializationEnabledByEnvironment.Value;
             }
 
-            string? envValue = env.GetEnvironmentVariable(UsesNSJDeserializationEnvVar);
-            return !string.Equals(envValue, "false", StringComparison.OrdinalIgnoreCase);
+            string? envValue = env.GetEnvironmentVariable(UseNSJDeserializationEnvVar);
+            return string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
