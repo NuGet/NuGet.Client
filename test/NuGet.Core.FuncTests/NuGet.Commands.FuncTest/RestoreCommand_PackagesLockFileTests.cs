@@ -1747,8 +1747,6 @@ namespace NuGet.Commands.FuncTest
             logger.Clear();
 
             // Second restore in locked mode
-            // Lock file validation does not consider ATF for project references (PackagesLockFileUtilities.cs),
-            // so locked mode fails with NU1004 when the project reference requires ATF.
             result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1, project2)).ExecuteAsync();
             result.Success.Should().BeTrue(logger.ShowErrors());
         }
