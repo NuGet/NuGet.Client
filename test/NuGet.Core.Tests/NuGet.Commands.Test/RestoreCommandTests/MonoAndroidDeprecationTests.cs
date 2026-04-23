@@ -155,6 +155,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             result.LockFile.LogMessages[0].Level.Should().Be(LogLevel.Warning);
             result.LockFile.LogMessages[0].LibraryId.Should().Be("a");
             result.LockFile.LogMessages[0].Message.Should().Contain("MonoAndroid");
+            result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
+            result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be("net11.0-android35.0");
             logger.Errors.Should().Be(0);
             logger.Warnings.Should().Be(1);
         }
