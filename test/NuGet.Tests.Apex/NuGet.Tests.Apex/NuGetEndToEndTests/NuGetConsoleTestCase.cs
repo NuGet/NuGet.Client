@@ -498,7 +498,7 @@ namespace NuGet.Tests.Apex
             var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
-            var packageName = "SolutionLevelPkg";
+            var packageName = "Pkg";
             var packageVersion = "1.0.0";
 
             await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion);
