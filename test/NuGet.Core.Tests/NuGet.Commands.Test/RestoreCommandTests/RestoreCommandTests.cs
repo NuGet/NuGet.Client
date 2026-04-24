@@ -3258,50 +3258,66 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(42);
+            var expectedProperties = new Dictionary<string, Action<object>>()
+            {
+                ["RestoreSuccess"] = value => value.Should().Be(true),
+                ["NoOpResult"] = value => value.Should().Be(true),
+                ["IsCentralVersionManagementEnabled"] = value => value.Should().Be(false),
+                ["NoOpCacheFileEvaluationResult"] = value => value.Should().Be(true),
+                ["NoOpRestoreOutputEvaluationResult"] = value => value.Should().Be(true),
+                ["NoOpDuration"] = value => value.Should().NotBeNull(),
+                ["TotalUniquePackagesCount"] = value => value.Should().Be(1),
+                ["NewPackagesInstalledCount"] = value => value.Should().Be(0),
+                ["NoOpCacheFileEvaluateDuration"] = value => value.Should().NotBeNull(),
+                ["StartTime"] = value => value.Should().NotBeNull(),
+                ["EndTime"] = value => value.Should().NotBeNull(),
+                ["OperationId"] = value => value.Should().NotBeNull(),
+                ["Duration"] = value => value.Should().NotBeNull(),
+                ["NoOpRestoreOutputEvaluationDuration"] = value => value.Should().NotBeNull(),
+                ["NoOpReplayLogsDuration"] = value => value.Should().NotBeNull(),
+                ["PackageSourceMapping.IsMappingEnabled"] = value => value.Should().Be(false),
+                ["SourcesCount"] = value => value.Should().Be(1),
+                ["HttpSourcesCount"] = value => value.Should().Be(0),
+                ["LocalSourcesCount"] = value => value.Should().Be(1),
+                ["FallbackFoldersCount"] = value => value.Should().Be(0),
+                ["IsLockFileEnabled"] = value => value.Should().Be(false),
+                ["NoOpCacheFileAgeDays"] = value => value.Should().NotBeNull(),
+                ["UseLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["UsedLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["Audit.Enabled"] = value => value.Should().BeOfType<string>(),
+                ["TargetFrameworks"] = value => value.Should().Be("net472"),
+                ["TargetFrameworksCount"] = value => value.Should().Be(1),
+                ["RuntimeIdentifiersCount"] = value => value.Should().Be(0),
+                ["TreatWarningsAsErrors"] = value => value.Should().Be(true),
+                ["SDKAnalysisLevel"] = value => value.Should().Be(NuGetVersion.Parse("9.0.100")),
+                ["UsingMicrosoftNETSdk"] = value => value.Should().Be(true),
+                ["IsPackageInstallationTrigger"] = value => value.Should().Be(false),
+                ["ForceRestore"] = value => value.Should().Be(false),
+                ["UpdatedAssetsFile"] = value => value.Should().Be(false),
+                ["UpdatedMSBuildFiles"] = value => value.Should().Be(false),
+                ["NETSdkVersion"] = value => value.Should().Be(NuGetVersion.Parse("10.0.100")),
+                ["Pruning.FrameworksEnabled.Count"] = value => value.Should().Be(0),
+                ["Pruning.FrameworksDisabled.Count"] = value => value.Should().Be(0),
+                ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().Be(1),
+                ["Pruning.DefaultEnabled"] = value => value.Should().Be(false),
+                ["UsesLegacyPackagesDirectory"] = value => value.Should().Be(false),
+                ["UsesLegacyAssetTargetFallback"] = value => value.Should().Be(false),
+            };
 
-            projectInformationEvent["RestoreSuccess"].Should().Be(true);
-            projectInformationEvent["NoOpResult"].Should().Be(true);
-            projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
-            projectInformationEvent["NoOpCacheFileEvaluationResult"].Should().Be(true);
-            projectInformationEvent["NoOpRestoreOutputEvaluationResult"].Should().Be(true);
-            projectInformationEvent["NoOpDuration"].Should().NotBeNull();
-            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(1);
-            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(0);
-            projectInformationEvent["NoOpCacheFileEvaluateDuration"].Should().NotBeNull();
-            projectInformationEvent["StartTime"].Should().NotBeNull();
-            projectInformationEvent["EndTime"].Should().NotBeNull();
-            projectInformationEvent["OperationId"].Should().NotBeNull();
-            projectInformationEvent["Duration"].Should().NotBeNull();
-            projectInformationEvent["NoOpRestoreOutputEvaluationDuration"].Should().NotBeNull();
-            projectInformationEvent["NoOpReplayLogsDuration"].Should().NotBeNull();
-            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
-            projectInformationEvent["SourcesCount"].Should().Be(1);
-            projectInformationEvent["HttpSourcesCount"].Should().Be(0);
-            projectInformationEvent["LocalSourcesCount"].Should().Be(1);
-            projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
-            projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
-            projectInformationEvent["NoOpCacheFileAgeDays"].Should().NotBeNull();
-            projectInformationEvent["UseLegacyDependencyResolver"].Should().BeOfType<bool>();
-            projectInformationEvent["UsedLegacyDependencyResolver"].Should().BeOfType<bool>();
-            projectInformationEvent["Audit.Enabled"].Should().BeOfType<string>();
-            projectInformationEvent["TargetFrameworks"].Should().Be("net472");
-            projectInformationEvent["TargetFrameworksCount"].Should().Be(1);
-            projectInformationEvent["RuntimeIdentifiersCount"].Should().Be(0);
-            projectInformationEvent["TreatWarningsAsErrors"].Should().Be(true);
-            projectInformationEvent["SDKAnalysisLevel"].Should().Be(NuGetVersion.Parse("9.0.100"));
-            projectInformationEvent["UsingMicrosoftNETSdk"].Should().Be(true);
-            projectInformationEvent["IsPackageInstallationTrigger"].Should().Be(false);
-            projectInformationEvent["ForceRestore"].Should().Be(false);
-            projectInformationEvent["UpdatedAssetsFile"].Should().Be(false);
-            projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(false);
-            projectInformationEvent["NETSdkVersion"].Should().Be(NuGetVersion.Parse("10.0.100"));
-            projectInformationEvent["Pruning.FrameworksEnabled.Count"].Should().Be(0);
-            projectInformationEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
-            projectInformationEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
-            projectInformationEvent["Pruning.DefaultEnabled"].Should().Be(false);
-            projectInformationEvent["UsesLegacyPackagesDirectory"].Should().Be(false);
-            projectInformationEvent["UsesLegacyAssetTargetFallback"].Should().Be(false);
+            HashSet<string> actualProperties = new();
+            foreach (var eventProperty in projectInformationEvent)
+            {
+                actualProperties.Add(eventProperty.Key);
+            }
+
+            expectedProperties.Keys.Except(actualProperties).Should().BeEmpty();
+            actualProperties.Except(expectedProperties.Keys).Should().BeEmpty();
+
+            foreach (var kvp in expectedProperties)
+            {
+                object value = projectInformationEvent[kvp.Key];
+                kvp.Value(value);
+            }
         }
 
         [Fact]
@@ -3359,17 +3375,75 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(50);
-            projectInformationEvent["RestoreSuccess"].Should().Be(true);
-            projectInformationEvent["NoOpResult"].Should().Be(false);
-            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
-            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
-            projectInformationEvent["TargetFrameworks"].Should().Be("net472");
-            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
-            projectInformationEvent["UpdatedAssetsFile"].Should().Be(true);
-            projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(true);
-            projectInformationEvent["IsPackageInstallationTrigger"].Should().Be(false);
-            projectInformationEvent["ForceRestore"].Should().Be(false);
+            var expectedProperties = new Dictionary<string, Action<object>>()
+            {
+                ["RestoreSuccess"] = value => value.Should().Be(true),
+                ["NoOpResult"] = value => value.Should().Be(false),
+                ["IsCentralVersionManagementEnabled"] = value => value.Should().Be(false),
+                ["NoOpCacheFileEvaluationResult"] = value => value.Should().Be(false),
+                ["IsLockFileEnabled"] = value => value.Should().Be(false),
+                ["IsLockFileValidForRestore"] = value => value.Should().Be(false),
+                ["LockFileEvaluationResult"] = value => value.Should().Be(true),
+                ["NoOpDuration"] = value => value.Should().NotBeNull(),
+                ["TotalUniquePackagesCount"] = value => value.Should().Be(2),
+                ["NewPackagesInstalledCount"] = value => value.Should().Be(1),
+                ["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"] = value => value.Should().Be(false),
+                ["EvaluateLockFileDuration"] = value => value.Should().NotBeNull(),
+                ["CreateRestoreTargetGraphDuration"] = value => value.Should().NotBeNull(),
+                ["GenerateRestoreGraphDuration"] = value => value.Should().NotBeNull(),
+                ["CreateRestoreResultDuration"] = value => value.Should().NotBeNull(),
+                ["WalkFrameworkDependencyDuration"] = value => value.Should().NotBeNull(),
+                ["GenerateAssetsFileDuration"] = value => value.Should().NotBeNull(),
+                ["ValidateRestoreGraphsDuration"] = value => value.Should().NotBeNull(),
+                ["EvaluateDownloadDependenciesDuration"] = value => value.Should().NotBeNull(),
+                ["NoOpCacheFileEvaluateDuration"] = value => value.Should().NotBeNull(),
+                ["StartTime"] = value => value.Should().NotBeNull(),
+                ["EndTime"] = value => value.Should().NotBeNull(),
+                ["OperationId"] = value => value.Should().NotBeNull(),
+                ["Duration"] = value => value.Should().NotBeNull(),
+                ["PackageSourceMapping.IsMappingEnabled"] = value => value.Should().Be(false),
+                ["SourcesCount"] = value => value.Should().Be(1),
+                ["HttpSourcesCount"] = value => value.Should().Be(0),
+                ["LocalSourcesCount"] = value => value.Should().Be(1),
+                ["FallbackFoldersCount"] = value => value.Should().Be(0),
+                ["Audit.Enabled"] = value => value.Should().BeOfType<string>(),
+                ["UseLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["UsedLegacyDependencyResolver"] = value => value.Should().BeOfType<bool>(),
+                ["TargetFrameworks"] = value => value.Should().Be("net472"),
+                ["TargetFrameworksCount"] = value => value.Should().Be(1),
+                ["RuntimeIdentifiersCount"] = value => value.Should().Be(0),
+                ["TreatWarningsAsErrors"] = value => value.Should().Be(false),
+                ["SDKAnalysisLevel"] = value => value.Should().Be(null),
+                ["UsingMicrosoftNETSdk"] = value => value.Should().Be(false),
+                ["IsPackageInstallationTrigger"] = value => value.Should().Be(false),
+                ["ForceRestore"] = value => value.Should().Be(false),
+                ["UpdatedAssetsFile"] = value => value.Should().Be(true),
+                ["UpdatedMSBuildFiles"] = value => value.Should().Be(true),
+                ["NETSdkVersion"] = value => value.Should().Be(null),
+                ["Pruning.FrameworksEnabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksDisabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.DefaultEnabled"] = value => value.Should().BeOfType<bool>(),
+                ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
+                ["UsesLegacyPackagesDirectory"] = value => value.Should().Be(false),
+                ["UsesLegacyAssetTargetFallback"] = value => value.Should().Be(false),
+            };
+
+            HashSet<string> actualProperties = new();
+            foreach (var eventProperty in projectInformationEvent)
+            {
+                actualProperties.Add(eventProperty.Key);
+            }
+
+            expectedProperties.Keys.Except(actualProperties).Should().BeEmpty();
+            actualProperties.Except(expectedProperties.Keys).Should().BeEmpty();
+
+            foreach (var kvp in expectedProperties)
+            {
+                object value = projectInformationEvent[kvp.Key];
+                kvp.Value(value);
+            }
         }
 
         /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
