@@ -415,6 +415,81 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
+        public async Task RestorePackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+
+            var packageName = "SolutionLevelPkg";
+            var packageVersion = "1.0.0";
+
+            await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion);
+            simpleTestPathContext.Settings.AddPackageSourceMapping("source", "Soluti*");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+
+            var projectDirectory = Path.GetDirectoryName(testContext.Project.FullPath);
+            var packagesConfigPath = Path.Combine(projectDirectory, "packages.config");
+            File.WriteAllText(packagesConfigPath,
+@"<packages>
+    <package id=""SolutionLevelPkg"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            // Act
+            testContext.SolutionService.Build();
+
+            // Assert
+            var packagesDirectory = Path.Combine(simpleTestPathContext.SolutionRoot, "packages");
+            var nupkgPath = Path.Combine(packagesDirectory, $"{packageName}.{packageVersion}", $"{packageName}.{packageVersion}.nupkg");
+            Assert.IsTrue(File.Exists(nupkgPath), $"'{nupkgPath}' should exist");
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task RestorePackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_RestoresCorrectPackage(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            string solutionDirectory = simpleTestPathContext.SolutionRoot;
+
+            var packageName = "Contoso.MVC.ASP";
+            var packageVersion = "1.0.0";
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion, "Thisisfromopensourcerepo.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion, "Thisisfromprivaterepo.txt");
+
+            simpleTestPathContext.Settings.AddSource("PrivateRepository", privateRepositoryPath);
+            simpleTestPathContext.Settings.AddPackageSourceMapping("source", "Others.*");
+            simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Contoso.MVC.*");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+
+            var projectDirectory = Path.GetDirectoryName(testContext.Project.FullPath);
+            var packagesConfigPath = Path.Combine(projectDirectory, "packages.config");
+            File.WriteAllText(packagesConfigPath,
+@"<packages>
+    <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            // Act
+            testContext.SolutionService.Build();
+
+            // Assert
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var packageFolder = Path.Combine(packagesDirectory, $"{packageName}.{packageVersion}");
+            Assert.IsTrue(File.Exists(Path.Combine(packageFolder, $"{packageName}.{packageVersion}.nupkg")), "Package nupkg should exist");
+            // Make sure name squatting package not restored from opensource repository.
+            var uniqueContentFile = Path.Combine(packageFolder, "lib", "net45", "Thisisfromprivaterepo.txt");
+            Assert.IsTrue(File.Exists(uniqueContentFile), $"'{uniqueContentFile}' should exist");
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageForPC_PackageSourceMapping_WithWrongMappedFeed_Fails(ProjectTemplate projectTemplate)
         {
             // Arrange
