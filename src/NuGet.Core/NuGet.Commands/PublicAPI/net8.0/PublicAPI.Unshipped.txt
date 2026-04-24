@@ -1,3 +1,2 @@
 #nullable enable
-NuGet.Commands.SignArgs.AllowUntrustedRoot.get -> bool
-NuGet.Commands.SignArgs.AllowUntrustedRoot.set -> void
+const NuGet.Commands.Restore.Utility.PackageSpecFactory.EnvironmentVariableName = "NUGET_USE_NEW_PACKAGESPEC_FACTORY" -> string!

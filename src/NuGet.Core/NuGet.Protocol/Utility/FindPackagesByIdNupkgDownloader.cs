@@ -137,7 +137,7 @@ namespace NuGet.Protocol
                         try
                         {
                             await stream.CopyToAsync(destination, token);
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length, identity.Id));
                         }
                         catch when (!token.IsCancellationRequested)
                         {
@@ -273,7 +273,7 @@ namespace NuGet.Protocol
                             "nupkg_" + identity.Id.ToLowerInvariant() + "." + identity.Version.ToNormalizedString(),
                             httpSourceCacheContext)
                         {
-                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(url, stream),
+                            EnsureValidContents = stream => HttpStreamValidation.ValidatePackageIdentity(url, stream, identity),
                             IgnoreNotFounds = true,
                             MaxTries = 1,
                             IsRetry = retry > 1,

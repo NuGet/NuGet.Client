@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.Protocol.Events.ProtocolDiagnosticNupkgCopiedEvent.PackageId.get -> string!
+NuGet.Protocol.Events.ProtocolDiagnosticNupkgCopiedEvent.ProtocolDiagnosticNupkgCopiedEvent(string! source, long fileSize, string! packageId) -> void
