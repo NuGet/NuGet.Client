@@ -238,35 +238,33 @@ namespace NuGet.Tests.Apex
         [TestCategory("Gate")]
         public async Task InstallAndUpdatePackageFromUI_NetCoreProject_Succeeds()
         {
-            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger))
-            {
-                // Arrange
-                var packageName = "NetCoreUpdateTestPackage";
-                var packageVersion1 = "1.0.0";
-                var packageVersion2 = "2.0.0";
+            // Arrange
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
+            var packageName = "NetCoreUpdateTestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
 
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
 
-                VisualStudio.AssertNoErrors();
+            VisualStudio.AssertNoErrors();
 
-                // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
-                var nugetTestService = GetNuGetTestService();
-                var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
-                uiwindow.InstallPackageFromUI(packageName, packageVersion1);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-                CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersion1, Logger);
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
+            uiwindow.InstallPackageFromUI(packageName, packageVersion1);
+            testContext.SolutionService.Build();
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+            CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersion1, Logger);
 
-                uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
+            uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
+            testContext.SolutionService.Build();
+            testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                // Assert
-                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersion2, Logger);
-            }
+            // Assert
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            CommonUtility.AssertPackageReferenceExists(testContext.Project, packageName, packageVersion2, Logger);
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
