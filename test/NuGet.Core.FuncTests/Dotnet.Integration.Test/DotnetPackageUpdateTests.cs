@@ -134,6 +134,63 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
+        public async Task FileBasedApp_WithRef()
+        {
+            using var pathContext = _testFixture.CreateSimpleTestPathContext();
+
+            // Create packages.
+            var a1 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "1.0.0");
+            var a2 = new SimpleTestPackageContext("NuGet.Internal.Test.a", "2.0.0");
+            var b1 = new SimpleTestPackageContext("NuGet.Internal.Test.b", "1.0.0");
+            var b2 = new SimpleTestPackageContext("NuGet.Internal.Test.b", "2.0.0");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, [a1, a2, b1, b2]);
+
+            // Create a referenced file-based app.
+            var libDir = Path.Join(pathContext.SolutionRoot, "lib");
+            Directory.CreateDirectory(libDir);
+
+            var libFile = Path.Join(libDir, "lib.cs");
+            var libContent = """
+                #:property PublishAot=false
+                #:package NuGet.Internal.Test.b@1.0.0
+                public class Lib { }
+                """;
+            File.WriteAllText(libFile, libContent);
+
+            // Create the root file-based app referencing the lib.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var refPath = Path.GetRelativePath(fbaDir, libFile);
+            var appFile = Path.Join(fbaDir, "app.cs");
+            var appContent = $"""
+                #:property PublishAot=false
+                #:property ExperimentalFileBasedProgramEnableRefDirective=true
+                #:ref {refPath}
+                #:package NuGet.Internal.Test.a@1.0.0
+                Console.WriteLine();
+                """;
+            File.WriteAllText(appFile, appContent);
+
+            // Update all packages.
+            _testFixture.RunDotnetExpectSuccess(fbaDir, "package update --file app.cs", testOutputHelper: _testOutputHelper, environmentVariables: _envVars);
+
+            // Verify the root app's package was updated.
+            var modifiedAppContent = File.ReadAllText(appFile);
+            _testOutputHelper.WriteLine("app after:\n" + modifiedAppContent);
+            Assert.Equal(
+                appContent.Replace("NuGet.Internal.Test.a@1.0.0", "NuGet.Internal.Test.a@2.0.0"),
+                modifiedAppContent);
+
+            // Verify the referenced lib's package was NOT updated
+            // (matching project-based behavior: only the specified project is updated).
+            var modifiedLibContent = File.ReadAllText(libFile);
+            _testOutputHelper.WriteLine("lib after:\n" + modifiedLibContent);
+            Assert.Equal(libContent, modifiedLibContent);
+        }
+
+        [Fact]
         public async Task SingleTfmCpmProject_PackageVersionUpdated()
         {
             // Arrange

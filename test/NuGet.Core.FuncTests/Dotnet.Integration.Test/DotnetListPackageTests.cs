@@ -87,11 +87,12 @@ namespace Dotnet.Integration.Test
             Directory.CreateDirectory(fbaDir);
 
             var appFile = Path.Join(fbaDir, "app.cs");
-            File.WriteAllText(appFile, """
+            var appContent = """
                 #:property PublishAot=false
                 #:package packageX@1.0.0
                 Console.WriteLine();
-                """);
+                """;
+            File.WriteAllText(appFile, appContent);
 
             var packageX = XPlatTestUtils.CreatePackage();
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, packageX);
@@ -104,6 +105,61 @@ namespace Dotnet.Integration.Test
 
             Assert.Contains("packageX", result.AllOutput);
             Assert.Contains("1.0.0", result.AllOutput);
+
+            // Verify the file was not modified (list is read-only).
+            Assert.Equal(appContent, File.ReadAllText(appFile));
+        }
+
+        [Fact]
+        public async Task DotnetListPackage_FileBasedApp_WithRef()
+        {
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+
+            // Create a referenced file-based app with a package.
+            var libDir = Path.Join(pathContext.SolutionRoot, "lib");
+            Directory.CreateDirectory(libDir);
+
+            var libFile = Path.Join(libDir, "lib.cs");
+            var libContent = """
+                #:property PublishAot=false
+                #:package packageY@1.0.0
+                public class Lib { }
+                """;
+            File.WriteAllText(libFile, libContent);
+
+            // Create the root file-based app referencing the lib.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var packageX = XPlatTestUtils.CreatePackage();
+            var packageY = XPlatTestUtils.CreatePackage("packageY");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, packageX, packageY);
+
+            var refPath = Path.GetRelativePath(fbaDir, libFile);
+            var appFile = Path.Join(fbaDir, "app.cs");
+            var appContent = $"""
+                #:property PublishAot=false
+                #:property ExperimentalFileBasedProgramEnableRefDirective=true
+                #:ref {refPath}
+                #:package packageX@1.0.0
+                Console.WriteLine();
+                """;
+            File.WriteAllText(appFile, appContent);
+
+            // Restore.
+            _fixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
+
+            // List packages.
+            var result = _fixture.RunDotnetExpectSuccess(fbaDir, "package list --file app.cs --format json", testOutputHelper: _testOutputHelper);
+
+            // The root app's packages should be listed, but not the referenced lib's packages.
+            Assert.Contains("packageX", result.AllOutput);
+            Assert.DoesNotContain("packageY", result.AllOutput);
+            Assert.Contains("1.0.0", result.AllOutput);
+
+            // Verify neither file was modified (list is read-only).
+            Assert.Equal(appContent, File.ReadAllText(appFile));
+            Assert.Equal(libContent, File.ReadAllText(libFile));
         }
 
         [PlatformFact(Platform.Windows)]

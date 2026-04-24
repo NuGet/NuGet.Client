@@ -49,6 +49,16 @@ internal sealed class TestVirtualProjectBuilder : IVirtualProjectBuilder, IDispo
         return _virtualProject.ProjectPath;
     }
 
+    public string? TryGetEntryPointPath(string virtualProjectPath)
+    {
+        if (string.Equals(_virtualProject.ProjectPath, virtualProjectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return _virtualProject.FilePath;
+        }
+
+        return null;
+    }
+
     public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
     {
         using var stringReader = new StringReader(_virtualProject.Content);

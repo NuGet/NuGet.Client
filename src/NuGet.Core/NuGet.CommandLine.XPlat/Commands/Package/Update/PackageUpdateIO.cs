@@ -73,16 +73,12 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
 
             DependencyGraphSpec result = DependencyGraphSpec.Load(tempFile);
 
-            // Fixup virtual project paths.
-            if (_msbuildUtility.VirtualProjectBuilder?.GetVirtualProjectPath(project) is { } virtualProjectPath)
+            // When a file-based app references other file-based apps via #:ref directives,
+            // the DGSpec contains virtual .csproj paths for all of them.
+            // We need to map all virtual paths back to entry point file paths.
+            if (_msbuildUtility.VirtualProjectBuilder is { } builder)
             {
-                foreach (var packageSpec in result.Projects)
-                {
-                    if (packageSpec.FilePath == virtualProjectPath)
-                    {
-                        packageSpec.FilePath = project;
-                    }
-                }
+                result = FixupVirtualProjectPaths(result, project, builder);
             }
 
             return result;
@@ -124,6 +120,90 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             process.WaitForExit();
 
             return process.ExitCode == 0;
+        }
+    }
+
+    /// <summary>
+    /// Maps virtual project paths (e.g., <c>app.csproj</c>) in the DGSpec back to the actual
+    /// entry point file paths (e.g., <c>app.cs</c>) for all file-based apps in the project graph.
+    /// This is needed because file-based apps don't have real <c>.csproj</c> files;
+    /// the SDK generates virtual project XML in memory.
+    /// </summary>
+    private static DependencyGraphSpec FixupVirtualProjectPaths(DependencyGraphSpec dgSpec, string rootEntryPoint, IVirtualProjectBuilder builder)
+    {
+        // Build mapping from virtual project paths to entry point file paths.
+        var virtualToEntryPoint = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        // Root project: we know the entry point from the user-provided path.
+        string rootVirtualPath = builder.GetVirtualProjectPath(rootEntryPoint);
+        virtualToEntryPoint[rootVirtualPath] = rootEntryPoint;
+
+        // Referenced file-based apps: reverse-map virtual paths to entry points.
+        foreach (PackageSpec packageSpec in dgSpec.Projects)
+        {
+            string filePath = packageSpec.FilePath;
+            if (!virtualToEntryPoint.ContainsKey(filePath) &&
+                builder.TryGetEntryPointPath(filePath) is { } entryPoint)
+            {
+                virtualToEntryPoint[filePath] = entryPoint;
+            }
+        }
+
+        // Create a new DGSpec with all virtual paths replaced by entry point paths.
+        var fixedDgSpec = new DependencyGraphSpec();
+
+        foreach (PackageSpec packageSpec in dgSpec.Projects)
+        {
+            FixupPackageSpecPaths(packageSpec, virtualToEntryPoint);
+            fixedDgSpec.AddProject(packageSpec);
+        }
+
+        foreach (string restorePath in dgSpec.Restore)
+        {
+            fixedDgSpec.AddRestore(virtualToEntryPoint.TryGetValue(restorePath, out string? entryPoint) ? entryPoint : restorePath);
+        }
+
+        return fixedDgSpec;
+    }
+
+    /// <summary>
+    /// Replaces virtual project paths with entry point paths in a single <see cref="PackageSpec"/>.
+    /// </summary>
+    private static void FixupPackageSpecPaths(PackageSpec packageSpec, Dictionary<string, string> virtualToEntryPoint)
+    {
+        if (virtualToEntryPoint.TryGetValue(packageSpec.FilePath, out string? entryPoint))
+        {
+            packageSpec.FilePath = entryPoint;
+        }
+
+        if (packageSpec.RestoreMetadata is { } metadata)
+        {
+            if (virtualToEntryPoint.TryGetValue(metadata.ProjectUniqueName, out entryPoint))
+            {
+                metadata.ProjectUniqueName = entryPoint;
+            }
+
+            if (virtualToEntryPoint.TryGetValue(metadata.ProjectPath, out entryPoint))
+            {
+                metadata.ProjectPath = entryPoint;
+            }
+
+            // Fix up project references that point to virtual projects.
+            foreach (ProjectRestoreMetadataFrameworkInfo tfm in metadata.TargetFrameworks)
+            {
+                foreach (ProjectRestoreReference projRef in tfm.ProjectReferences)
+                {
+                    if (virtualToEntryPoint.TryGetValue(projRef.ProjectUniqueName, out entryPoint))
+                    {
+                        projRef.ProjectUniqueName = entryPoint;
+                    }
+
+                    if (virtualToEntryPoint.TryGetValue(projRef.ProjectPath, out entryPoint))
+                    {
+                        projRef.ProjectPath = entryPoint;
+                    }
+                }
+            }
         }
     }
 

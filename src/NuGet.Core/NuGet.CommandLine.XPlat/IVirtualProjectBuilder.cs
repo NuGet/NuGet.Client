@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.IO;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 
@@ -28,6 +29,21 @@ public interface IVirtualProjectBuilder
     /// (e.g., <c>app.cs</c>). The returned path is used by MSBuild for DG specs and property evaluation.
     /// </summary>
     string GetVirtualProjectPath(string entryPointFilePath);
+
+    /// <summary>
+    /// Given a virtual project path (e.g., <c>app.csproj</c>), attempts to find the corresponding
+    /// entry point file path (e.g., <c>app.cs</c>). Returns <c>null</c> if no valid entry point exists.
+    /// </summary>
+    /// <remarks>
+    /// This is the reverse of <see cref="GetVirtualProjectPath"/>.
+    /// </remarks>
+    string? TryGetEntryPointPath(string virtualProjectPath)
+    {
+        // Default implementation for backward compatibility with SDK versions
+        // that don't yet implement this method.
+        string potentialEntryPoint = Path.ChangeExtension(virtualProjectPath, ".cs");
+        return IsValidEntryPointPath(potentialEntryPoint) ? potentialEntryPoint : null;
+    }
 
     ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection);
 

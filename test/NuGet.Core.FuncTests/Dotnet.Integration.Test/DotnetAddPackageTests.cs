@@ -112,6 +112,59 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
+        public async Task AddPkg_FileBasedApp_WithRef()
+        {
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+
+            // Create a referenced file-based app.
+            var libDir = Path.Join(pathContext.SolutionRoot, "lib");
+            Directory.CreateDirectory(libDir);
+
+            var libFile = Path.Join(libDir, "lib.cs");
+            var libContent = """
+                #:property PublishAot=false
+                public class Lib { }
+                """;
+            File.WriteAllText(libFile, libContent);
+
+            // Create the root file-based app referencing the lib.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var refPath = Path.GetRelativePath(fbaDir, libFile);
+            var appFile = Path.Join(fbaDir, "app.cs");
+            var appContent = $"""
+                #:property PublishAot=false
+                #:property ExperimentalFileBasedProgramEnableRefDirective=true
+                #:ref {refPath}
+                Console.WriteLine();
+                """;
+            File.WriteAllText(appFile, appContent);
+
+            // Create a package.
+            var packageX = XPlatTestUtils.CreatePackage();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, packageX);
+
+            // Add a package to the root app (which has a #:ref to lib).
+            _fixture.RunDotnetExpectSuccess(fbaDir, "package add packageX --file app.cs --version 1.0.0", testOutputHelper: _testOutputHelper);
+
+            // Verify the package was added to the root app.
+            var modifiedAppContent = File.ReadAllText(appFile);
+            _testOutputHelper.WriteLine("app after:\n" + modifiedAppContent);
+            Assert.Equal(
+                $"""
+                #:package packageX@1.0.0
+                {appContent}
+                """,
+                modifiedAppContent);
+
+            // Verify the lib was not modified.
+            var modifiedLibContent = File.ReadAllText(libFile);
+            _testOutputHelper.WriteLine("lib after:\n" + modifiedLibContent);
+            Assert.Equal(libContent, modifiedLibContent);
+        }
+
+        [Fact]
         public async Task AddPkg_V3LocalSourceFeed_WithRelativePath_NoVersionSpecified_Fail()
         {
             using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())

@@ -79,11 +79,12 @@ namespace Dotnet.Integration.Test
             Directory.CreateDirectory(fbaDir);
 
             var appFile = Path.Join(fbaDir, "app.cs");
-            File.WriteAllText(appFile, """
+            var appContent = """
                 #:property PublishAot=false
                 #:package PackageA@1.0.0
                 Console.WriteLine();
-                """);
+                """;
+            File.WriteAllText(appFile, appContent);
 
             // Restore.
             _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
@@ -93,6 +94,73 @@ namespace Dotnet.Integration.Test
 
             Assert.Contains("PackageA (v1.0.0)", result.AllOutput);
             Assert.Contains("packageB (v1.0.1)", result.AllOutput);
+
+            // Verify the file was not modified (why is read-only).
+            Assert.Equal(appContent, File.ReadAllText(appFile));
+        }
+
+        [Fact]
+        public async Task WhyCommand_FileBasedApp_WithRef()
+        {
+            using var pathContext = _testFixture.CreateSimpleTestPathContext();
+
+            // Create packages: PackageA depends on PackageB; PackageC is standalone.
+            var packageB = XPlatTestUtils.CreatePackage("Fba.PackageB", "1.0.1", TestConstants.ProjectTargetFramework);
+            var packageA = XPlatTestUtils.CreatePackage("Fba.PackageA", "1.0.0", TestConstants.ProjectTargetFramework);
+            packageA.Dependencies.Add(packageB);
+            var packageC = XPlatTestUtils.CreatePackage("Fba.PackageC", "2.0.0", TestConstants.ProjectTargetFramework);
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                packageA,
+                packageB,
+                packageC);
+
+            // Create a referenced file-based app with PackageC.
+            var libDir = Path.Join(pathContext.SolutionRoot, "lib");
+            Directory.CreateDirectory(libDir);
+
+            var libFile = Path.Join(libDir, "lib.cs");
+            var libContent = """
+                #:property PublishAot=false
+                #:package Fba.PackageC@2.0.0
+                public class Lib { }
+                """;
+            File.WriteAllText(libFile, libContent);
+
+            // Create the root file-based app referencing the lib, with PackageA.
+            var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+            Directory.CreateDirectory(fbaDir);
+
+            var refPath = Path.GetRelativePath(fbaDir, libFile);
+            var appFile = Path.Join(fbaDir, "app.cs");
+            var appContent = $"""
+                #:property PublishAot=false
+                #:property ExperimentalFileBasedProgramEnableRefDirective=true
+                #:ref {refPath}
+                #:package Fba.PackageA@1.0.0
+                Console.WriteLine();
+                """;
+            File.WriteAllText(appFile, appContent);
+
+            // Restore.
+            _testFixture.RunDotnetExpectSuccess(fbaDir, "restore app.cs", testOutputHelper: _testOutputHelper);
+
+            // Run "why" command for PackageB (transitive dependency of root's PackageA).
+            var result = _testFixture.RunDotnetExpectSuccess(fbaDir, "nuget why app.cs Fba.PackageB", testOutputHelper: _testOutputHelper);
+
+            Assert.Contains("Fba.PackageA (v1.0.0)", result.AllOutput);
+            Assert.Contains("Fba.PackageB (v1.0.1)", result.AllOutput);
+
+            // Run "why" command for PackageC (direct dependency of referenced lib).
+            // The why command should find it since it's a transitive dependency through the project reference.
+            var resultC = _testFixture.RunDotnetExpectSuccess(fbaDir, "nuget why app.cs Fba.PackageC", testOutputHelper: _testOutputHelper);
+
+            Assert.Contains("Fba.PackageC (v2.0.0)", resultC.AllOutput);
+
+            // Verify neither file was modified (why is read-only).
+            Assert.Equal(appContent, File.ReadAllText(appFile));
+            Assert.Equal(libContent, File.ReadAllText(libFile));
         }
 
         [Fact]

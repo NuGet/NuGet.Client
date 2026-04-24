@@ -40,4 +40,60 @@ public sealed class DotnetRemovePackageTests(DotnetIntegrationTestFixture fixtur
             """,
             modifiedContent);
     }
+
+    [Fact]
+    public void RemovePkg_FileBasedApp_WithRef()
+    {
+        using var pathContext = _fixture.CreateSimpleTestPathContext();
+
+        // Create a referenced file-based app.
+        var libDir = Path.Join(pathContext.SolutionRoot, "lib");
+        Directory.CreateDirectory(libDir);
+
+        var libFile = Path.Join(libDir, "lib.cs");
+        var libContent = """
+            #:property PublishAot=false
+            #:package packageY@1.0.0
+            public class Lib { }
+            """;
+        File.WriteAllText(libFile, libContent);
+
+        // Create the root file-based app referencing the lib.
+        var fbaDir = Path.Join(pathContext.SolutionRoot, "fba");
+        Directory.CreateDirectory(fbaDir);
+
+        var refPath = Path.GetRelativePath(fbaDir, libFile);
+        var appFile = Path.Join(fbaDir, "app.cs");
+        var appContentPre = $"""
+            #:property PublishAot=false
+            #:property ExperimentalFileBasedProgramEnableRefDirective=true
+            #:ref {refPath}
+            """;
+        var appContentPost = """
+            Console.WriteLine();
+            """;
+        File.WriteAllText(appFile, $"""
+            {appContentPre}
+            #:package packageX@1.0.0
+            {appContentPost}
+            """);
+
+        // Remove the package from the root app.
+        _fixture.RunDotnetExpectSuccess(fbaDir, "package remove packageX --file app.cs", testOutputHelper: _testOutputHelper);
+
+        // Verify the package was removed from the root app.
+        var modifiedAppContent = File.ReadAllText(appFile);
+        _testOutputHelper.WriteLine("app after:\n" + modifiedAppContent);
+        Assert.Equal(
+            $"""
+            {appContentPre}
+            {appContentPost}
+            """,
+            modifiedAppContent);
+
+        // Verify the lib was not modified.
+        var modifiedLibContent = File.ReadAllText(libFile);
+        _testOutputHelper.WriteLine("lib after:\n" + modifiedLibContent);
+        Assert.Equal(libContent, modifiedLibContent);
+    }
 }

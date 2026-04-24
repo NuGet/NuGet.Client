@@ -1,1 +1,2 @@
 #nullable enable
+NuGet.CommandLine.XPlat.IVirtualProjectBuilder.TryGetEntryPointPath(string! virtualProjectPath) -> string?
