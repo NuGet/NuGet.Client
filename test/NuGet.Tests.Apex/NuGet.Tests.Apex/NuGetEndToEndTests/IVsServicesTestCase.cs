@@ -100,6 +100,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName);
+            solutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
@@ -125,6 +126,7 @@ namespace NuGet.Tests.Apex
             // Act
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV1);
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV2);
+            solutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
@@ -159,6 +161,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV1);
+            solutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
@@ -194,6 +197,7 @@ namespace NuGet.Tests.Apex
             // Act
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV1);
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV2);
+            solutionService.SaveAll();
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
@@ -221,6 +225,7 @@ namespace NuGet.Tests.Apex
 
             // Act — InstallPackage swallows InvalidOperationException, so the call returns without throwing.
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName);
+            solutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
@@ -250,6 +255,7 @@ namespace NuGet.Tests.Apex
 
             // Act — install latest (no version specified)
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName);
+            solutionService.SaveAll();
 
             // Assert — latest version (2.0.0) should be installed from the mapped primary source
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);

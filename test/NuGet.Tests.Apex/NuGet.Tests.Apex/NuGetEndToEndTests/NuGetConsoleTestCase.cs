@@ -292,6 +292,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+                testContext.SolutionService.SaveAll();
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
@@ -321,6 +322,7 @@ namespace NuGet.Tests.Apex
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+                testContext.SolutionService.SaveAll();
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
@@ -358,6 +360,7 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+                testContext.SolutionService.SaveAll();
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, Logger);
@@ -401,6 +404,7 @@ namespace NuGet.Tests.Apex
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+                testContext.SolutionService.SaveAll();
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
@@ -437,6 +441,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             testContext.SolutionService.Build();
+            testContext.SolutionService.SaveAll();
 
             // Assert
             var packagesDirectory = Path.Combine(simpleTestPathContext.SolutionRoot, "packages");
@@ -477,6 +482,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             testContext.SolutionService.Build();
+            testContext.SolutionService.SaveAll();
 
             // Assert
             var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -510,6 +516,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+            testContext.SolutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
@@ -540,6 +547,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion, privateRepositoryPath);
+            testContext.SolutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
@@ -576,6 +584,7 @@ namespace NuGet.Tests.Apex
 
             // Act — Install from the opensourceRepo where the package doesn't match the source mapping
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion, opensourceRepositoryPath);
+            testContext.SolutionService.SaveAll();
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
@@ -617,7 +626,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, Logger);
 
             nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2, privateRepositoryPath);
-
+            testContext.SolutionService.SaveAll();
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
 
@@ -693,6 +702,7 @@ namespace NuGet.Tests.Apex
 
             // Act
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+            testContext.SolutionService.SaveAll();
 
             // Assert
             var expectedMessage = $"Installed {packageName} {packageVersion1} from {privateRepositoryPath}";
