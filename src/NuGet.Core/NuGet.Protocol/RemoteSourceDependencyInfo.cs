@@ -65,7 +65,9 @@ namespace NuGet.Protocol.Core.Types
         /// <remarks>
         /// NULL_INC: Annotated as non-null but no runtime check is enforced in the constructor
         /// to avoid introducing a new throw in a previously-permissive code path.
-        /// Revisit with telemetry to confirm callers never pass null.
+        /// This maps to the <c>packageContent</c> field in the NuGet V3 registration API
+        /// (https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource#registration-leaf-object-in-a-page)
+        /// which is required by protocol, so null is not expected in practice.
         /// </remarks>
         public string ContentUri { get; set; }
 
