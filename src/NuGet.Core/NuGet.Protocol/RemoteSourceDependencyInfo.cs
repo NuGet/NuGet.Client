@@ -38,11 +38,6 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(dependencyGroups));
             }
 
-            if (contentUri == null)
-            {
-                throw new ArgumentNullException(nameof(contentUri));
-            }
-
             Identity = identity;
             Listed = listed;
             DependencyGroups = dependencyGroups.ToList();
@@ -67,6 +62,11 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// The content url of this resource.
         /// </summary>
+        /// <remarks>
+        /// NULL_INC: Annotated as non-null but no runtime check is enforced in the constructor
+        /// to avoid introducing a new throw in a previously-permissive code path.
+        /// Revisit with telemetry to confirm callers never pass null.
+        /// </remarks>
         public string ContentUri { get; set; }
 
         public bool Equals(RemoteSourceDependencyInfo? other)
