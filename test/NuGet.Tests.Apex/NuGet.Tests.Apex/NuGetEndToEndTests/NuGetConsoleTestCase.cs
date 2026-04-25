@@ -431,21 +431,22 @@ namespace NuGet.Tests.Apex
             simpleTestPathContext.Settings.AddPackageSourceMapping("source", "Soluti*");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
 
-            var projectDirectory = Path.GetDirectoryName(testContext.Project.FullPath);
-            var packagesConfigPath = Path.Combine(projectDirectory, "packages.config");
-            File.WriteAllText(packagesConfigPath,
-@"<packages>
-    <package id=""SolutionLevelPkg"" version=""1.0.0"" targetFramework=""net461"" />
-</packages>");
+            // Install the package so the project system is aware of packages.config
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+
+            // Delete both the packages folder and global packages folder to force restore to re-download
+            Directory.Delete(simpleTestPathContext.PackagesV2, recursive: true);
+            Directory.Delete(simpleTestPathContext.UserPackagesFolder, recursive: true);
 
             // Act
             testContext.SolutionService.Build();
             testContext.SolutionService.SaveAll();
 
             // Assert
-            var packagesDirectory = Path.Combine(simpleTestPathContext.SolutionRoot, "packages");
-            var nupkgPath = Path.Combine(packagesDirectory, $"{packageName}.{packageVersion}", $"{packageName}.{packageVersion}.nupkg");
+            var nupkgPath = Path.Combine(simpleTestPathContext.PackagesV2, $"{packageName}.{packageVersion}", $"{packageName}.{packageVersion}.nupkg");
             Assert.IsTrue(File.Exists(nupkgPath), $"'{nupkgPath}' should exist");
         }
 
@@ -472,21 +473,22 @@ namespace NuGet.Tests.Apex
             simpleTestPathContext.Settings.AddPackageSourceMapping("PrivateRepository", "Contoso.MVC.*");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
 
-            var projectDirectory = Path.GetDirectoryName(testContext.Project.FullPath);
-            var packagesConfigPath = Path.Combine(projectDirectory, "packages.config");
-            File.WriteAllText(packagesConfigPath,
-@"<packages>
-    <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
-</packages>");
+            // Install the package so the project system is aware of packages.config
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+
+            // Delete both the packages folder and global packages folder to force restore to re-download
+            Directory.Delete(simpleTestPathContext.PackagesV2, recursive: true);
+            Directory.Delete(simpleTestPathContext.UserPackagesFolder, recursive: true);
 
             // Act
             testContext.SolutionService.Build();
             testContext.SolutionService.SaveAll();
 
             // Assert
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var packageFolder = Path.Combine(packagesDirectory, $"{packageName}.{packageVersion}");
+            var packageFolder = Path.Combine(simpleTestPathContext.PackagesV2, $"{packageName}.{packageVersion}");
             Assert.IsTrue(File.Exists(Path.Combine(packageFolder, $"{packageName}.{packageVersion}.nupkg")), "Package nupkg should exist");
             // Make sure name squatting package not restored from opensource repository.
             var uniqueContentFile = Path.Combine(packageFolder, "lib", "net45", "Thisisfromprivaterepo.txt");
