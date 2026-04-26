@@ -48,6 +48,7 @@ namespace NuGet.XPlat.FuncTest
         public static IEnumerable<string> HelpCommands => new List<string>
         {
             "add",
+            "apikey",
             "config",
             "delete",
             "disable",
