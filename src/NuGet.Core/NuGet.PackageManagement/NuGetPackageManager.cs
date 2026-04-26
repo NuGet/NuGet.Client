@@ -1010,17 +1010,22 @@ namespace NuGet.PackageManagement
 
             var allowedVersions = installedPackage.AllowedVersions;
 
-            if (!allowedVersions.Satisfies(packageIdentity.Version))
-            {
-                return false;
-            }
-
             if (allowedVersions.IsFloating)
             {
+                if (!allowedVersions.Satisfies(packageIdentity.Version))
+                {
+                    return false;
+                }
+
                 versionRange = allowedVersions;
             }
             else if (allowedVersions.HasUpperBound)
             {
+                if (!allowedVersions.Satisfies(packageIdentity.Version))
+                {
+                    return false;
+                }
+
                 versionRange = new VersionRange(
                     minVersion: packageIdentity.Version,
                     includeMinVersion: true,
