@@ -165,7 +165,11 @@ namespace NuGet.Test
                 e => e.Dependencies.Select(p =>
                 new PackageReference(
                     new PackageIdentity(p.Name, p.LibraryRange.VersionRange.MinVersion),
-                    e.FrameworkName)))]);
+                    e.FrameworkName,
+                    userInstalled: true,
+                    developmentDependency: false,
+                    requireReinstallation: false,
+                    allowedVersions: p.LibraryRange.VersionRange)))]);
         }
     }
 }

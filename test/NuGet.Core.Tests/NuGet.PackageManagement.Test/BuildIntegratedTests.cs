@@ -773,6 +773,38 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task UpdatePackage_WithExplicitVersionOutsideAllowedRange_DoesNotCreateAction()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+
+            var projectName = "TestProjectName";
+            var packageId = "NuGet.Versioning";
+            var originalPackage = new PackageIdentity(packageId, NuGetVersion.Parse("1.0.0"));
+            var outOfRangePackage = new PackageIdentity(packageId, NuGetVersion.Parse("2.0.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalPackage, outOfRangePackage);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, new TestDeleteOnRestartManager());
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, pathContext.SolutionRoot, framework: "net472");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency(packageId, VersionRange.Parse("[1.0.0,2.0.0)")));
+
+            var projectTargetFramework = NuGetFramework.Parse("net472");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, projectFullPath: Path.GetDirectoryName(packageSpec.FilePath), projectName);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act
+            var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<PackageIdentity> { outOfRangePackage }, new List<NuGetProject> { buildIntegratedProject }, new ResolutionContext(), new TestNuGetProjectContext(), primarySources: sourceRepositories, secondarySources: sourceRepositories, CancellationToken.None)).ToList();
+
+            // Assert
+            actions.Should().BeEmpty();
+        }
+
+        [Fact]
         public async Task UpdateMultipleAndRollback()
         {
             // Arrange

@@ -430,6 +430,14 @@ internal static class PackageUpdateCommandRunner
             VersionRange upgradeVersion;
             if (package.VersionRange is not null)
             {
+                if (!IsVersionRangeAllowed(package.VersionRange, existingVersion))
+                {
+                    var message = $"Package '{package.Id}' version '{package.VersionRange}' is outside the allowed update range '{existingVersion}'.";
+                    logger.LogMinimal(message, ConsoleColor.Red);
+                    hasErrors = true;
+                    continue;
+                }
+
                 upgradeVersion = package.VersionRange;
                 if (upgradeVersion == existingVersion)
                 {
@@ -440,7 +448,11 @@ internal static class PackageUpdateCommandRunner
             else
             {
                 bool usePrerelease = existingVersion.HasLowerBound && existingVersion.MinVersion.IsPrerelease;
-                var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+                var allowedUpdateRange = GetAllowedUpdateRange(existingVersion);
+                var latestVersion = allowedUpdateRange == null
+                    ? await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
+                    : await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
+
                 if (latestVersion is null)
                 {
                     logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
@@ -448,7 +460,7 @@ internal static class PackageUpdateCommandRunner
                     continue;
                 }
 
-                upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
+                upgradeVersion = GetVersionRangeForUpdate(existingVersion, latestVersion);
                 if (upgradeVersion == existingVersion)
                 {
                     logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, latestVersion.OriginalVersion!, project.FilePath), ConsoleColor.Yellow);
@@ -508,17 +520,10 @@ internal static class PackageUpdateCommandRunner
                     }
 
                     VersionRange tfmVersionRange;
-                    if (project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
+                    if (tfm.CentralPackageVersions.TryGetValue(
+                        packageId,
+                        out CentralPackageVersion? centralVersion))
                     {
-                        if (!tfm.CentralPackageVersions.TryGetValue(
-                            packageId,
-                            out CentralPackageVersion? centralVersion))
-                        {
-                            logger.LogMinimal(
-                                Messages.Error_CouldNotFindPackageVersionForCpmPackage(packageId),
-                                ConsoleColor.Red);
-                            return (null, []);
-                        }
                         tfmVersionRange = centralVersion.VersionRange;
                     }
                     else
@@ -545,6 +550,42 @@ internal static class PackageUpdateCommandRunner
         }
 
         return (existingVersion, frameworks);
+    }
+
+    private static VersionRange? GetAllowedUpdateRange(VersionRange currentVersionRange)
+    {
+        return currentVersionRange.HasUpperBound || currentVersionRange.IsFloating
+            ? currentVersionRange
+            : null;
+    }
+
+    private static VersionRange GetVersionRangeForUpdate(VersionRange currentVersionRange, NuGetVersion selectedVersion)
+    {
+        if (currentVersionRange.IsFloating)
+        {
+            return currentVersionRange;
+        }
+
+        if (currentVersionRange.HasUpperBound)
+        {
+            return new VersionRange(
+                minVersion: selectedVersion,
+                includeMinVersion: true,
+                maxVersion: currentVersionRange.MaxVersion,
+                includeMaxVersion: currentVersionRange.IsMaxInclusive);
+        }
+
+        return VersionRange.Parse(selectedVersion.OriginalVersion!);
+    }
+
+    private static bool IsVersionRangeAllowed(VersionRange requestedVersionRange, VersionRange currentVersionRange)
+    {
+        if (!currentVersionRange.HasUpperBound && !currentVersionRange.IsFloating)
+        {
+            return true;
+        }
+
+        return requestedVersionRange.IsSubSetOrEqualTo(currentVersionRange);
     }
 
     internal static async Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages)> SelectAllPackagesWithUpdatesAsync(
@@ -577,7 +618,10 @@ internal static class PackageUpdateCommandRunner
             // package.identity.VersionRange is the project's referenced version.
             Debug.Assert(package.identity.VersionRange != null);
             bool usePrerelease = package.identity.VersionRange.HasLowerBound && package.identity.VersionRange.MinVersion.IsPrerelease;
-            var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+            var allowedUpdateRange = GetAllowedUpdateRange(package.identity.VersionRange);
+            var latestVersion = allowedUpdateRange == null
+                ? await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
+                : await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
 
             if (latestVersion is null)
             {
@@ -586,7 +630,7 @@ internal static class PackageUpdateCommandRunner
                 continue;
             }
 
-            var upgradeVersion = VersionRange.Parse(latestVersion.OriginalVersion!);
+            var upgradeVersion = GetVersionRangeForUpdate(package.identity.VersionRange, latestVersion);
             if (upgradeVersion.ToString() == package.identity.VersionRange.ToString())
             {
                 // Already using the highest version.
@@ -627,7 +671,9 @@ internal static class PackageUpdateCommandRunner
                             continue;
                         }
 
-                        if (existing.Item1 != dependency.LibraryRange.VersionRange)
+                        VersionRange versionRange = GetDependencyVersionRange(tfm, dependency);
+
+                        if (existing.Item1 != versionRange)
                         {
                             logger.LogMinimal(
                                 Messages.Unsupported_UpdatePackageWithDifferentPerTfmVersions(dependency.Name, project.FilePath),
@@ -640,7 +686,7 @@ internal static class PackageUpdateCommandRunner
                     }
                     else
                     {
-                        VersionRange version = dependency.LibraryRange.VersionRange ?? VersionRange.All;
+                        VersionRange version = GetDependencyVersionRange(tfm, dependency);
                         List<string> tfms = [tfm.TargetAlias];
                         allPackages[dependency.Name] = (version, tfms, hasError: false);
                     }
@@ -661,6 +707,16 @@ internal static class PackageUpdateCommandRunner
         }
 
         return result;
+    }
+
+    private static VersionRange GetDependencyVersionRange(TargetFrameworkInformation tfm, LibraryDependency dependency)
+    {
+        if (tfm.CentralPackageVersions.TryGetValue(dependency.Name, out CentralPackageVersion? centralVersion))
+        {
+            return centralVersion.VersionRange;
+        }
+
+        return dependency.LibraryRange.VersionRange ?? VersionRange.All;
     }
 
     private static DependencyGraphSpec GetUpdatedDependencyGraphSpec(DependencyGraphSpec currentDgSpec, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates)

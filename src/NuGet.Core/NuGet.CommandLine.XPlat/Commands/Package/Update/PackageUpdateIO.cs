@@ -228,13 +228,31 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         ILogger logger,
         CancellationToken cancellationToken)
     {
+        return await GetLatestVersionAsync(
+            packageId,
+            includePrerelease,
+            allowedSources,
+            allowedVersions: null,
+            logger,
+            cancellationToken);
+    }
+
+    /// <inheritdoc cref="IPackageUpdateIO.GetLatestVersionAsync(string, bool, IReadOnlyList{string}?, VersionRange?, ILogger, CancellationToken)"/>
+    public async Task<NuGetVersion?> GetLatestVersionAsync(
+        string packageId,
+        bool includePrerelease,
+        IReadOnlyList<string>? allowedSources,
+        VersionRange? allowedVersions,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
         var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<NuGetVersion?>[sources.Count];
         for (int source = 0; source < sources.Count; source++)
         {
             SourceRepository sourceRepository = sources[source];
             // If package source is a local folder feed, it might not actually be async
-            lookups[source] = Task.Run(() => FindHighestPackageVersionAsync(sourceRepository, packageId, includePrerelease, logger, cancellationToken));
+            lookups[source] = Task.Run(() => FindHighestPackageVersionAsync(sourceRepository, packageId, includePrerelease, allowedVersions, logger, cancellationToken));
         }
 
         await Task.WhenAll(lookups);
@@ -424,6 +442,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         SourceRepository source,
         string packageId,
         bool includePrerelease,
+        VersionRange? allowedVersions,
         ILogger logger,
         CancellationToken cancellationToken)
     {
@@ -442,7 +461,11 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             return null;
         }
 
-        NuGetVersion highestVersion = packageDetails.Max(p => p.Identity.Version)!;
+        NuGetVersion? highestVersion = packageDetails
+            .Select(p => p.Identity.Version)
+            .Where(version => allowedVersions == null || allowedVersions.Satisfies(version))
+            .Max();
+
         return highestVersion;
     }
 

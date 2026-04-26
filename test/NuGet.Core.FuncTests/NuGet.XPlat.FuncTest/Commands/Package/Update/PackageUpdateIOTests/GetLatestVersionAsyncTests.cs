@@ -56,6 +56,32 @@ public class GetLatestVersionAsyncTests
     }
 
     [Fact]
+    public async Task GetLatestVersionAsync_WithAllowedVersions_ReturnsHighestVersionInRange()
+    {
+        // Arrange
+        using var testContext = new SimpleTestPathContext();
+        var packageId = "TestPackage.Range";
+
+        var packages = new[]
+        {
+            new SimpleTestPackageContext(packageId, "1.0.0"),
+            new SimpleTestPackageContext(packageId, "1.5.0"),
+            new SimpleTestPackageContext(packageId, "2.0.0"),
+        };
+
+        await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
+
+        using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot);
+
+        // Act
+        var result = await packageUpdateIO.GetLatestVersionAsync(packageId, includePrerelease: false, allowedSources: null, allowedVersions: VersionRange.Parse("[1.0.0,2.0.0)"), NullLogger.Instance, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(new NuGetVersion("1.5.0"));
+    }
+
+    [Fact]
     public async Task GetLatestVersionAsync_WithPrereleaseVersions_WhenIncludePrereleaseTrue_ReturnsPrereleaseVersion()
     {
         // Arrange
