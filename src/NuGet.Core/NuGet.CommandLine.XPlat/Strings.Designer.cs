@@ -214,6 +214,87 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manages NuGet API keys..
+        /// </summary>
+        internal static string ApiKeyCommand_Description {
+            get {
+                return ResourceManager.GetString("ApiKeyCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source (URL or package source name) the API key is for. Defaults to the NuGet gallery..
+        /// </summary>
+        internal static string ApiKeyCommand_SourceDescription {
+            get {
+                return ResourceManager.GetString("ApiKeyCommand_SourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The API key to save..
+        /// </summary>
+        internal static string ApiKeySetCommand_ApiKeyDescription {
+            get {
+                return ResourceManager.GetString("ApiKeySetCommand_ApiKeyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The API key was saved for &apos;{0}&apos;..
+        /// </summary>
+        internal static string ApiKeySetCommand_ApiKeySaved {
+            get {
+                return ResourceManager.GetString("ApiKeySetCommand_ApiKeySaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saves an API key for a package source..
+        /// </summary>
+        internal static string ApiKeySetCommand_Description {
+            get {
+                return ResourceManager.GetString("ApiKeySetCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please provide an API key..
+        /// </summary>
+        internal static string ApiKeySetCommand_MissingApiKey {
+            get {
+                return ResourceManager.GetString("ApiKeySetCommand_MissingApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No API key was found for &apos;{0}&apos;..
+        /// </summary>
+        internal static string ApiKeyUnsetCommand_ApiKeyNotFound {
+            get {
+                return ResourceManager.GetString("ApiKeyUnsetCommand_ApiKeyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The API key was removed for &apos;{0}&apos;..
+        /// </summary>
+        internal static string ApiKeyUnsetCommand_ApiKeyRemoved {
+            get {
+                return ResourceManager.GetString("ApiKeyUnsetCommand_ApiKeyRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removes a saved API key for a package source..
+        /// </summary>
+        internal static string ApiKeyUnsetCommand_Description {
+            get {
+                return ResourceManager.GetString("ApiKeyUnsetCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Command Line.
         /// </summary>
         internal static string App_FullName {

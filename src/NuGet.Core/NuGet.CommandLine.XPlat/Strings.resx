@@ -120,6 +120,36 @@
   <data name="ApiKey_Description" xml:space="preserve">
     <value>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</value>
   </data>
+  <data name="ApiKeyCommand_Description" xml:space="preserve">
+    <value>Manages NuGet API keys.</value>
+  </data>
+  <data name="ApiKeyCommand_SourceDescription" xml:space="preserve">
+    <value>Package source (URL or package source name) the API key is for. Defaults to the NuGet gallery.</value>
+  </data>
+  <data name="ApiKeySetCommand_ApiKeyDescription" xml:space="preserve">
+    <value>The API key to save.</value>
+  </data>
+  <data name="ApiKeySetCommand_ApiKeySaved" xml:space="preserve">
+    <value>The API key was saved for '{0}'.</value>
+    <comment>{0} - The package source the API key was saved for.</comment>
+  </data>
+  <data name="ApiKeySetCommand_Description" xml:space="preserve">
+    <value>Saves an API key for a package source.</value>
+  </data>
+  <data name="ApiKeySetCommand_MissingApiKey" xml:space="preserve">
+    <value>Please provide an API key.</value>
+  </data>
+  <data name="ApiKeyUnsetCommand_ApiKeyNotFound" xml:space="preserve">
+    <value>No API key was found for '{0}'.</value>
+    <comment>{0} - The package source the API key was not found for.</comment>
+  </data>
+  <data name="ApiKeyUnsetCommand_ApiKeyRemoved" xml:space="preserve">
+    <value>The API key was removed for '{0}'.</value>
+    <comment>{0} - The package source the API key was removed for.</comment>
+  </data>
+  <data name="ApiKeyUnsetCommand_Description" xml:space="preserve">
+    <value>Removes a saved API key for a package source.</value>
+  </data>
   <data name="App_FullName" xml:space="preserve">
     <value>NuGet Command Line</value>
   </data>

@@ -329,6 +329,7 @@ namespace NuGet.CommandLine.XPlat
                 // "dotnet nuget *" commands
                 app.Name = DotnetNuGetAppName;
                 CommandParsers.Register(app, getHidePrefixLogger);
+                ApiKeyCommand.Register(app, getHidePrefixLogger);
                 DeleteCommand.Register(app, getHidePrefixLogger);
                 PushCommand.Register(app, getHidePrefixLogger);
                 LocalsCommand.Register(app, getHidePrefixLogger);

@@ -82,6 +82,51 @@
         <target state="translated">Разрешает отправку в HTTP-источники (небезопасные).</target>
         <note />
       </trans-unit>
+      <trans-unit id="ApiKeyCommand_Description">
+        <source>Manages NuGet API keys.</source>
+        <target state="new">Manages NuGet API keys.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApiKeyCommand_SourceDescription">
+        <source>Package source (URL or package source name) the API key is for. Defaults to the NuGet gallery.</source>
+        <target state="new">Package source (URL or package source name) the API key is for. Defaults to the NuGet gallery.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApiKeySetCommand_ApiKeyDescription">
+        <source>The API key to save.</source>
+        <target state="new">The API key to save.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApiKeySetCommand_ApiKeySaved">
+        <source>The API key was saved for '{0}'.</source>
+        <target state="new">The API key was saved for '{0}'.</target>
+        <note>{0} - The package source the API key was saved for.</note>
+      </trans-unit>
+      <trans-unit id="ApiKeySetCommand_Description">
+        <source>Saves an API key for a package source.</source>
+        <target state="new">Saves an API key for a package source.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApiKeySetCommand_MissingApiKey">
+        <source>Please provide an API key.</source>
+        <target state="new">Please provide an API key.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApiKeyUnsetCommand_ApiKeyNotFound">
+        <source>No API key was found for '{0}'.</source>
+        <target state="new">No API key was found for '{0}'.</target>
+        <note>{0} - The package source the API key was not found for.</note>
+      </trans-unit>
+      <trans-unit id="ApiKeyUnsetCommand_ApiKeyRemoved">
+        <source>The API key was removed for '{0}'.</source>
+        <target state="new">The API key was removed for '{0}'.</target>
+        <note>{0} - The package source the API key was removed for.</note>
+      </trans-unit>
+      <trans-unit id="ApiKeyUnsetCommand_Description">
+        <source>Removes a saved API key for a package source.</source>
+        <target state="new">Removes a saved API key for a package source.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ApiKey_Description">
         <source>The API key for the server. If not set, the NUGET_API_KEY environment variable is read.</source>
         <target state="translated">Ключ API сервера. Если не настроено, читается переменная среды NUGET_API_KEY.</target>
