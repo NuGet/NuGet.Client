@@ -29,11 +29,8 @@ namespace NuGet.Protocol
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
-            : base()
+            : this(client, serviceIndex, regResource, null)
         {
-            _regResource = regResource;
-            _serviceIndex = serviceIndex;
-            _client = client;
         }
 
         internal AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource, IEnvironmentVariableReader environmentVariableReader)
@@ -51,13 +48,13 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseLegacyJsonDeserializationFeatureSwitch || NuGetFeatureFlags.IsLegacyJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
-                return await IdStartsWithNsjAsync(packageIdPrefix, includePrerelease, log, token);
+                return await IdStartsWithStjAsync(packageIdPrefix, includePrerelease, log, token);
             }
             else
             {
-                return await IdStartsWithStjAsync(packageIdPrefix, includePrerelease, log, token);
+                return await IdStartsWithNsjAsync(packageIdPrefix, includePrerelease, log, token);
             }
         }
 

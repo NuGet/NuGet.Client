@@ -18,9 +18,9 @@ namespace NuGet.Protocol.Tests
     public class AutoCompleteResourceV3Tests
     {
         [Theory]
-        [InlineData("true")]  // NSJ path
-        [InlineData("false")] // STJ path
-        public async Task IdStartsWith_BothPaths_ReturnsResultsAsync(string useNsj)
+        [InlineData("true")]  // STJ path
+        [InlineData("false")] // NSJ path
+        public async Task IdStartsWith_BothPaths_ReturnsResultsAsync(string useStj)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Tests
             var resource = (AutoCompleteResourceV3)await repo.GetResourceAsync<AutoCompleteResource>(CancellationToken.None);
 
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseLegacyJsonDeserializationEnvVar)).Returns(useNsj);
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
             var testResource = new AutoCompleteResourceV3(resource._client, resource._serviceIndex, resource._regResource, envReader.Object);
             var logger = new TestLogger();
 

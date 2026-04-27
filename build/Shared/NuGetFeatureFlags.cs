@@ -9,31 +9,31 @@ namespace NuGet.Shared
 {
     internal static class NuGetFeatureFlags
     {
-        internal const string UseLegacyJsonDeserializationSwitchName = "NuGet.UseLegacyJsonDeserialization";
-        internal const string UseLegacyJsonDeserializationEnvVar = "NUGET_USE_LEGACY_JSON_DESERIALIZATION";
+        internal const string UseSystemTextJsonDeserializationSwitchName = "NuGet.UseSystemTextJsonDeserialization";
+        internal const string UseSystemTextJsonDeserializationEnvVar = "NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION";
 
-        private static readonly Lazy<bool> _isLegacyJsonDeserializationEnabledByEnvironment =
-            new Lazy<bool>(() => IsLegacyJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
+        private static readonly Lazy<bool> _isSystemTextJsonDeserializationEnabledByEnvironment =
+            new Lazy<bool>(() => IsSystemTextJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
-        /// <summary>Feature switch for legacy (Newtonsoft) JSON deserialization. Defaults to <see langword="false"/> (STJ is the default).</summary>
-        [FeatureSwitchDefinition(UseLegacyJsonDeserializationSwitchName)]
-        internal static bool UseLegacyJsonDeserializationFeatureSwitch { get; } =
-            AppContext.TryGetSwitch(UseLegacyJsonDeserializationSwitchName, out bool value) && value;
+        /// <summary>Feature switch for System.Text.Json deserialization. Defaults to <see langword="false"/> (Newtonsoft is the default).</summary>
+        [FeatureSwitchDefinition(UseSystemTextJsonDeserializationSwitchName)]
+        internal static bool UseSystemTextJsonDeserializationFeatureSwitch { get; } =
+            AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value) && value;
 
-        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_LEGACY_JSON_DESERIALIZATION</c> is <c>true</c>.</summary>
+        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION</c> is <c>true</c>.</summary>
         /// <param name="env">
         /// Pass <see langword="null"/> (or omit) in production code to use the cached <see cref="Lazy{T}"/> value,
         /// avoiding repeated allocations on .NET Framework. Pass an explicit <see cref="IEnvironmentVariableReader"/>
         /// only in tests to override the value.
         /// </param>
-        internal static bool IsLegacyJsonDeserializationEnabledByEnvironment(IEnvironmentVariableReader? env = null)
+        internal static bool IsSystemTextJsonDeserializationEnabledByEnvironment(IEnvironmentVariableReader? env = null)
         {
             if (env is null)
             {
-                return _isLegacyJsonDeserializationEnabledByEnvironment.Value;
+                return _isSystemTextJsonDeserializationEnabledByEnvironment.Value;
             }
 
-            string? envValue = env.GetEnvironmentVariable(UseLegacyJsonDeserializationEnvVar);
+            string? envValue = env.GetEnvironmentVariable(UseSystemTextJsonDeserializationEnvVar);
             return string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
         }
     }
