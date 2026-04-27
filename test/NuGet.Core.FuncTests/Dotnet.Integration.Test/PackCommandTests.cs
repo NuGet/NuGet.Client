@@ -980,6 +980,114 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProjectReferenceWithPackTrue_AddsProjectOutputToLib()
+        {
+            // Arrange
+            using (var testDirectory = _dotnetFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        new Dictionary<string, string>
+                        {
+                            { "Pack", "true" }
+                        },
+                        new Dictionary<string, string>());
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+
+                // Act
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles().ToList();
+                    files.Should().Contain(filePath => filePath.StartsWith("lib/") && filePath.EndsWith("/ClassLibrary1.dll"));
+                    files.Should().Contain(filePath => filePath.StartsWith("lib/") && filePath.EndsWith("/ClassLibrary2.dll"));
+
+                    var packages = nupkgReader.NuspecReader.GetDependencyGroups().SelectMany(group => group.Packages);
+                    packages.Should().NotContain(package => package.Id == referencedProject);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProjectReferenceWithPackagePath_AddsProjectOutputToPackagePath()
+        {
+            // Arrange
+            using (var testDirectory = _dotnetFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var packagePath = "analyzers/dotnet/cs";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib", testOutputHelper: _testOutputHelper);
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib", testOutputHelper: _testOutputHelper);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        new Dictionary<string, string>
+                        {
+                            { "Pack", "true" },
+                            { "PackagePath", packagePath }
+                        },
+                        new Dictionary<string, string>());
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+
+                // Act
+                _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles().ToList();
+                    files.Should().Contain($"{packagePath}/ClassLibrary2.dll");
+                    files.Should().NotContain(filePath => filePath.StartsWith("lib/") && filePath.EndsWith("/ClassLibrary2.dll"));
+
+                    var packages = nupkgReader.NuspecReader.GetDependencyGroups().SelectMany(group => group.Packages);
+                    packages.Should().NotContain(package => package.Id == referencedProject);
+                }
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]

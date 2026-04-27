@@ -4,12 +4,14 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks.Pack
@@ -30,6 +32,12 @@ namespace NuGet.Build.Tasks.Pack
         /// </summary>
         [Output]
         public ITaskItem[] ProjectReferences { get; set; }
+
+        /// <summary>
+        /// Project references that should be packed into the parent package.
+        /// </summary>
+        [Output]
+        public ITaskItem[] PackedProjectReferences { get; set; }
 
         public override bool Execute()
         {
@@ -79,7 +87,120 @@ namespace NuGet.Build.Tasks.Pack
             {
                 ProjectReferences = Array.Empty<ITaskItem>();
             }
+
+            PackedProjectReferences = CreatePackedProjectReferenceItems(assetsFile, projectDirectory).ToArray();
+
             return true;
+        }
+
+        private static IEnumerable<ITaskItem> CreatePackedProjectReferenceItems(LockFile assetsFile, string projectDirectory)
+        {
+            var projectLibraryPaths = assetsFile
+                .Libraries
+                .Where(library => library.MSBuildProject != null)
+                .ToDictionary(
+                    library => $"{library.Name}/{library.Version}",
+                    library => Path.GetFullPath(Path.Combine(
+                        projectDirectory,
+                        PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject))),
+                    StringComparer.OrdinalIgnoreCase);
+
+            var seen = new HashSet<string>(PathUtility.GetStringComparerBasedOnOS());
+
+            foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
+            {
+                var target = assetsFile.GetTarget(framework.TargetAlias, runtimeIdentifier: null);
+                if (target == null)
+                {
+                    continue;
+                }
+
+                foreach (var projectReference in framework.ProjectReferences.Where(projectReference => projectReference.Pack))
+                {
+                    var projectLibrary = target.Libraries.FirstOrDefault(library =>
+                        string.Equals(library.Type, LibraryType.Project, StringComparison.OrdinalIgnoreCase)
+                        && projectLibraryPaths.TryGetValue($"{library.Name}/{library.Version}", out var projectPath)
+                        && PathUtility.GetStringComparerBasedOnOS().Equals(projectPath, projectReference.ProjectPath));
+
+                    foreach (var taskItem in CreatePackedProjectReferenceItems(
+                        framework,
+                        target.Libraries,
+                        projectLibraryPaths,
+                        projectReference.ProjectPath,
+                        projectReference.PackagePath,
+                        projectLibrary,
+                        seen))
+                    {
+                        yield return taskItem;
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<ITaskItem> CreatePackedProjectReferenceItems(
+            ProjectRestoreMetadataFrameworkInfo framework,
+            IEnumerable<LockFileTargetLibrary> targetLibraries,
+            IReadOnlyDictionary<string, string> projectLibraryPaths,
+            string projectPath,
+            string packagePath,
+            LockFileTargetLibrary projectLibrary,
+            ISet<string> seen)
+        {
+            var targetFramework = string.IsNullOrEmpty(framework.TargetAlias)
+                ? framework.FrameworkName.GetShortFolderName()
+                : framework.TargetAlias;
+
+            var key = $"{targetFramework}|{projectPath}";
+            if (seen.Add(key))
+            {
+                yield return CreatePackedProjectReferenceItem(projectPath, targetFramework, packagePath);
+            }
+
+            if (projectLibrary == null)
+            {
+                yield break;
+            }
+
+            foreach (var dependency in projectLibrary.Dependencies)
+            {
+                var childLibrary = targetLibraries.FirstOrDefault(library =>
+                    string.Equals(library.Type, LibraryType.Project, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(library.Name, dependency.Id, StringComparison.OrdinalIgnoreCase)
+                    && dependency.VersionRange.Satisfies(library.Version));
+
+                if (childLibrary == null
+                    || !projectLibraryPaths.TryGetValue($"{childLibrary.Name}/{childLibrary.Version}", out var childProjectPath))
+                {
+                    continue;
+                }
+
+                foreach (var taskItem in CreatePackedProjectReferenceItems(
+                    framework,
+                    targetLibraries,
+                    projectLibraryPaths,
+                    childProjectPath,
+                    packagePath,
+                    childLibrary,
+                    seen))
+                {
+                    yield return taskItem;
+                }
+            }
+        }
+
+        private static ITaskItem CreatePackedProjectReferenceItem(string projectPath, string targetFramework, string packagePath)
+        {
+            var taskItem = new TaskItem(projectPath);
+            taskItem.SetMetadata("TargetFramework", targetFramework);
+            taskItem.SetMetadata("AdditionalProperties", $"TargetFramework={targetFramework};BuildProjectReferences=false");
+
+            if (!string.IsNullOrEmpty(packagePath))
+            {
+                taskItem.SetMetadata("PackagePath", packagePath);
+                taskItem.SetMetadata("AdditionalProperties", $"TargetFramework={targetFramework};BuildProjectReferences=false;PackProjectReferencePackagePath={packagePath}");
+            }
+
+            return taskItem;
         }
     }
 }

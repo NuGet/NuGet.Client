@@ -1,3 +1,7 @@
 #nullable enable
 NuGet.ProjectModel.ProjectRestoreMetadata.RestoreDoNotWriteDependencyGraphSpec.get -> bool
 NuGet.ProjectModel.ProjectRestoreMetadata.RestoreDoNotWriteDependencyGraphSpec.set -> void
+~NuGet.ProjectModel.ProjectRestoreReference.PackagePath.get -> string
+~NuGet.ProjectModel.ProjectRestoreReference.PackagePath.set -> void
+NuGet.ProjectModel.ProjectRestoreReference.Pack.get -> bool
+NuGet.ProjectModel.ProjectRestoreReference.Pack.set -> void

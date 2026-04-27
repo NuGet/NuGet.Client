@@ -112,6 +112,41 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Write_ReadWriteProjectReferencePackMetadata()
+        {
+            // Arrange
+            var json = @"{
+  ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""frameworks"": {
+      ""net45"": {
+        ""framework"": ""net45"",
+        ""targetAlias"": ""net45"",
+        ""projectReferences"": {
+          ""referenceUniqueName"": {
+            ""projectPath"": ""referencePath"",
+            ""pack"": true,
+            ""packagePath"": ""analyzers/dotnet/cs""
+          }
+        }
+      }
+    }
+  },
+  ""frameworks"": {
+    ""net45"": {
+        ""framework"": ""net45""
+    }
+  }
+}";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
         public void Write_ReadWriteWarningProperties()
         {
             // Arrange

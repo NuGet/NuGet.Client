@@ -152,6 +152,14 @@ namespace NuGet.Commands
             dependency.PrivateAssets = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
         }
 
+        private static void ApplyProjectReferencePackMetadata(ProjectRestoreReference dependency, string pack, string packagePath)
+        {
+            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
+
+            dependency.Pack = MSBuildStringUtility.IsTrue(pack);
+            dependency.PackagePath = MSBuildStringUtility.TrimAndGetNullForEmpty(packagePath);
+        }
+
         /// <summary>
         /// Convert MSBuild items to a PackageSpec.
         /// </summary>
@@ -595,6 +603,7 @@ namespace NuGet.Commands
             };
 
             ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
+            ApplyProjectReferencePackMetadata(reference, item.GetProperty("Pack"), item.GetProperty("PackagePath"));
 
             return new Tuple<List<string>, ProjectRestoreReference>(frameworks, reference);
         }

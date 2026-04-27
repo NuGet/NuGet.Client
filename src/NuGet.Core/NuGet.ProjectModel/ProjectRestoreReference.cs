@@ -27,6 +27,10 @@ namespace NuGet.ProjectModel
 
         public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
+        public bool Pack { get; set; }
+
+        public string PackagePath { get; set; }
+
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
@@ -36,6 +40,8 @@ namespace NuGet.ProjectModel
             combiner.AddStruct(IncludeAssets);
             combiner.AddStruct(ExcludeAssets);
             combiner.AddStruct(PrivateAssets);
+            combiner.AddStruct(Pack);
+            combiner.AddObject(PackagePath);
 
             return combiner.CombinedHash;
         }
@@ -66,7 +72,9 @@ namespace NuGet.ProjectModel
                 && StringComparer.OrdinalIgnoreCase.Equals(ProjectUniqueName, other.ProjectUniqueName)
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
-                && PrivateAssets == other.PrivateAssets;
+                && PrivateAssets == other.PrivateAssets
+                && Pack == other.Pack
+                && StringComparer.Ordinal.Equals(PackagePath, other.PackagePath);
         }
 
         public ProjectRestoreReference Clone()
@@ -77,6 +85,8 @@ namespace NuGet.ProjectModel
             clonedObject.ExcludeAssets = ExcludeAssets;
             clonedObject.IncludeAssets = IncludeAssets;
             clonedObject.PrivateAssets = PrivateAssets;
+            clonedObject.Pack = Pack;
+            clonedObject.PackagePath = PackagePath;
             return clonedObject;
         }
     }

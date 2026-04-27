@@ -1,2 +1,4 @@
 #nullable enable
 const NuGet.Commands.Restore.Utility.PackageSpecFactory.EnvironmentVariableName = "NUGET_USE_NEW_PACKAGESPEC_FACTORY" -> string!
+~NuGet.Commands.OutputLibFile.PackagePath.get -> string
+~NuGet.Commands.OutputLibFile.PackagePath.set -> void

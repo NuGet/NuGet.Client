@@ -473,6 +473,8 @@ namespace NuGet.Build.Tasks.Console
                 {
                     ExcludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     IncludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
+                    Pack = projectReferenceItem.IsPropertyTrue("Pack", defaultValue: false),
+                    PackagePath = MSBuildStringUtility.TrimAndGetNullForEmpty(projectReferenceItem.GetProperty("PackagePath")),
                     PrivateAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     ProjectPath = fullPath,
                     ProjectUniqueName = fullPath

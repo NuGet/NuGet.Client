@@ -526,6 +526,7 @@ namespace NuGet.Build.Tasks.Pack
 
                 var targetPath = assembly.GetProperty("TargetPath");
                 var targetFrameworkProperty = assembly.GetProperty("TargetFramework");
+                var packagePath = assembly.GetProperty("PackagePath");
 
                 if (!File.Exists(finalOutputPath))
                 {
@@ -564,7 +565,8 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     FinalOutputPath = finalOutputPath,
                     TargetPath = targetPath,
-                    TargetFramework = targetFramework
+                    TargetFramework = targetFramework,
+                    PackagePath = packagePath
                 });
             }
 
@@ -963,6 +965,17 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
+                    if (projectReference.Pack)
+                    {
+                        AddPackageDependenciesFromPackedProject(
+                            targetLibrary,
+                            target.Libraries,
+                            dependencies,
+                            new HashSet<PackageIdentity>());
+
+                        continue;
+                    }
+
                     var versionToUse = new VersionRange(targetLibrary.Version);
 
                     // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file.
@@ -987,6 +1000,63 @@ namespace NuGet.Build.Tasks.Pack
                     PackCommandRunner.AddLibraryDependency(projectDependency, dependencies);
                 }
             }
+        }
+
+        private static void AddPackageDependenciesFromPackedProject(
+            LockFileTargetLibrary projectLibrary,
+            IEnumerable<LockFileTargetLibrary> targetLibraries,
+            HashSet<LibraryDependency> dependencies,
+            HashSet<PackageIdentity> visitedProjects)
+        {
+            var projectIdentity = new PackageIdentity(projectLibrary.Name, projectLibrary.Version);
+            if (!visitedProjects.Add(projectIdentity))
+            {
+                return;
+            }
+
+            foreach (var dependency in projectLibrary.Dependencies)
+            {
+                var targetLibrary = targetLibraries.FirstOrDefault(library =>
+                    string.Equals(library.Name, dependency.Id, StringComparison.OrdinalIgnoreCase)
+                    && dependency.VersionRange.Satisfies(library.Version));
+
+                if (targetLibrary == null)
+                {
+                    continue;
+                }
+
+                if (string.Equals(targetLibrary.Type, LibraryType.Project, StringComparison.OrdinalIgnoreCase))
+                {
+                    AddPackageDependenciesFromPackedProject(targetLibrary, targetLibraries, dependencies, visitedProjects);
+                    continue;
+                }
+
+                if (string.Equals(targetLibrary.Type, LibraryType.Package, StringComparison.OrdinalIgnoreCase))
+                {
+                    var packageDependency = new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(
+                            targetLibrary.Name,
+                            dependency.VersionRange,
+                            LibraryDependencyTarget.Package),
+                        IncludeType = GetLibraryIncludeFlags(dependency.Include, LibraryIncludeFlags.All)
+                            & ~GetLibraryIncludeFlags(dependency.Exclude, LibraryIncludeFlags.None),
+                        SuppressParent = LibraryIncludeFlags.None
+                    };
+
+                    PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
+                }
+            }
+        }
+
+        private static LibraryIncludeFlags GetLibraryIncludeFlags(IReadOnlyList<string> flags, LibraryIncludeFlags defaultFlags)
+        {
+            if (flags == null || flags.Count == 0)
+            {
+                return defaultFlags;
+            }
+
+            return LibraryIncludeFlagUtils.GetFlags(string.Join(";", flags), defaultFlags);
         }
 
         private void InitializePackageDependencies(

@@ -79,6 +79,8 @@ namespace NuGet.ProjectModel
         private static readonly byte[] WarnNotAsErrorPropertyName = Encoding.UTF8.GetBytes("warnNotAsError");
         private static readonly byte[] ExcludeAssetsPropertyName = Encoding.UTF8.GetBytes("excludeAssets");
         private static readonly byte[] IncludeAssetsPropertyName = Encoding.UTF8.GetBytes("includeAssets");
+        private static readonly byte[] PackPropertyName = Encoding.UTF8.GetBytes("pack");
+        private static readonly byte[] PackagePathPropertyName = Encoding.UTF8.GetBytes("packagePath");
         private static readonly byte[] TargetAliasPropertyName = Encoding.UTF8.GetBytes("targetAlias");
         private static readonly byte[] AssetTargetFallbackPropertyName = Encoding.UTF8.GetBytes("assetTargetFallback");
         private static readonly byte[] SecondaryFrameworkPropertyName = Encoding.UTF8.GetBytes("secondaryFramework");
@@ -1329,6 +1331,8 @@ namespace NuGet.ProjectModel
                                         var projectReferencePropertyName = jsonReader.GetString();
                                         string excludeAssets = null;
                                         string includeAssets = null;
+                                        bool pack = false;
+                                        string packagePath = null;
                                         string privateAssets = null;
                                         string projectReferenceProjectPath = null;
 
@@ -1347,6 +1351,14 @@ namespace NuGet.ProjectModel
                                                 else if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
                                                 {
                                                     privateAssets = jsonReader.ReadNextTokenAsString();
+                                                }
+                                                else if (jsonReader.ValueTextEquals(PackPropertyName))
+                                                {
+                                                    pack = jsonReader.ReadNextTokenAsBoolOrFalse();
+                                                }
+                                                else if (jsonReader.ValueTextEquals(PackagePathPropertyName))
+                                                {
+                                                    packagePath = jsonReader.ReadNextTokenAsString();
                                                 }
                                                 else if (jsonReader.ValueTextEquals(ProjectPathPropertyName))
                                                 {
@@ -1376,6 +1388,9 @@ namespace NuGet.ProjectModel
                                             PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
                                                 flags: privateAssets,
                                                 defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+
+                                            Pack = pack,
+                                            PackagePath = packagePath,
                                         });
                                     }
                                 }

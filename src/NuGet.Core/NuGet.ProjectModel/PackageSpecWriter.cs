@@ -262,6 +262,13 @@ namespace NuGet.ProjectModel
                                 writer.WriteNameValue("privateAssets", LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets));
                             }
 
+                            if (project.Pack)
+                            {
+                                writer.WriteNameValue("pack", project.Pack);
+                            }
+
+                            SetValueIfNotNull(writer, "packagePath", project.PackagePath);
+
                             writer.WriteObjectEnd();
                         }
 

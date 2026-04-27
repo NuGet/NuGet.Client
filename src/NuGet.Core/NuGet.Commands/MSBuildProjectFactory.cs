@@ -140,17 +140,31 @@ namespace NuGet.Commands
                 }
                 var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
                 var targetPath = file.TargetPath;
-                for (var i = 0; i < targetFolders.Length; i++)
+                var hasPackagePath = !string.IsNullOrEmpty(file.PackagePath);
+                var targetFolderCount = hasPackagePath ? 1 : targetFolders.Length;
+
+                for (var i = 0; i < targetFolderCount; i++)
                 {
+                    var target = hasPackagePath
+                        ? Path.Combine(file.PackagePath, targetPath)
+                        : GetBuildOutputPackagePath(targetFolders[i], tfm, targetPath);
+
                     var packageFile = new ManifestFile()
                     {
                         Source = file.FinalOutputPath,
-                        Target = IsTool ? Path.Combine(targetFolders[i], targetPath) : Path.Combine(targetFolders[i], tfm, targetPath)
+                        Target = target
                     };
 
                     AddFileToBuilder(packageFile);
                 }
             }
+        }
+
+        private string GetBuildOutputPackagePath(string targetFolder, string tfm, string targetPath)
+        {
+            return IsTool
+                ? Path.Combine(targetFolder, targetPath)
+                : Path.Combine(targetFolder, tfm, targetPath);
         }
 
         private bool AddFileToBuilder(ManifestFile packageFile)

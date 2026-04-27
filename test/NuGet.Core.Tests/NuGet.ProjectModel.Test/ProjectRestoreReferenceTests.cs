@@ -117,6 +117,52 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        public void Equals_WithPack(bool left, bool right, bool expected)
+        {
+            var leftSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                Pack = left
+            };
+
+            var rightSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                Pack = right
+            };
+
+            AssertEquality(expected, leftSide, rightSide);
+        }
+
+        [Theory]
+        [InlineData("lib/netstandard2.0", "lib/netstandard2.0", true)]
+        [InlineData("lib/netstandard2.0", "analyzers/dotnet/cs", false)]
+        [InlineData(null, null, true)]
+        public void Equals_WithPackagePath(string left, string right, bool expected)
+        {
+            var leftSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                PackagePath = left
+            };
+
+            var rightSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                PackagePath = right
+            };
+
+            AssertEquality(expected, leftSide, rightSide);
+        }
+
+        [Theory]
         [InlineData("path1", "path1", true)]
         [InlineData("path1", "path2", false)]
         [InlineData("", "", true)]
@@ -222,6 +268,52 @@ namespace NuGet.ProjectModel.Test
                 ProjectPath = "path",
                 ProjectUniqueName = "path",
                 ExcludeAssets = right
+            };
+
+            AssertHashCode(expected, leftSide, rightSide);
+        }
+
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        public void HashCode_WithPack(bool left, bool right, bool expected)
+        {
+            var leftSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                Pack = left
+            };
+
+            var rightSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                Pack = right
+            };
+
+            AssertHashCode(expected, leftSide, rightSide);
+        }
+
+        [Theory]
+        [InlineData("lib/netstandard2.0", "lib/netstandard2.0", true)]
+        [InlineData("lib/netstandard2.0", "analyzers/dotnet/cs", false)]
+        [InlineData(null, null, true)]
+        public void HashCode_WithPackagePath(string left, string right, bool expected)
+        {
+            var leftSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                PackagePath = left
+            };
+
+            var rightSide = new ProjectRestoreReference()
+            {
+                ProjectPath = "path",
+                ProjectUniqueName = "path",
+                PackagePath = right
             };
 
             AssertHashCode(expected, leftSide, rightSide);

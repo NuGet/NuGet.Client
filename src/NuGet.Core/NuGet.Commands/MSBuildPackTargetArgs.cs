@@ -48,5 +48,10 @@ namespace NuGet.Commands
         /// This is the target framework for which this assembly was built.
         /// </summary>
         public string TargetFramework { get; set; }
+
+        /// <summary>
+        /// This is an optional package path override for the output file.
+        /// </summary>
+        public string PackagePath { get; set; }
     }
 }

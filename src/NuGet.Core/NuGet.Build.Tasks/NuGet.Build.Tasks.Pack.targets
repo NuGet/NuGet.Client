@@ -326,6 +326,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="ProjectReferences"
         ItemName="_ProjectReferencesFromAssetsFile" />
+      <Output
+        TaskParameter="PackedProjectReferences"
+        ItemName="_PackedProjectReferencesFromAssetsFile" />
     </GetProjectReferencesFromAssetsFileTask>
 
     <MSBuild
@@ -368,6 +371,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
 
     <MSBuild
+      Condition="'$(IncludeBuildOutput)' == 'true' AND '@(_PackedProjectReferencesFromAssetsFile)' != ''"
+      Projects="@(_PackedProjectReferencesFromAssetsFile)"
+      Targets="_GetBuildOutputFilesWithTfm"
+      BuildInParallel="$(BuildInParallel)"
+      Properties="BuildProjectReferences=false">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_BuildOutputInPackage" />
+    </MSBuild>
+
+    <MSBuild
       Condition="'$(TargetsForTfmSpecificContentInPackage)' != ''"
       Projects="@(_ProjectsWithTFM)"
       Targets="_GetTfmSpecificContentForPackage"
@@ -383,6 +398,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="@(_ProjectsWithTFM)"
       Targets="_GetDebugSymbolsWithTfm"
       BuildInParallel="$(BuildInParallel)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_TargetPathsToSymbols" />
+    </MSBuild>
+
+    <MSBuild
+      Condition="'$(IncludeBuildOutput)' == 'true' AND '@(_PackedProjectReferencesFromAssetsFile)' != ''"
+      Projects="@(_PackedProjectReferencesFromAssetsFile)"
+      Targets="_GetDebugSymbolsWithTfm"
+      BuildInParallel="$(BuildInParallel)"
+      Properties="BuildProjectReferences=false">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -444,6 +471,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                             @(BuiltProjectOutputGroupOutput);
                             @(DocumentationProjectOutputGroupOutput);
                             @(_PathToPriFile)"/>
+      <BuildOutputInPackage Condition="'$(PackProjectReferencePackagePath)' != ''" Update="@(BuildOutputInPackage)">
+        <PackagePath>$(PackProjectReferencePackagePath)</PackagePath>
+      </BuildOutputInPackage>
     </ItemGroup>
   </Target>
 
@@ -465,6 +495,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(IncludeBuildOutput)' == 'true'">
       <_TargetPathsToSymbolsWithTfm Include="@(DebugSymbolsProjectOutputGroupOutput)">
         <TargetFramework>$(TargetFramework)</TargetFramework>
+        <PackagePath Condition="'$(PackProjectReferencePackagePath)' != ''">$(PackProjectReferencePackagePath)</PackagePath>
       </_TargetPathsToSymbolsWithTfm>
     </ItemGroup>
     <ItemGroup>

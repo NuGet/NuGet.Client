@@ -699,6 +699,8 @@ namespace NuGet.SolutionRestoreManager
                 includeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.IncludeAssets),
                 excludeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludeAssets),
                 privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets));
+            dependency.Pack = MSBuildStringUtility.IsTrue(GetPropertyValueOrNull(item, "Pack"));
+            dependency.PackagePath = GetPropertyValueOrNull(item, "PackagePath");
 
             return dependency;
         }
