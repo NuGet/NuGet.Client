@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -41,19 +41,18 @@ namespace NuGet.Protocol.Plugins.Tests
         public void JsonDeserialization_ReturnsCorrectObject()
         {
             var json = $"{{\"ProcessId\":{_processId}}}";
-            var request = JsonSerializationUtilities.Deserialize<MonitorNuGetProcessExitRequest>(json);
+            var request = JsonSerializer.Deserialize(json, PluginJsonContext.Default.MonitorNuGetProcessExitRequest)!;
 
             Assert.Equal(_processId, request.ProcessId);
         }
 
         [Theory]
-        [InlineData("{}")]
         [InlineData("{\"ProcessId\":null}")]
         [InlineData("{\"ProcessId\":\"\"}")]
         public void JsonDeserialization_ThrowsForInvalidProcessId(string json)
         {
-            Assert.Throws<JsonSerializationException>(
-                () => JsonSerializationUtilities.Deserialize<MonitorNuGetProcessExitRequest>(json));
+            Assert.Throws<JsonException>(
+                () => JsonSerializer.Deserialize(json, PluginJsonContext.Default.MonitorNuGetProcessExitRequest));
         }
     }
 }

@@ -105,7 +105,8 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                 }
             }
 
-            await responseHandler.SendResponseAsync(message, response.Payload, cancellationToken);
+            var payload = DeserializeResponsePayload(message.Method, response.Payload);
+            await responseHandler.SendResponseAsync(message, payload, cancellationToken);
         }
 
         private IRequestHandlers CreateRequestHandlers()
@@ -116,6 +117,19 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             handlers.TryAdd(MessageMethod.GetOperationClaims, this);
 
             return handlers;
+        }
+
+        private static object DeserializeResponsePayload(MessageMethod method, Newtonsoft.Json.Linq.JObject jObject)
+        {
+            if (jObject == null)
+                return null;
+
+            return method switch
+            {
+                MessageMethod.Initialize => jObject.ToObject<InitializeResponse>(JsonSerializationUtilities.Serializer),
+                MessageMethod.GetOperationClaims => jObject.ToObject<GetOperationClaimsResponse>(JsonSerializationUtilities.Serializer),
+                _ => null
+            };
         }
 
         private void OnShuttingDown(object sender, EventArgs e)

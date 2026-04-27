@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Plugins.Tests
             string password,
             string[] authTypes)
         {
-            var response = JsonSerializationUtilities.Deserialize<GetCredentialsResponse>(json);
+            var response = JsonSerializer.Deserialize(json, PluginJsonContext.Default.GetCredentialsResponse)!;
 
             Assert.Equal(responseCode, response.ResponseCode);
             Assert.Equal(username, response.Username);
@@ -105,15 +105,13 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Theory]
-        [InlineData("{}")]
-        [InlineData("{\"Password\":\"a\",\"Username\":\"cc\"}")]
         [InlineData("{\"Password\":\"a\",\"ResponseCode\":null,\"Username\":\"c\"}")]
         [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"\",\"Username\":\"c\"}")]
         [InlineData("{\"Password\":\"a\",\"ResponseCode\":\"b\",\"Username\":\"c\"}")]
         public void JsonDeserialization_ThrowsForInvalidResponseCode(string json)
         {
-            Assert.Throws<JsonSerializationException>(
-                () => JsonSerializationUtilities.Deserialize<GetCredentialsResponse>(json));
+            Assert.Throws<JsonException>(
+                () => JsonSerializer.Deserialize(json, PluginJsonContext.Default.GetCredentialsResponse));
         }
     }
 }

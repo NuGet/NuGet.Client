@@ -14,6 +14,7 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// A plugin's response as to which operations it supports for a specific package source.
     /// </summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(StjGetOperationClaimsResponseConverter))]
     public sealed class GetOperationClaimsResponse
     {
         /// <summary>

@@ -27,6 +27,8 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         [JsonProperty("ServiceIndex")]
         [JsonConverter(typeof(NsjRawJsonStringConverter))]
+        [System.Text.Json.Serialization.JsonPropertyName("ServiceIndex")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(RawJsonStringConverter))]
         public string? ServiceIndexJson { get; }
 #nullable disable
 
