@@ -374,6 +374,16 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                     destFileName: Path.Combine(pathToSdkInCli, assembly.Name),
                     overwrite: true);
             }
+
+            File.Copy(
+                sourceFileName: Path.Combine(
+                    Directory.GetParent(artifactsDirectory).FullName,
+                    "src",
+                    "NuGet.Core",
+                    "NuGet.Build.Tasks",
+                    "NuGet.Build.Tasks.Pack.targets"),
+                destFileName: Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.Pack.targets"),
+                overwrite: true);
         }
 
         public static void WriteGlobalJson(string path)
