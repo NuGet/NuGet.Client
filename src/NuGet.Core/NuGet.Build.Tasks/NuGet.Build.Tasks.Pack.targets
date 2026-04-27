@@ -310,9 +310,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="_GetProjectReferenceVersions"
+  <Target Name="_GetProjectReferencesFromAssetsFile"
           Condition="'$(NuspecFile)' == ''"
-          DependsOnTargets="_GetAbsoluteOutputPathsForPack;$(GetPackageVersionDependsOn)">
+          DependsOnTargets="_GetAbsoluteOutputPathsForPack">
 
     <!-- 'RestoreOutputAbsolutePath' will be provided by '_GetAbsoluteOutputPathsForPack' target -->
 
@@ -330,7 +330,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="PackedProjectReferences"
         ItemName="_PackedProjectReferencesFromAssetsFile" />
     </GetProjectReferencesFromAssetsFileTask>
+  </Target>
 
+  <Target Name="_GetProjectReferenceVersions"
+          Condition="'$(NuspecFile)' == ''"
+          DependsOnTargets="_GetProjectReferencesFromAssetsFile;$(GetPackageVersionDependsOn)">
     <MSBuild
       Projects="@(_ProjectReferencesFromAssetsFile)"
       Targets="_GetProjectVersion"
@@ -353,7 +357,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_WalkEachTargetPerFramework">
+  <Target Name="_WalkEachTargetPerFramework"
+          DependsOnTargets="_GetProjectReferencesFromAssetsFile">
     <ItemGroup>
         <_ProjectsWithTFM Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity)" />
         <_ProjectsWithTFMNoBuild Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity);BuildProjectReferences=false" />
