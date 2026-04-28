@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -52,9 +51,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <typeparam name="T">Type of object</typeparam>
         /// <param name="json">JSON representation of object</param>
+        [return: MaybeNull]
         public static T FromJson<T>(this string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, JsonExtensions.ObjectSerializationSettings);
+            return JsonConvert.DeserializeObject<T>(json, JsonExtensions.ObjectSerializationSettings)!;
         }
 
         /// <summary>
@@ -63,9 +63,10 @@ namespace NuGet.Protocol
         /// <typeparam name="T">Type of object</typeparam>
         /// <param name="json">JSON representation of object</param>
         /// <param name="settings">The settings.</param>
+        [return: MaybeNull]
         public static T FromJson<T>(this string json, JsonSerializerSettings settings)
         {
-            return JsonConvert.DeserializeObject<T>(json, settings);
+            return JsonConvert.DeserializeObject<T>(json, settings)!;
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="json">JSON representation of object</param>
         /// <param name="type">The object type.</param>
-        public static object FromJson(this string json, Type type)
+        public static object? FromJson(this string json, Type type)
         {
             return JsonConvert.DeserializeObject(json, type, JsonExtensions.ObjectSerializationSettings);
         }
@@ -92,9 +93,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <typeparam name="T">Type of object.</typeparam>
         /// <param name="jtoken">The JToken to be deserialized.</param>
+        [return: MaybeNull]
         public static T FromJToken<T>(this JToken jtoken)
         {
-            return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer);
+            return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer)!;
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="jtoken">The JToken to be deserialized.</param>
         /// <param name="type">The object type.</param>
-        public static object FromJToken(this JToken jtoken, Type type)
+        public static object? FromJToken(this JToken jtoken, Type type)
         {
             return jtoken.ToObject(type, JsonExtensions.JsonObjectSerializer);
         }
@@ -113,6 +115,7 @@ namespace NuGet.Protocol
         /// <typeparam name="T">Type of property to return.</typeparam>
         /// <param name="jobject">The JObject to be deserialized.</param>
         /// <param name="propertyName">The property name.</param>
+        [return: MaybeNull]
         public static T GetJObjectProperty<T>(this JObject jobject, string propertyName)
         {
             var targetProperty = jobject.GetValue(propertyName: propertyName, comparison: StringComparison.OrdinalIgnoreCase);
@@ -127,7 +130,7 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            return (bool)value.Value;
+            return (bool)value.Value!;
         }
     }
 }

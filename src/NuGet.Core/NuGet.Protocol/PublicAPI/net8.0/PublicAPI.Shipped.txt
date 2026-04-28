@@ -1574,56 +1574,56 @@ const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.First = "First" -
 const NuGet.Protocol.Core.Types.NuGetResourceProviderPositions.Last = "Last" -> string!
 const NuGet.Protocol.Core.Types.NuGetTestMode.NuGetTestClientName = "NuGet Test Client" -> string!
 const NuGet.Protocol.JsonExtensions.JsonSerializationMaxDepth = 512 -> int
-~const NuGet.Protocol.JsonProperties.AdvisoryUrl = "advisoryUrl" -> string
-~const NuGet.Protocol.JsonProperties.AllRepositorySigned = "allRepositorySigned" -> string
-~const NuGet.Protocol.JsonProperties.AlternatePackage = "alternatePackage" -> string
-~const NuGet.Protocol.JsonProperties.Authors = "authors" -> string
-~const NuGet.Protocol.JsonProperties.ContentUrl = "contentUrl" -> string
-~const NuGet.Protocol.JsonProperties.Created = "created" -> string
-~const NuGet.Protocol.JsonProperties.Data = "data" -> string
-~const NuGet.Protocol.JsonProperties.Dependencies = "dependencies" -> string
-~const NuGet.Protocol.JsonProperties.DependencyGroups = "dependencyGroups" -> string
-~const NuGet.Protocol.JsonProperties.Deprecation = "deprecation" -> string
-~const NuGet.Protocol.JsonProperties.DeprecationMessage = "message" -> string
-~const NuGet.Protocol.JsonProperties.DeprecationReasons = "reasons" -> string
-~const NuGet.Protocol.JsonProperties.Description = "description" -> string
-~const NuGet.Protocol.JsonProperties.DownloadCount = "totalDownloads" -> string
-~const NuGet.Protocol.JsonProperties.Fingerprints = "fingerprints" -> string
-~const NuGet.Protocol.JsonProperties.IconUrl = "iconUrl" -> string
-~const NuGet.Protocol.JsonProperties.Issuer = "issuer" -> string
-~const NuGet.Protocol.JsonProperties.Language = "language" -> string
-~const NuGet.Protocol.JsonProperties.LastEdited = "lastEdited" -> string
-~const NuGet.Protocol.JsonProperties.LatestVersion = "latestVersion" -> string
-~const NuGet.Protocol.JsonProperties.LicenseExpression = "licenseExpression" -> string
-~const NuGet.Protocol.JsonProperties.LicenseExpressionVersion = "licenseExpressionVersion" -> string
-~const NuGet.Protocol.JsonProperties.LicenseUrl = "licenseUrl" -> string
-~const NuGet.Protocol.JsonProperties.Listed = "listed" -> string
-~const NuGet.Protocol.JsonProperties.MinimumClientVersion = "minClientVersion" -> string
-~const NuGet.Protocol.JsonProperties.NotAfter = "notAfter" -> string
-~const NuGet.Protocol.JsonProperties.NotBefore = "notBefore" -> string
-~const NuGet.Protocol.JsonProperties.Owners = "owners" -> string
-~const NuGet.Protocol.JsonProperties.PackageContent = "packageContent" -> string
-~const NuGet.Protocol.JsonProperties.PackageId = "id" -> string
-~const NuGet.Protocol.JsonProperties.PrefixReserved = "verified" -> string
-~const NuGet.Protocol.JsonProperties.ProjectUrl = "projectUrl" -> string
-~const NuGet.Protocol.JsonProperties.Published = "published" -> string
-~const NuGet.Protocol.JsonProperties.Range = "range" -> string
-~const NuGet.Protocol.JsonProperties.ReadmeFileUrl = "readmeFileUrl" -> string
-~const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string
-~const NuGet.Protocol.JsonProperties.RequireLicenseAcceptance = "requireLicenseAcceptance" -> string
-~const NuGet.Protocol.JsonProperties.Severity = "severity" -> string
-~const NuGet.Protocol.JsonProperties.SigningCertificates = "signingCertificates" -> string
-~const NuGet.Protocol.JsonProperties.Subject = "subject" -> string
-~const NuGet.Protocol.JsonProperties.SubjectId = "@id" -> string
-~const NuGet.Protocol.JsonProperties.Summary = "summary" -> string
-~const NuGet.Protocol.JsonProperties.Tags = "tags" -> string
-~const NuGet.Protocol.JsonProperties.TargetFramework = "targetFramework" -> string
-~const NuGet.Protocol.JsonProperties.Title = "title" -> string
-~const NuGet.Protocol.JsonProperties.Type = "@type" -> string
-~const NuGet.Protocol.JsonProperties.Url = "url" -> string
-~const NuGet.Protocol.JsonProperties.Version = "version" -> string
-~const NuGet.Protocol.JsonProperties.Versions = "versions" -> string
-~const NuGet.Protocol.JsonProperties.Vulnerabilities = "vulnerabilities" -> string
+const NuGet.Protocol.JsonProperties.AdvisoryUrl = "advisoryUrl" -> string!
+const NuGet.Protocol.JsonProperties.AllRepositorySigned = "allRepositorySigned" -> string!
+const NuGet.Protocol.JsonProperties.AlternatePackage = "alternatePackage" -> string!
+const NuGet.Protocol.JsonProperties.Authors = "authors" -> string!
+const NuGet.Protocol.JsonProperties.ContentUrl = "contentUrl" -> string!
+const NuGet.Protocol.JsonProperties.Created = "created" -> string!
+const NuGet.Protocol.JsonProperties.Data = "data" -> string!
+const NuGet.Protocol.JsonProperties.Dependencies = "dependencies" -> string!
+const NuGet.Protocol.JsonProperties.DependencyGroups = "dependencyGroups" -> string!
+const NuGet.Protocol.JsonProperties.Deprecation = "deprecation" -> string!
+const NuGet.Protocol.JsonProperties.DeprecationMessage = "message" -> string!
+const NuGet.Protocol.JsonProperties.DeprecationReasons = "reasons" -> string!
+const NuGet.Protocol.JsonProperties.Description = "description" -> string!
+const NuGet.Protocol.JsonProperties.DownloadCount = "totalDownloads" -> string!
+const NuGet.Protocol.JsonProperties.Fingerprints = "fingerprints" -> string!
+const NuGet.Protocol.JsonProperties.IconUrl = "iconUrl" -> string!
+const NuGet.Protocol.JsonProperties.Issuer = "issuer" -> string!
+const NuGet.Protocol.JsonProperties.Language = "language" -> string!
+const NuGet.Protocol.JsonProperties.LastEdited = "lastEdited" -> string!
+const NuGet.Protocol.JsonProperties.LatestVersion = "latestVersion" -> string!
+const NuGet.Protocol.JsonProperties.LicenseExpression = "licenseExpression" -> string!
+const NuGet.Protocol.JsonProperties.LicenseExpressionVersion = "licenseExpressionVersion" -> string!
+const NuGet.Protocol.JsonProperties.LicenseUrl = "licenseUrl" -> string!
+const NuGet.Protocol.JsonProperties.Listed = "listed" -> string!
+const NuGet.Protocol.JsonProperties.MinimumClientVersion = "minClientVersion" -> string!
+const NuGet.Protocol.JsonProperties.NotAfter = "notAfter" -> string!
+const NuGet.Protocol.JsonProperties.NotBefore = "notBefore" -> string!
+const NuGet.Protocol.JsonProperties.Owners = "owners" -> string!
+const NuGet.Protocol.JsonProperties.PackageContent = "packageContent" -> string!
+const NuGet.Protocol.JsonProperties.PackageId = "id" -> string!
+const NuGet.Protocol.JsonProperties.PrefixReserved = "verified" -> string!
+const NuGet.Protocol.JsonProperties.ProjectUrl = "projectUrl" -> string!
+const NuGet.Protocol.JsonProperties.Published = "published" -> string!
+const NuGet.Protocol.JsonProperties.Range = "range" -> string!
+const NuGet.Protocol.JsonProperties.ReadmeFileUrl = "readmeFileUrl" -> string!
+const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string!
+const NuGet.Protocol.JsonProperties.RequireLicenseAcceptance = "requireLicenseAcceptance" -> string!
+const NuGet.Protocol.JsonProperties.Severity = "severity" -> string!
+const NuGet.Protocol.JsonProperties.SigningCertificates = "signingCertificates" -> string!
+const NuGet.Protocol.JsonProperties.Subject = "subject" -> string!
+const NuGet.Protocol.JsonProperties.SubjectId = "@id" -> string!
+const NuGet.Protocol.JsonProperties.Summary = "summary" -> string!
+const NuGet.Protocol.JsonProperties.Tags = "tags" -> string!
+const NuGet.Protocol.JsonProperties.TargetFramework = "targetFramework" -> string!
+const NuGet.Protocol.JsonProperties.Title = "title" -> string!
+const NuGet.Protocol.JsonProperties.Type = "@type" -> string!
+const NuGet.Protocol.JsonProperties.Url = "url" -> string!
+const NuGet.Protocol.JsonProperties.Version = "version" -> string!
+const NuGet.Protocol.JsonProperties.Versions = "versions" -> string!
+const NuGet.Protocol.JsonProperties.Vulnerabilities = "vulnerabilities" -> string!
 ~override NuGet.Protocol.AutoCompleteResourceV2Feed.IdStartsWith(string packageIdPrefix, bool includePrerelease, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
 ~override NuGet.Protocol.AutoCompleteResourceV2Feed.VersionStartsWith(string packageId, string versionPrefix, bool includePrerelease, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion>>
 ~override NuGet.Protocol.AutoCompleteResourceV2FeedProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
@@ -1691,10 +1691,10 @@ override NuGet.Protocol.DownloadTimeoutStream.SetLength(long value) -> void
 ~override NuGet.Protocol.FindLocalPackagesResourceV3.GetPackage(System.Uri path, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> NuGet.Protocol.LocalPackageInfo
 ~override NuGet.Protocol.FindLocalPackagesResourceV3.GetPackages(NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 ~override NuGet.Protocol.FindLocalPackagesResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
-~override NuGet.Protocol.FingerprintsConverter.CanConvert(System.Type objectType) -> bool
+override NuGet.Protocol.FingerprintsConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.FingerprintsConverter.CanWrite.get -> bool
-~override NuGet.Protocol.FingerprintsConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
-~override NuGet.Protocol.FingerprintsConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
+override NuGet.Protocol.FingerprintsConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object!
+override NuGet.Protocol.FingerprintsConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.CopyNupkgToStreamAsync(string! id, NuGet.Versioning.NuGetVersion! version, System.IO.Stream! destination, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.DoesPackageExistAsync(string! id, NuGet.Versioning.NuGetVersion! version, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetAllVersionsAsync(string! id, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion!>!>!
@@ -1742,10 +1742,10 @@ override NuGet.Protocol.HttpSourceAuthenticationHandler.Dispose(bool disposing) 
 ~override NuGet.Protocol.LocalV3FindPackageByIdResource.GetDependencyInfoAsync(string id, NuGet.Versioning.NuGetVersion version, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo>
 ~override NuGet.Protocol.LocalV3FindPackageByIdResource.GetPackageDownloaderAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Packaging.IPackageDownloader>
 ~override NuGet.Protocol.LocalV3FindPackageByIdResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
-~override NuGet.Protocol.MetadataFieldConverter.CanConvert(System.Type objectType) -> bool
+override NuGet.Protocol.MetadataFieldConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.MetadataFieldConverter.CanWrite.get -> bool
-~override NuGet.Protocol.MetadataFieldConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
-~override NuGet.Protocol.MetadataFieldConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
+override NuGet.Protocol.MetadataFieldConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
+override NuGet.Protocol.MetadataFieldConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 ~override NuGet.Protocol.MetadataResourceV2Feed.Exists(NuGet.Packaging.Core.PackageIdentity identity, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 ~override NuGet.Protocol.MetadataResourceV2Feed.Exists(string packageId, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 ~override NuGet.Protocol.MetadataResourceV2Feed.GetLatestVersions(System.Collections.Generic.IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, NuGet.Versioning.NuGetVersion>>>
@@ -1758,9 +1758,9 @@ override NuGet.Protocol.MetadataFieldConverter.CanWrite.get -> bool
 ~override NuGet.Protocol.MetadataResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 override NuGet.Protocol.Model.PackageVulnerabilityInfo.Equals(object? obj) -> bool
 override NuGet.Protocol.Model.PackageVulnerabilityInfo.GetHashCode() -> int
-~override NuGet.Protocol.NuGetVersionConverter.CanConvert(System.Type objectType) -> bool
-~override NuGet.Protocol.NuGetVersionConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
-~override NuGet.Protocol.NuGetVersionConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
+override NuGet.Protocol.NuGetVersionConverter.CanConvert(System.Type! objectType) -> bool
+override NuGet.Protocol.NuGetVersionConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
+override NuGet.Protocol.NuGetVersionConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 ~override NuGet.Protocol.ODataServiceDocumentResourceV2Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 ~override NuGet.Protocol.PackageDetailsUriResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 ~override NuGet.Protocol.PackageMetadataResourceV2Feed.GetMetadataAsync(NuGet.Packaging.Core.PackageIdentity package, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.IPackageSearchMetadata>
@@ -1862,9 +1862,9 @@ override NuGet.Protocol.SafeUriConverter.CanRead.get -> bool
 override NuGet.Protocol.SafeUriConverter.CanWrite.get -> bool
 override NuGet.Protocol.SafeUriConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
 override NuGet.Protocol.SafeUriConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
-~override NuGet.Protocol.SemanticVersionConverter.CanConvert(System.Type objectType) -> bool
-~override NuGet.Protocol.SemanticVersionConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
-~override NuGet.Protocol.SemanticVersionConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
+override NuGet.Protocol.SemanticVersionConverter.CanConvert(System.Type! objectType) -> bool
+override NuGet.Protocol.SemanticVersionConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
+override NuGet.Protocol.SemanticVersionConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 ~override NuGet.Protocol.ServerWarningLogHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
 ~override NuGet.Protocol.ServiceIndexResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 ~override NuGet.Protocol.SymbolPackageUpdateResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
@@ -1872,10 +1872,10 @@ override NuGet.Protocol.SafeUriConverter.WriteJson(Newtonsoft.Json.JsonWriter! w
 ~override NuGet.Protocol.V2FeedListResource.Source.get -> string
 ~override NuGet.Protocol.V2FeedListResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 ~override NuGet.Protocol.V3FeedListResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
-~override NuGet.Protocol.VersionInfoConverter.CanConvert(System.Type objectType) -> bool
+override NuGet.Protocol.VersionInfoConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.VersionInfoConverter.CanWrite.get -> bool
-~override NuGet.Protocol.VersionInfoConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
-~override NuGet.Protocol.VersionInfoConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
+override NuGet.Protocol.VersionInfoConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object!
+override NuGet.Protocol.VersionInfoConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 override NuGet.Protocol.VersionRangeConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.VersionRangeConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
 override NuGet.Protocol.VersionRangeConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
@@ -1947,15 +1947,15 @@ static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet
 ~static NuGet.Protocol.HttpStreamValidation.ValidateJObject(string uri, System.IO.Stream stream) -> void
 ~static NuGet.Protocol.HttpStreamValidation.ValidateNupkg(string uri, System.IO.Stream stream) -> void
 ~static NuGet.Protocol.HttpStreamValidation.ValidateXml(string uri, System.IO.Stream stream) -> void
-~static NuGet.Protocol.JsonExtensions.FromJToken(this Newtonsoft.Json.Linq.JToken jtoken, System.Type type) -> object
-~static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken jtoken) -> T
-~static NuGet.Protocol.JsonExtensions.FromJson(this string json, System.Type type) -> object
-~static NuGet.Protocol.JsonExtensions.FromJson<T>(this string json) -> T
-~static NuGet.Protocol.JsonExtensions.FromJson<T>(this string json, Newtonsoft.Json.JsonSerializerSettings settings) -> T
-~static NuGet.Protocol.JsonExtensions.GetBoolean(this Newtonsoft.Json.Linq.JObject json, string propertyName) -> bool?
-~static NuGet.Protocol.JsonExtensions.GetJObjectProperty<T>(this Newtonsoft.Json.Linq.JObject jobject, string propertyName) -> T
-~static NuGet.Protocol.JsonExtensions.ToJToken(this object obj) -> Newtonsoft.Json.Linq.JToken
-~static NuGet.Protocol.JsonExtensions.ToJson(this object obj, Newtonsoft.Json.Formatting formatting = Newtonsoft.Json.Formatting.None) -> string
+static NuGet.Protocol.JsonExtensions.FromJToken(this Newtonsoft.Json.Linq.JToken! jtoken, System.Type! type) -> object?
+static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken! jtoken) -> T
+static NuGet.Protocol.JsonExtensions.FromJson(this string! json, System.Type! type) -> object?
+static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json) -> T
+static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json, Newtonsoft.Json.JsonSerializerSettings! settings) -> T
+static NuGet.Protocol.JsonExtensions.GetBoolean(this Newtonsoft.Json.Linq.JObject! json, string! propertyName) -> bool?
+static NuGet.Protocol.JsonExtensions.GetJObjectProperty<T>(this Newtonsoft.Json.Linq.JObject! jobject, string! propertyName) -> T
+static NuGet.Protocol.JsonExtensions.ToJToken(this object! obj) -> Newtonsoft.Json.Linq.JToken!
+static NuGet.Protocol.JsonExtensions.ToJson(this object! obj, Newtonsoft.Json.Formatting formatting = Newtonsoft.Json.Formatting.None) -> string!
 ~static NuGet.Protocol.LocalFolderUtility.EnsurePackageFileExists(string packagePath, System.Collections.Generic.IEnumerable<string> matchingPackagePaths) -> void
 ~static NuGet.Protocol.LocalFolderUtility.GenerateNupkgMetadataFile(string nupkgPath, string installPath, string hashPath, string nupkgMetadataPath) -> void
 ~static NuGet.Protocol.LocalFolderUtility.GetAndVerifyRootDirectory(string root) -> System.IO.DirectoryInfo
@@ -2032,7 +2032,7 @@ static readonly NuGet.Protocol.HttpRetryHandlerRequest.DefaultDownloadTimeout ->
 static readonly NuGet.Protocol.HttpRetryHandlerRequest.DefaultMaxTries -> int
 static readonly NuGet.Protocol.HttpSourceAuthenticationHandler.MaxAuthRetries -> int
 static readonly NuGet.Protocol.HttpSourceRequest.DefaultRequestTimeout -> System.TimeSpan
-~static readonly NuGet.Protocol.JsonExtensions.ObjectSerializationSettings -> Newtonsoft.Json.JsonSerializerSettings
+static readonly NuGet.Protocol.JsonExtensions.ObjectSerializationSettings -> Newtonsoft.Json.JsonSerializerSettings!
 static readonly NuGet.Protocol.Plugins.PluginConstants.CloseTimeout -> System.TimeSpan
 static readonly NuGet.Protocol.Plugins.PluginConstants.IdleTimeout -> System.TimeSpan
 ~static readonly NuGet.Protocol.Plugins.PluginConstants.PluginArguments -> System.Collections.Generic.IEnumerable<string>
