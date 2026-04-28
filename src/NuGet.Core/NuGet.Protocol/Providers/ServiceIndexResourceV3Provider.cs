@@ -38,7 +38,7 @@ namespace NuGet.Protocol
         /// </summary>
         public TimeSpan MaxCacheDuration { get; protected set; }
 
-        public ServiceIndexResourceV3Provider() : this(EnvironmentVariableWrapper.Instance) { }
+        public ServiceIndexResourceV3Provider() : this(environmentVariableReader: null) { }
 
         internal ServiceIndexResourceV3Provider(IEnvironmentVariableReader environmentVariableReader)
             : base(typeof(ServiceIndexResourceV3),
@@ -48,7 +48,7 @@ namespace NuGet.Protocol
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
             MaxCacheDuration = DefaultCacheDuration;
             _environmentVariableReader = environmentVariableReader;
-            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader ?? EnvironmentVariableWrapper.Instance);
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
