@@ -105,31 +105,49 @@ namespace NuGet.Commands
                 // this is validated in the nuspec reader
                 Debug.Assert(filesEntry.Include != null, "invalid contentFiles entry");
 
-                // Create a filesystem matcher for globbing patterns
-                var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-                matcher.AddInclude(filesEntry.Include);
+                // When the include pattern is a literal path (no wildcards) and there is no exclude,
+                // use a direct string comparison instead of the more expensive glob matcher.
+                bool isLiteralInclude = filesEntry.Include.AsSpan().IndexOfAny('*', '?') < 0;
 
-                if (filesEntry.Exclude != null)
+                if (isLiteralInclude && filesEntry.Exclude == null)
                 {
-                    matcher.AddExclude(filesEntry.Exclude);
-                }
-
-                // Check each file against the patterns
-                foreach ((var file, var entries) in entryMappings)
-                {
-                    // Remove contentFiles/ from the string
-                    Debug.Assert(file.StartsWith(ContentFilesFolderName, StringComparison.OrdinalIgnoreCase),
-                        "invalid file path: " + file);
-
-                    // All files should begin with the same root folder
-                    if (file.Length > rootFolderPathLength)
+                    foreach ((var file, var entries) in entryMappings)
                     {
-                        var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
-
-                        // Check if the nuspec group include/exclude patterns apply to the file
-                        if (matcher.Match(relativePath).HasMatches)
+                        if (file.Length > rootFolderPathLength
+                            && file.AsSpan(rootFolderPathLength).Equals(filesEntry.Include.AsSpan(), StringComparison.OrdinalIgnoreCase))
                         {
                             entries.Add(filesEntry);
+                        }
+                    }
+                }
+                else
+                {
+                    // Create a filesystem matcher for globbing patterns
+                    var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+                    matcher.AddInclude(filesEntry.Include);
+
+                    if (filesEntry.Exclude != null)
+                    {
+                        matcher.AddExclude(filesEntry.Exclude);
+                    }
+
+                    // Check each file against the patterns
+                    foreach ((var file, var entries) in entryMappings)
+                    {
+                        // Remove contentFiles/ from the string
+                        Debug.Assert(file.StartsWith(ContentFilesFolderName, StringComparison.OrdinalIgnoreCase),
+                            "invalid file path: " + file);
+
+                        // All files should begin with the same root folder
+                        if (file.Length > rootFolderPathLength)
+                        {
+                            var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
+
+                            // Check if the nuspec group include/exclude patterns apply to the file
+                            if (matcher.Match(relativePath).HasMatches)
+                            {
+                                entries.Add(filesEntry);
+                            }
                         }
                     }
                 }
