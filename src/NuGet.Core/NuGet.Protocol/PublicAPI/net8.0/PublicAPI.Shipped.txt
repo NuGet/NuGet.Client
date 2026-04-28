@@ -372,10 +372,10 @@ NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.HttpStatusCode.get -> int?
 NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.IsCancelled.get -> bool
 NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.IsLastAttempt.get -> bool
 NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.IsRetry.get -> bool
-~NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.ProtocolDiagnosticHttpEventBase(NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase other) -> void
-~NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.ProtocolDiagnosticHttpEventBase(string source, System.Uri url, System.TimeSpan? headerDuration, int? httpStatusCode, bool isRetry, bool isCancelled, bool isLastAttempt) -> void
-~NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.Source.get -> string
-~NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.Url.get -> System.Uri
+NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.ProtocolDiagnosticHttpEventBase(NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase! other) -> void
+NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.ProtocolDiagnosticHttpEventBase(string! source, System.Uri! url, System.TimeSpan? headerDuration, int? httpStatusCode, bool isRetry, bool isCancelled, bool isLastAttempt) -> void
+NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.Source.get -> string!
+NuGet.Protocol.Events.ProtocolDiagnosticHttpEventBase.Url.get -> System.Uri!
 NuGet.Protocol.Events.ProtocolDiagnosticNupkgCopiedEvent
 NuGet.Protocol.Events.ProtocolDiagnosticNupkgCopiedEvent.FileSize.get -> long
 NuGet.Protocol.Events.ProtocolDiagnosticNupkgCopiedEvent.ProtocolDiagnosticNupkgCopiedEvent(string! source, long fileSize) -> void
@@ -1913,10 +1913,10 @@ static NuGet.Protocol.Core.Types.NullSourceCacheContext.Instance.get -> NuGet.Pr
 static NuGet.Protocol.Core.Types.UserAgent.SetUserAgent(System.Net.Http.HttpClient! client) -> void
 static NuGet.Protocol.Core.Types.UserAgent.SetUserAgentString(NuGet.Protocol.Core.Types.UserAgentStringBuilder! builder) -> void
 static NuGet.Protocol.Core.Types.UserAgent.UserAgentString.get -> string!
-static NuGet.Protocol.Events.ProtocolDiagnostics.HttpEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticHttpEventHandler
-static NuGet.Protocol.Events.ProtocolDiagnostics.NupkgCopiedEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticsNupkgCopiedEventHandler
-static NuGet.Protocol.Events.ProtocolDiagnostics.ResourceEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticResourceEventHandler
-static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticServiceIndexEntryEventHandler
+static NuGet.Protocol.Events.ProtocolDiagnostics.HttpEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticHttpEventHandler?
+static NuGet.Protocol.Events.ProtocolDiagnostics.NupkgCopiedEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticsNupkgCopiedEventHandler?
+static NuGet.Protocol.Events.ProtocolDiagnostics.ResourceEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticResourceEventHandler?
+static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticServiceIndexEntryEventHandler?
 ~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV2(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
 ~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.ProviderFactory factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>>
 ~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
