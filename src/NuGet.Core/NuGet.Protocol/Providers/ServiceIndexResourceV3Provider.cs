@@ -221,7 +221,15 @@ namespace NuGet.Protocol
                     source.Source), ex);
             }
 
-            if (index?.Version is null)
+            if (index is null)
+            {
+                throw new InvalidDataException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Protocol_InvalidJsonObject,
+                    source.Source));
+            }
+
+            if (index.Version is null)
             {
                 throw new InvalidDataException(Strings.Protocol_MissingVersion);
             }

@@ -9,11 +9,12 @@ namespace NuGet.Protocol.Model
 {
     internal sealed class ServiceIndexModel
     {
+        [JsonRequired]
         [JsonPropertyName("version")]
         public string? Version { get; set; }
 
         [JsonPropertyName("resources")]
-        public IReadOnlyList<ServiceIndexEntryModel>? Resources { get; set; }
+        public List<ServiceIndexEntryModel>? Resources { get; set; }
     }
 
     internal sealed class ServiceIndexEntryModel

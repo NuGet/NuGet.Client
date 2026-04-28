@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -142,6 +143,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = $"https://fake.server-{new Guid().ToString()}/users.json";
+            var expectedMessage = useStj
+                ? string.Format(CultureInfo.CurrentCulture, Strings.Protocol_InvalidJsonObject, source)
+                : Strings.Protocol_MissingVersion;
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = CreateProvider(useStj);
             var sourceRepository = new SourceRepository(new PackageSource(source),
@@ -154,7 +158,8 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             });
 
             // Assert
-            Assert.Equal("The source does not have the 'version' property.", exception.InnerException.Message);
+            Assert.IsType<InvalidDataException>(exception.InnerException);
+            Assert.Equal(expectedMessage, exception.InnerException.Message);
         }
 
         [Theory]
