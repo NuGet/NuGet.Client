@@ -133,11 +133,6 @@ function Test-GetPackageAcceptsRelativePathSource2 {
     popd
 }
 
-function Test-GetPackageThrowsWhenSourceIsInvalid {
-    # Act & Assert
-    Assert-Throws { Get-Package -ListAvailable -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
-}
-
 function Test-GetPackageForProjectReturnsEmptyProjectIfItHasNoInstalledPackage {
     # Arrange
     $p = New-ConsoleApplication
@@ -207,18 +202,6 @@ function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage2 {
 
     # Assert
     Assert-AreEqual 0 $result.Count
-}
-
-function Test-GetPackageForProjectThrowIfProjectNameIsInvalid {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p1 = New-ConsoleApplication
-
-    # Act & Assert
-    Assert-Throws { Get-Package -ProjectName "invalidname" } "Project 'invalidname' is not found."
 }
 
 function Test-GetPackageWithoutProjectNameReturnsInstalledPackagesInTheSolution {

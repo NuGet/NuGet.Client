@@ -177,14 +177,6 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-Null (Get-SolutionPackage B 1.0)
 }
 
-function Test-UpdateWithoutPackageInstalledThrows {
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act & Assert
-    Assert-Throws { $p | Update-Package elmah } ("'elmah' was not installed in any project. Update failed.")
-}
-
 #function Test-UpdateSolutionOnlyPackage {
 function UpdateSolutionOnlyPackage {
     param(
@@ -844,15 +836,6 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
 
     # Act
     Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Unable to resolve dependencies. 'B 2.0.0' is not compatible with 'A 1.0.0 constraint: B (= 1.0.0)'."
-}
-
-function Test-UpdatePackageThrowsWhenSourceIsInvalid {
-    # Arrange
-    $p = New-ConsoleApplication
-    $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
-
-    # Act & Assert
-    Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {

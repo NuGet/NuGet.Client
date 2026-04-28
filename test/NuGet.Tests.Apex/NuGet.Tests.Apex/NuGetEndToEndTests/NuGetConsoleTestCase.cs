@@ -973,6 +973,222 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public void InstallPackageFromPMCWithFtpSource_Fails()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "Rules";
+            var source = "ftp://Rules";
+            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void UninstallPackageFromPMCNotInstalled_Fails()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "TestPackage";
+            var expectedMessage = $"Package '{packageName}' to be uninstalled could not be found in project '{testContext.Project.Name}'";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Uninstall-Package {packageName}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void UpdatePackageFromPMCNotInstalled_Fails()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "TestPackage";
+            var expectedMessage = $"'{packageName}' was not installed in any project. Update failed.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Update-Package {packageName}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void GetPackageFromPMCWithInvalidSource_Fails()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var source = "d:package";
+            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Get-Package -ListAvailable -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void GetPackageFromPMCWithInvalidProjectName_Fails()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var invalidProjectName = "invalidname";
+            var expectedMessage = $"Project '{invalidProjectName}' is not found.";
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Get-Package -ProjectName {invalidProjectName}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWithWhatIfDowngrade_DoesNotDowngradeAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Version {packageVersion1} -Source {testContext.PackageSource} -WhatIf");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageFromPMCWithWhatIf_DoesNotUninstallAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "TestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+
+            nugetConsole.Execute($"Uninstall-Package {packageName} -ProjectName {testContext.Project.Name} -WhatIf");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithInvalidSource_FailsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+
+            var source = "d:package";
+            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+
+            nugetConsole.Execute($"Update-Package {packageName} -Source {source}");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWithoutVersion_InstallsLatestStableAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var olderVersion = "0.4.0";
+            var latestStableVersion = "0.5.0";
+            var prereleaseVersion = "0.6.0-beta";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, olderVersion);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, latestStableVersion);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, prereleaseVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {testContext.PackageSource}");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, latestStableVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWithPrerelease_InstallsLatestPrereleaseAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var stableVersion = "0.5.0";
+            var latestPrereleaseVersion = "0.6.0-beta";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, stableVersion);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, latestPrereleaseVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {testContext.PackageSource} -IncludePrerelease");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, latestPrereleaseVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWithFileUriSource_SucceedsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "TestPackage";
+            var packageVersion = "2.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var fileUri = "file:///" + testContext.PackageSource.Replace("\\", "/");
+
+            var nugetConsole = GetConsole(testContext.Project);
+
+            nugetConsole.Execute($"Install-Package {packageName} -Version {packageVersion} -Source {fileUri}");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void GetProject_CanAccessProjectName()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
