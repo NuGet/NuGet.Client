@@ -276,6 +276,32 @@ For example the following are correct:
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
+## Prefer Immutability and Non-Null Types
+
+When writing new code or refactoring existing code, prefer types that are immutable and non-null. Immutable objects are easier to reason about, thread-safe by construction, and enable compiler optimizations — the JIT can cache property reads, skip defensive copies for readonly structs, and in some cases eliminate bounds checks. Non-null types make illegal states unrepresentable and push error detection from runtime to compile time.
+
+### Property accessor guidelines
+
+Use the most restrictive accessor that the code actually needs:
+
+| Scenario | Pattern | Example |
+|---|---|---|
+| Must be provided, immutable after creation | `required init` | `public required string Id { get; init; }` |
+| Optional at creation, immutable after | `init` | `public bool Listed { get; init; }` |
+| Collection, never replaced | get-only + inline init | `public IList<Item> Items { get; } = new List<Item>();` |
+| Truly mutable state | `set` | `public int RetryCount { get; set; }` |
+
+Think of it as a spectrum: **`required init`** > **`init`** > **`set`**. Use the most restrictive accessor that works.
+
+- **`{ get; init; }`** over `{ get; set; }` for properties set only at construction time. This is especially valuable for data-carrying types (DTOs, info objects, result types).
+- **`{ get; }` (get-only)** for collection properties initialized inline. There's no reason to expose a setter if the collection itself is never replaced, only mutated via `.Add()`.
+- **`required`** over accepting `null!` initializers for properties that must be provided. `required init` enforces that callers set the value, and the value is immutable once set.
+- **`readonly` fields** wherever the field isn't reassigned after construction. (This is already mentioned in the C# Coding Style section above, but bears repeating in this context.)
+
+### Non-null bias
+
+Default to non-null types. Only mark a type as nullable (`?`) when the value is genuinely optional — configuration, cache misses, "not found" semantics. Don't replace null with sentinel values (`string.Empty`, `Array.Empty<T>()`) if downstream code would silently misbehave — empty should not become the new null.
+
 ### Getting or Setting Environment Variables
 
 Environment variables apply to the entire process and are considered static state which can cause test issues since multiple tests can be running in parallel reading or updating the same variable.

@@ -9,15 +9,28 @@ This skill guides the process of enabling C# nullable reference types on files i
 
 The work is inherently incremental — don't try to migrate an entire project at once. Work in batches of related files, fix cascading warnings, build, and repeat.
 
+## Coding Guidelines for Nullable Migration
+
+Nullable migration is a rare chance to modernize internal types. Beyond just annotating, apply the immutability and non-null design principles from [`docs/coding-guidelines.md`](../../coding-guidelines.md#prefer-immutability-and-non-null-types) — prefer `required init` over `set`, get-only collections, and `readonly` fields. The migration touchpoint is the natural moment to tighten up these types.
+
+### Fix Stale Contracts, Don't Paper Over Them
+
+During nullable annotation you'll sometimes discover that a method's actual behavior doesn't match its documented contract — e.g., a method documented as "returns null if not found" that actually returns an empty object, or dead null checks in callers. Don't just annotate what the code does today. If the internal method's contract is wrong, fix it:
+
+- If a method is documented to return null but never does, decide whether to make it return null (honest contract) or update the docs (honest documentation).
+- Prefer the semantically correct option — returning null for "not found" is usually cleaner than returning an empty shell object with uninitialized properties.
+- Since internal methods have no public API surface risk, you can change their contracts freely.
+
 ## Annotation Philosophy: Prefer Non-Null
 
 The default mindset when annotating is **non-null unless proven otherwise**. Before marking something `?`, ask: "Can I make this non-null instead?" Sometimes a small, non-breaking code change can eliminate nullability — and that's preferable to marking something nullable. But be careful not to replace null problems with empty-value problems.
 
 **Good non-null opportunities:**
-- **Use `required`** on internal/private types so the constructor enforces initialization.
+- **Use `required`** on internal/private types so the constructor enforces initialization. The `required` keyword works on net472 via the shared polyfill `RequiredModifierAttributes.cs` (and `IsExternalInit.cs` for `init`). If the target project doesn't include them, add `<Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />` and `<Compile Include="$(SharedDirectory)\IsExternalInit.cs" />` to the csproj under the `<ItemGroup Label="NuGet Shared">` section. Check `NuGet.Packaging.csproj` as a reference.
 - **Set a property in the constructor** instead of relying on callers to set it later.
 - **Use `??` or `?? throw`** at assignment sites to guarantee non-null storage.
 - **Initialize a field** to a sensible default — but only when the consuming code already handles that default gracefully. Don't initialize to `string.Empty` or `Array.Empty<T>()` if downstream code would silently misbehave with an empty value instead of correctly handling null. Empty should not become the new null.
+- **Use `null!` initializer** when `required` can't work (e.g., the property is set by external code after construction, not in an initializer). Add a comment explaining why.
 
 **When `?` is the right answer:**
 - The value is genuinely optional — configuration, cache misses, "not found" semantics.
@@ -172,14 +185,17 @@ NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Pr
 After each batch of changes, build the affected project to ensure zero warnings/errors:
 
 ```
-msbuild src\NuGet.Core\<ProjectName>\<ProjectName>.csproj /t:Build /p:Configuration=Release
+dotnet msbuild src\NuGet.Core\<ProjectName>\<ProjectName>.csproj -v:q
 ```
 
-or use the solution filter:
+Also build the test projects to catch cascading warnings:
 
 ```
-msbuild NuGet-Src.slnf /t:Build /p:Configuration=Release
+dotnet msbuild test\NuGet.Core.Tests\<ProjectName>.Tests\<ProjectName>.Tests.csproj -v:q
+dotnet msbuild test\NuGet.Core.FuncTests\<ProjectName>.FuncTest\<ProjectName>.FuncTest.csproj -v:q
 ```
+
+`dotnet msbuild` builds all TFMs without needing a restore step, unlike `dotnet build` which may fail on some TFMs with NETSDK1005 (missing restore for net8.0). Use `dotnet msbuild` as the default build command.
 
 Common build errors after nullable migration:
 

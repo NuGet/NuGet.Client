@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,17 +64,17 @@ namespace NuGet.Protocol
 
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 
-            foreach (JObject item in index["items"])
+            foreach (JObject item in index["items"]!)
             {
-                var lower = NuGetVersion.Parse(item["lower"].ToString());
-                var upper = NuGetVersion.Parse(item["upper"].ToString());
+                var lower = NuGetVersion.Parse(item["lower"]!.ToString());
+                var upper = NuGetVersion.Parse(item["upper"]!.ToString());
 
                 if (range.DoesRangeSatisfy(lower, upper))
                 {
-                    JToken items;
+                    JToken? items;
                     if (!item.TryGetValue("items", out items))
                     {
-                        var rangeUri = item["@id"].ToString();
+                        var rangeUri = item["@id"]!.ToString();
 
                         rangeTasks.Add(httpSource.GetAsync(
                             new HttpSourceCachedRequest(
