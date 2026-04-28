@@ -13,30 +13,6 @@ parameters:
     displayName: Build bits for publishing
     type: boolean
     default: true
-  - name: RunTestsOnWindows
-    displayName: Run functional tests on Windows
-    type: boolean
-    default: true
-  - name: RunSourceBuild
-    displayName: Run source build
-    type: boolean
-    default: true
-  - name: RunTestsOnLinux
-    displayName: Run tests on Linux
-    type: boolean
-    default: true
-  - name: RunTestsOnMac
-    displayName: Run tests on Mac
-    type: boolean
-    default: true
-  - name: RunMonoTestsOnMac
-    displayName: Run Mono tests on Mac
-    type: boolean
-    default: false
-  - name: RunStaticAnalysis
-    displayName: Run static analysis
-    type: boolean
-    default: true
   - name: SigningType
     displayName: Type of signing to use
     type: string
@@ -72,30 +48,11 @@ stages:
         steps:
           - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
-  # Disable on this branch.
-  # - stage: StaticSourceAnalysis
-  #   displayName: Static Source Analysis
-  #   dependsOn: []
-  #   jobs:
-  #   - job: RunStaticSourceAnalysis
-  #     displayName: Run Static Source Analysis
-  #     condition: "and(succeeded(), ne(variables['RunStaticAnalysis'], 'false'))"
-  #     timeoutInMinutes: 15
-  #     pool:
-  #       name: VSEngSS-MicroBuild2019-1ES
-  #       os: windows
-  #       demands:
-  #       - ImageOverride -equals server2022-microbuildVS2019-1es
-  #     steps:
-  #     - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
-  #       parameters:
-  #         isOfficialBuild: ${{ parameters.isOfficialBuild }}
-
   - stage: Build_Insertable
     displayName: Build NuGet inserted into VS and .NET SDK
     dependsOn: Initialize
     jobs:
-      - job: Build_and_UnitTest_NonRTM
+      - job: Build_NonRTM
         timeoutInMinutes: 170
         variables:
           BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
@@ -233,7 +190,7 @@ stages:
               sbomEnabled: false
 
         steps:
-          - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
+          - template: /eng/pipelines/templates/Build.yml@self
             parameters:
               BuildRTM: false
               SigningType: ${{ parameters.SigningType }}
@@ -242,7 +199,7 @@ stages:
     displayName: Build NuGet published to nuget.org
     dependsOn: Initialize
     jobs:
-      - job: Build_and_UnitTest_RTM
+      - job: Build_RTM
         condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
         timeoutInMinutes: 170
         variables:
@@ -299,172 +256,7 @@ stages:
               targetPath: $(Build.StagingDirectory)\binlog
               sbomBuildDropPath: $(Build.SourcesDirectory)/artifacts
         steps:
-          - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
+          - template: /eng/pipelines/templates/Build.yml@self
             parameters:
               BuildRTM: true
               SigningType: ${{ parameters.SigningType }}
-
-  - stage: Tests
-    displayName: "Run Unit and Functional Tests"
-    dependsOn: Initialize
-    jobs:
-      - job: Functional_Tests_On_Windows
-        displayName: "Windows FunctionalTests"
-        timeoutInMinutes: 120
-        variables:
-          BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-          FullVstsBuildNumber:
-            $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-            # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-          MSBuildEnableWorkloadResolver: false
-        condition: "and(succeeded(), ne(variables['RunTestsOnWindows'], 'false'))"
-        pool:
-          name: VSEngSS-MicroBuild2019-1ES
-          os: windows
-          demands:
-            - ImageOverride -equals server2022-microbuildVS2019-1es
-        strategy:
-          matrix:
-            IsDesktop:
-              SkipCoreAssemblies: "true"
-            IsCore:
-              SkipDesktopAssemblies: "true"
-        templateContext:
-          outputs:
-            - output: pipelineArtifact
-              displayName: "Publish Test Freeze Dump"
-              condition: "or(failed(), canceled())"
-              targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-              artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
-              sbomEnabled: false
-
-            - output: pipelineArtifact
-              displayName: "Publish binlogs"
-              condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-              artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-              targetPath: $(Build.StagingDirectory)\binlog
-              sbomEnabled: false
-        steps:
-          - template: /eng/pipelines/templates/Functional_Tests_On_Windows.yml@self
-
-      - job: Tests_On_Linux
-        displayName: "Linux"
-        timeoutInMinutes: 45
-        variables:
-          FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-          MSBUILDDISABLENODEREUSE: 1
-          # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-          MSBuildEnableWorkloadResolver: false
-          DOTNET_NUGET_SIGNATURE_VERIFICATION: true
-        condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
-        pool:
-          name: AzurePipelines-EO
-          image: 1ESPT-Ubuntu22.04
-          os: linux
-        strategy:
-          matrix:
-            UnitTests:
-              TestRunDisplayName: "Unit Tests"
-              TestRunCommandLineArguments: "--unit-tests"
-            FunctionalTests:
-              TestRunDisplayName: "Functional Tests"
-              TestRunCommandLineArguments: "--functional-tests"
-        templateContext:
-          outputs:
-            - output: pipelineArtifact
-              displayName: "Publish Test Freeze Dump"
-              condition: "or(failed(), canceled())"
-              targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-              artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
-              sbomEnabled: false
-
-            - output: pipelineArtifact
-              displayName: "Publish binlogs"
-              condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-              artifactName: binlog - $(TestRunDisplayName) On Linux - Attempt $(System.JobAttempt)
-              targetPath: $(Build.StagingDirectory)/binlog
-              sbomEnabled: false
-        steps:
-          - template: /eng/pipelines/templates/Tests_On_Linux.yml@self
-
-  - stage: TestsMacUnit
-    displayName: "Run Unit and Functional Tests (Mac)"
-    dependsOn:
-      - Initialize
-      - Build_Insertable
-    jobs:
-      - job: Tests_On_Mac
-        displayName: "Mac"
-        timeoutInMinutes: 45
-        variables:
-          FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-          MSBUILDDISABLENODEREUSE: 1
-          # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-          MSBuildEnableWorkloadResolver: false
-        condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
-        pool:
-          name: "Azure Pipelines"
-          vmImage: macos-latest
-          os: macOS
-        strategy:
-          matrix:
-            UnitTests:
-              TestRunDisplayName: "Unit Tests"
-              TestRunCommandLineArguments: "--unit-tests"
-            FunctionalTests:
-              TestRunDisplayName: "Functional Tests"
-              TestRunCommandLineArguments: "--functional-tests"
-        templateContext:
-          outputs:
-            - output: pipelineArtifact
-              displayName: "Publish Test Freeze Dump"
-              condition: "or(failed(), canceled())"
-              targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-              artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
-              sbomEnabled: false
-
-            - output: pipelineArtifact
-              displayName: "Publish binlogs"
-              condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-              artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
-              targetPath: $(Build.StagingDirectory)/binlog
-              sbomEnabled: false
-        steps:
-          - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
-
-  - stage: MacTests
-    displayName: "Mac Mono Tests"
-    dependsOn:
-      - Initialize
-      - Build_Insertable
-    jobs:
-      - job: MonoTests_On_Mac
-        condition: "and(succeeded(), ne(variables['RunMonoTestsOnMac'], 'false'))"
-        timeoutInMinutes: 90
-        variables:
-          FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-          # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-          MSBuildEnableWorkloadResolver: false
-          TestRunDisplayName: "Mono Tests"
-          TestRunCommandLineArguments: "--mono-tests"
-        pool:
-          name: "Azure Pipelines"
-          vmImage: macos-latest
-          os: macOS
-        templateContext:
-          outputs:
-            - output: pipelineArtifact
-              displayName: "Publish Test Freeze Dump"
-              condition: "or(failed(), canceled())"
-              targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-              artifactName: "$(Agent.JobName) - Attempt $(System.JobAttempt)"
-              sbomEnabled: false
-
-            - output: pipelineArtifact
-              displayName: "Publish binlogs"
-              condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-              artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
-              targetPath: $(Build.StagingDirectory)/binlog
-              sbomEnabled: false
-        steps:
-          - template: /eng/pipelines/templates/Tests_On_Mac.yml@self

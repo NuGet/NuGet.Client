@@ -111,43 +111,6 @@ steps:
       msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) /binarylogger:$(Build.StagingDirectory)\\binlog\\06.ILMerge.binlog"
 
   - task: MSBuild@1
-    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
-    inputs:
-      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath /binarylogger:$(Build.StagingDirectory)\\binlog\\07.CopyFinalNuGetExeToOutputPath.binlog"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), not(eq(variables['RunMonoTestsOnMac'], 'false')))"
-
-  - task: MSBuild@1
-    displayName: "Run unit tests (stop on error)"
-    continueOnError: "false"
-    inputs:
-      solution: "build\\build.proj"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')), not(eq(variables['IsOfficialBuild'], 'true')))"
-
-  - task: MSBuild@1
-    displayName: "Run unit tests (continue on error)"
-    continueOnError: "true"
-    inputs:
-      solution: "build\\build.proj"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')), eq(variables['IsOfficialBuild'], 'true'))"
-
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results"
-    inputs:
-      testRunner: "XUnit"
-      testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
-      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-      mergeTestResults: "true"
-      publishRunAttachments: "false"
-    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'), not(eq(variables['RunTestsOnWindows'], 'false')))"
-
-  - task: MSBuild@1
     displayName: "Sign Assemblies"
     inputs:
       solution: "build\\sign.proj"
