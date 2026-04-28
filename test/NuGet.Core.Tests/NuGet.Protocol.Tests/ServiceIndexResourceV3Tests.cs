@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -123,60 +123,80 @@ namespace NuGet.Protocol.Tests
         // STJ path: mirrors of the JObject-based tests above
 
         [Fact]
-        public void Constructor_WithModel_InitializesProperties()
+        public void ServiceIndexResourceV3_ServiceIndexModel_InitializesProperties()
         {
-            var model = DeserializeModel(@"{""version"":""1.2.3"",""resources"":[{""@id"":""http://contoso.test/b"",""@type"":""a""}]}");
+            // Arrange
+            var expectedType = "a";
+            var expectedId = "http://contoso.test/b";
+            var model = DeserializeModel($@"{{""version"":""1.2.3"",""resources"":[{{""@id"":""{expectedId}"",""@type"":""{expectedType}""}}]}}");
             var expectedRequestTime = DateTime.UtcNow;
 
+            // Act
             var resource = new ServiceIndexResourceV3(model, expectedRequestTime, packageSource: null);
 
+            // Assert
             Assert.Equal(expectedRequestTime, resource.RequestTime);
             Assert.Equal(1, resource.Entries.Count);
-            Assert.Equal("a", resource.Entries[0].Type);
-            Assert.Equal("http://contoso.test/b", resource.Entries[0].Uri.ToString());
+            Assert.Equal(expectedType, resource.Entries[0].Type);
+            Assert.Equal(expectedId, resource.Entries[0].Uri.ToString());
         }
 
         [Fact]
-        public void Constructor_WithModel_JsonProperty_RoundTrips()
+        public void ServiceIndexResourceV3_ServiceIndexModel_JsonPropertyRoundTrips()
         {
-            var model = DeserializeModel(@"{""version"":""1.2.3"",""resources"":[{""@id"":""http://contoso.test/b"",""@type"":""a""}]}");
+            // Arrange
+            var expectedVersion = "1.2.3";
+            var model = DeserializeModel($@"{{""version"":""{expectedVersion}"",""resources"":[{{""@id"":""http://contoso.test/b"",""@type"":""a""}}]}}");
 
+            // Act
             var resource = new ServiceIndexResourceV3(model, DateTime.UtcNow, packageSource: null);
 
-            // Json property re-serializes from the model; verify it round-trips to equivalent content.
+            // Assert
             using var doc = JsonDocument.Parse(resource.Json);
-            Assert.Equal("1.2.3", doc.RootElement.GetProperty("version").GetString());
+            Assert.Equal(expectedVersion, doc.RootElement.GetProperty("version").GetString());
             Assert.Equal(1, doc.RootElement.GetProperty("resources").GetArrayLength());
         }
 
         [Fact]
-        public void Constructor_WithModel_TypeAsArray_ExpandsToEntryPerType()
+        public void ServiceIndexResourceV3_ServiceIndexModel_WhenTypeIsArray_CreatesEntryPerType()
         {
-            var model = DeserializeModel(@"{""version"":""3.0.0"",""resources"":[{""@id"":""http://contoso.test/b"",""@type"":[""a"",""b""]}]}");
+            // Arrange
+            var expectedId = "http://contoso.test/b";
+            var expectedTypeA = "a";
+            var expectedTypeB = "b";
+            var model = DeserializeModel($@"{{""version"":""3.0.0"",""resources"":[{{""@id"":""{expectedId}"",""@type"":[""{expectedTypeA}"",""{expectedTypeB}""]}}]}}");
 
+            // Act
             var resource = new ServiceIndexResourceV3(model, DateTime.UtcNow, packageSource: null);
 
+            // Assert
             Assert.Equal(2, resource.Entries.Count);
-            Assert.Contains(resource.Entries, e => e.Type == "a");
-            Assert.Contains(resource.Entries, e => e.Type == "b");
-            Assert.All(resource.Entries, e => Assert.Equal("http://contoso.test/b", e.Uri.ToString()));
+            Assert.Contains(resource.Entries, e => e.Type == expectedTypeA);
+            Assert.Contains(resource.Entries, e => e.Type == expectedTypeB);
+            Assert.All(resource.Entries, e => Assert.Equal(expectedId, e.Uri.ToString()));
         }
 
         [Fact]
-        public void Constructor_WithModel_ClientVersionAsArray_CreatesEntryPerVersion()
+        public void ServiceIndexResourceV3_ServiceIndexModel_WhenClientVersionIsArray_CreatesEntryPerVersion()
         {
-            var model = DeserializeModel(@"{""version"":""3.0.0"",""resources"":[{""@id"":""http://contoso.test/b"",""@type"":""a"",""clientVersion"":[""4.0.0"",""5.0.0""]}]}");
+            // Arrange
+            var expectedVersionA = new SemanticVersion(4, 0, 0);
+            var expectedVersionB = new SemanticVersion(5, 0, 0);
+            var model = DeserializeModel($@"{{""version"":""3.0.0"",""resources"":[{{""@id"":""http://contoso.test/b"",""@type"":""a"",""clientVersion"":[""{expectedVersionA}"",""{expectedVersionB}""]}}]}}");
 
+            // Act
             var resource = new ServiceIndexResourceV3(model, DateTime.UtcNow, packageSource: null);
 
+            // Assert
             Assert.Equal(2, resource.Entries.Count);
-            Assert.Contains(resource.Entries, e => e.ClientVersion == new SemanticVersion(4, 0, 0));
-            Assert.Contains(resource.Entries, e => e.ClientVersion == new SemanticVersion(5, 0, 0));
+            Assert.Contains(resource.Entries, e => e.ClientVersion == expectedVersionA);
+            Assert.Contains(resource.Entries, e => e.ClientVersion == expectedVersionB);
         }
 
         [Fact]
-        public void GetServiceEntries_WithModel_InvokesDiagnosticEventForHttpResourcesUnderHttpsSource()
+        public void GetServiceEntries_ServiceIndexModel_WhenHttpsSourceHasHttpResources_InvokesDiagnosticEvent()
         {
+            // Arrange
             int eventInvokeCount = 0;
             var capturedEvents = new List<ProtocolDiagnosticServiceIndexEntryEvent>();
 
@@ -188,10 +208,12 @@ namespace NuGet.Protocol.Tests
 
             var source = "https://contoso.test/index.json";
             var model = DeserializeModel(CreateServiceIndexJsonWithFourResourceTypesTwoHttp());
-
             var resource = new ServiceIndexResourceV3(model, DateTime.UtcNow, new Configuration.PackageSource(source));
+
+            // Act
             resource.GetServiceEntries(ServiceTypes.SearchQueryService);
 
+            // Assert
             int httpResourceCapture = 0;
             foreach (var serviceIndexEvent in capturedEvents)
             {

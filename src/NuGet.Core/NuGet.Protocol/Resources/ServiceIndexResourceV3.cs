@@ -209,7 +209,7 @@ namespace NuGet.Protocol
                 }
             }
 
-            foreach (var type in result.Keys)
+            foreach (var type in result.Keys.ToArray())
             {
                 result[type] = result[type].OrderByDescending(e => e.ClientVersion).ToList();
             }
