@@ -2,10 +2,13 @@ parameters:
 - name: displayName
 - name: agentPool
   type: string
-  default: VSEngSS-MicroBuild2019-1ES
+  default: Azure Pipelines
 - name: agentDemands
   type: string
-  default: ImageOverride -equals server2022-microbuildVS2019-1es
+  default: none
+- name: vmImage
+  type: string
+  default: none
 - name: testType
 - name: testTargetFramework
 - name: timeoutInMinutes
@@ -37,9 +40,10 @@ jobs:
 
   pool:
     name: ${{ parameters.agentPool }}
-    os: windows
-    demands:
-    - ${{ parameters.agentDemands }}
+    ${{ if ne(parameters.vmImage, 'none') }}:
+      vmImage: ${{ parameters.vmImage }}
+    ${{ if ne(parameters.agentDemands, 'none') }}:
+      demands: ${{ parameters.agentDemands }}
 
   steps:
   - task: PowerShell@2

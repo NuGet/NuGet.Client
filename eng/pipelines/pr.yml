@@ -34,6 +34,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: Unit Tests on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Unit
         testTargetFramework: net472
 
@@ -45,6 +50,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: Msbuild.Integration.Test on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: Msbuild.Integration.Test
@@ -57,6 +67,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.CommandLine.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.FuncTest
@@ -69,6 +84,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.CommandLine.Test on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Test
@@ -83,6 +103,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.Commands.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Commands.FuncTest
@@ -95,6 +120,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Packaging.FuncTest
@@ -107,6 +137,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.Protocol.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Protocol.FuncTest
@@ -119,6 +154,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.XPlat.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.XPlat.FuncTest
@@ -131,6 +171,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.CommandLine.Xplat.Tests on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Xplat.Tests
@@ -143,6 +188,11 @@ stages:
     - template: pr.job.yml
       parameters:
         displayName: NuGet.MSSigning.Extensions.FuncTest on Windows (.NET Framework 4.7.2)
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.MSSigning.Extensions.FuncTest
