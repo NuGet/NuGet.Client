@@ -8,12 +8,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -105,6 +109,30 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         }
 
         [Theory]
+        [InlineData("not-valid-json")]
+        [InlineData(@"<?xml version=""1.0"" encoding=""utf-8""?><service xml:base=""http://www.nuget.org/api/v2/""
+xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom""><workspace><atom:title>Default</atom:title>
+<collection href=""Packages""><atom:title>Packages</atom:title></collection></workspace></service>")]
+        public async Task TryCreate_Stj_Throws_IfSourceLocationDoesNotReturnValidJson(string content)
+        {
+            // Arrange
+            var source = $"https://fake.server-{new Guid().ToString()}/users.json";
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider(CreateStjEnabledEnvReader());
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                [httpProvider, provider]);
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+
+            Assert.IsType<InvalidDataException>(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException.InnerException);
+        }
+
+        [Theory]
         [InlineData("{ \"version\": \"not-semver\" }")]
         [InlineData("{ \"version\": \"3.0.0.0\" }")] // not strict semver
         public async Task TryCreate_Throws_IfInvalidVersionInJson(string content)
@@ -153,11 +181,34 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         public async Task TryCreate_Throws_IfVersionFieldIsWrongType(string content)
         {
             // Arrange
+            // NSJ: version is not a JTokenType.String, falls through to Protocol_MissingVersion.
+            var source = "https://contoso.test/index.json";
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider();
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { httpProvider, provider });
+
+            // Act
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+
+            // Assert
+            Assert.IsType<InvalidDataException>(exception.InnerException);
+        }
+
+        [Theory]
+        [InlineData("{ \"version\": 3 }")] // version is not a string
+        [InlineData("{ \"version\": { \"value\": 3 } }")] // version is not a string
+        public async Task TryCreate_Stj_Throws_IfVersionFieldIsWrongType(string content)
+        {
+            // Arrange
             // STJ throws JsonException for type mismatches during deserialization, which
             // maps to Protocol_InvalidJsonObject rather than Protocol_MissingVersion.
             var source = "https://contoso.test/index.json";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
-            var provider = new ServiceIndexResourceV3Provider();
+            var provider = new ServiceIndexResourceV3Provider(CreateStjEnabledEnvReader());
             var sourceRepository = new SourceRepository(new PackageSource(source),
                 new INuGetResourceProvider[] { httpProvider, provider });
 
@@ -452,6 +503,13 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 // Assert
                 await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
+        }
+
+        private static IEnvironmentVariableReader CreateStjEnabledEnvReader()
+        {
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns("true");
+            return envReader.Object;
         }
 
         private static string CreateTestIndex()

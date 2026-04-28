@@ -10,11 +10,13 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
 using NuGet.Protocol.Utility;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -29,7 +31,7 @@ namespace NuGet.Protocol
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
-
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Maximum amount of time to store index.json
@@ -45,6 +47,7 @@ namespace NuGet.Protocol
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
             MaxCacheDuration = DefaultCacheDuration;
+            _environmentVariableReader = environmentVariableReader;
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
@@ -190,7 +193,20 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
+        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            {
+                return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
+            }
+            else
+            {
+                return await ConsumeServiceIndexStreamNsjAsync(stream, utcNow, source, token);
+            }
+        }
+
+        private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamStjAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
             ServiceIndexModel index;
             try
@@ -205,21 +221,53 @@ namespace NuGet.Protocol
                     source.Source), ex);
             }
 
-            if (index?.Version is not string versionString)
+            if (index?.Version is null)
             {
                 throw new InvalidDataException(Strings.Protocol_MissingVersion);
             }
 
             // Use SemVer instead of NuGetVersion; the service index should always be in strict SemVer format.
-            if (!SemanticVersion.TryParse(versionString, out SemanticVersion version) || version.Major != 3)
+            if (!SemanticVersion.TryParse(index.Version, out SemanticVersion version) || version.Major != 3)
             {
                 throw new InvalidDataException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Protocol_UnsupportedVersion,
-                    versionString));
+                    index.Version));
             }
 
             return new ServiceIndexResourceV3(index, utcNow, source);
+        }
+
+        private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamNsjAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
+        {
+            // Parse the JSON
+            JObject json = await stream.AsJObjectAsync(token);
+
+            // Use SemVer instead of NuGetVersion, the service index should always be
+            // in strict SemVer format
+            JToken versionToken;
+            if (json.TryGetValue("version", out versionToken) &&
+                versionToken.Type == JTokenType.String)
+            {
+                SemanticVersion version;
+                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                    version.Major == 3)
+                {
+                    return new ServiceIndexResourceV3(json, utcNow, source);
+                }
+                else
+                {
+                    string errorMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Protocol_UnsupportedVersion,
+                        (string)versionToken);
+                    throw new InvalidDataException(errorMessage);
+                }
+            }
+            else
+            {
+                throw new InvalidDataException(Strings.Protocol_MissingVersion);
+            }
         }
 
         protected class ServiceIndexCacheInfo

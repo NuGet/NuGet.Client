@@ -23,7 +23,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class ServiceIndexResourceV3 : INuGetResource
     {
-        private readonly string _json;
+        private string _json;
         private readonly ServiceIndexModel _model;
         private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
         private readonly DateTime _requestTime;
@@ -67,7 +67,7 @@ namespace NuGet.Protocol
 
         public virtual string Json
         {
-            get { return _json ?? JsonSerializer.Serialize(_model, JsonContext.Default.ServiceIndexModel); }
+            get { return _json ??= JsonSerializer.Serialize(_model, JsonContext.Default.ServiceIndexModel); }
         }
 
         /// <summary>
@@ -178,8 +178,6 @@ namespace NuGet.Protocol
                     ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(source: packageSource.Source, httpsSourceHasHttpResource: true));
                 }
 
-                var types = GetStringValues(resource.Type).ToArray();
-
                 var clientVersions = new List<SemanticVersion>();
                 if (resource.ClientVersion.ValueKind == JsonValueKind.Undefined)
                 {
@@ -187,7 +185,7 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    foreach (var versionString in GetStringValues(resource.ClientVersion))
+                    foreach (var versionString in resource.ClientVersion.AsStrings())
                     {
                         if (SemanticVersion.TryParse(versionString, out SemanticVersion semVer))
                         {
@@ -196,7 +194,7 @@ namespace NuGet.Protocol
                     }
                 }
 
-                foreach (var type in types)
+                foreach (var type in resource.Type.AsStrings())
                 {
                     foreach (var clientVersion in clientVersions)
                     {
@@ -211,30 +209,12 @@ namespace NuGet.Protocol
                 }
             }
 
-            foreach (var type in result.Keys.ToArray())
+            foreach (var type in result.Keys)
             {
                 result[type] = result[type].OrderByDescending(e => e.ClientVersion).ToList();
             }
 
             return result;
-        }
-
-        private static IEnumerable<string> GetStringValues(JsonElement element)
-        {
-            if (element.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in element.EnumerateArray())
-                {
-                    if (item.ValueKind == JsonValueKind.String)
-                    {
-                        yield return item.GetString();
-                    }
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.String)
-            {
-                yield return element.GetString();
-            }
         }
 
         private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
