@@ -11,7 +11,7 @@ namespace NuGet.Protocol.Model
     {
         [JsonRequired]
         [JsonPropertyName("version")]
-        public string? Version { get; set; }
+        public string Version { get; set; } = null!;
 
         [JsonPropertyName("resources")]
         public List<ServiceIndexEntryModel>? Resources { get; set; }

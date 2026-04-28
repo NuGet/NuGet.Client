@@ -163,6 +163,31 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task TryCreate_Throws_IfVersionValueIsNull(bool useStj)
+        {
+            // Arrange
+            var content = "{ \"version\": null }";
+            var source = "https://contoso.test/index.json";
+            var expectedMessage = Strings.Protocol_MissingVersion;
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
+            var provider = CreateProvider(useStj);
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { httpProvider, provider });
+
+            // Act
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+
+            // Assert
+            Assert.IsType<InvalidDataException>(exception.InnerException);
+            Assert.Equal(expectedMessage, exception.InnerException.Message);
+        }
+
+        [Theory]
         [InlineData("{ \"version\": 3 }", false)] // version is not a string
         [InlineData("{ \"version\": 3 }", true)] // version is not a string
         [InlineData("{ \"version\": { \"value\": 3 } }", false)] // version is not a string
