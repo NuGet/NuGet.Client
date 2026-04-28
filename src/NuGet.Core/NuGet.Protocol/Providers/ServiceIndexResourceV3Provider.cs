@@ -229,11 +229,6 @@ namespace NuGet.Protocol
                     source.Source));
             }
 
-            if (index.Version is null)
-            {
-                throw new InvalidDataException(Strings.Protocol_MissingVersion);
-            }
-
             // Use SemVer instead of NuGetVersion; the service index should always be in strict SemVer format.
             if (!SemanticVersion.TryParse(index.Version, out SemanticVersion version) || version.Major != 3)
             {

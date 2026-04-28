@@ -3,18 +3,29 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Model
 {
     internal sealed class ServiceIndexModel
     {
-        [JsonRequired]
         [JsonPropertyName("version")]
-        public string? Version { get; set; }
+        public string Version { get; }
 
         [JsonPropertyName("resources")]
-        public List<ServiceIndexEntryModel>? Resources { get; set; }
+        public List<ServiceIndexEntryModel>? Resources { get; }
+
+        [JsonConstructor]
+        public ServiceIndexModel(string? version, List<ServiceIndexEntryModel>? resources)
+        {
+            if (version is null)
+            {
+                throw new InvalidDataException(Strings.Protocol_MissingVersion);
+            }
+            Version = version;
+            Resources = resources;
+        }
     }
 
     internal sealed class ServiceIndexEntryModel
