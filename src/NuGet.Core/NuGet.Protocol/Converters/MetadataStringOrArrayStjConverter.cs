@@ -3,28 +3,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Converters
 {
     /// <summary>
-    /// Reads a JSON string or array of strings into a <see cref="string"/> array.
+    /// Reads a JSON string or array of strings into a <see cref="IReadOnlyList{T}"/> of strings.
     /// Equivalent to <see cref="MetadataStringOrArrayConverter"/> for System.Text.Json.
     /// </summary>
     /// <remarks>
     /// NSJ equivalent: <see cref="MetadataStringOrArrayConverter"/>.
     /// Used by: <see cref="PackageSearchMetadata.OwnersList"/>.
     /// </remarks>
-    internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<string[]>
+    internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<IReadOnlyList<string>>
     {
         public override bool HandleNull => true;
 
-        public override string[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override IReadOnlyList<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
             {
-                return [];
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
             if (reader.TokenType == JsonTokenType.String)
@@ -35,7 +36,7 @@ namespace NuGet.Protocol.Converters
 
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
             var values = new List<string>();
@@ -43,14 +44,15 @@ namespace NuGet.Protocol.Converters
             {
                 if (reader.TokenType != JsonTokenType.String && reader.TokenType != JsonTokenType.Null)
                 {
-                    throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                    throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
                 }
                 values.Add(reader.GetString() ?? string.Empty);
             }
             return [.. values];
         }
 
-        public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, IReadOnlyList<string> value, JsonSerializerOptions options)
             => throw new NotSupportedException();
     }
 }
+
