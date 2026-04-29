@@ -93,7 +93,7 @@ namespace NuGet.Protocol
                                 {
                                     var model = await JsonSerializer.DeserializeAsync(
                                         httpSourceResult.Stream,
-                                        JsonContext.Default.RepositorySignatureModel,
+                                        RepositorySignatureJsonContext.Default.RepositorySignatureModel,
                                         token);
                                     return new RepositorySignatureResource(model, source);
                                 }
