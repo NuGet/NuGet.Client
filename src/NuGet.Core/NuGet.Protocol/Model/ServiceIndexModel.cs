@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Text.Json;
 using System.IO;
 using System.Text.Json.Serialization;
+using NuGet.Protocol.Converters;
 
 namespace NuGet.Protocol.Model
 {
@@ -33,13 +33,12 @@ namespace NuGet.Protocol.Model
         [JsonPropertyName("@id")]
         public string? Id { get; set; }
 
-        /// <summary>JSON string or array of strings.</summary>
         [JsonPropertyName("@type")]
-        public JsonElement Type { get; set; }
+        [JsonConverter(typeof(StringOrStringArrayConverter))]
+        public string[] Type { get; set; } = [];
 
-        /// <summary>Optional JSON string or array of strings.</summary>
         [JsonPropertyName("clientVersion")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public JsonElement ClientVersion { get; set; }
+        [JsonConverter(typeof(StringOrStringArrayConverter))]
+        public string[]? ClientVersion { get; set; }
     }
 }

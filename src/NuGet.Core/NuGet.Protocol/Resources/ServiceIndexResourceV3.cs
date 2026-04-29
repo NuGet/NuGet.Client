@@ -179,13 +179,13 @@ namespace NuGet.Protocol
                 }
 
                 var clientVersions = new List<SemanticVersion>();
-                if (resource.ClientVersion.ValueKind == JsonValueKind.Undefined)
+                if (resource.ClientVersion is null)
                 {
                     clientVersions.Add(_defaultVersion);
                 }
                 else
                 {
-                    foreach (var versionString in resource.ClientVersion.AsStrings())
+                    foreach (var versionString in resource.ClientVersion)
                     {
                         if (SemanticVersion.TryParse(versionString, out SemanticVersion semVer))
                         {
@@ -194,7 +194,7 @@ namespace NuGet.Protocol
                     }
                 }
 
-                foreach (var type in resource.Type.AsStrings())
+                foreach (var type in resource.Type)
                 {
                     foreach (var clientVersion in clientVersions)
                     {
