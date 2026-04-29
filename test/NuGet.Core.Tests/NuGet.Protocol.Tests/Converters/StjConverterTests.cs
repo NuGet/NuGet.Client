@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -99,19 +98,27 @@ namespace NuGet.Protocol.Tests.Converters
         public void MetadataStringOrArrayStjConverter_OnStringOrArray_ReturnsCorrectItems(string json, string[] expected)
         {
             // Act
-            var actual = Deserialize<IReadOnlyList<string>>(json, new MetadataStringOrArrayStjConverter());
+            var actual = Deserialize<string[]>(json, new MetadataStringOrArrayStjConverter());
 
             // Assert
             actual.Should().Equal(expected);
         }
 
-        [Theory]
-        [InlineData("null")]
-        [InlineData("\"   \"")]
-        public void MetadataStringOrArrayStjConverter_OnNullOrWhitespace_ReturnsNull(string json)
+        [Fact]
+        public void MetadataStringOrArrayStjConverter_OnNull_ReturnsEmpty()
         {
             // Act
-            var actual = Deserialize<IReadOnlyList<string>>(json, new MetadataStringOrArrayStjConverter());
+            var actual = Deserialize<string[]>("null", new MetadataStringOrArrayStjConverter());
+
+            // Assert
+            actual.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void MetadataStringOrArrayStjConverter_OnWhitespace_ReturnsNull()
+        {
+            // Act
+            var actual = Deserialize<string[]>("\"   \"", new MetadataStringOrArrayStjConverter());
 
             // Assert
             actual.Should().BeNull();
@@ -124,7 +131,7 @@ namespace NuGet.Protocol.Tests.Converters
         public void MetadataStringOrArrayStjConverter_OnUnexpectedTokenType_ThrowsJsonException(string json)
         {
             // Act
-            var act = () => Deserialize<IReadOnlyList<string>>(json, new MetadataStringOrArrayStjConverter());
+            var act = () => Deserialize<string[]>(json, new MetadataStringOrArrayStjConverter());
 
             // Assert
             act.Should().Throw<JsonException>();
