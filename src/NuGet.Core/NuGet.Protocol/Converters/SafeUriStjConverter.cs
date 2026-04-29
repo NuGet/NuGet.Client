@@ -7,7 +7,11 @@ using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Converters
 {
-    /// <remarks>NSJ equivalent: <see cref="SafeUriConverter"/>.</remarks>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="SafeUriConverter"/>.
+    /// Used by: <see cref="PackageSearchMetadata.LicenseUrl"/>, <see cref="PackageSearchMetadata.ProjectUrl"/>,
+    /// <see cref="PackageSearchMetadata.ReadmeUrl"/>, <see cref="PackageVulnerabilityMetadata.AdvisoryUrl"/>.
+    /// </remarks>
     internal sealed class SafeUriStjConverter : JsonConverter<Uri>
     {
         public override Uri? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -7,8 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Converters;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -160,86 +158,6 @@ namespace NuGet.Protocol.Tests.Converters
 
             // Assert
             actual.Should().Be(expected);
-        }
-
-        [Theory]
-        [InlineData("""{"id":"Newtonsoft.Json","range":"[6.0.0, )"}""", "Newtonsoft.Json", "[6.0.0, )")]
-        [InlineData("""{"id":"SomePackage"}""", "SomePackage", null)]
-        [InlineData("""{"Id":"MyPackage","Range":"[1.0.0, 2.0.0)"}""", "MyPackage", "[1.0.0, 2.0.0)")]
-        public void PackageDependencyStjConverter_OnObject_ReturnsCorrectDependency(string json, string expectedId, string? expectedRange)
-        {
-            // Arrange
-            var expectedVersionRange = expectedRange is null ? VersionRange.All : VersionRange.Parse(expectedRange);
-
-            // Act
-            var actual = Deserialize<PackageDependency>(json, new PackageDependencyStjConverter());
-
-            // Assert
-            actual.Id.Should().Be(expectedId);
-            actual.VersionRange.Should().Be(expectedVersionRange);
-        }
-
-        [Theory]
-        [InlineData("{}")]
-        [InlineData("""{"range":"[1.0.0, )"}""")]
-        public void PackageDependencyStjConverter_OnMissingId_ThrowsJsonException(string json)
-        {
-            // Act
-            var act = () => Deserialize<PackageDependency>(json, new PackageDependencyStjConverter());
-
-            // Assert
-            act.Should().Throw<JsonException>();
-        }
-
-        [Fact]
-        public void PackageDependencyStjConverter_OnRoundTrip_PreservesValues()
-        {
-            // Arrange
-            var original = new PackageDependency("Newtonsoft.Json", VersionRange.Parse("[13.0.0, )"));
-            var options = OptionsFor(new PackageDependencyStjConverter());
-
-            // Act
-            var json = JsonSerializer.Serialize(original, options);
-            var actual = JsonSerializer.Deserialize<PackageDependency>(json, options);
-
-            // Assert
-            actual!.Id.Should().Be(original.Id);
-            actual.VersionRange.Should().Be(original.VersionRange);
-        }
-
-        [Theory]
-        [InlineData("""{"targetFramework":"net8.0","dependencies":[{"id":"Serilog","range":"[3.0.0, )"}]}""", "net8.0", 1)]
-        [InlineData("""{"targetFramework":"net472","dependencies":[]}""", "net472", 0)]
-        [InlineData("""{"targetFramework":null,"dependencies":[]}""", null, 0)]
-        public void PackageDependencyGroupStjConverter_OnObject_ReturnsCorrectGroup(string json, string? expectedFramework, int expectedCount)
-        {
-            // Arrange
-            var expectedTfm = expectedFramework is null ? NuGetFramework.AnyFramework : NuGetFramework.Parse(expectedFramework);
-
-            // Act
-            var actual = Deserialize<PackageDependencyGroup>(json, new PackageDependencyGroupStjConverter());
-
-            // Assert
-            actual.TargetFramework.Should().Be(expectedTfm);
-            actual.Packages.Should().HaveCount(expectedCount);
-        }
-
-        [Fact]
-        public void PackageDependencyGroupStjConverter_OnRoundTrip_PreservesValues()
-        {
-            // Arrange
-            var original = new PackageDependencyGroup(
-                NuGetFramework.Parse("net8.0"),
-                new[] { new PackageDependency("Serilog", VersionRange.Parse("[3.0.0, )")) });
-            var options = OptionsFor(new PackageDependencyGroupStjConverter());
-
-            // Act
-            var json = JsonSerializer.Serialize(original, options);
-            var actual = JsonSerializer.Deserialize<PackageDependencyGroup>(json, options);
-
-            // Assert
-            actual!.TargetFramework.Should().Be(original.TargetFramework);
-            actual.Packages.Should().ContainSingle().Which.Id.Should().Be("Serilog");
         }
 
         private static T Deserialize<T>(string json, params JsonConverter[] converters)

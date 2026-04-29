@@ -10,14 +10,17 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol.Converters
 {
-    /// <remarks>NSJ equivalent: <see cref="VersionInfoConverter"/> (registered globally in <see cref="JsonExtensions.ObjectSerializationSettings"/>).</remarks>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="VersionInfoConverter"/> (registered globally in <see cref="JsonExtensions.ObjectSerializationSettings"/>).
+    /// Used by: <see cref="VersionInfo"/> entries.
+    /// </remarks>
     internal sealed class VersionInfoStjConverter : JsonConverter<VersionInfo>
     {
         public override VersionInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new JsonException();
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
             string? version = null;

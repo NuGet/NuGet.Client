@@ -9,18 +9,28 @@ using System.Text.Json.Serialization;
 namespace NuGet.Protocol.Converters
 {
     /// <summary>
-    /// Reads a JSON string or array of strings into an <see cref="IReadOnlyList{T}"/> of strings.
+    /// Reads a JSON string or array of strings into a <see cref="string"/> array.
     /// Equivalent to <see cref="MetadataStringOrArrayConverter"/> for System.Text.Json.
     /// </summary>
-    /// <remarks>NSJ equivalent: <see cref="MetadataStringOrArrayConverter"/>.</remarks>
-    internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<IReadOnlyList<string>>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="MetadataStringOrArrayConverter"/>.
+    /// Used by: <see cref="PackageSearchMetadata.OwnersList"/>.
+    /// </remarks>
+    internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<string[]>
     {
-        public override IReadOnlyList<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override bool HandleNull => true;
+
+        public override string[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return [];
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
                 var str = reader.GetString();
-                return string.IsNullOrWhiteSpace(str) ? null : new[] { str! };
+                return string.IsNullOrWhiteSpace(str) ? null : [str!];
             }
 
             if (reader.TokenType != JsonTokenType.StartArray)
@@ -31,12 +41,16 @@ namespace NuGet.Protocol.Converters
             var values = new List<string>();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
+                if (reader.TokenType != JsonTokenType.String && reader.TokenType != JsonTokenType.Null)
+                {
+                    throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                }
                 values.Add(reader.GetString() ?? string.Empty);
             }
-            return values.ToArray();
+            return [.. values];
         }
 
-        public override void Write(Utf8JsonWriter writer, IReadOnlyList<string> value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)
             => throw new NotSupportedException();
     }
 }

@@ -12,7 +12,10 @@ namespace NuGet.Protocol.Converters
     /// Reads a JSON string or array of strings into a single comma-separated string.
     /// Equivalent to <see cref="MetadataFieldConverter"/> for System.Text.Json.
     /// </summary>
-    /// <remarks>NSJ equivalent: <see cref="MetadataFieldConverter"/>.</remarks>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="MetadataFieldConverter"/>.
+    /// Used by: <see cref="PackageSearchMetadata.Authors"/>, <see cref="PackageSearchMetadata.Tags"/>.
+    /// </remarks>
     internal sealed class MetadataFieldStjConverter : JsonConverter<string>
     {
         public override bool HandleNull => true;
@@ -28,6 +31,10 @@ namespace NuGet.Protocol.Converters
                 var values = new List<string>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
+                    if (reader.TokenType != JsonTokenType.String && reader.TokenType != JsonTokenType.Null)
+                    {
+                        throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                    }
                     var s = reader.GetString();
                     if (!string.IsNullOrWhiteSpace(s))
                     {
@@ -35,6 +42,11 @@ namespace NuGet.Protocol.Converters
                     }
                 }
                 return string.Join(", ", values);
+            }
+
+            if (reader.TokenType != JsonTokenType.String)
+            {
+                throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
             return reader.GetString() ?? string.Empty;

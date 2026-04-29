@@ -7,7 +7,10 @@ using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Converters
 {
-    /// <remarks>NSJ equivalent: <see cref="SafeBoolConverter"/>.</remarks>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="SafeBoolConverter"/>.
+    /// Used by: <see cref="PackageSearchMetadata.RequireLicenseAcceptance"/>.
+    /// </remarks>
     internal sealed class SafeBoolStjConverter : JsonConverter<bool>
     {
         public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

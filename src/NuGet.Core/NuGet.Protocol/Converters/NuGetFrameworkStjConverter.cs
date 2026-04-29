@@ -8,7 +8,10 @@ using NuGet.Frameworks;
 
 namespace NuGet.Protocol.Converters
 {
-    /// <remarks>NSJ equivalent: <see cref="NuGetFrameworkConverter"/> (registered globally in <see cref="JsonExtensions.ObjectSerializationSettings"/>).</remarks>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="NuGetFrameworkConverter"/> (registered globally in <see cref="JsonExtensions.ObjectSerializationSettings"/>).
+    /// Used by: <see cref="NuGetFramework"/> properties.
+    /// </remarks>
     internal sealed class NuGetFrameworkStjConverter : JsonConverter<NuGetFramework>
     {
         public override bool HandleNull => true;
