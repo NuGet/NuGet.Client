@@ -27,6 +27,10 @@ jobs:
 - job:
   displayName: ${{ parameters.displayName }}
   variables:
+    - name: BuildConfiguration
+      value: Release
+    - name: BuildRTM
+      value: false
     - name: TestType
       value: ${{ parameters.testType }}
     - name: TestTargetFramework
@@ -46,30 +50,45 @@ jobs:
       demands: ${{ parameters.agentDemands }}
 
   steps:
-  - task: PowerShell@2
+  - task: PowerShell@1
     displayName: Run configure.ps1
     inputs:
-      filePath: configure.ps1
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CleanCache"
 
-  - script: SET | SORT
-    displayName: Log Environment Variables
+  - task: PowerShell@1
+    displayName: Print Environment Variables
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: MSBuild@1
-    displayName: Restore and Build $(TestType) Test Projects
+    displayName: Restore
     inputs:
-      solution: NuGet.sln
-      msbuildArchitecture: x64
-      msbuildArguments: --binarylogger:"$(BinlogDirectory)01-RestoreAndBuild.binlog"
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(Build.BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /binarylogger:\"$(BinlogDirectory)01-Restore.binlog\""
+
+  - task: MSBuild@1
+    displayName: Build
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Build.BuildNumber) /p:SkipILMergeOfNuGetExe=true /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
+      maximumCpuCount: true
 
   - task: DotNetCoreCLI@2
-    displayName: Run $(TestType) Tests 
+    displayName: Run $(TestType) Tests
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     env:
       VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1000
     inputs:
       command: test
-      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
+      ${{ if ne(parameters.testProjectName, '') }}:
+        projects: "test/**/${{ parameters.testProjectName }}/${{ parameters.testProjectName }}.csproj"
+      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)03-RunTests.binlog"
       ${{ if ne(parameters.testProjectName, '') }}:
         testRunTitle: Windows $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
       ${{ else }}:
