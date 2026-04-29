@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../Strings.resx">
     <body>
@@ -220,7 +220,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">您正在使用 'HTTP' 來源執行 '{0}' 作業: {1}。NuGet 需要 HTTPS 來源。若要使用 HTTP 來源，您必須在 NuGet.Config 檔案中將 'allowInsecureConnections' 明確設定為 true。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
+        <target state="translated">您正在使用 'HTTP' 來源 {1} 執行 '{0}' 作業。NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecureConnections' 明確設定為 true，才能使用 HTTP 來源。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single_Short">
@@ -230,7 +230,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">您正在使用 'HTTP' 來源執行 '{0}' 作業: {1}。NuGet 需要 HTTPS 來源。若要使用 HTTP 來源，您必須在 NuGet.Config 檔案中將 'allowInsecureConnections' 明確設定為 true。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
+        <target state="translated">您正在使用 'HTTP' 來源 {1} 執行 '{0}' 作業。NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecureConnections' 明確設定為 true，才能使用 HTTP 來源。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Error_IncompatiblePackageType">
@@ -680,7 +680,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Log_AliasContainsDisallowedCharacters">
         <source>The project {0} contains a TargetFramework '{1}' with disallowed characters. TargetFramework names must contain only ASCII characters and must not contain path separators.</source>
-        <target state="new">The project {0} contains a TargetFramework '{1}' with disallowed characters. TargetFramework names must contain only ASCII characters and must not contain path separators.</target>
+        <target state="translated">專案 {0} 包含一個 TargetFramework '{1}'，其中含有不允許的字元。TargetFramework 名稱必須僅包含 ASCII 字元，且不得包含路徑分隔符。</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
@@ -1002,7 +1002,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Log_VersionConflictForCentralTransitive">
         <source>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</source>
-        <target state="new">Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</target>
+        <target state="translated">偵測到 {0} 的版本衝突。已啟用中央套件管理的傳遞相依版本鎖定。請為 {1} 新增 PackageVersion 以解決此問題。</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">
@@ -1476,14 +1476,14 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">以下是「非 HTTPS」來源: {0}
-NuGet 需要 HTTPS 來源。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
+NuGet 需要 HTTPS 來源。如需詳細資訊，請參閱 https://aka.ms/nuget-https-everywhere。</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">以下是「非 HTTPS」來源: {0}
-NuGet 需要 HTTPS 來源。參閱 https://aka.ms/nuget-https-everywhere 以取得更多資訊。</target>
+NuGet 需要 HTTPS 來源。如需詳細資訊，請參閱 https://aka.ms/nuget-https-everywhere。</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">

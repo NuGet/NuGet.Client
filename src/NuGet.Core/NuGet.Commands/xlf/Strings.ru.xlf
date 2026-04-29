@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
     <body>
@@ -680,14 +680,14 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Log_AliasContainsDisallowedCharacters">
         <source>The project {0} contains a TargetFramework '{1}' with disallowed characters. TargetFramework names must contain only ASCII characters and must not contain path separators.</source>
-        <target state="new">The project {0} contains a TargetFramework '{1}' with disallowed characters. TargetFramework names must contain only ASCII characters and must not contain path separators.</target>
+        <target state="translated">Проект {0} содержит TargetFramework "{1}" с запрещенными символами. Имена TargetFramework должны содержать только символы ASCII и не должны содержать разделителей пути.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET {1} или более поздней.
-Обновите пакет SDK для .NET или удалите RestoreUseLegacyDependencyResolver, чтобы использовать эту функцию.</target>
+        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET не ниже {1}.
+Чтобы использовать эту функцию, установите более новую версию пакета SDK для .NET или удалите RestoreUseLegacyDependencyResolver.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">
@@ -1002,7 +1002,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Log_VersionConflictForCentralTransitive">
         <source>Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</source>
-        <target state="new">Version conflict detected for {0}. Central Package Management transitive pinning is enabled. Add a PackageVersion for {1} to resolve this issue.</target>
+        <target state="translated">Обнаружен конфликт версий для {0}. Включено транзитивное закрепление в Центральном управлении пакетами. Добавьте PackageVersion для {1}, чтобы решить эту проблему.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_WritingAssetsFile">
@@ -1419,22 +1419,22 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Critical">
         <source>critical</source>
-        <target state="translated">критический уровень</target>
+        <target state="translated">критический</target>
         <note>As in "This package has a critical severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_High">
         <source>high</source>
-        <target state="translated">высокий уровень</target>
+        <target state="translated">высокий</target>
         <note>As in "This package has a high severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Low">
         <source>low</source>
-        <target state="translated">низкий уровень</target>
+        <target state="translated">низкий</target>
         <note>As in "This package has a low severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Moderate">
         <source>moderate</source>
-        <target state="translated">средний уровень</target>
+        <target state="translated">средний</target>
         <note>As in "This package has a moderate severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
