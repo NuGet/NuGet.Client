@@ -68,14 +68,14 @@ jobs:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(Build.BuildId) /p:BuildRTM=$(BuildRTM) /v:m /binarylogger:\"$(BinlogDirectory)01-Restore.binlog\""
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=1 /p:BuildRTM=$(BuildRTM) /v:m /binarylogger:\"$(BinlogDirectory)01-Restore.binlog\""
 
   - task: MSBuild@1
     displayName: Build
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(Build.BuildId) /p:SkipILMergeOfNuGetExe=true /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=1 /p:SkipILMergeOfNuGetExe=true /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
       maximumCpuCount: true
 
   - task: DotNetCoreCLI@2
