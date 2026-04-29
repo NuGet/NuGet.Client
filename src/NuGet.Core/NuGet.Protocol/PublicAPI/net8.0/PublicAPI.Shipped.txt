@@ -1948,12 +1948,12 @@ static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet
 ~static NuGet.Protocol.HttpStreamValidation.ValidateNupkg(string uri, System.IO.Stream stream) -> void
 ~static NuGet.Protocol.HttpStreamValidation.ValidateXml(string uri, System.IO.Stream stream) -> void
 static NuGet.Protocol.JsonExtensions.FromJToken(this Newtonsoft.Json.Linq.JToken! jtoken, System.Type! type) -> object?
-static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken! jtoken) -> T
+static NuGet.Protocol.JsonExtensions.FromJToken<T>(this Newtonsoft.Json.Linq.JToken! jtoken) -> T?
 static NuGet.Protocol.JsonExtensions.FromJson(this string! json, System.Type! type) -> object?
-static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json) -> T
-static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json, Newtonsoft.Json.JsonSerializerSettings! settings) -> T
+static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json) -> T?
+static NuGet.Protocol.JsonExtensions.FromJson<T>(this string! json, Newtonsoft.Json.JsonSerializerSettings! settings) -> T?
 static NuGet.Protocol.JsonExtensions.GetBoolean(this Newtonsoft.Json.Linq.JObject! json, string! propertyName) -> bool?
-static NuGet.Protocol.JsonExtensions.GetJObjectProperty<T>(this Newtonsoft.Json.Linq.JObject! jobject, string! propertyName) -> T
+static NuGet.Protocol.JsonExtensions.GetJObjectProperty<T>(this Newtonsoft.Json.Linq.JObject! jobject, string! propertyName) -> T?
 static NuGet.Protocol.JsonExtensions.ToJToken(this object! obj) -> Newtonsoft.Json.Linq.JToken!
 static NuGet.Protocol.JsonExtensions.ToJson(this object! obj, Newtonsoft.Json.Formatting formatting = Newtonsoft.Json.Formatting.None) -> string!
 ~static NuGet.Protocol.LocalFolderUtility.EnsurePackageFileExists(string packagePath, System.Collections.Generic.IEnumerable<string> matchingPackagePaths) -> void
