@@ -21,6 +21,7 @@ namespace NuGet.Protocol.Converters
             var dict = new Dictionary<string, string>();
             while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
             {
+                // Non-null: GetString() returns null only for JsonTokenType.Null.
                 string key = reader.GetString()!;
                 reader.Read();
                 dict[key] = reader.GetString() ?? string.Empty;

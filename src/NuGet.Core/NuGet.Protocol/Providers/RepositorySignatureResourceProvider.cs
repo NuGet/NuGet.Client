@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Model;
 using NuGet.Protocol.Utility;
 using NuGet.Shared;
 
@@ -48,21 +47,7 @@ namespace NuGet.Protocol
             return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
 
-        private Task<RepositorySignatureResource> GetRepositorySignatureResourceAsync(
-            SourceRepository source,
-            ServiceIndexEntry serviceEntry,
-            ILogger log,
-            CancellationToken token)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
-            {
-                return GetRepositorySignatureResourceStjAsync(source, serviceEntry, log, token);
-            }
-            return GetRepositorySignatureResourceNsjAsync(source, serviceEntry, log, token);
-        }
-
-        private static async Task<RepositorySignatureResource> GetRepositorySignatureResourceStjAsync(
+        private async Task<RepositorySignatureResource> GetRepositorySignatureResourceAsync(
             SourceRepository source,
             ServiceIndexEntry serviceEntry,
             ILogger log,
@@ -103,78 +88,20 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                RepositorySignatureModel model = await JsonSerializer.DeserializeAsync(
-                                    httpSourceResult.Stream,
-                                    JsonContext.Default.RepositorySignatureModel,
-                                    token);
-
-                                return new RepositorySignatureResource(model, source);
-                            },
-                            log,
-                            token);
-                    }
-                    catch (Exception ex) when (retry < maxRetries)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri)
-                            + Environment.NewLine
-                            + ExceptionUtilities.DisplayMessage(ex);
-                        log.LogMinimal(message);
-                    }
-                    catch (Exception ex) when (retry == maxRetries)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri);
-
-                        throw new FatalProtocolException(message, ex);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private static async Task<RepositorySignatureResource> GetRepositorySignatureResourceNsjAsync(
-            SourceRepository source,
-            ServiceIndexEntry serviceEntry,
-            ILogger log,
-            CancellationToken token)
-        {
-            var repositorySignaturesResourceUri = serviceEntry.Uri;
-
-            if (repositorySignaturesResourceUri == null
-                || !string.Equals(repositorySignaturesResourceUri.Scheme, "https", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(repositorySignaturesResourceUri.Scheme, "http", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.RepositorySignaturesResourceMustBeHttps, source.PackageSource.Source));
-            }
-
-            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
-            var client = httpSourceResource.HttpSource;
-            var cacheKey = GenerateCacheKey(serviceEntry);
-
-            const int maxRetries = 3;
-            for (var retry = 1; retry <= maxRetries; retry++)
-            {
-                using (var sourceCacheContext = new SourceCacheContext())
-                {
-                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, isFirstAttempt: retry == 1);
-
-                    try
-                    {
-                        return await client.GetAsync(
-                            new HttpSourceCachedRequest(
-                                serviceEntry.Uri.AbsoluteUri,
-                                cacheKey,
-                                cacheContext)
-                            {
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(repositorySignaturesResourceUri.AbsoluteUri, stream),
-                                MaxTries = 1,
-                                IsRetry = retry > 1,
-                                IsLastAttempt = retry == maxRetries
-                            },
-                            async httpSourceResult =>
-                            {
-                                var json = await httpSourceResult.Stream.AsJObjectAsync(token);
-                                return new RepositorySignatureResource(json, source);
+                                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                                    || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                                {
+                                    var model = await JsonSerializer.DeserializeAsync(
+                                        httpSourceResult.Stream,
+                                        JsonContext.Default.RepositorySignatureModel,
+                                        token);
+                                    return new RepositorySignatureResource(model, source);
+                                }
+                                else
+                                {
+                                    var json = await httpSourceResult.Stream.AsJObjectAsync(token);
+                                    return new RepositorySignatureResource(json, source);
+                                }
                             },
                             log,
                             token);
