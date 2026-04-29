@@ -88,7 +88,7 @@ jobs:
       command: test
       ${{ if ne(parameters.testProjectName, '') }}:
         projects: "test/**/${{ parameters.testProjectName }}/${{ parameters.testProjectName }}.csproj"
-      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)03-RunTests.binlog"
+      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework)
       ${{ if ne(parameters.testProjectName, '') }}:
         testRunTitle: Windows $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
       ${{ else }}:
