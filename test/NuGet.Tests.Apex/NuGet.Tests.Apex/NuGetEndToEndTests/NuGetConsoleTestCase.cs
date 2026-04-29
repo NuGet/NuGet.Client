@@ -1340,7 +1340,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMCToMultipleProjects_SucceedsAsync()
+        public async Task InstallPackageFromPMCWithExplicitVersionAndSource_SucceedsAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
