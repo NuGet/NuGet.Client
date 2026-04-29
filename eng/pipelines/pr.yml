@@ -36,9 +36,10 @@ stages:
         displayName: Unit Tests on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Unit
         testTargetFramework: net472
 
@@ -52,9 +53,10 @@ stages:
         displayName: Msbuild.Integration.Test on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: Msbuild.Integration.Test
@@ -69,9 +71,10 @@ stages:
         displayName: NuGet.CommandLine.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.FuncTest
@@ -86,9 +89,10 @@ stages:
         displayName: NuGet.CommandLine.Test on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Test
@@ -105,9 +109,10 @@ stages:
         displayName: NuGet.Commands.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Commands.FuncTest
@@ -122,9 +127,10 @@ stages:
         displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Packaging.FuncTest
@@ -139,9 +145,10 @@ stages:
         displayName: NuGet.Protocol.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Protocol.FuncTest
@@ -156,9 +163,10 @@ stages:
         displayName: NuGet.XPlat.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.XPlat.FuncTest
@@ -173,9 +181,10 @@ stages:
         displayName: NuGet.CommandLine.Xplat.Tests on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Xplat.Tests
@@ -190,9 +199,10 @@ stages:
         displayName: NuGet.MSSigning.Extensions.FuncTest on Windows (.NET Framework 4.7.2)
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEngSS-MicroBuild2019-1ES
+          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.MSSigning.Extensions.FuncTest
