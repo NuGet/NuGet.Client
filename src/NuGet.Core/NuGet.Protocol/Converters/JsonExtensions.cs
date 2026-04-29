@@ -52,7 +52,7 @@ namespace NuGet.Protocol
         /// <param name="json">JSON representation of object</param>
         public static T? FromJson<T>(this string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, JsonExtensions.ObjectSerializationSettings)!;
+            return JsonConvert.DeserializeObject<T>(json, JsonExtensions.ObjectSerializationSettings);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace NuGet.Protocol
         /// <param name="settings">The settings.</param>
         public static T? FromJson<T>(this string json, JsonSerializerSettings settings)
         {
-            return JsonConvert.DeserializeObject<T>(json, settings)!;
+            return JsonConvert.DeserializeObject<T>(json, settings);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace NuGet.Protocol
         /// <param name="jtoken">The JToken to be deserialized.</param>
         public static T? FromJToken<T>(this JToken jtoken)
         {
-            return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer)!;
+            return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer);
         }
 
         /// <summary>
