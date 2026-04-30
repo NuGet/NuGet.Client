@@ -85,7 +85,8 @@ stages:
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
       RunSettingsDropName: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
       ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
-      NuGetTestGateDropName: 'TestGate/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildNumber)'
+      NuGetStagingGateDropName: 'StagingGate/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildNumber)'
+      NuGetCanaryGateDropName: 'CanaryGate/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildNumber)'
     pool:
       name: VSEng-MicroBuildVSStable
     templateContext:
@@ -133,14 +134,25 @@ stages:
         codeSignValidationEnabled: false
 
       - output: artifactsDrop
-        displayName: 'Publish test gate drop'
+        displayName: 'Publish staging gate drop'
         condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: '$(NuGetTestGateDropName)'
+        buildNumber: '$(NuGetStagingGateDropName)'
         sourcePath: '$(Build.StagingDirectory)\RunSettings'
         toLowerCase: false
         usePat: true
-        dropMetadataContainerName: 'DropMetadata-TestGate'
+        dropMetadataContainerName: 'DropMetadata-StagingGate'
+        codeSignValidationEnabled: false
+
+      - output: artifactsDrop
+        displayName: 'Publish canary gate drop'
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+        buildNumber: '$(NuGetCanaryGateDropName)'
+        sourcePath: '$(Build.StagingDirectory)\RunSettings'
+        toLowerCase: false
+        usePat: true
+        dropMetadataContainerName: 'DropMetadata-CanaryGate'
         codeSignValidationEnabled: false
 
       - output: artifactsDrop
