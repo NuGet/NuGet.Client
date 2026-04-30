@@ -358,7 +358,7 @@ NuGet.Protocol.DownloadResourceV3
 NuGet.Protocol.DownloadResourceV3Provider
 NuGet.Protocol.DownloadResourceV3Provider.DownloadResourceV3Provider() -> void
 NuGet.Protocol.DownloadTimeoutStream
-~NuGet.Protocol.DownloadTimeoutStream.DownloadTimeoutStream(string downloadName, System.IO.Stream networkStream, System.TimeSpan timeout) -> void
+NuGet.Protocol.DownloadTimeoutStream.DownloadTimeoutStream(string! downloadName, System.IO.Stream! networkStream, System.TimeSpan timeout) -> void
 NuGet.Protocol.DownloadTimeoutStreamContent
 ~NuGet.Protocol.DownloadTimeoutStreamContent.DownloadTimeoutStreamContent(string downloadName, System.IO.Stream networkStream, System.TimeSpan timeout) -> void
 NuGet.Protocol.Events.ProtocolDiagnosticHttpEvent
@@ -681,8 +681,8 @@ NuGet.Protocol.MetadataFieldConverter
 NuGet.Protocol.MetadataFieldConverter.MetadataFieldConverter() -> void
 NuGet.Protocol.MetadataReferenceCache
 NuGet.Protocol.MetadataReferenceCache.GetObject<T>(T input) -> T
-~NuGet.Protocol.MetadataReferenceCache.GetString(string s) -> string
-~NuGet.Protocol.MetadataReferenceCache.GetVersion(string s) -> NuGet.Versioning.NuGetVersion
+NuGet.Protocol.MetadataReferenceCache.GetString(string? s) -> string?
+NuGet.Protocol.MetadataReferenceCache.GetVersion(string! s) -> NuGet.Versioning.NuGetVersion!
 NuGet.Protocol.MetadataReferenceCache.MetadataReferenceCache() -> void
 NuGet.Protocol.MetadataResourceV2Feed
 ~NuGet.Protocol.MetadataResourceV2Feed.MetadataResourceV2Feed(NuGet.Protocol.V2FeedParser feedParser, NuGet.Protocol.Core.Types.SourceRepository source) -> void
@@ -1664,11 +1664,11 @@ override NuGet.Protocol.DownloadTimeoutStream.Flush() -> void
 override NuGet.Protocol.DownloadTimeoutStream.Length.get -> long
 override NuGet.Protocol.DownloadTimeoutStream.Position.get -> long
 override NuGet.Protocol.DownloadTimeoutStream.Position.set -> void
-~override NuGet.Protocol.DownloadTimeoutStream.Read(byte[] buffer, int offset, int count) -> int
-~override NuGet.Protocol.DownloadTimeoutStream.ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>
+override NuGet.Protocol.DownloadTimeoutStream.Read(byte[]! buffer, int offset, int count) -> int
+override NuGet.Protocol.DownloadTimeoutStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
 override NuGet.Protocol.DownloadTimeoutStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 override NuGet.Protocol.DownloadTimeoutStream.SetLength(long value) -> void
-~override NuGet.Protocol.DownloadTimeoutStream.Write(byte[] buffer, int offset, int count) -> void
+override NuGet.Protocol.DownloadTimeoutStream.Write(byte[]! buffer, int offset, int count) -> void
 ~override NuGet.Protocol.FeedTypeResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 ~override NuGet.Protocol.FindLocalPackagesResourcePackagesConfig.FindPackagesById(string id, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 ~override NuGet.Protocol.FindLocalPackagesResourcePackagesConfig.GetPackage(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> NuGet.Protocol.LocalPackageInfo
@@ -1880,10 +1880,10 @@ override NuGet.Protocol.VersionRangeConverter.CanConvert(System.Type! objectType
 override NuGet.Protocol.VersionRangeConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
 override NuGet.Protocol.VersionRangeConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 ~override NuGet.Repositories.LocalPackageInfo.ToString() -> string
-~static NuGet.Protocol.CachingUtility.ComputeHash(string value, bool addIdentifiableCharacters = true) -> string
-~static NuGet.Protocol.CachingUtility.IsFileAlreadyOpen(string filePath) -> bool
-~static NuGet.Protocol.CachingUtility.ReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
-~static NuGet.Protocol.CachingUtility.RemoveInvalidFileNameChars(string value) -> string
+static NuGet.Protocol.CachingUtility.ComputeHash(string! value, bool addIdentifiableCharacters = true) -> string!
+static NuGet.Protocol.CachingUtility.IsFileAlreadyOpen(string! filePath) -> bool
+static NuGet.Protocol.CachingUtility.ReadCacheFile(System.TimeSpan maxAge, string! cacheFile) -> System.IO.Stream?
+static NuGet.Protocol.CachingUtility.RemoveInvalidFileNameChars(string! value) -> string!
 ~static NuGet.Protocol.Core.Types.FindPackageByIdResource.GetDependencyInfo(NuGet.Packaging.NuspecReader reader) -> NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo
 static NuGet.Protocol.Core.Types.HttpSourceCacheContext.Create(NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, bool isFirstAttempt) -> NuGet.Protocol.Core.Types.HttpSourceCacheContext!
 static NuGet.Protocol.Core.Types.HttpSourceCacheContext.Create(NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, int retryCount) -> NuGet.Protocol.Core.Types.HttpSourceCacheContext!
@@ -2013,13 +2013,13 @@ static NuGet.Protocol.JsonExtensions.ToJson(this object! obj, Newtonsoft.Json.Fo
 ~static NuGet.Protocol.Plugins.TimeoutUtilities.GetTimeout(string timeoutInSeconds, System.TimeSpan fallbackTimeout) -> System.TimeSpan
 static NuGet.Protocol.Plugins.TimeoutUtilities.IsValid(System.TimeSpan timeout) -> bool
 static NuGet.Protocol.RegistrationUtility.CreateVersionRange(string! stringToParse) -> NuGet.Versioning.VersionRange!
-static NuGet.Protocol.RegistrationUtility.LoadRanges(NuGet.Protocol.HttpSource! httpSource, System.Uri! registrationUri, string! packageId, NuGet.Versioning.VersionRange! range, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Newtonsoft.Json.Linq.JObject!>!>!
+static NuGet.Protocol.RegistrationUtility.LoadRanges(NuGet.Protocol.HttpSource! httpSource, System.Uri! registrationUri, string! packageId, NuGet.Versioning.VersionRange! range, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Newtonsoft.Json.Linq.JObject?>!>!
 static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(System.Uri! uriTemplate) -> NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3?
 ~static NuGet.Protocol.SemaphoreSlimThrottle.CreateBinarySemaphore() -> NuGet.Protocol.SemaphoreSlimThrottle
 ~static NuGet.Protocol.SemaphoreSlimThrottle.CreateSemaphoreThrottle(int initialCount) -> NuGet.Protocol.SemaphoreSlimThrottle
-~static NuGet.Protocol.StreamExtensions.CopyToAsync(this System.IO.Stream stream, System.IO.Stream destination, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-~static NuGet.Protocol.TimeoutUtility.StartWithTimeout(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task> getTask, System.TimeSpan timeout, string timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-~static NuGet.Protocol.TimeoutUtility.StartWithTimeout<T>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>> getTask, System.TimeSpan timeout, string timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
+static NuGet.Protocol.StreamExtensions.CopyToAsync(this System.IO.Stream! stream, System.IO.Stream! destination, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+static NuGet.Protocol.TimeoutUtility.StartWithTimeout(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! getTask, System.TimeSpan timeout, string? timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+static NuGet.Protocol.TimeoutUtility.StartWithTimeout<T>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>!>! getTask, System.TimeSpan timeout, string? timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
 ~static NuGet.Protocol.TokenStore.Instance.get -> NuGet.Protocol.TokenStore
 ~static NuGet.Protocol.V2FeedUtilities.CreatePackageSearchResult(NuGet.Protocol.V2FeedPackageInfo package, NuGet.Protocol.MetadataReferenceCache metadataCache, NuGet.Protocol.Core.Types.SearchFilter filter, NuGet.Protocol.V2FeedParser feedParser, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> NuGet.Protocol.Core.Types.IPackageSearchMetadata
 ~static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.ProviderFactory factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>>

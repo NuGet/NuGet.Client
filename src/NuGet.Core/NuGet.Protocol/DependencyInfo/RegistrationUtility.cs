@@ -28,7 +28,7 @@ namespace NuGet.Protocol
             return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
         }
 
-        public async static Task<IEnumerable<JObject>> LoadRanges(
+        public async static Task<IEnumerable<JObject?>> LoadRanges(
             HttpSource httpSource,
             Uri registrationUri,
             string packageId,
@@ -62,7 +62,7 @@ namespace NuGet.Protocol
                 return Enumerable.Empty<JObject>();
             }
 
-            IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
+            IList<Task<JObject?>> rangeTasks = new List<Task<JObject?>>();
 
             foreach (JObject item in index["items"]!)
             {
@@ -93,7 +93,7 @@ namespace NuGet.Protocol
                     }
                     else
                     {
-                        rangeTasks.Add(Task.FromResult(item));
+                        rangeTasks.Add(Task.FromResult<JObject?>(item));
                     }
                 }
             }
