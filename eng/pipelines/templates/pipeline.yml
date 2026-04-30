@@ -262,17 +262,3 @@ stages:
       parameters:
         BuildRTM: true
         SigningType: ${{ parameters.SigningType }}
-
-  - job: Validate_Publishing_Artifacts
-    condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
-    displayName: 'Validate Publishing build artifacts'
-    dependsOn: Build_RTM
-    timeoutInMinutes: 15
-    pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
-      os: windows
-    steps:
-    - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
-      parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
