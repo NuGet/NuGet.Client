@@ -203,7 +203,7 @@ namespace NuGet.Frameworks
 
                 if (target.IsNet5Era && candidate.HasPlatform)
                 {
-                    // If targeting a TFM with .1 revision for the Platform version, then that means
+                    // If targeting a TFM with .1 revision for the Windows Platform version, then that means
                     // it is targeting CsWinRT 3.0 and we need to make sure the candidate is also doing
                     // the same. Similarly, if it is not targeting .1, then we need to make sure the candidate
                     // is also not targeting it for it to be compatible. The .1 revision was added in .NET 10.
