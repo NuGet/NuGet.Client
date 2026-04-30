@@ -5,7 +5,7 @@
 - When creating pull requests, always follow the [PR template](PULL_REQUEST_TEMPLATE.md).
 - Always format before submitting a pull request.
 - Before implementing any code changes, read all files in the `docs/` folder. It contains the NuGet development guidelines, including rules for SDKAnalysisLevel gating, public API policies, error handling patterns, and feature design requirements.
-- Do not edit xlf files directly. These are generated from resx files and any manual changes will be overwritten. Instead, edit the resx files and build to update the xlf files.
+- Do not manually edit `.xlf` files. These files are generated from `.resx` files during build and are managed by the OneLocBuild localization pipeline — any manual edits will be overwritten. When adding or modifying localized strings, edit only the `.resx` file, then build. The build will regenerate the `.Designer.cs` and `.xlf` files. Include all three (`.resx`, `.Designer.cs`, `.xlf`) in your pull request.
 
 ## Coding Standards
 
