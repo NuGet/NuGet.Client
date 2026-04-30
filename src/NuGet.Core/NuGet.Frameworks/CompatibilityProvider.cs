@@ -203,10 +203,13 @@ namespace NuGet.Frameworks
 
                 if (target.IsNet5Era && candidate.HasPlatform)
                 {
-                    // If targeting a TFM with .1 revision for the Windows Platform version, then that means
-                    // it is targeting CsWinRT 3.0 and we need to make sure the candidate is also doing
-                    // the same. Similarly, if it is not targeting .1, then we need to make sure the candidate
-                    // is also not targeting it for it to be compatible. The .1 revision was added in .NET 10.
+                    // net*.0-windows, where the windows version is 10 or higher, will make WinRT APIs available.
+                    // Under the covers it uses CsWinRT to convert WinRT ABIs to .NET API/ABIs.
+                    // Different major versions of CsWinRT are incompatible with each other, so we're special
+                    // casing windows to encode CsWinRT as the platform revision.
+                    // Therefore, net10.0-windows10.0.2610.0 should not be compatible with
+                    // net10.0-windows10.0.22000.1, even though the platform version is higher
+                    // because the revision number is different, signaling an incompatible CsWinRT version.
                     if (result
                          // Scope to .NET 10 and later for the Windows 10 TFM
                          && target.Version.Major >= 10
