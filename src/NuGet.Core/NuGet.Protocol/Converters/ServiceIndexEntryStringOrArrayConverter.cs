@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol.Converters
 {
-    internal sealed class StringOrStringArrayConverter : JsonConverter<string[]>
+    internal sealed class ServiceIndexEntryStringOrArrayConverter : JsonConverter<string[]>
     {
         public override string[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

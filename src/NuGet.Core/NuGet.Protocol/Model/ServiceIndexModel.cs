@@ -34,11 +34,11 @@ namespace NuGet.Protocol.Model
         public string? Id { get; set; }
 
         [JsonPropertyName("@type")]
-        [JsonConverter(typeof(StringOrStringArrayConverter))]
+        [JsonConverter(typeof(ServiceIndexEntryStringOrArrayConverter))]
         public string[] Type { get; set; } = [];
 
         [JsonPropertyName("clientVersion")]
-        [JsonConverter(typeof(StringOrStringArrayConverter))]
+        [JsonConverter(typeof(ServiceIndexEntryStringOrArrayConverter))]
         public string[]? ClientVersion { get; set; }
     }
 }

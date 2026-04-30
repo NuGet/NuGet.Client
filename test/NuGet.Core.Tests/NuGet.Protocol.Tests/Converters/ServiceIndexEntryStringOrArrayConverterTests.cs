@@ -8,11 +8,11 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests.Converters
 {
-    public class StringOrStringArrayConverterTests
+    public class ServiceIndexEntryStringOrArrayConverterTests
     {
         private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
-            Converters = { new StringOrStringArrayConverter() }
+            Converters = { new ServiceIndexEntryStringOrArrayConverter() }
         };
 
         [Theory]
