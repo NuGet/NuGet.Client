@@ -214,7 +214,7 @@ namespace NuGet.Frameworks
                          && target.PlatformVersion.Major >= 10
                          && candidate.PlatformVersion.Major >= 10
                          // Check if both are targeting the same version of CsWinRT support
-                         && (target.PlatformVersion.Revision == 1) != (candidate.PlatformVersion.Revision == 1))
+                         && target.PlatformVersion.Revision != candidate.PlatformVersion.Revision)
                     {
                         result = false;
                     }
