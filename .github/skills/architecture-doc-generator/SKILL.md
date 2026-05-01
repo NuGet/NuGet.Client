@@ -17,7 +17,7 @@ The generated file MUST follow this structure, in order:
 1. **Title and introduction** — A short paragraph explaining what the document is and who it is for.
 2. **Bird's Eye View** — A high-level overview of the problem being solved and the products/artifacts the repository ships. Keep it to a few paragraphs.
 3. **Repository Layout** — A `tree`-style overview of the top-level directory structure, plus any solution filters, workspaces, or other mechanisms for loading subsets of the code.
-4. **Code Map** — The heart of the document. Describes each significant project/crate/package: what it does, what it depends on, and any design rules it enforces. Organized by architectural layer (foundation → core → commands → hosts → UI).
+4. **Code Map** — The heart of the document. Describes each significant project/crate/package: what it does and any design rules it enforces. Organized by architectural layer (foundation → core → commands → hosts → UI). Do NOT include per-project "Depends on: ..." lines — the dependency relationships are captured in the Mermaid diagram instead.
 5. **Dependency Layers** — A Mermaid `block-beta` diagram showing the strict layering of the codebase. Dependencies flow downward only. Use ```` ```mermaid ```` fenced code blocks so GitHub renders the diagram natively. See the Mermaid diagram guidelines below.
 6. **Cross-Cutting Concerns** — Shared source files, multi-targeting, build system, extensibility models, testing strategy, and other concerns that span multiple projects.
 
@@ -29,7 +29,7 @@ The generated file MUST follow this structure, in order:
 - Call out **API boundaries** — the interfaces where one subsystem meets another.
 - Call out **Design Rules** (see below).
 - Mention the dependency direction between layers.
-- **Project heading links**: Each project heading in the Code Map MUST link to its project file (e.g., `.csproj`, `Cargo.toml`, `package.json`) on the repository's hosting platform. Generate the URL by prepending the repository's web base URL to the project file's relative path. Use forward slashes in URLs regardless of the local OS. Format: `#### [\`ProjectName\`](https://github.com/org/repo/blob/main/path/to/Project.csproj)`. To get the relative paths, enumerate the actual project files from the local clone — do not guess paths.
+- **Project heading links**: Each project heading in the Code Map MUST link to its project file (e.g., `.csproj`, `Cargo.toml`, `package.json`) using a **relative path** from the repository root. Use forward slashes in paths regardless of the local OS. Format: `#### [\`ProjectName\`](src/path/to/Project.csproj)`. Do NOT use absolute GitHub URLs — relative paths work on any hosting platform and survive forks/mirrors. To get the relative paths, enumerate the actual project files from the local clone — do not guess paths.
 
 ### What to exclude
 - Do NOT go into detail about *how* each module works internally. The code map is a map of a country, not an atlas of maps of its states.
@@ -50,7 +50,7 @@ Format them as standalone bold-prefixed paragraphs within the relevant code map 
 
 ### Accuracy Requirements
 - **Target frameworks**: Always read the actual build configuration files (e.g., `Directory.Build.props`, `common.project.props`, `Cargo.toml`, `tsconfig.json`) to determine real target frameworks. Never guess or assume — the explore agent's summaries may hallucinate these.
-- **Dependency graph**: If a DGML code map or similar artifact is provided, parse it programmatically (e.g., with a Node.js script) to extract the real dependency relationships. Do not rely solely on agent summaries for dependency data.
+- **Dependency graph**: If a DGML code map or similar artifact is provided, parse it programmatically (e.g., with a Node.js script) to extract the real dependency relationships. Do not rely solely on agent summaries for dependency data. Do NOT emit per-project "Depends on:" lines — the Mermaid diagram is the single source of truth for layer dependencies.
 - **Public vs. internal**: Carefully distinguish public API surfaces (shipped as packages for third-party consumption) from internal implementation details. Do not list internal components under "Public API" headings or diagram sections.
 - **MSBuild / build system details**: When describing build tasks, attribute functionality to the correct system (e.g., "uses MSBuild's static graph APIs" not "evaluates the project graph up-front").
 
@@ -143,3 +143,9 @@ If a component is being replaced by a newer implementation, clearly mark the old
 
 ### Public SDK / extensibility API boundaries
 If certain assemblies form a **public SDK** consumed by third-party developers, call this out explicitly. Link to the official documentation for the SDK. Add a Design Rule noting that any changes to these APIs constitute **breaking changes** and must follow the team's breaking-change process. These assemblies deserve extra scrutiny during code review.
+
+### VS package early-load patterns
+If a VS package auto-loads early in the IDE lifecycle, explain **why** it can do so cheaply. For example, a restore-manager package may contain a slimmed-down subset of assemblies specifically so it can load early without paying a performance cost. Document this design intent explicitly.
+
+### MEF / service composition
+When documenting MEF usage in VS extensions, list the key exports (services, factories, providers) but do NOT reference internal VS service infrastructure (e.g., `SComponentModel`, `SVsServiceProvider`) — those are implementation details that add noise without helping readers understand the architecture.
