@@ -523,8 +523,9 @@ namespace NuGet.Packaging.Signing
                     }
                 }
             }
-            catch (System.Security.Cryptography.CryptographicException)
+            catch (System.Security.Cryptography.CryptographicException exception)
             {
+                return [exception.Message];
             }
 
             return urls;
@@ -571,8 +572,9 @@ namespace NuGet.Packaging.Signing
                     }
                 }
             }
-            catch (System.Security.Cryptography.CryptographicException)
+            catch (System.Security.Cryptography.CryptographicException exception)
             {
+                return [exception.Message];
             }
 
             return urls;

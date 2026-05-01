@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
 using Xunit;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
+using FluentAssertions;
 
 namespace NuGet.Packaging.Test
 {
@@ -414,6 +415,26 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void GetCrlDistributionPointUrls_WithInvalidDerEncoding_ReturnsError()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate("test",
+                generator =>
+                {
+                    // Create an extension with invalid DER-encoded data
+                    // This will cause DerSequenceReader to throw a CryptographicException
+                    var invalidData = new byte[] { 0xFF, 0xFF, 0xFF }; // Invalid DER structure
+                    var ext = new X509Extension("2.5.29.31", invalidData, critical: false);
+                    generator.Extensions.Add(ext);
+                }))
+            {
+                var urls = CertificateUtility.GetCrlDistributionPointUrls(certificate);
+
+                urls.Should().HaveCount(1);
+                urls[0].Should().Be(NuGet.Packaging.Signing.DerEncoding.SR.Cryptography_Der_Invalid_Encoding);
+            }
+        }
+
+        [Fact]
         public void GetOcspUrls_WithNoExtension_ReturnsEmpty()
         {
             using (var certificate = SigningTestUtility.GenerateCertificate("test", generator => { }))
@@ -456,6 +477,26 @@ namespace NuGet.Packaging.Test
                 var urls = CertificateUtility.GetOcspUrls(certificate);
 
                 Assert.Empty(urls);
+            }
+        }
+
+        [Fact]
+        public void GetOcspUrls_WithInvalidDerEncoding_ReturnsError()
+        {
+            using (var certificate = SigningTestUtility.GenerateCertificate("test",
+                generator =>
+                {
+                    // Create an extension with invalid DER-encoded data
+                    // This will cause DerSequenceReader to throw a CryptographicException
+                    var invalidData = new byte[] { 0xFF, 0xFF, 0xFF }; // Invalid DER structure
+                    var ext = new X509Extension("1.3.6.1.5.5.7.1.1", invalidData, critical: false);
+                    generator.Extensions.Add(ext);
+                }))
+            {
+                var urls = CertificateUtility.GetOcspUrls(certificate);
+
+                urls.Should().HaveCount(1);
+                urls[0].Should().Be(NuGet.Packaging.Signing.DerEncoding.SR.Cryptography_Der_Invalid_Encoding);
             }
         }
     }
