@@ -158,9 +158,9 @@ public class PackageDownloadRunnerTests
         using var pathContext = new SimpleTestPathContext();
         using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
 
-        var cache = new SourceCacheContext();
+        using var cache = new SourceCacheContext();
         var logger = new Mock<ILoggerWithColor>();
-        var token = CancellationToken.None;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var sourceRepo = Repository.Factory.GetCoreV3(mockServer.ServiceIndexUri);
 
@@ -186,7 +186,7 @@ public class PackageDownloadRunnerTests
             cache,
             logger.Object,
             includePrerelease: false,
-            token);
+            cts.Token);
 
         mockServer.Stop();
 
