@@ -156,6 +156,7 @@ namespace NuGet.Protocol
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
         }
 
+#nullable enable
         private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(ServiceIndexModel index, PackageSource packageSource)
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
@@ -168,7 +169,7 @@ namespace NuGet.Protocol
             foreach (var resource in index.Resources)
             {
                 var id = resource.Id;
-                if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out Uri uri))
+                if (string.IsNullOrEmpty(id) || !Uri.TryCreate(id, UriKind.Absolute, out Uri? uri))
                 {
                     continue;
                 }
@@ -187,7 +188,7 @@ namespace NuGet.Protocol
                 {
                     foreach (var versionString in resource.ClientVersion)
                     {
-                        if (SemanticVersion.TryParse(versionString, out SemanticVersion semVer))
+                        if (SemanticVersion.TryParse(versionString, out SemanticVersion? semVer))
                         {
                             clientVersions.Add(semVer);
                         }
@@ -198,7 +199,7 @@ namespace NuGet.Protocol
                 {
                     foreach (var clientVersion in clientVersions)
                     {
-                        if (!result.TryGetValue(type, out List<ServiceIndexEntry> entries))
+                        if (!result.TryGetValue(type, out List<ServiceIndexEntry>? entries))
                         {
                             entries = new List<ServiceIndexEntry>();
                             result.Add(type, entries);
@@ -209,13 +210,19 @@ namespace NuGet.Protocol
                 }
             }
 
+#if NET8_0_OR_GREATER
+            foreach (var type in result.Keys)
+#else
             foreach (var type in result.Keys.ToArray())
+#endif
             {
                 result[type] = result[type].OrderByDescending(e => e.ClientVersion).ToList();
             }
 
             return result;
         }
+
+#nullable disable
 
         private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
         {
