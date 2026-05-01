@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ContentFileGlobbingBenchmark-20260501-154505</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.6936/23H2/2023Update/SunValley3) (Hyper-V)
+Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.300-preview.0.26217.103
+  [Host]     : .NET 8.0.26 (8.0.2626.16921), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+  DefaultJob : .NET 8.0.26 (8.0.2626.16921), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Branch_MatchRelativePath</td><td>75.43 ms</td><td>1.469 ms</td><td>1.749 ms</td><td>1.00</td><td>0.03</td><td>5571.4286</td><td>135.87 MB</td><td>1.00</td>
+</tr><tr><td>Dev_ExecuteWithFileProvider</td><td>42.66 ms</td><td>0.296 ms</td><td>0.263 ms</td><td>0.57</td><td>0.01</td><td>3500.0000</td><td>84.21 MB</td><td>0.62</td>
+</tr><tr><td>Proposed_SingleFileDirectory</td><td>33.74 ms</td><td>0.285 ms</td><td>0.266 ms</td><td>0.45</td><td>0.01</td><td>2666.6667</td><td>64.2 MB</td><td>0.47</td>
+</tr></tbody></table>
+</body>
+</html>
