@@ -1,56 +1,69 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using FluentAssertions;
+using Newtonsoft.Json;
 using NuGet.Protocol.Converters;
 using Xunit;
+using StjSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.Protocol.Tests.Converters
 {
     public class MetadataStringOrArrayStjConverterTests
     {
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        private class NsjWrapper
         {
-            Converters = { new MetadataStringOrArrayStjConverter() }
-        };
+            [Newtonsoft.Json.JsonConverter(typeof(MetadataStringOrArrayConverter))]
+            [Newtonsoft.Json.JsonProperty("v")]
+            public IReadOnlyList<string>? Value { get; set; }
+        }
 
-        [Fact]
-        public void Read_OnNull_ThrowsJsonException()
+        private class StjWrapper
         {
-            var act = () => JsonSerializer.Deserialize<IReadOnlyList<string>?>("null", _options);
+            [System.Text.Json.Serialization.JsonConverter(typeof(MetadataStringOrArrayStjConverter))]
+            [System.Text.Json.Serialization.JsonPropertyName("v")]
+            public IReadOnlyList<string>? Value { get; set; }
+        }
 
-            act.Should().Throw<JsonException>();
+        private static IReadOnlyList<string>? DeserializeWithNsj(string json)
+            => JsonConvert.DeserializeObject<NsjWrapper>($"{{\"v\":{json}}}")!.Value;
+
+        private static IReadOnlyList<string>? DeserializeWithStj(string json)
+            => StjSerializer.Deserialize<StjWrapper>($"{{\"v\":{json}}}")!.Value;
+
+        [Theory]
+        [InlineData("\"\"", null)]
+        [InlineData("\"   \"", null)]
+        [InlineData("\"Alice\"", new[] { "Alice" })]
+        [InlineData("[]", new string[0])]
+        [InlineData("[\"Alice\"]", new[] { "Alice" })]
+        [InlineData("[\"Alice\",\"Bob\",\"Charlie\"]", new[] { "Alice", "Bob", "Charlie" })]
+        [InlineData("[\"Alice\",\"\",\"Bob\"]", new[] { "Alice", "", "Bob" })]
+        public void Read_ValidStringOrArray_Succeeds(string json, string[]? expected)
+        {
+            // Act
+            var stjResult = DeserializeWithStj(json);
+            var nsjResult = DeserializeWithNsj(json);
+
+            // Assert
+            stjResult.Should().BeEquivalentTo(expected, o => o.WithStrictOrdering());
+            nsjResult.Should().BeEquivalentTo(stjResult, o => o.WithStrictOrdering());
         }
 
         [Theory]
-        [InlineData("[\"a\",\"b\",\"c\"]", new[] { "a", "b", "c" })]
-        public void Read_OnStringOrArray_ReturnsCorrectItems(string json, string[] expected)
+        [InlineData("[\"Alice\",[],\"Bob\"]")]
+        [InlineData("[\"Alice\",{},\"Bob\"]")]
+        public void Read_NonConvertibleArrayElement_Throws(string json)
         {
-            var actual = JsonSerializer.Deserialize<IReadOnlyList<string>?>(json, _options);
+            // Act
+            Action nsjAction = () => DeserializeWithNsj(json);
+            Action stjAction = () => DeserializeWithStj(json);
 
-            actual.Should().Equal(expected);
-        }
-
-        [Fact]
-        public void Read_OnWhitespace_ReturnsNull()
-        {
-            var actual = JsonSerializer.Deserialize<IReadOnlyList<string>?>("\"   \"", _options);
-
-            actual.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData("42")]
-        [InlineData("true")]
-        [InlineData("{}")]
-        public void Read_OnUnexpectedTokenType_ThrowsJsonException(string json)
-        {
-            var act = () => JsonSerializer.Deserialize<IReadOnlyList<string>?>(json, _options);
-
-            act.Should().Throw<JsonException>();
+            // Assert
+            nsjAction.Should().Throw<Exception>();
+            stjAction.Should().Throw<System.Text.Json.JsonException>();
         }
     }
 }
-

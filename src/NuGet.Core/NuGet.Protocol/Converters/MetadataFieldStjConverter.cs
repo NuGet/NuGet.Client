@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -31,11 +32,17 @@ namespace NuGet.Protocol.Converters
                 var values = new List<string>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    if (reader.TokenType != JsonTokenType.String && reader.TokenType != JsonTokenType.Null)
+                    // Match NSJ coercion: JToken.Value<string>() silently converts
+                    // strings, nulls, numbers, booleans, and dates to string.
+                    string? s = reader.TokenType switch
                     {
-                        throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
-                    }
-                    var s = reader.GetString();
+                        JsonTokenType.String => reader.GetString(),
+                        JsonTokenType.Null => null,
+                        JsonTokenType.True => "True",
+                        JsonTokenType.False => "False",
+                        JsonTokenType.Number => Encoding.UTF8.GetString(reader.ValueSpan.ToArray()),
+                        _ => throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+                    };
                     if (!string.IsNullOrWhiteSpace(s))
                     {
                         values.Add(s!);

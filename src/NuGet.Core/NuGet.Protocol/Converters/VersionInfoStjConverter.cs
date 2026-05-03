@@ -16,6 +16,7 @@ namespace NuGet.Protocol.Converters
     /// </remarks>
     internal sealed class VersionInfoStjConverter : JsonConverter<VersionInfo>
     {
+        public override bool HandleNull => true;
         public override VersionInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -36,11 +37,11 @@ namespace NuGet.Protocol.Converters
                 var propName = reader.GetString();
                 reader.Read();
 
-                if (string.Equals(propName, JsonProperties.Version, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(propName, JsonProperties.Version, StringComparison.Ordinal))
                 {
                     version = reader.GetString();
                 }
-                else if (string.Equals(propName, "downloads", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(propName, "downloads", StringComparison.Ordinal))
                 {
                     downloads = reader.TokenType == JsonTokenType.Null ? null : reader.GetInt64();
                 }

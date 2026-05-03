@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -42,11 +43,19 @@ namespace NuGet.Protocol.Converters
             var values = new List<string>();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.TokenType != JsonTokenType.String && reader.TokenType != JsonTokenType.Null)
+                string? s = reader.TokenType switch
                 {
-                    throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                    JsonTokenType.String => reader.GetString(),
+                    JsonTokenType.Null => null,
+                    JsonTokenType.True => "True",
+                    JsonTokenType.False => "False",
+                    JsonTokenType.Number => Encoding.UTF8.GetString(reader.ValueSpan.ToArray()),
+                    _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+                };
+                if (s is not null)
+                {
+                    values.Add(s);
                 }
-                values.Add(reader.GetString() ?? string.Empty);
             }
             return [.. values];
         }

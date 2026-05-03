@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Frameworks;
@@ -17,12 +18,15 @@ namespace NuGet.Protocol.Converters
         public override bool HandleNull => true;
         public override NuGetFramework Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
+            string? value = reader.TokenType switch
             {
-                return NuGetFramework.AnyFramework;
-            }
+                JsonTokenType.String => reader.GetString(),
+                JsonTokenType.True => "True",
+                JsonTokenType.False => "False",
+                JsonTokenType.Number => Encoding.UTF8.GetString(reader.ValueSpan.ToArray()),
+                _ => throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+            };
 
-            var value = reader.GetString();
             return string.IsNullOrEmpty(value) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(value!);
         }
 
