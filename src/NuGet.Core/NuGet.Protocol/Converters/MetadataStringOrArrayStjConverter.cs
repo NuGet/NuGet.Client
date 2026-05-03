@@ -1,0 +1,67 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace NuGet.Protocol.Converters
+{
+    /// <summary>
+    /// Reads a JSON string or array of strings into a <see cref="IReadOnlyList{T}"/> of strings.
+    /// Equivalent to <see cref="MetadataStringOrArrayConverter"/> for System.Text.Json.
+    /// </summary>
+    /// <remarks>
+    /// NSJ equivalent: <see cref="MetadataStringOrArrayConverter"/>.
+    /// Used by: <see cref="PackageSearchMetadata.OwnersList"/>.
+    /// </remarks>
+    internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<IReadOnlyList<string>>
+    {
+        public override bool HandleNull => true;
+
+        public override IReadOnlyList<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var str = reader.GetString();
+                return string.IsNullOrWhiteSpace(str) ? null : [str!];
+            }
+
+            if (reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+            }
+
+            var values = new List<string>();
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            {
+                string? s = reader.TokenType switch
+                {
+                    JsonTokenType.String => reader.GetString(),
+                    JsonTokenType.Null => null,
+                    JsonTokenType.True => "True",
+                    JsonTokenType.False => "False",
+                    JsonTokenType.Number => Encoding.UTF8.GetString(reader.ValueSpan.ToArray()),
+                    _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+                };
+                if (s is not null)
+                {
+                    values.Add(s);
+                }
+            }
+            return [.. values];
+        }
+
+        public override void Write(Utf8JsonWriter writer, IReadOnlyList<string> value, JsonSerializerOptions options)
+            => throw new NotSupportedException();
+    }
+}
+
