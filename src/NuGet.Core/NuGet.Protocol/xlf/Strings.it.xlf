@@ -89,6 +89,11 @@
         <target state="new">Required property '{0}' not found in JSON.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_UnexpectedJsonToken">
+        <source>Unexpected JSON token type '{0}'.</source>
+        <target state="new">Unexpected JSON token type '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
         <source>The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.</source>
         <target state="translated">Il server ha restituito un errore HTTP '403: accesso non consentito' durante l'accesso all'origine '{0}'. Questo suggerisce che il server ha autenticato l'identità dell'utente ma non ha consentito l'accesso alla risorsa richiesta. Specificare credenziali autorizzate a visualizzare questa risorsa.</target>

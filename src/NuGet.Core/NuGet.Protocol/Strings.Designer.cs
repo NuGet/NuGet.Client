@@ -205,6 +205,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unexpected JSON token type &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_UnexpectedJsonToken {
+            get {
+                return ResourceManager.GetString("Error_UnexpectedJsonToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Required property &apos;{0}&apos; not found in JSON..
         /// </summary>
         internal static string Error_RequiredJsonPropertyMissing {
