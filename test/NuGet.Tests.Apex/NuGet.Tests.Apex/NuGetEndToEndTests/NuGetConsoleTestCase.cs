@@ -1256,6 +1256,9 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
+            var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, CommonUtility.DefaultTargetFramework, "TestProject2");
+            testContext.SolutionService.SaveAll();
+
             var packageName = "TestPackage";
             var packageVersion = "1.0.0";
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
@@ -1264,12 +1267,12 @@ namespace NuGet.Tests.Apex
 
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-            // Get-Package for a different (non-existent) project should fail
+            // Get-Package for the other project which has no packages should return empty
             nugetConsole.Clear();
-            nugetConsole.Execute("Get-Package -ProjectName NonExistentProject");
+            nugetConsole.Execute($"Get-Package -ProjectName {project2.Name}");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain("not found", because: pmcText);
+            pmcText.Should().NotContain(packageName, because: pmcText);
         }
 
         [TestMethod]
@@ -1340,9 +1343,12 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMCWithExplicitVersionAndSource_SucceedsAsync()
+        public async Task InstallPackageFromPMCToMultipleProjects_SucceedsAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, CommonUtility.DefaultTargetFramework, "TestProject2");
+            testContext.SolutionService.SaveAll();
 
             var packageName = "TestPackage";
             var packageVersion = "1.0.0";
@@ -1350,25 +1356,43 @@ namespace NuGet.Tests.Apex
 
             var nugetConsole = GetConsole(testContext.Project);
 
-            nugetConsole.Execute($"Install-Package {packageName} -Version {packageVersion} -Source {testContext.PackageSource}");
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+            nugetConsole.Execute($"Install-Package {packageName} -Version {packageVersion} -ProjectName {project2.Name}");
 
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project2, packageName, packageVersion, Logger);
         }
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void GetPackageFromPMCWithNoSolution_Fails()
+        public async Task GetPackageFromPMCWithListAvailable_ReturnsAvailablePackagesAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packages = new[]
+            {
+                ("TestPackageA", "1.0.0"),
+                ("TestPackageB", "1.0.0"),
+                ("TestPackageC", "1.0.0"),
+                ("TestPackageD", "1.0.0"),
+                ("TestPackageE", "1.0.0"),
+            };
+
+            foreach (var (name, version) in packages)
+            {
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, name, version);
+            }
 
             var nugetConsole = GetConsole(testContext.Project);
             nugetConsole.Clear();
 
-            // Verify Get-Package -ListAvailable works (doesn't require solution-level packages)
-            nugetConsole.Execute("Get-Package -ListAvailable -First 1");
+            nugetConsole.Execute($"Get-Package -ListAvailable -Source {testContext.PackageSource}");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
+            foreach (var (name, _) in packages)
+            {
+                pmcText.Should().Contain(name, because: pmcText);
+            }
         }
 
         [TestMethod]
