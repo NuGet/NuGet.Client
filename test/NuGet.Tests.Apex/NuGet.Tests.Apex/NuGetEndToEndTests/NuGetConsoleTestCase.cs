@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -1210,8 +1211,8 @@ namespace NuGet.Tests.Apex
 
             string pmcText = nugetConsole.GetText();
             var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Should().Contain(packageName1, because: pmcText);
-            packages.Should().Contain(packageName2, because: pmcText);
+            packages.Select(p => p.Id).Should().Contain(packageName1, because: pmcText);
+            packages.Select(p => p.Id).Should().Contain(packageName2, because: pmcText);
         }
 
         [TestMethod]
@@ -1249,8 +1250,8 @@ namespace NuGet.Tests.Apex
 
             string pmcText = nugetConsole.GetText();
             var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Should().Contain(packageName, because: pmcText);
-            pmcText.Should().Contain(packageVersion, because: pmcText);
+            packages.Select(p => p.Id).Should().Contain(packageName, because: pmcText);
+            packages.Select(p => p.Versions).Should().Contain(v => v.Contains(packageVersion), because: pmcText);
         }
 
         [TestMethod]
@@ -1299,7 +1300,7 @@ namespace NuGet.Tests.Apex
             string pmcText = nugetConsole.GetText();
             var packages = ParseGetPackageTableOutput(pmcText);
             packages.Should().ContainSingle(because: pmcText)
-                .Which.Should().Be(packageName, because: pmcText);
+                .Which.Id.Should().Be(packageName, because: pmcText);
         }
 
         [TestMethod]
@@ -1398,7 +1399,7 @@ namespace NuGet.Tests.Apex
             availablePackages.Should().HaveCount(packages.Length, because: pmcText);
             foreach (var (name, _) in packages)
             {
-                availablePackages.Should().Contain(name, because: pmcText);
+                availablePackages.Select(p => p.Id).Should().Contain(name, because: pmcText);
             }
         }
 
@@ -1439,7 +1440,24 @@ namespace NuGet.Tests.Apex
         }
 
         /// <summary>
-        /// Parses the tabular output of a Get-Package PMC command into a list of package IDs.
+        /// Holds a single row from the Get-Package PMC table output.
+        /// </summary>
+        private sealed class PmcPackageEntry
+        {
+            public string Id { get; }
+            public string Versions { get; }
+            public string ProjectName { get; }
+
+            public PmcPackageEntry(string id, string versions, string projectName)
+            {
+                Id = id;
+                Versions = versions;
+                ProjectName = projectName;
+            }
+        }
+
+        /// <summary>
+        /// Parses the tabular output of a Get-Package PMC command into a list of package entries.
         /// The expected output format is a fixed-width table with a separator row of dashes:
         /// <code>
         /// Id                 Versions    ProjectName
@@ -1448,11 +1466,13 @@ namespace NuGet.Tests.Apex
         /// TestPackageB       {2.0.0}     MyProject
         /// </code>
         /// Parsing begins after the separator row and stops at the first empty line.
+        /// Column boundaries are inferred from the positions of the dash groups in the separator row.
         /// </summary>
-        private static List<string> ParseGetPackageTableOutput(string pmcText)
+        private static List<PmcPackageEntry> ParseGetPackageTableOutput(string pmcText)
         {
-            var packageIds = new List<string>();
+            var entries = new List<PmcPackageEntry>();
             bool pastSeparator = false;
+            int[]? columnStarts = null;
 
             foreach (string rawLine in pmcText.Split('\n'))
             {
@@ -1464,6 +1484,7 @@ namespace NuGet.Tests.Apex
                     string stripped = line.Replace("-", "").Replace(" ", "");
                     if (stripped.Length == 0 && line.Contains("--"))
                     {
+                        columnStarts = FindColumnStarts(line);
                         pastSeparator = true;
                     }
                     continue;
@@ -1474,18 +1495,70 @@ namespace NuGet.Tests.Apex
                     break; // End of table
                 }
 
-                // The first column ends at the first occurrence of three or more consecutive spaces.
-                // PMC table columns are separated by a large number of spaces, so using 3+ is
-                // more robust than 2+, avoiding false splits on unusual (but technically valid) IDs.
-                int colEnd = line.IndexOf("   ");
-                string packageId = colEnd >= 0 ? line.Substring(0, colEnd).Trim() : line.Trim();
-                if (packageId.Length > 0)
+                if (columnStarts != null)
                 {
-                    packageIds.Add(packageId);
+                    string id = ExtractColumn(line, columnStarts, 0).Trim();
+                    string versions = columnStarts.Length >= 2 ? ExtractColumn(line, columnStarts, 1).Trim() : string.Empty;
+                    string projectName = columnStarts.Length >= 3 ? ExtractColumn(line, columnStarts, 2).Trim() : string.Empty;
+
+                    if (id.Length > 0)
+                    {
+                        entries.Add(new PmcPackageEntry(id, versions, projectName));
+                    }
                 }
             }
 
-            return packageIds;
+            return entries;
+        }
+
+        /// <summary>
+        /// Returns the start index of each group of dashes in the separator row,
+        /// giving the column start positions for the fixed-width table.
+        /// </summary>
+        private static int[] FindColumnStarts(string separatorLine)
+        {
+            var starts = new List<int>();
+            bool inDashes = false;
+
+            for (int i = 0; i < separatorLine.Length; i++)
+            {
+                if (separatorLine[i] == '-' && !inDashes)
+                {
+                    starts.Add(i);
+                    inDashes = true;
+                }
+                else if (separatorLine[i] != '-')
+                {
+                    inDashes = false;
+                }
+            }
+
+            return starts.ToArray();
+        }
+
+        /// <summary>
+        /// Extracts the text for a specific column from a data row, using the column-start
+        /// positions obtained from the separator row.
+        /// </summary>
+        private static string ExtractColumn(string line, int[] columnStarts, int columnIndex)
+        {
+            int start = columnStarts[columnIndex];
+            if (start >= line.Length)
+            {
+                return string.Empty;
+            }
+
+            if (columnIndex + 1 < columnStarts.Length)
+            {
+                int end = columnStarts[columnIndex + 1];
+                if (end > line.Length)
+                {
+                    end = line.Length;
+                }
+                return line.Substring(start, end - start);
+            }
+
+            return line.Substring(start);
         }
     }
 }
