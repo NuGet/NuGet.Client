@@ -192,6 +192,110 @@ public class GetPackageToUpdateTests
     }
 
     [Fact]
+    public async Task RequestPackage_WithVersionRangeOutsideUpperBound_ReturnsError()
+    {
+        // Arrange
+        // Cross-major range request: installed [8.0.0, 9.0.0), explicit request [9.0.0, 10.0.0).
+        // The request is rejected because the requested range is not a subset of the installed range,
+        // and IPackageUpdateIO.GetLatestVersionAsync must never be called for an explicit-range request.
+        Pkg package = new()
+        {
+            Id = "Contoso.Utils",
+            VersionRange = VersionRange.Parse("[9.0.0,10.0.0)")
+        };
+
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Contoso.Utils", [new("Version", "[8.0.0,9.0.0)")]);
+        })
+            .Build();
+
+        var packageUpdateIO = new Mock<IPackageUpdateIO>(MockBehavior.Strict);
+        packageUpdateIO.Setup(v => v.GetPackageSourceMapping()).Returns(DisabledPackageSourceMapping);
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act
+        var (packagesToUpdate, scannedPackages) = await PackageUpdateCommandRunner.SelectSpecificPackagesToUpdateAsync([package], packageSpec, logger.Object, packageUpdateIO.Object, CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().BeNull();
+        scannedPackages.Should().ContainSingle().Which.Should().Be("Contoso.Utils");
+        logger.Invocations.Count.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task RequestPackage_WithFloatingRangeOutsideInstalledFloatingRange_ReturnsError()
+    {
+        // Arrange
+        // Floating-to-floating cross-major bump: installed [8.*, 9.0.0), requested [9.*, 10.0.0).
+        // The requested floating range is outside the installed upper bound and must be rejected.
+        Pkg package = new()
+        {
+            Id = "Contoso.Utils",
+            VersionRange = VersionRange.Parse("[9.*,10.0.0)")
+        };
+
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Contoso.Utils", [new("Version", "[8.*,9.0.0)")]);
+        })
+            .Build();
+
+        var packageUpdateIO = new Mock<IPackageUpdateIO>(MockBehavior.Strict);
+        packageUpdateIO.Setup(v => v.GetPackageSourceMapping()).Returns(DisabledPackageSourceMapping);
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act
+        var (packagesToUpdate, scannedPackages) = await PackageUpdateCommandRunner.SelectSpecificPackagesToUpdateAsync([package], packageSpec, logger.Object, packageUpdateIO.Object, CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().BeNull();
+        scannedPackages.Should().ContainSingle().Which.Should().Be("Contoso.Utils");
+        logger.Invocations.Count.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task RequestPackage_WithSubsetRangeWithinUpperBound_IsAccepted()
+    {
+        // Arrange
+        // Positive guardrail: installed [1.0.0, 2.0.0), requested [1.5.0, 2.0.0) is a subset
+        // and must be accepted as the new version range without invoking latest-version lookup.
+        Pkg package = new()
+        {
+            Id = "Contoso.Utils",
+            VersionRange = VersionRange.Parse("[1.5.0,2.0.0)")
+        };
+
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Contoso.Utils", [new("Version", "[1.0.0,2.0.0)")]);
+        })
+            .Build();
+
+        var packageUpdateIO = new Mock<IPackageUpdateIO>(MockBehavior.Strict);
+        packageUpdateIO.Setup(v => v.GetPackageSourceMapping()).Returns(DisabledPackageSourceMapping);
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act
+        var (packagesToUpdate, scannedPackages) = await PackageUpdateCommandRunner.SelectSpecificPackagesToUpdateAsync([package], packageSpec, logger.Object, packageUpdateIO.Object, CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().HaveCount(1);
+        scannedPackages.Should().ContainSingle().Which.Should().Be("Contoso.Utils");
+        var packageToUpdate = packagesToUpdate.First().Package;
+        packageToUpdate.Id.Should().Be("Contoso.Utils");
+        packageToUpdate.CurrentVersion.ToString().Should().Be("[1.0.0, 2.0.0)");
+        packageToUpdate.NewVersion.ToString().Should().Be("[1.5.0, 2.0.0)");
+        logger.Invocations.Count.Should().Be(0);
+    }
+
+    [Fact]
     public async Task RequestSinglePackageWithRangeSyntax_GetsRequestedVersion()
     {
         // Arrange
