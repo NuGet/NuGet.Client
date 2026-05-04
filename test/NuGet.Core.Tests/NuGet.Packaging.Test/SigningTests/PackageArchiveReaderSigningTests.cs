@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.IO;
 using System.Threading;
@@ -35,7 +33,7 @@ namespace NuGet.Packaging.Test
 
                 using (var signedDir = TestDirectory.Create())
                 {
-                    Uri timestampService = null;
+                    Uri? timestampService = null;
                     var signatureHashAlgorithm = HashAlgorithmName.SHA256;
                     var timestampHashAlgorithm = HashAlgorithmName.SHA256;
 
