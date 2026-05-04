@@ -127,7 +127,8 @@ namespace NuGet.Commands
                         var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
 
                         // Check if the nuspec group include/exclude patterns apply to the file
-                        if (matcher.Match(relativePath).HasMatches)
+                        var directory = new SingleFileDirectory(relativePath);
+                        if (matcher.Execute(directory).HasMatches)
                         {
                             entries.Add(filesEntry);
                         }
