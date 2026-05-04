@@ -1203,6 +1203,12 @@ namespace NuGet.Tests.Apex
 
             var nugetConsole = GetConsole(testContext.Project);
 
+            // Assert no packages are installed initially
+            nugetConsole.Clear();
+            nugetConsole.Execute("Get-Package");
+            string emptyText = nugetConsole.GetText();
+            ParseGetPackageTableOutput(emptyText).Should().BeEmpty(because: emptyText);
+
             nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
             nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
 
@@ -1213,22 +1219,6 @@ namespace NuGet.Tests.Apex
             var packages = ParseGetPackageTableOutput(pmcText);
             packages.Select(p => p.Id).Should().Contain(packageName1, because: pmcText);
             packages.Select(p => p.Id).Should().Contain(packageName2, because: pmcText);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public void GetPackageFromPMCForProject_ReturnsEmptyForNoInstalledPackages()
-        {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var nugetConsole = GetConsole(testContext.Project);
-            nugetConsole.Clear();
-
-            nugetConsole.Execute($"Get-Package -ProjectName {testContext.Project.Name}");
-
-            string pmcText = nugetConsole.GetText();
-            var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Should().BeEmpty(because: pmcText);
         }
 
         [TestMethod]
@@ -1362,8 +1352,8 @@ namespace NuGet.Tests.Apex
 
             var nugetConsole = GetConsole(testContext.Project);
 
-            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-            nugetConsole.Execute($"Install-Package {packageName} -Version {packageVersion} -ProjectName {project2.Name}");
+            // Pipe all projects to Install-Package to replicate the PS1 piping behavior
+            nugetConsole.Execute($"Get-Project -All | Install-Package {packageName} -Version {packageVersion} -Source {testContext.PackageSource}");
 
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project2, packageName, packageVersion, Logger);
