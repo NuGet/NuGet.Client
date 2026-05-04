@@ -1209,8 +1209,9 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute("Get-Package");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain(packageName1, because: pmcText);
-            pmcText.Should().Contain(packageName2, because: pmcText);
+            var packages = ParseGetPackageTableOutput(pmcText);
+            packages.Should().Contain(packageName1, because: pmcText);
+            packages.Should().Contain(packageName2, because: pmcText);
         }
 
         [TestMethod]
@@ -1225,7 +1226,8 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute($"Get-Package -ProjectName {testContext.Project.Name}");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
+            var packages = ParseGetPackageTableOutput(pmcText);
+            packages.Should().BeEmpty(because: pmcText);
         }
 
         [TestMethod]
@@ -1246,7 +1248,8 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute($"Get-Package -ProjectName {testContext.Project.Name}");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain(packageName, because: pmcText);
+            var packages = ParseGetPackageTableOutput(pmcText);
+            packages.Should().Contain(packageName, because: pmcText);
             pmcText.Should().Contain(packageVersion, because: pmcText);
         }
 
@@ -1272,7 +1275,8 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute($"Get-Package -ProjectName {project2.Name}");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().NotContain(packageName, because: pmcText);
+            var packages = ParseGetPackageTableOutput(pmcText);
+            packages.Should().BeEmpty(because: pmcText);
         }
 
         [TestMethod]
@@ -1293,8 +1297,9 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute("Get-Package 'TestFilter'");
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain(packageName, because: pmcText);
-            pmcText.Should().Contain(packageVersion, because: pmcText);
+            var packages = ParseGetPackageTableOutput(pmcText);
+            packages.Should().ContainSingle(because: pmcText)
+                .Which.Should().Be(packageName, because: pmcText);
         }
 
         [TestMethod]
@@ -1389,9 +1394,11 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute($"Get-Package -ListAvailable -Source {testContext.PackageSource}");
 
             string pmcText = nugetConsole.GetText();
+            var availablePackages = ParseGetPackageTableOutput(pmcText);
+            availablePackages.Should().HaveCount(packages.Length, because: pmcText);
             foreach (var (name, _) in packages)
             {
-                pmcText.Should().Contain(name, because: pmcText);
+                availablePackages.Should().Contain(name, because: pmcText);
             }
         }
 
@@ -1429,6 +1436,56 @@ namespace NuGet.Tests.Apex
         public static IEnumerable<object[]> GetMauiTemplates()
         {
             yield return new object[] { ProjectTemplate.MauiClassLibrary };
+        }
+
+        /// <summary>
+        /// Parses the tabular output of a Get-Package PMC command into a list of package IDs.
+        /// The expected output format is a fixed-width table with a separator row of dashes:
+        /// <code>
+        /// Id                 Versions    ProjectName
+        /// --                 --------    -----------
+        /// TestPackageA       {1.0.0}     MyProject
+        /// TestPackageB       {2.0.0}     MyProject
+        /// </code>
+        /// Parsing begins after the separator row and stops at the first empty line.
+        /// </summary>
+        private static List<string> ParseGetPackageTableOutput(string pmcText)
+        {
+            var packageIds = new List<string>();
+            bool pastSeparator = false;
+
+            foreach (string rawLine in pmcText.Split('\n'))
+            {
+                string line = rawLine.TrimEnd('\r');
+
+                if (!pastSeparator)
+                {
+                    // The separator row contains only dashes and spaces (e.g. "--  --------  -----------")
+                    string stripped = line.Replace("-", "").Replace(" ", "");
+                    if (stripped.Length == 0 && line.Contains("--"))
+                    {
+                        pastSeparator = true;
+                    }
+                    continue;
+                }
+
+                if (line.Trim().Length == 0)
+                {
+                    break; // End of table
+                }
+
+                // The first column ends at the first occurrence of three or more consecutive spaces.
+                // PMC table columns are separated by a large number of spaces, so using 3+ is
+                // more robust than 2+, avoiding false splits on unusual (but technically valid) IDs.
+                int colEnd = line.IndexOf("   ");
+                string packageId = colEnd >= 0 ? line.Substring(0, colEnd).Trim() : line.Trim();
+                if (packageId.Length > 0)
+                {
+                    packageIds.Add(packageId);
+                }
+            }
+
+            return packageIds;
         }
     }
 }
