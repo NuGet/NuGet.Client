@@ -113,7 +113,9 @@ namespace Test.Utility
 
                 _listenerTask = null;
 
-                task?.Wait();
+                // Use a bounded wait to prevent hanging the test host if Abort()
+                // doesn't immediately unblock the listener's GetContext() call.
+                task?.Wait(TimeSpan.FromSeconds(5));
             }
             catch (Exception ex)
             {
