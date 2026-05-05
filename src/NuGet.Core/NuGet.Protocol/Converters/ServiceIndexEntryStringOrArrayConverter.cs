@@ -19,31 +19,27 @@ namespace NuGet.Protocol.Converters
 
             if (reader.TokenType == JsonTokenType.StartArray)
             {
-                string? first = null;
-                List<string>? rest = null;
+                string? value = null;
+                List<string>? values = null;
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
                     if (reader.TokenType == JsonTokenType.String)
                     {
-                        string value = reader.GetString()!;
-                        if (first is null)
+                        if (value is null)
                         {
-                            first = value;
+                            value = reader.GetString()!;
                         }
                         else
                         {
-                            (rest ??= []).Add(value);
+                            (values ??= [value]).Add(reader.GetString()!);
                         }
                     }
                 }
 
-                if (first is null) { return []; }
-                if (rest is null) { return [first]; }
-                string[] result = new string[rest.Count + 1];
-                result[0] = first;
-                rest.CopyTo(result, 1);
-                return result;
+                if (value is null) { return []; }
+                if (values is null) { return [value]; }
+                return [.. values];
             }
 
             reader.Skip();
