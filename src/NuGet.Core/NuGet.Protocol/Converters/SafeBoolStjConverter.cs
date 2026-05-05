@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Converters
                 case JsonTokenType.Null:
                     return false;
                 case JsonTokenType.String:
-                    return bool.TryParse(reader.GetString()?.Trim(), out bool flag) && flag;
+                    return bool.TryParse(reader.GetString(), out bool flag) && flag;
                 case JsonTokenType.Number:
                     return reader.TryGetInt64(out long l) && l == 1;
                 default:
