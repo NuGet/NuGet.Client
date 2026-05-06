@@ -424,11 +424,7 @@ namespace NuGet.CommandLine.Test
                     var requestedId = r.QueryString["id"]?.Trim('\'');
                     var filteredPackages = string.IsNullOrEmpty(requestedId)
                         ? packages
-                        : packages.Where(p =>
-                        {
-                            using var reader = new PackageArchiveReader(p.OpenRead());
-                            return string.Equals(reader.NuspecReader.GetId(), requestedId, StringComparison.OrdinalIgnoreCase);
-                        }).ToList();
+                        : packages.Where(p => string.Equals(p.Id, requestedId, StringComparison.OrdinalIgnoreCase)).ToList();
                     string feed = server.ToODataFeed(filteredPackages, "FindPackagesById");
                     MockServer.SetResponseContent(response, feed);
                 }));
