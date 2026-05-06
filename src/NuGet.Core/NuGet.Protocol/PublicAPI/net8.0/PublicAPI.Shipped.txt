@@ -471,21 +471,21 @@ NuGet.Protocol.HttpRetryHandler.HttpRetryHandler() -> void
 NuGet.Protocol.HttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest! request, NuGet.Common.ILogger! log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
 NuGet.Protocol.HttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest! request, string! source, NuGet.Common.ILogger! log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
 NuGet.Protocol.HttpRetryHandlerRequest
-~NuGet.Protocol.HttpRetryHandlerRequest.AddHeaders.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string, System.Collections.Generic.IEnumerable<string>>>
-~NuGet.Protocol.HttpRetryHandlerRequest.AddHeaders.set -> void
+NuGet.Protocol.HttpRetryHandlerRequest.AddHeaders.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, System.Collections.Generic.IEnumerable<string!>!>>!
+NuGet.Protocol.HttpRetryHandlerRequest.AddHeaders.set -> void
 NuGet.Protocol.HttpRetryHandlerRequest.CompletionOption.get -> System.Net.Http.HttpCompletionOption
 NuGet.Protocol.HttpRetryHandlerRequest.CompletionOption.set -> void
 NuGet.Protocol.HttpRetryHandlerRequest.DownloadTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpRetryHandlerRequest.DownloadTimeout.set -> void
-~NuGet.Protocol.HttpRetryHandlerRequest.HttpClient.get -> System.Net.Http.HttpClient
-~NuGet.Protocol.HttpRetryHandlerRequest.HttpRetryHandlerRequest(System.Net.Http.HttpClient httpClient, System.Func<System.Net.Http.HttpRequestMessage> requestFactory) -> void
+NuGet.Protocol.HttpRetryHandlerRequest.HttpClient.get -> System.Net.Http.HttpClient!
+NuGet.Protocol.HttpRetryHandlerRequest.HttpRetryHandlerRequest(System.Net.Http.HttpClient! httpClient, System.Func<System.Net.Http.HttpRequestMessage!>! requestFactory) -> void
 NuGet.Protocol.HttpRetryHandlerRequest.IsLastAttempt.get -> bool
 NuGet.Protocol.HttpRetryHandlerRequest.IsLastAttempt.set -> void
 NuGet.Protocol.HttpRetryHandlerRequest.IsRetry.get -> bool
 NuGet.Protocol.HttpRetryHandlerRequest.IsRetry.set -> void
 NuGet.Protocol.HttpRetryHandlerRequest.MaxTries.get -> int
 NuGet.Protocol.HttpRetryHandlerRequest.MaxTries.set -> void
-~NuGet.Protocol.HttpRetryHandlerRequest.RequestFactory.get -> System.Func<System.Net.Http.HttpRequestMessage>
+NuGet.Protocol.HttpRetryHandlerRequest.RequestFactory.get -> System.Func<System.Net.Http.HttpRequestMessage!>!
 NuGet.Protocol.HttpRetryHandlerRequest.RequestTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpRetryHandlerRequest.RequestTimeout.set -> void
 NuGet.Protocol.HttpRetryHandlerRequest.RetryDelay.get -> System.TimeSpan
@@ -552,17 +552,17 @@ NuGet.Protocol.HttpSourceRequest.MaxTries.set -> void
 NuGet.Protocol.HttpSourceRequest.RequestTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpSourceRequest.RequestTimeout.set -> void
 NuGet.Protocol.HttpSourceResource
-~NuGet.Protocol.HttpSourceResource.HttpSource.get -> NuGet.Protocol.HttpSource
-~NuGet.Protocol.HttpSourceResource.HttpSourceResource(NuGet.Protocol.HttpSource httpSource) -> void
+NuGet.Protocol.HttpSourceResource.HttpSource.get -> NuGet.Protocol.HttpSource!
+NuGet.Protocol.HttpSourceResource.HttpSourceResource(NuGet.Protocol.HttpSource! httpSource) -> void
 NuGet.Protocol.HttpSourceResourceProvider
 NuGet.Protocol.HttpSourceResourceProvider.HttpSourceResourceProvider() -> void
 NuGet.Protocol.HttpSourceResult
-~NuGet.Protocol.HttpSourceResult.CacheFile.get -> string
+NuGet.Protocol.HttpSourceResult.CacheFile.get -> string?
 NuGet.Protocol.HttpSourceResult.Dispose() -> void
 NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status) -> void
-~NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status, string cacheFileName, System.IO.Stream stream) -> void
+NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status, string! cacheFileName, System.IO.Stream! stream) -> void
 NuGet.Protocol.HttpSourceResult.Status.get -> NuGet.Protocol.HttpSourceResultStatus
-~NuGet.Protocol.HttpSourceResult.Stream.get -> System.IO.Stream
+NuGet.Protocol.HttpSourceResult.Stream.get -> System.IO.Stream?
 NuGet.Protocol.HttpSourceResultStatus
 NuGet.Protocol.HttpSourceResultStatus.NoContent = 1 -> NuGet.Protocol.HttpSourceResultStatus
 NuGet.Protocol.HttpSourceResultStatus.NotFound = 0 -> NuGet.Protocol.HttpSourceResultStatus
@@ -570,8 +570,8 @@ NuGet.Protocol.HttpSourceResultStatus.OpenedFromDisk = 2 -> NuGet.Protocol.HttpS
 NuGet.Protocol.HttpSourceResultStatus.OpenedFromNetwork = 3 -> NuGet.Protocol.HttpSourceResultStatus
 NuGet.Protocol.HttpStreamValidation
 NuGet.Protocol.IHttpRetryHandler
-~NuGet.Protocol.IHttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest request, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
-~NuGet.Protocol.IHttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest request, string sourceUri, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
+NuGet.Protocol.IHttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest! request, NuGet.Common.ILogger! log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+NuGet.Protocol.IHttpRetryHandler.SendAsync(NuGet.Protocol.HttpRetryHandlerRequest! request, string! sourceUri, NuGet.Common.ILogger! log, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
 NuGet.Protocol.IThrottle
 NuGet.Protocol.IThrottle.Release() -> void
 NuGet.Protocol.IThrottle.WaitAsync() -> System.Threading.Tasks.Task!
@@ -713,7 +713,7 @@ NuGet.Protocol.NuGetVersionConverter.NuGetVersionConverter() -> void
 NuGet.Protocol.NullThrottle
 NuGet.Protocol.NullThrottle.NullThrottle() -> void
 NuGet.Protocol.NullThrottle.Release() -> void
-~NuGet.Protocol.NullThrottle.WaitAsync() -> System.Threading.Tasks.Task
+NuGet.Protocol.NullThrottle.WaitAsync() -> System.Threading.Tasks.Task!
 NuGet.Protocol.ODataServiceDocumentResourceV2
 ~NuGet.Protocol.ODataServiceDocumentResourceV2.BaseAddress.get -> string
 ~NuGet.Protocol.ODataServiceDocumentResourceV2.ODataServiceDocumentResourceV2(string baseAddress, System.DateTime requestTime) -> void
@@ -1414,8 +1414,8 @@ NuGet.Protocol.SemanticVersionConverter.SemanticVersionConverter() -> void
 NuGet.Protocol.SemaphoreSlimThrottle
 NuGet.Protocol.SemaphoreSlimThrottle.CurrentCount.get -> int
 NuGet.Protocol.SemaphoreSlimThrottle.Release() -> void
-~NuGet.Protocol.SemaphoreSlimThrottle.SemaphoreSlimThrottle(System.Threading.SemaphoreSlim semaphore) -> void
-~NuGet.Protocol.SemaphoreSlimThrottle.WaitAsync() -> System.Threading.Tasks.Task
+NuGet.Protocol.SemaphoreSlimThrottle.SemaphoreSlimThrottle(System.Threading.SemaphoreSlim! semaphore) -> void
+NuGet.Protocol.SemaphoreSlimThrottle.WaitAsync() -> System.Threading.Tasks.Task!
 NuGet.Protocol.ServerWarningLogHandler
 NuGet.Protocol.ServerWarningLogHandler.ServerWarningLogHandler(System.Net.Http.HttpClientHandler! clientHandler) -> void
 NuGet.Protocol.ServiceIndexEntry
@@ -1927,18 +1927,18 @@ static NuGet.Protocol.GetDownloadResultUtility.CleanUpDirectDownloads(NuGet.Prot
 static NuGet.Protocol.GetDownloadResultUtility.GetDownloadResultAsync(NuGet.Protocol.HttpSource! client, NuGet.Packaging.Core.PackageIdentity! identity, System.Uri! uri, NuGet.Protocol.Core.Types.PackageDownloadContext! downloadContext, string! globalPackagesFolder, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.DownloadResourceResult!>!
 static NuGet.Protocol.GlobalPackagesFolderUtility.AddPackageAsync(string! source, NuGet.Packaging.Core.PackageIdentity! packageIdentity, System.IO.Stream! packageStream, string! globalPackagesFolder, System.Guid parentId, NuGet.Packaging.Signing.ClientPolicyContext? clientPolicyContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.DownloadResourceResult!>!
 static NuGet.Protocol.GlobalPackagesFolderUtility.GetPackage(NuGet.Packaging.Core.PackageIdentity! packageIdentity, string! globalPackagesFolder) -> NuGet.Protocol.Core.Types.DownloadResourceResult?
-~static NuGet.Protocol.HttpCacheUtility.CreateCacheFileAsync(NuGet.Protocol.HttpCacheResult result, System.Net.Http.HttpResponseMessage response, System.Action<System.IO.Stream> ensureValidContents, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
-~static NuGet.Protocol.HttpCacheUtility.InitializeHttpCacheResult(string httpCacheDirectory, System.Uri sourceUri, string cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext context) -> NuGet.Protocol.HttpCacheResult
+static NuGet.Protocol.HttpCacheUtility.CreateCacheFileAsync(NuGet.Protocol.HttpCacheResult! result, System.Net.Http.HttpResponseMessage! response, System.Action<System.IO.Stream!>? ensureValidContents, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+static NuGet.Protocol.HttpCacheUtility.InitializeHttpCacheResult(string! httpCacheDirectory, System.Uri! sourceUri, string! cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext! context) -> NuGet.Protocol.HttpCacheResult!
 static NuGet.Protocol.HttpHandlerResourceV3.CredentialService.get -> System.Lazy<NuGet.Configuration.ICredentialService!>?
 static NuGet.Protocol.HttpHandlerResourceV3.CredentialService.set -> void
 static NuGet.Protocol.HttpHandlerResourceV3.CredentialsSuccessfullyUsed.get -> System.Action<System.Uri!, System.Net.ICredentials!>?
 static NuGet.Protocol.HttpHandlerResourceV3.CredentialsSuccessfullyUsed.set -> void
-~static NuGet.Protocol.HttpRequestMessageExtensions.GetOrCreateConfiguration(this System.Net.Http.HttpRequestMessage request) -> NuGet.Protocol.HttpRequestMessageConfiguration
-~static NuGet.Protocol.HttpRequestMessageExtensions.SetConfiguration(this System.Net.Http.HttpRequestMessage request, NuGet.Protocol.HttpRequestMessageConfiguration configuration) -> void
-~static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod method, System.Uri requestUri, NuGet.Common.ILogger log) -> System.Net.Http.HttpRequestMessage
-~static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod method, System.Uri requestUri, NuGet.Protocol.HttpRequestMessageConfiguration configuration) -> System.Net.Http.HttpRequestMessage
-~static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod method, string requestUri, NuGet.Common.ILogger log) -> System.Net.Http.HttpRequestMessage
-~static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod method, string requestUri, NuGet.Protocol.HttpRequestMessageConfiguration configuration) -> System.Net.Http.HttpRequestMessage
+static NuGet.Protocol.HttpRequestMessageExtensions.GetOrCreateConfiguration(this System.Net.Http.HttpRequestMessage! request) -> NuGet.Protocol.HttpRequestMessageConfiguration!
+static NuGet.Protocol.HttpRequestMessageExtensions.SetConfiguration(this System.Net.Http.HttpRequestMessage! request, NuGet.Protocol.HttpRequestMessageConfiguration! configuration) -> void
+static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, System.Uri! requestUri, NuGet.Common.ILogger! log) -> System.Net.Http.HttpRequestMessage!
+static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, System.Uri! requestUri, NuGet.Protocol.HttpRequestMessageConfiguration! configuration) -> System.Net.Http.HttpRequestMessage!
+static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, string! requestUri, NuGet.Common.ILogger! log) -> System.Net.Http.HttpRequestMessage!
+static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, string! requestUri, NuGet.Protocol.HttpRequestMessageConfiguration! configuration) -> System.Net.Http.HttpRequestMessage!
 ~static NuGet.Protocol.HttpResponseMessageExtensions.LogServerWarning(this System.Net.Http.HttpResponseMessage response, NuGet.Common.ILogger log) -> void
 ~static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository source) -> NuGet.Protocol.HttpSource
 ~static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository source, NuGet.Protocol.IThrottle throttle) -> NuGet.Protocol.HttpSource
@@ -1990,7 +1990,7 @@ static NuGet.Protocol.LocalFolderUtility.GetVersionFromFileName(string! fileName
 static NuGet.Protocol.LocalFolderUtility.IsPossiblePackageMatch(System.IO.FileInfo! file, NuGet.Packaging.Core.PackageIdentity! identity) -> bool
 static NuGet.Protocol.LocalFolderUtility.IsPossiblePackageMatch(System.IO.FileInfo! file, string! id) -> bool
 static NuGet.Protocol.LocalFolderUtility.ResolvePackageFromPath(string! packagePath, bool isSnupkg = false) -> System.Collections.Generic.IEnumerable<string!>!
-~static NuGet.Protocol.NullThrottle.Instance.get -> NuGet.Protocol.NullThrottle
+static NuGet.Protocol.NullThrottle.Instance.get -> NuGet.Protocol.NullThrottle!
 ~static NuGet.Protocol.PackageDetailsUriResourceV3.CreateOrNull(string uriTemplate) -> NuGet.Protocol.PackageDetailsUriResourceV3
 ~static NuGet.Protocol.Plugins.AutomaticProgressReporter.Create(NuGet.Protocol.Plugins.IConnection connection, NuGet.Protocol.Plugins.Message request, System.TimeSpan interval, System.Threading.CancellationToken cancellationToken) -> NuGet.Protocol.Plugins.AutomaticProgressReporter
 ~static NuGet.Protocol.Plugins.ConnectionOptions.CreateDefault(NuGet.Common.IEnvironmentVariableReader reader = null) -> NuGet.Protocol.Plugins.ConnectionOptions
@@ -2015,8 +2015,8 @@ static NuGet.Protocol.Plugins.TimeoutUtilities.IsValid(System.TimeSpan timeout) 
 static NuGet.Protocol.RegistrationUtility.CreateVersionRange(string! stringToParse) -> NuGet.Versioning.VersionRange!
 static NuGet.Protocol.RegistrationUtility.LoadRanges(NuGet.Protocol.HttpSource! httpSource, System.Uri! registrationUri, string! packageId, NuGet.Versioning.VersionRange! range, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Newtonsoft.Json.Linq.JObject?>!>!
 static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(System.Uri! uriTemplate) -> NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3?
-~static NuGet.Protocol.SemaphoreSlimThrottle.CreateBinarySemaphore() -> NuGet.Protocol.SemaphoreSlimThrottle
-~static NuGet.Protocol.SemaphoreSlimThrottle.CreateSemaphoreThrottle(int initialCount) -> NuGet.Protocol.SemaphoreSlimThrottle
+static NuGet.Protocol.SemaphoreSlimThrottle.CreateBinarySemaphore() -> NuGet.Protocol.SemaphoreSlimThrottle!
+static NuGet.Protocol.SemaphoreSlimThrottle.CreateSemaphoreThrottle(int initialCount) -> NuGet.Protocol.SemaphoreSlimThrottle!
 static NuGet.Protocol.StreamExtensions.CopyToAsync(this System.IO.Stream! stream, System.IO.Stream! destination, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
 static NuGet.Protocol.TimeoutUtility.StartWithTimeout(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! getTask, System.TimeSpan timeout, string? timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
 static NuGet.Protocol.TimeoutUtility.StartWithTimeout<T>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>!>! getTask, System.TimeSpan timeout, string? timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
