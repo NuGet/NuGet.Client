@@ -77,14 +77,14 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [Theory]
         [InlineData("list {0} package")]
         [InlineData("package list --project {0}")]
         public async Task DotnetListPackage_RelativeProjectPath_Succeeds(string commandTemplate)
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, TestConstants.ProjectTargetFramework);
 
                 var packageX = XPlatTestUtils.CreatePackage();
 
@@ -101,7 +101,7 @@ namespace Dotnet.Integration.Test
 
                 _fixture.RunDotnetExpectSuccess(
                     Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"restore {projectA.ProjectName}.csproj",
+                    $"restore {projectA.ProjectPath}",
                     testOutputHelper: _testOutputHelper);
 
                 var relativeProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, projectA.ProjectPath);
