@@ -77,6 +77,43 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("list {0} package")]
+        [InlineData("package list --project {0}")]
+        public async Task DotnetListPackage_RelativeProjectPath_Succeeds(string commandTemplate)
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                _fixture.RunDotnetExpectSuccess(
+                    Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore",
+                    testOutputHelper: _testOutputHelper);
+
+                _fixture.RunDotnetExpectSuccess(
+                    Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj",
+                    testOutputHelper: _testOutputHelper);
+
+                var relativeProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, projectA.ProjectPath);
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(
+                    pathContext.SolutionRoot,
+                    string.Format(CultureInfo.InvariantCulture, commandTemplate, relativeProjectPath),
+                    testOutputHelper: _testOutputHelper);
+
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
+            }
+        }
+
         [Fact]
         public async Task DotnetListPackage_FileBasedApp()
         {
