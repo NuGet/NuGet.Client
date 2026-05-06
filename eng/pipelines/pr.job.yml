@@ -75,7 +75,7 @@ jobs:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=1 /p:SkipILMergeOfNuGetExe=true /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=1 /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
       maximumCpuCount: true
 
   - task: DotNetCoreCLI@2
