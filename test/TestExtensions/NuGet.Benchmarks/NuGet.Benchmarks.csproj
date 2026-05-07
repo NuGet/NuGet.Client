@@ -8,6 +8,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 </Project>
