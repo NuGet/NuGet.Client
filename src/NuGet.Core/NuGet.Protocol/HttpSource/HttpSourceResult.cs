@@ -19,13 +19,8 @@ namespace NuGet.Protocol
             Status = status;
         }
 
-        public HttpSourceResult(HttpSourceResultStatus status, string cacheFileName, Stream stream)
+        public HttpSourceResult(HttpSourceResultStatus status, string? cacheFileName, Stream stream)
         {
-            if (cacheFileName == null)
-            {
-                throw new ArgumentNullException(nameof(cacheFileName));
-            }
-
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));

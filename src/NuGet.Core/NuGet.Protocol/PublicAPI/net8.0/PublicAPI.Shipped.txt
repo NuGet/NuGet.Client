@@ -492,28 +492,28 @@ NuGet.Protocol.HttpRetryHandlerRequest.RetryDelay.get -> System.TimeSpan
 NuGet.Protocol.HttpRetryHandlerRequest.RetryDelay.set -> void
 NuGet.Protocol.HttpSource
 NuGet.Protocol.HttpSource.Dispose() -> void
-~NuGet.Protocol.HttpSource.GetJObjectAsync(NuGet.Protocol.HttpSourceRequest request, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<Newtonsoft.Json.Linq.JObject>
-~NuGet.Protocol.HttpSource.HttpCacheDirectory.get -> string
-~NuGet.Protocol.HttpSource.HttpCacheDirectory.set -> void
-~NuGet.Protocol.HttpSource.HttpSource(NuGet.Configuration.PackageSource packageSource, System.Func<System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.HttpHandlerResource>> messageHandlerFactory, NuGet.Protocol.IThrottle throttle) -> void
-~NuGet.Protocol.HttpSource.PackageSource.get -> string
-~NuGet.Protocol.HttpSource.ProcessResponseAsync<T>(NuGet.Protocol.HttpSourceRequest request, System.Func<System.Net.Http.HttpResponseMessage, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~NuGet.Protocol.HttpSource.ProcessResponseAsync<T>(NuGet.Protocol.HttpSourceRequest request, System.Func<System.Net.Http.HttpResponseMessage, System.Threading.Tasks.Task<T>> processAsync, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest request, System.Func<System.IO.Stream, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest request, System.Func<System.IO.Stream, System.Threading.Tasks.Task<T>> processAsync, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~NuGet.Protocol.HttpSource.RetryHandler.get -> NuGet.Protocol.IHttpRetryHandler
-~NuGet.Protocol.HttpSource.RetryHandler.set -> void
+NuGet.Protocol.HttpSource.GetJObjectAsync(NuGet.Protocol.HttpSourceRequest! request, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<Newtonsoft.Json.Linq.JObject?>!
+NuGet.Protocol.HttpSource.HttpCacheDirectory.get -> string!
+NuGet.Protocol.HttpSource.HttpCacheDirectory.set -> void
+NuGet.Protocol.HttpSource.HttpSource(NuGet.Configuration.PackageSource! packageSource, System.Func<System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.HttpHandlerResource!>!>! messageHandlerFactory, NuGet.Protocol.IThrottle! throttle) -> void
+NuGet.Protocol.HttpSource.PackageSource.get -> string!
+NuGet.Protocol.HttpSource.ProcessResponseAsync<T>(NuGet.Protocol.HttpSourceRequest! request, System.Func<System.Net.Http.HttpResponseMessage!, System.Threading.Tasks.Task<T>!>! processAsync, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+NuGet.Protocol.HttpSource.ProcessResponseAsync<T>(NuGet.Protocol.HttpSourceRequest! request, System.Func<System.Net.Http.HttpResponseMessage!, System.Threading.Tasks.Task<T>!>! processAsync, NuGet.Protocol.Core.Types.SourceCacheContext? cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest! request, System.Func<System.IO.Stream?, System.Threading.Tasks.Task<T>!>! processAsync, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest! request, System.Func<System.IO.Stream?, System.Threading.Tasks.Task<T>!>! processAsync, NuGet.Protocol.Core.Types.SourceCacheContext? cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+NuGet.Protocol.HttpSource.RetryHandler.get -> NuGet.Protocol.IHttpRetryHandler!
+NuGet.Protocol.HttpSource.RetryHandler.set -> void
 NuGet.Protocol.HttpSourceAuthenticationHandler
 ~NuGet.Protocol.HttpSourceAuthenticationHandler.HttpSourceAuthenticationHandler(NuGet.Configuration.PackageSource packageSource, System.Net.Http.HttpClientHandler clientHandler, NuGet.Configuration.ICredentialService credentialService) -> void
 NuGet.Protocol.HttpSourceCachedRequest
-~NuGet.Protocol.HttpSourceCachedRequest.AcceptHeaderValues.get -> System.Collections.Generic.IList<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>
-~NuGet.Protocol.HttpSourceCachedRequest.CacheContext.get -> NuGet.Protocol.Core.Types.HttpSourceCacheContext
-~NuGet.Protocol.HttpSourceCachedRequest.CacheKey.get -> string
+NuGet.Protocol.HttpSourceCachedRequest.AcceptHeaderValues.get -> System.Collections.Generic.IList<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue!>!
+NuGet.Protocol.HttpSourceCachedRequest.CacheContext.get -> NuGet.Protocol.Core.Types.HttpSourceCacheContext!
+NuGet.Protocol.HttpSourceCachedRequest.CacheKey.get -> string!
 NuGet.Protocol.HttpSourceCachedRequest.DownloadTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpSourceCachedRequest.DownloadTimeout.set -> void
-~NuGet.Protocol.HttpSourceCachedRequest.EnsureValidContents.get -> System.Action<System.IO.Stream>
-~NuGet.Protocol.HttpSourceCachedRequest.EnsureValidContents.set -> void
-~NuGet.Protocol.HttpSourceCachedRequest.HttpSourceCachedRequest(string uri, string cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext cacheContext) -> void
+NuGet.Protocol.HttpSourceCachedRequest.EnsureValidContents.get -> System.Action<System.IO.Stream!>?
+NuGet.Protocol.HttpSourceCachedRequest.EnsureValidContents.set -> void
+NuGet.Protocol.HttpSourceCachedRequest.HttpSourceCachedRequest(string! uri, string! cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext! cacheContext) -> void
 NuGet.Protocol.HttpSourceCachedRequest.IgnoreNotFounds.get -> bool
 NuGet.Protocol.HttpSourceCachedRequest.IgnoreNotFounds.set -> void
 NuGet.Protocol.HttpSourceCachedRequest.IsLastAttempt.get -> bool
@@ -524,7 +524,7 @@ NuGet.Protocol.HttpSourceCachedRequest.MaxTries.get -> int
 NuGet.Protocol.HttpSourceCachedRequest.MaxTries.set -> void
 NuGet.Protocol.HttpSourceCachedRequest.RequestTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpSourceCachedRequest.RequestTimeout.set -> void
-~NuGet.Protocol.HttpSourceCachedRequest.Uri.get -> string
+NuGet.Protocol.HttpSourceCachedRequest.Uri.get -> string!
 NuGet.Protocol.HttpSourceCredentials
 NuGet.Protocol.HttpSourceCredentials.Credentials.get -> System.Net.ICredentials?
 NuGet.Protocol.HttpSourceCredentials.Credentials.set -> void
@@ -537,9 +537,9 @@ NuGet.Protocol.HttpSourceException.HttpSourceException(string! message, System.E
 NuGet.Protocol.HttpSourceRequest
 NuGet.Protocol.HttpSourceRequest.DownloadTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpSourceRequest.DownloadTimeout.set -> void
-~NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(System.Func<System.Net.Http.HttpRequestMessage> requestFactory) -> void
-~NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(System.Uri uri, NuGet.Common.ILogger log) -> void
-~NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(string uri, NuGet.Common.ILogger log) -> void
+NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(System.Func<System.Net.Http.HttpRequestMessage!>! requestFactory) -> void
+NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(System.Uri! uri, NuGet.Common.ILogger! log) -> void
+NuGet.Protocol.HttpSourceRequest.HttpSourceRequest(string! uri, NuGet.Common.ILogger! log) -> void
 NuGet.Protocol.HttpSourceRequest.IgnoreNotFounds.get -> bool
 NuGet.Protocol.HttpSourceRequest.IgnoreNotFounds.set -> void
 NuGet.Protocol.HttpSourceRequest.IsLastAttempt.get -> bool
@@ -548,7 +548,7 @@ NuGet.Protocol.HttpSourceRequest.IsRetry.get -> bool
 NuGet.Protocol.HttpSourceRequest.IsRetry.set -> void
 NuGet.Protocol.HttpSourceRequest.MaxTries.get -> int
 NuGet.Protocol.HttpSourceRequest.MaxTries.set -> void
-~NuGet.Protocol.HttpSourceRequest.RequestFactory.get -> System.Func<System.Net.Http.HttpRequestMessage>
+NuGet.Protocol.HttpSourceRequest.RequestFactory.get -> System.Func<System.Net.Http.HttpRequestMessage!>!
 NuGet.Protocol.HttpSourceRequest.RequestTimeout.get -> System.TimeSpan
 NuGet.Protocol.HttpSourceRequest.RequestTimeout.set -> void
 NuGet.Protocol.HttpSourceResource
@@ -560,7 +560,7 @@ NuGet.Protocol.HttpSourceResult
 NuGet.Protocol.HttpSourceResult.CacheFile.get -> string?
 NuGet.Protocol.HttpSourceResult.Dispose() -> void
 NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status) -> void
-NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status, string! cacheFileName, System.IO.Stream! stream) -> void
+NuGet.Protocol.HttpSourceResult.HttpSourceResult(NuGet.Protocol.HttpSourceResultStatus status, string? cacheFileName, System.IO.Stream! stream) -> void
 NuGet.Protocol.HttpSourceResult.Status.get -> NuGet.Protocol.HttpSourceResultStatus
 NuGet.Protocol.HttpSourceResult.Stream.get -> System.IO.Stream?
 NuGet.Protocol.HttpSourceResultStatus
@@ -1940,8 +1940,8 @@ static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMetho
 static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, string! requestUri, NuGet.Common.ILogger! log) -> System.Net.Http.HttpRequestMessage!
 static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMethod! method, string! requestUri, NuGet.Protocol.HttpRequestMessageConfiguration! configuration) -> System.Net.Http.HttpRequestMessage!
 ~static NuGet.Protocol.HttpResponseMessageExtensions.LogServerWarning(this System.Net.Http.HttpResponseMessage response, NuGet.Common.ILogger log) -> void
-~static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository source) -> NuGet.Protocol.HttpSource
-~static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository source, NuGet.Protocol.IThrottle throttle) -> NuGet.Protocol.HttpSource
+static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository! source) -> NuGet.Protocol.HttpSource!
+static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository! source, NuGet.Protocol.IThrottle! throttle) -> NuGet.Protocol.HttpSource!
 ~static NuGet.Protocol.HttpSourceResourceProvider.Throttle.get -> NuGet.Protocol.IThrottle
 ~static NuGet.Protocol.HttpSourceResourceProvider.Throttle.set -> void
 static NuGet.Protocol.HttpStreamValidation.ValidateJObject(string! uri, System.IO.Stream! stream) -> void
@@ -2090,8 +2090,8 @@ virtual NuGet.Protocol.Core.Types.SourceCacheContext.WithRefreshCacheTrue() -> N
 ~virtual NuGet.Protocol.FindLocalPackagesResource.Exists(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
 ~virtual NuGet.Protocol.FindLocalPackagesResource.Exists(string packageId, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
 virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
-~virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest request, System.Func<NuGet.Protocol.HttpSourceResult, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string uri, System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
+virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest! request, System.Func<NuGet.Protocol.HttpSourceResult!, System.Threading.Tasks.Task<T>!>! processAsync, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string! uri, System.TimeSpan maxAge, string! cacheFile) -> System.IO.Stream?
 virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void
 ~virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Generic.IReadOnlyList<string>>
 ~virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddNuspec(string manifestPath, string expandedPath) -> System.Lazy<NuGet.Packaging.NuspecReader>
