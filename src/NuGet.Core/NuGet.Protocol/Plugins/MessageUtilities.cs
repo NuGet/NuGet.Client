@@ -88,7 +88,12 @@ namespace NuGet.Protocol.Plugins
                 return default(TPayload);
             }
 
-            return JsonSerializationUtilities.ToObject<TPayload>((Newtonsoft.Json.Linq.JObject)message.Payload);
+            if (message.Payload is Newtonsoft.Json.Linq.JObject jobj)
+            {
+                return JsonSerializationUtilities.ToObject<TPayload>(jobj);
+            }
+
+            return (TPayload)message.Payload;
         }
     }
 }

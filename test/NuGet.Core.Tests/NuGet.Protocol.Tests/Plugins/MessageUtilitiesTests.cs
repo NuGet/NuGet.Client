@@ -90,7 +90,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             Assert.NotNull(message);
             Assert.NotNull(message.Payload);
-            Assert.Equal("{\"A\":\"a\",\"B\":3,\"C\":true,\"D\":\"F\"}", ((JObject)message.Payload).ToString(Formatting.None));
+            Assert.Equal("{\"A\":\"a\",\"B\":3,\"C\":true,\"D\":\"F\"}", TestUtilities.Serialize(message.Payload));
         }
 
         [Fact]

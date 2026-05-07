@@ -245,7 +245,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(MessageType.Request, message.Type);
                 Assert.Equal(MessageMethod.Handshake, message.Method);
                 Assert.Equal("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}",
-                    ((JObject)message.Payload).ToString(Formatting.None));
+                    TestUtilities.Serialize(message.Payload));
             }
         }
 
@@ -498,7 +498,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Fault, message.Type);
                 Assert.Equal(MessageMethod.None, message.Method);
-                Assert.Equal("{\"Message\":\"a\"}", ((JObject)message.Payload).ToString(Formatting.None));
+                Assert.Equal("{\"Message\":\"a\"}", TestUtilities.Serialize(message.Payload));
             }
         }
 
@@ -536,7 +536,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Fault, message.Type);
                 Assert.Equal(request.Method, message.Method);
-                Assert.Equal("{\"Message\":\"a\"}", ((JObject)message.Payload).ToString(Formatting.None));
+                Assert.Equal("{\"Message\":\"a\"}", TestUtilities.Serialize(message.Payload));
             }
         }
 
@@ -649,7 +649,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Progress, message.Type);
                 Assert.Equal(request.Method, message.Method);
-                Assert.Equal("{\"Percentage\":0.5}", ((JObject)message.Payload).ToString(Formatting.None));
+                Assert.Equal("{\"Percentage\":0.5}", TestUtilities.Serialize(message.Payload));
             }
         }
 
