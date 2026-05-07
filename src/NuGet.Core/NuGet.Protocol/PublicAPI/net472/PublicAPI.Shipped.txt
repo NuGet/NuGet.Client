@@ -1089,9 +1089,7 @@ NuGet.Protocol.Plugins.LogResponse
 NuGet.Protocol.Plugins.LogResponse.LogResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode) -> void
 NuGet.Protocol.Plugins.LogResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.Message
-~NuGet.Protocol.Plugins.Message.Message(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, Newtonsoft.Json.Linq.JObject payload = null) -> void
 NuGet.Protocol.Plugins.Message.Method.get -> NuGet.Protocol.Plugins.MessageMethod
-~NuGet.Protocol.Plugins.Message.Payload.get -> Newtonsoft.Json.Linq.JObject
 ~NuGet.Protocol.Plugins.Message.RequestId.get -> string
 NuGet.Protocol.Plugins.Message.Type.get -> NuGet.Protocol.Plugins.MessageType
 NuGet.Protocol.Plugins.MessageDispatcher

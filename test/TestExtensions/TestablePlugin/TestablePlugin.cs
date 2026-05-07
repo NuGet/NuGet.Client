@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 
@@ -90,7 +91,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                 {
                     case MessageMethod.Initialize:
                         {
-                            var initializeRequest = JsonSerializationUtilities.ToObject<InitializeRequest>(message.Payload);
+                            var initializeRequest = JsonSerializationUtilities.ToObject<InitializeRequest>((JObject)message.Payload);
 
                             _plugin.Connection.Options.SetRequestTimeout(initializeRequest.RequestTimeout);
                         }

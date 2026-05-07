@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -165,7 +166,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(requestId, message.RequestId);
                 Assert.Equal(type, message.Type);
                 Assert.Equal(method, message.Method);
-                Assert.Equal(payload, message.Payload?.ToString(Formatting.None));
+                Assert.Equal(payload, (message.Payload as JObject)?.ToString(Formatting.None));
             }
         }
 
@@ -213,7 +214,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(requestId, message.RequestId);
                 Assert.Equal(type, message.Type);
                 Assert.Equal(method, message.Method);
-                Assert.Equal(payload, message.Payload.ToString(Formatting.None));
+                Assert.Equal(payload, ((JObject)message.Payload).ToString(Formatting.None));
             }
         }
 

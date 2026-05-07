@@ -50,7 +50,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal("a", message.RequestId);
             Assert.Equal(MessageType.Request, message.Type);
             Assert.Equal(MessageMethod.None, message.Method);
-            Assert.Equal("{\"E\":7}", message.Payload.ToString(Formatting.None));
+            Assert.Equal("{\"E\":7}", ((JObject)message.Payload).ToString(Formatting.None));
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal("a", message.RequestId);
             Assert.Equal(MessageType.Request, message.Type);
             Assert.Equal(MessageMethod.None, message.Method);
-            Assert.Equal("{\"ProtocolVersion\":\"c\",\"MinimumProtocolVersion\":\"d\"}", message.Payload.ToString(Formatting.None));
+            Assert.Equal("{\"ProtocolVersion\":\"c\",\"MinimumProtocolVersion\":\"d\"}", ((JObject)message.Payload).ToString(Formatting.None));
         }
 
         [Theory]
