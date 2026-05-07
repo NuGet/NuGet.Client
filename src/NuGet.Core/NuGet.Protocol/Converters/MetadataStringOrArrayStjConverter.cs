@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -40,24 +39,28 @@ namespace NuGet.Protocol.Converters
                 throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
-            var values = new List<string>();
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.EndArray)
             {
-                string? s = reader.TokenType switch
-                {
-                    JsonTokenType.String => reader.GetString(),
-                    JsonTokenType.Null => null,
-                    JsonTokenType.True => "True",
-                    JsonTokenType.False => "False",
-                    JsonTokenType.Number => Encoding.UTF8.GetString(reader.ValueSpan.ToArray()),
-                    _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
-                };
-                if (s is not null)
-                {
-                    values.Add(s);
-                }
+                return Array.Empty<string>();
             }
-            return [.. values];
+
+            string? first = reader.TokenType == JsonTokenType.Null ? null : reader.CoerceScalarTokenToString();
+
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.EndArray)
+            {
+                return new[] { first! };
+            }
+
+            var values = new List<string?> { first };
+            do
+            {
+                values.Add(reader.TokenType == JsonTokenType.Null ? null : reader.CoerceScalarTokenToString());
+            }
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray);
+
+            return values!;
         }
 
         public override void Write(Utf8JsonWriter writer, IReadOnlyList<string> value, JsonSerializerOptions options)

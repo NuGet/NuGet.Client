@@ -41,6 +41,7 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("[\"Alice\"]", new[] { "Alice" })]
         [InlineData("[\"Alice\",\"Bob\",\"Charlie\"]", new[] { "Alice", "Bob", "Charlie" })]
         [InlineData("[\"Alice\",\"\",\"Bob\"]", new[] { "Alice", "", "Bob" })]
+        [InlineData("[\"Alice\",null,\"Bob\"]", new[] { "Alice", null, "Bob" })]
         public void Read_ValidStringOrArray_Succeeds(string json, string[]? expected)
         {
             // Act
