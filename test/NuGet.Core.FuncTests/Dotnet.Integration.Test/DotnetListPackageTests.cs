@@ -94,10 +94,18 @@ namespace Dotnet.Integration.Test
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                _fixture.RunDotnetExpectSuccess(
-                    Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore",
-                    testOutputHelper: _testOutputHelper);
+                using (var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "packageX",
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        new Dictionary<string, string>() { { "Version", "1.0.0" } });
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
 
                 _fixture.RunDotnetExpectSuccess(
                     Directory.GetParent(projectA.ProjectPath).FullName,
