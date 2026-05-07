@@ -86,7 +86,7 @@
       </trans-unit>
       <trans-unit id="Error_RequiredJsonPropertyMissing">
         <source>Required property '{0}' not found in JSON.</source>
-        <target state="new">Required property '{0}' not found in JSON.</target>
+        <target state="translated">必要なプロパティ '{0}' が JSON に見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnexpectedJsonToken">
