@@ -38,6 +38,8 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("""{"version":"2.0.0-beta"}""", "2.0.0-beta", null)]
         [InlineData("""{"version":"1.0.0","downloads":null}""", "1.0.0", null)]
         [InlineData("""{"version":"1.0.0","extra":"ignored","downloads":5}""", "1.0.0", 5L)]
+        [InlineData("""{"version":1,"downloads":5}""", "1.0.0", 5L)]
+        [InlineData("""{"version":"1.0.0","downloads":"500"}""", "1.0.0", 500L)]
         public void Read_ValidObject_Succeeds(string json, string expectedVersion, long? expectedDownloads)
         {
             // Arrange

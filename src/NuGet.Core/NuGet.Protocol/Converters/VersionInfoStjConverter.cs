@@ -39,11 +39,22 @@ namespace NuGet.Protocol.Converters
 
                 if (string.Equals(propName, JsonProperties.Version, StringComparison.Ordinal))
                 {
-                    version = reader.GetString();
+                    version = reader.TokenType switch
+                    {
+                        JsonTokenType.String => reader.GetString(),
+                        JsonTokenType.Number => reader.CoerceScalarTokenToString(),
+                        _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+                    };
                 }
                 else if (string.Equals(propName, "downloads", StringComparison.Ordinal))
                 {
-                    downloads = reader.TokenType == JsonTokenType.Null ? null : reader.GetInt64();
+                    downloads = reader.TokenType switch
+                    {
+                        JsonTokenType.Null => null,
+                        JsonTokenType.Number => reader.GetInt64(),
+                        JsonTokenType.String => long.Parse(reader.GetString()!, CultureInfo.InvariantCulture),
+                        _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
+                    };
                 }
                 else
                 {
