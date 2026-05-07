@@ -1498,7 +1498,7 @@ NuGet vyžaduje zdroje HTTPS. Další informace najdete na https://aka.ms/nuget-
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <target state="translated">Balíček {0} {1} používá zastaralou architekturu MonoAndroid místo net6.0-android nebo novější. Zvažte možnost upgradovat na novější verzi tohoto balíčku nebo kontaktovat autora balíčku.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
