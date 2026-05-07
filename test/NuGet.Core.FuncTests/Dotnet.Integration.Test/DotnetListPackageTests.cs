@@ -82,46 +82,31 @@ namespace Dotnet.Integration.Test
         [InlineData("package list --project {0}")]
         public async Task DotnetListPackage_RelativeProjectPath_Succeeds(string commandTemplate)
         {
-            using (var pathContext = _fixture.CreateSimpleTestPathContext())
-            {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, TestConstants.ProjectTargetFramework);
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, TestConstants.ProjectTargetFramework);
 
-                var packageX = XPlatTestUtils.CreatePackage();
+            var packageX = XPlatTestUtils.CreatePackage();
 
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
+            // Generate Package
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX);
 
-                using var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite);
-                var xml = XDocument.Load(stream);
-                var metadata = new Dictionary<string, string>();
-                var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-                ProjectFileUtils.AddItem(
-                    xml,
-                    "PackageReference",
-                    "packageX",
-                    string.Empty,
-                    metadata,
-                    attributes);
-                stream.Position = 0;
-                stream.SetLength(0);
-                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            using var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite);
+            var xml = XDocument.Load(stream);
+            ProjectFileUtils.AddItem(xml, "PackageReference", "packageX", string.Empty, [], new Dictionary<string, string>() { { "Version", "1.0.0" } });
+            stream.Position = 0;
+            stream.SetLength(0);
+            ProjectFileUtils.WriteXmlToFile(xml, stream);
 
-                _fixture.RunDotnetExpectSuccess(
-                    Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"restore {projectA.ProjectPath}",
-                    testOutputHelper: _testOutputHelper);
+            var relativeProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, projectA.ProjectPath);
+            CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(
+                pathContext.SolutionRoot,
+                string.Format(CultureInfo.InvariantCulture, commandTemplate, relativeProjectPath),
+                testOutputHelper: _testOutputHelper);
 
-                var relativeProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, projectA.ProjectPath);
-                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(
-                    pathContext.SolutionRoot,
-                    string.Format(CultureInfo.InvariantCulture, commandTemplate, relativeProjectPath),
-                    testOutputHelper: _testOutputHelper);
-
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
-            }
+            Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
         }
 
         [Fact]
