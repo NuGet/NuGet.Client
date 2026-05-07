@@ -736,6 +736,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot convert payload of type &apos;{0}&apos; to &apos;{1}&apos; for method &apos;{2}&apos;..
+        /// </summary>
+        internal static string Plugin_InvalidPayloadCast {
+            get {
+                return ResourceManager.GetString("Plugin_InvalidPayloadCast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The plugin file path &apos;{0}&apos; is invalid..
         /// </summary>
         internal static string Plugin_InvalidPluginFilePath {

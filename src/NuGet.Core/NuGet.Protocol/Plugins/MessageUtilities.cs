@@ -93,7 +93,18 @@ namespace NuGet.Protocol.Plugins
                 return JsonSerializationUtilities.ToObject<TPayload>(jobj);
             }
 
-            return (TPayload)message.Payload;
+            if (message.Payload is TPayload typed)
+            {
+                return typed;
+            }
+
+            throw new InvalidCastException(
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Strings.Plugin_InvalidPayloadCast,
+                    message.Payload.GetType().FullName,
+                    typeof(TPayload).FullName,
+                    message.Method));
         }
     }
 }

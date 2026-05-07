@@ -398,6 +398,13 @@ The "ms" should be localized to the abbreviation for milliseconds.</note>
         <target state="translated">消息类型“{0}”此时无效。</target>
         <note>{0} is a message type enum value</note>
       </trans-unit>
+      <trans-unit id="Plugin_InvalidPayloadCast">
+        <source>Cannot convert payload of type '{0}' to '{1}' for method '{2}'.</source>
+        <target state="new">Cannot convert payload of type '{0}' to '{1}' for method '{2}'.</target>
+        <note>{0} is the actual payload type name
+{1} is the expected payload type name
+{2} is the message method</note>
+      </trans-unit>
       <trans-unit id="Plugin_InvalidPluginFilePath">
         <source>The plugin file path '{0}' is invalid.</source>
         <target state="translated">插件文件路径“{0}”无效。</target>
