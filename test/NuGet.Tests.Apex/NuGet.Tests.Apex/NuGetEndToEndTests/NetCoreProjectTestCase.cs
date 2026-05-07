@@ -106,7 +106,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12898")]
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -156,10 +155,13 @@ namespace NuGet.Tests.Apex
 
                 VisualStudio.AssertNoErrors();
 
-                // Arrange
+                // Install v1 (arrange for update test)
                 CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                // The Install action will automatically create a package source mapping to the selected package source if it's missing,
+                // so select the source which already has a mapping.
+                uiwindow.SetPackageSourceOptionToSource("PrivateRepository");
                 uiwindow.InstallPackageFromUI(packageName, packageVersion1);
                 testContext.SolutionService.SaveAll();
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
