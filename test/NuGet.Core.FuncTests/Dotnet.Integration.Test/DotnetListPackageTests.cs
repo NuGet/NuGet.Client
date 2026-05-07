@@ -96,13 +96,15 @@ namespace Dotnet.Integration.Test
 
                 using var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite);
                 var xml = XDocument.Load(stream);
+                var metadata = new Dictionary<string, string>();
+                var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
                 ProjectFileUtils.AddItem(
                     xml,
                     "PackageReference",
                     "packageX",
                     string.Empty,
-                    new Dictionary<string, string>(),
-                    new Dictionary<string, string>() { { "Version", "1.0.0" } });
+                    metadata,
+                    attributes);
                 stream.Position = 0;
                 stream.SetLength(0);
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
