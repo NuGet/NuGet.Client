@@ -40,6 +40,9 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("""{"version":"1.0.0","extra":"ignored","downloads":5}""", "1.0.0", 5L)]
         [InlineData("""{"version":1,"downloads":5}""", "1.0.0", 5L)]
         [InlineData("""{"version":"1.0.0","downloads":"500"}""", "1.0.0", 500L)]
+        [InlineData("""{"version":"1.0.0","downloads":5.0}""", "1.0.0", 5L)]
+        [InlineData("""{"version":"1.0.0","downloads":5.5}""", "1.0.0", 6L)]
+        [InlineData("""{"version":"1.0.0","downloads":1e3}""", "1.0.0", 1000L)]
         public void Read_ValidObject_Succeeds(string json, string expectedVersion, long? expectedDownloads)
         {
             // Arrange

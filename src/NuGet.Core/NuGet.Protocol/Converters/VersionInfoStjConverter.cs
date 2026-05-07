@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Converters
                     downloads = reader.TokenType switch
                     {
                         JsonTokenType.Null => null,
-                        JsonTokenType.Number => reader.GetInt64(),
+                        JsonTokenType.Number => reader.TryGetInt64(out long longValue) ? longValue : Convert.ToInt64(reader.GetDouble()),
                         JsonTokenType.String => long.Parse(reader.GetString()!, CultureInfo.InvariantCulture),
                         _ => throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
                     };
