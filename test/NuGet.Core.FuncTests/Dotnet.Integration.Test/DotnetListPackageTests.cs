@@ -104,6 +104,8 @@ namespace Dotnet.Integration.Test
                         string.Empty,
                         new Dictionary<string, string>(),
                         new Dictionary<string, string>() { { "Version", "1.0.0" } });
+                    stream.Position = 0;
+                    stream.SetLength(0);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
