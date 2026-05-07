@@ -127,7 +127,6 @@ EndGlobal";
                         "PackageReference",
                         "TestPackage.AuthorSigned",
                         string.Empty,
-                        new Dictionary<string, string>(),
                         attributes);
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
