@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Tests;
 using Xunit;
