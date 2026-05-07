@@ -35,6 +35,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Gets the optional message payload.
         /// </summary>
+        [JsonConverter(typeof(ObjectPayloadConverter))]
         public object Payload { get; }
 
         /// <summary>
