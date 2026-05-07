@@ -36,6 +36,7 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("\"net8.0\"", "net8.0")]
         [InlineData("\"net472\"", "net472")]
         [InlineData("\"\"", null)]
+        [InlineData("null", null)]
         [InlineData("42", "42")]
         [InlineData("true", "True")]
         public void Read_ValidFrameworkString_Succeeds(string json, string? expectedShortName)
@@ -53,7 +54,6 @@ namespace NuGet.Protocol.Tests.Converters
         }
 
         [Theory]
-        [InlineData("null")]
         [InlineData("[\"net8.0\"]")]
         [InlineData("{\"framework\":\"net8.0\"}")]
         public void Read_InvalidToken_Throws(string json)

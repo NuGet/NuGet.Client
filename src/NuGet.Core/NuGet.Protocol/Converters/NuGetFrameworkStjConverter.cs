@@ -20,6 +20,7 @@ namespace NuGet.Protocol.Converters
         {
             string? value = reader.TokenType switch
             {
+                JsonTokenType.Null => null,
                 JsonTokenType.String => reader.GetString(),
                 JsonTokenType.True => "True",
                 JsonTokenType.False => "False",
