@@ -93,17 +93,15 @@ namespace NuGet.Test.Utility
         /// The target framework used to generate a per-TFM condition on the <c>ItemGroup</c>.
         /// Pass <see cref="NuGetFramework.AnyFramework"/> (or any non-specific framework) to emit the item unconditionally.
         /// </param>
-        /// <param name="properties">Child XML elements to add under the item element (e.g. <c>&lt;Version&gt;1.0.0&lt;/Version&gt;</c>).</param>
         /// <param name="attributes">XML attributes to add on the item element itself (e.g. <c>Version="1.0.0"</c>).</param>
         public static void AddItem(XDocument doc,
             string name,
             string identity,
             NuGetFramework framework,
-            Dictionary<string, string> properties,
             Dictionary<string, string> attributes)
         {
             AddItem(doc, name, identity,
-                framework?.IsSpecificFramework == true ? framework.GetShortFolderName() : string.Empty, properties, attributes);
+                framework?.IsSpecificFramework == true ? framework.GetShortFolderName() : string.Empty, attributes);
         }
 
         /// <summary>
