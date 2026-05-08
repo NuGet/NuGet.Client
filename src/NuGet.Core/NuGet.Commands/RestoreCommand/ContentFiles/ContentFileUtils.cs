@@ -22,6 +22,7 @@ namespace NuGet.Commands
     internal static class ContentFileUtils
     {
         private const string ContentFilesFolderName = "contentFiles/";
+        private const string MatcherRoot = "ROOT/";
 
         /// <summary>
         /// Get all content groups that have the nearest TxM
@@ -107,11 +108,11 @@ namespace NuGet.Commands
 
                 // Create a filesystem matcher for globbing patterns
                 var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-                matcher.AddInclude(filesEntry.Include);
+                matcher.AddInclude(GetMatcherPattern(filesEntry.Include));
 
                 if (filesEntry.Exclude != null)
                 {
-                    matcher.AddExclude(filesEntry.Exclude);
+                    matcher.AddExclude(GetMatcherPattern(filesEntry.Exclude));
                 }
 
                 // Check each file against the patterns
@@ -127,7 +128,7 @@ namespace NuGet.Commands
                         var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
 
                         // Check if the nuspec group include/exclude patterns apply to the file
-                        if (matcher.Match("ROOT", relativePath).HasMatches)
+                        if (matcher.Match(MatcherRoot + relativePath).HasMatches)
                         {
                             entries.Add(filesEntry);
                         }
@@ -232,6 +233,21 @@ namespace NuGet.Commands
             }
 
             return results;
+        }
+
+        private static string GetMatcherPattern(string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern))
+            {
+                return pattern;
+            }
+
+            if (pattern.StartsWith("..", StringComparison.Ordinal))
+            {
+                return pattern;
+            }
+
+            return MatcherRoot + pattern;
         }
 
         /// <summary>
