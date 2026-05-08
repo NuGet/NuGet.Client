@@ -17,12 +17,13 @@ namespace NuGet.Protocol.Converters
         public override bool HandleNull => true;
         public override NuGetFramework Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            // Delegate parsing to NuGetFramework.Parse. it handles unknown/unsupported values gracefully.
             string? value = reader.TokenType switch
             {
                 JsonTokenType.Null => null,
                 JsonTokenType.String => reader.GetString(),
-                JsonTokenType.True => "True",
-                JsonTokenType.False => "False",
+                JsonTokenType.True => bool.TrueString,
+                JsonTokenType.False => bool.FalseString,
                 JsonTokenType.Number => reader.CoerceScalarTokenToString(),
                 _ => throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
             };

@@ -39,7 +39,7 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("null", null)]
         [InlineData("42", "42")]
         [InlineData("true", "True")]
-        public void Read_ValidFrameworkString_Succeeds(string json, string? expectedShortName)
+        public void Read_ScalarToken_DelegatesToNuGetFrameworkParse(string json, string? expectedShortName)
         {
             // Arrange
             var expected = expectedShortName is null ? NuGetFramework.AnyFramework : NuGetFramework.Parse(expectedShortName);
