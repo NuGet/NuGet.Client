@@ -235,11 +235,15 @@ namespace NuGet.Commands
             return results;
         }
 
+        /// <summary>
+        /// Prefix matcher patterns with a fixed root segment so matching doesn't rely on current directory.
+        /// Preserve empty patterns and leading ".." patterns as-is to keep existing globbing behavior.
+        /// </summary>
         private static string GetMatcherPattern(string pattern)
         {
             if (string.IsNullOrEmpty(pattern))
             {
-                return pattern;
+                return string.Empty;
             }
 
             if (pattern.StartsWith("..", StringComparison.Ordinal))
