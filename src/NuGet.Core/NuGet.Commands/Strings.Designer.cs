@@ -826,7 +826,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PackageReference {0} will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary..
+        ///   Looks up a localized string similar to PackageReference {0} will not be pruned. This package is unused and should be removed from your dependencies..
         /// </summary>
         internal static string Error_RestorePruningDirectPackageReference {
             get {

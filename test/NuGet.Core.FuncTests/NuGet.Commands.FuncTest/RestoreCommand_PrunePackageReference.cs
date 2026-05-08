@@ -1330,6 +1330,7 @@ namespace NuGet.Commands.FuncTest
             var restoreLogMessage = (RestoreLogMessage)testLogger.LogMessages.Single();
             restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
             restoreLogMessage.LibraryId.Should().Be("A");
+            restoreLogMessage.Message.Should().Be("PackageReference A will not be pruned. This package is unused and should be removed from your dependencies.");
 
             testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
             testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
