@@ -1218,7 +1218,7 @@ namespace NuGet.Packaging.Test
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.AdjustToUniversal)
                     .ToLocalTime();
-                DateTime expectedLastWriteTimeUtc = time.DateTime;
+                DateTime expectedLastWriteTime = time.DateTime;
 
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1247,11 +1247,11 @@ namespace NuGet.Packaging.Test
 
                     string installPath = resolver.GetInstallPath(identity);
                     string outputDll = Path.Combine(installPath, "lib", "net45", "A.dll");
-                    DateTime outputTimeUtc = File.GetLastWriteTimeUtc(outputDll);
+                    DateTime outputTime = File.GetLastWriteTime(outputDll);
 
                     // Assert
                     Assert.True(File.Exists(outputDll));
-                    Assert.Equal(expectedLastWriteTimeUtc, outputTimeUtc);
+                    Assert.Equal(expectedLastWriteTime, outputTime);
                 }
             }
         }

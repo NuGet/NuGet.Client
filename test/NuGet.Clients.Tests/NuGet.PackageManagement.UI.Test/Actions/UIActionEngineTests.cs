@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -208,7 +209,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var sourceProvider = new Mock<ISourceRepositoryProvider>();
             var settings = new Mock<ISettings>();
-            var nugetPM = new NuGetPackageManager(sourceProvider.Object, settings.Object, @"\packagesFolder");
+            var nugetPM = new NuGetPackageManager(sourceProvider.Object, settings.Object, Path.Combine(Path.GetTempPath(), "packagesFolder"));
             var lockService = new NuGetLockService(ThreadHelper.JoinableTaskContext);
             var uiEngine = new UIActionEngine(sourceProvider.Object, nugetPM, lockService, telemetryProvider.Object);
 
@@ -455,7 +456,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             var sourceProvider = new Mock<ISourceRepositoryProvider>();
             var settings = new Mock<ISettings>();
-            var nugetPM = new NuGetPackageManager(sourceProvider.Object, settings.Object, @"\packagesFolder");
+            var nugetPM = new NuGetPackageManager(sourceProvider.Object, settings.Object, Path.Combine(Path.GetTempPath(), "packagesFolder"));
             var lockService = new NuGetLockService(ThreadHelper.JoinableTaskContext);
             var uiEngine = new UIActionEngine(sourceProvider.Object, nugetPM, lockService, telemetryProvider.Object);
 
@@ -699,7 +700,7 @@ namespace NuGet.PackageManagement.UI.Test
             PackageSource activePackageSource = remotePackageSource ?? localPackageSource;
             SetupActivePackageSource(activePackageSource, mockUiService);
 
-            NuGetPackageManager packageManager = new(sourceRepositoryProvider, settings.Object, @"\packagesFolder");
+            NuGetPackageManager packageManager = new(sourceRepositoryProvider, settings.Object, Path.Combine(Path.GetTempPath(), "packagesFolder"));
             uiActionEngine = new(sourceRepositoryProvider, packageManager, lockService, Mock.Of<INuGetTelemetryProvider>());
 
             SetupUIService(mockUiService, uiContext, projectContext, settings, throwOnShowError);

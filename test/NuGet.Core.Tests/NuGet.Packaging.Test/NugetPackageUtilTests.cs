@@ -623,7 +623,7 @@ namespace Commands.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
             var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0));
-            DateTime expectedLastWriteTime = entryModifiedTime.DateTime.ToLocalTime();
+            DateTime expectedLastWriteTime = entryModifiedTime.LocalDateTime;
 
             using (var packagesDirectory = TestDirectory.Create())
             {

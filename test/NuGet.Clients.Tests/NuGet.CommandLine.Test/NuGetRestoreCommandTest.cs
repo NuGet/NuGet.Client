@@ -1921,7 +1921,7 @@ EndProject";
                 var workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = pathContext.PackageSource;
 
-                var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
+                var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0));
 
                 var packageFileFullPath = Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 using (var zip = new ZipArchive(File.Open(packageFileFullPath, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
@@ -1948,7 +1948,7 @@ EndProject";
                 var dllPath = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "lib", "net45", "A.dll");
                 var dllFileInfo = new FileInfo(dllPath);
                 Assert.True(File.Exists(dllFileInfo.FullName));
-                Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
+                Assert.Equal(entryModifiedTime.LocalDateTime, dllFileInfo.LastWriteTime);
             }
         }
 

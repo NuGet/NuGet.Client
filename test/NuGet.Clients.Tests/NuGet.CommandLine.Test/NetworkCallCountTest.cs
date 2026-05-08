@@ -136,7 +136,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [SkipMono(Skip = "https://github.com/NuGet/Home/issues/7878")]
+        [Fact]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
         {
             // Arrange
