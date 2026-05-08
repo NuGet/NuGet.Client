@@ -125,7 +125,7 @@ High-level command implementations shared by all clients. `RestoreCommand`, `Pac
 
 #### [`NuGet.PackageManagement`](src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj)
 
-Package management orchestration for install/uninstall/update flows (primarily used by the Visual Studio client and NuGet.exe `install`/`update` commands). Defines `NuGetPackageManager`, the abstract `NuGetProject` base class, and concrete project types like `MSBuildNuGetProject`, `FolderNuGetProject`, and `BuildIntegratedNuGetProject`. The `Audit/` subdirectory handles package vulnerability auditing.
+Package management orchestration for install/uninstall/update flows (primarily used by the Visual Studio client and NuGet.exe `install`/`update` commands). Defines `NuGetPackageManager`, the abstract `NuGetProject` base class. The `Audit/` subdirectory handles package vulnerability auditing.
 
 
 #### [`NuGet.Localization`](src/NuGet.Core/NuGet.Localization/NuGet.Localization.csproj)
@@ -214,19 +214,6 @@ VS-specific package management infrastructure. `VSSolutionManager` tracks the lo
 
 Shared infrastructure used by all VS client projects. Contains telemetry (`NuGetTelemetryProvider`), experimentation/A/B testing (`NuGetExperimentationService`), the error list integration, output window logging, and the `ServiceLocator` that provides static access to MEF-composed services.
 
-
-#### [`NuGet.VisualStudio`](src/NuGet.Clients/NuGet.VisualStudio/NuGet.VisualStudio.csproj)
-
-The public extensibility API for third-party VS extensions. Defines interfaces like `IVsPackageInstaller`, `IVsPackageUninstaller`, `IVsPackageRestorer`, `IVsFrameworkParser`, and `IVsPathContextProvider`. Also defines the `IVsSolutionRestoreService` interface for restore manager interop. This is an **API boundary** — it is a NuGet package consumed by third-party extensions. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
-
-**Design Rule:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack. Because this is a public SDK, any changes to its API surface constitute **breaking changes** and must follow the team's breaking-change process.
-
-#### [`NuGet.VisualStudio.Contracts`](src/NuGet.Clients/NuGet.VisualStudio.Contracts/NuGet.VisualStudio.Contracts.csproj)
-
-Public Service Broker extensibility contracts. Defines `INuGetProjectService` for out-of-process VS extensions to query installed packages. Like `NuGet.VisualStudio`, this is a leaf dependency shipped as a NuGet package. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
-
-**Design Rule:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable. As with `NuGet.VisualStudio`, any API changes here are **breaking changes** and must follow the team's breaking-change process.
-
 #### [`NuGet.VisualStudio.Implementation`](src/NuGet.Clients/NuGet.VisualStudio.Implementation/NuGet.VisualStudio.Implementation.csproj)
 
 Implements the extensibility interfaces from `NuGet.VisualStudio`. `VsPackageInstaller`, `VsPackageRestorer`, `VsPackageUninstaller`, `VsFrameworkParser`, `VsPathContextProvider` are all MEF exports. Also provides the Solution Explorer integration (`PackageReferenceAttachedCollectionSourceProvider`) and template wizard support (`VsTemplateWizard`).
@@ -250,6 +237,20 @@ Package search indexing and result aggregation for the VS Package Manager UI. Us
 #### [`NuGet.MSSigning.Extensions`](src/NuGet.Clients/NuGet.MSSigning.Extensions/NuGet.MSSigning.Extensions.csproj)
 
 Extension commands for repository signing (`NuGet.exe reposign`, `NuGet.exe sign`). Extends `NuGet.CommandLine` with additional signing functionality.
+
+### Visual Studio APIs
+
+#### [`NuGet.VisualStudio`](src/NuGet.Clients/NuGet.VisualStudio/NuGet.VisualStudio.csproj)
+
+The public extensibility API for third-party VS extensions.Defines interfaces like `IVsPackageInstaller`, `IVsPackageUninstaller`, `IVsPackageRestorer`, `IVsFrameworkParser`, and `IVsPathContextProvider`. Also defines the `IVsSolutionRestoreService` interface for restore manager interop. This is an **API boundary** — it is a NuGet package consumed by third-party extensions. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
+
+**Design Rule:** `NuGet.VisualStudio` is a leaf dependency containing only interfaces and simple types. It has no dependency on any other NuGet assembly. This allows third-party extensions to reference it without pulling in the entire NuGet stack. Because this is a public SDK, any changes to its API surface constitute **breaking changes** and must follow the team's breaking-change process.
+
+#### [`NuGet.VisualStudio.Contracts`](src/NuGet.Clients/NuGet.VisualStudio.Contracts/NuGet.VisualStudio.Contracts.csproj)
+
+Public Service Broker extensibility contracts. Defines `INuGetProjectService` for out-of-process VS extensions to query installed packages. Like `NuGet.VisualStudio`, this is a leaf dependency shipped as a NuGet package. Part of the **NuGet VS SDK** (see [NuGet API in Visual Studio](https://learn.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio)).
+
+**Design Rule:** `NuGet.VisualStudio.Contracts` has no internal NuGet dependencies, keeping the public API surface minimal and stable. As with `NuGet.VisualStudio`, any API changes here are **breaking changes** and must follow the team's breaking-change process.
 
 ## Dependency Layers
 

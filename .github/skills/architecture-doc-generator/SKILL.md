@@ -34,6 +34,7 @@ The generated file MUST follow this structure, in order:
 ### What to exclude
 - Do NOT go into detail about *how* each module works internally. The code map is a map of a country, not an atlas of maps of its states.
 - Do NOT mention implementation-level interface names (e.g., `ICancelableTask`, `IDisposable`) unless they are part of the public API surface. Focus on *what* a component does, not which .NET interfaces it implements.
+- Do NOT enumerate concrete implementation class names (e.g., `MSBuildNuGetProject`, `FolderNuGetProject`, `BuildIntegratedNuGetProject`) when describing a component that defines an abstract base class. Mention the base class and its purpose, but leave the concrete subclasses out — they are implementation details.
 - Do NOT mention features that are not ready for public consumption, even if they exist in the code. When in doubt, omit.
 - Do NOT include time estimates or dates.
 
@@ -142,7 +143,7 @@ When generating architecture docs, watch for these patterns and document them wi
 If a component is being replaced by a newer implementation, clearly mark the old one as **legacy/deprecated** and point to the replacement. Both the old component's section and the new component's section should cross-reference each other, and any summary diagrams should reflect the deprecation. Example: a legacy dependency resolver in one library being superseded by a new resolver class in a higher-level command library.
 
 ### Public SDK / extensibility API boundaries
-If certain assemblies form a **public SDK** consumed by third-party developers, call this out explicitly. Link to the official documentation for the SDK. Add a Design Rule noting that any changes to these APIs constitute **breaking changes** and must follow the team's breaking-change process. These assemblies deserve extra scrutiny during code review.
+If certain assemblies form a **public SDK** consumed by third-party developers, call this out explicitly. Group related public API assemblies under a shared sub-header (e.g., "Visual Studio APIs" for `NuGet.VisualStudio` and `NuGet.VisualStudio.Contracts`) while keeping each assembly's own heading and description underneath. Link to the official documentation for the SDK. Add a Design Rule noting that any changes to these APIs constitute **breaking changes** and must follow the team's breaking-change process. These assemblies deserve extra scrutiny during code review.
 
 ### VS package early-load patterns
 If a VS package auto-loads early in the IDE lifecycle, explain **why** it can do so cheaply. For example, a restore-manager package may contain a slimmed-down subset of assemblies specifically so it can load early without paying a performance cost. Document this design intent explicitly.
