@@ -93,8 +93,8 @@ namespace Dotnet.Integration.Test
             // Run "why" command.
             var result = _testFixture.RunDotnetExpectSuccess(fbaDir, "nuget why app.cs PackageB", testOutputHelper: _testOutputHelper);
 
-            Assert.Contains("packageA@1.0.0", result.AllOutput);
-            Assert.Contains("packageB@1.0.1", result.AllOutput);
+            Assert.Contains("packageA (v1.0.0)", result.AllOutput);
+            Assert.Contains("packageB (v1.0.1)", result.AllOutput);
         }
 
         [Fact]
@@ -345,7 +345,7 @@ namespace Dotnet.Integration.Test
                 $"  [{TestConstants.ProjectTargetFramework}]                                                                     ",
                 "  └── ProjectB                                                                  ",
                 "      └── ProjectA                                                              ",
-                "          └── PackageX@1.0.0 (>= 1.0.0)                                         ",
+                "          └── PackageX (v1.0.0)                                                 ",
                 "",
                 "",
                 ""
