@@ -23,10 +23,8 @@ namespace NuGet.Protocol.Plugins
                 throw new JsonSerializationException(
                     string.Format(
                         System.Globalization.CultureInfo.CurrentCulture,
-                        Strings.Plugin_InvalidPayloadCast,
-                        reader.TokenType,
-                        nameof(JObject),
-                        string.Empty));
+                        Strings.Error_UnexpectedJsonToken,
+                        reader.TokenType));
             }
 
             return JObject.Load(reader);
