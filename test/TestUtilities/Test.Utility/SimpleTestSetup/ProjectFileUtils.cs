@@ -75,6 +75,8 @@ namespace NuGet.Test.Utility
 
         /// <summary>
         /// Opens a project file, adds an MSBuild item, and writes it back.
+        /// This is the simplest method for adding an item to a project file, but it is not the most efficient if you need to add multiple items since it opens and writes the file for each item added.
+        /// Prefer this method whenever there you only need to do 1 item change.
         /// </summary>
         /// <param name="projectFilePath">The full path to the project file.</param>
         /// <param name="name">The MSBuild item type (e.g. <c>PackageReference</c>).</param>
