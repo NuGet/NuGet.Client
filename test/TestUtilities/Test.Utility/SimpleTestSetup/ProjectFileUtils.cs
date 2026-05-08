@@ -74,6 +74,29 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
+        /// Opens a project file, adds an MSBuild item, and writes it back.
+        /// </summary>
+        /// <param name="projectFilePath">The full path to the project file.</param>
+        /// <param name="name">The MSBuild item type (e.g. <c>PackageReference</c>).</param>
+        /// <param name="identity">The value of the <c>Include</c> attribute on the item element.</param>
+        /// <param name="framework">
+        /// The short TFM string used to generate a per-TFM condition on the <c>ItemGroup</c>.
+        /// Pass an empty string to emit the item unconditionally.
+        /// </param>
+        /// <param name="attributes">XML attributes to add on the item element itself (e.g. <c>Version="1.0.0"</c>).</param>
+        public static void AddItem(string projectFilePath,
+            string name,
+            string identity,
+            string framework,
+            Dictionary<string, string> attributes)
+        {
+            using var stream = File.Open(projectFilePath, FileMode.Open, FileAccess.ReadWrite);
+            var xml = XDocument.Load(stream);
+            AddItem(xml, name, identity, framework, attributes);
+            WriteXmlToFile(xml, stream);
+        }
+
+        /// <summary>
         /// Adds a new MSBuild item to the project file inside a new <c>ItemGroup</c>.
         /// When <paramref name="framework"/> is a specific framework, a <c>Condition</c> attribute of the form
         /// <c>'$(TargetFramework)' == '&lt;tfm&gt;'</c> is added to the <c>ItemGroup</c>; otherwise no condition is emitted.
