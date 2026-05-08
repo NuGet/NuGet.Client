@@ -93,10 +93,12 @@ namespace Dotnet.Integration.Test
                 PackageSaveMode.Defaultv3,
                 packageX);
 
-            using var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite);
-            var xml = XDocument.Load(stream);
-            ProjectFileUtils.AddItem(xml, "PackageReference", "packageX", string.Empty, [], new Dictionary<string, string>() { { "Version", "1.0.0" } });
-            ProjectFileUtils.WriteXmlToFile(xml, stream);
+            {
+                using var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite);
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(xml, "PackageReference", "packageX", string.Empty, [], new Dictionary<string, string>() { { "Version", "1.0.0" } });
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
 
             var relativeProjectPath = Path.GetRelativePath(pathContext.SolutionRoot, projectA.ProjectPath);
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(
