@@ -1498,7 +1498,7 @@ NuGet에는 HTTPS 원본이 필요합니다. https://aka.ms/nuget-https-everywhe
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <target state="translated">패키지 '{0}' {1}이(가) 'net6.0-android' 이상 대신 사용 중단된 MonoAndroid 프레임워크를 사용합니다. 이 패키지의 최신 버전으로 업그레이드하거나 패키지 작성자에게 문의하는 것이 좋습니다.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>

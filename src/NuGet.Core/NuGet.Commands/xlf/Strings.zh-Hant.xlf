@@ -1498,7 +1498,7 @@ NuGet 需要 HTTPS 來源。參閱 https://aka.ms/nuget-https-everywhere 以取�
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <target state="translated">套件 '{0}' {1} 使用已棄用的 MonoAndroid 架構，而非 'net6.0-android' 或更新版本。請考慮將此套件升級到較新版本，或聯絡套件作者。</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
