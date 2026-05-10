@@ -1332,7 +1332,7 @@ namespace NuGet.Commands.FuncTest
             restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
             restoreLogMessage.LibraryId.Should().Be("A");
             restoreLogMessage.Message.Should().Be(
-                string.Format(CultureInfo.CurrentCulture, Strings.Error_RestorePruningDirectPackageReference, "A"));
+                string.Format(CultureInfo.InvariantCulture, Strings.Error_RestorePruningDirectPackageReference, "A"));
 
             testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
             testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);
