@@ -1,55 +1,55 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../NuGetResources.resx">
     <body>
       <trans-unit id="AddCommand_ExistingPackageInvalid">
         <source>Package '{0}' already exists at feed '{1}' and is invalid.</source>
-        <target state="translated">Пакет "{0}" уже существует в веб-канале "{1}", но он недопустим.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "{0}" ╤â╨╢╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╨▓╨╡╨▒-╨║╨░╨╜╨░╨╗╨╡ "{1}", ╨╜╨╛ ╨╛╨╜ ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddCommand_PackageAlreadyExists">
         <source>Package '{0}' already exists at feed '{1}'.</source>
-        <target state="translated">Пакет "{0}" уже существует в веб-канале "{1}".</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "{0}" ╤â╨╢╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╨▓╨╡╨▒-╨║╨░╨╜╨░╨╗╨╡ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="AddCommand_SourceNotProvided">
         <source>'-Source' switch is not provided. nupkg gets added to the 'Source' and is mandatory.</source>
-        <target state="translated">Переключатель "-Source" не предоставлен. NUPKG добавляется в "Источник" и является обязательным.</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╨║╨╗╤Ä╤ç╨░╤é╨╡╨╗╤î "-Source" ╨╜╨╡ ╨┐╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜. NUPKG ╨┤╨╛╨▒╨░╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨▓ "╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║" ╨╕ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨╛╨▒╤Å╨╖╨░╤é╨╡╨╗╤î╨╜╤ï╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddFileToPackage">
         <source>Add file '{0}' to package as '{1}'</source>
-        <target state="translated">Добавить файл "{0}" в пакет как "{1}"</target>
+        <target state="translated">╨ö╨╛╨▒╨░╨▓╨╕╤é╤î ╤ä╨░╨╣╨╗ "{0}" ╨▓ ╨┐╨░╨║╨╡╤é ╨║╨░╨║ "{1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="AmbiguousCommand">
         <source>Ambiguous command '{0}'. Possible values: {1}.</source>
-        <target state="translated">Неоднозначная команда "{0}". Возможные значения: {1}.</target>
+        <target state="translated">╨¥╨╡╨╛╨┤╨╜╨╛╨╖╨╜╨░╤ç╨╜╨░╤Å ╨║╨╛╨╝╨░╨╜╨┤╨░ "{0}". ╨Æ╨╛╨╖╨╝╨╛╨╢╨╜╤ï╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╤Å: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AmbiguousOption">
         <source>Ambiguous option '{0}'. Possible values: {1}.</source>
-        <target state="translated">Неоднозначный параметр "{0}". Возможные значения: {1}.</target>
+        <target state="translated">╨¥╨╡╨╛╨┤╨╜╨╛╨╖╨╜╨░╤ç╨╜╤ï╨╣ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç "{0}". ╨Æ╨╛╨╖╨╝╨╛╨╢╨╜╤ï╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╤Å: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">Аргумент не может быть пустым или равен NULL.</target>
+        <target state="translated">╨É╤Ç╨│╤â╨╝╨╡╨╜╤é ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝ ╨╕╨╗╨╕ ╤Ç╨░╨▓╨╡╨╜ NULL.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildingProjectTargetingFramework">
         <source>Building project '{0}' for target framework '{1}'.</source>
-        <target state="translated">Идет сборка проекта "{0}" для целевой платформы "{1}".</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤ü╨▒╨╛╤Ç╨║╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{0}" ╨┤╨╗╤Å ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandLine_Warning">
         <source>WARNING: {0}</source>
-        <target state="translated">ПРЕДУПРЕЖДЕНИЕ: {0}</target>
+        <target state="translated">╨ƒ╨á╨ò╨ö╨ú╨ƒ╨á╨ò╨û╨ö╨ò╨¥╨ÿ╨ò: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigCommandKeyNotFound">
         <source>Key '{0}' not found.</source>
-        <target state="translated">Ключ "{0}" не найден.</target>
+        <target state="translated">╨Ü╨╗╤Ä╤ç "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
@@ -64,472 +64,472 @@
       </trans-unit>
       <trans-unit id="ConsolePasswordProvider_DisplayFile">
         <source>Please provide password for: {0}</source>
-        <target state="translated">Предоставьте пароль для: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╤î╤é╨╡ ╨┐╨░╤Ç╨╛╨╗╤î ╨┤╨╗╤Å: {0}</target>
         <note>0 - file that requires password</note>
       </trans-unit>
       <trans-unit id="ConsolePasswordProvider_PromptForPassword">
         <source>Password: </source>
-        <target state="translated">Пароль: </target>
+        <target state="translated">╨ƒ╨░╤Ç╨╛╨╗╤î: </target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_ForbiddenCredentials">
         <source>The remote server indicated that the previous request was forbidden. Please provide credentials for: {0}</source>
-        <target state="translated">Удаленный сервер указал, что предыдущий запрос запрещен. Предоставьте учетные данные для: {0}</target>
+        <target state="translated">╨ú╨┤╨░╨╗╨╡╨╜╨╜╤ï╨╣ ╤ü╨╡╤Ç╨▓╨╡╤Ç ╤â╨║╨░╨╖╨░╨╗, ╤ç╤é╨╛ ╨┐╤Ç╨╡╨┤╤ï╨┤╤â╤ë╨╕╨╣ ╨╖╨░╨┐╤Ç╨╛╤ü ╨╖╨░╨┐╤Ç╨╡╤ë╨╡╨╜. ╨ƒ╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╤î╤é╨╡ ╤â╤ç╨╡╤é╨╜╤ï╨╡ ╨┤╨░╨╜╨╜╤ï╨╡ ╨┤╨╗╤Å: {0}</target>
         <note>{0} will be replaced with the URL that needs credentials.</note>
       </trans-unit>
       <trans-unit id="Credentials_Password">
         <source>Password: </source>
-        <target state="translated">Пароль: </target>
+        <target state="translated">╨ƒ╨░╤Ç╨╛╨╗╤î: </target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_ProxyCredentials">
         <source>Please provide proxy credentials:</source>
-        <target state="translated">Предоставьте учетные данные прокси-сервера:</target>
+        <target state="translated">╨ƒ╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╤î╤é╨╡ ╤â╤ç╨╡╤é╨╜╤ï╨╡ ╨┤╨░╨╜╨╜╤ï╨╡ ╨┐╤Ç╨╛╨║╤ü╨╕-╤ü╨╡╤Ç╨▓╨╡╤Ç╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_RequestCredentials">
         <source>Please provide credentials for: {0}</source>
-        <target state="translated">Предоставьте учетные данные для: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╤î╤é╨╡ ╤â╤ç╨╡╤é╨╜╤ï╨╡ ╨┤╨░╨╜╨╜╤ï╨╡ ╨┤╨╗╤Å: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_UserName">
         <source>UserName: </source>
-        <target state="translated">Имя пользователя: </target>
+        <target state="translated">╨ÿ╨╝╤Å ╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╨╡╨╗╤Å: </target>
         <note />
       </trans-unit>
       <trans-unit id="DefaultCommandDescription">
         <source>No description was provided for this command.</source>
-        <target state="translated">Описание этой команды не предоставлено.</target>
+        <target state="translated">╨₧╨┐╨╕╤ü╨░╨╜╨╕╨╡ ╤ì╤é╨╛╨╣ ╨║╨╛╨╝╨░╨╜╨┤╤ï ╨╜╨╡ ╨┐╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefaultSymbolServer">
         <source>the symbol server</source>
-        <target state="translated">сервер символов</target>
+        <target state="translated">╤ü╨╡╤Ç╨▓╨╡╤Ç ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Error">
         <source>Error</source>
-        <target state="translated">Ошибка</target>
+        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ArgumentNotExpected">
         <source>The argument '{0}' is not expected.</source>
-        <target state="translated">Неожиданный аргумент "{0}".</target>
+        <target state="translated">╨¥╨╡╨╛╨╢╨╕╨┤╨░╨╜╨╜╤ï╨╣ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é "{0}".</target>
         <note>0 - argument name</note>
       </trans-unit>
       <trans-unit id="Error_AttemptingToPackSDKproject">
         <source>The `pack` command for SDK-style projects is not supported, use `dotnet pack` or `msbuild -t:pack` to pack this project instead. You can override this behavior by setting the '{0}' environment variable to 'true'.</source>
-        <target state="translated">Команда "pack" для проектов в стиле SDK не поддерживается. Вместо этого используйте команду "dotnet pack" или "msbuild -t:pack". Это поведение можно переопрепредить, задав для переменной среды {0} значение ИСТИНА.</target>
+        <target state="translated">╨Ü╨╛╨╝╨░╨╜╨┤╨░ "pack" ╨┤╨╗╤Å ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓ ╨▓ ╤ü╤é╨╕╨╗╨╡ SDK ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å. ╨Æ╨╝╨╡╤ü╤é╨╛ ╤ì╤é╨╛╨│╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨║╨╛╨╝╨░╨╜╨┤╤â "dotnet pack" ╨╕╨╗╨╕ "msbuild -t:pack". ╨¡╤é╨╛ ╨┐╨╛╨▓╨╡╨┤╨╡╨╜╨╕╨╡ ╨╝╨╛╨╢╨╜╨╛ ╨┐╨╡╤Ç╨╡╨╛╨┐╤Ç╨╡╨┐╤Ç╨╡╨┤╨╕╤é╤î, ╨╖╨░╨┤╨░╨▓ ╨┤╨╗╤Å ╨┐╨╡╤Ç╨╡╨╝╨╡╨╜╨╜╨╛╨╣ ╤ü╤Ç╨╡╨┤╤ï {0} ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨ÿ╨í╨ó╨ÿ╨¥╨É.</target>
         <note>0 - environment variable name. 
 Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_CannotFindMsbuild">
         <source>Cannot find the specified version of msbuild: '{0}'</source>
-        <target state="translated">Не удается найти указанную версию msbuild: "{0}"</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╜╨░╨╣╤é╨╕ ╤â╨║╨░╨╖╨░╨╜╨╜╤â╤Ä ╨▓╨╡╤Ç╤ü╨╕╤Ä msbuild: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotFindNonArchitectureSpecificMsbuild">
         <source>The resolved MSBuild directory is `{0}` which is an architecture-specific directory. Could not find MSBuild in its parent directory (non-architecture specific).</source>
-        <target state="translated">Разрешенный каталог MSBuild — "{0}", являющийся каталогом, зависящим от архитектуры. Не удалось найти MSBuild в родительском каталоге (не зависит от архитектуры).</target>
+        <target state="translated">╨á╨░╨╖╤Ç╨╡╤ê╨╡╨╜╨╜╤ï╨╣ ╨║╨░╤é╨░╨╗╨╛╨│ MSBuild ΓÇö "{0}", ╤Å╨▓╨╗╤Å╤Ä╤ë╨╕╨╣╤ü╤Å ╨║╨░╤é╨░╨╗╨╛╨│╨╛╨╝, ╨╖╨░╨▓╨╕╤ü╤Å╤ë╨╕╨╝ ╨╛╤é ╨░╤Ç╤à╨╕╤é╨╡╨║╤é╤â╤Ç╤ï. ╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ MSBuild ╨▓ ╤Ç╨╛╨┤╨╕╤é╨╡╨╗╤î╤ü╨║╨╛╨╝ ╨║╨░╤é╨░╨╗╨╛╨│╨╡ (╨╜╨╡ ╨╖╨░╨▓╨╕╤ü╨╕╤é ╨╛╤é ╨░╤Ç╤à╨╕╤é╨╡╨║╤é╤â╤Ç╤ï).</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotGetGetAllProjectFileNamesMethod">
         <source>Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser.</source>
-        <target state="translated">Не удается получить метод GetAllProjectFileNamesMethod из типа Mono.XBuild.CommandLine.SolutionParser.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╨╝╨╡╤é╨╛╨┤ GetAllProjectFileNamesMethod ╨╕╨╖ ╤é╨╕╨┐╨░ Mono.XBuild.CommandLine.SolutionParser.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotGetXBuildSolutionParser">
         <source>Cannot get type Mono.XBuild.CommandLine.SolutionParser.</source>
-        <target state="translated">Не удается получить тип Mono.XBuild.CommandLine.SolutionParser.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤é╨╕╨┐ Mono.XBuild.CommandLine.SolutionParser.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotKillMsBuild">
         <source>MsBuild timeout out while trying to get project to project references, and NuGet.exe failed to kill the process.</source>
-        <target state="translated">Истекло время ожидания MsBuild при попытке получить ссылки проекта на проект, и NuGet.exe не удалось завершить процесс.</target>
+        <target state="translated">╨ÿ╤ü╤é╨╡╨║╨╗╨╛ ╨▓╤Ç╨╡╨╝╤Å ╨╛╨╢╨╕╨┤╨░╨╜╨╕╤Å MsBuild ╨┐╤Ç╨╕ ╨┐╨╛╨┐╤ï╤é╨║╨╡ ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╨╕ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╜╨░ ╨┐╤Ç╨╛╨╡╨║╤é, ╨╕ NuGet.exe ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨▓╨╡╤Ç╤ê╨╕╤é╤î ╨┐╤Ç╨╛╤å╨╡╤ü╤ü.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLoadTypeProjectInSolution">
         <source>Cannot load type Microsoft.Build.Construction.ProjectInSolution from Microsoft.Build.dll</source>
-        <target state="translated">Не удается загрузить тип Microsoft.Build.Construction.ProjectInSolution из Microsoft.Build.dll</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╤é╨╕╨┐ Microsoft.Build.Construction.ProjectInSolution ╨╕╨╖ Microsoft.Build.dll</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLoadTypeSolutionParser">
         <source>Cannot load type Microsoft.Build.Construction.SolutionParser from Microsoft.Build.dll</source>
-        <target state="translated">Не удается загрузить тип Microsoft.Build.Construction.SolutionParser из Microsoft.Build.dll</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╤é╨╕╨┐ Microsoft.Build.Construction.SolutionParser ╨╕╨╖ Microsoft.Build.dll</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLocateSolutionFile">
         <source>Cannot locate a solution file.</source>
-        <target state="translated">Не удается найти файл решения.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╜╨░╨╣╤é╨╕ ╤ä╨░╨╣╨╗ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotPromptForInput">
         <source>Cannot prompt for input in non-interactive mode.</source>
-        <target state="translated">Не удается запросить ввод в неинтерактивном режиме.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╖╨░╨┐╤Ç╨╛╤ü╨╕╤é╤î ╨▓╨▓╨╛╨┤ ╨▓ ╨╜╨╡╨╕╨╜╤é╨╡╤Ç╨░╨║╤é╨╕╨▓╨╜╨╛╨╝ ╤Ç╨╡╨╢╨╕╨╝╨╡.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FailedToCreateRandomFileForP2P">
         <source>Failed to create a temporary file while trying to get project to project references.</source>
-        <target state="translated">При попытке получить ссылки проекта на проект не удалось создать временный файл.</target>
+        <target state="translated">╨ƒ╤Ç╨╕ ╨┐╨╛╨┐╤ï╤é╨║╨╡ ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╨╕ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╜╨░ ╨┐╤Ç╨╛╨╡╨║╤é ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤ü╨╛╨╖╨┤╨░╤é╤î ╨▓╤Ç╨╡╨╝╨╡╨╜╨╜╤ï╨╣ ╤ä╨░╨╣╨╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Вы выполняете операцию "{0}" с источником "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источник HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">╨Æ╤ï ╨▓╤ï╨┐╨╛╨╗╨╜╤Å╨╡╤é╨╡ ╨╛╨┐╨╡╤Ç╨░╤å╨╕╤Ä "{0}" ╤ü ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨╝ "HTTP": {1}. ╨ö╨╗╤Å NuGet ╤é╤Ç╨╡╨▒╤â╤Ä╤é╤ü╤Å ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ HTTPS. ╨º╤é╨╛╨▒╤ï ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ HTTP, ╨╜╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╤Å╨▓╨╜╨╛ ╨╖╨░╨┤╨░╤é╤î ╨┤╨╗╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ "allowInsecureConnections" ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ true ╨▓ ╤ä╨░╨╣╨╗╨╡ NuGet.Config. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Вы выполняете операцию "{0}" с источниками "HTTP": {1}. Для NuGet требуются источники HTTPS. Чтобы использовать источники HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">╨Æ╤ï ╨▓╤ï╨┐╨╛╨╗╨╜╤Å╨╡╤é╨╡ ╨╛╨┐╨╡╤Ç╨░╤å╨╕╤Ä "{0}" ╤ü ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░╨╝╨╕ "HTTP": {1}. ╨ö╨╗╤Å NuGet ╤é╤Ç╨╡╨▒╤â╤Ä╤é╤ü╤Å ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ HTTPS. ╨º╤é╨╛╨▒╤ï ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ HTTP, ╨╜╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╤Å╨▓╨╜╨╛ ╨╖╨░╨┤╨░╤é╤î ╨┤╨╗╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ "allowInsecureConnections" ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ true ╨▓ ╤ä╨░╨╣╨╗╨╡ NuGet.Config. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCharactersInPathSegment">
         <source>Invalid characters in one of the following path segments: '{0}'</source>
-        <target state="translated">Недопустимые символы в одном из следующих сегментов пути: "{0}"</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╡ ╤ü╨╕╨╝╨▓╨╛╨╗╤ï ╨▓ ╨╛╨┤╨╜╨╛╨╝ ╨╕╨╖ ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╕╤à ╤ü╨╡╨│╨╝╨╡╨╜╤é╨╛╨▓ ╨┐╤â╤é╨╕: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCultureInfo">
         <source>Invalid culture identifier in {0} environment variable. Value read is '{1}'</source>
-        <target state="translated">Недопустимый идентификатор языка и региональных параметров в {0} переменной среды. Прочитано значение "{1}"</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨╕╨┤╨╡╨╜╤é╨╕╤ä╨╕╨║╨░╤é╨╛╤Ç ╤Å╨╖╤ï╨║╨░ ╨╕ ╤Ç╨╡╨│╨╕╨╛╨╜╨░╨╗╤î╨╜╤ï╤à ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨╛╨▓ ╨▓ {0} ╨┐╨╡╤Ç╨╡╨╝╨╡╨╜╨╜╨╛╨╣ ╤ü╤Ç╨╡╨┤╤ï. ╨ƒ╤Ç╨╛╤ç╨╕╤é╨░╨╜╨╛ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ "{1}"</target>
         <note>0 - Environment variable name, 1 - value set in environment variable</note>
       </trans-unit>
       <trans-unit id="Error_InvalidMsbuildVersion">
         <source>Invalid MSBuild version specified: '{0}'</source>
-        <target state="translated">Указана недействительный версия MSBuild: "{0}"</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨░ ╨╜╨╡╨┤╨╡╨╣╤ü╤é╨▓╨╕╤é╨╡╨╗╤î╨╜╤ï╨╣ ╨▓╨╡╤Ç╤ü╨╕╤Å MSBuild: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidSolutionDirectory">
         <source>Invalid solution directory: '{0}'</source>
-        <target state="translated">Недопустимый каталог решения: "{0}"</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨║╨░╤é╨░╨╗╨╛╨│ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MSBuildNotInstalled">
         <source>MSBuild is not installed.</source>
-        <target state="translated">Microsoft Build Engine не установлен.</target>
+        <target state="translated">Microsoft Build Engine ╨╜╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MissingSourceParameter">
         <source>Source parameter was not specified.</source>
-        <target state="translated">Исходный параметр не указан.</target>
+        <target state="translated">╨ÿ╤ü╤à╨╛╨┤╨╜╤ï╨╣ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">
         <source>MsBuild timeout out while trying to get project to project references.</source>
-        <target state="translated">При попытке получить ссылки проекта на проект истекло время ожидания MsBuild.</target>
+        <target state="translated">╨ƒ╤Ç╨╕ ╨┐╨╛╨┐╤ï╤é╨║╨╡ ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╨╕ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╜╨░ ╨┐╤Ç╨╛╨╡╨║╤é ╨╕╤ü╤é╨╡╨║╨╗╨╛ ╨▓╤Ç╨╡╨╝╤Å ╨╛╨╢╨╕╨┤╨░╨╜╨╕╤Å MsBuild.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MultipleSolutions">
         <source>This folder contains more than one solution file.</source>
-        <target state="translated">Эта папка содержит несколько файлов решения.</target>
+        <target state="translated">╨¡╤é╨░ ╨┐╨░╨┐╨║╨░ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╤ä╨░╨╣╨╗╨╛╨▓ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MultipleTargetFrameworks">
         <source>project.json cannot contain multiple Target Frameworks.</source>
-        <target state="translated">Project.json не может содержать несколько целевых инфраструктур.</target>
+        <target state="translated">Project.json ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤é╤î ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╤å╨╡╨╗╨╡╨▓╤ï╤à ╨╕╨╜╤ä╤Ç╨░╤ü╤é╤Ç╤â╨║╤é╤â╤Ç.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_NuGetExeNeedsToBeUnblockedAfterDownloading">
         <source>NuGet.exe file on path {0} needs to be unblocked after downloading.</source>
-        <target state="translated">Файл NuGet.exe по пути {0} необходимо разблокировать после скачивания.</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ NuGet.exe ╨┐╨╛ ╨┐╤â╤é╨╕ {0} ╨╜╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╤Ç╨░╨╖╨▒╨╗╨╛╨║╨╕╤Ç╨╛╨▓╨░╤é╤î ╨┐╨╛╤ü╨╗╨╡ ╤ü╨║╨░╤ç╨╕╨▓╨░╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackagesConfigParseError">
         <source>Error parsing packages.config file at {0}: {1}</source>
-        <target state="translated">Ошибка при анализе файла packages.config в {0}: {1}</target>
+        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╤ä╨░╨╣╨╗╨░ packages.config ╨▓ {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProcessingNuspecFile">
         <source>Error occurred when processing file '{0}': {1}</source>
-        <target state="translated">Произошла ошибка при обработке файла "{0}": {1}</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨╛╨▒╤Ç╨░╨▒╨╛╤é╨║╨╡ ╤ä╨░╨╣╨╗╨░ "{0}": {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectJsonNotAllowed">
         <source>Invalid input '{0}'. Provide the path of an msbuild solution file instead. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</source>
-        <target state="translated">Недопустимое входное значение "{0}". Вместо этого укажите путь к файлу решения msbuild. Удалена поддержка файлов XProj и автономных файлов project.json. Чтобы продолжить работу с устаревшими проектами, используйте NuGet 3.5.x со страницы https://nuget.org/downloads.</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨▓╤à╨╛╨┤╨╜╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ "{0}". ╨Æ╨╝╨╡╤ü╤é╨╛ ╤ì╤é╨╛╨│╨╛ ╤â╨║╨░╨╢╨╕╤é╨╡ ╨┐╤â╤é╤î ╨║ ╤ä╨░╨╣╨╗╤â ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å msbuild. ╨ú╨┤╨░╨╗╨╡╨╜╨░ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨║╨░ ╤ä╨░╨╣╨╗╨╛╨▓ XProj ╨╕ ╨░╨▓╤é╨╛╨╜╨╛╨╝╨╜╤ï╤à ╤ä╨░╨╣╨╗╨╛╨▓ project.json. ╨º╤é╨╛╨▒╤ï ╨┐╤Ç╨╛╨┤╨╛╨╗╨╢╨╕╤é╤î ╤Ç╨░╨▒╨╛╤é╤â ╤ü ╤â╤ü╤é╨░╤Ç╨╡╨▓╤ê╨╕╨╝╨╕ ╨┐╤Ç╨╛╨╡╨║╤é╨░╨╝╨╕, ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ NuGet 3.5.x ╤ü╨╛ ╤ü╤é╤Ç╨░╨╜╨╕╤å╤ï https://nuget.org/downloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectJson_Deprecated_And_Removed">
         <source>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
 Please consider migrating '{0}' to `PackageReference` and using the pack targets.
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</source>
-        <target state="translated">Пакет "project.json" отключен в текущей версии NuGet, и будет окончательно удален в будущей версии.
-Рассмотрите возможность переноса "{0}" в "PackageReference" и использование целей пакета.
-Вы можете установить для "{1}" значение "ИСТИНА", чтобы временно повторно разрешить эту функцию.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "project.json" ╨╛╤é╨║╨╗╤Ä╤ç╨╡╨╜ ╨▓ ╤é╨╡╨║╤â╤ë╨╡╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕ NuGet, ╨╕ ╨▒╤â╨┤╨╡╤é ╨╛╨║╨╛╨╜╤ç╨░╤é╨╡╨╗╤î╨╜╨╛ ╤â╨┤╨░╨╗╨╡╨╜ ╨▓ ╨▒╤â╨┤╤â╤ë╨╡╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕.
+╨á╨░╤ü╤ü╨╝╨╛╤é╤Ç╨╕╤é╨╡ ╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛╤ü╤é╤î ╨┐╨╡╤Ç╨╡╨╜╨╛╤ü╨░ "{0}" ╨▓ "PackageReference" ╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╨╡ ╤å╨╡╨╗╨╡╨╣ ╨┐╨░╨║╨╡╤é╨░.
+╨Æ╤ï ╨╝╨╛╨╢╨╡╤é╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┤╨╗╤Å "{1}" ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ "╨ÿ╨í╨ó╨ÿ╨¥╨É", ╤ç╤é╨╛╨▒╤ï ╨▓╤Ç╨╡╨╝╨╡╨╜╨╜╨╛ ╨┐╨╛╨▓╤é╨╛╤Ç╨╜╨╛ ╤Ç╨░╨╖╤Ç╨╡╤ê╨╕╤é╤î ╤ì╤é╤â ╤ä╤â╨╜╨║╤å╨╕╤Ä.</target>
         <note>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</note>
       </trans-unit>
       <trans-unit id="Error_ResponseFileDoesNotExist">
         <source>Response file '{0}' does not exist</source>
-        <target state="translated">Файл отклика "{0}" не существует.</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╨╛╤é╨║╨╗╨╕╨║╨░ "{0}" ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileInvalid">
         <source>Invalid response file, '@' does not exist</source>
-        <target state="translated">Недопустимый файл ответа, "@" не существует</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╤ä╨░╨╣╨╗ ╨╛╤é╨▓╨╡╤é╨░, "@" ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileMaxRecursionDepth">
         <source>No more than {0} nested response files are allowed</source>
-        <target state="translated">Допускается не более {0} вложенных файлов ответов</target>
+        <target state="translated">╨ö╨╛╨┐╤â╤ü╨║╨░╨╡╤é╤ü╤Å ╨╜╨╡ ╨▒╨╛╨╗╨╡╨╡ {0} ╨▓╨╗╨╛╨╢╨╡╨╜╨╜╤ï╤à ╤ä╨░╨╣╨╗╨╛╨▓ ╨╛╤é╨▓╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileNullOrEmpty">
         <source>Response file '{0}' cannot be empty</source>
-        <target state="translated">Файл ответа "{0}" не может быть пустым</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╨╛╤é╨▓╨╡╤é╨░ "{0}" ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileTooLarge">
         <source>Response file '{0}' cannot be larger than {1}mb</source>
-        <target state="translated">Размер файла ответа "{0}" не может быть больше {1}МБ</target>
+        <target state="translated">╨á╨░╨╖╨╝╨╡╤Ç ╤ä╨░╨╣╨╗╨░ ╨╛╤é╨▓╨╡╤é╨░ "{0}" ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨▒╨╛╨╗╤î╤ê╨╡ {1}╨£╨æ</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SettingsIsNull">
         <source>Property Settings is null.</source>
-        <target state="translated">Параметры свойства NULL.</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╤ü╨▓╨╛╨╣╤ü╤é╨▓╨░ NULL.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SolutionFileParseError">
         <source>Error parsing solution file at {0}: {1}</source>
-        <target state="translated">Ошибка при анализе файла решения в {0}: {1}</target>
+        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╤ä╨░╨╣╨╗╨░ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å ╨▓ {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceProviderIsNull">
         <source>Property SourceProvider is null.</source>
-        <target state="translated">Свойство SourceProvider имеет значение null.</target>
+        <target state="translated">╨í╨▓╨╛╨╣╤ü╤é╨▓╨╛ SourceProvider ╨╕╨╝╨╡╨╡╤é ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ null.</target>
         <note>Don't localize 'SourceProvider'</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLocateRestoreTarget">
         <source>The folder '{0}' does not contain an msbuild solution or packages.config file to restore.</source>
-        <target state="translated">Папка "{0}" не содержит восстанавливаемого решения msbuild или packages.config.</target>
+        <target state="translated">╨ƒ╨░╨┐╨║╨░ "{0}" ╨╜╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨▓╨╛╤ü╤ü╤é╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╨╡╨╝╨╛╨│╨╛ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å msbuild ╨╕╨╗╨╕ packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnableToLocateRestoreTarget_Because">
         <source>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}'.</source>
-        <target state="translated">Не удалось найти решение msbuild, файл packages.config или project.json в папке "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ msbuild, ╤ä╨░╨╣╨╗ packages.config ╨╕╨╗╨╕ project.json ╨▓ ╨┐╨░╨┐╨║╨╡ "{0}".</target>
         <note>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</note>
       </trans-unit>
       <trans-unit id="Error_UnknownAction">
         <source>The action '{0}' is not recognized.</source>
-        <target state="translated">Не удалось распознать действие '{0}'.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤Ç╨░╤ü╨┐╨╛╨╖╨╜╨░╤é╤î ╨┤╨╡╨╣╤ü╤é╨▓╨╕╨╡ '{0}'.</target>
         <note>0 - action</note>
       </trans-unit>
       <trans-unit id="Error_UnknownDependencyVersion">
         <source>Invalid value given for 'DependencyVersion': "{0}".</source>
-        <target state="translated">Для "DependencyVersion" указано недопустимое значение: "{0}".</target>
+        <target state="translated">╨ö╨╗╤Å "DependencyVersion" ╤â╨║╨░╨╖╨░╨╜╨╛ ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡: "{0}".</target>
         <note>Please don't localize "DependencyVersion".</note>
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsBuildForSlnx">
         <source>This version of MSBuild not support the slnx format: '{0}'. Please use a MSBuild version greater or equal to 17.13 to use this feature.</source>
-        <target state="translated">Эта версия MSBuild не поддерживает формат slnx: '{0}'. Для использования этой функции используйте версию MSBuild не ниже 17.13.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å MSBuild ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é ╤ä╨╛╤Ç╨╝╨░╤é slnx: '{0}'. ╨ö╨╗╤Å ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╤Å ╤ì╤é╨╛╨╣ ╤ä╤â╨╜╨║╤å╨╕╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨▓╨╡╤Ç╤ü╨╕╤Ä MSBuild ╨╜╨╡ ╨╜╨╕╨╢╨╡ 17.13.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsBuildForSolutionFilter">
         <source>This version of MSBuild not support Solution filter: '{0}'. Please use a MSBuild version greater or equal to 16.7 to use this feature.</source>
-        <target state="translated">Эта версия MSBuild не поддерживает фильтр решений: '{0}'. Для использования этой функции используйте версию MSBuild не ниже 16.7.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å MSBuild ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é ╤ä╨╕╨╗╤î╤é╤Ç ╤Ç╨╡╤ê╨╡╨╜╨╕╨╣: '{0}'. ╨ö╨╗╤Å ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╤Å ╤ì╤é╨╛╨╣ ╤ä╤â╨╜╨║╤å╨╕╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨▓╨╡╤Ç╤ü╨╕╤Ä MSBuild ╨╜╨╡ ╨╜╨╕╨╢╨╡ 16.7.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsbuild">
         <source>This version of msbuild is not supported: '{0}'</source>
-        <target state="translated">Эта версия msbuild не поддерживается: "{0}"</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å msbuild ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UpdateSelf_Source">
         <source>The `update -self` command only accepts one source as an argument. If the source option is not specified, the default NuGet source will be used.</source>
-        <target state="translated">Команда "update -self" принимает в качестве аргумента только один источник. Если параметр источника не указан, будет использован источник NuGet по умолчанию.</target>
+        <target state="translated">╨Ü╨╛╨╝╨░╨╜╨┤╨░ "update -self" ╨┐╤Ç╨╕╨╜╨╕╨╝╨░╨╡╤é ╨▓ ╨║╨░╤ç╨╡╤ü╤é╨▓╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨░ ╤é╨╛╨╗╤î╨║╨╛ ╨╛╨┤╨╕╨╜ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║. ╨ò╤ü╨╗╨╕ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜, ╨▒╤â╨┤╨╡╤é ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ NuGet ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToBuildProject">
         <source>Failed to build '{0}'.</source>
-        <target state="translated">Не удалось выполнить сборку "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╤ü╨▒╨╛╤Ç╨║╤â "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadExtension">
         <source>Failed to load {0}, if this extension was downloaded from the internet please make sure it got unblocked (right click, properties, unblock).</source>
-        <target state="translated">Не удалось загрузить {0}. Если это расширение скачано из Интернета, убедитесь, что оно разблокировано (щелкните его правой кнопкой мыши, выберите "Свойства" и "Разблокировать").</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î {0}. ╨ò╤ü╨╗╨╕ ╤ì╤é╨╛ ╤Ç╨░╤ü╤ê╨╕╤Ç╨╡╨╜╨╕╨╡ ╤ü╨║╨░╤ç╨░╨╜╨╛ ╨╕╨╖ ╨ÿ╨╜╤é╨╡╤Ç╨╜╨╡╤é╨░, ╤â╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╨╛╨╜╨╛ ╤Ç╨░╨╖╨▒╨╗╨╛╨║╨╕╤Ç╨╛╨▓╨░╨╜╨╛ (╤ë╨╡╨╗╨║╨╜╨╕╤é╨╡ ╨╡╨│╨╛ ╨┐╤Ç╨░╨▓╨╛╨╣ ╨║╨╜╨╛╨┐╨║╨╛╨╣ ╨╝╤ï╤ê╨╕, ╨▓╤ï╨▒╨╡╤Ç╨╕╤é╨╡ "╨í╨▓╨╛╨╣╤ü╤é╨▓╨░" ╨╕ "╨á╨░╨╖╨▒╨╗╨╛╨║╨╕╤Ç╨╛╨▓╨░╤é╤î").</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadExtensionDuringMefComposition">
         <source>Failed to load {0}{1}</source>
-        <target state="translated">Не удалось загрузить {0}{1}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î {0}{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictChoiceText">
         <source>[Y] Yes  [A] Yes to All  [N] No  [L] No to All ?</source>
-        <target state="translated">[Y] Да  [A] Да для всех  [N] Нет  [L] Нет для всех?</target>
+        <target state="translated">[Y] ╨ö╨░  [A] ╨ö╨░ ╨┤╨╗╤Å ╨▓╤ü╨╡╤à  [N] ╨¥╨╡╤é  [L] ╨¥╨╡╤é ╨┤╨╗╤Å ╨▓╤ü╨╡╤à?</target>
         <note>Please do not localize the letters inside the [] brackets.</note>
       </trans-unit>
       <trans-unit id="FileNotAddedToPackage">
         <source>File '{0}' is not added because the package already contains file '{1}'</source>
-        <target state="translated">Файл "{0}" не добавлен, так как пакет уже содержит файл "{1}"</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ "{0}" ╨╜╨╡ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜, ╤é╨░╨║ ╨║╨░╨║ ╨┐╨░╨║╨╡╤é ╤â╨╢╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╤ä╨░╨╣╨╗ "{1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="FoundProject">
         <source>Found 1 project with a packages.config file. ({0})</source>
-        <target state="translated">Обнаружен 1 проект с файлом packages.config. ({0})</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜ 1 ╨┐╤Ç╨╛╨╡╨║╤é ╤ü ╤ä╨░╨╣╨╗╨╛╨╝ packages.config. ({0})</target>
         <note />
       </trans-unit>
       <trans-unit id="FoundProjects">
         <source>Found {0} projects with a packages.config file. ({1})</source>
-        <target state="translated">Обнаружены проекты с файлом packages.config: {0}. ({1})</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╤ï ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╤ü ╤ä╨░╨╣╨╗╨╛╨╝ packages.config: {0}. ({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpCommandForMoreInfo">
         <source>For more information, visit {0}</source>
-        <target state="translated">Для получения дополнительной информации посетите {0}</target>
+        <target state="translated">╨ö╨╗╤Å ╨┐╨╛╨╗╤â╤ç╨╡╨╜╨╕╤Å ╨┤╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╨╛╨╣ ╨╕╨╜╤ä╨╛╤Ç╨╝╨░╤å╨╕╨╕ ╨┐╨╛╤ü╨╡╤é╨╕╤é╨╡ {0}</target>
         <note>{0} will be replaced with a url.</note>
       </trans-unit>
       <trans-unit id="InitCommand_FeedContainsNoPackages">
         <source>Feed '{0}' contains no packages.</source>
-        <target state="translated">Канал "{0}" не содержит пакетов.</target>
+        <target state="translated">╨Ü╨░╨╜╨░╨╗ "{0}" ╨╜╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨┐╨░╨║╨╡╤é╨╛╨▓.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitCommand_FeedIsNotFound">
         <source>Provided feed folder '{0}' is not found.</source>
-        <target state="translated">Указанная папка канала "{0}" не найдена.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╨░╤Å ╨┐╨░╨┐╨║╨░ ╨║╨░╨╜╨░╨╗╨░ "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandHigherVersionAlreadyExists">
         <source>Skipping installation of package "{0}" because higher version "{1}" is already installed.</source>
-        <target state="translated">Пропуск установки пакета "{0}" , так как уже установлена более поздняя версия "{1}".</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨┐╤â╤ü╨║ ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╕ ╨┐╨░╨║╨╡╤é╨░ "{0}" , ╤é╨░╨║ ╨║╨░╨║ ╤â╨╢╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨░ ╨▒╨╛╨╗╨╡╨╡ ╨┐╨╛╨╖╨┤╨╜╤Å╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandInvalidPackageReference">
         <source>'{0}' contains invalid package references. </source>
-        <target state="translated">"{0}" содержит недопустимые ссылки на пакеты. </target>
+        <target state="translated">"{0}" ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╡ ╤ü╤ü╤ï╨╗╨║╨╕ ╨╜╨░ ╨┐╨░╨║╨╡╤é╤ï. </target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandNothingToInstall">
         <source>All packages listed in {0} are already installed.</source>
-        <target state="translated">Все пакеты, указанные в {0}, уже установлены.</target>
+        <target state="translated">╨Æ╤ü╨╡ ╨┐╨░╨║╨╡╤é╤ï, ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╡ ╨▓ {0}, ╤â╨╢╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageAlreadyExists">
         <source>Package "{0}" is already installed.</source>
-        <target state="translated">Пакет "{0}" уже установлен.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "{0}" ╤â╨╢╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageReferenceInvalidVersion">
         <source>Version string specified for package reference '{0}' is invalid.</source>
-        <target state="translated">Для ссылки на пакет "{0}" указана недопустимая строка версии.</target>
+        <target state="translated">╨ö╨╗╤Å ╤ü╤ü╤ï╨╗╨║╨╕ ╨╜╨░ ╨┐╨░╨║╨╡╤é "{0}" ╤â╨║╨░╨╖╨░╨╜╨░ ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨░╤Å ╤ü╤é╤Ç╨╛╨║╨░ ╨▓╨╡╤Ç╤ü╨╕╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageRestoreConsentNotFound">
         <source>Package restore is disabled. To enable it, open the Visual Studio Options dialog, click on Package Manager node and check '{0}'. You can also enable package restore by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</source>
-        <target state="translated">Восстановление пакетов отключено. Чтобы включить его, откройте в Visual Studio диалоговое окно "Параметры", щелкните узел "Диспетчер пакетов" и установите флажок "{0}".Также можно включить восстановление пакетов, установив для переменной среды "EnableNuGetPackageRestore" значение "true".</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨╛╤é╨║╨╗╤Ä╤ç╨╡╨╜╨╛. ╨º╤é╨╛╨▒╤ï ╨▓╨║╨╗╤Ä╤ç╨╕╤é╤î ╨╡╨│╨╛, ╨╛╤é╨║╤Ç╨╛╨╣╤é╨╡ ╨▓ Visual Studio ╨┤╨╕╨░╨╗╨╛╨│╨╛╨▓╨╛╨╡ ╨╛╨║╨╜╨╛ "╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï", ╤ë╨╡╨╗╨║╨╜╨╕╤é╨╡ ╤â╨╖╨╡╨╗ "╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓" ╨╕ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ ╤ä╨╗╨░╨╢╨╛╨║ "{0}".╨ó╨░╨║╨╢╨╡ ╨╝╨╛╨╢╨╜╨╛ ╨▓╨║╨╗╤Ä╤ç╨╕╤é╤î ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓, ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╨▓ ╨┤╨╗╤Å ╨┐╨╡╤Ç╨╡╨╝╨╡╨╜╨╜╨╛╨╣ ╤ü╤Ç╨╡╨┤╤ï "EnableNuGetPackageRestore" ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ "true".</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandUnableToFindPackage">
         <source>Unable to find package '{0}'</source>
-        <target state="translated">Не удалось найти пакет «{0}»</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╨┐╨░╨║╨╡╤é ┬½{0}┬╗</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallPackageMessage">
         <source>Installing package '{0}' to '{1}'.</source>
-        <target state="translated">Установка пакета "{0}" в "{1}".</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨║╨░ ╨┐╨░╨║╨╡╤é╨░ "{0}" ╨▓ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidArguments">
         <source>{0}: invalid arguments.</source>
-        <target state="translated">{0}: недопустимые аргументы.</target>
+        <target state="translated">{0}: ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidAssemblyInformationalVersion">
         <source>Invalid AssemblyInformationalVersion '{0}' on assembly '{1}'; falling back to AssemblyVersion '{2}'.</source>
-        <target state="translated">Недопустимой значение AssemblyInformationalVersion "{0}" в сборке "{1}", откат к AssemblyVersion "{2}".</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╣ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ AssemblyInformationalVersion "{0}" ╨▓ ╤ü╨▒╨╛╤Ç╨║╨╡ "{1}", ╨╛╤é╨║╨░╤é ╨║ AssemblyVersion "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidFile">
         <source>No packages.config, project or solution file specified. Use the -self switch to update NuGet.exe.</source>
-        <target state="translated">Не указан файл packages.config, файл проекта или файл решения. Используйте параметр -self, чтобы обновить NuGet.exe.</target>
+        <target state="translated">╨¥╨╡ ╤â╨║╨░╨╖╨░╨╜ ╤ä╨░╨╣╨╗ packages.config, ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╕╨╗╨╕ ╤ä╨░╨╣╨╗ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç -self, ╤ç╤é╨╛╨▒╤ï ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î NuGet.exe.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidOptionValueError">
         <source>Invalid option value: '{0} {1}'</source>
-        <target state="translated">Недопустимое значение параметра: "{0} {1}"</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░: "{0} {1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidSource">
         <source>The specified source '{0}' is invalid. Please provide a valid source.</source>
-        <target state="translated">Указанный источник "{0}" недопустим. Укажите допустимый источник.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ "{0}" ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝. ╨ú╨║╨░╨╢╨╕╤é╨╡ ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommandNoPackages">
         <source>No packages found.</source>
-        <target state="translated">Пакеты не найдены.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é╤ï ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_LicenseUrl">
         <source>License url: {0}</source>
-        <target state="translated">URL-адрес лицензии: {0}</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╕: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_ListNotSupported">
         <source>This version of nuget.exe does not support listing packages from package source '{0}'.</source>
-        <target state="translated">Эта версия nuget.exe не поддерживает перечисление пакетов из источника пакетов "{0}".</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å nuget.exe ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é ╨┐╨╡╤Ç╨╡╤ç╨╕╤ü╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨╕╨╖ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="LiveFeed">
         <source>the NuGet gallery</source>
-        <target state="translated">коллекция NuGet</target>
+        <target state="translated">╨║╨╛╨╗╨╗╨╡╨║╤å╨╕╤Å NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearFailed">
         <source>Clearing local resources failed: one or more errors occured.</source>
-        <target state="translated">Не удалось очистить локальные ресурсы. Произошла одна или несколько ошибок.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╛╤ç╨╕╤ü╤é╨╕╤é╤î ╨╗╨╛╨║╨░╨╗╤î╨╜╤ï╨╡ ╤Ç╨╡╤ü╤â╤Ç╤ü╤ï. ╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╨┤╨╜╨░ ╨╕╨╗╨╕ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨╛╤ê╨╕╨▒╨╛╨║.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearedSuccessful">
         <source>Local resources cleared.</source>
-        <target state="translated">Локальные ресурсы очищены.</target>
+        <target state="translated">╨¢╨╛╨║╨░╨╗╤î╨╜╤ï╨╡ ╤Ç╨╡╤ü╤â╤Ç╤ü╤ï ╨╛╤ç╨╕╤ë╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetCache">
         <source>Clearing NuGet cache: {0}</source>
-        <target state="translated">Очищается кэш NuGet: {0}</target>
+        <target state="translated">╨₧╤ç╨╕╤ë╨░╨╡╤é╤ü╤Å ╨║╤ì╤ê NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetGlobalPackagesCache">
         <source>Clearing NuGet global packages cache: {0}</source>
-        <target state="translated">Очищается глобальный кэш пакетов NuGet: {0}</target>
+        <target state="translated">╨₧╤ç╨╕╤ë╨░╨╡╤é╤ü╤Å ╨│╨╗╨╛╨▒╨░╨╗╤î╨╜╤ï╨╣ ╨║╤ì╤ê ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetHttpCache">
         <source>Clearing NuGet HTTP cache: {0}</source>
-        <target state="translated">Очищается кэш HTTP NuGet: {0}</target>
+        <target state="translated">╨₧╤ç╨╕╤ë╨░╨╡╤é╤ü╤Å ╨║╤ì╤ê HTTP NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_FailedToDeletePath">
         <source>Failed to delete '{0}'.</source>
-        <target state="translated">Не удалось удалить "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_InvalidLocalResourceName">
         <source>An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all.</source>
-        <target state="translated">Указано недопустимое имя локального ресурса. Укажите одно из следующих значений: http-cache, packages-cache, global-packages, all.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╛ ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╕╨╝╤Å ╨╗╨╛╨║╨░╨╗╤î╨╜╨╛╨│╨╛ ╤Ç╨╡╤ü╤â╤Ç╤ü╨░. ╨ú╨║╨░╨╢╨╕╤é╨╡ ╨╛╨┤╨╜╨╛ ╨╕╨╖ ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╕╤à ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╣: http-cache, packages-cache, global-packages, all.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_LocalResourcePathNotSet">
         <source>The location of local resource '{0}' is undefined.</source>
-        <target state="translated">Расположение локального ресурса "{0}" не определено.</target>
+        <target state="translated">╨á╨░╤ü╨┐╨╛╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╨╗╨╛╨║╨░╨╗╤î╨╜╨╛╨│╨╛ ╤Ç╨╡╤ü╤â╤Ç╤ü╨░ "{0}" ╨╜╨╡ ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╡╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_LocalsPartiallyCleared">
         <source>Local resources partially cleared.</source>
-        <target state="translated">Локальные ресурсы частично удалены.</target>
+        <target state="translated">╨¢╨╛╨║╨░╨╗╤î╨╜╤ï╨╡ ╤Ç╨╡╤ü╤â╤Ç╤ü╤ï ╤ç╨░╤ü╤é╨╕╤ç╨╜╨╛ ╤â╨┤╨░╨╗╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForInstalledPackages">
         <source>Looking for installed packages in '{0}'.</source>
-        <target state="translated">Поиск установленных пакетов в "{0}".</target>
+        <target state="translated">╨ƒ╨╛╨╕╤ü╨║ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╜╤ï╤à ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨▓ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAutoDetection">
         <source>MSBuild auto-detection: using msbuild version '{0}' from '{1}'.</source>
-        <target state="translated">Автоматическое обнаружение MSBuild: используется msbuild версии "{0}" из "{1}".</target>
+        <target state="translated">╨É╨▓╤é╨╛╨╝╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨╡ ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╕╨╡ MSBuild: ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é╤ü╤Å msbuild ╨▓╨╡╤Ç╤ü╨╕╨╕ "{0}" ╨╕╨╖ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAutoDetection_Verbose">
         <source>MSBuild auto-detection: using msbuild version '{0}' from '{1}'. Use option -MSBuildVersion to force nuget to use a specific version of MSBuild.</source>
-        <target state="translated">Автоматическое обнаружение MSBuild: используется msbuild версии "{0}" из "{1}". Используйте параметр -MSBuildVersion, чтобы принудительно использовать определенную версию MSBuild.</target>
+        <target state="translated">╨É╨▓╤é╨╛╨╝╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨╡ ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╕╨╡ MSBuild: ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é╤ü╤Å msbuild ╨▓╨╡╤Ç╤ü╨╕╨╕ "{0}" ╨╕╨╖ "{1}". ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç -MSBuildVersion, ╤ç╤é╨╛╨▒╤ï ╨┐╤Ç╨╕╨╜╤â╨┤╨╕╤é╨╡╨╗╤î╨╜╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╡╨╜╨╜╤â╤Ä ╨▓╨╡╤Ç╤ü╨╕╤Ä MSBuild.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSbuildFromPath">
@@ -539,37 +539,37 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="MissingOptionValueError">
         <source>Missing option value for: '{0}'</source>
-        <target state="translated">Отсутствует значение для параметра "{0}".</target>
+        <target state="translated">╨₧╤é╤ü╤â╤é╤ü╤é╨▓╤â╨╡╤é ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┤╨╗╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDoesNotExistAtPath">
         <source>MsBuild.exe does not exist at '{0}'.</source>
-        <target state="translated">MsBuild.exe не существует в "{0}".</target>
+        <target state="translated">MsBuild.exe ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="MsbuildLoadToolSetError">
         <source>Failed to load msbuild Toolset</source>
-        <target state="translated">Не удалось загрузить набор инструментов msbuild</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨╜╨░╨▒╨╛╤Ç ╨╕╨╜╤ü╤é╤Ç╤â╨╝╨╡╨╜╤é╨╛╨▓ msbuild</target>
         <note />
       </trans-unit>
       <trans-unit id="MsbuildPathNotExist">
         <source>MSBuildPath : {0} does not exist.</source>
-        <target state="translated">MSBuildPath : {0} не существует</target>
+        <target state="translated">MSBuildPath : {0} ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="MultipleProjectFilesFound">
         <source>Found multiple project files for '{0}'.</source>
-        <target state="translated">Обнаружено несколько файлов проектов для "{0}".</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╛ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╤ä╨░╨╣╨╗╨╛╨▓ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓ ╨┤╨╗╤Å "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPackagesConfig">
         <source>Unable to update. The project does not contain a packages.config file.</source>
-        <target state="translated">Не удалось обновить. Проект не содержит файл packages.config.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î. ╨ƒ╤Ç╨╛╨╡╨║╤é ╨╜╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╤ä╨░╨╣╨╗ packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectsFound">
         <source>No projects found with packages.config.</source>
-        <target state="translated">Не найдены проекты с packages.config.</target>
+        <target state="translated">╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╤ï ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╤ü packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="NupkgPath_InvalidNupkg">
@@ -579,22 +579,22 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="NupkgPath_NotFound">
         <source>Provided Nupkg file '{0}' is not found.</source>
-        <target state="translated">Указанный файл Nupkg "{0}" не найден.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╤ä╨░╨╣╨╗ Nupkg "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="OfficialPackageSourceName">
         <source>NuGet official package source</source>
-        <target state="translated">Официальный источник пакетов NuGet</target>
+        <target state="translated">╨₧╤ä╨╕╤å╨╕╨░╨╗╤î╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionInvalidWithoutSetter">
         <source>[option] on '{0}' is invalid without a setter.</source>
-        <target state="translated">[option] в "{0}" недопустим без метода задания.</target>
+        <target state="translated">[option] ╨▓ "{0}" ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝ ╨▒╨╡╨╖ ╨╝╨╡╤é╨╛╨┤╨░ ╨╖╨░╨┤╨░╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_VerboseDeprecated">
         <source>Option 'Verbose' has been deprecated. Use 'Verbosity' instead.</source>
-        <target state="translated">Параметр "Verbose" упразднен. Используйте вместо него параметр "Verbosity".</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç "Verbose" ╤â╨┐╤Ç╨░╨╖╨┤╨╜╨╡╨╜. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨▓╨╝╨╡╤ü╤é╨╛ ╨╜╨╡╨│╨╛ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç "Verbosity".</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputNuGetVersion">
@@ -604,427 +604,427 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="PackageCommandAddedFile">
         <source>Added file '{0}'.</source>
-        <target state="translated">Добавлен файл "{0}".</target>
+        <target state="translated">╨ö╨╛╨▒╨░╨▓╨╗╨╡╨╜ ╤ä╨░╨╣╨╗ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandAttemptingToBuildPackage">
         <source>Attempting to build package from '{0}'.</source>
-        <target state="translated">Попытка собрать пакет для "{0}".</target>
+        <target state="translated">╨ƒ╨╛╨┐╤ï╤é╨║╨░ ╤ü╨╛╨▒╤Ç╨░╤é╤î ╨┐╨░╨║╨╡╤é ╨┤╨╗╤Å "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandAttemptingToBuildSymbolsPackage">
         <source>Attempting to build symbols package for '{0}'.</source>
-        <target state="translated">Попытка выполнить сборку пакета символов для "{0}".</target>
+        <target state="translated">╨ƒ╨╛╨┐╤ï╤é╨║╨░ ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╤ü╨▒╨╛╤Ç╨║╤â ╨┐╨░╨║╨╡╤é╨░ ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨▓ ╨┤╨╗╤Å "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandFileFromDependencyIsChanged">
         <source>File from dependency is changed. Adding file '{0}'.</source>
-        <target state="translated">Файл из зависимости изменен. Добавление файла "{0}".</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╨╕╨╖ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╕╨╖╨╝╨╡╨╜╨╡╨╜. ╨ö╨╛╨▒╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╤ä╨░╨╣╨╗╨░ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandFileFromDependencyIsNotChanged">
         <source>File from dependency is not changed. File '{0}' is not added.</source>
-        <target state="translated">Файл из зависимости не изменен. Файл "{0}" не добавлен.</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╨╕╨╖ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╜╨╡ ╨╕╨╖╨╝╨╡╨╜╨╡╨╜. ╨ñ╨░╨╣╨╗ "{0}" ╨╜╨╡ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandInvalidMinClientVersion">
         <source>The value of MinClientVersion argument is not a valid version.</source>
-        <target state="translated">Значение аргумента MinClientVersion недопустимо как версия.</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨░ MinClientVersion ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛ ╨║╨░╨║ ╨▓╨╡╤Ç╤ü╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandIssueDescription">
         <source>Description: {0}</source>
-        <target state="translated">Описание: {0}</target>
+        <target state="translated">╨₧╨┐╨╕╤ü╨░╨╜╨╕╨╡: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandIssueSolution">
         <source>Solution: {0}</source>
-        <target state="translated">Решение: {0}</target>
+        <target state="translated">╨á╨╡╤ê╨╡╨╜╨╕╨╡: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandIssueTitle">
         <source>Issue: {0}</source>
-        <target state="translated">Проблема: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨▒╨╗╨╡╨╝╨░: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandNoFilesForLibPackage">
         <source>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Не удалось выполнить сборку проекта. Убедитесь, что "{0}" включает файлы сборки. Справку по сборке пакета символов см. по ссылке {1}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╤ü╨▒╨╛╤Ç╨║╤â ╨┐╤Ç╨╛╨╡╨║╤é╨░. ╨ú╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ "{0}" ╨▓╨║╨╗╤Ä╤ç╨░╨╡╤é ╤ä╨░╨╣╨╗╤ï ╤ü╨▒╨╛╤Ç╨║╨╕. ╨í╨┐╤Ç╨░╨▓╨║╤â ╨┐╨╛ ╤ü╨▒╨╛╤Ç╨║╨╡ ╨┐╨░╨║╨╡╤é╨░ ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨▓ ╤ü╨╝. ╨┐╨╛ ╤ü╤ü╤ï╨╗╨║╨╡ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandNoFilesForSymbolsPackage">
         <source>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Не удалось выполнить сборку пакета. Убедитесь, что "{0}" включает исходные файлы и файлы символов. Справку по сборке пакета символов см. по ссылке {1}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╤ü╨▒╨╛╤Ç╨║╤â ╨┐╨░╨║╨╡╤é╨░. ╨ú╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ "{0}" ╨▓╨║╨╗╤Ä╤ç╨░╨╡╤é ╨╕╤ü╤à╨╛╨┤╨╜╤ï╨╡ ╤ä╨░╨╣╨╗╤ï ╨╕ ╤ä╨░╨╣╨╗╤ï ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨▓. ╨í╨┐╤Ç╨░╨▓╨║╤â ╨┐╨╛ ╤ü╨▒╨╛╤Ç╨║╨╡ ╨┐╨░╨║╨╡╤é╨░ ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨▓ ╤ü╨╝. ╨┐╨╛ ╤ü╤ü╤ï╨╗╨║╨╡ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandPackageIssueSummary">
         <source>{0} issue(s) found with package '{1}'.</source>
-        <target state="translated">Обнаружены проблемы ({0}) в пакете "{1}".</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╤ï ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╤ï ({0}) ╨▓ ╨┐╨░╨║╨╡╤é╨╡ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandSpecifyInputFileError">
         <source>Please specify a nuspec or project file to use.</source>
-        <target state="translated">Укажите файл nuspec или файл проекта для использования.</target>
+        <target state="translated">╨ú╨║╨░╨╢╨╕╤é╨╡ ╤ä╨░╨╣╨╗ nuspec ╨╕╨╗╨╕ ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨┤╨╗╤Å ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandSuccess">
         <source>Successfully created package '{0}'.</source>
-        <target state="translated">Пакет "{0}" успешно создан.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "{0}" ╤â╤ü╨┐╨╡╤ê╨╜╨╛ ╤ü╨╛╨╖╨┤╨░╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDoesNotExist">
         <source>Unable to locate '{0} {1}'. Make sure all packages exist in the packages folder before running update.</source>
-        <target state="translated">Не удалось найти "{0} {1}". Перед запуском обновления убедитесь, что все пакеты существуют в папке пакетов.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ "{0} {1}". ╨ƒ╨╡╤Ç╨╡╨┤ ╨╖╨░╨┐╤â╤ü╨║╨╛╨╝ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╤â╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╨▓╤ü╨╡ ╨┐╨░╨║╨╡╤é╤ï ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╤Ä╤é ╨▓ ╨┐╨░╨┐╨║╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsentCheckBoxText">
         <source>&amp;Allow NuGet to download missing packages</source>
-        <target state="translated">&amp;Разрешить NuGet скачивать отсутствующие пакеты</target>
+        <target state="translated">&amp;╨á╨░╨╖╤Ç╨╡╤ê╨╕╤é╤î NuGet ╤ü╨║╨░╤ç╨╕╨▓╨░╤é╤î ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╤â╤Ä╤ë╨╕╨╡ ╨┐╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagingFilesFromOutputPath">
         <source>Packing files from '{0}'.</source>
-        <target state="translated">Идет упаковка файлов из "{0}".</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤â╨┐╨░╨║╨╛╨▓╨║╨░ ╤ä╨░╨╣╨╗╨╛╨▓ ╨╕╨╖ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="Path_Invalid">
         <source>'{0}' is not a valid path.</source>
-        <target state="translated">"{0}" не является допустимым путем.</target>
+        <target state="translated">"{0}" ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╝ ╨┐╤â╤é╨╡╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="Path_Invalid_NotFileNotUnc">
         <source>'{0}' should be a local path or a UNC share path.</source>
-        <target state="translated">"{0}" должен быть локальным путем или UNC-путем к общей папке.</target>
+        <target state="translated">"{0}" ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▒╤ï╤é╤î ╨╗╨╛╨║╨░╨╗╤î╨╜╤ï╨╝ ╨┐╤â╤é╨╡╨╝ ╨╕╨╗╨╕ UNC-╨┐╤â╤é╨╡╨╝ ╨║ ╨╛╨▒╤ë╨╡╨╣ ╨┐╨░╨┐╨║╨╡.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectJsonPack_Deprecated">
         <source>`project.json` pack is deprecated. Please consider migrating '{0}' to `PackageReference` and using the pack targets.</source>
-        <target state="translated">Пакет "project.json" упразднен. Рассмотрите возможность миграции "{0}" на "PackageReference" и использования целей пакетов.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "project.json" ╤â╨┐╤Ç╨░╨╖╨┤╨╜╨╡╨╜. ╨á╨░╤ü╤ü╨╝╨╛╤é╤Ç╨╕╤é╨╡ ╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛╤ü╤é╤î ╨╝╨╕╨│╤Ç╨░╤å╨╕╨╕ "{0}" ╨╜╨░ "PackageReference" ╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╤Å ╤å╨╡╨╗╨╡╨╣ ╨┐╨░╨║╨╡╤é╨╛╨▓.</target>
         <note>Do not localize project.json and `PackageReference` 
 0 - project path (project.json file path)</note>
       </trans-unit>
       <trans-unit id="ProjectRestoreCommandNoPackagesConfigOrProjectJson">
         <source>Nothing to do. This project does not specify any packages for NuGet to restore.</source>
-        <target state="translated">Нет действий. В этом проекте не указаны пакеты для восстановления с помощью NuGet.</target>
+        <target state="translated">╨¥╨╡╤é ╨┤╨╡╨╣╤ü╤é╨▓╨╕╨╣. ╨Æ ╤ì╤é╨╛╨╝ ╨┐╤Ç╨╛╨╡╨║╤é╨╡ ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜╤ï ╨┐╨░╨║╨╡╤é╤ï ╨┤╨╗╤Å ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╤ü ╨┐╨╛╨╝╨╛╤ë╤î╤Ä NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandNoSourceError">
         <source>There is no default source, please specify a source.</source>
-        <target state="translated">Нет источника по умолчанию. Укажите источник.</target>
+        <target state="translated">╨¥╨╡╤é ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä. ╨ú╨║╨░╨╢╨╕╤é╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║.</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandTimeoutError">
         <source>Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command.</source>
-        <target state="translated">Отправка заняла слишком много времени. Чтобы изменить время ожидания по умолчанию (300 секунд), используйте параметр -Timeout &lt;seconds&gt; с командой push.</target>
+        <target state="translated">╨₧╤é╨┐╤Ç╨░╨▓╨║╨░ ╨╖╨░╨╜╤Å╨╗╨░ ╤ü╨╗╨╕╤ê╨║╨╛╨╝ ╨╝╨╜╨╛╨│╨╛ ╨▓╤Ç╨╡╨╝╨╡╨╜╨╕. ╨º╤é╨╛╨▒╤ï ╨╕╨╖╨╝╨╡╨╜╨╕╤é╤î ╨▓╤Ç╨╡╨╝╤Å ╨╛╨╢╨╕╨┤╨░╨╜╨╕╤Å ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä (300 ╤ü╨╡╨║╤â╨╜╨┤), ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç -Timeout &lt;seconds&gt; ╤ü ╨║╨╛╨╝╨░╨╜╨┤╨╛╨╣ push.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResourcePropertyIncorrectType">
         <source>The property '{0}' on resource type '{1}' is not a type of ResourceManager.</source>
-        <target state="translated">Свойство "{0}" типа ресурса "{1}" не является типом ResourceManager.</target>
+        <target state="translated">╨í╨▓╨╛╨╣╤ü╤é╨▓╨╛ "{0}" ╤é╨╕╨┐╨░ ╤Ç╨╡╤ü╤â╤Ç╤ü╨░ "{1}" ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╤é╨╕╨┐╨╛╨╝ ResourceManager.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResourceTypeDoesNotHaveProperty">
         <source>The resource type '{0}' does not have an accessible static property named '{1}'.</source>
-        <target state="translated">У типа ресурса "{0}" нет доступного статического свойства с именем "{1}".</target>
+        <target state="translated">╨ú ╤é╨╕╨┐╨░ ╤Ç╨╡╤ü╤â╤Ç╤ü╨░ "{0}" ╨╜╨╡╤é ╨┤╨╛╤ü╤é╤â╨┐╨╜╨╛╨│╨╛ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╤ü╨▓╨╛╨╣╤ü╤é╨▓╨░ ╤ü ╨╕╨╝╨╡╨╜╨╡╨╝ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandCannotDetermineGlobalPackagesFolder">
         <source>'globalPackagesFolder' setting is a relative path. To determine full path, please specify either -SolutionDirectory or a solution file as a parameter. To ignore 'globalPackagesFolder' setting, specify -PackagesDirectory.</source>
-        <target state="translated">Параметр "globalPackagesFolder" является относительным путем. Чтобы задать полный путь, укажите в качестве параметра -SolutionDirectory или файл решения. Чтобы игнорировать параметр "globalPackagesFolder", укажите -PackagesDirectory.</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç "globalPackagesFolder" ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨╛╤é╨╜╨╛╤ü╨╕╤é╨╡╨╗╤î╨╜╤ï╨╝ ╨┐╤â╤é╨╡╨╝. ╨º╤é╨╛╨▒╤ï ╨╖╨░╨┤╨░╤é╤î ╨┐╨╛╨╗╨╜╤ï╨╣ ╨┐╤â╤é╤î, ╤â╨║╨░╨╢╨╕╤é╨╡ ╨▓ ╨║╨░╤ç╨╡╤ü╤é╨▓╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ -SolutionDirectory ╨╕╨╗╨╕ ╤ä╨░╨╣╨╗ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å. ╨º╤é╨╛╨▒╤ï ╨╕╨│╨╜╨╛╤Ç╨╕╤Ç╨╛╨▓╨░╤é╤î ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç "globalPackagesFolder", ╤â╨║╨░╨╢╨╕╤é╨╡ -PackagesDirectory.</target>
         <note>Please do not localize 'globalPackagesFolder', -SolutionDirectory or -PackagesDirectory</note>
       </trans-unit>
       <trans-unit id="RestoreCommandCannotDeterminePackagesFolder">
         <source>Cannot determine the packages folder to restore NuGet packages. Please specify either -PackagesDirectory or -SolutionDirectory.</source>
-        <target state="translated">Не удается определить папку пакетов для восстановления пакетов NuGet. Укажите -PackagesDirectory или -SolutionDirectory.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╕╤é╤î ╨┐╨░╨┐╨║╤â ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨┤╨╗╤Å ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet. ╨ú╨║╨░╨╢╨╕╤é╨╡ -PackagesDirectory ╨╕╨╗╨╕ -SolutionDirectory.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandFileNotFound">
         <source>Input file does not exist: {0}.</source>
-        <target state="translated">Входной файл не существует: "{0}".</target>
+        <target state="translated">╨Æ╤à╨╛╨┤╨╜╨╛╨╣ ╤ä╨░╨╣╨╗ ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandOptionSolutionDirectoryIsInvalid">
         <source>Option -SolutionDirectory is not valid when restoring packages for a solution.</source>
-        <target state="translated">Параметр -SolutionDirectory недопустим при восстановлении пакетов для решения.</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç -SolutionDirectory ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝ ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨┤╨╗╤Å ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandPackageRestoreOptOutMessage">
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
-        <target state="translated">Восстановление пакетов NuGet...
-Чтобы решение NuGet не скачивало пакеты при сборке, откройте в Visual Studio диалоговое окно "Параметры", щелкните узел "Диспетчер пакетов NuGet" и снимите флажок "{0}".</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet...
+╨º╤é╨╛╨▒╤ï ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ NuGet ╨╜╨╡ ╤ü╨║╨░╤ç╨╕╨▓╨░╨╗╨╛ ╨┐╨░╨║╨╡╤é╤ï ╨┐╤Ç╨╕ ╤ü╨▒╨╛╤Ç╨║╨╡, ╨╛╤é╨║╤Ç╨╛╨╣╤é╨╡ ╨▓ Visual Studio ╨┤╨╕╨░╨╗╨╛╨│╨╛╨▓╨╛╨╡ ╨╛╨║╨╜╨╛ "╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï", ╤ë╨╡╨╗╨║╨╜╨╕╤é╨╡ ╤â╨╖╨╡╨╗ "╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet" ╨╕ ╤ü╨╜╨╕╨╝╨╕╤é╨╡ ╤ä╨╗╨░╨╢╨╛╨║ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">
         <source>Project file {0} cannot be found.</source>
-        <target state="translated">Не удается найти файл проекта {0}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╜╨░╨╣╤é╨╕ ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesForSolution">
         <source>Restoring NuGet packages for solution {0}.</source>
-        <target state="translated">Восстановление пакетов NuGet для решения {0}.</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet ╨┤╨╗╤Å ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesFromPackagesConfigFile">
         <source>Restoring NuGet packages listed in packages.config file.</source>
-        <target state="translated">Восстановление пакетов NuGet, перечисленных в файле packages.config.</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet, ╨┐╨╡╤Ç╨╡╤ç╨╕╤ü╨╗╨╡╨╜╨╜╤ï╤à ╨▓ ╤ä╨░╨╣╨╗╨╡ packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesListedInFile">
         <source>Restoring NuGet packages listed in file {0}.</source>
-        <target state="translated">Восстановление пакетов NuGet, перечисленных в файле {0}.</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet, ╨┐╨╡╤Ç╨╡╤ç╨╕╤ü╨╗╨╡╨╜╨╜╤ï╤à ╨▓ ╤ä╨░╨╣╨╗╨╡ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ScanningForProjects">
         <source>Scanning for projects...</source>
-        <target state="translated">Сканирование проектов...</target>
+        <target state="translated">╨í╨║╨░╨╜╨╕╤Ç╨╛╨▓╨░╨╜╨╕╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓...</target>
         <note />
       </trans-unit>
       <trans-unit id="SetApiKeyCommandApiKeySaved">
         <source>The API Key '{0}' was saved for {1}.</source>
-        <target state="translated">Ключ API "{0}" сохранен для {1}.</target>
+        <target state="translated">╨Ü╨╗╤Ä╤ç API "{0}" ╤ü╨╛╤à╤Ç╨░╨╜╨╡╨╜ ╨┤╨╗╤Å {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SetApiKeyCommandDefaultApiKeysSaved">
         <source>The API Key '{0}' was saved for {1} and {2}.</source>
-        <target state="translated">Ключ API "{0}" сохранен для {1} и {2}.</target>
+        <target state="translated">╨Ü╨╗╤Ä╤ç API "{0}" ╤ü╨╛╤à╤Ç╨░╨╜╨╡╨╜ ╨┤╨╗╤Å {1} ╨╕ {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsCredentials_UsingSavedCredentials">
         <source>Using credentials from config. UserName: {0}</source>
-        <target state="translated">Использование учетных данных из конфигурации. Имя пользователя: {0}</target>
+        <target state="translated">╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╨╡ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨╕╨╖ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕. ╨ÿ╨╝╤Å ╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╨╡╨╗╤Å: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionRestoreCommandNoPackagesConfigOrProjectJson">
         <source>Nothing to do. None of the projects in this solution specify any packages for NuGet to restore.</source>
-        <target state="translated">Нет действий. В проектах в этом решении нет указанных пакетов для восстановления с помощью NuGet.</target>
+        <target state="translated">╨¥╨╡╤é ╨┤╨╡╨╣╤ü╤é╨▓╨╕╨╣. ╨Æ ╨┐╤Ç╨╛╨╡╨║╤é╨░╤à ╨▓ ╤ì╤é╨╛╨╝ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╕ ╨╜╨╡╤é ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╤à ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨┤╨╗╤Å ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╤ü ╨┐╨╛╨╝╨╛╤ë╤î╤Ä NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="Source_NotFound">
         <source>Source '{0}' is not found.</source>
-        <target state="translated">Источник "{0}" не найден.</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecCommandCreatedNuSpec">
         <source>Created '{0}' successfully.</source>
-        <target state="translated">Успешно создано: "{0}".</target>
+        <target state="translated">╨ú╤ü╨┐╨╡╤ê╨╜╨╛ ╤ü╨╛╨╖╨┤╨░╨╜╨╛: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecCommandFileExists">
         <source>'{0}' already exists, use -Force to overwrite it.</source>
-        <target state="translated">"{0}" уже существует. Для его перезаписи используйте параметр -Force.</target>
+        <target state="translated">"{0}" ╤â╨╢╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é. ╨ö╨╗╤Å ╨╡╨│╨╛ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╨╕╤ü╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç -Force.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToConvertTypeError">
         <source>Unable to change from type '{0}' to '{1}'.</source>
-        <target state="translated">Не удалось изменить тип "{0}" на "{1}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╕╨╖╨╝╨╡╨╜╨╕╤é╤î ╤é╨╕╨┐ "{0}" ╨╜╨░ "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToExtractAssemblyMetadata">
         <source>Unable to extract metadata from '{0}'.</source>
-        <target state="translated">Не удалось извлечь метаданные из "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╕╨╖╨▓╨╗╨╡╤ç╤î ╨╝╨╡╤é╨░╨┤╨░╨╜╨╜╤ï╨╡ ╨╕╨╖ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindBuildOutput">
         <source>Unable to find '{0}'. Make sure the project has been built.</source>
-        <target state="translated">Не удалось найти "{0}". Убедитесь, что сборка проекта выполнена.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ "{0}". ╨ú╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╤ü╨▒╨╛╤Ç╨║╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindPackages">
         <source>Unable to find '{0}'. Make sure they are specified in packages.config.</source>
-        <target state="translated">Не удалось найти "{0}". Проверьте, указаны ли они в packages.config.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ "{0}". ╨ƒ╤Ç╨╛╨▓╨╡╤Ç╤î╤é╨╡, ╤â╨║╨░╨╖╨░╨╜╤ï ╨╗╨╕ ╨╛╨╜╨╕ ╨▓ packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindProject">
         <source>Unable to find project '{0}'.</source>
-        <target state="translated">Не найден проект "{0}".</target>
+        <target state="translated">╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜ ╨┐╤Ç╨╛╨╡╨║╤é "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindSolution">
         <source>Unable to find solution '{0}'.</source>
-        <target state="translated">Не найдено решение "{0}".</target>
+        <target state="translated">╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╨╛ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocatePackagesFolder">
         <source>Unable to locate the packages folder. Verify all the packages are restored before running 'nuget.exe update'.</source>
-        <target state="translated">Не удалось найти папку пакетов. Перед запуском "nuget.exe update" проверьте, все ли пакеты восстановлены.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╨┐╨░╨┐╨║╤â ╨┐╨░╨║╨╡╤é╨╛╨▓. ╨ƒ╨╡╤Ç╨╡╨┤ ╨╖╨░╨┐╤â╤ü╨║╨╛╨╝ "nuget.exe update" ╨┐╤Ç╨╛╨▓╨╡╤Ç╤î╤é╨╡, ╨▓╤ü╨╡ ╨╗╨╕ ╨┐╨░╨║╨╡╤é╤ï ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateProjectFile">
         <source>Unable to locate project file for '{0}'.</source>
-        <target state="translated">Не найден файл проекта для "{0}".</target>
+        <target state="translated">╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜ ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨┤╨╗╤Å "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknowCommandError">
         <source>Unknown command: '{0}'</source>
-        <target state="translated">Неизвестная команда: "{0}"</target>
+        <target state="translated">╨¥╨╡╨╕╨╖╨▓╨╡╤ü╤é╨╜╨░╤Å ╨║╨╛╨╝╨░╨╜╨┤╨░: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownOptionError">
         <source>Unknown option: '{0}'</source>
-        <target state="translated">Неизвестный параметр: "{0}"</target>
+        <target state="translated">╨¥╨╡╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï╨╣ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedFramework">
         <source>'{0}' is not a valid target framework.</source>
-        <target state="translated">"{0}" не является допустимой целевой инфраструктурой.</target>
+        <target state="translated">"{0}" ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╣ ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨╕╨╜╤ä╤Ç╨░╤ü╤é╤Ç╤â╨║╤é╤â╤Ç╨╛╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandCheckingForUpdates">
         <source>Checking for updates from {0}.</source>
-        <target state="translated">Проверка на наличие обновлений от {0}.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨▓╨╡╤Ç╨║╨░ ╨╜╨░ ╨╜╨░╨╗╨╕╤ç╨╕╨╡ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╣ ╨╛╤é {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandCurrentlyRunningNuGetExe">
         <source>Currently running NuGet.exe {0}.</source>
-        <target state="translated">Сейчас запущен NuGet.exe {0}.</target>
+        <target state="translated">╨í╨╡╨╣╤ç╨░╤ü ╨╖╨░╨┐╤â╤ë╨╡╨╜ NuGet.exe {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandNuGetUpToDate">
         <source>NuGet.exe is up to date.</source>
-        <target state="translated">NuGet.exe актуален.</target>
+        <target state="translated">NuGet.exe ╨░╨║╤é╤â╨░╨╗╨╡╨╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUnableToFindPackage">
         <source>Unable to find '{0}' package.</source>
-        <target state="translated">Не удалось найти пакет "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╨┐╨░╨║╨╡╤é "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUnableToLocateNuGetExe">
         <source>Invalid NuGet.CommandLine package. Unable to locate NuGet.exe within the package.</source>
-        <target state="translated">Недопустимый пакет NuGet.CommandLine. Не удалось найти NuGet.exe в пакете.</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨┐╨░╨║╨╡╤é NuGet.CommandLine. ╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ NuGet.exe ╨▓ ╨┐╨░╨║╨╡╤é╨╡.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUpdateSuccessful">
         <source>Update successful.</source>
-        <target state="translated">Обновление выполнено.</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUpdatingNuGet">
         <source>Updating NuGet.exe to {0}.</source>
-        <target state="translated">Обновление NuGet.exe до {0}.</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ NuGet.exe ╨┤╨╛ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdatingProject">
         <source>Updating '{0}'...</source>
-        <target state="translated">Выполняется обновление "{0}"...</target>
+        <target state="translated">╨Æ╤ï╨┐╨╛╨╗╨╜╤Å╨╡╤é╤ü╤Å ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ "{0}"...</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingNuspecForMetadata">
         <source>Using '{0}' for metadata.</source>
-        <target state="translated">Использование "{0}" для метаданных.</target>
+        <target state="translated">╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╨╡ "{0}" ╨┤╨╗╤Å ╨╝╨╡╤é╨░╨┤╨░╨╜╨╜╤ï╤à.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingPackagesConfigForDependencies">
         <source>Found packages.config. Using packages listed as dependencies</source>
-        <target state="translated">Обнаружен файл packages.config. Используются пакеты, перечисленные как зависимости</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜ ╤ä╨░╨╣╨╗ packages.config. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╤Ä╤é╤ü╤Å ╨┐╨░╨║╨╡╤é╤ï, ╨┐╨╡╤Ç╨╡╤ç╨╕╤ü╨╗╨╡╨╜╨╜╤ï╨╡ ╨║╨░╨║ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_CommandDeprecated">
         <source>'{0} {1}' is deprecated. Use '{0} {2}' instead.</source>
-        <target state="translated">"{0} {1}" устарело. Используйте взамен {0} {2}.</target>
+        <target state="translated">"{0} {1}" ╤â╤ü╤é╨░╤Ç╨╡╨╗╨╛. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨▓╨╖╨░╨╝╨╡╨╜ {0} {2}.</target>
         <note>{0} - name of the assembly running the command, e.g., NuGet
 {1} - current command marked as deprecated, e.g., list
 {2} - replacement command. For example, search</note>
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValue">
         <source>The value "{0}" for {1} is a sample value and should be removed.</source>
-        <target state="translated">Значение "{0}" для {1} является примером и должно быть удалено.</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╡╨╜╨╕╨╡ "{0}" ╨┤╨╗╤Å {1} ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┐╤Ç╨╕╨╝╨╡╤Ç╨╛╨╝ ╨╕ ╨┤╨╛╨╗╨╢╨╜╨╛ ╨▒╤ï╤é╤î ╤â╨┤╨░╨╗╨╡╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValueSolution">
         <source>Replace with an appropriate value or remove and it and rebuild your package.</source>
-        <target state="translated">Замените это соответствующим значением или удалите и перестройте свой пакет.</target>
+        <target state="translated">╨ù╨░╨╝╨╡╨╜╨╕╤é╨╡ ╤ì╤é╨╛ ╤ü╨╛╨╛╤é╨▓╨╡╤é╤ü╤é╨▓╤â╤Ä╤ë╨╕╨╝ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡╨╝ ╨╕╨╗╨╕ ╤â╨┤╨░╨╗╨╕╤é╨╡ ╨╕ ╨┐╨╡╤Ç╨╡╤ü╤é╤Ç╨╛╨╣╤é╨╡ ╤ü╨▓╨╛╨╣ ╨┐╨░╨║╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValueTitle">
         <source>Remove sample nuspec values.</source>
-        <target state="translated">Удаление примеров значений nuspec.</target>
+        <target state="translated">╨ú╨┤╨░╨╗╨╡╨╜╨╕╨╡ ╨┐╤Ç╨╕╨╝╨╡╤Ç╨╛╨▓ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╣ nuspec.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DuplicatePropertyKey">
         <source>'{0}' key already exists in Properties collection. Overriding value.</source>
-        <target state="translated">Ключ "{0}" уже существует в коллекции свойств (Properties). Идет переопределение значения.</target>
+        <target state="translated">╨Ü╨╗╤Ä╤ç "{0}" ╤â╨╢╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╨║╨╛╨╗╨╗╨╡╨║╤å╨╕╨╕ ╤ü╨▓╨╛╨╣╤ü╤é╨▓ (Properties). ╨ÿ╨┤╨╡╤é ╨┐╨╡╤Ç╨╡╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╡╨╜╨╕╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FileDoesNotExist">
         <source>'{0}' was included in the project but doesn't exist. Skipping...</source>
-        <target state="translated">Элемент "{0}" был включен в проект, но не существует. Идет пропуск...</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é "{0}" ╨▒╤ï╨╗ ╨▓╨║╨╗╤Ä╤ç╨╡╨╜ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é, ╨╜╨╛ ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é. ╨ÿ╨┤╨╡╤é ╨┐╤Ç╨╛╨┐╤â╤ü╨║...</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_InvalidPackageSaveMode">
         <source>Invalid PackageSaveMode value '{0}'.</source>
-        <target state="translated">Недопустимое значение PackageSaveMode: "{0}".</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ PackageSaveMode: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_DisabledPolicy">
         <source>Please enbale long file path support in local group policy. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Включите поддержку длинных путей к файлам в локальной групповой политике. Дополнительные сведения см. на странице https://aka.ms/nuget-long-path.</target>
+        <target state="translated">╨Æ╨║╨╗╤Ä╤ç╨╕╤é╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨║╤â ╨┤╨╗╨╕╨╜╨╜╤ï╤à ╨┐╤â╤é╨╡╨╣ ╨║ ╤ä╨░╨╣╨╗╨░╨╝ ╨▓ ╨╗╨╛╨║╨░╨╗╤î╨╜╨╛╨╣ ╨│╤Ç╤â╨┐╨┐╨╛╨▓╨╛╨╣ ╨┐╨╛╨╗╨╕╤é╨╕╨║╨╡. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_UnsupportedNetFramework">
         <source>Please install .NET Framework 4.6.2 or above that supports long file paths. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Установите .NET Framework 4.6.2 или более позднюю версию, которая поддерживает длинные пути к файлам. Дополнительные сведения см. на странице https://aka.ms/nuget-long-path.</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ .NET Framework 4.6.2 ╨╕╨╗╨╕ ╨▒╨╛╨╗╨╡╨╡ ╨┐╨╛╨╖╨┤╨╜╤Ä╤Ä ╨▓╨╡╤Ç╤ü╨╕╤Ä, ╨║╨╛╤é╨╛╤Ç╨░╤Å ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é ╨┤╨╗╨╕╨╜╨╜╤ï╨╡ ╨┐╤â╤é╨╕ ╨║ ╤ä╨░╨╣╨╗╨░╨╝. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_UnsupportedOS">
         <source>Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Длинный путь к файлу сейчас поддерживается только в Windows 10. Дополнительные сведения см. на странице https://aka.ms/nuget-long-path.</target>
+        <target state="translated">╨ö╨╗╨╕╨╜╨╜╤ï╨╣ ╨┐╤â╤é╤î ╨║ ╤ä╨░╨╣╨╗╤â ╤ü╨╡╨╣╤ç╨░╤ü ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å ╤é╨╛╨╗╤î╨║╨╛ ╨▓ Windows 10. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_MsbuildPath">
         <source>MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. </source>
-        <target state="translated">MsbuildPath : используется {0}, игнорировать MsBuildVersion: {1}. </target>
+        <target state="translated">MsbuildPath : ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é╤ü╤Å {0}, ╨╕╨│╨╜╨╛╤Ç╨╕╤Ç╨╛╨▓╨░╤é╤î MsBuildVersion: {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_NoPromptDeprecated">
         <source>Option 'NoPrompt' has been deprecated. Use 'NonInteractive' instead.</source>
-        <target state="translated">Нерекомендуемый параметр "NoPrompt". Вместо этого используйте "NonInteractive".</target>
+        <target state="translated">╨¥╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╣ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç "NoPrompt". ╨Æ╨╝╨╡╤ü╤é╨╛ ╤ì╤é╨╛╨│╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ "NonInteractive".</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ReadingProjectsFailed">
         <source>Error reading msbuild project information, ensure that your input solution or project file is valid. NETCore and UAP projects will be skipped, only packages.config files will be restored.</source>
-        <target state="translated">Ошибка при чтении сведений о проекте msbuild. Проверьте, допустимо ли ваше входное решение или файл проекта. Проекты NETCore и UAP будут пропущены, будут восстановлены только файлы packages.config.</target>
+        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╤ç╤é╨╡╨╜╨╕╨╕ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣ ╨╛ ╨┐╤Ç╨╛╨╡╨║╤é╨╡ msbuild. ╨ƒ╤Ç╨╛╨▓╨╡╤Ç╤î╤é╨╡, ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛ ╨╗╨╕ ╨▓╨░╤ê╨╡ ╨▓╤à╨╛╨┤╨╜╨╛╨╡ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ ╨╕╨╗╨╕ ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░. ╨ƒ╤Ç╨╛╨╡╨║╤é╤ï NETCore ╨╕ UAP ╨▒╤â╨┤╤â╤é ╨┐╤Ç╨╛╨┐╤â╤ë╨╡╨╜╤ï, ╨▒╤â╨┤╤â╤é ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï ╤é╨╛╨╗╤î╨║╨╛ ╤ä╨░╨╣╨╗╤ï packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersion">
         <source>Version "{0}" does not follow semantic versioning guidelines.</source>
-        <target state="translated">Версия "{0}" не следует правилам семантического версионирования.</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å "{0}" ╨╜╨╡ ╤ü╨╗╨╡╨┤╤â╨╡╤é ╨┐╤Ç╨░╨▓╨╕╨╗╨░╨╝ ╤ü╨╡╨╝╨░╨╜╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨▓╨╡╤Ç╤ü╨╕╨╛╨╜╨╕╤Ç╨╛╨▓╨░╨╜╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersionSolution">
         <source>Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org. </source>
-        <target state="translated">Обновите файл nuspec или используйте атрибут сборки AssemblyInformationalVersion, чтобы указать семантическую версию, как описано на сайте http://semver.org. </target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╕╤é╨╡ ╤ä╨░╨╣╨╗ nuspec ╨╕╨╗╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨░╤é╤Ç╨╕╨▒╤â╤é ╤ü╨▒╨╛╤Ç╨║╨╕ AssemblyInformationalVersion, ╤ç╤é╨╛╨▒╤ï ╤â╨║╨░╨╖╨░╤é╤î ╤ü╨╡╨╝╨░╨╜╤é╨╕╤ç╨╡╤ü╨║╤â╤Ä ╨▓╨╡╤Ç╤ü╨╕╤Ä, ╨║╨░╨║ ╨╛╨┐╨╕╤ü╨░╨╜╨╛ ╨╜╨░ ╤ü╨░╨╣╤é╨╡ http://semver.org. </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersionTitle">
         <source>Use semantic versioning</source>
-        <target state="translated">Использование семантического версионирования</target>
+        <target state="translated">╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╨╡ ╤ü╨╡╨╝╨░╨╜╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨▓╨╡╤Ç╤ü╨╕╨╛╨╜╨╕╤Ç╨╛╨▓╨░╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnresolvedFilePath">
         <source>'{0}' was included in the project but the path could not be resolved. Skipping...</source>
-        <target state="translated">Элемент "{0}" был включен в проект, но не удалось разрешить путь. Идет пропуск...</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é "{0}" ╨▒╤ï╨╗ ╨▓╨║╨╗╤Ä╤ç╨╡╨╜ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é, ╨╜╨╛ ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤Ç╨░╨╖╤Ç╨╡╤ê╨╕╤é╤î ╨┐╤â╤é╤î. ╨ÿ╨┤╨╡╤é ╨┐╤Ç╨╛╨┐╤â╤ü╨║...</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersion">
         <source>The version of dependency '{0}' is not specified.</source>
-        <target state="translated">Версия зависимости "{0}" не указана.</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ "{0}" ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersionSolution">
         <source>Specify the version of dependency and rebuild your package.</source>
-        <target state="translated">Укажите версию зависимости и выполните повторную сборку пакета.</target>
+        <target state="translated">╨ú╨║╨░╨╢╨╕╤é╨╡ ╨▓╨╡╤Ç╤ü╨╕╤Ä ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╕ ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╨╡ ╨┐╨╛╨▓╤é╨╛╤Ç╨╜╤â╤Ä ╤ü╨▒╨╛╤Ç╨║╤â ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersionTitle">
         <source>Specify version of dependencies.</source>
-        <target state="translated">Укажите версию зависимостей.</target>
+        <target state="translated">╨ú╨║╨░╨╢╨╕╤é╨╡ ╨▓╨╡╤Ç╤ü╨╕╤Ä ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╡╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedField">
         <source>{0} was not specified. Using '{1}'.</source>
-        <target state="translated">Элемент {0} не указан. Используется "{1}".</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é {0} ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é╤ü╤Å "{1}".</target>
         <note />
       </trans-unit>
     </body>

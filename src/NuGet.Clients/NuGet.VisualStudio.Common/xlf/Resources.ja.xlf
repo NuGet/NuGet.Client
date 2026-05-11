@@ -1,35 +1,35 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Resources.resx">
     <body>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Argument cannot be null or empty</source>
-        <target state="translated">引数を null または空にすることはできません</target>
+        <target state="translated">σ╝òµò░πéÆ null πü╛πüƒπü»τ⌐║πü½πüÖπéïπüôπü¿πü»πüºπüìπü╛πü¢πéô</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Invalid_GUID">
         <source>The argument is not a valid GUID.</source>
-        <target state="translated">この引数は有効な GUID ではありません。</target>
+        <target state="translated">πüôπü«σ╝òµò░πü»µ£ëσè╣πü¬ GUID πüºπü»πüéπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThanOrEqualTo">
         <source>Value must be greater than or equal to {0}.</source>
-        <target state="translated">{0} 以上の値にする必要があります。</target>
+        <target state="translated">{0} Σ╗ÑΣ╕èπü«σÇñπü½πüÖπéïσ┐àΦªüπüîπüéπéèπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="ExperimentVariableOverrideLogText">
         <source>Experiment flight '{0}' evaluation overridden by environment variable '{1}' set to '{2}'</source>
-        <target state="translated">実験フライト '{0}' 評価は、環境変数 '{1}' によってオーバーライドされ、'{2}' に設定されました</target>
+        <target state="translated">σ«ƒΘ¿ôπâòπâ⌐πéñπâê '{0}' Φ⌐òΣ╛íπü»πÇüτÆ░σóâσñëµò░ '{1}' πü½πéêπüúπüªπé¬πâ╝πâÉπâ╝πâ⌐πéñπâëπüòπéîπÇü'{2}' πü½Φ¿¡σ«Üπüòπéîπü╛πüùπüƒ</target>
         <note>{0} is a flight name, {1} is a variable name, {2} is a string value of the variable</note>
       </trans-unit>
       <trans-unit id="Finished">
         <source>========== Finished ==========</source>
-        <target state="translated">========== 終了 ==========</target>
+        <target state="translated">========== τ╡éΣ║å ==========</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatSelection">
         <source>Select the NuGet package manager format for {0}</source>
-        <target state="translated">{0} の NuGet パッケージ マネージャーの形式を選択します</target>
+        <target state="translated">{0} πü« NuGet πâæπââπé▒πâ╝πé╕ πâ₧πâìπâ╝πé╕πâúπâ╝πü«σ╜óσ╝ÅπéÆΘü╕µè₧πüùπü╛πüÖ</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatSelection_Solution">

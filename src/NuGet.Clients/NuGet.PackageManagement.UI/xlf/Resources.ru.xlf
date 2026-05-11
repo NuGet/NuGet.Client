@@ -1,550 +1,550 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Resources.resx">
     <body>
       <trans-unit id="Accessibility_ColumnNotSortedHelpText">
         <source>Not sorted, press space to sort ascending</source>
-        <target state="translated">Не отсортировано, нажмите пробел, чтобы отсортировать по возрастанию.</target>
+        <target state="translated">╨¥╨╡ ╨╛╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╨╜╨╛, ╨╜╨░╨╢╨╝╨╕╤é╨╡ ╨┐╤Ç╨╛╨▒╨╡╨╗, ╤ç╤é╨╛╨▒╤ï ╨╛╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╤é╤î ╨┐╨╛ ╨▓╨╛╨╖╤Ç╨░╤ü╤é╨░╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedAscendingHelpText">
         <source>Sorted ascending, press space to sort descending</source>
-        <target state="translated">Отсортировано по возрастанию, нажмите пробел, чтобы отсортировать по убыванию.</target>
+        <target state="translated">╨₧╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╨╜╨╛ ╨┐╨╛ ╨▓╨╛╨╖╤Ç╨░╤ü╤é╨░╨╜╨╕╤Ä, ╨╜╨░╨╢╨╝╨╕╤é╨╡ ╨┐╤Ç╨╛╨▒╨╡╨╗, ╤ç╤é╨╛╨▒╤ï ╨╛╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╤é╤î ╨┐╨╛ ╤â╨▒╤ï╨▓╨░╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedDescendingHelpText">
         <source>Sorted descending, press space to sort ascending</source>
-        <target state="translated">Отсортировано по убыванию, нажмите пробел, чтобы отсортировать по возрастанию.</target>
+        <target state="translated">╨₧╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╨╜╨╛ ╨┐╨╛ ╤â╨▒╤ï╨▓╨░╨╜╨╕╤Ä, ╨╜╨░╨╢╨╝╨╕╤é╨╡ ╨┐╤Ç╨╛╨▒╨╡╨╗, ╤ç╤é╨╛╨▒╤ï ╨╛╤é╤ü╨╛╤Ç╤é╨╕╤Ç╨╛╨▓╨░╤é╤î ╨┐╨╛ ╨▓╨╛╨╖╤Ç╨░╤ü╤é╨░╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDeprecation">
         <source>Package deprecation</source>
-        <target state="translated">Объявление пакетов нерекомендуемыми</target>
+        <target state="translated">╨₧╨▒╤è╤Å╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╝╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDetailsUrlIcon">
         <source>Package details URL icon</source>
-        <target state="translated">Значок URL-адреса сведений о пакете</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╛╨║ URL-╨░╨┤╤Ç╨╡╤ü╨░ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣ ╨╛ ╨┐╨░╨║╨╡╤é╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageIcon">
         <source>Package icon</source>
-        <target state="translated">Значок пакета</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╛╨║ ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="translated">{0} версии {1}</target>
+        <target state="translated">{0} ╨▓╨╡╤Ç╤ü╨╕╨╕ {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
         <source>Package manager</source>
-        <target state="translated">Диспетчер пакетов</target>
+        <target state="translated">╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageMetadata">
         <source>Package metadata</source>
-        <target state="translated">Метаданные пакета</target>
+        <target state="translated">╨£╨╡╤é╨░╨┤╨░╨╜╨╜╤ï╨╡ ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageVulnerabilities">
         <source>Package vulnerabilities</source>
-        <target state="translated">Уязвимости пакета</target>
+        <target state="translated">╨ú╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╨╕ ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
         <source>Packages</source>
-        <target state="translated">Пакеты</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
         <source>Package details</source>
-        <target state="translated">Сведения о пакете</target>
+        <target state="translated">╨í╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╨┐╨░╨║╨╡╤é╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesList">
         <source>Packages list</source>
-        <target state="translated">Список пакетов</target>
+        <target state="translated">╨í╨┐╨╕╤ü╨╛╨║ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PrefixReserved">
         <source>Prefix reserved</source>
-        <target state="translated">Префикс зарезервирован</target>
+        <target state="translated">╨ƒ╤Ç╨╡╤ä╨╕╨║╤ü ╨╖╨░╤Ç╨╡╨╖╨╡╤Ç╨▓╨╕╤Ç╨╛╨▓╨░╨╜</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteAllToTopLevel">
         <source>Promote all to top level dependencies</source>
-        <target state="translated">Повысить все до зависимостей верхнего уровня</target>
+        <target state="translated">╨ƒ╨╛╨▓╤ï╤ü╨╕╤é╤î ╨▓╤ü╨╡ ╨┤╨╛ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╡╨╣ ╨▓╨╡╤Ç╤à╨╜╨╡╨│╨╛ ╤â╤Ç╨╛╨▓╨╜╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteToTopLevel">
         <source>Promote to a top level dependency</source>
-        <target state="translated">Повысить до зависимости верхнего уровня</target>
+        <target state="translated">╨ƒ╨╛╨▓╤ï╤ü╨╕╤é╤î ╨┤╨╛ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨▓╨╡╤Ç╤à╨╜╨╡╨│╨╛ ╤â╤Ç╨╛╨▓╨╜╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbHelp">
         <source>Use arrow keys to change the size of the sections</source>
-        <target state="translated">Используйте клавиши со стрелками, чтобы изменить размер разделов</target>
+        <target state="translated">╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╨║╨╗╨░╨▓╨╕╤ê╨╕ ╤ü╨╛ ╤ü╤é╤Ç╨╡╨╗╨║╨░╨╝╨╕, ╤ç╤é╨╛╨▒╤ï ╨╕╨╖╨╝╨╡╨╜╨╕╤é╤î ╤Ç╨░╨╖╨╝╨╡╤Ç ╤Ç╨░╨╖╨┤╨╡╨╗╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbName">
         <source>splitter for Packages list</source>
-        <target state="translated">разделитель для списка пакетов</target>
+        <target state="translated">╤Ç╨░╨╖╨┤╨╡╨╗╨╕╤é╨╡╨╗╤î ╨┤╨╗╤Å ╤ü╨┐╨╕╤ü╨║╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_VulnerabilitiesDescriptionName">
         <source>Package vulnerability description</source>
-        <target state="translated">Описание уязвимости пакета</target>
+        <target state="translated">╨₧╨┐╨╕╤ü╨░╨╜╨╕╨╡ ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╨╕ ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Action_Consolidate">
         <source>Consolidate</source>
-        <target state="translated">Консолидировать</target>
+        <target state="translated">╨Ü╨╛╨╜╤ü╨╛╨╗╨╕╨┤╨╕╤Ç╨╛╨▓╨░╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="AggregateSourceName">
         <source>All</source>
-        <target state="translated">Все</target>
+        <target state="translated">╨Æ╤ü╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">Аргумент не может быть пустым или равен NULL.</target>
+        <target state="translated">╨É╤Ç╨│╤â╨╝╨╡╨╜╤é ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝ ╨╕╨╗╨╕ ╤Ç╨░╨▓╨╡╨╜ NULL.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForPRMigrator">
         <source>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageReference'.</source>
-        <target state="translated">Попробуйте перенести формат управления пакетами NuGet проекта из "packages.config" в "PackageReference".</target>
+        <target state="translated">╨ƒ╨╛╨┐╤Ç╨╛╨▒╤â╨╣╤é╨╡ ╨┐╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ ╤ä╨╛╤Ç╨╝╨░╤é ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╕╨╖ "packages.config" ╨▓ "PackageReference".</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForRestoreMessage">
         <source>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</source>
-        <target state="translated">В этом решении отсутствует несколько пакетов NuGet. Щелкните, чтобы восстановить их из источников пакетов в сети.</target>
+        <target state="translated">╨Æ ╤ì╤é╨╛╨╝ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╕ ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╤â╨╡╤é ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet. ╨⌐╨╡╨╗╨║╨╜╨╕╤é╨╡, ╤ç╤é╨╛╨▒╤ï ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨╕╤à ╨╕╨╖ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨▓ ╤ü╨╡╤é╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForUpdateMessage">
         <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">Доступна новая версия диспетчера пакетов NuGet.</target>
+        <target state="translated">╨ö╨╛╤ü╤é╤â╨┐╨╜╨░ ╨╜╨╛╨▓╨░╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
-        <target state="translated">На этот пакет неявно ссылается пакет SDK. Чтобы обновить пакет, обновите пакет SDK, к которому принадлежит этот пакет.</target>
+        <target state="translated">╨¥╨░ ╤ì╤é╨╛╤é ╨┐╨░╨║╨╡╤é ╨╜╨╡╤Å╨▓╨╜╨╛ ╤ü╤ü╤ï╨╗╨░╨╡╤é╤ü╤Å ╨┐╨░╨║╨╡╤é SDK. ╨º╤é╨╛╨▒╤ï ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║╨╡╤é, ╨╛╨▒╨╜╨╛╨▓╨╕╤é╨╡ ╨┐╨░╨║╨╡╤é SDK, ╨║ ╨║╨╛╤é╨╛╤Ç╨╛╨╝╤â ╨┐╤Ç╨╕╨╜╨░╨┤╨╗╨╡╨╢╨╕╤é ╤ì╤é╨╛╤é ╨┐╨░╨║╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="Billion">
         <source>{0:G3}B</source>
-        <target state="translated">{0:G3} млрд</target>
+        <target state="translated">{0:G3}┬á╨╝╨╗╤Ç╨┤</target>
         <note>American billions in short format notation</note>
       </trans-unit>
       <trans-unit id="Button_Apply">
         <source>_Apply</source>
-        <target state="translated">_Применить</target>
+        <target state="translated">_╨ƒ╤Ç╨╕╨╝╨╡╨╜╨╕╤é╤î</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Cancel">
         <source>_Cancel</source>
-        <target state="translated">_Отменить</target>
+        <target state="translated">_╨₧╤é╨╝╨╡╨╜╨╕╤é╤î</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Copy">
         <source>Co_py</source>
-        <target state="translated">Ко_пировать</target>
+        <target state="translated">╨Ü╨╛_╨┐╨╕╤Ç╨╛╨▓╨░╤é╤î</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Dismiss">
         <source>Dismiss</source>
-        <target state="translated">Закрыть</target>
+        <target state="translated">╨ù╨░╨║╤Ç╤ï╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_IAccept">
         <source>I _Accept</source>
-        <target state="translated">_Принимаю</target>
+        <target state="translated">_╨ƒ╤Ç╨╕╨╜╨╕╨╝╨░╤Ä</target>
         <note>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_IDecline">
         <source>I _Decline</source>
-        <target state="translated">_Не принимаю</target>
+        <target state="translated">_╨¥╨╡ ╨┐╤Ç╨╕╨╜╨╕╨╝╨░╤Ä</target>
         <note>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Install">
         <source>Install</source>
-        <target state="translated">Установить</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_No">
         <source>_No</source>
-        <target state="translated">_Нет</target>
+        <target state="translated">_╨¥╨╡╤é</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_NoToAll">
         <source>No to A_ll</source>
-        <target state="translated">Нет для в_сех</target>
+        <target state="translated">╨¥╨╡╤é ╨┤╨╗╤Å ╨▓_╤ü╨╡╤à</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_OK">
         <source>_OK</source>
-        <target state="translated">_ОК</target>
+        <target state="translated">_╨₧╨Ü</target>
         <note>Button_Cancel and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Preview">
         <source>Preview</source>
-        <target state="translated">Просмотр</target>
+        <target state="translated">╨ƒ╤Ç╨╛╤ü╨╝╨╛╤é╤Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_RestartSearch">
         <source>Restart search</source>
-        <target state="translated">Перезапустить поиск</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╤é╨╕╤é╤î ╨┐╨╛╨╕╤ü╨║</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowErrors">
         <source>Show errors in output</source>
-        <target state="translated">Показать ошибки в данных вывода</target>
+        <target state="translated">╨ƒ╨╛╨║╨░╨╖╨░╤é╤î ╨╛╤ê╨╕╨▒╨║╨╕ ╨▓ ╨┤╨░╨╜╨╜╤ï╤à ╨▓╤ï╨▓╨╛╨┤╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowMoreResults">
         <source>Show {0} more results</source>
-        <target state="translated">Показать еще результатов: {0}</target>
+        <target state="translated">╨ƒ╨╛╨║╨░╨╖╨░╤é╤î ╨╡╤ë╨╡ ╤Ç╨╡╨╖╤â╨╗╤î╤é╨░╤é╨╛╨▓: {0}</target>
         <note>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</note>
       </trans-unit>
       <trans-unit id="Button_Uninstall">
         <source>Uninstall</source>
-        <target state="translated">Удалить</target>
+        <target state="translated">╨ú╨┤╨░╨╗╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Update">
         <source>Update</source>
-        <target state="translated">Обновить</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Yes">
         <source>_Yes</source>
-        <target state="translated">_Да</target>
+        <target state="translated">_╨ö╨░</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_YesToAll">
         <source>Yes to _All</source>
-        <target state="translated">Да для _всех</target>
+        <target state="translated">╨ö╨░ ╨┤╨╗╤Å _╨▓╤ü╨╡╤à</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="CheckBox_DefaultPackageFormat">
         <source>Allow format selection on first package install</source>
-        <target state="translated">Разрешить выбрать формат при первой установке пакета</target>
+        <target state="translated">╨á╨░╨╖╤Ç╨╡╤ê╨╕╤é╤î ╨▓╤ï╨▒╤Ç╨░╤é╤î ╤ä╨╛╤Ç╨╝╨░╤é ╨┐╤Ç╨╕ ╨┐╨╡╤Ç╨▓╨╛╨╣ ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╡ ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects">
         <source>Select All Projects</source>
-        <target state="translated">Выбрать все проекты</target>
+        <target state="translated">╨Æ╤ï╨▒╤Ç╨░╤é╤î ╨▓╤ü╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╤ï</target>
         <note>Name for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects_HelpText">
         <source>Select this checkbox to install the NuGet Package to all projects in the solution</source>
-        <target state="translated">Установите этот флажок, чтобы установить пакет NuGet во все проекты решения.</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ ╤ì╤é╨╛╤é ╤ä╨╗╨░╨╢╨╛╨║, ╤ç╤é╨╛╨▒╤ï ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║╨╡╤é NuGet ╨▓╨╛ ╨▓╤ü╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å.</target>
         <note>Help text for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectProject_HelpText">
         <source>Select this checkbox to install the NuGet Package to the project '{0}'</source>
-        <target state="translated">Установите этот флажок, чтобы установить пакет NuGet в проект "{0}".</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ ╤ì╤é╨╛╤é ╤ä╨╗╨░╨╢╨╛╨║, ╤ç╤é╨╛╨▒╤ï ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║╨╡╤é NuGet ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é "{0}".</target>
         <note>Help text for the checkbox to install a NuGet package to a specific project.</note>
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="translated">Выбрано</target>
+        <target state="translated">╨Æ╤ï╨▒╤Ç╨░╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
         <source>Force uninstall, even if there are dependencies on it</source>
-        <target state="translated">Принудительно удалить, даже если есть зависимости от него</target>
+        <target state="translated">╨ƒ╤Ç╨╕╨╜╤â╨┤╨╕╤é╨╡╨╗╤î╨╜╨╛ ╤â╨┤╨░╨╗╨╕╤é╤î, ╨┤╨░╨╢╨╡ ╨╡╤ü╨╗╨╕ ╨╡╤ü╤é╤î ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╛╤é ╨╜╨╡╨│╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_IncludePrerelease">
         <source>Include prerelease</source>
-        <target state="translated">Включить предварительные версии</target>
+        <target state="translated">╨Æ╨║╨╗╤Ä╤ç╨╕╤é╤î ╨┐╤Ç╨╡╨┤╨▓╨░╤Ç╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ProjectSelection">
         <source>{0} project(s)</source>
-        <target state="translated">Проектов: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é╨╛╨▓: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_RemoveDependencies">
         <source>Remove dependencies</source>
-        <target state="translated">Удалить зависимости</target>
+        <target state="translated">╨ú╨┤╨░╨╗╨╕╤é╤î ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_SelectAllPackages">
         <source>Select all packages</source>
-        <target state="translated">Выбрать все пакеты</target>
+        <target state="translated">╨Æ╤ï╨▒╤Ç╨░╤é╤î ╨▓╤ü╨╡ ╨┐╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ShowPreviewWindow">
         <source>Show preview window</source>
-        <target state="translated">Показать окно предварительного просмотра</target>
+        <target state="translated">╨ƒ╨╛╨║╨░╨╖╨░╤é╤î ╨╛╨║╨╜╨╛ ╨┐╤Ç╨╡╨┤╨▓╨░╤Ç╨╕╤é╨╡╨╗╤î╨╜╨╛╨│╨╛ ╨┐╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_Show_Vulnerable_Only">
         <source>Show only vulnerable</source>
-        <target state="translated">Показать только уязвимые</target>
+        <target state="translated">╨ƒ╨╛╨║╨░╨╖╨░╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╤â╤Å╨╖╨▓╨╕╨╝╤ï╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_InstalledVersion">
         <source>Installed</source>
-        <target state="translated">Установлено</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_PackageLevel">
         <source>Package Level</source>
-        <target state="translated">Уровень пакета</target>
+        <target state="translated">╨ú╤Ç╨╛╨▓╨╡╨╜╤î ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Project">
         <source>Project</source>
-        <target state="translated">Проект</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Requested">
         <source>Version</source>
-        <target state="translated">Версия</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Selected">
         <source>Selected</source>
-        <target state="translated">Выбрано</target>
+        <target state="translated">╨Æ╤ï╨▒╤Ç╨░╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="CopyMenuCommandLabel">
         <source>_Copy</source>
-        <target state="translated">_Копировать</target>
+        <target state="translated">_╨Ü╨╛╨┐╨╕╤Ç╨╛╨▓╨░╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_Highest">
         <source>Highest</source>
-        <target state="translated">Наибольший</target>
+        <target state="translated">╨¥╨░╨╕╨▒╨╛╨╗╤î╤ê╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestMinor">
         <source>Highest Minor</source>
-        <target state="translated">Наибольший номер дополнительной версии</target>
+        <target state="translated">╨¥╨░╨╕╨▒╨╛╨╗╤î╤ê╨╕╨╣ ╨╜╨╛╨╝╨╡╤Ç ╨┤╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╨╛╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestPatch">
         <source>Highest Patch</source>
-        <target state="translated">Наибольший номер исправления</target>
+        <target state="translated">╨¥╨░╨╕╨▒╨╛╨╗╤î╤ê╨╕╨╣ ╨╜╨╛╨╝╨╡╤Ç ╨╕╤ü╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_IgnoreDependencies">
         <source>Ignore Dependencies</source>
-        <target state="translated">Игнорировать зависимости</target>
+        <target state="translated">╨ÿ╨│╨╜╨╛╤Ç╨╕╤Ç╨╛╨▓╨░╤é╤î ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_Lowest">
         <source>Lowest</source>
-        <target state="translated">Наименьший</target>
+        <target state="translated">╨¥╨░╨╕╨╝╨╡╨╜╤î╤ê╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_LinkTooltip">
         <source>Select to view the alternative package.</source>
-        <target state="translated">Выберите, чтобы просмотреть альтернативный пакет.</target>
+        <target state="translated">╨Æ╤ï╨▒╨╡╤Ç╨╕╤é╨╡, ╤ç╤é╨╛╨▒╤ï ╨┐╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨╡╤é╤î ╨░╨╗╤î╤é╨╡╤Ç╨╜╨░╤é╨╕╨▓╨╜╤ï╨╣ ╨┐╨░╨║╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_MoreInfo">
         <source>More info</source>
-        <target state="translated">Дополнительно</target>
+        <target state="translated">╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessage">
         <source>This package version is deprecated.</source>
-        <target state="translated">Эта версия пакета является нерекомендуемой.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┐╨░╨║╨╡╤é╨░ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╨╛╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessageAlternative">
         <source>This package version is deprecated. Use {0} instead.</source>
-        <target state="translated">Эта версия пакета устарела. Используйте {0}.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┐╨░╨║╨╡╤é╨░ ╤â╤ü╤é╨░╤Ç╨╡╨╗╨░. ╨ÿ╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ {0}.</target>
         <note>{0} is a NuGet package id (string)</note>
       </trans-unit>
       <trans-unit id="Description_LearnMore">
         <source>Learn more</source>
-        <target state="translated">Дополнительные сведения</target>
+        <target state="translated">╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="DialogTitle_HttpSource">
         <source>HTTP Source</source>
-        <target state="translated">Источник HTTP</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ HTTP</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotShowThisAgain">
         <source>_Don't show this again</source>
-        <target state="translated">_Больше не показывать</target>
+        <target state="translated">_╨æ╨╛╨╗╤î╤ê╨╡ ╨╜╨╡ ╨┐╨╛╨║╨░╨╖╤ï╨▓╨░╤é╤î</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</source>
-        <target state="translated">Для NuGet требуются источники HTTPS. Чтобы использовать источник HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config.</target>
+        <target state="translated">╨ö╨╗╤Å NuGet ╤é╤Ç╨╡╨▒╤â╤Ä╤é╤ü╤Å ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ HTTPS. ╨º╤é╨╛╨▒╤ï ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ HTTP, ╨╜╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╤Å╨▓╨╜╨╛ ╨╖╨░╨┤╨░╤é╤î ╨┤╨╗╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ "allowInsecureConnections" ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ true ╨▓ ╤ä╨░╨╣╨╗╨╡ NuGet.Config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MetadataNotFound">
         <source>Unable to find metadata of {0}</source>
-        <target state="translated">Не удалось найти метаданные {0}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╨╝╨╡╤é╨░╨┤╨░╨╜╨╜╤ï╨╡ {0}</target>
         <note>{0} is the package ID</note>
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">Проект {0} не существует в кэше системы проектов.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é {0} ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╨║╤ì╤ê╨╡ ╤ü╨╕╤ü╤é╨╡╨╝╤ï ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceMapping_GPF_NotEnabled">
         <source>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</source>
-        <target state="translated">Пакет "{0}" доступен в папке глобальных пакетов, но источник "{1}", из которого он получен, не относится к настроенным источникам.</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é "{0}" ╨┤╨╛╤ü╤é╤â╨┐╨╡╨╜ ╨▓ ╨┐╨░╨┐╨║╨╡ ╨│╨╗╨╛╨▒╨░╨╗╤î╨╜╤ï╤à ╨┐╨░╨║╨╡╤é╨╛╨▓, ╨╜╨╛ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ "{1}", ╨╕╨╖ ╨║╨╛╤é╨╛╤Ç╨╛╨│╨╛ ╨╛╨╜ ╨┐╨╛╨╗╤â╤ç╨╡╨╜, ╨╜╨╡ ╨╛╤é╨╜╨╛╤ü╨╕╤é╤ü╤Å ╨║ ╨╜╨░╤ü╤é╤Ç╨╛╨╡╨╜╨╜╤ï╨╝ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░╨╝.</target>
         <note>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLoadReadme">
         <source>An error occurred while trying to load the README.</source>
-        <target state="translated">Произошла ошибка при попытке загрузить README.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨┐╨╛╨┐╤ï╤é╨║╨╡ ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î README.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_IgnoreAll">
         <source>Ignore All</source>
-        <target state="translated">Пропустить все</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨┐╤â╤ü╤é╨╕╤é╤î ╨▓╤ü╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_OverwriteAll">
         <source>Overwrite All</source>
-        <target state="translated">Перезаписать все</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╨╖╨░╨┐╨╕╤ü╨░╤é╤î ╨▓╤ü╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_Prompt">
         <source>Prompt</source>
-        <target state="translated">Запрос</target>
+        <target state="translated">╨ù╨░╨┐╤Ç╨╛╤ü</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_InstallOptions">
         <source>Install and Update Options</source>
-        <target state="translated">Параметры установки и обновления</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╕ ╨╕ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_UninstallOptions">
         <source>Uninstall Options</source>
-        <target state="translated">Параметры удаления</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_AdvisoryUrl">
         <source>Advisory URL</source>
-        <target state="translated">URL-адрес рекомендаций</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╨░╤å╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_License">
         <source>License</source>
-        <target state="translated">Лицензия</target>
+        <target state="translated">╨¢╨╕╤å╨╡╨╜╨╖╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Owner">
         <source>Owner</source>
-        <target state="translated">Владелец</target>
+        <target state="translated">╨Æ╨╗╨░╨┤╨╡╨╗╨╡╤å</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_PackageSourceMappingSettings">
         <source>Configure</source>
-        <target state="translated">Настроить</target>
+        <target state="translated">╨¥╨░╤ü╤é╤Ç╨╛╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="translated">URL-адрес проекта</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╨┐╤Ç╨╛╨╡╨║╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
         <source>Readme</source>
-        <target state="translated">Файл сведений</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
-        <target state="translated">Сообщить о нарушении</target>
+        <target state="translated">╨í╨╛╨╛╨▒╤ë╨╕╤é╤î ╨╛ ╨╜╨░╤Ç╤â╤ê╨╡╨╜╨╕╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoreUpgrade">
         <source>Ignore for now</source>
-        <target state="translated">Пока пропустить</target>
+        <target state="translated">╨ƒ╨╛╨║╨░ ╨┐╤Ç╨╛╨┐╤â╤ü╤é╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
         <source>Help icon</source>
-        <target state="translated">Значок справки</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╛╨║ ╤ü╨┐╤Ç╨░╨▓╨║╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Action">
         <source>Action:</source>
-        <target state="translated">Действие:</target>
+        <target state="translated">╨ö╨╡╨╣╤ü╤é╨▓╨╕╨╡:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Authors">
         <source>Author(s): </source>
-        <target state="translated">Авторы: </target>
+        <target state="translated">╨É╨▓╤é╨╛╤Ç╤ï: </target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Browse">
         <source>Browse</source>
-        <target state="translated">Обзор</target>
+        <target state="translated">╨₧╨▒╨╖╨╛╤Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_CreatingSourceMappings">
         <source>Creating source mappings to '{0}':</source>
-        <target state="translated">Создание сопоставлений источников с "{0}":</target>
+        <target state="translated">╨í╨╛╨╖╨┤╨░╨╜╨╕╨╡ ╤ü╨╛╨┐╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╤ü "{0}":</target>
         <note>{0} - The Name of a user-configured NuGet Package Source</note>
       </trans-unit>
       <trans-unit id="Label_DatePublished">
         <source>Date published:</source>
-        <target state="translated">Дата публикации:</target>
+        <target state="translated">╨ö╨░╤é╨░ ╨┐╤â╨▒╨╗╨╕╨║╨░╤å╨╕╨╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Dependencies">
         <source>Dependencies</source>
-        <target state="translated">Зависимости</target>
+        <target state="translated">╨ù╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DependencyBehavior">
         <source>Dependency behavior:</source>
-        <target state="translated">Поведение зависимости:</target>
+        <target state="translated">╨ƒ╨╛╨▓╨╡╨┤╨╡╨╜╨╕╨╡ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="translated">Нерекомендуемое</target>
+        <target state="translated">╨¥╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╨╛╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
         <source>Alternate package</source>
-        <target state="translated">Альтернативный пакет</target>
+        <target state="translated">╨É╨╗╤î╤é╨╡╤Ç╨╜╨░╤é╨╕╨▓╨╜╤ï╨╣ ╨┐╨░╨║╨╡╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons">
         <source>Deprecation reason</source>
-        <target state="translated">Причина устаревания</target>
+        <target state="translated">╨ƒ╤Ç╨╕╤ç╨╕╨╜╨░ ╤â╤ü╤é╨░╤Ç╨╡╨▓╨░╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_CriticalBugs">
         <source>This package has been deprecated as it has critical bugs.</source>
-        <target state="translated">Этот пакет сделан нерекомендуемым, так как он содержит критические ошибки.</target>
+        <target state="translated">╨¡╤é╨╛╤é ╨┐╨░╨║╨╡╤é ╤ü╨┤╨╡╨╗╨░╨╜ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╝, ╤é╨░╨║ ╨║╨░╨║ ╨╛╨╜ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨║╤Ç╨╕╤é╨╕╤ç╨╡╤ü╨║╨╕╨╡ ╨╛╤ê╨╕╨▒╨║╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Legacy">
         <source>This package has been deprecated as it is legacy and no longer maintained.</source>
-        <target state="translated">Этот пакет сделан нерекомендуемым, так как он устарел и больше не поддерживается.</target>
+        <target state="translated">╨¡╤é╨╛╤é ╨┐╨░╨║╨╡╤é ╤ü╨┤╨╡╨╗╨░╨╜ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╝, ╤é╨░╨║ ╨║╨░╨║ ╨╛╨╜ ╤â╤ü╤é╨░╤Ç╨╡╨╗ ╨╕ ╨▒╨╛╨╗╤î╤ê╨╡ ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_LegacyAndCriticalBugs">
         <source>This package has been deprecated as it has critical bugs and is no longer maintained.</source>
-        <target state="translated">Этот пакет сделан нерекомендуемым, так как он содержит критические ошибки и больше не поддерживается.</target>
+        <target state="translated">╨¡╤é╨╛╤é ╨┐╨░╨║╨╡╤é ╤ü╨┤╨╡╨╗╨░╨╜ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╝, ╤é╨░╨║ ╨║╨░╨║ ╨╛╨╜ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨║╤Ç╨╕╤é╨╕╤ç╨╡╤ü╨║╨╕╨╡ ╨╛╤ê╨╕╨▒╨║╨╕ ╨╕ ╨▒╨╛╨╗╤î╤ê╨╡ ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Unknown">
         <source>The package has been deprecated.</source>
-        <target state="translated">Этот пакет сделан нерекомендуемым.</target>
+        <target state="translated">╨¡╤é╨╛╤é ╨┐╨░╨║╨╡╤é ╤ü╨┤╨╡╨╗╨░╨╜ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Description">
         <source>Description</source>
-        <target state="translated">Описание</target>
+        <target state="translated">╨₧╨┐╨╕╤ü╨░╨╜╨╕╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Details">
@@ -554,62 +554,62 @@
       </trans-unit>
       <trans-unit id="Label_Downloads">
         <source>Downloads:</source>
-        <target state="translated">Скачивания:</target>
+        <target state="translated">╨í╨║╨░╤ç╨╕╨▓╨░╨╜╨╕╤Å:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_FileConflictAction">
         <source>File conflict action:</source>
-        <target state="translated">Действие при конфликте файлов:</target>
+        <target state="translated">╨ö╨╡╨╣╤ü╤é╨▓╨╕╨╡ ╨┐╤Ç╨╕ ╨║╨╛╨╜╤ä╨╗╨╕╨║╤é╨╡ ╤ä╨░╨╣╨╗╨╛╨▓:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed">
         <source>Installed</source>
-        <target state="translated">Установлено</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledColon">
         <source>Installed:</source>
-        <target state="translated">Установлено:</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledPackages">
         <source>Installing:</source>
-        <target state="translated">Идет установка:</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledVersionsCount">
         <source>Versions: {0}</source>
-        <target state="translated">Версии: {0}</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╨╕: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed_DeprecatedWarning">
         <source>You have {0} deprecated package versions installed.</source>
-        <target state="translated">Установлены нерекомендуемые версии пакетов ({0}).</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ({0}).</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning">
         <source>You have {0} vulnerable package versions and {1} deprecated package versions installed.</source>
-        <target state="translated">Установлены уязвимые версии пакетов ({0}) и нерекомендуемые версии пакетов ({1}).</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï ╤â╤Å╨╖╨▓╨╕╨╝╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ({0}) ╨╕ ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ({1}).</target>
         <note>{0} and {1} are numbers of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableWarning">
         <source>You have {0} vulnerable package versions installed.</source>
-        <target state="translated">Установлены уязвимые версии пакетов ({0}).</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï ╤â╤Å╨╖╨▓╨╕╨╝╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ({0}).</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_License">
         <source>License:</source>
-        <target state="translated">Лицензия:</target>
+        <target state="translated">╨¢╨╕╤å╨╡╨╜╨╖╨╕╤Å:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_MultiplePackageVulnerableVersionToolTip">
         <source>These installed package versions contain vulnerabilities: {0}</source>
-        <target state="translated">Эти версии установленных пакетов содержат уязвимости: {0}</target>
+        <target state="translated">╨¡╤é╨╕ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╜╤ï╤à ╨┐╨░╨║╨╡╤é╨╛╨▓ ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤é ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╨╕: {0}</target>
         <note>{0} are package versions</note>
       </trans-unit>
       <trans-unit id="Label_NetworkError">
         <source>An error occurred while fetching additional information about the package. Refresh to try again.</source>
-        <target state="translated">Во время получения дополнительных сведений о пакете произошла ошибка. Обновите страницу, чтобы повторить попытку.</target>
+        <target state="translated">╨Æ╨╛ ╨▓╤Ç╨╡╨╝╤Å ╨┐╨╛╨╗╤â╤ç╨╡╨╜╨╕╤Å ╨┤╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╤à ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣ ╨╛ ╨┐╨░╨║╨╡╤é╨╡ ╨┐╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░. ╨₧╨▒╨╜╨╛╨▓╨╕╤é╨╡ ╤ü╤é╤Ç╨░╨╜╨╕╤å╤â, ╤ç╤é╨╛╨▒╤ï ╨┐╨╛╨▓╤é╨╛╤Ç╨╕╤é╤î ╨┐╨╛╨┐╤ï╤é╨║╤â.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_NuGetWindowCaption">
@@ -619,257 +619,257 @@
       </trans-unit>
       <trans-unit id="Label_Options">
         <source>Options</source>
-        <target state="translated">Параметры</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Owners">
         <source>Owner(s):</source>
-        <target state="translated">Владельцы:</target>
+        <target state="translated">╨Æ╨╗╨░╨┤╨╡╨╗╤î╤å╤ï:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDeprecatedToolTip">
         <source>This package version is deprecated.</source>
-        <target state="translated">Эта версия пакета является нерекомендуемой.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┐╨░╨║╨╡╤é╨░ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨╜╨╡╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╨╝╨╛╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDetails">
         <source>Package Details</source>
-        <target state="translated">Сведения о пакете</target>
+        <target state="translated">╨í╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╨┐╨░╨║╨╡╤é╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageManager">
         <source>NuGet Package Manager: {0}</source>
-        <target state="translated">Диспетчер пакетов NuGet: {0}</target>
+        <target state="translated">╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackagePrerelease">
         <source>Prerelease</source>
-        <target state="translated">Предварительный выпуск</target>
+        <target state="translated">╨ƒ╤Ç╨╡╨┤╨▓╨░╤Ç╨╕╤é╨╡╨╗╤î╨╜╤ï╨╣ ╨▓╤ï╨┐╤â╤ü╨║</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageSelectForInfoToolTip">
         <source>Select to view package details for more information.</source>
-        <target state="translated">Выберите, чтобы просмотреть информацию о пакете для получения дополнительных сведений.</target>
+        <target state="translated">╨Æ╤ï╨▒╨╡╤Ç╨╕╤é╨╡, ╤ç╤é╨╛╨▒╤ï ╨┐╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨╡╤é╤î ╨╕╨╜╤ä╨╛╤Ç╨╝╨░╤å╨╕╤Ä ╨╛ ╨┐╨░╨║╨╡╤é╨╡ ╨┤╨╗╤Å ╨┐╨╛╨╗╤â╤ç╨╡╨╜╨╕╤Å ╨┤╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╤à ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageVulnerableToolTip">
         <source>This package version has a vulnerability with {0} severity.</source>
-        <target state="translated">Эта версия пакета имеет уязвимость со уровнем серьезности {0}.</target>
+        <target state="translated">╨¡╤é╨░ ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┐╨░╨║╨╡╤é╨░ ╨╕╨╝╨╡╨╡╤é ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╤î ╤ü╨╛ ╤â╤Ç╨╛╨▓╨╜╨╡╨╝ ╤ü╨╡╤Ç╤î╨╡╨╖╨╜╨╛╤ü╤é╨╕ {0}.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_ProjectUrl">
         <source>Project URL:</source>
-        <target state="translated">URL-адрес проекта:</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╨┐╤Ç╨╛╨╡╨║╤é╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Readme">
         <source>Readme:</source>
-        <target state="translated">Файл сведений:</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Readme_Tab">
         <source>README</source>
-        <target state="translated">Файл сведений</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_ReportAbuse">
         <source>Report Abuse:</source>
-        <target state="translated">Сообщить о нарушении:</target>
+        <target state="translated">╨í╨╛╨╛╨▒╤ë╨╕╤é╤î ╨╛ ╨╜╨░╤Ç╤â╤ê╨╡╨╜╨╕╨╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Repository">
         <source>Package source:</source>
-        <target state="translated">Источник пакета:</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ ╨┐╨░╨║╨╡╤é╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Solution">
         <source>Solution</source>
-        <target state="translated">Решение</target>
+        <target state="translated">╨á╨╡╤ê╨╡╨╜╨╕╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionNuGetWindowCaption">
         <source>NuGet - Solution</source>
-        <target state="translated">NuGet — решение</target>
+        <target state="translated">NuGet ΓÇö ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionPackageManager">
         <source>Manage Packages for Solution</source>
-        <target state="translated">Управление пакетами для решения</target>
+        <target state="translated">╨ú╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ ╨┤╨╗╤Å ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Tags">
         <source>Tags:</source>
-        <target state="translated">Теги:</target>
+        <target state="translated">╨ó╨╡╨│╨╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_UninstalledPackages">
         <source>Uninstalling:</source>
-        <target state="translated">Идет удаление:</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤â╨┤╨░╨╗╨╡╨╜╨╕╨╡:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_UpdatedPackages">
         <source>Updates:</source>
-        <target state="translated">Обновления:</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Updates">
         <source>Updates</source>
-        <target state="translated">Обновления</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Version">
         <source>Version:</source>
-        <target state="translated">Версия:</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Vulnerabilities">
         <source>Vulnerabilities detected ({0})</source>
-        <target state="translated">Обнаружены уязвимости ({0})</target>
+        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╤ï ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╨╕ ({0})</target>
         <note>{0} is the number of vulnerabilities</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilitiesDescription">
         <source>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</source>
-        <target state="translated">Данная версия пакета имеет по крайней мере одну уязвимость с серьезностью {0}. Это может привести к определенным проблемам в проекте. Попробуйте обновить версию пакета.</target>
+        <target state="translated">╨ö╨░╨╜╨╜╨░╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å ╨┐╨░╨║╨╡╤é╨░ ╨╕╨╝╨╡╨╡╤é ╨┐╨╛ ╨║╤Ç╨░╨╣╨╜╨╡╨╣ ╨╝╨╡╤Ç╨╡ ╨╛╨┤╨╜╤â ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╤î ╤ü ╤ü╨╡╤Ç╤î╨╡╨╖╨╜╨╛╤ü╤é╤î╤Ä {0}. ╨¡╤é╨╛ ╨╝╨╛╨╢╨╡╤é ╨┐╤Ç╨╕╨▓╨╡╤ü╤é╨╕ ╨║ ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╡╨╜╨╜╤ï╨╝ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨░╨╝ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é╨╡. ╨ƒ╨╛╨┐╤Ç╨╛╨▒╤â╨╣╤é╨╡ ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨▓╨╡╤Ç╤ü╨╕╤Ä ╨┐╨░╨║╨╡╤é╨░.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilityAdvisory">
         <source>Advisory ({0} severity):</source>
-        <target state="translated">Рекомендации (уровень серьезности {0}):</target>
+        <target state="translated">╨á╨╡╨║╨╛╨╝╨╡╨╜╨┤╨░╤å╨╕╨╕ (╤â╤Ç╨╛╨▓╨╡╨╜╤î ╤ü╨╡╤Ç╤î╨╡╨╖╨╜╨╛╤ü╤é╨╕ {0}):</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_Vulnerable">
         <source>Vulnerable</source>
-        <target state="translated">Уязвимо</target>
+        <target state="translated">╨ú╤Å╨╖╨▓╨╕╨╝╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseFile_Loading">
         <source>Loading license file...</source>
-        <target state="translated">Загружается файл лицензии…</target>
+        <target state="translated">╨ù╨░╨│╤Ç╤â╨╢╨░╨╡╤é╤ü╤Å ╤ä╨░╨╣╨╗ ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╕ΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseTerm_LinkName">
         <source>{0} license</source>
-        <target state="translated">Лицензия {0}</target>
+        <target state="translated">╨¢╨╕╤å╨╡╨╜╨╖╨╕╤Å {0}</target>
         <note>{0} = license name. Examples: MIT, Apache</note>
       </trans-unit>
       <trans-unit id="Link_DoNotShowAgain">
         <source>Don't show again</source>
-        <target state="translated">Больше не показывать</target>
+        <target state="translated">╨æ╨╛╨╗╤î╤ê╨╡ ╨╜╨╡ ╨┐╨╛╨║╨░╨╖╤ï╨▓╨░╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutInstallOptions">
         <source>Learn about Install Options</source>
-        <target state="translated">Дополнительные сведения о параметрах установки</target>
+        <target state="translated">╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░╤à ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutUninstallOptions">
         <source>Learn about Uninstall Options</source>
-        <target state="translated">Дополнительные сведения о параметрах удаления</target>
+        <target state="translated">╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░╤à ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_MigratorHelp">
         <source>Why should I migrate?</source>
-        <target state="translated">Почему следует выполнить переход?</target>
+        <target state="translated">╨ƒ╨╛╤ç╨╡╨╝╤â ╤ü╨╗╨╡╨┤╤â╨╡╤é ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╨┐╨╡╤Ç╨╡╤à╨╛╨┤?</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_UpgradeOption">
         <source>Migrate Now</source>
-        <target state="translated">Перейти сейчас</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╨╣╤é╨╕ ╤ü╨╡╨╣╤ç╨░╤ü</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_configuration">
         <source>Common NuGet configurations; How settings are applied.</source>
-        <target state="translated">Общие конфигурации NuGet; как применяются параметры.</target>
+        <target state="translated">╨₧╨▒╤ë╨╕╨╡ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕ NuGet; ╨║╨░╨║ ╨┐╤Ç╨╕╨╝╨╡╨╜╤Å╤Ä╤é╤ü╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageIdColumnHeader">
         <source>Package Id</source>
-        <target state="translated">Идентификатор пакета</target>
+        <target state="translated">╨ÿ╨┤╨╡╨╜╤é╨╕╤ä╨╕╨║╨░╤é╨╛╤Ç ╨┐╨░╨║╨╡╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageNotFound">
         <source>Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project.</source>
-        <target state="translated">Не удалось выполнить переход, так как не удалось удалить пакеты {0}. Эти пакеты не были найдены в каталоге пакетов решения. Никаких изменений в проект внесено не было.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╨┐╨╡╤Ç╨╡╤à╨╛╨┤, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨┐╨░╨║╨╡╤é╤ï {0}. ╨¡╤é╨╕ ╨┐╨░╨║╨╡╤é╤ï ╨╜╨╡ ╨▒╤ï╨╗╨╕ ╨╜╨░╨╣╨┤╨╡╨╜╤ï ╨▓ ╨║╨░╤é╨░╨╗╨╛╨│╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å. ╨¥╨╕╨║╨░╨║╨╕╤à ╨╕╨╖╨╝╨╡╨╜╨╡╨╜╨╕╨╣ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é ╨▓╨╜╨╡╤ü╨╡╨╜╨╛ ╨╜╨╡ ╨▒╤ï╨╗╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_TopLevelColumnHeader">
         <source>Top-Level</source>
-        <target state="translated">Верхний уровень</target>
+        <target state="translated">╨Æ╨╡╤Ç╤à╨╜╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_VersionColumnHeader">
         <source>Version</source>
-        <target state="translated">Версия</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Million">
         <source>{0:G3}M</source>
-        <target state="translated">{0:G3} млн</target>
+        <target state="translated">{0:G3}┬á╨╝╨╗╨╜</target>
         <note>Millions in short format notation</note>
       </trans-unit>
       <trans-unit id="NuGetUpgrade_PackageDependencyOf">
         <source>(dependency of {0})</source>
-        <target state="translated">(зависимость {0})</target>
+        <target state="translated">(╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╤î {0})</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Installing">
         <source>Installing required packages</source>
-        <target state="translated">Устанавливаются обязательные пакеты</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╤Ä╤é╤ü╤Å ╨╛╨▒╤Å╨╖╨░╤é╨╡╨╗╤î╨╜╤ï╨╡ ╨┐╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Uninstalling">
         <source>Uninstalling packages from packages.config</source>
-        <target state="translated">Удаляются пакеты из packages.config</target>
+        <target state="translated">╨ú╨┤╨░╨╗╤Å╤Ä╤é╤ü╤Å ╨┐╨░╨║╨╡╤é╤ï ╨╕╨╖ packages.config</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_WaitMessage">
         <source>Upgrading Project to PackageReference</source>
-        <target state="translated">Обновляется проект до PackageReference</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┐╤Ç╨╛╨╡╨║╤é ╨┤╨╛ PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="Operation_TotalTime">
         <source>Time Elapsed: {0}</source>
-        <target state="translated">Прошло времени: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╛╤ê╨╗╨╛ ╨▓╤Ç╨╡╨╝╨╡╨╜╨╕: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageLevel_TopLevelPackageHeaderText">
         <source>Top-level packages ({0})</source>
-        <target state="translated">Пакеты верхнего уровня ({0})</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é╤ï ╨▓╨╡╤Ç╤à╨╜╨╡╨│╨╛ ╤â╤Ç╨╛╨▓╨╜╤Å ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageLevel_TransitivePackageHeaderText">
         <source>Transitive packages ({0})</source>
-        <target state="translated">Транзитивные пакеты ({0})</target>
+        <target state="translated">╨ó╤Ç╨░╨╜╨╖╨╕╤é╨╕╨▓╨╜╤ï╨╡ ╨┐╨░╨║╨╡╤é╤ï ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageRestoreErrorTryAgain">
         <source>An error occurred while trying to restore packages:</source>
-        <target state="translated">При попытке восстановить пакеты произошла ошибка:</target>
+        <target state="translated">╨ƒ╤Ç╨╕ ╨┐╨╛╨┐╤ï╤é╨║╨╡ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║╨╡╤é╤ï ╨┐╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreProgressMessage">
         <source>Downloading missing packages...</source>
-        <target state="translated">Идет скачивание недостающих пакетов…</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤ü╨║╨░╤ç╨╕╨▓╨░╨╜╨╕╨╡ ╨╜╨╡╨┤╨╛╤ü╤é╨░╤Ä╤ë╨╕╤à ╨┐╨░╨║╨╡╤é╨╛╨▓ΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionWithTransitiveOrigins">
         <source>{0} by {1}</source>
-        <target state="translated">{0} — {1}</target>
+        <target state="translated">{0} ΓÇö {1}</target>
         <note>{0} - Version of package, {1} - Packages that transitively reference the package</note>
       </trans-unit>
       <trans-unit id="Preview_PackageUpdate">
         <source>{0} version {1} to {2} version {3}</source>
-        <target state="translated">{0} версии {1} до {2} версии {3}</target>
+        <target state="translated">{0} ╨▓╨╡╤Ç╤ü╨╕╨╕┬á{1} ╨┤╨╛ {2} ╨▓╨╡╤Ç╤ü╨╕╨╕┬á{3}</target>
         <note>{0} = Old package ID, {1} = Old package version, {2} = New package ID, {3} = New package version</note>
       </trans-unit>
       <trans-unit id="Preview_UnknownProject">
         <source>Unknown project</source>
-        <target state="translated">Неизвестный проект</target>
+        <target state="translated">╨¥╨╡╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï╨╣ ╨┐╤Ç╨╛╨╡╨║╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="RadioBtn_PackageRef">
         <source>PackageReference in project file</source>
-        <target state="translated">PackageReference в файле проекта</target>
+        <target state="translated">PackageReference ╨▓ ╤ä╨░╨╣╨╗╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="RadioBtn_PackagesConfig">
@@ -879,66 +879,66 @@
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallMultiplePackages">
         <source>Multiple packages failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">Не удалось удалить несколько пакетов. Чтобы завершить процесс, перезапустите Visual Studio.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨┐╨░╨║╨╡╤é╨╛╨▓. ╨º╤é╨╛╨▒╤ï ╨╖╨░╨▓╨╡╤Ç╤ê╨╕╤é╤î ╨┐╤Ç╨╛╤å╨╡╤ü╤ü, ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╤é╨╕╤é╨╡ Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallSinglePackage">
         <source>The package at '{0}' failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">Не удалось удалить пакет в «{0}». Чтобы завершить процесс, перезапустите Visual Studio.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨┐╨░╨║╨╡╤é ╨▓ ┬½{0}┬╗. ╨º╤é╨╛╨▒╤ï ╨╖╨░╨▓╨╡╤Ç╤ê╨╕╤é╤î ╨┐╤Ç╨╛╤å╨╡╤ü╤ü, ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╤é╨╕╤é╨╡ Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestartButtonLabel">
         <source>Rest_art</source>
-        <target state="translated">Пере_запустить</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡_╨╖╨░╨┐╤â╤ü╤é╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
-        <target state="translated">_Восстановить</target>
+        <target state="translated">_╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowDetails">
         <source>Show Details</source>
-        <target state="translated">Показать сведения</target>
+        <target state="translated">╨ƒ╨╛╨║╨░╨╖╨░╤é╤î ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">
         <source>NuGet storage clear failed at {0}. 
 Error: {1}</source>
-        <target state="translated">Сбой очистки хранилища NuGet в {0}. 
-Ошибка: {1}</target>
+        <target state="translated">╨í╨▒╨╛╨╣ ╨╛╤ç╨╕╤ü╤é╨║╨╕ ╤à╤Ç╨░╨╜╨╕╨╗╨╕╤ë╨░ NuGet ╨▓ {0}. 
+╨₧╤ê╨╕╨▒╨║╨░: {1}</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
         <source>For more information, see</source>
-        <target state="translated">Подробнее см. на странице</target>
+        <target state="translated">╨ƒ╨╛╨┤╤Ç╨╛╨▒╨╜╨╡╨╡ ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
         <source>NuGet storage cleared at {0}</source>
-        <target state="translated">Хранилище NuGet очищено в {0}</target>
+        <target state="translated">╨Ñ╤Ç╨░╨╜╨╕╨╗╨╕╤ë╨╡ NuGet ╨╛╤ç╨╕╤ë╨╡╨╜╨╛ ╨▓ {0}</target>
         <note>{0} for date and time string</note>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandWorking">
         <source>Clearing all NuGet storage...</source>
-        <target state="translated">Очистка всего хранилища NuGet...</target>
+        <target state="translated">╨₧╤ç╨╕╤ü╤é╨║╨░ ╨▓╤ü╨╡╨│╨╛ ╤à╤Ç╨░╨╜╨╕╨╗╨╕╤ë╨░ NuGet...</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_Title">
         <source>Package Manager Options</source>
-        <target state="translated">Параметры диспетчера пакетов</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Please provide a unique name.</source>
-        <target state="translated">Указанное имя уже было добавлено в список доступных источников пакетов. Укажите уникальное имя.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╨╛╨╡ ╨╕╨╝╤Å ╤â╨╢╨╡ ╨▒╤ï╨╗╨╛ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜╨╛ ╨▓ ╤ü╨┐╨╕╤ü╨╛╨║ ╨┤╨╛╤ü╤é╤â╨┐╨╜╤ï╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓. ╨ú╨║╨░╨╢╨╕╤é╨╡ ╤â╨╜╨╕╨║╨░╨╗╤î╨╜╨╛╨╡ ╨╕╨╝╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Please provide a unique source.</source>
-        <target state="translated">Указанный источник уже был добавлен в список доступных источников пакетов. Укажите уникальный источник.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ ╤â╨╢╨╡ ╨▒╤ï╨╗ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜ ╨▓ ╤ü╨┐╨╕╤ü╨╛╨║ ╨┤╨╛╤ü╤é╤â╨┐╨╜╤ï╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓. ╨ú╨║╨░╨╢╨╕╤é╨╡ ╤â╨╜╨╕╨║╨░╨╗╤î╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
@@ -963,127 +963,127 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="Text_By">
         <source>by</source>
-        <target state="translated">от</target>
+        <target state="translated">╨╛╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ByAuthor">
         <source>by {0}</source>
-        <target state="translated">от {0}</target>
+        <target state="translated">╨╛╤é {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ByOwner">
         <source>by {0}</source>
-        <target state="translated">от {0}</target>
+        <target state="translated">╨╛╤é {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Changes">
         <source>Visual Studio is about to make changes to this solution:</source>
-        <target state="translated">Visual Studio собирается внести изменения в это решение:</target>
+        <target state="translated">Visual Studio ╤ü╨╛╨▒╨╕╤Ç╨░╨╡╤é╤ü╤Å ╨▓╨╜╨╡╤ü╤é╨╕ ╨╕╨╖╨╝╨╡╨╜╨╡╨╜╨╕╤Å ╨▓ ╤ì╤é╨╛ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DirectDependencies">
         <source>Top-level dependencies:</source>
-        <target state="translated">Зависимости верхнего уровня</target>
+        <target state="translated">╨ù╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨▓╨╡╤Ç╤à╨╜╨╡╨│╨╛ ╤â╤Ç╨╛╨▓╨╜╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Downloads">
         <source>{0} downloads</source>
-        <target state="translated">Скачиваний: {0}</target>
+        <target state="translated">╨í╨║╨░╤ç╨╕╨▓╨░╨╜╨╕╨╣: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ErrorOccurred">
         <source>Error occurred</source>
-        <target state="translated">Произошла ошибка</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HelpMeMigrate">
         <source>Help me migrate to NuGet PackageReference</source>
-        <target state="translated">Помогите перейти на формат управления пакетами NuGet PackageReference</target>
+        <target state="translated">╨ƒ╨╛╨╝╨╛╨│╨╕╤é╨╡ ╨┐╨╡╤Ç╨╡╨╣╤é╨╕ ╨╜╨░ ╤ä╨╛╤Ç╨╝╨░╤é ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LegalDisclaimer">
         <source>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages.</source>
-        <target state="translated">Все пакеты лицензируются их владельцами. NuGet не несет ответственности за пакеты сторонних производителей и не предоставляет лицензии на такие пакеты.</target>
+        <target state="translated">╨Æ╤ü╨╡ ╨┐╨░╨║╨╡╤é╤ï ╨╗╨╕╤å╨╡╨╜╨╖╨╕╤Ç╤â╤Ä╤é╤ü╤Å ╨╕╤à ╨▓╨╗╨░╨┤╨╡╨╗╤î╤å╨░╨╝╨╕. NuGet ╨╜╨╡ ╨╜╨╡╤ü╨╡╤é ╨╛╤é╨▓╨╡╤é╤ü╤é╨▓╨╡╨╜╨╜╨╛╤ü╤é╨╕ ╨╖╨░ ╨┐╨░╨║╨╡╤é╤ï ╤ü╤é╨╛╤Ç╨╛╨╜╨╜╨╕╤à ╨┐╤Ç╨╛╨╕╨╖╨▓╨╛╨┤╨╕╤é╨╡╨╗╨╡╨╣ ╨╕ ╨╜╨╡ ╨┐╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╨╗╤Å╨╡╤é ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╕ ╨╜╨░ ╤é╨░╨║╨╕╨╡ ╨┐╨░╨║╨╡╤é╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseHeaderText">
         <source>The following package(s) require that you accept their license terms before installing.</source>
-        <target state="translated">Перед установкой следующих пакетов требуется принять условия их лицензий.</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╨┤ ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╛╨╣ ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╕╤à ╨┐╨░╨║╨╡╤é╨╛╨▓ ╤é╤Ç╨╡╨▒╤â╨╡╤é╤ü╤Å ╨┐╤Ç╨╕╨╜╤Å╤é╤î ╤â╤ü╨╗╨╛╨▓╨╕╤Å ╨╕╤à ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseText">
         <source>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</source>
-        <target state="translated">Выбрав «Принимаю», вы подтверждаете согласие с условиями лицензий указанных выше пакетов. Если вы не согласны с условиями лицензий, щелкните «Не принимаю».</target>
+        <target state="translated">╨Æ╤ï╨▒╤Ç╨░╨▓ ┬½╨ƒ╤Ç╨╕╨╜╨╕╨╝╨░╤Ä┬╗, ╨▓╤ï ╨┐╨╛╨┤╤é╨▓╨╡╤Ç╨╢╨┤╨░╨╡╤é╨╡ ╤ü╨╛╨│╨╗╨░╤ü╨╕╨╡ ╤ü ╤â╤ü╨╗╨╛╨▓╨╕╤Å╨╝╨╕ ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╣ ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╤à ╨▓╤ï╤ê╨╡ ╨┐╨░╨║╨╡╤é╨╛╨▓. ╨ò╤ü╨╗╨╕ ╨▓╤ï ╨╜╨╡ ╤ü╨╛╨│╨╗╨░╤ü╨╜╤ï ╤ü ╤â╤ü╨╗╨╛╨▓╨╕╤Å╨╝╨╕ ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╣, ╤ë╨╡╨╗╨║╨╜╨╕╤é╨╡ ┬½╨¥╨╡ ╨┐╤Ç╨╕╨╜╨╕╨╝╨░╤Ä┬╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Loading">
         <source>Loading...</source>
-        <target state="translated">Идет скачивание…</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╤ü╨║╨░╤ç╨╕╨▓╨░╨╜╨╕╨╡ΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LoadingReadme">
         <source>Loading README...</source>
-        <target state="translated">Загрузка файла сведений...</target>
+        <target state="translated">╨ù╨░╨│╤Ç╤â╨╖╨║╨░ ╤ä╨░╨╣╨╗╨░ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
         <source>You can manage these settings in </source>
-        <target state="translated">Вы можете управлять этими параметрами в </target>
+        <target state="translated">╨Æ╤ï ╨╝╨╛╨╢╨╡╤é╨╡ ╤â╨┐╤Ç╨░╨▓╨╗╤Å╤é╤î ╤ì╤é╨╕╨╝╨╕ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░╨╝╨╕ ╨▓ </target>
         <note />
       </trans-unit>
       <trans-unit id="Text_MultipleVersionsInstalled">
         <source>multiple versions installed</source>
-        <target state="translated">установлено несколько версий</target>
+        <target state="translated">╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨▓╨╡╤Ç╤ü╨╕╨╣</target>
         <note>In the solution package manager, if the select package has multiple versions installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NoDependencies">
         <source>No dependencies</source>
-        <target state="translated">Зависимости отсутствуют</target>
+        <target state="translated">╨ù╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╤â╤Ä╤é</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoPackagesFound">
         <source>No packages found</source>
-        <target state="translated">Пакеты не найдены</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é╤ï ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="translated">Нет доступного файла сведений для выбранной версии пакета. Дополнительные сведения см. на странице [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
+        <target state="translated">╨¥╨╡╤é ╨┤╨╛╤ü╤é╤â╨┐╨╜╨╛╨│╨╛ ╤ä╨░╨╣╨╗╨░ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣ ╨┤╨╗╤Å ╨▓╤ï╨▒╤Ç╨░╨╜╨╜╨╛╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨░. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
         <source>Not available in this source</source>
-        <target state="translated">Не доступно в этом источнике</target>
+        <target state="translated">╨¥╨╡ ╨┤╨╛╤ü╤é╤â╨┐╨╜╨╛ ╨▓ ╤ì╤é╨╛╨╝ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NotInstalled">
         <source>not installed</source>
-        <target state="translated">не установлено</target>
+        <target state="translated">╨╜╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛</target>
         <note>In the solution package manager, if the select package is not installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NuGetSettings">
         <source>NuGet Settings</source>
-        <target state="translated">Параметры NuGet</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeIssues">
         <source>Package compatibility issues:</source>
-        <target state="translated">Проблемы совместимости пакетов:</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨▒╨╗╨╡╨╝╤ï ╤ü╨╛╨▓╨╝╨╡╤ü╤é╨╕╨╝╨╛╤ü╤é╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeNoIssuesFound">
         <source>No issues were found.</source>
-        <target state="translated">Проблемы не найдены.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨▒╨╗╨╡╨╝╤ï ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╤ï.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatApply">
         <source>The package manager format will apply to the following projects in this Solution</source>
-        <target state="translated">Формат диспетчера пакетов будет применен к следующим проектам в этом решении (Solution).</target>
+        <target state="translated">╨ñ╨╛╤Ç╨╝╨░╤é ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨▒╤â╨┤╨╡╤é ╨┐╤Ç╨╕╨╝╨╡╨╜╨╡╨╜ ╨║ ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╕╨╝ ╨┐╤Ç╨╛╨╡╨║╤é╨░╨╝ ╨▓ ╤ì╤é╨╛╨╝ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╕ (Solution).</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTopLevel">
         <source>Top-level</source>
-        <target state="translated">Верхний уровень</target>
+        <target state="translated">╨Æ╨╡╤Ç╤à╨╜╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTransitive">
@@ -1093,287 +1093,287 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="Text_PackageMappingsAutoCreate">
         <source>A package source mapping will be created.</source>
-        <target state="translated">Будет создано сопоставление источника пакета.</target>
+        <target state="translated">╨æ╤â╨┤╨╡╤é ╤ü╨╛╨╖╨┤╨░╨╜╨╛ ╤ü╨╛╨┐╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsDisabled">
         <source>Package source mapping is off.</source>
-        <target state="translated">Сопоставление источника пакета отключено.</target>
+        <target state="translated">╨í╨╛╨┐╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨░ ╨╛╤é╨║╨╗╤Ä╤ç╨╡╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsFound">
         <source>Package source mapping found.</source>
-        <target state="translated">Найдено сопоставление источника пакета.</target>
+        <target state="translated">╨¥╨░╨╣╨┤╨╡╨╜╨╛ ╤ü╨╛╨┐╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsNotFound">
         <source>Requires a package source mapping.</source>
-        <target state="translated">Требуется сопоставление источника пакета.</target>
+        <target state="translated">╨ó╤Ç╨╡╨▒╤â╨╡╤é╤ü╤Å ╤ü╨╛╨┐╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport">
         <source>Projects with PackageReference are not supported in Visual Studio 2015 and earlier.</source>
-        <target state="translated">Visual Studio 2015 и более ранних версий не поддерживает проекты с PackageReference.</target>
+        <target state="translated">Visual Studio┬á2015 ╨╕ ╨▒╨╛╨╗╨╡╨╡ ╤Ç╨░╨╜╨╜╨╕╤à ╨▓╨╡╤Ç╤ü╨╕╨╣ ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╤ü PackageReference.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport_DocumentLink">
         <source>Learn more about package reference</source>
-        <target state="translated">Подробности о ссылках на пакеты</target>
+        <target state="translated">╨ƒ╨╛╨┤╤Ç╨╛╨▒╨╜╨╛╤ü╤é╨╕ ╨╛ ╤ü╤ü╤ï╨╗╨║╨░╤à ╨╜╨░ ╨┐╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources">
         <source>Package sources:</source>
-        <target state="translated">Источники пакетов:</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackagesFound">
         <source>Packages found</source>
-        <target state="translated">Найдены пакеты</target>
+        <target state="translated">╨¥╨░╨╣╨┤╨╡╨╜╤ï ╨┐╨░╨║╨╡╤é╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ReadmeLoaded">
         <source>README loaded</source>
-        <target state="translated">Файл сведений загружен</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣ ╨╖╨░╨│╤Ç╤â╨╢╨╡╨╜</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchBoxText">
         <source>Search ({0})</source>
-        <target state="translated">Поиск ({0})</target>
+        <target state="translated">╨ƒ╨╛╨╕╤ü╨║ ({0})</target>
         <note>The text to be displayed in the search box</note>
       </trans-unit>
       <trans-unit id="Text_SearchIncomplete">
         <source>Retrieving results from one or more sources</source>
-        <target state="translated">Извлечение результатов из одного или нескольких источников</target>
+        <target state="translated">╨ÿ╨╖╨▓╨╗╨╡╤ç╨╡╨╜╨╕╨╡ ╤Ç╨╡╨╖╤â╨╗╤î╤é╨░╤é╨╛╨▓ ╨╕╨╖ ╨╛╨┤╨╜╨╛╨│╨╛ ╨╕╨╗╨╕ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╕╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchStopped">
         <source>Unable to retrieve results from one or more sources</source>
-        <target state="translated">Не удалось получить результаты из одного или нескольких источников</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤Ç╨╡╨╖╤â╨╗╤î╤é╨░╤é╤ï ╨╕╨╖ ╨╛╨┤╨╜╨╛╨│╨╛ ╨╕╨╗╨╕ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╕╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Searching">
         <source>Searching '{0}'</source>
-        <target state="translated">Идет поиск «{0}»</target>
+        <target state="translated">╨ÿ╨┤╨╡╤é ╨┐╨╛╨╕╤ü╨║ ┬½{0}┬╗</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_TransitiveDependencies">
         <source>Transitive dependencies:</source>
-        <target state="translated">Переходные зависимости:</target>
+        <target state="translated">╨ƒ╨╡╤Ç╨╡╤à╨╛╨┤╨╜╤ï╨╡ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UpgradeNuGetProjectDescription">
         <source>Migrate this project from packages.config to PackageReference format.</source>
-        <target state="translated">Изменение формата управления пакетами NuGet для этого проекта с packages.config на PackageReference.</target>
+        <target state="translated">╨ÿ╨╖╨╝╨╡╨╜╨╡╨╜╨╕╨╡ ╤ä╨╛╤Ç╨╝╨░╤é╨░ ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet ╨┤╨╗╤Å ╤ì╤é╨╛╨│╨╛ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╤ü packages.config ╨╜╨░ PackageReference.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UserCanceled">
         <source>Operation canceled by user</source>
-        <target state="translated">Операция отменена пользователем</target>
+        <target state="translated">╨₧╨┐╨╡╤Ç╨░╤å╨╕╤Å ╨╛╤é╨╝╨╡╨╜╨╡╨╜╨░ ╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╨╡╨╗╨╡╨╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewLicense">
         <source>View License</source>
-        <target state="translated">Просмотреть лицензию</target>
+        <target state="translated">╨ƒ╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨╡╤é╤î ╨╗╨╕╤å╨╡╨╜╨╖╨╕╤Ä</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewReadme">
         <source>View Readme</source>
-        <target state="translated">Просмотреть файл сведений</target>
+        <target state="translated">╨ƒ╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨╡╤é╤î ╤ä╨░╨╣╨╗ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="Thousand">
         <source>{0:G3}K</source>
-        <target state="translated">{0:G3} тыс.</target>
+        <target state="translated">{0:G3}┬á╤é╤ï╤ü.</target>
         <note>Thousands in short format notation</note>
       </trans-unit>
       <trans-unit id="ToolTip_BlockedVersion">
         <source>Following versions are unavailable due to additional constraints in the project or packages.config</source>
-        <target state="translated">Следующие версии недоступны из-за дополнительных ограничений в проекте или файле packages.config.</target>
+        <target state="translated">╨í╨╗╨╡╨┤╤â╤Ä╤ë╨╕╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨╜╨╡╨┤╨╛╤ü╤é╤â╨┐╨╜╤ï ╨╕╨╖-╨╖╨░ ╨┤╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╤à ╨╛╨│╤Ç╨░╨╜╨╕╤ç╨╡╨╜╨╕╨╣ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é╨╡ ╨╕╨╗╨╕ ╤ä╨░╨╣╨╗╨╡ packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstallButton">
         <source>Install {0} version {1}.</source>
-        <target state="translated">Установка {0} версии {1}.</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨║╨░ {0} ╨▓╨╡╤Ç╤ü╨╕╨╕ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstalledVersion">
         <source>Installed version: {0}</source>
-        <target state="translated">Установленная версия: {0}</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╜╨░╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_LatestVersion">
         <source>Latest version: {0}</source>
-        <target state="translated">Последняя версия: {0}</target>
+        <target state="translated">╨ƒ╨╛╤ü╨╗╨╡╨┤╨╜╤Å╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageInstalled">
         <source>Latest stable version is installed</source>
-        <target state="translated">Установлена последняя стабильная версия.</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨░ ╨┐╨╛╤ü╨╗╨╡╨┤╨╜╤Å╤Å ╤ü╤é╨░╨▒╨╕╨╗╤î╨╜╨░╤Å ╨▓╨╡╤Ç╤ü╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageRecommended">
         <source>IntelliCode package suggestion based on this project context</source>
-        <target state="translated">Предложение пакета IntelliCode на основе контекста этого проекта</target>
+        <target state="translated">╨ƒ╤Ç╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨░ IntelliCode ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╨║╨╛╨╜╤é╨╡╨║╤ü╤é╨░ ╤ì╤é╨╛╨│╨╛ ╨┐╤Ç╨╛╨╡╨║╤é╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_Refresh">
         <source>Refresh</source>
-        <target state="translated">Обновить</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╕╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_Settings">
         <source>Settings</source>
-        <target state="translated">Параметры</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependency">
         <source>Transitively referenced version</source>
-        <target state="translated">Версия с транзитивной ссылкой</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å ╤ü ╤é╤Ç╨░╨╜╨╖╨╕╤é╨╕╨▓╨╜╨╛╨╣ ╤ü╤ü╤ï╨╗╨║╨╛╨╣</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependencyVersion">
         <source>Transitively referenced version: {0}</source>
-        <target state="translated">Версия с транзитивной ссылкой: {0}</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å ╤ü ╤é╤Ç╨░╨╜╨╖╨╕╤é╨╕╨▓╨╜╨╛╨╣ ╤ü╤ü╤ï╨╗╨║╨╛╨╣: {0}</target>
         <note>{0} is a version number</note>
       </trans-unit>
       <trans-unit id="ToolTip_TransitivePathHelp">
         <source>To learn more about transitive paths, see</source>
-        <target state="translated">Дополнительные сведения о транзитивных путях:</target>
+        <target state="translated">╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╤é╤Ç╨░╨╜╨╖╨╕╤é╨╕╨▓╨╜╤ï╤à ╨┐╤â╤é╤Å╤à:</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UninstallButton">
         <source>Uninstall this package.</source>
-        <target state="translated">Удалить этот пакет.</target>
+        <target state="translated">╨ú╨┤╨░╨╗╨╕╤é╤î ╤ì╤é╨╛╤é ╨┐╨░╨║╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateAvailable">
         <source>Update available</source>
-        <target state="translated">Доступно обновление.</target>
+        <target state="translated">╨ö╨╛╤ü╤é╤â╨┐╨╜╨╛ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateButton">
         <source>Update {0} to version {1}.</source>
-        <target state="translated">Обновление {0} до версии {1}.</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ {0} ╨┤╨╛ ╨▓╨╡╤Ç╤ü╨╕╨╕ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Tooltip_PrefixReserved">
         <source>The ID prefix of this package has been reserved for the owner of the package by the currently selected feed</source>
-        <target state="translated">Префикс идентификатора этого пакета был зарезервирован для владельца пакета выбранным сейчас каналом</target>
+        <target state="translated">╨ƒ╤Ç╨╡╤ä╨╕╨║╤ü ╨╕╨┤╨╡╨╜╤é╨╕╤ä╨╕╨║╨░╤é╨╛╤Ç╨░ ╤ì╤é╨╛╨│╨╛ ╨┐╨░╨║╨╡╤é╨░ ╨▒╤ï╨╗ ╨╖╨░╤Ç╨╡╨╖╨╡╤Ç╨▓╨╕╤Ç╨╛╨▓╨░╨╜ ╨┤╨╗╤Å ╨▓╨╗╨░╨┤╨╡╨╗╤î╤å╨░ ╨┐╨░╨║╨╡╤é╨░ ╨▓╤ï╨▒╤Ç╨░╨╜╨╜╤ï╨╝ ╤ü╨╡╨╣╤ç╨░╤ü ╨║╨░╨╜╨░╨╗╨╛╨╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Trillion">
         <source>{0:G3}T</source>
-        <target state="translated">{0:G3} трлн</target>
+        <target state="translated">{0:G3}┬á╤é╤Ç╨╗╨╜</target>
         <note>American trillions in short format notation</note>
       </trans-unit>
       <trans-unit id="UpdateButton_VersionOverride_Tooltip">
         <source>Dependency version defined by VersionOverride, modify project file to change package version.</source>
-        <target state="translated">Версия зависимости определяется параметром VersionOverride. Измените файл проекта для изменения версии пакета.</target>
+        <target state="translated">╨Æ╨╡╤Ç╤ü╨╕╤Å ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╕ ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╤Å╨╡╤é╤ü╤Å ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨╛╨╝ VersionOverride. ╨ÿ╨╖╨╝╨╡╨╜╨╕╤é╨╡ ╤ä╨░╨╣╨╗ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨┤╨╗╤Å ╨╕╨╖╨╝╨╡╨╜╨╡╨╜╨╕╤Å ╨▓╨╡╤Ç╤ü╨╕╨╕ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpgradeLogger_BackupPathMustBeValid">
         <source>Must be a valid path.</source>
-        <target state="translated">Это должен быть допустимый путь.</target>
+        <target state="translated">╨¡╤é╨╛ ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▒╤ï╤é╤î ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨┐╤â╤é╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_InstallFailed">
         <source>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</source>
-        <target state="translated">Не удалось изменить формат управления пакетами NuGet, так как не удалось установить пакеты как PackageReference. Измененные файлы включены в резервную копию в {0}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╕╨╖╨╝╨╡╨╜╨╕╤é╤î ╤ä╨╛╤Ç╨╝╨░╤é ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║╨╡╤é╤ï ╨║╨░╨║ PackageReference. ╨ÿ╨╖╨╝╨╡╨╜╨╡╨╜╨╜╤ï╨╡ ╤ä╨░╨╣╨╗╤ï ╨▓╨║╨╗╤Ä╤ç╨╡╨╜╤ï ╨▓ ╤Ç╨╡╨╖╨╡╤Ç╨▓╨╜╤â╤Ä ╨║╨╛╨┐╨╕╤Ä ╨▓ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
         <source>Please follow simple instructions from {0} to go back to previous state.</source>
-        <target state="translated">Следуйте простым инструкциям в {0}, чтобы вернуться к предыдущему состоянию.</target>
+        <target state="translated">╨í╨╗╨╡╨┤╤â╨╣╤é╨╡ ╨┐╤Ç╨╛╤ü╤é╤ï╨╝ ╨╕╨╜╤ü╤é╤Ç╤â╨║╤å╨╕╤Å╨╝ ╨▓ {0}, ╤ç╤é╨╛╨▒╤ï ╨▓╨╡╤Ç╨╜╤â╤é╤î╤ü╤Å ╨║ ╨┐╤Ç╨╡╨┤╤ï╨┤╤â╤ë╨╡╨╝╤â ╤ü╨╛╤ü╤é╨╛╤Å╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_UninstallFailed">
         <source>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</source>
-        <target state="translated">Обновлению NuGet не удалось удалить пакеты из packages.config, поэтому выполнен откат к предыдущему состоянию.</target>
+        <target state="translated">╨₧╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Ä NuGet ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨┐╨░╨║╨╡╤é╤ï ╨╕╨╖ packages.config, ╨┐╨╛╤ì╤é╨╛╨╝╤â ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜ ╨╛╤é╨║╨░╤é ╨║ ╨┐╤Ç╨╡╨┤╤ï╨┤╤â╤ë╨╡╨╝╤â ╤ü╨╛╤ü╤é╨╛╤Å╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_BackupFailed">
         <source>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</source>
-        <target state="translated">Проект невозможно обновить, так как при архивации файла проекта и packages.config возникла проблема.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é ╨╜╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î, ╤é╨░╨║ ╨║╨░╨║ ╨┐╤Ç╨╕ ╨░╤Ç╤à╨╕╨▓╨░╤å╨╕╨╕ ╤ä╨░╨╣╨╗╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ╨╕ packages.config ╨▓╨╛╨╖╨╜╨╕╨║╨╗╨░ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_PackageNotFound">
         <source>Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated.</source>
-        <target state="translated">Не удалось определить совместимость пакета, так как не удалось найти файл {0}.nupkg на диске. Невозможно перенести проект.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╛╨┐╤Ç╨╡╨┤╨╡╨╗╨╕╤é╤î ╤ü╨╛╨▓╨╝╨╡╤ü╤é╨╕╨╝╨╛╤ü╤é╤î ╨┐╨░╨║╨╡╤é╨░, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╤ä╨░╨╣╨╗ {0}.nupkg ╨╜╨░ ╨┤╨╕╤ü╨║╨╡. ╨¥╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨┐╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ ╨┐╤Ç╨╛╨╡╨║╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Button_Close">
         <source>Close</source>
-        <target state="translated">Закрыть</target>
+        <target state="translated">╨ù╨░╨║╤Ç╤ï╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalResourcesTitle">
         <source>NuGet Package Manager</source>
-        <target state="translated">Диспетчер пакетов NuGet</target>
+        <target state="translated">╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="translated">После запуска это действие нельзя отменить.</target>
+        <target state="translated">╨ƒ╨╛╤ü╨╗╨╡ ╨╖╨░╨┐╤â╤ü╨║╨░ ╤ì╤é╨╛ ╨┤╨╡╨╣╤ü╤é╨▓╨╕╨╡ ╨╜╨╡╨╗╤î╨╖╤Å ╨╛╤é╨╝╨╡╨╜╨╕╤é╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="translated">Очистить все локальные ресурсы NuGet?</target>
+        <target state="translated">╨₧╤ç╨╕╤ü╤é╨╕╤é╤î ╨▓╤ü╨╡ ╨╗╨╛╨║╨░╨╗╤î╨╜╤ï╨╡ ╤Ç╨╡╤ü╤â╤Ç╤ü╤ï NuGet?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">
         <source>Blocked by package.config</source>
-        <target state="translated">Заблокировано package.config</target>
+        <target state="translated">╨ù╨░╨▒╨╗╨╛╨║╨╕╤Ç╨╛╨▓╨░╨╜╨╛ package.config</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked_Generic">
         <source>Blocked by project</source>
-        <target state="translated">Заблокировано проектом</target>
+        <target state="translated">╨ù╨░╨▒╨╗╨╛╨║╨╕╤Ç╨╛╨▓╨░╨╜╨╛ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Installed">
         <source>Installed</source>
-        <target state="translated">Установлено</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╛</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestPrerelease">
         <source>Latest prerelease</source>
-        <target state="translated">Последний предварительный выпуск</target>
+        <target state="translated">╨ƒ╨╛╤ü╨╗╨╡╨┤╨╜╨╕╨╣ ╨┐╤Ç╨╡╨┤╨▓╨░╤Ç╨╕╤é╨╡╨╗╤î╨╜╤ï╨╣ ╨▓╤ï╨┐╤â╤ü╨║</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestStable">
         <source>Latest stable</source>
-        <target state="translated">Последняя стабильная</target>
+        <target state="translated">╨ƒ╨╛╤ü╨╗╨╡╨┤╨╜╤Å╤Å ╤ü╤é╨░╨▒╨╕╨╗╤î╨╜╨░╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Vulnerabilities_Loading">
         <source>Loading vulnerable packages...</source>
-        <target state="translated">Загрузка уязвимых пакетов...</target>
+        <target state="translated">╨ù╨░╨│╤Ç╤â╨╖╨║╨░ ╤â╤Å╨╖╨▓╨╕╨╝╤ï╤à ╨┐╨░╨║╨╡╤é╨╛╨▓...</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Critical">
         <source>critical</source>
-        <target state="translated">критический уровень</target>
+        <target state="translated">╨║╤Ç╨╕╤é╨╕╤ç╨╡╤ü╨║╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_High">
         <source>high</source>
-        <target state="translated">высокий уровень</target>
+        <target state="translated">╨▓╤ï╤ü╨╛╨║╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Low">
         <source>low</source>
-        <target state="translated">низкий уровень</target>
+        <target state="translated">╨╜╨╕╨╖╨║╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Moderate">
         <source>moderate</source>
-        <target state="translated">средний уровень</target>
+        <target state="translated">╤ü╤Ç╨╡╨┤╨╜╨╕╨╣ ╤â╤Ç╨╛╨▓╨╡╨╜╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Warn_Adding_HttpSource">
         <source>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</source>
-        <target state="translated">Вы пытаетесь добавить небезопасный источник HTTP. Продолжить добавление этого небезопасного источника HTTP?</target>
+        <target state="translated">╨Æ╤ï ╨┐╤ï╤é╨░╨╡╤é╨╡╤ü╤î ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╨╜╨╡╨▒╨╡╨╖╨╛╨┐╨░╤ü╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ HTTP. ╨ƒ╤Ç╨╛╨┤╨╛╨╗╨╢╨╕╤é╤î ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╤ì╤é╨╛╨│╨╛ ╨╜╨╡╨▒╨╡╨╖╨╛╨┐╨░╤ü╨╜╨╛╨│╨╛ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ HTTP?</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_HTTPSource">
@@ -1383,42 +1383,42 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="Warning_ProjectJson">
         <source>These options are not applicable to projects managing their dependencies through project.json or PackageReference</source>
-        <target state="translated">Эти параметры неприменимы к проектам, управление зависимостями в которых ведется через project.json или PackageReference.</target>
+        <target state="translated">╨¡╤é╨╕ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╨╜╨╡╨┐╤Ç╨╕╨╝╨╡╨╜╨╕╨╝╤ï ╨║ ╨┐╤Ç╨╛╨╡╨║╤é╨░╨╝, ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╤Å╨╝╨╕ ╨▓ ╨║╨╛╤é╨╛╤Ç╤ï╤à ╨▓╨╡╨┤╨╡╤é╤ü╤Å ╤ç╨╡╤Ç╨╡╨╖ project.json ╨╕╨╗╨╕ PackageReference.</target>
         <note>To be displayed for the VS UI opened through a solution. bug #2665</note>
       </trans-unit>
       <trans-unit id="WindowTitle_DeprecatedFramework">
         <source>Deprecated Framework</source>
-        <target state="translated">Устаревшая платформа</target>
+        <target state="translated">╨ú╤ü╤é╨░╤Ç╨╡╨▓╤ê╨░╤Å ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_FileConflict">
         <source>File Conflict</source>
-        <target state="translated">Конфликт файлов</target>
+        <target state="translated">╨Ü╨╛╨╜╤ä╨╗╨╕╨║╤é ╤ä╨░╨╣╨╗╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseAcceptance">
         <source>License Acceptance</source>
-        <target state="translated">Принятие условий лицензионного соглашения</target>
+        <target state="translated">╨ƒ╤Ç╨╕╨╜╤Å╤é╨╕╨╡ ╤â╤ü╨╗╨╛╨▓╨╕╨╣ ╨╗╨╕╤å╨╡╨╜╨╖╨╕╨╛╨╜╨╜╨╛╨│╨╛ ╤ü╨╛╨│╨╗╨░╤ê╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseFileWindow">
         <source>{0} License</source>
-        <target state="translated">Лицензия {0}</target>
+        <target state="translated">╨¢╨╕╤å╨╡╨╜╨╖╨╕╤Å {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_NuGetMigrator">
         <source>Migrate NuGet format to PackageReference - {0}</source>
-        <target state="translated">Изменить формат управления пакетами NuGet на PackageReference — {0}</target>
+        <target state="translated">╨ÿ╨╖╨╝╨╡╨╜╨╕╤é╤î ╤ä╨╛╤Ç╨╝╨░╤é ╤â╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet ╨╜╨░ PackageReference┬áΓÇö {0}</target>
         <note>{0} is the project name</note>
       </trans-unit>
       <trans-unit id="WindowTitle_PackageFormatSelector">
         <source>Choose NuGet Package Manager Format</source>
-        <target state="translated">Выбор формата диспетчера пакетов NuGet</target>
+        <target state="translated">╨Æ╤ï╨▒╨╛╤Ç ╤ä╨╛╤Ç╨╝╨░╤é╨░ ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_PreviewChanges">
         <source>Preview Changes</source>
-        <target state="translated">Просмотреть изменения</target>
+        <target state="translated">╨ƒ╤Ç╨╛╤ü╨╝╨╛╤é╤Ç╨╡╤é╤î ╨╕╨╖╨╝╨╡╨╜╨╡╨╜╨╕╤Å</target>
         <note />
       </trans-unit>
     </body>

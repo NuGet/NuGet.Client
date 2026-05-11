@@ -1,55 +1,55 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../NuGetResources.resx">
     <body>
       <trans-unit id="AddCommand_ExistingPackageInvalid">
         <source>Package '{0}' already exists at feed '{1}' and is invalid.</source>
-        <target state="translated">Balíček {0} už v kanálu {1} existuje a je neplatný.</target>
+        <target state="translated">Bal├¡─ìek {0} u┼╛ v kan├ílu {1} existuje a je neplatn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddCommand_PackageAlreadyExists">
         <source>Package '{0}' already exists at feed '{1}'.</source>
-        <target state="translated">Balíček {0} už v kanálu {1} existuje.</target>
+        <target state="translated">Bal├¡─ìek {0} u┼╛ v kan├ílu {1} existuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddCommand_SourceNotProvided">
         <source>'-Source' switch is not provided. nupkg gets added to the 'Source' and is mandatory.</source>
-        <target state="translated">Přepínač -Source není zadaný. nupkg se přidá do zdroje a je povinný.</target>
+        <target state="translated">P┼Öep├¡na─ì -Source nen├¡ zadan├╜. nupkg se p┼Öid├í do zdroje a je povinn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddFileToPackage">
         <source>Add file '{0}' to package as '{1}'</source>
-        <target state="translated">Přidat soubor {0} do balíčku jako: {1}</target>
+        <target state="translated">P┼Öidat soubor {0} do bal├¡─ìku jako: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="AmbiguousCommand">
         <source>Ambiguous command '{0}'. Possible values: {1}.</source>
-        <target state="translated">Nejednoznačný příkaz „{0}“. Možné hodnoty: {1}.</target>
+        <target state="translated">Nejednozna─ìn├╜ p┼Ö├¡kaz ΓÇ₧{0}ΓÇ£. Mo┼╛n├⌐ hodnoty: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AmbiguousOption">
         <source>Ambiguous option '{0}'. Possible values: {1}.</source>
-        <target state="translated">Nejednoznačná možnost „{0}“. Možné hodnoty: {1}</target>
+        <target state="translated">Nejednozna─ìn├í mo┼╛nost ΓÇ₧{0}ΓÇ£. Mo┼╛n├⌐ hodnoty: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">Argument nemůže být null ani prázdný.</target>
+        <target state="translated">Argument nem┼»┼╛e b├╜t null ani pr├ízdn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildingProjectTargetingFramework">
         <source>Building project '{0}' for target framework '{1}'.</source>
-        <target state="translated">Sestavuje se projekt {0} pro cílové rozhraní {1}.</target>
+        <target state="translated">Sestavuje se projekt {0} pro c├¡lov├⌐ rozhran├¡ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandLine_Warning">
         <source>WARNING: {0}</source>
-        <target state="translated">Varování: {0}</target>
+        <target state="translated">Varov├ín├¡: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigCommandKeyNotFound">
         <source>Key '{0}' not found.</source>
-        <target state="translated">Klíč „{0}“ nebyl nalezen.</target>
+        <target state="translated">Kl├¡─ì ΓÇ₧{0}ΓÇ£ nebyl nalezen.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleConfirmMessage">
@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="ConsolePasswordProvider_DisplayFile">
         <source>Please provide password for: {0}</source>
-        <target state="translated">Zadejte prosím heslo pro: {0}</target>
+        <target state="translated">Zadejte pros├¡m heslo pro: {0}</target>
         <note>0 - file that requires password</note>
       </trans-unit>
       <trans-unit id="ConsolePasswordProvider_PromptForPassword">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="Credentials_ForbiddenCredentials">
         <source>The remote server indicated that the previous request was forbidden. Please provide credentials for: {0}</source>
-        <target state="translated">Vzdálený server uvedl, že předchozí požadavek byl zakázán. Zadejte prosím přihlašovací údaje pro: {0}</target>
+        <target state="translated">Vzd├ílen├╜ server uvedl, ┼╛e p┼Öedchoz├¡ po┼╛adavek byl zak├íz├ín. Zadejte pros├¡m p┼Öihla┼íovac├¡ ├║daje pro: {0}</target>
         <note>{0} will be replaced with the URL that needs credentials.</note>
       </trans-unit>
       <trans-unit id="Credentials_Password">
@@ -84,27 +84,27 @@
       </trans-unit>
       <trans-unit id="Credentials_ProxyCredentials">
         <source>Please provide proxy credentials:</source>
-        <target state="translated">Zadejte prosím přihlašovací údaje proxy serveru:</target>
+        <target state="translated">Zadejte pros├¡m p┼Öihla┼íovac├¡ ├║daje proxy serveru:</target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_RequestCredentials">
         <source>Please provide credentials for: {0}</source>
-        <target state="translated">Zadejte prosím přihlašovací údaje pro: {0}</target>
+        <target state="translated">Zadejte pros├¡m p┼Öihla┼íovac├¡ ├║daje pro: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Credentials_UserName">
         <source>UserName: </source>
-        <target state="translated">Uživatelské jméno: </target>
+        <target state="translated">U┼╛ivatelsk├⌐ jm├⌐no: </target>
         <note />
       </trans-unit>
       <trans-unit id="DefaultCommandDescription">
         <source>No description was provided for this command.</source>
-        <target state="translated">Pro tento příkaz nebyl zadán žádný popis.</target>
+        <target state="translated">Pro tento p┼Ö├¡kaz nebyl zad├ín ┼╛├ídn├╜ popis.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefaultSymbolServer">
         <source>the symbol server</source>
-        <target state="translated">server symbolů</target>
+        <target state="translated">server symbol┼»</target>
         <note />
       </trans-unit>
       <trans-unit id="Error">
@@ -114,63 +114,63 @@
       </trans-unit>
       <trans-unit id="Error_ArgumentNotExpected">
         <source>The argument '{0}' is not expected.</source>
-        <target state="translated">Argument „{0}“ není očekáván.</target>
+        <target state="translated">Argument ΓÇ₧{0}ΓÇ£ nen├¡ o─ìek├ív├ín.</target>
         <note>0 - argument name</note>
       </trans-unit>
       <trans-unit id="Error_AttemptingToPackSDKproject">
         <source>The `pack` command for SDK-style projects is not supported, use `dotnet pack` or `msbuild -t:pack` to pack this project instead. You can override this behavior by setting the '{0}' environment variable to 'true'.</source>
-        <target state="translated">Příkaz pack pro projekty ve stylu sady SDK se nepodporuje. K zabalení tohoto projektu použijte příkaz dotnet pack nebo msbuild -t:pack. Toto chování můžete přepsat nastavením proměnné prostředí {0} na hodnotu true.</target>
+        <target state="translated">P┼Ö├¡kaz pack pro projekty ve stylu sady SDK se nepodporuje. K zabalen├¡ tohoto projektu pou┼╛ijte p┼Ö├¡kaz dotnet pack nebo msbuild -t:pack. Toto chov├ín├¡ m┼»┼╛ete p┼Öepsat nastaven├¡m prom─¢nn├⌐ prost┼Öed├¡ {0} na hodnotu true.</target>
         <note>0 - environment variable name. 
 Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_CannotFindMsbuild">
         <source>Cannot find the specified version of msbuild: '{0}'</source>
-        <target state="translated">Nelze najít zadanou verzi nástroje msbuild:{0}</target>
+        <target state="translated">Nelze naj├¡t zadanou verzi n├ístroje msbuild:{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotFindNonArchitectureSpecificMsbuild">
         <source>The resolved MSBuild directory is `{0}` which is an architecture-specific directory. Could not find MSBuild in its parent directory (non-architecture specific).</source>
-        <target state="translated">Vyřešený adresář MSBuild je {0}, což je adresář specifický pro architekturu. Nepodařilo se najít nástroj MSBuild v jeho nadřazeném adresáři (nespecifickém pro architekturu).</target>
+        <target state="translated">Vy┼Öe┼íen├╜ adres├í┼Ö MSBuild je {0}, co┼╛ je adres├í┼Ö specifick├╜ pro architekturu. Nepoda┼Öilo se naj├¡t n├ístroj MSBuild v jeho nad┼Öazen├⌐m adres├í┼Öi (nespecifick├⌐m pro architekturu).</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotGetGetAllProjectFileNamesMethod">
         <source>Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser.</source>
-        <target state="translated">Nelze získat metodu GetAllProjectFileNamesMethod z typu Mono.XBuild.CommandLine.SolutionParser.</target>
+        <target state="translated">Nelze z├¡skat metodu GetAllProjectFileNamesMethod z typu Mono.XBuild.CommandLine.SolutionParser.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotGetXBuildSolutionParser">
         <source>Cannot get type Mono.XBuild.CommandLine.SolutionParser.</source>
-        <target state="translated">Nelze získat typ Mono.XBuild.CommandLine.SolutionParser.</target>
+        <target state="translated">Nelze z├¡skat typ Mono.XBuild.CommandLine.SolutionParser.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotKillMsBuild">
         <source>MsBuild timeout out while trying to get project to project references, and NuGet.exe failed to kill the process.</source>
-        <target state="translated">Při pokusu o získání odkazů projektu na projekt vypršel časový limit nástroje MsBuild a nástroji NuGet.exe se nepodařilo ukončit proces.</target>
+        <target state="translated">P┼Öi pokusu o z├¡sk├ín├¡ odkaz┼» projektu na projekt vypr┼íel ─ìasov├╜ limit n├ístroje MsBuild a n├ístroji NuGet.exe se nepoda┼Öilo ukon─ìit proces.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLoadTypeProjectInSolution">
         <source>Cannot load type Microsoft.Build.Construction.ProjectInSolution from Microsoft.Build.dll</source>
-        <target state="translated">Nelze načíst typ Microsoft.Build.Construction.ProjectInSolution z knihovny Microsoft.Build.dll.</target>
+        <target state="translated">Nelze na─ì├¡st typ Microsoft.Build.Construction.ProjectInSolution z knihovny Microsoft.Build.dll.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLoadTypeSolutionParser">
         <source>Cannot load type Microsoft.Build.Construction.SolutionParser from Microsoft.Build.dll</source>
-        <target state="translated">Nelze načíst typ Microsoft.Build.Construction.SolutionParser z knihovny Microsoft.Build.dll.</target>
+        <target state="translated">Nelze na─ì├¡st typ Microsoft.Build.Construction.SolutionParser z knihovny Microsoft.Build.dll.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotLocateSolutionFile">
         <source>Cannot locate a solution file.</source>
-        <target state="translated">Nelze najít soubor řešení.</target>
+        <target state="translated">Nelze naj├¡t soubor ┼Öe┼íen├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotPromptForInput">
         <source>Cannot prompt for input in non-interactive mode.</source>
-        <target state="translated">Nelze zobrazit výzvu k zadání vstupu v neinteraktivním režimu.</target>
+        <target state="translated">Nelze zobrazit v├╜zvu k zad├ín├¡ vstupu v neinteraktivn├¡m re┼╛imu.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FailedToCreateRandomFileForP2P">
         <source>Failed to create a temporary file while trying to get project to project references.</source>
-        <target state="translated">Při pokusu o získání odkazů projektu na projekt se nepovedlo vytvořit dočasný soubor.</target>
+        <target state="translated">P┼Öi pokusu o z├¡sk├ín├¡ odkaz┼» projektu na projekt se nepovedlo vytvo┼Öit do─ìasn├╜ soubor.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
@@ -185,156 +185,156 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_InvalidCharactersInPathSegment">
         <source>Invalid characters in one of the following path segments: '{0}'</source>
-        <target state="translated">Neplatné znaky v jednom z následujících segmentů cesty: '{0}'</target>
+        <target state="translated">Neplatn├⌐ znaky v jednom z n├ísleduj├¡c├¡ch segment┼» cesty: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCultureInfo">
         <source>Invalid culture identifier in {0} environment variable. Value read is '{1}'</source>
-        <target state="translated">Neplatný identifikátor jazykové verze v proměnné prostředí {0}. Načtená hodnota je {1}.</target>
+        <target state="translated">Neplatn├╜ identifik├ítor jazykov├⌐ verze v prom─¢nn├⌐ prost┼Öed├¡ {0}. Na─ìten├í hodnota je {1}.</target>
         <note>0 - Environment variable name, 1 - value set in environment variable</note>
       </trans-unit>
       <trans-unit id="Error_InvalidMsbuildVersion">
         <source>Invalid MSBuild version specified: '{0}'</source>
-        <target state="translated">Byla zadána neplatná verze nástroje MSBuild:{0}</target>
+        <target state="translated">Byla zad├ína neplatn├í verze n├ístroje MSBuild:{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidSolutionDirectory">
         <source>Invalid solution directory: '{0}'</source>
-        <target state="translated">Neplatný adresář řešení:{0}</target>
+        <target state="translated">Neplatn├╜ adres├í┼Ö ┼Öe┼íen├¡:{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MSBuildNotInstalled">
         <source>MSBuild is not installed.</source>
-        <target state="translated">Nástroj MSBuild není nainstalován.</target>
+        <target state="translated">N├ístroj MSBuild nen├¡ nainstalov├ín.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MissingSourceParameter">
         <source>Source parameter was not specified.</source>
-        <target state="translated">Není zadaný zdrojový parametr.</target>
+        <target state="translated">Nen├¡ zadan├╜ zdrojov├╜ parametr.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">
         <source>MsBuild timeout out while trying to get project to project references.</source>
-        <target state="translated">Při pokusu o získání odkazů projektu na projekt vypršel časový limit nástroje MsBuild.</target>
+        <target state="translated">P┼Öi pokusu o z├¡sk├ín├¡ odkaz┼» projektu na projekt vypr┼íel ─ìasov├╜ limit n├ístroje MsBuild.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MultipleSolutions">
         <source>This folder contains more than one solution file.</source>
-        <target state="translated">Tato složka obsahuje více než jeden soubor řešení.</target>
+        <target state="translated">Tato slo┼╛ka obsahuje v├¡ce ne┼╛ jeden soubor ┼Öe┼íen├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MultipleTargetFrameworks">
         <source>project.json cannot contain multiple Target Frameworks.</source>
-        <target state="translated">Project.json nemůže obsahovat více cílových architektur.</target>
+        <target state="translated">Project.json nem┼»┼╛e obsahovat v├¡ce c├¡lov├╜ch architektur.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_NuGetExeNeedsToBeUnblockedAfterDownloading">
         <source>NuGet.exe file on path {0} needs to be unblocked after downloading.</source>
-        <target state="translated">Soubor NuGet.exe v cestě {0} musí být po stažení odblokovaný.</target>
+        <target state="translated">Soubor NuGet.exe v cest─¢ {0} mus├¡ b├╜t po sta┼╛en├¡ odblokovan├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackagesConfigParseError">
         <source>Error parsing packages.config file at {0}: {1}</source>
-        <target state="translated">Při parsování souboru packages.config na cestě {0} došlo k chybě: {1}</target>
+        <target state="translated">P┼Öi parsov├ín├¡ souboru packages.config na cest─¢ {0} do┼ílo k chyb─¢: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProcessingNuspecFile">
         <source>Error occurred when processing file '{0}': {1}</source>
-        <target state="translated">Při zpracovávání souboru {0} došlo k chybě: {1}</target>
+        <target state="translated">P┼Öi zpracov├ív├ín├¡ souboru {0} do┼ílo k chyb─¢: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectJsonNotAllowed">
         <source>Invalid input '{0}'. Provide the path of an msbuild solution file instead. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</source>
-        <target state="translated">Neplatný vstup „{0}“. Místo toho zadejte cestu k souboru řešení msbuild. Odebrala se podpora souborů XProj a samostatných souborů project.json. Pokud chcete dál pracovat se staršími projekty, použijte NuGet 3.5.x z https://nuget.org/downloads</target>
+        <target state="translated">Neplatn├╜ vstup ΓÇ₧{0}ΓÇ£. M├¡sto toho zadejte cestu k souboru ┼Öe┼íen├¡ msbuild. Odebrala se podpora soubor┼» XProj a samostatn├╜ch soubor┼» project.json. Pokud chcete d├íl pracovat se star┼í├¡mi projekty, pou┼╛ijte NuGet 3.5.x z https://nuget.org/downloads</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectJson_Deprecated_And_Removed">
         <source>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
 Please consider migrating '{0}' to `PackageReference` and using the pack targets.
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</source>
-        <target state="translated">Balík project.json je v aktuální verzi NuGet zakázaný a v budoucí verzi se trvale odebere.
-Zvažte prosím migraci „{0}“ na PackageReference a použití cílů balíku.
-Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se tato funkce mohla dočasně znovu povolit.</target>
+        <target state="translated">Bal├¡k project.json je v aktu├íln├¡ verzi NuGet zak├ízan├╜ a v budouc├¡ verzi se trvale odebere.
+Zva┼╛te pros├¡m migraci ΓÇ₧{0}ΓÇ£ na PackageReference a pou┼╛it├¡ c├¡l┼» bal├¡ku.
+M┼»┼╛ete nastavit prom─¢nnou prost┼Öed├¡ ΓÇ₧{1}ΓÇ£ na hodnotu ΓÇ₧trueΓÇ£, aby se tato funkce mohla do─ìasn─¢ znovu povolit.</target>
         <note>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</note>
       </trans-unit>
       <trans-unit id="Error_ResponseFileDoesNotExist">
         <source>Response file '{0}' does not exist</source>
-        <target state="translated">Soubor odpovědi {0} neexistuje.</target>
+        <target state="translated">Soubor odpov─¢di {0} neexistuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileInvalid">
         <source>Invalid response file, '@' does not exist</source>
-        <target state="translated">Neplatný soubor odpovědi, „@“ neexistuje</target>
+        <target state="translated">Neplatn├╜ soubor odpov─¢di, ΓÇ₧@ΓÇ£ neexistuje</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileMaxRecursionDepth">
         <source>No more than {0} nested response files are allowed</source>
-        <target state="translated">Není povoleno více než {0} vnořených souborů odpovědí</target>
+        <target state="translated">Nen├¡ povoleno v├¡ce ne┼╛ {0} vno┼Öen├╜ch soubor┼» odpov─¢d├¡</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileNullOrEmpty">
         <source>Response file '{0}' cannot be empty</source>
-        <target state="translated">Soubor odpovědi „{0}“ nemůže být prázdný.</target>
+        <target state="translated">Soubor odpov─¢di ΓÇ₧{0}ΓÇ£ nem┼»┼╛e b├╜t pr├ízdn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ResponseFileTooLarge">
         <source>Response file '{0}' cannot be larger than {1}mb</source>
-        <target state="translated">Soubor odpovědi „{0}“ nemůže být větší než {1} MB.</target>
+        <target state="translated">Soubor odpov─¢di ΓÇ₧{0}ΓÇ£ nem┼»┼╛e b├╜t v─¢t┼í├¡ ne┼╛ {1} MB.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SettingsIsNull">
         <source>Property Settings is null.</source>
-        <target state="translated">Nastavení vlastnosti má hodnotu null.</target>
+        <target state="translated">Nastaven├¡ vlastnosti m├í hodnotu null.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SolutionFileParseError">
         <source>Error parsing solution file at {0}: {1}</source>
-        <target state="translated">Při analýze souboru řešení na došlo k chybě u {0}: {1}</target>
+        <target state="translated">P┼Öi anal├╜ze souboru ┼Öe┼íen├¡ na do┼ílo k chyb─¢ u {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceProviderIsNull">
         <source>Property SourceProvider is null.</source>
-        <target state="translated">Vlastnost SourceProvider má hodnotu null.</target>
+        <target state="translated">Vlastnost SourceProvider m├í hodnotu null.</target>
         <note>Don't localize 'SourceProvider'</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLocateRestoreTarget">
         <source>The folder '{0}' does not contain an msbuild solution or packages.config file to restore.</source>
-        <target state="translated">Složka {0} neobsahuje soubor msbuild solution nebo packages.config, který se má obnovit.</target>
+        <target state="translated">Slo┼╛ka {0} neobsahuje soubor msbuild solution nebo packages.config, kter├╜ se m├í obnovit.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnableToLocateRestoreTarget_Because">
         <source>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}'.</source>
-        <target state="translated">Ve složce „{0}“ se nepovedlo najít soubor msbuild solution, packages.config nebo project.json.</target>
+        <target state="translated">Ve slo┼╛ce ΓÇ₧{0}ΓÇ£ se nepovedlo naj├¡t soubor msbuild solution, packages.config nebo project.json.</target>
         <note>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</note>
       </trans-unit>
       <trans-unit id="Error_UnknownAction">
         <source>The action '{0}' is not recognized.</source>
-        <target state="translated">Akce {0} není rozpoznána.</target>
+        <target state="translated">Akce {0} nen├¡ rozpozn├ína.</target>
         <note>0 - action</note>
       </trans-unit>
       <trans-unit id="Error_UnknownDependencyVersion">
         <source>Invalid value given for 'DependencyVersion': "{0}".</source>
-        <target state="translated">Byla zadána neplatná hodnota pro DependencyVersion: „{0}“.</target>
+        <target state="translated">Byla zad├ína neplatn├í hodnota pro DependencyVersion: ΓÇ₧{0}ΓÇ£.</target>
         <note>Please don't localize "DependencyVersion".</note>
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsBuildForSlnx">
         <source>This version of MSBuild not support the slnx format: '{0}'. Please use a MSBuild version greater or equal to 17.13 to use this feature.</source>
-        <target state="translated">Tato verze MSBuildu nepodporuje formát slnx: „{0}“. Pokud chcete použít tuto funkci, použijte prosím verzi MSBuildu 17.13 nebo vyšší.</target>
+        <target state="translated">Tato verze MSBuildu nepodporuje form├ít slnx: ΓÇ₧{0}ΓÇ£. Pokud chcete pou┼╛├¡t tuto funkci, pou┼╛ijte pros├¡m verzi MSBuildu 17.13 nebo vy┼í┼í├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsBuildForSolutionFilter">
         <source>This version of MSBuild not support Solution filter: '{0}'. Please use a MSBuild version greater or equal to 16.7 to use this feature.</source>
-        <target state="translated">Tato verze nástroje MSBuild nepodporuje filtr řešení: '{0}'. Pokud chcete použít tuto funkci, použijte prosím verzi MSBuildu větší nebo rovnu 16.7.</target>
+        <target state="translated">Tato verze n├ístroje MSBuild nepodporuje filtr ┼Öe┼íen├¡: '{0}'. Pokud chcete pou┼╛├¡t tuto funkci, pou┼╛ijte pros├¡m verzi MSBuildu v─¢t┼í├¡ nebo rovnu 16.7.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnsupportedMsbuild">
         <source>This version of msbuild is not supported: '{0}'</source>
-        <target state="translated">Tato verze nástroje msbuild není podporována: „{0}“</target>
+        <target state="translated">Tato verze n├ístroje msbuild nen├¡ podporov├ína: ΓÇ₧{0}ΓÇ£</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UpdateSelf_Source">
         <source>The `update -self` command only accepts one source as an argument. If the source option is not specified, the default NuGet source will be used.</source>
-        <target state="translated">Příkaz update -self přijímá jako argument pouze jeden zdroj. Pokud není zadaná možnost zdroje, použije se výchozí zdroj NuGet.</target>
+        <target state="translated">P┼Ö├¡kaz update -self p┼Öij├¡m├í jako argument pouze jeden zdroj. Pokud nen├¡ zadan├í mo┼╛nost zdroje, pou┼╛ije se v├╜choz├¡ zdroj NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToBuildProject">
@@ -344,22 +344,22 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="FailedToLoadExtension">
         <source>Failed to load {0}, if this extension was downloaded from the internet please make sure it got unblocked (right click, properties, unblock).</source>
-        <target state="translated">Nepovedlo se načíst {0}%1. Pokud se toto rozšíření stáhlo z internetu, ujistěte se prosím, že se odblokovalo (klikněte pravým tlačítkem, vlastnosti, odblokujte).</target>
+        <target state="translated">Nepovedlo se na─ì├¡st {0}%1. Pokud se toto roz┼í├¡┼Öen├¡ st├íhlo z internetu, ujist─¢te se pros├¡m, ┼╛e se odblokovalo (klikn─¢te prav├╜m tla─ì├¡tkem, vlastnosti, odblokujte).</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadExtensionDuringMefComposition">
         <source>Failed to load {0}{1}</source>
-        <target state="translated">Nepovedlo se načíst {0}{1}</target>
+        <target state="translated">Nepovedlo se na─ì├¡st {0}{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictChoiceText">
         <source>[Y] Yes  [A] Yes to All  [N] No  [L] No to All ?</source>
-        <target state="translated">[Y] Ano [A] Ano všem [N] Ne [L] Ne všem ?</target>
+        <target state="translated">[Y] Ano [A] Ano v┼íem [N] Ne [L] Ne v┼íem ?</target>
         <note>Please do not localize the letters inside the [] brackets.</note>
       </trans-unit>
       <trans-unit id="FileNotAddedToPackage">
         <source>File '{0}' is not added because the package already contains file '{1}'</source>
-        <target state="translated">Soubor {0} se nepřidal, protože balíček už obsahuje soubor {1}.</target>
+        <target state="translated">Soubor {0} se nep┼Öidal, proto┼╛e bal├¡─ìek u┼╛ obsahuje soubor {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FoundProject">
@@ -374,87 +374,87 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="HelpCommandForMoreInfo">
         <source>For more information, visit {0}</source>
-        <target state="translated">Další informace najdete na webu {0}</target>
+        <target state="translated">Dal┼í├¡ informace najdete na webu {0}</target>
         <note>{0} will be replaced with a url.</note>
       </trans-unit>
       <trans-unit id="InitCommand_FeedContainsNoPackages">
         <source>Feed '{0}' contains no packages.</source>
-        <target state="translated">Informační kanál „{0}“ neobsahuje žádné balíčky.</target>
+        <target state="translated">Informa─ìn├¡ kan├íl ΓÇ₧{0}ΓÇ£ neobsahuje ┼╛├ídn├⌐ bal├¡─ìky.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitCommand_FeedIsNotFound">
         <source>Provided feed folder '{0}' is not found.</source>
-        <target state="translated">Zadaná složka informačního kanálu „{0}“ nebyla nalezena.</target>
+        <target state="translated">Zadan├í slo┼╛ka informa─ìn├¡ho kan├ílu ΓÇ₧{0}ΓÇ£ nebyla nalezena.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandHigherVersionAlreadyExists">
         <source>Skipping installation of package "{0}" because higher version "{1}" is already installed.</source>
-        <target state="translated">Instalace balíčku {0} se přeskakuje, protože už je nainstalovaná vyšší verze {1}.</target>
+        <target state="translated">Instalace bal├¡─ìku {0} se p┼Öeskakuje, proto┼╛e u┼╛ je nainstalovan├í vy┼í┼í├¡ verze {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandInvalidPackageReference">
         <source>'{0}' contains invalid package references. </source>
-        <target state="translated">„{0}“ obsahuje neplatné odkazy na balíček. </target>
+        <target state="translated">ΓÇ₧{0}ΓÇ£ obsahuje neplatn├⌐ odkazy na bal├¡─ìek. </target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandNothingToInstall">
         <source>All packages listed in {0} are already installed.</source>
-        <target state="translated">Všechny balíčky uvedené v {0} jsou už nainstalované.</target>
+        <target state="translated">V┼íechny bal├¡─ìky uveden├⌐ v {0} jsou u┼╛ nainstalovan├⌐.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageAlreadyExists">
         <source>Package "{0}" is already installed.</source>
-        <target state="translated">Balíček „{0}“ je již nainstalován.</target>
+        <target state="translated">Bal├¡─ìek ΓÇ₧{0}ΓÇ£ je ji┼╛ nainstalov├ín.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageReferenceInvalidVersion">
         <source>Version string specified for package reference '{0}' is invalid.</source>
-        <target state="translated">Řetězec verze zadaný pro odkaz na balíček „{0}“ je neplatný.</target>
+        <target state="translated">┼ÿet─¢zec verze zadan├╜ pro odkaz na bal├¡─ìek ΓÇ₧{0}ΓÇ£ je neplatn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandPackageRestoreConsentNotFound">
         <source>Package restore is disabled. To enable it, open the Visual Studio Options dialog, click on Package Manager node and check '{0}'. You can also enable package restore by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.</source>
-        <target state="translated">Obnovení balíčku je zakázané. Pokud ho chcete povolit, otevřete dialogové okno možnosti Visual Studio, klikněte na uzel Správce balíčků a zaškrtněte „{0}“. Obnovení balíčku můžete povolit také nastavením proměnné prostředí EnableNuGetPackageRestore na hodnotu true.</target>
+        <target state="translated">Obnoven├¡ bal├¡─ìku je zak├ízan├⌐. Pokud ho chcete povolit, otev┼Öete dialogov├⌐ okno mo┼╛nosti Visual Studio, klikn─¢te na uzel Spr├ívce bal├¡─ìk┼» a za┼íkrtn─¢te ΓÇ₧{0}ΓÇ£. Obnoven├¡ bal├¡─ìku m┼»┼╛ete povolit tak├⌐ nastaven├¡m prom─¢nn├⌐ prost┼Öed├¡ EnableNuGetPackageRestore na hodnotu true.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallCommandUnableToFindPackage">
         <source>Unable to find package '{0}'</source>
-        <target state="translated">Nenašel se balíček {0}</target>
+        <target state="translated">Nena┼íel se bal├¡─ìek {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallPackageMessage">
         <source>Installing package '{0}' to '{1}'.</source>
-        <target state="translated">Instalování balíčku „{0}“ do „{1}“.</target>
+        <target state="translated">Instalov├ín├¡ bal├¡─ìku ΓÇ₧{0}ΓÇ£ do ΓÇ₧{1}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidArguments">
         <source>{0}: invalid arguments.</source>
-        <target state="translated">{0}: neplatné argumenty.</target>
+        <target state="translated">{0}: neplatn├⌐ argumenty.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidAssemblyInformationalVersion">
         <source>Invalid AssemblyInformationalVersion '{0}' on assembly '{1}'; falling back to AssemblyVersion '{2}'.</source>
-        <target state="translated">Neplatná verze AssemblyInformationalVersion „{0}“ v sestavení „{1}“; návrat na AssemblyVersion „{2}“.</target>
+        <target state="translated">Neplatn├í verze AssemblyInformationalVersion ΓÇ₧{0}ΓÇ£ v sestaven├¡ ΓÇ₧{1}ΓÇ£; n├ívrat na AssemblyVersion ΓÇ₧{2}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidFile">
         <source>No packages.config, project or solution file specified. Use the -self switch to update NuGet.exe.</source>
-        <target state="translated">Nebyl zadán žádný soubor packages.config, projekt nebo řešení. Pomocí přepínače -self aktualizujte NuGet.exe.</target>
+        <target state="translated">Nebyl zad├ín ┼╛├ídn├╜ soubor packages.config, projekt nebo ┼Öe┼íen├¡. Pomoc├¡ p┼Öep├¡na─ìe -self aktualizujte NuGet.exe.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidOptionValueError">
         <source>Invalid option value: '{0} {1}'</source>
-        <target state="translated">Neplatná hodnota možnosti: „{0} {1}“</target>
+        <target state="translated">Neplatn├í hodnota mo┼╛nosti: ΓÇ₧{0} {1}ΓÇ£</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidSource">
         <source>The specified source '{0}' is invalid. Please provide a valid source.</source>
-        <target state="translated">Zadaný zdroj {0} není platný. Zadejte prosím platný zdroj.</target>
+        <target state="translated">Zadan├╜ zdroj {0} nen├¡ platn├╜. Zadejte pros├¡m platn├╜ zdroj.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommandNoPackages">
         <source>No packages found.</source>
-        <target state="translated">Nenašly se žádné balíčky.</target>
+        <target state="translated">Nena┼íly se ┼╛├ídn├⌐ bal├¡─ìky.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_LicenseUrl">
@@ -464,7 +464,7 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="ListCommand_ListNotSupported">
         <source>This version of nuget.exe does not support listing packages from package source '{0}'.</source>
-        <target state="translated">Tato verze programu nuget.exe nepodporuje výpis balíčků ze zdroje balíčků{0}.</target>
+        <target state="translated">Tato verze programu nuget.exe nepodporuje v├╜pis bal├¡─ìk┼» ze zdroje bal├¡─ìk┼»{0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="LiveFeed">
@@ -474,27 +474,27 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearFailed">
         <source>Clearing local resources failed: one or more errors occured.</source>
-        <target state="translated">Nepovedlo se vymazat místní prostředky: došlo k jedné nebo více chybám.</target>
+        <target state="translated">Nepovedlo se vymazat m├¡stn├¡ prost┼Öedky: do┼ílo k jedn├⌐ nebo v├¡ce chyb├ím.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearedSuccessful">
         <source>Local resources cleared.</source>
-        <target state="translated">Místní prostředky se vymazaly.</target>
+        <target state="translated">M├¡stn├¡ prost┼Öedky se vymazaly.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetCache">
         <source>Clearing NuGet cache: {0}</source>
-        <target state="translated">Vymazává se mezipaměť NuGet: {0}</target>
+        <target state="translated">Vymaz├ív├í se mezipam─¢┼Ñ NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetGlobalPackagesCache">
         <source>Clearing NuGet global packages cache: {0}</source>
-        <target state="translated">Vymazává se mezipaměť globálních balíčků NuGet: {0}</target>
+        <target state="translated">Vymaz├ív├í se mezipam─¢┼Ñ glob├íln├¡ch bal├¡─ìk┼» NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearingNuGetHttpCache">
         <source>Clearing NuGet HTTP cache: {0}</source>
-        <target state="translated">Vymazává se mezipaměť HTTP NuGet: {0}</target>
+        <target state="translated">Vymaz├ív├í se mezipam─¢┼Ñ HTTP NuGet: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_FailedToDeletePath">
@@ -504,52 +504,52 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="LocalsCommand_InvalidLocalResourceName">
         <source>An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all.</source>
-        <target state="translated">Byl zadán neplatný název místního prostředku. Zadejte jednu z následujících hodnot: http-cache, packages-cache, global-packages, all.</target>
+        <target state="translated">Byl zad├ín neplatn├╜ n├ízev m├¡stn├¡ho prost┼Öedku. Zadejte jednu z n├ísleduj├¡c├¡ch hodnot: http-cache, packages-cache, global-packages, all.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_LocalResourcePathNotSet">
         <source>The location of local resource '{0}' is undefined.</source>
-        <target state="translated">Umístění místního prostředku {0} není definované.</target>
+        <target state="translated">Um├¡st─¢n├¡ m├¡stn├¡ho prost┼Öedku {0} nen├¡ definovan├⌐.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_LocalsPartiallyCleared">
         <source>Local resources partially cleared.</source>
-        <target state="translated">Místní prostředky se částečně vymazaly.</target>
+        <target state="translated">M├¡stn├¡ prost┼Öedky se ─ì├íste─ìn─¢ vymazaly.</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForInstalledPackages">
         <source>Looking for installed packages in '{0}'.</source>
-        <target state="translated">Hledají se nainstalované balíčky v „{0}“.</target>
+        <target state="translated">Hledaj├¡ se nainstalovan├⌐ bal├¡─ìky v ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAutoDetection">
         <source>MSBuild auto-detection: using msbuild version '{0}' from '{1}'.</source>
-        <target state="translated">Automatické zjišťování MSBuild: používá se msbuild version „{0}“ z „{1}“.</target>
+        <target state="translated">Automatick├⌐ zji┼í┼Ñov├ín├¡ MSBuild: pou┼╛├¡v├í se msbuild version ΓÇ₧{0}ΓÇ£ z ΓÇ₧{1}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAutoDetection_Verbose">
         <source>MSBuild auto-detection: using msbuild version '{0}' from '{1}'. Use option -MSBuildVersion to force nuget to use a specific version of MSBuild.</source>
-        <target state="translated">Automatické zjišťování MSBuild: používá se msbuild version „{0}“ z „{1}“. Pomocí možnosti -MSBuildVersion vynutíte, aby nástroj nuget používal konkrétní verzi nástroje MSBuild.</target>
+        <target state="translated">Automatick├⌐ zji┼í┼Ñov├ín├¡ MSBuild: pou┼╛├¡v├í se msbuild version ΓÇ₧{0}ΓÇ£ z ΓÇ₧{1}ΓÇ£. Pomoc├¡ mo┼╛nosti -MSBuildVersion vynut├¡te, aby n├ístroj nuget pou┼╛├¡val konkr├⌐tn├¡ verzi n├ístroje MSBuild.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSbuildFromPath">
         <source>Using Msbuild from '{0}'.</source>
-        <target state="translated">Pomocí nástroje Msbuild z „{0}“.</target>
+        <target state="translated">Pomoc├¡ n├ístroje Msbuild z ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingOptionValueError">
         <source>Missing option value for: '{0}'</source>
-        <target state="translated">Chybí hodnota možnosti pro: „{0}“</target>
+        <target state="translated">Chyb├¡ hodnota mo┼╛nosti pro: ΓÇ₧{0}ΓÇ£</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDoesNotExistAtPath">
         <source>MsBuild.exe does not exist at '{0}'.</source>
-        <target state="translated">Soubor MsBuild.exe v „{0}“ neexistuje.</target>
+        <target state="translated">Soubor MsBuild.exe v ΓÇ₧{0}ΓÇ£ neexistuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsbuildLoadToolSetError">
         <source>Failed to load msbuild Toolset</source>
-        <target state="translated">Nepovedlo se načíst sadu nástrojů msbuild.</target>
+        <target state="translated">Nepovedlo se na─ì├¡st sadu n├ístroj┼» msbuild.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsbuildPathNotExist">
@@ -559,7 +559,7 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="MultipleProjectFilesFound">
         <source>Found multiple project files for '{0}'.</source>
-        <target state="translated">Pro „{0}“ bylo nalezeno více souborů projektu.</target>
+        <target state="translated">Pro ΓÇ₧{0}ΓÇ£ bylo nalezeno v├¡ce soubor┼» projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPackagesConfig">
@@ -569,32 +569,32 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="NoProjectsFound">
         <source>No projects found with packages.config.</source>
-        <target state="translated">Nebyly nalezeny žádné projekty s balíčkem.config.</target>
+        <target state="translated">Nebyly nalezeny ┼╛├ídn├⌐ projekty s bal├¡─ìkem.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="NupkgPath_InvalidNupkg">
         <source>'{0}' is not a valid nupkg file.</source>
-        <target state="translated">{0} není platný soubor nupkg.</target>
+        <target state="translated">{0} nen├¡ platn├╜ soubor nupkg.</target>
         <note />
       </trans-unit>
       <trans-unit id="NupkgPath_NotFound">
         <source>Provided Nupkg file '{0}' is not found.</source>
-        <target state="translated">Zadaný soubor Nupkg „{0}“ nebyl nalezen.</target>
+        <target state="translated">Zadan├╜ soubor Nupkg ΓÇ₧{0}ΓÇ£ nebyl nalezen.</target>
         <note />
       </trans-unit>
       <trans-unit id="OfficialPackageSourceName">
         <source>NuGet official package source</source>
-        <target state="translated">Oficiální zdroj balíčku NuGet</target>
+        <target state="translated">Ofici├íln├¡ zdroj bal├¡─ìku NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionInvalidWithoutSetter">
         <source>[option] on '{0}' is invalid without a setter.</source>
-        <target state="translated">Parametr [option] na „{0}“ je bez metody setter neplatný.</target>
+        <target state="translated">Parametr [option] na ΓÇ₧{0}ΓÇ£ je bez metody setter neplatn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_VerboseDeprecated">
         <source>Option 'Verbose' has been deprecated. Use 'Verbosity' instead.</source>
-        <target state="translated">Možnost „Verbose“ je zastaralá. Místo toho použijte „Verbosity“ (Podrobnosti).</target>
+        <target state="translated">Mo┼╛nost ΓÇ₧VerboseΓÇ£ je zastaral├í. M├¡sto toho pou┼╛ijte ΓÇ₧VerbosityΓÇ£ (Podrobnosti).</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputNuGetVersion">
@@ -604,32 +604,32 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="PackageCommandAddedFile">
         <source>Added file '{0}'.</source>
-        <target state="translated">Přidal se soubor „{0}“.</target>
+        <target state="translated">P┼Öidal se soubor ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandAttemptingToBuildPackage">
         <source>Attempting to build package from '{0}'.</source>
-        <target state="translated">Probíhá pokus o sestavení balíčku z {0}.</target>
+        <target state="translated">Prob├¡h├í pokus o sestaven├¡ bal├¡─ìku z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandAttemptingToBuildSymbolsPackage">
         <source>Attempting to build symbols package for '{0}'.</source>
-        <target state="translated">Probíhá pokus o sestavení balíčku symbolů pro: {0}.</target>
+        <target state="translated">Prob├¡h├í pokus o sestaven├¡ bal├¡─ìku symbol┼» pro: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandFileFromDependencyIsChanged">
         <source>File from dependency is changed. Adding file '{0}'.</source>
-        <target state="translated">Soubor ze závislosti se změnil. Přidává se soubor „{0}“.</target>
+        <target state="translated">Soubor ze z├ívislosti se zm─¢nil. P┼Öid├ív├í se soubor ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandFileFromDependencyIsNotChanged">
         <source>File from dependency is not changed. File '{0}' is not added.</source>
-        <target state="translated">Soubor ze závislosti není změněný. Soubor {0} se nepřidal.</target>
+        <target state="translated">Soubor ze z├ívislosti nen├¡ zm─¢n─¢n├╜. Soubor {0} se nep┼Öidal.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandInvalidMinClientVersion">
         <source>The value of MinClientVersion argument is not a valid version.</source>
-        <target state="translated">Hodnota argumentu MinClientVersion není platná verze.</target>
+        <target state="translated">Hodnota argumentu MinClientVersion nen├¡ platn├í verze.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandIssueDescription">
@@ -639,120 +639,120 @@ Můžete nastavit proměnnou prostředí „{1}“ na hodnotu „true“, aby se
       </trans-unit>
       <trans-unit id="PackageCommandIssueSolution">
         <source>Solution: {0}</source>
-        <target state="translated">Řešení: {0}</target>
+        <target state="translated">┼ÿe┼íen├¡: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandIssueTitle">
         <source>Issue: {0}</source>
-        <target state="translated">Problém: {0}</target>
+        <target state="translated">Probl├⌐m: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandNoFilesForLibPackage">
         <source>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Balíček se nepovedlo sestavit. Ujistěte se, jestli {0} obsahuje soubory sestavení. Nápovědu k sestavení balíčku symbolů najdete na stránce {1}.</target>
+        <target state="translated">Bal├¡─ìek se nepovedlo sestavit. Ujist─¢te se, jestli {0} obsahuje soubory sestaven├¡. N├ípov─¢du k sestaven├¡ bal├¡─ìku symbol┼» najdete na str├ínce {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandNoFilesForSymbolsPackage">
         <source>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</source>
-        <target state="translated">Balíček se nepovedlo sestavit. Ujistěte se, jestli {0} obsahuje zdrojové soubory a soubory symbolů. Nápovědu k sestavení balíčku symbolů najdete na stránce {1}.</target>
+        <target state="translated">Bal├¡─ìek se nepovedlo sestavit. Ujist─¢te se, jestli {0} obsahuje zdrojov├⌐ soubory a soubory symbol┼». N├ípov─¢du k sestaven├¡ bal├¡─ìku symbol┼» najdete na str├ínce {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandPackageIssueSummary">
         <source>{0} issue(s) found with package '{1}'.</source>
-        <target state="translated">Problémy ({0}) u balíčku „{1}“.</target>
+        <target state="translated">Probl├⌐my ({0}) u bal├¡─ìku ΓÇ₧{1}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandSpecifyInputFileError">
         <source>Please specify a nuspec or project file to use.</source>
-        <target state="translated">Zadejte prosím soubor nuspec nebo projektu, který se má použít.</target>
+        <target state="translated">Zadejte pros├¡m soubor nuspec nebo projektu, kter├╜ se m├í pou┼╛├¡t.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandSuccess">
         <source>Successfully created package '{0}'.</source>
-        <target state="translated">Balíček {0} se úspěšně vytvořil.</target>
+        <target state="translated">Bal├¡─ìek {0} se ├║sp─¢┼ín─¢ vytvo┼Öil.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDoesNotExist">
         <source>Unable to locate '{0} {1}'. Make sure all packages exist in the packages folder before running update.</source>
-        <target state="translated">Nelze najít „{0} {1}“. Před spuštěním aktualizace se ujistěte, že všechny balíčky existují ve složce balíčků.</target>
+        <target state="translated">Nelze naj├¡t ΓÇ₧{0} {1}ΓÇ£. P┼Öed spu┼ít─¢n├¡m aktualizace se ujist─¢te, ┼╛e v┼íechny bal├¡─ìky existuj├¡ ve slo┼╛ce bal├¡─ìk┼».</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsentCheckBoxText">
         <source>&amp;Allow NuGet to download missing packages</source>
-        <target state="translated">&amp;Umožnit správci balíčků NuGet stáhnout chybějící balíčky</target>
+        <target state="translated">&amp;Umo┼╛nit spr├ívci bal├¡─ìk┼» NuGet st├íhnout chyb─¢j├¡c├¡ bal├¡─ìky</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagingFilesFromOutputPath">
         <source>Packing files from '{0}'.</source>
-        <target state="translated">Balí se soubory z: {0}.</target>
+        <target state="translated">Bal├¡ se soubory z: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Path_Invalid">
         <source>'{0}' is not a valid path.</source>
-        <target state="translated">{0} není platná cesta.</target>
+        <target state="translated">{0} nen├¡ platn├í cesta.</target>
         <note />
       </trans-unit>
       <trans-unit id="Path_Invalid_NotFileNotUnc">
         <source>'{0}' should be a local path or a UNC share path.</source>
-        <target state="translated">{0} by měla být místní cesta nebo cesta UNC ke sdílené složce.</target>
+        <target state="translated">{0} by m─¢la b├╜t m├¡stn├¡ cesta nebo cesta UNC ke sd├¡len├⌐ slo┼╛ce.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectJsonPack_Deprecated">
         <source>`project.json` pack is deprecated. Please consider migrating '{0}' to `PackageReference` and using the pack targets.</source>
-        <target state="translated">Balík „project.json“ je zastaralý. Zvažte prosím migraci „{0}“ na „PackageReference“ a použití cílů balíku.</target>
+        <target state="translated">Bal├¡k ΓÇ₧project.jsonΓÇ£ je zastaral├╜. Zva┼╛te pros├¡m migraci ΓÇ₧{0}ΓÇ£ na ΓÇ₧PackageReferenceΓÇ£ a pou┼╛it├¡ c├¡l┼» bal├¡ku.</target>
         <note>Do not localize project.json and `PackageReference` 
 0 - project path (project.json file path)</note>
       </trans-unit>
       <trans-unit id="ProjectRestoreCommandNoPackagesConfigOrProjectJson">
         <source>Nothing to do. This project does not specify any packages for NuGet to restore.</source>
-        <target state="translated">Není co dělat. Tento projekt neurčuje žádné balíčky, které má NuGet obnovit.</target>
+        <target state="translated">Nen├¡ co d─¢lat. Tento projekt neur─ìuje ┼╛├ídn├⌐ bal├¡─ìky, kter├⌐ m├í NuGet obnovit.</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandNoSourceError">
         <source>There is no default source, please specify a source.</source>
-        <target state="translated">Neexistuje žádný výchozí zdroj, zadejte ho, prosím.</target>
+        <target state="translated">Neexistuje ┼╛├ídn├╜ v├╜choz├¡ zdroj, zadejte ho, pros├¡m.</target>
         <note />
       </trans-unit>
       <trans-unit id="PushCommandTimeoutError">
         <source>Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command.</source>
-        <target state="translated">Sdílení změn trvalo příliš dlouho. Výchozí časový limit 300 sekund můžete změnit pomocí možnosti -Timeout &lt;seconds&gt; příkazem nasdílet změny.</target>
+        <target state="translated">Sd├¡len├¡ zm─¢n trvalo p┼Ö├¡li┼í dlouho. V├╜choz├¡ ─ìasov├╜ limit 300 sekund m┼»┼╛ete zm─¢nit pomoc├¡ mo┼╛nosti -Timeout &lt;seconds&gt; p┼Ö├¡kazem nasd├¡let zm─¢ny.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResourcePropertyIncorrectType">
         <source>The property '{0}' on resource type '{1}' is not a type of ResourceManager.</source>
-        <target state="translated">Vlastnost „{0}“ u typu prostředku „{1}“ není typem ResourceManager.</target>
+        <target state="translated">Vlastnost ΓÇ₧{0}ΓÇ£ u typu prost┼Öedku ΓÇ₧{1}ΓÇ£ nen├¡ typem ResourceManager.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResourceTypeDoesNotHaveProperty">
         <source>The resource type '{0}' does not have an accessible static property named '{1}'.</source>
-        <target state="translated">Typ prostředku „{0}“ nemá přístupnou statickou vlastnost s názvem „{1}“.</target>
+        <target state="translated">Typ prost┼Öedku ΓÇ₧{0}ΓÇ£ nem├í p┼Ö├¡stupnou statickou vlastnost s n├ízvem ΓÇ₧{1}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandCannotDetermineGlobalPackagesFolder">
         <source>'globalPackagesFolder' setting is a relative path. To determine full path, please specify either -SolutionDirectory or a solution file as a parameter. To ignore 'globalPackagesFolder' setting, specify -PackagesDirectory.</source>
-        <target state="translated">Nastavení „globalPackagesFolder“ je relativní cesta. Chcete-li určit úplnou cestu, zadejte jako parametr buď parametr -SolutionDirectory, nebo soubor řešení. Pokud chcete ignorovat nastavení „globalPackagesFolder“, zadejte -PackagesDirectory.</target>
+        <target state="translated">Nastaven├¡ ΓÇ₧globalPackagesFolderΓÇ£ je relativn├¡ cesta. Chcete-li ur─ìit ├║plnou cestu, zadejte jako parametr bu─Å parametr -SolutionDirectory, nebo soubor ┼Öe┼íen├¡. Pokud chcete ignorovat nastaven├¡ ΓÇ₧globalPackagesFolderΓÇ£, zadejte -PackagesDirectory.</target>
         <note>Please do not localize 'globalPackagesFolder', -SolutionDirectory or -PackagesDirectory</note>
       </trans-unit>
       <trans-unit id="RestoreCommandCannotDeterminePackagesFolder">
         <source>Cannot determine the packages folder to restore NuGet packages. Please specify either -PackagesDirectory or -SolutionDirectory.</source>
-        <target state="translated">Nelze určit složku balíčků pro obnovení balíčků NuGet. Zadejte buď -PackagesDirectory, nebo -SolutionDirectory.</target>
+        <target state="translated">Nelze ur─ìit slo┼╛ku bal├¡─ìk┼» pro obnoven├¡ bal├¡─ìk┼» NuGet. Zadejte bu─Å -PackagesDirectory, nebo -SolutionDirectory.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandFileNotFound">
         <source>Input file does not exist: {0}.</source>
-        <target state="translated">Vstupní soubor neexistuje: {0}.</target>
+        <target state="translated">Vstupn├¡ soubor neexistuje: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandOptionSolutionDirectoryIsInvalid">
         <source>Option -SolutionDirectory is not valid when restoring packages for a solution.</source>
-        <target state="translated">Možnost -SolutionDirectory není platná při obnovování balíčků pro řešení.</target>
+        <target state="translated">Mo┼╛nost -SolutionDirectory nen├¡ platn├í p┼Öi obnovov├ín├¡ bal├¡─ìk┼» pro ┼Öe┼íen├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandPackageRestoreOptOutMessage">
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
-        <target state="translated">Obnovují se balíčky NuGet...
-Pokud chcete NuGetu ve stahování balíčků během sestavování zabránit, otevřete dialogové okno možnosti Visual Studio, klikněte na uzel Správce balíčků NuGet a zrušte zaškrtnutí políčka „{0}“.</target>
+        <target state="translated">Obnovuj├¡ se bal├¡─ìky NuGet...
+Pokud chcete NuGetu ve stahov├ín├¡ bal├¡─ìk┼» b─¢hem sestavov├ín├¡ zabr├ínit, otev┼Öete dialogov├⌐ okno mo┼╛nosti Visual Studio, klikn─¢te na uzel Spr├ívce bal├¡─ìk┼» NuGet a zru┼íte za┼íkrtnut├¡ pol├¡─ìka ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">
@@ -762,62 +762,62 @@ Pokud chcete NuGetu ve stahování balíčků během sestavování zabránit, ot
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesForSolution">
         <source>Restoring NuGet packages for solution {0}.</source>
-        <target state="translated">Obnovování balíčků NuGet pro řešení {0}.</target>
+        <target state="translated">Obnovov├ín├¡ bal├¡─ìk┼» NuGet pro ┼Öe┼íen├¡ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesFromPackagesConfigFile">
         <source>Restoring NuGet packages listed in packages.config file.</source>
-        <target state="translated">Obnovování balíčků NuGet uvedených v souboru packages.config.</target>
+        <target state="translated">Obnovov├ín├¡ bal├¡─ìk┼» NuGet uveden├╜ch v souboru packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandRestoringPackagesListedInFile">
         <source>Restoring NuGet packages listed in file {0}.</source>
-        <target state="translated">Obnovování balíčků NuGet uvedených v souboru {0}.</target>
+        <target state="translated">Obnovov├ín├¡ bal├¡─ìk┼» NuGet uveden├╜ch v souboru {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ScanningForProjects">
         <source>Scanning for projects...</source>
-        <target state="translated">Vyhledávání projektů...</target>
+        <target state="translated">Vyhled├ív├ín├¡ projekt┼»...</target>
         <note />
       </trans-unit>
       <trans-unit id="SetApiKeyCommandApiKeySaved">
         <source>The API Key '{0}' was saved for {1}.</source>
-        <target state="translated">Klíč rozhraní API „{0}“ byl uložen pro {1}.</target>
+        <target state="translated">Kl├¡─ì rozhran├¡ API ΓÇ₧{0}ΓÇ£ byl ulo┼╛en pro {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SetApiKeyCommandDefaultApiKeysSaved">
         <source>The API Key '{0}' was saved for {1} and {2}.</source>
-        <target state="translated">Klíč rozhraní API „{0}“ se uložil pro {1} a {2}.</target>
+        <target state="translated">Kl├¡─ì rozhran├¡ API ΓÇ₧{0}ΓÇ£ se ulo┼╛il pro {1} a {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsCredentials_UsingSavedCredentials">
         <source>Using credentials from config. UserName: {0}</source>
-        <target state="translated">Pomocí přihlašovacích údajů z konfigurace. Uživatelské jméno: {0}</target>
+        <target state="translated">Pomoc├¡ p┼Öihla┼íovac├¡ch ├║daj┼» z konfigurace. U┼╛ivatelsk├⌐ jm├⌐no: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionRestoreCommandNoPackagesConfigOrProjectJson">
         <source>Nothing to do. None of the projects in this solution specify any packages for NuGet to restore.</source>
-        <target state="translated">Není co dělat. Žádný z projektů v tomto řešení neurčuje žádné balíčky, které má NuGet obnovit.</target>
+        <target state="translated">Nen├¡ co d─¢lat. ┼╜├ídn├╜ z projekt┼» v tomto ┼Öe┼íen├¡ neur─ìuje ┼╛├ídn├⌐ bal├¡─ìky, kter├⌐ m├í NuGet obnovit.</target>
         <note />
       </trans-unit>
       <trans-unit id="Source_NotFound">
         <source>Source '{0}' is not found.</source>
-        <target state="translated">Zdroj „{0}“ nebyl nalezen.</target>
+        <target state="translated">Zdroj ΓÇ₧{0}ΓÇ£ nebyl nalezen.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecCommandCreatedNuSpec">
         <source>Created '{0}' successfully.</source>
-        <target state="translated">„{0}“ se úspěšně vytvořil.</target>
+        <target state="translated">ΓÇ₧{0}ΓÇ£ se ├║sp─¢┼ín─¢ vytvo┼Öil.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecCommandFileExists">
         <source>'{0}' already exists, use -Force to overwrite it.</source>
-        <target state="translated">„{0}“ už existuje, k přepsání použijte příkaz -Force.</target>
+        <target state="translated">ΓÇ₧{0}ΓÇ£ u┼╛ existuje, k p┼Öeps├ín├¡ pou┼╛ijte p┼Ö├¡kaz -Force.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToConvertTypeError">
         <source>Unable to change from type '{0}' to '{1}'.</source>
-        <target state="translated">Nelze změnit typ „{0}“ na „{1}“.</target>
+        <target state="translated">Nelze zm─¢nit typ ΓÇ₧{0}ΓÇ£ na ΓÇ₧{1}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToExtractAssemblyMetadata">
@@ -827,82 +827,82 @@ Pokud chcete NuGetu ve stahování balíčků během sestavování zabránit, ot
       </trans-unit>
       <trans-unit id="UnableToFindBuildOutput">
         <source>Unable to find '{0}'. Make sure the project has been built.</source>
-        <target state="translated">{0} nejde najít. Ujistěte se, jestli je projekt sestavený.</target>
+        <target state="translated">{0} nejde naj├¡t. Ujist─¢te se, jestli je projekt sestaven├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindPackages">
         <source>Unable to find '{0}'. Make sure they are specified in packages.config.</source>
-        <target state="translated">Nelze najít „{0}“. Ujistěte se, že jsou zadané v souboru packages.config.</target>
+        <target state="translated">Nelze naj├¡t ΓÇ₧{0}ΓÇ£. Ujist─¢te se, ┼╛e jsou zadan├⌐ v souboru packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindProject">
         <source>Unable to find project '{0}'.</source>
-        <target state="translated">Nepovedlo se najít projekt „{0}“.</target>
+        <target state="translated">Nepovedlo se naj├¡t projekt ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindSolution">
         <source>Unable to find solution '{0}'.</source>
-        <target state="translated">Nepovedlo se najít řešení „{0}“.</target>
+        <target state="translated">Nepovedlo se naj├¡t ┼Öe┼íen├¡ ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocatePackagesFolder">
         <source>Unable to locate the packages folder. Verify all the packages are restored before running 'nuget.exe update'.</source>
-        <target state="translated">Nepovedlo se najít složku balíčků. Před spuštěním „aktualizace nuget.exe“ ověřte, že se obnovily všechny balíčky.</target>
+        <target state="translated">Nepovedlo se naj├¡t slo┼╛ku bal├¡─ìk┼». P┼Öed spu┼ít─¢n├¡m ΓÇ₧aktualizace nuget.exeΓÇ£ ov─¢┼Öte, ┼╛e se obnovily v┼íechny bal├¡─ìky.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateProjectFile">
         <source>Unable to locate project file for '{0}'.</source>
-        <target state="translated">Nepovedlo se najít soubor projektu pro „{0}“.</target>
+        <target state="translated">Nepovedlo se naj├¡t soubor projektu pro ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknowCommandError">
         <source>Unknown command: '{0}'</source>
-        <target state="translated">Neznámý příkaz: „{0}“</target>
+        <target state="translated">Nezn├ím├╜ p┼Ö├¡kaz: ΓÇ₧{0}ΓÇ£</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownOptionError">
         <source>Unknown option: '{0}'</source>
-        <target state="translated">Neznámá možnost: „{0}“</target>
+        <target state="translated">Nezn├ím├í mo┼╛nost: ΓÇ₧{0}ΓÇ£</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedFramework">
         <source>'{0}' is not a valid target framework.</source>
-        <target state="translated">„{0}“ není platná cílová architektura.</target>
+        <target state="translated">ΓÇ₧{0}ΓÇ£ nen├¡ platn├í c├¡lov├í architektura.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandCheckingForUpdates">
         <source>Checking for updates from {0}.</source>
-        <target state="translated">Probíhá kontrola aktualizací z {0}.</target>
+        <target state="translated">Prob├¡h├í kontrola aktualizac├¡ z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandCurrentlyRunningNuGetExe">
         <source>Currently running NuGet.exe {0}.</source>
-        <target state="translated">Právě běží NuGet.exe {0}.</target>
+        <target state="translated">Pr├ív─¢ b─¢┼╛├¡ NuGet.exe {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandNuGetUpToDate">
         <source>NuGet.exe is up to date.</source>
-        <target state="translated">NuGet.exe je aktuální.</target>
+        <target state="translated">NuGet.exe je aktu├íln├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUnableToFindPackage">
         <source>Unable to find '{0}' package.</source>
-        <target state="translated">Nepovedlo se najít balíček „{0}“.</target>
+        <target state="translated">Nepovedlo se naj├¡t bal├¡─ìek ΓÇ₧{0}ΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUnableToLocateNuGetExe">
         <source>Invalid NuGet.CommandLine package. Unable to locate NuGet.exe within the package.</source>
-        <target state="translated">Neplatný balíček NuGet.CommandLine. V balíčku se nepovedlo najít NuGet.exe.</target>
+        <target state="translated">Neplatn├╜ bal├¡─ìek NuGet.CommandLine. V bal├¡─ìku se nepovedlo naj├¡t NuGet.exe.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUpdateSuccessful">
         <source>Update successful.</source>
-        <target state="translated">Aktualizace proběhla úspěšně.</target>
+        <target state="translated">Aktualizace prob─¢hla ├║sp─¢┼ín─¢.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateCommandUpdatingNuGet">
         <source>Updating NuGet.exe to {0}.</source>
-        <target state="translated">Probíhá aktualizace nuGet.exe na {0}.</target>
+        <target state="translated">Prob├¡h├í aktualizace nuGet.exe na {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdatingProject">
@@ -912,119 +912,119 @@ Pokud chcete NuGetu ve stahování balíčků během sestavování zabránit, ot
       </trans-unit>
       <trans-unit id="UsingNuspecForMetadata">
         <source>Using '{0}' for metadata.</source>
-        <target state="translated">Pro metadata se používá: {0}.</target>
+        <target state="translated">Pro metadata se pou┼╛├¡v├í: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingPackagesConfigForDependencies">
         <source>Found packages.config. Using packages listed as dependencies</source>
-        <target state="translated">Našel se soubor packages.config. Použijí se balíčky uvedené jako závislosti.</target>
+        <target state="translated">Na┼íel se soubor packages.config. Pou┼╛ij├¡ se bal├¡─ìky uveden├⌐ jako z├ívislosti.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_CommandDeprecated">
         <source>'{0} {1}' is deprecated. Use '{0} {2}' instead.</source>
-        <target state="translated">Příkaz {0} {1} je zastaralý. Místo toho použijte {0} {2}.</target>
+        <target state="translated">P┼Ö├¡kaz {0} {1} je zastaral├╜. M├¡sto toho pou┼╛ijte {0} {2}.</target>
         <note>{0} - name of the assembly running the command, e.g., NuGet
 {1} - current command marked as deprecated, e.g., list
 {2} - replacement command. For example, search</note>
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValue">
         <source>The value "{0}" for {1} is a sample value and should be removed.</source>
-        <target state="translated">Hodnota {0} pro {1} je ukázková hodnota a měla by se odebrat.</target>
+        <target state="translated">Hodnota {0} pro {1} je uk├ízkov├í hodnota a m─¢la by se odebrat.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValueSolution">
         <source>Replace with an appropriate value or remove and it and rebuild your package.</source>
-        <target state="translated">Nahraďte příslušnou hodnotou nebo odeberte a znovu sestavte balíček.</target>
+        <target state="translated">Nahra─Åte p┼Ö├¡slu┼ínou hodnotou nebo odeberte a znovu sestavte bal├¡─ìek.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DefaultSpecValueTitle">
         <source>Remove sample nuspec values.</source>
-        <target state="translated">Odeberte ukázkové hodnoty v souboru nuspec.</target>
+        <target state="translated">Odeberte uk├ízkov├⌐ hodnoty v souboru nuspec.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DuplicatePropertyKey">
         <source>'{0}' key already exists in Properties collection. Overriding value.</source>
-        <target state="translated">Klíč {0} už v kolekci Properties existuje. Hodnota se přepíše.</target>
+        <target state="translated">Kl├¡─ì {0} u┼╛ v kolekci Properties existuje. Hodnota se p┼Öep├¡┼íe.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FileDoesNotExist">
         <source>'{0}' was included in the project but doesn't exist. Skipping...</source>
-        <target state="translated">Soubor {0} je zahrnutý v projektu, ale neexistuje. Soubor se přeskočí...</target>
+        <target state="translated">Soubor {0} je zahrnut├╜ v projektu, ale neexistuje. Soubor se p┼Öesko─ì├¡...</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_InvalidPackageSaveMode">
         <source>Invalid PackageSaveMode value '{0}'.</source>
-        <target state="translated">Hodnota vlastnosti PackageSaveMode {0} je neplatná.</target>
+        <target state="translated">Hodnota vlastnosti PackageSaveMode {0} je neplatn├í.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_DisabledPolicy">
         <source>Please enbale long file path support in local group policy. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Povolte prosím v místních zásadách skupiny podporu dlouhých cest k souborům. Další podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
+        <target state="translated">Povolte pros├¡m v m├¡stn├¡ch z├ísad├ích skupiny podporu dlouh├╜ch cest k soubor┼»m. Dal┼í├¡ podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_UnsupportedNetFramework">
         <source>Please install .NET Framework 4.6.2 or above that supports long file paths. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Nainstalujte .NET Framework 4.6.2 nebo novější, který podporuje dlouhé cesty k souborům. Další podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
+        <target state="translated">Nainstalujte .NET Framework 4.6.2 nebo nov─¢j┼í├¡, kter├╜ podporuje dlouh├⌐ cesty k soubor┼»m. Dal┼í├¡ podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_LongPath_UnsupportedOS">
         <source>Long file path is currently only supported on Windows 10. Fore more details, please refer to https://aka.ms/nuget-long-path.</source>
-        <target state="translated">Dlouhá cesta k souboru je aktuálně podporována pouze u Windows 10. Další podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
+        <target state="translated">Dlouh├í cesta k souboru je aktu├íln─¢ podporov├ína pouze u Windows 10. Dal┼í├¡ podrobnosti najdete v https://aka.ms/nuget-long-path.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_MsbuildPath">
         <source>MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. </source>
-        <target state="translated">MsbuildPath : {0} používá, ignorujte MsBuildVersion: {1}. </target>
+        <target state="translated">MsbuildPath : {0} pou┼╛├¡v├í, ignorujte MsBuildVersion: {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_NoPromptDeprecated">
         <source>Option 'NoPrompt' has been deprecated. Use 'NonInteractive' instead.</source>
-        <target state="translated">Možnost „NoPrompt“ je zastaralá. Místo toho použijte „NonInteractive“.</target>
+        <target state="translated">Mo┼╛nost ΓÇ₧NoPromptΓÇ£ je zastaral├í. M├¡sto toho pou┼╛ijte ΓÇ₧NonInteractiveΓÇ£.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ReadingProjectsFailed">
         <source>Error reading msbuild project information, ensure that your input solution or project file is valid. NETCore and UAP projects will be skipped, only packages.config files will be restored.</source>
-        <target state="translated">Při čtení informací o projektu msbuild došlo k chybě. Ujistěte se, že vstupní řešení nebo soubor projektu jsou platné. Projekty NETCore a UAP se přeskočí, obnoví se jenom soubory packages.config.</target>
+        <target state="translated">P┼Öi ─ìten├¡ informac├¡ o projektu msbuild do┼ílo k chyb─¢. Ujist─¢te se, ┼╛e vstupn├¡ ┼Öe┼íen├¡ nebo soubor projektu jsou platn├⌐. Projekty NETCore a UAP se p┼Öesko─ì├¡, obnov├¡ se jenom soubory packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersion">
         <source>Version "{0}" does not follow semantic versioning guidelines.</source>
-        <target state="translated">Verze {0} neodpovídá pravidlům pro sémantické verze.</target>
+        <target state="translated">Verze {0} neodpov├¡d├í pravidl┼»m pro s├⌐mantick├⌐ verze.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersionSolution">
         <source>Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org. </source>
-        <target state="translated">Aktualizujte si soubor nuspec nebo pomocí atributu sestavení AssemblyInformationalVersion zadejte sémantickou verzi podle popisu na webu http://semver.org. </target>
+        <target state="translated">Aktualizujte si soubor nuspec nebo pomoc├¡ atributu sestaven├¡ AssemblyInformationalVersion zadejte s├⌐mantickou verzi podle popisu na webu http://semver.org. </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_SemanticVersionTitle">
         <source>Use semantic versioning</source>
-        <target state="translated">Použít sémantické verze</target>
+        <target state="translated">Pou┼╛├¡t s├⌐mantick├⌐ verze</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnresolvedFilePath">
         <source>'{0}' was included in the project but the path could not be resolved. Skipping...</source>
-        <target state="translated">Soubor {0} je zahrnutý v projektu, ale cestu nešlo rozpoznat. Soubor se přeskočí...</target>
+        <target state="translated">Soubor {0} je zahrnut├╜ v projektu, ale cestu ne┼ílo rozpoznat. Soubor se p┼Öesko─ì├¡...</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersion">
         <source>The version of dependency '{0}' is not specified.</source>
-        <target state="translated">Není zadaná verze závislosti {0}.</target>
+        <target state="translated">Nen├¡ zadan├í verze z├ívislosti {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersionSolution">
         <source>Specify the version of dependency and rebuild your package.</source>
-        <target state="translated">Zadejte verzi závislosti a sestavte svůj balíček znovu.</target>
+        <target state="translated">Zadejte verzi z├ívislosti a sestavte sv┼»j bal├¡─ìek znovu.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedDependencyVersionTitle">
         <source>Specify version of dependencies.</source>
-        <target state="translated">Zadejte verzi závislostí.</target>
+        <target state="translated">Zadejte verzi z├ívislost├¡.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_UnspecifiedField">
         <source>{0} was not specified. Using '{1}'.</source>
-        <target state="translated">Není zadaná hodnota {0}. Použije se {1}.</target>
+        <target state="translated">Nen├¡ zadan├í hodnota {0}. Pou┼╛ije se {1}.</target>
         <note />
       </trans-unit>
     </body>

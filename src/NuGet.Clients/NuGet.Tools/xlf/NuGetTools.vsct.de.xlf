@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">&amp;NuGet-Pakete für Projektmappe verwalten...</target>
+        <target state="translated">&amp;NuGet-Pakete f├╝r Projektmappe verwalten...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="cmdidClearHost|ButtonText">
         <source>&amp;Clear Console</source>
-        <target state="translated">Konsole &amp;löschen</target>
+        <target state="translated">Konsole &amp;l├╢schen</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidClearNuGetLocalResources|ButtonText">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">Befehl&amp;sausführung beenden</target>
+        <target state="translated">Befehl&amp;sausf├╝hrung beenden</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">

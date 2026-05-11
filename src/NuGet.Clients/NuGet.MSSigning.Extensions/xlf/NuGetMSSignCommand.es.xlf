@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">Nombre del proveedor de servicios criptográficos que incluye el contenedor de claves privadas.</target>
+        <target state="translated">Nombre del proveedor de servicios criptogr├íficos que incluye el contenedor de claves privadas.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
@@ -29,12 +29,12 @@
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
         <source>Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</source>
-        <target state="translated">Se proporcionó un valor no válido para "{0}". Para obtener una lista de los valores aceptados, visite https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
+        <target state="translated">Se proporcion├│ un valor no v├ílido para "{0}". Para obtener una lista de los valores aceptados, visite https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
         <note>{0} - argument name</note>
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: valor no válido para la opción "CertificateFingerprint". El valor debe ser una huella de certificado SHA-256, SHA-384 o SHA-512 (en hexadecimal).</target>
+        <target state="translated">{0}: valor no v├ílido para la opci├│n "CertificateFingerprint". El valor debe ser una huella de certificado SHA-256, SHA-384 o SHA-512 (en hexadecimal).</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
@@ -59,17 +59,17 @@
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
         <source>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">No se proporcionó ningún paquete. Para obtener una lista de las formas aceptadas para proporcionar un paquete, visite https://docs.nuget.org/docs/reference/command-line-reference.</target>
+        <target state="translated">No se proporcion├│ ning├║n paquete. Para obtener una lista de las formas aceptadas para proporcionar un paquete, visite https://docs.nuget.org/docs/reference/command-line-reference.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
         <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">No se proporcionó ninguna opción para "-Timestamper" y no se incluirá la marca de tiempo en el paquete firmado. Para obtener más información acerca de esta opción, visite https://docs.nuget.org/docs/reference/command-line-reference.</target>
+        <target state="translated">No se proporcion├│ ninguna opci├│n para "-Timestamper" y no se incluir├í la marca de tiempo en el paquete firmado. Para obtener m├ís informaci├│n acerca de esta opci├│n, visite https://docs.nuget.org/docs/reference/command-line-reference.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoValidCertificateFileException">
         <source>No CertificateFile provided or provided file is not a p7b file.</source>
-        <target state="translated">No se proporcionó ningún archivo de certificado (CertificateFile) o el archivo proporcionado no es p7b.</target>
+        <target state="translated">No se proporcion├│ ning├║n archivo de certificado (CertificateFile) o el archivo proporcionado no es p7b.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">Algoritmo hash que va a usar el servidor de asignación de marca de tiempo RFC 3161. El valor predeterminado es SHA256.</target>
+        <target state="translated">Algoritmo hash que va a usar el servidor de asignaci├│n de marca de tiempo RFC 3161. El valor predeterminado es SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
         <source>URL to an RFC 3161 timestamping server.</source>
-        <target state="translated">Dirección URL a un servidor de asignación de marca de tiempo RFC 3161.</target>
+        <target state="translated">Direcci├│n URL a un servidor de asignaci├│n de marca de tiempo RFC 3161.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageDescription">
@@ -101,9 +101,9 @@
         <source>nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
 nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</source>
-        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Proveedor de servicios criptográficos"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
+        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Proveedor de servicios criptogr├íficos"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
-nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Proveedor de servicios criptográficos"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</target>
+nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Proveedor de servicios criptogr├íficos"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</target>
         <note>Please don't localize this string</note>
       </trans-unit>
       <trans-unit id="MSSignCommandUsageSummary">
@@ -130,9 +130,9 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
         <source>nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
 nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "owner1;owner2" -V3ServiceIndexUrl https://v3.index.test</source>
-        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Proveedor de servicios criptográficos" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
+        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Proveedor de servicios criptogr├íficos" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
-nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Proveedor de servicios criptográficos" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "propietario1;propietario2" -V3ServiceIndexUrl https://v3.index.test</target>
+nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Proveedor de servicios criptogr├íficos" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "propietario1;propietario2" -V3ServiceIndexUrl https://v3.index.test</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageSummary">
@@ -142,7 +142,7 @@ nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -Certificate
       </trans-unit>
       <trans-unit id="RepoSignCommandV3ServiceIndexUrlDescription">
         <source>Repository V3 service index URL.</source>
-        <target state="translated">Dirección URL del índice del servicio de repositorio V3.</target>
+        <target state="translated">Direcci├│n URL del ├¡ndice del servicio de repositorio V3.</target>
         <note />
       </trans-unit>
     </body>

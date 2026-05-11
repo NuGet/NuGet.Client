@@ -1,30 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">Özel anahtar kapsayıcısını içeren şifreleme hizmeti sağlayıcısının adı.</target>
+        <target state="translated">├ûzel anahtar kapsay─▒c─▒s─▒n─▒ i├ºeren ┼ƒifreleme hizmeti sa─ƒlay─▒c─▒s─▒n─▒n ad─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
         <source>File path to the p7b file to be used while signing the package.</source>
-        <target state="translated">Paketi imzalarken kullanılacak p7b dosyasının yolu.</target>
+        <target state="translated">Paketi imzalarken kullan─▒lacak p7b dosyas─▒n─▒n yolu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="translated">p7b dosyasında sertifikayı aramak için kullanılan sertifikanın SHA-256, SHA-384 veya SHA-512 parmak izi.</target>
+        <target state="translated">p7b dosyas─▒nda sertifikay─▒ aramak i├ºin kullan─▒lan sertifikan─▒n SHA-256, SHA-384 veya SHA-512 parmak izi.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
         <source>Signs a NuGet package with the specified p7b file.</source>
-        <target state="translated">Bir NuGet paketini belirtilen p7b dosyası ile imzalar.</target>
+        <target state="translated">Bir NuGet paketini belirtilen p7b dosyas─▒ ile imzalar.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandHashAlgorithmDescription">
         <source>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</source>
-        <target state="translated">Paket bildirim dosyası oluşturulurken kullanılacak karma algoritması. Varsayılan değeri: SHA256.</target>
+        <target state="translated">Paket bildirim dosyas─▒ olu┼ƒturulurken kullan─▒lacak karma algoritmas─▒. Varsay─▒lan de─ƒeri: SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
@@ -34,62 +34,62 @@
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: 'CertificateFingerprint' seçeneği için geçersiz değer. Değer bir SHA-256, SHA-384 veya SHA-512 sertifikası parmak izi (onaltılık düzende) olmalıdır.</target>
+        <target state="translated">{0}: 'CertificateFingerprint' se├ºene─ƒi i├ºin ge├ºersiz de─ƒer. De─ƒer bir SHA-256, SHA-384 veya SHA-512 sertifikas─▒ parmak izi (onalt─▒l─▒k d├╝zende) olmal─▒d─▒r.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
         <source>Cng Key is not an RSA key.</source>
-        <target state="translated">CNG Anahtarı bir RSA anahtarı değildir.</target>
+        <target state="translated">CNG Anahtar─▒ bir RSA anahtar─▒ de─ƒildir.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandKeyContainerDescription">
         <source>Name of the key container which has the private key.</source>
-        <target state="translated">Özel anahtarı olan anahtar kapsayıcısının adı.</target>
+        <target state="translated">├ûzel anahtar─▒ olan anahtar kapsay─▒c─▒s─▒n─▒n ad─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCertException">
         <source>Can't find specified certificate.</source>
-        <target state="translated">Belirtilen sertifika bulunamıyor.</target>
+        <target state="translated">Belirtilen sertifika bulunam─▒yor.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCngKeyException">
         <source>Can't find cng key.</source>
-        <target state="translated">Cng anahtarı bulunamıyor.</target>
+        <target state="translated">Cng anahtar─▒ bulunam─▒yor.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
         <source>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">Hiçbir paket sağlanmadı. Kabul edilen paket sağlama yollarının listesi için lütfen https://docs.nuget.org/docs/reference/command-line-reference adresini ziyaret edin</target>
+        <target state="translated">Hi├ºbir paket sa─ƒlanmad─▒. Kabul edilen paket sa─ƒlama yollar─▒n─▒n listesi i├ºin l├╝tfen https://docs.nuget.org/docs/reference/command-line-reference adresini ziyaret edin</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
         <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">Hayır '-Timestamper' seçeneği sağlandı, imzalı pakete zaman damgası konulmayacak. Bu seçenek hakkında daha fazla bilgi için lütfen https://docs.nuget.org/docs/reference/command-line-reference adresini ziyaret edin</target>
+        <target state="translated">Hay─▒r '-Timestamper' se├ºene─ƒi sa─ƒland─▒, imzal─▒ pakete zaman damgas─▒ konulmayacak. Bu se├ºenek hakk─▒nda daha fazla bilgi i├ºin l├╝tfen https://docs.nuget.org/docs/reference/command-line-reference adresini ziyaret edin</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoValidCertificateFileException">
         <source>No CertificateFile provided or provided file is not a p7b file.</source>
-        <target state="translated">Bir CertificateFile sağlanmadı veya sağlanan dosya bir p7b dosyası değil.</target>
+        <target state="translated">Bir CertificateFile sa─ƒlanmad─▒ veya sa─ƒlanan dosya bir p7b dosyas─▒ de─ƒil.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
         <source>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</source>
-        <target state="translated">İmzalı paketin kaydedileceği dizin. Varsayılan ayar olarak, imzalı paket tarafından özgün paketin üzerine yazılır.</target>
+        <target state="translated">─░mzal─▒ paketin kaydedilece─ƒi dizin. Varsay─▒lan ayar olarak, imzal─▒ paket taraf─▒ndan ├╢zg├╝n paketin ├╝zerine yaz─▒l─▒r.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOverwriteDescription">
         <source>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</source>
-        <target state="translated">Geçerli imzanın üzerine yazılıp yazılmayacağını belirtmek için değiştirin. Varsayılan ayar olarak, paketin imzası zaten varsa komut başarısız olur.</target>
+        <target state="translated">Ge├ºerli imzan─▒n ├╝zerine yaz─▒l─▒p yaz─▒lmayaca─ƒ─▒n─▒ belirtmek i├ºin de─ƒi┼ƒtirin. Varsay─▒lan ayar olarak, paketin imzas─▒ zaten varsa komut ba┼ƒar─▒s─▒z olur.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">RFC 3161 zaman damgası sunucusu tarafından kullanılacak karma algoritması. Varsayılan değeri: SHA256.</target>
+        <target state="translated">RFC 3161 zaman damgas─▒ sunucusu taraf─▒ndan kullan─▒lacak karma algoritmas─▒. Varsay─▒lan de─ƒeri: SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
         <source>URL to an RFC 3161 timestamping server.</source>
-        <target state="translated">RFC 3161 zaman damgası sunucusunun URL'si.</target>
+        <target state="translated">RFC 3161 zaman damgas─▒ sunucusunun URL'si.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageDescription">
@@ -101,9 +101,9 @@
         <source>nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
 nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</source>
-        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Şifreleme Hizmeti Sağlayıcısı"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
+        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "┼₧ifreleme Hizmeti Sa─ƒlay─▒c─▒s─▒"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
-nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Şifreleme Hizmeti Sağlayıcısı"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</target>
+nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "┼₧ifreleme Hizmeti Sa─ƒlay─▒c─▒s─▒"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</target>
         <note>Please don't localize this string</note>
       </trans-unit>
       <trans-unit id="MSSignCommandUsageSummary">
@@ -113,17 +113,17 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">
         <source>Sign a NuGet package by adding repository signature with specified p7b file.</source>
-        <target state="translated">Bir NuGet paketini belirtilen p7b dosyasıyla depo imzası ekleyerek imzalayın.</target>
+        <target state="translated">Bir NuGet paketini belirtilen p7b dosyas─▒yla depo imzas─▒ ekleyerek imzalay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandPackageOwnersDescription">
         <source>Semicolon-separated list of package owners.</source>
-        <target state="translated">Paket sahiplerinin noktalı virgülle ayrılmış listesi.</target>
+        <target state="translated">Paket sahiplerinin noktal─▒ virg├╝lle ayr─▒lm─▒┼ƒ listesi.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageDescription">
         <source>Sign a NuGet package with repository signature.</source>
-        <target state="translated">Bir NuGet paketini depo imzasıyla imzalayın.</target>
+        <target state="translated">Bir NuGet paketini depo imzas─▒yla imzalay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageExamples">

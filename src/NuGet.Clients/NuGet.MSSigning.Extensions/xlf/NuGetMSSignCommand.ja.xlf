@@ -1,30 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">秘密キーのコンテナーを含む暗号化サービス プロバイダーの名前です。</target>
+        <target state="translated">τºÿσ»åπé¡πâ╝πü«πé│πâ│πâåπâèπâ╝πéÆσÉ½πéÇµÜùσÅ╖σîûπé╡πâ╝πâôπé╣ πâùπâ¡πâÉπéñπâÇπâ╝πü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
         <source>File path to the p7b file to be used while signing the package.</source>
-        <target state="translated">パッケージの署名中に使用する p7b ファイルのファイル パスです。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πü«τ╜▓σÉìΣ╕¡πü½Σ╜┐τö¿πüÖπéï p7b πâòπéíπéñπâ½πü«πâòπéíπéñπâ½ πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="translated">証明書の p7b ファイルの検索に使用する、証明書の SHA-256、SHA-384 または SHA-512 フィンガープリント。</target>
+        <target state="translated">Φ¿╝µÿÄµ¢╕πü« p7b πâòπéíπéñπâ½πü«µñ£τ┤óπü½Σ╜┐τö¿πüÖπéïπÇüΦ¿╝µÿÄµ¢╕πü« SHA-256πÇüSHA-384 πü╛πüƒπü» SHA-512 πâòπéúπâ│πé¼πâ╝πâùπâ¬πâ│πâêπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
         <source>Signs a NuGet package with the specified p7b file.</source>
-        <target state="translated">指定した p7b ファイルを使用して NuGet パッケージに署名します。</target>
+        <target state="translated">µîçσ«Üπüùπüƒ p7b πâòπéíπéñπâ½πéÆΣ╜┐τö¿πüùπüª NuGet πâæπââπé▒πâ╝πé╕πü½τ╜▓σÉìπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandHashAlgorithmDescription">
         <source>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</source>
-        <target state="translated">パッケージ マニフェスト ファイルの生成中に使用するハッシュ アルゴリズムです。規定値は SHA256 です。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕ πâ₧πâïπâòπéºπé╣πâê πâòπéíπéñπâ½πü«τöƒµêÉΣ╕¡πü½Σ╜┐τö¿πüÖπéïπâÅπââπé╖πâÑ πéóπâ½πé┤πâ¬πé║πâáπüºπüÖπÇéΦªÅσ«ÜσÇñπü» SHA256 πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
@@ -34,76 +34,76 @@
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: 'CertificateFingerprint' オプションの値が無効です。値は SHA-256、SHA-384、または SHA-512 証明書フィンガープリント (16 進数) である必要があります。</target>
+        <target state="translated">{0}: 'CertificateFingerprint' πé¬πâùπé╖πâºπâ│πü«σÇñπüîτäíσè╣πüºπüÖπÇéσÇñπü» SHA-256πÇüSHA-384πÇüπü╛πüƒπü» SHA-512 Φ¿╝µÿÄµ¢╕πâòπéúπâ│πé¼πâ╝πâùπâ¬πâ│πâê (16 ΘÇ▓µò░) πüºπüéπéïσ┐àΦªüπüîπüéπéèπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
         <source>Cng Key is not an RSA key.</source>
-        <target state="translated">CNG キーは RSA キーではありません。</target>
+        <target state="translated">CNG πé¡πâ╝πü» RSA πé¡πâ╝πüºπü»πüéπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandKeyContainerDescription">
         <source>Name of the key container which has the private key.</source>
-        <target state="translated">秘密キーを持つキー コンテナーの名前です。</target>
+        <target state="translated">τºÿσ»åπé¡πâ╝πéÆµîüπüñπé¡πâ╝ πé│πâ│πâåπâèπâ╝πü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCertException">
         <source>Can't find specified certificate.</source>
-        <target state="translated">指定された証明書が見つかりません。</target>
+        <target state="translated">µîçσ«ÜπüòπéîπüƒΦ¿╝µÿÄµ¢╕πüîΦªïπüñπüïπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCngKeyException">
         <source>Can't find cng key.</source>
-        <target state="translated">CNG キーが見つかりません。</target>
+        <target state="translated">CNG πé¡πâ╝πüîΦªïπüñπüïπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
         <source>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">パッケージが指定されていません。パッケージを指定する承認済みの方法の一覧については、https://docs.nuget.org/docs/reference/command-line-reference をご覧ください</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πüîµîçσ«Üπüòπéîπüªπüäπü╛πü¢πéôπÇéπâæπââπé▒πâ╝πé╕πéÆµîçσ«ÜπüÖπéïµë┐Φ¬ìµ╕êπü┐πü«µû╣µ│òπü«Σ╕ÇΦªºπü½πüñπüäπüªπü»πÇühttps://docs.nuget.org/docs/reference/command-line-reference πéÆπüöΦªºπüÅπüáπüòπüä</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
         <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">'-Timestamper' オプションは指定されていません。署名済みのパッケージには、タイムスタンプは設定されません。このオプションの詳細については、https://docs.nuget.org/docs/reference/command-line-reference をご覧ください</target>
+        <target state="translated">'-Timestamper' πé¬πâùπé╖πâºπâ│πü»µîçσ«Üπüòπéîπüªπüäπü╛πü¢πéôπÇéτ╜▓σÉìµ╕êπü┐πü«πâæπââπé▒πâ╝πé╕πü½πü»πÇüπé┐πéñπâáπé╣πé┐πâ│πâùπü»Φ¿¡σ«Üπüòπéîπü╛πü¢πéôπÇéπüôπü«πé¬πâùπé╖πâºπâ│πü«Φ⌐│τ┤░πü½πüñπüäπüªπü»πÇühttps://docs.nuget.org/docs/reference/command-line-reference πéÆπüöΦªºπüÅπüáπüòπüä</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoValidCertificateFileException">
         <source>No CertificateFile provided or provided file is not a p7b file.</source>
-        <target state="translated">CertificateFile が指定されていないか、指定されたファイルが p7b ファイルではありません。</target>
+        <target state="translated">CertificateFile πüîµîçσ«Üπüòπéîπüªπüäπü¬πüäπüïπÇüµîçσ«Üπüòπéîπüƒπâòπéíπéñπâ½πüî p7b πâòπéíπéñπâ½πüºπü»πüéπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
         <source>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</source>
-        <target state="translated">署名済みパッケージを保存するディレクトリです。既定では、オリジナル パッケージは署名済みパッケージで上書きされます。</target>
+        <target state="translated">τ╜▓σÉìµ╕êπü┐πâæπââπé▒πâ╝πé╕πéÆΣ┐¥σ¡ÿπüÖπéïπâçπéúπâ¼πé»πâêπâ¬πüºπüÖπÇéµùóσ«Üπüºπü»πÇüπé¬πâ¬πé╕πâèπâ½ πâæπââπé▒πâ╝πé╕πü»τ╜▓σÉìµ╕êπü┐πâæπââπé▒πâ╝πé╕πüºΣ╕èµ¢╕πüìπüòπéîπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOverwriteDescription">
         <source>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</source>
-        <target state="translated">現在の署名を上書きするかどうかを示すスイッチです。規定では、パッケージに既に署名がある場合、コマンドは失敗します。</target>
+        <target state="translated">τÅ╛σ£¿πü«τ╜▓σÉìπéÆΣ╕èµ¢╕πüìπüÖπéïπüïπü⌐πüåπüïπéÆτñ║πüÖπé╣πéñπââπâüπüºπüÖπÇéΦªÅσ«Üπüºπü»πÇüπâæπââπé▒πâ╝πé╕πü½µùóπü½τ╜▓σÉìπüîπüéπéïσá┤σÉêπÇüπé│πâ₧πâ│πâëπü»σñ▒µòùπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">RFC 3161 タイムスタンプ サーバーで使用するハッシュ アルゴリズムです。規定値は SHA256 です。</target>
+        <target state="translated">RFC 3161 πé┐πéñπâáπé╣πé┐πâ│πâù πé╡πâ╝πâÉπâ╝πüºΣ╜┐τö¿πüÖπéïπâÅπââπé╖πâÑ πéóπâ½πé┤πâ¬πé║πâáπüºπüÖπÇéΦªÅσ«ÜσÇñπü» SHA256 πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
         <source>URL to an RFC 3161 timestamping server.</source>
-        <target state="translated">RFC 3161 タイム スタンプ サーバーの URL です。</target>
+        <target state="translated">RFC 3161 πé┐πéñπâá πé╣πé┐πâ│πâù πé╡πâ╝πâÉπâ╝πü« URL πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageDescription">
         <source>Signs a NuGet package.</source>
-        <target state="translated">NuGet パッケージに署名します。</target>
+        <target state="translated">NuGet πâæπââπé▒πâ╝πé╕πü½τ╜▓σÉìπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageExamples">
         <source>nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
 nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "Cryptographic Service Provider"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\Signed</source>
-        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "暗号化サービス プロバイダー"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
+        <target state="translated">nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "µÜùσÅ╖σîûπé╡πâ╝πâôπé╣ πâùπâ¡πâÉπéñπâÇπâ╝"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a"  
 
-nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "暗号化サービス プロバイダー"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\署名済み</target>
+nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p7b -CSPName "µÜùσÅ╖σîûπé╡πâ╝πâôπé╣ πâùπâ¡πâÉπéñπâÇπâ╝"  -KeyContainer "4003d786-cc37-4004-bfdf-c4f3e8ef9b3a" -CertificateFingerprint "4003d786cc374004bfdfc4f3e8ef9b3a" -OutputDirectory .\..\τ╜▓σÉìµ╕êπü┐</target>
         <note>Please don't localize this string</note>
       </trans-unit>
       <trans-unit id="MSSignCommandUsageSummary">
@@ -113,26 +113,26 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">
         <source>Sign a NuGet package by adding repository signature with specified p7b file.</source>
-        <target state="translated">指定された p7b ファイルを使用してリポジトリ署名を追加し、NuGet パッケージに署名します。</target>
+        <target state="translated">µîçσ«Üπüòπéîπüƒ p7b πâòπéíπéñπâ½πéÆΣ╜┐τö¿πüùπüªπâ¬πâ¥πé╕πâêπâ¬τ╜▓σÉìπéÆΦ┐╜σèáπüùπÇüNuGet πâæπââπé▒πâ╝πé╕πü½τ╜▓σÉìπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandPackageOwnersDescription">
         <source>Semicolon-separated list of package owners.</source>
-        <target state="translated">パッケージ所有者をセミコロンで区切った一覧。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕µëÇµ£ëΦÇàπéÆπé╗πâƒπé│πâ¡πâ│πüºσî║σêçπüúπüƒΣ╕ÇΦªºπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageDescription">
         <source>Sign a NuGet package with repository signature.</source>
-        <target state="translated">リポジトリ署名を使用して NuGet パッケージに署名します。</target>
+        <target state="translated">πâ¬πâ¥πé╕πâêπâ¬τ╜▓σÉìπéÆΣ╜┐τö¿πüùπüª NuGet πâæπââπé▒πâ╝πé╕πü½τ╜▓σÉìπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageExamples">
         <source>nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
 nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "owner1;owner2" -V3ServiceIndexUrl https://v3.index.test</source>
-        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "暗号化サービス プロバイダー" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
+        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "µÜùσÅ╖σîûπé╡πâ╝πâôπé╣ πâùπâ¡πâÉπéñπâÇπâ╝" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
-nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "暗号化サービス プロバイダー" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "owner1;owner2" -V3ServiceIndexUrl https://v3.index.test</target>
+nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "µÜùσÅ╖σîûπé╡πâ╝πâôπé╣ πâùπâ¡πâÉπéñπâÇπâ╝" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "owner1;owner2" -V3ServiceIndexUrl https://v3.index.test</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageSummary">
@@ -142,7 +142,7 @@ nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -Certificate
       </trans-unit>
       <trans-unit id="RepoSignCommandV3ServiceIndexUrlDescription">
         <source>Repository V3 service index URL.</source>
-        <target state="translated">リポジトリ V3 サービス インデックス URL。</target>
+        <target state="translated">πâ¬πâ¥πé╕πâêπâ¬ V3 πé╡πâ╝πâôπé╣ πéñπâ│πâçπââπé»πé╣ URLπÇé</target>
         <note />
       </trans-unit>
     </body>

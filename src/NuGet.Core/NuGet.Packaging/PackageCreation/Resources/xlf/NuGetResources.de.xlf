@@ -1,20 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../NuGetResources.resx">
     <body>
       <trans-unit id="CannotCreateEmptyPackage">
         <source>Cannot create a package that has no dependencies nor content.</source>
-        <target state="translated">Ein Paket ohne Abhängigkeiten und Inhalt kann nicht erstellt werden.</target>
+        <target state="translated">Ein Paket ohne Abh├ñngigkeiten und Inhalt kann nicht erstellt werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyHasInvalidVersion">
         <source>Dependency '{0}' has an invalid version.</source>
-        <target state="translated">Die Abhängigkeit "{0}" weist eine ungültige Version auf.</target>
+        <target state="translated">Die Abh├ñngigkeit "{0}" weist eine ung├╝ltige Version auf.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDependenciesDefined">
         <source>'{0}' already has a dependency defined for '{1}'.</source>
-        <target state="translated">Für "{0}" ist bereits eine Abhängigkeit für "{1}" definiert.</target>
+        <target state="translated">F├╝r "{0}" ist bereits eine Abh├ñngigkeit f├╝r "{1}" definiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="FoundDuplicateFile">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="IconCannotOpenFile">
         <source>Cannot open the icon file '{0}': {1}.</source>
-        <target state="translated">Die Symboldatei "{0}" kann nicht geöffnet werden: {1}.</target>
+        <target state="translated">Die Symboldatei "{0}" kann nicht ge├╢ffnet werden: {1}.</target>
         <note>0 - Path to the icon file, 1 - Error message for not opening the icon</note>
       </trans-unit>
       <trans-unit id="IconErrorEmpty">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="IconInvalidExtension">
         <source>The 'icon' element '{0}' has an invalid file extension. Valid options are .png, .jpg or .jpeg.</source>
-        <target state="translated">Das icon-Element "{0}" weist eine ungültige Dateierweiterung auf. Gültige Optionen: PNG, JPG oder JPEG.</target>
+        <target state="translated">Das icon-Element "{0}" weist eine ung├╝ltige Dateierweiterung auf. G├╝ltige Optionen: PNG, JPG oder JPEG.</target>
         <note>0 - Icon entry in the nuspec</note>
       </trans-unit>
       <trans-unit id="IconMaxFileSizeExceeded">
         <source>The icon file size must not exceed 1 megabyte.</source>
-        <target state="translated">Die Größe der Symboldatei darf 1 MB nicht überschreiten.</target>
+        <target state="translated">Die Gr├╢├ƒe der Symboldatei darf 1 MB nicht ├╝berschreiten.</target>
         <note />
       </trans-unit>
       <trans-unit id="IconMissingRequiredValue">
@@ -59,12 +59,12 @@
       </trans-unit>
       <trans-unit id="IncompatibleSchema">
         <source>The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.</source>
-        <target state="translated">Die Schemaversion von "{0}" ist mit der Version {1} von NuGet nicht kompatibel. Führen Sie ein Upgrade von NuGet auf die neueste Version unter "http://go.microsoft.com/fwlink/?LinkId=213942" aus.</target>
+        <target state="translated">Die Schemaversion von "{0}" ist mit der Version {1} von NuGet nicht kompatibel. F├╝hren Sie ein Upgrade von NuGet auf die neueste Version unter "http://go.microsoft.com/fwlink/?LinkId=213942" aus.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageId">
         <source>The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.</source>
-        <target state="translated">Die Paket-ID '{0}' enthält ungültige Zeichen. Beispiele für gültige Paket-IDs sind 'MyPackage' und 'MyPackage.Sample'.</target>
+        <target state="translated">Die Paket-ID '{0}' enth├ñlt ung├╝ltige Zeichen. Beispiele f├╝r g├╝ltige Paket-IDs sind 'MyPackage' und 'MyPackage.Sample'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_DependenciesHasMixedElements">
@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="Manifest_ExcludeContainsInvalidCharacters">
         <source>Exclude path '{0}' contains invalid characters.</source>
-        <target state="translated">Der Ausschlusspfad "{0}" enthält ungültige Zeichen.</target>
+        <target state="translated">Der Ausschlusspfad "{0}" enth├ñlt ung├╝ltige Zeichen.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_IdMaxLengthExceeded">
@@ -84,22 +84,22 @@
       </trans-unit>
       <trans-unit id="Manifest_InvalidMinClientVersion">
         <source>The 'minClientVersion' attribute in the package manifest has invalid value. It must be a valid version string.</source>
-        <target state="translated">Das Attribut "minClientVersion" im Paketmanifest weist einen ungültigen Wert auf. Es muss sich um eine gültige Versionszeichenfolge handeln.</target>
+        <target state="translated">Das Attribut "minClientVersion" im Paketmanifest weist einen ung├╝ltigen Wert auf. Es muss sich um eine g├╝ltige Versionszeichenfolge handeln.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_InvalidReference">
         <source>Invalid assembly reference '{0}'. Ensure that a file named '{0}' exists in the lib directory.</source>
-        <target state="translated">Ungültiger Assemblyverweis "{0}". Stellen Sie sicher, dass eine Datei namens "{0}" im Verzeichnis "lib" vorhanden ist.</target>
+        <target state="translated">Ung├╝ltiger Assemblyverweis "{0}". Stellen Sie sicher, dass eine Datei namens "{0}" im Verzeichnis "lib" vorhanden ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_InvalidReferenceFile">
         <source>Assembly reference '{0}' contains invalid characters.</source>
-        <target state="translated">Der Assemblyverweis "{0}"enthält ungültige Zeichen.</target>
+        <target state="translated">Der Assemblyverweis "{0}"enth├ñlt ung├╝ltige Zeichen.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_LicenseFileExtensionIsInvalid">
         <source>The license file '{0}' has an invalid extension. Valid options are .txt, .md or none.</source>
-        <target state="translated">Die Lizenzdatei "{0}" besitzt eine ungültige Erweiterung. Gültige Optionen sind TXT, MD oder keine Erweiterung.</target>
+        <target state="translated">Die Lizenzdatei "{0}" besitzt eine ung├╝ltige Erweiterung. G├╝ltige Optionen sind TXT, MD oder keine Erweiterung.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_LicenseFileIsNotInNupkg">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata">
         <source>The licenseUrl and license elements cannot be used together.</source>
-        <target state="translated">licenseUrl und Lizenzelemente können nicht zusammen verwendet werden.</target>
+        <target state="translated">licenseUrl und Lizenzelemente k├╢nnen nicht zusammen verwendet werden.</target>
         <note>Please don't localize licenseUrl and license</note>
       </trans-unit>
       <trans-unit id="Manifest_PropertyValueReadFailure">
@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="Manifest_RequireLicenseAcceptanceRequiresLicenseUrl">
         <source>Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata.</source>
-        <target state="translated">Für die Aktivierung der Lizenzakzeptanz ist die Angabe einer Lizenz oder einer licenseUrl erforderlich. Die licenseUrl ist veraltet, daher sollten Sie die Lizenzmetadaten verwenden.</target>
+        <target state="translated">F├╝r die Aktivierung der Lizenzakzeptanz ist die Angabe einer Lizenz oder einer licenseUrl erforderlich. Die licenseUrl ist veraltet, daher sollten Sie die Lizenzmetadaten verwenden.</target>
         <note>Please don't localize license and licenseUrl in 'requires a license or a licenseUrl' part.</note>
       </trans-unit>
       <trans-unit id="Manifest_RequiredElementMissing">
@@ -154,12 +154,12 @@
       </trans-unit>
       <trans-unit id="Manifest_SourceContainsInvalidCharacters">
         <source>Source path '{0}' contains invalid characters.</source>
-        <target state="translated">Der Quellpfad "{0}" enthält ungültige Zeichen.</target>
+        <target state="translated">Der Quellpfad "{0}" enth├ñlt ung├╝ltige Zeichen.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_TargetContainsInvalidCharacters">
         <source>Target path '{0}' contains invalid characters.</source>
-        <target state="translated">Der Zielpfad "{0}" enthält ungültige Zeichen.</target>
+        <target state="translated">Der Zielpfad "{0}" enth├ñlt ung├╝ltige Zeichen.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_UriCannotBeEmpty">
@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="ReadmeCannotOpenFile">
         <source>Cannot open the readme file '{0}': {1}.</source>
-        <target state="translated">Die Infodatei "{0}" kann nicht geöffnet werden: {1}.</target>
+        <target state="translated">Die Infodatei "{0}" kann nicht ge├╢ffnet werden: {1}.</target>
         <note>0 - Path to the readme file, 1 - Error message for not opening the readme</note>
       </trans-unit>
       <trans-unit id="ReadmeErrorEmpty">
@@ -184,7 +184,7 @@
       </trans-unit>
       <trans-unit id="ReadmeFileExtensionIsInvalid">
         <source>The readme file '{0}' has an invalid extension. It must end in .md.</source>
-        <target state="translated">Die Infodatei "{0}" weist eine ungültige Erweiterung auf. Der Wert muss auf ".md" enden.</target>
+        <target state="translated">Die Infodatei "{0}" weist eine ung├╝ltige Erweiterung auf. Der Wert muss auf ".md" enden.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReadmeMissingRequiredValue">

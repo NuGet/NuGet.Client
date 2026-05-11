@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../Resources.resx">
     <body>
@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="Argument_Invalid_GUID">
         <source>The argument is not a valid GUID.</source>
-        <target state="translated">O argumento não é um GUID válido.</target>
+        <target state="translated">O argumento n├úo ├⌐ um GUID v├ílido.</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThanOrEqualTo">
@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="ExperimentVariableOverrideLogText">
         <source>Experiment flight '{0}' evaluation overridden by environment variable '{1}' set to '{2}'</source>
-        <target state="translated">Versão de pré-lançamento '{0}' avaliação substituída pela variável de ambiente '{1}' definido para '{2}'</target>
+        <target state="translated">Vers├úo de pr├⌐-lan├ºamento '{0}' avalia├º├úo substitu├¡da pela vari├ível de ambiente '{1}' definido para '{2}'</target>
         <note>{0} is a flight name, {1} is a variable name, {2} is a string value of the variable</note>
       </trans-unit>
       <trans-unit id="Finished">
         <source>========== Finished ==========</source>
-        <target state="translated">========== Concluído ==========</target>
+        <target state="translated">========== Conclu├¡do ==========</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatSelection">

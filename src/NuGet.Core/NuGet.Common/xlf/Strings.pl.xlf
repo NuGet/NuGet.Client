@@ -1,25 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../Strings.resx">
     <body>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty</source>
-        <target state="translated">Argument nie może mieć wartości null ani być pusty</target>
+        <target state="translated">Argument nie mo┼╝e mie─ç warto┼¢ci null ani by─ç pusty</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThanOrEqualTo">
         <source>Value must be greater than or equal to {0}</source>
-        <target state="translated">Wartość musi być większa lub równa {0}</target>
+        <target state="translated">Warto┼¢─ç musi by─ç wi─Öksza lub r├│wna {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingRequiredEnvVar">
         <source>Required environment variable '{0}' is not set. Try setting '{0}' and running the operation again.</source>
-        <target state="translated">Wymagana zmienna środowiskowa „{0}” nie jest ustawiona. Spróbuj ustawić zmienną „{0}” i ponownie uruchomić operację.</target>
+        <target state="translated">Wymagana zmienna ┼¢rodowiskowa ΓÇ₧{0}ΓÇ¥ nie jest ustawiona. Spr├│buj ustawi─ç zmienn─à ΓÇ₧{0}ΓÇ¥ i ponownie uruchomi─ç operacj─Ö.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingRequiredEnvVarsDotnet">
         <source>Required environment variable '{0}' is not set. Try setting '{1}' or '{0}' and running the operation</source>
-        <target state="translated">Wymagana zmienna środowiskowa „{0}” nie jest ustawiona. Spróbuj ustawić zmienną „{1}” lub „{0}” i uruchomić operację.</target>
+        <target state="translated">Wymagana zmienna ┼¢rodowiskowa ΓÇ₧{0}ΓÇ¥ nie jest ustawiona. Spr├│buj ustawi─ç zmienn─à ΓÇ₧{1}ΓÇ¥ lub ΓÇ₧{0}ΓÇ¥ i uruchomi─ç operacj─Ö.</target>
         <note />
       </trans-unit>
       <trans-unit id="TimeUnits_Hour">
@@ -44,32 +44,32 @@
       </trans-unit>
       <trans-unit id="UnableToDetemineClientVersion">
         <source>Unable to determine the current NuGet client version.</source>
-        <target state="translated">Nie można określić bieżącej wersji klienta NuGet.</target>
+        <target state="translated">Nie mo┼╝na okre┼¢li─ç bie┼╝─àcej wersji klienta NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToSetNuGetTempFolderPermission">
         <source>User is unable to set permission to 700 while creating {0}, errno={1}.</source>
-        <target state="translated">Użytkownik nie może ustawić uprawnienia na wartość 700 podczas tworzenia ścieżki {0}, błąd={1}.</target>
+        <target state="translated">U┼╝ytkownik nie mo┼╝e ustawi─ç uprawnienia na warto┼¢─ç 700 podczas tworzenia ┼¢cie┼╝ki {0}, b┼é─àd={1}.</target>
         <note>{0} is a file path; {1} is an error code.</note>
       </trans-unit>
       <trans-unit id="UnauthorizedLockFail">
         <source>Unable to obtain lock file access on '{0}' for operations on '{1}'. This may mean that a different user or administrator is holding this lock and that this process does not have permission to access it. If no other process is currently performing an operation on this file it may mean that an earlier NuGet process crashed and left an inaccessible lock file, in this case removing the file '{0}' will allow NuGet to continue.</source>
-        <target state="translated">Nie można uzyskać dostępu do pliku blokady w „{0}” na potrzeby operacji w „{1}”. Może to oznaczać, że inny użytkownik lub administrator utrzymuje tę blokadę i ten proces nie ma uprawnienia dostępu do niego. Jeśli żaden inny proces obecnie nie wykonuje operacji na tym pliku, może to oznaczać, że wystąpiła awaria wcześniejszego procesu NuGet i pozostał niedostępny plik blokady. W tej sytuacji usunięcie pliku „{0}” umożliwi kontynuowanie działania rozwiązania NuGet.</target>
+        <target state="translated">Nie mo┼╝na uzyska─ç dost─Öpu do pliku blokady w ΓÇ₧{0}ΓÇ¥ na potrzeby operacji w ΓÇ₧{1}ΓÇ¥. Mo┼╝e to oznacza─ç, ┼╝e inny u┼╝ytkownik lub administrator utrzymuje t─Ö blokad─Ö i ten proces nie ma uprawnienia dost─Öpu do niego. Je┼¢li ┼╝aden inny proces obecnie nie wykonuje operacji na tym pliku, mo┼╝e to oznacza─ç, ┼╝e wyst─àpi┼éa awaria wcze┼¢niejszego procesu NuGet i pozosta┼é niedost─Öpny plik blokady. W tej sytuacji usuni─Öcie pliku ΓÇ₧{0}ΓÇ¥ umo┼╝liwi kontynuowanie dzia┼éania rozwi─àzania NuGet.</target>
         <note>{0} and {1} are both file paths.</note>
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithm">
         <source>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</source>
-        <target state="translated">Algorytm wyznaczania wartości skrótu „{0}” jest nieobsługiwany. Obsługiwane algorytmy obejmują SHA512 i SHA256.</target>
+        <target state="translated">Algorytm wyznaczania warto┼¢ci skr├│tu ΓÇ₧{0}ΓÇ¥ jest nieobs┼éugiwany. Obs┼éugiwane algorytmy obejmuj─à SHA512 i SHA256.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithmName">
         <source>Hash algorithm '{0}' is unsupported.</source>
-        <target state="translated">Algorytm wyznaczania wartości skrótu „{0}” jest nieobsługiwany.</target>
+        <target state="translated">Algorytm wyznaczania warto┼¢ci skr├│tu ΓÇ₧{0}ΓÇ¥ jest nieobs┼éugiwany.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
       <trans-unit id="UnsupportedSignatureAlgorithmName">
         <source>Signature algorithm '{0}' is unsupported.</source>
-        <target state="translated">Algorytm podpisywania „{0}” jest nieobsługiwany.</target>
+        <target state="translated">Algorytm podpisywania ΓÇ₧{0}ΓÇ¥ jest nieobs┼éugiwany.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
     </body>

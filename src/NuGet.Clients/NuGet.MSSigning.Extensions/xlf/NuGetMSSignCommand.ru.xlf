@@ -1,100 +1,100 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">Имя поставщика служб шифрования, который содержит контейнер закрытого ключа.</target>
+        <target state="translated">╨ÿ╨╝╤Å ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║╨░ ╤ü╨╗╤â╨╢╨▒ ╤ê╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╕╤Å, ╨║╨╛╤é╨╛╤Ç╤ï╨╣ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨║╨╛╨╜╤é╨╡╨╣╨╜╨╡╤Ç ╨╖╨░╨║╤Ç╤ï╤é╨╛╨│╨╛ ╨║╨╗╤Ä╤ç╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
         <source>File path to the p7b file to be used while signing the package.</source>
-        <target state="translated">Путь к файлу p7b, используемому при подписывании пакета.</target>
+        <target state="translated">╨ƒ╤â╤é╤î ╨║ ╤ä╨░╨╣╨╗╤â p7b, ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╨╝╨╛╨╝╤â ╨┐╤Ç╨╕ ╨┐╨╛╨┤╨┐╨╕╤ü╤ï╨▓╨░╨╜╨╕╨╕ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="translated">Отпечаток SHA-256, SHA-384 или SHA-512 сертификата, используемый для поиска P7B-файла для сертификата.</target>
+        <target state="translated">╨₧╤é╨┐╨╡╤ç╨░╤é╨╛╨║ SHA-256, SHA-384 ╨╕╨╗╨╕ SHA-512 ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░, ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╨╝╤ï╨╣ ╨┤╨╗╤Å ╨┐╨╛╨╕╤ü╨║╨░ P7B-╤ä╨░╨╣╨╗╨░ ╨┤╨╗╤Å ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
         <source>Signs a NuGet package with the specified p7b file.</source>
-        <target state="translated">Подписывает пакет NuGet с указанным P7B-файлом.</target>
+        <target state="translated">╨ƒ╨╛╨┤╨┐╨╕╤ü╤ï╨▓╨░╨╡╤é ╨┐╨░╨║╨╡╤é NuGet ╤ü ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╝ P7B-╤ä╨░╨╣╨╗╨╛╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandHashAlgorithmDescription">
         <source>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</source>
-        <target state="translated">Хэш-алгоритм, который будет использоваться при создании файла манифеста пакета. По умолчанию SHA256.</target>
+        <target state="translated">╨Ñ╤ì╤ê-╨░╨╗╨│╨╛╤Ç╨╕╤é╨╝, ╨║╨╛╤é╨╛╤Ç╤ï╨╣ ╨▒╤â╨┤╨╡╤é ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î╤ü╤Å ╨┐╤Ç╨╕ ╤ü╨╛╨╖╨┤╨░╨╜╨╕╨╕ ╤ä╨░╨╣╨╗╨░ ╨╝╨░╨╜╨╕╤ä╨╡╤ü╤é╨░ ╨┐╨░╨║╨╡╤é╨░. ╨ƒ╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
         <source>Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</source>
-        <target state="translated">Указано недопустимое значение для "{0}". Список допустимых значений см. на странице https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╛ ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┤╨╗╤Å "{0}". ╨í╨┐╨╕╤ü╨╛╨║ ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╤à ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╣ ╤ü╨╝. ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
         <note>{0} - argument name</note>
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: недопустимое значение параметра "CertificateFingerprint". Значение должно быть отпечатком сертификата SHA-256, SHA-384 или SHA-512 (в шестнадцатеричном формате).</target>
+        <target state="translated">{0}: ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░ "CertificateFingerprint". ╨ù╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┤╨╛╨╗╨╢╨╜╨╛ ╨▒╤ï╤é╤î ╨╛╤é╨┐╨╡╤ç╨░╤é╨║╨╛╨╝ ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░ SHA-256, SHA-384 ╨╕╨╗╨╕ SHA-512 (╨▓ ╤ê╨╡╤ü╤é╨╜╨░╨┤╤å╨░╤é╨╡╤Ç╨╕╤ç╨╜╨╛╨╝ ╤ä╨╛╤Ç╨╝╨░╤é╨╡).</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
         <source>Cng Key is not an RSA key.</source>
-        <target state="translated">Ключ CNG не является ключом RSA.</target>
+        <target state="translated">╨Ü╨╗╤Ä╤ç CNG ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨║╨╗╤Ä╤ç╨╛╨╝ RSA.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandKeyContainerDescription">
         <source>Name of the key container which has the private key.</source>
-        <target state="translated">Имя контейнера ключа, содержащего закрытый ключ.</target>
+        <target state="translated">╨ÿ╨╝╤Å ╨║╨╛╨╜╤é╨╡╨╣╨╜╨╡╤Ç╨░ ╨║╨╗╤Ä╤ç╨░, ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤ë╨╡╨│╨╛ ╨╖╨░╨║╤Ç╤ï╤é╤ï╨╣ ╨║╨╗╤Ä╤ç.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCertException">
         <source>Can't find specified certificate.</source>
-        <target state="translated">Не удается найти указанный сертификат.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╜╨░╨╣╤é╨╕ ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCngKeyException">
         <source>Can't find cng key.</source>
-        <target state="translated">Не удается найти ключ CNG.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╜╨░╨╣╤é╨╕ ╨║╨╗╤Ä╤ç CNG.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
         <source>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">Пакет не указан. Допустимые способы предоставления пакетов: https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="translated">╨ƒ╨░╨║╨╡╤é ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜. ╨ö╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╡ ╤ü╨┐╨╛╤ü╨╛╨▒╤ï ╨┐╤Ç╨╡╨┤╨╛╤ü╤é╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨░╨║╨╡╤é╨╛╨▓: https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
         <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">Для подписанного пакета не будет установлена метка времени, так как не был указан параметр "-Timestamper". Дополнительные сведения об этом параметре: https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="translated">╨ö╨╗╤Å ╨┐╨╛╨┤╨┐╨╕╤ü╨░╨╜╨╜╨╛╨│╨╛ ╨┐╨░╨║╨╡╤é╨░ ╨╜╨╡ ╨▒╤â╨┤╨╡╤é ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨░ ╨╝╨╡╤é╨║╨░ ╨▓╤Ç╨╡╨╝╨╡╨╜╨╕, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡ ╨▒╤ï╨╗ ╤â╨║╨░╨╖╨░╨╜ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç "-Timestamper". ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛╨▒ ╤ì╤é╨╛╨╝ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨╡: https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoValidCertificateFileException">
         <source>No CertificateFile provided or provided file is not a p7b file.</source>
-        <target state="translated">Файл сертификата не указан, или указанный файл не является P7B-файлом.</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░ ╨╜╨╡ ╤â╨║╨░╨╖╨░╨╜, ╨╕╨╗╨╕ ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╤ä╨░╨╣╨╗ ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å P7B-╤ä╨░╨╣╨╗╨╛╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
         <source>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</source>
-        <target state="translated">Папка, в которой будет сохранен подписанный пакет. По умолчанию исходный пакет перезаписывается подписанным пакетом.</target>
+        <target state="translated">╨ƒ╨░╨┐╨║╨░, ╨▓ ╨║╨╛╤é╨╛╤Ç╨╛╨╣ ╨▒╤â╨┤╨╡╤é ╤ü╨╛╤à╤Ç╨░╨╜╨╡╨╜ ╨┐╨╛╨┤╨┐╨╕╤ü╨░╨╜╨╜╤ï╨╣ ╨┐╨░╨║╨╡╤é. ╨ƒ╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä ╨╕╤ü╤à╨╛╨┤╨╜╤ï╨╣ ╨┐╨░╨║╨╡╤é ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╨╕╤ü╤ï╨▓╨░╨╡╤é╤ü╤Å ╨┐╨╛╨┤╨┐╨╕╤ü╨░╨╜╨╜╤ï╨╝ ╨┐╨░╨║╨╡╤é╨╛╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOverwriteDescription">
         <source>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</source>
-        <target state="translated">Параметр, который указывает, необходимо ли перезаписать текущую подпись. Если у пакета уже есть подпись, по умолчанию команда завершится с ошибкой.</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç, ╨║╨╛╤é╨╛╤Ç╤ï╨╣ ╤â╨║╨░╨╖╤ï╨▓╨░╨╡╤é, ╨╜╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╨╗╨╕ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╨╕╤ü╨░╤é╤î ╤é╨╡╨║╤â╤ë╤â╤Ä ╨┐╨╛╨┤╨┐╨╕╤ü╤î. ╨ò╤ü╨╗╨╕ ╤â ╨┐╨░╨║╨╡╤é╨░ ╤â╨╢╨╡ ╨╡╤ü╤é╤î ╨┐╨╛╨┤╨┐╨╕╤ü╤î, ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä ╨║╨╛╨╝╨░╨╜╨┤╨░ ╨╖╨░╨▓╨╡╤Ç╤ê╨╕╤é╤ü╤Å ╤ü ╨╛╤ê╨╕╨▒╨║╨╛╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">Хэш-алгоритм, используемый сервером меток времени RFC 3161. По умолчанию SHA256.</target>
+        <target state="translated">╨Ñ╤ì╤ê-╨░╨╗╨│╨╛╤Ç╨╕╤é╨╝, ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╨╝╤ï╨╣ ╤ü╨╡╤Ç╨▓╨╡╤Ç╨╛╨╝ ╨╝╨╡╤é╨╛╨║ ╨▓╤Ç╨╡╨╝╨╡╨╜╨╕ RFC 3161. ╨ƒ╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
         <source>URL to an RFC 3161 timestamping server.</source>
-        <target state="translated">URL-адрес сервера меток времени RFC 3161.</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╤ü╨╡╤Ç╨▓╨╡╤Ç╨░ ╨╝╨╡╤é╨╛╨║ ╨▓╤Ç╨╡╨╝╨╡╨╜╨╕ RFC 3161.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageDescription">
         <source>Signs a NuGet package.</source>
-        <target state="translated">Подписывает пакет NuGet.</target>
+        <target state="translated">╨ƒ╨╛╨┤╨┐╨╕╤ü╤ï╨▓╨░╨╡╤é ╨┐╨░╨║╨╡╤é NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageExamples">
@@ -113,26 +113,26 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">
         <source>Sign a NuGet package by adding repository signature with specified p7b file.</source>
-        <target state="translated">Подпишите пакет NuGet, добавив подпись репозитория с указанным файлом P7B.</target>
+        <target state="translated">╨ƒ╨╛╨┤╨┐╨╕╤ê╨╕╤é╨╡ ╨┐╨░╨║╨╡╤é NuGet, ╨┤╨╛╨▒╨░╨▓╨╕╨▓ ╨┐╨╛╨┤╨┐╨╕╤ü╤î ╤Ç╨╡╨┐╨╛╨╖╨╕╤é╨╛╤Ç╨╕╤Å ╤ü ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╝ ╤ä╨░╨╣╨╗╨╛╨╝ P7B.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandPackageOwnersDescription">
         <source>Semicolon-separated list of package owners.</source>
-        <target state="translated">Разделенный точками с запятыми список владельцев пакета.</target>
+        <target state="translated">╨á╨░╨╖╨┤╨╡╨╗╨╡╨╜╨╜╤ï╨╣ ╤é╨╛╤ç╨║╨░╨╝╨╕ ╤ü ╨╖╨░╨┐╤Å╤é╤ï╨╝╨╕ ╤ü╨┐╨╕╤ü╨╛╨║ ╨▓╨╗╨░╨┤╨╡╨╗╤î╤å╨╡╨▓ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageDescription">
         <source>Sign a NuGet package with repository signature.</source>
-        <target state="translated">Подпишите пакет NuGet подписью репозитория.</target>
+        <target state="translated">╨ƒ╨╛╨┤╨┐╨╕╤ê╨╕╤é╨╡ ╨┐╨░╨║╨╡╤é NuGet ╨┐╨╛╨┤╨┐╨╕╤ü╤î╤Ä ╤Ç╨╡╨┐╨╛╨╖╨╕╤é╨╛╤Ç╨╕╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageExamples">
         <source>nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
 nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Cryptographic Service Provider" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "owner1;owner2" -V3ServiceIndexUrl https://v3.index.test</source>
-        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Поставщик служб шифрования" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
+        <target state="translated">nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "╨ƒ╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤ü╨╗╤â╨╢╨▒ ╤ê╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╕╤Å" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -V3ServiceIndexUrl https://v3.index.test
 
-nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "Поставщик служб шифрования" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "владелец1;владелец2" -V3ServiceIndexUrl https://v3.index.test</target>
+nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -CertificateFile certificates.p7b -CSPName "╨ƒ╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤ü╨╗╤â╨╢╨▒ ╤ê╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╕╤Å" -KeyContainer 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -CertificateFingerprint 8599ADD1C62EE42E315EA887FF60908B7A7C6E9B -OutputDirectory .\..\Signed -PackageOwners "╨▓╨╗╨░╨┤╨╡╨╗╨╡╤å1;╨▓╨╗╨░╨┤╨╡╨╗╨╡╤å2" -V3ServiceIndexUrl https://v3.index.test</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageSummary">
@@ -142,7 +142,7 @@ nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -Certificate
       </trans-unit>
       <trans-unit id="RepoSignCommandV3ServiceIndexUrlDescription">
         <source>Repository V3 service index URL.</source>
-        <target state="translated">URL-адрес индекса для службы V3 репозитория.</target>
+        <target state="translated">URL-╨░╨┤╤Ç╨╡╤ü ╨╕╨╜╨┤╨╡╨║╤ü╨░ ╨┤╨╗╤Å ╤ü╨╗╤â╨╢╨▒╤ï V3 ╤Ç╨╡╨┐╨╛╨╖╨╕╤é╨╛╤Ç╨╕╤Å.</target>
         <note />
       </trans-unit>
     </body>

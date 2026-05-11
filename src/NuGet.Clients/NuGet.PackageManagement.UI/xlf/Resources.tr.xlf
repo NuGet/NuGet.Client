@@ -1,30 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../Resources.resx">
     <body>
       <trans-unit id="Accessibility_ColumnNotSortedHelpText">
         <source>Not sorted, press space to sort ascending</source>
-        <target state="translated">Sıralanmadı. Artan düzende sıralamak için boşluk tuşuna basın</target>
+        <target state="translated">S─▒ralanmad─▒. Artan d├╝zende s─▒ralamak i├ºin bo┼ƒluk tu┼ƒuna bas─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedAscendingHelpText">
         <source>Sorted ascending, press space to sort descending</source>
-        <target state="translated">Artan düzende sıralandı. Azalan düzende sıralamak için boşluk tuşuna basın</target>
+        <target state="translated">Artan d├╝zende s─▒raland─▒. Azalan d├╝zende s─▒ralamak i├ºin bo┼ƒluk tu┼ƒuna bas─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedDescendingHelpText">
         <source>Sorted descending, press space to sort ascending</source>
-        <target state="translated">Azalan düzende sıralandı. Artan düzende sıralamak için boşluk tuşuna basın</target>
+        <target state="translated">Azalan d├╝zende s─▒raland─▒. Artan d├╝zende s─▒ralamak i├ºin bo┼ƒluk tu┼ƒuna bas─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDeprecation">
         <source>Package deprecation</source>
-        <target state="translated">Paketi kullanım dışı bırakma</target>
+        <target state="translated">Paketi kullan─▒m d─▒┼ƒ─▒ b─▒rakma</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDetailsUrlIcon">
         <source>Package details URL icon</source>
-        <target state="translated">Paket ayrıntıları URL simgesi</target>
+        <target state="translated">Paket ayr─▒nt─▒lar─▒ URL simgesi</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageIcon">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="translated">{0} sürüm {1}</target>
+        <target state="translated">{0} s├╝r├╝m {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
         <source>Package manager</source>
-        <target state="translated">Paket yöneticisi</target>
+        <target state="translated">Paket y├╢neticisi</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageMetadata">
@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageVulnerabilities">
         <source>Package vulnerabilities</source>
-        <target state="translated">Paket güvenlik açıkları</target>
+        <target state="translated">Paket g├╝venlik a├º─▒klar─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
         <source>Package details</source>
-        <target state="translated">Paket ayrıntıları</target>
+        <target state="translated">Paket ayr─▒nt─▒lar─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesList">
@@ -69,67 +69,67 @@
       </trans-unit>
       <trans-unit id="Accessibility_PrefixReserved">
         <source>Prefix reserved</source>
-        <target state="translated">Ayrılmış ön ek</target>
+        <target state="translated">Ayr─▒lm─▒┼ƒ ├╢n ek</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteAllToTopLevel">
         <source>Promote all to top level dependencies</source>
-        <target state="translated">Tümünü üst düzey bağımlılıklara yükselt</target>
+        <target state="translated">T├╝m├╝n├╝ ├╝st d├╝zey ba─ƒ─▒ml─▒l─▒klara y├╝kselt</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteToTopLevel">
         <source>Promote to a top level dependency</source>
-        <target state="translated">Üst düzey bağımlılığa yükselt</target>
+        <target state="translated">├£st d├╝zey ba─ƒ─▒ml─▒l─▒─ƒa y├╝kselt</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbHelp">
         <source>Use arrow keys to change the size of the sections</source>
-        <target state="translated">Bölümlerin boyutunu değiştirmek için ok tuşlarını kullanın</target>
+        <target state="translated">B├╢l├╝mlerin boyutunu de─ƒi┼ƒtirmek i├ºin ok tu┼ƒlar─▒n─▒ kullan─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbName">
         <source>splitter for Packages list</source>
-        <target state="translated">Paket listesi için ayırıcı</target>
+        <target state="translated">Paket listesi i├ºin ay─▒r─▒c─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_VulnerabilitiesDescriptionName">
         <source>Package vulnerability description</source>
-        <target state="translated">Paket güvenlik açığı açıklaması</target>
+        <target state="translated">Paket g├╝venlik a├º─▒─ƒ─▒ a├º─▒klamas─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Action_Consolidate">
         <source>Consolidate</source>
-        <target state="translated">Birleştir</target>
+        <target state="translated">Birle┼ƒtir</target>
         <note />
       </trans-unit>
       <trans-unit id="AggregateSourceName">
         <source>All</source>
-        <target state="translated">Tümü</target>
+        <target state="translated">T├╝m├╝</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">Bağımsız değişken null veya boş olamaz.</target>
+        <target state="translated">Ba─ƒ─▒ms─▒z de─ƒi┼ƒken null veya bo┼ƒ olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForPRMigrator">
         <source>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageReference'.</source>
-        <target state="translated">Bu projenin NuGet paketi yönetim biçimini 'packages.config' biçiminden 'PackageReference' biçimine geçirmeyi düşünün.</target>
+        <target state="translated">Bu projenin NuGet paketi y├╢netim bi├ºimini 'packages.config' bi├ºiminden 'PackageReference' bi├ºimine ge├ºirmeyi d├╝┼ƒ├╝n├╝n.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForRestoreMessage">
         <source>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</source>
-        <target state="translated">Bu çözümde bazı NuGet paketleri eksik. Çevrimiçi paket kaynaklarınızdan geri yüklemek için tıklayın.</target>
+        <target state="translated">Bu ├º├╢z├╝mde baz─▒ NuGet paketleri eksik. ├çevrimi├ºi paket kaynaklar─▒n─▒zdan geri y├╝klemek i├ºin t─▒klay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForUpdateMessage">
         <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">NuGet Paket Yöneticisinin yeni bir sürümü kullanılabilir.</target>
+        <target state="translated">NuGet Paket Y├╢neticisinin yeni bir s├╝r├╝m├╝ kullan─▒labilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
-        <target state="translated">Bir SDK tarafından örtülü olarak başvuruldu. Paketi güncelleştirmek için paketin ait olduğu SDK'yı güncelleştirin.</target>
+        <target state="translated">Bir SDK taraf─▒ndan ├╢rt├╝l├╝ olarak ba┼ƒvuruldu. Paketi g├╝ncelle┼ƒtirmek i├ºin paketin ait oldu─ƒu SDK'y─▒ g├╝ncelle┼ƒtirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Billion">
@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="Button_Cancel">
         <source>_Cancel</source>
-        <target state="translated">_İptal</target>
+        <target state="translated">_─░ptal</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Copy">
@@ -169,17 +169,17 @@
       </trans-unit>
       <trans-unit id="Button_Install">
         <source>Install</source>
-        <target state="translated">Yükle</target>
+        <target state="translated">Y├╝kle</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_No">
         <source>_No</source>
-        <target state="translated">_Hayır</target>
+        <target state="translated">_Hay─▒r</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_NoToAll">
         <source>No to A_ll</source>
-        <target state="translated">T_ümüne Hayır</target>
+        <target state="translated">T_├╝m├╝ne Hay─▒r</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_OK">
@@ -189,32 +189,32 @@
       </trans-unit>
       <trans-unit id="Button_Preview">
         <source>Preview</source>
-        <target state="translated">Önizleme</target>
+        <target state="translated">├ûnizleme</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_RestartSearch">
         <source>Restart search</source>
-        <target state="translated">Aramayı yeniden başlat</target>
+        <target state="translated">Aramay─▒ yeniden ba┼ƒlat</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowErrors">
         <source>Show errors in output</source>
-        <target state="translated">Hataları çıkışta göster</target>
+        <target state="translated">Hatalar─▒ ├º─▒k─▒┼ƒta g├╢ster</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowMoreResults">
         <source>Show {0} more results</source>
-        <target state="translated">Diğer {0} sonucu göster</target>
+        <target state="translated">Di─ƒer {0} sonucu g├╢ster</target>
         <note>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</note>
       </trans-unit>
       <trans-unit id="Button_Uninstall">
         <source>Uninstall</source>
-        <target state="translated">Kaldır</target>
+        <target state="translated">Kald─▒r</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Update">
         <source>Update</source>
-        <target state="translated">Güncelleştir</target>
+        <target state="translated">G├╝ncelle┼ƒtir</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Yes">
@@ -224,42 +224,42 @@
       </trans-unit>
       <trans-unit id="Button_YesToAll">
         <source>Yes to _All</source>
-        <target state="translated">_Tümüne Evet</target>
+        <target state="translated">_T├╝m├╝ne Evet</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="CheckBox_DefaultPackageFormat">
         <source>Allow format selection on first package install</source>
-        <target state="translated">İlk paket yüklemesinde biçim seçimine izin ver</target>
+        <target state="translated">─░lk paket y├╝klemesinde bi├ºim se├ºimine izin ver</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects">
         <source>Select All Projects</source>
-        <target state="translated">Tüm Projeleri Seç</target>
+        <target state="translated">T├╝m Projeleri Se├º</target>
         <note>Name for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects_HelpText">
         <source>Select this checkbox to install the NuGet Package to all projects in the solution</source>
-        <target state="translated">Çözümdeki tüm projelere NuGet Paketi yüklemek için bu onay kutucuğunu seçin</target>
+        <target state="translated">├ç├╢z├╝mdeki t├╝m projelere NuGet Paketi y├╝klemek i├ºin bu onay kutucu─ƒunu se├ºin</target>
         <note>Help text for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectProject_HelpText">
         <source>Select this checkbox to install the NuGet Package to the project '{0}'</source>
-        <target state="translated">'{0}' projesine NuGet Paketi yüklemek için bu onay kutucuğunu seçin</target>
+        <target state="translated">'{0}' projesine NuGet Paketi y├╝klemek i├ºin bu onay kutucu─ƒunu se├ºin</target>
         <note>Help text for the checkbox to install a NuGet package to a specific project.</note>
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="translated">Seçili</target>
+        <target state="translated">Se├ºili</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
         <source>Force uninstall, even if there are dependencies on it</source>
-        <target state="translated">Üzerinde bağımlılıklar olsa bile zorla kaldır</target>
+        <target state="translated">├£zerinde ba─ƒ─▒ml─▒l─▒klar olsa bile zorla kald─▒r</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_IncludePrerelease">
         <source>Include prerelease</source>
-        <target state="translated">Ön sürümü dahil et</target>
+        <target state="translated">├ûn s├╝r├╝m├╝ dahil et</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ProjectSelection">
@@ -269,32 +269,32 @@
       </trans-unit>
       <trans-unit id="Checkbox_RemoveDependencies">
         <source>Remove dependencies</source>
-        <target state="translated">Bağımlılıkları kaldır</target>
+        <target state="translated">Ba─ƒ─▒ml─▒l─▒klar─▒ kald─▒r</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_SelectAllPackages">
         <source>Select all packages</source>
-        <target state="translated">Tüm paketleri seç</target>
+        <target state="translated">T├╝m paketleri se├º</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ShowPreviewWindow">
         <source>Show preview window</source>
-        <target state="translated">Önizleme penceresini göster</target>
+        <target state="translated">├ûnizleme penceresini g├╢ster</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_Show_Vulnerable_Only">
         <source>Show only vulnerable</source>
-        <target state="translated">Yalnızca savunmasız olanları göster</target>
+        <target state="translated">Yaln─▒zca savunmas─▒z olanlar─▒ g├╢ster</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_InstalledVersion">
         <source>Installed</source>
-        <target state="translated">Yüklü</target>
+        <target state="translated">Y├╝kl├╝</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_PackageLevel">
         <source>Package Level</source>
-        <target state="translated">Paket Düzeyi</target>
+        <target state="translated">Paket D├╝zeyi</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Project">
@@ -304,12 +304,12 @@
       </trans-unit>
       <trans-unit id="ColumnHeader_Requested">
         <source>Version</source>
-        <target state="translated">Sürüm</target>
+        <target state="translated">S├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Selected">
         <source>Selected</source>
-        <target state="translated">Seçili</target>
+        <target state="translated">Se├ºili</target>
         <note />
       </trans-unit>
       <trans-unit id="CopyMenuCommandLabel">
@@ -319,32 +319,32 @@
       </trans-unit>
       <trans-unit id="DependencyBehavior_Highest">
         <source>Highest</source>
-        <target state="translated">En Yüksek</target>
+        <target state="translated">En Y├╝ksek</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestMinor">
         <source>Highest Minor</source>
-        <target state="translated">En Yüksek İkincil Sürüm</target>
+        <target state="translated">En Y├╝ksek ─░kincil S├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestPatch">
         <source>Highest Patch</source>
-        <target state="translated">En Yüksek Düzeltme Eki</target>
+        <target state="translated">En Y├╝ksek D├╝zeltme Eki</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_IgnoreDependencies">
         <source>Ignore Dependencies</source>
-        <target state="translated">Bağımlılıkları Yoksay</target>
+        <target state="translated">Ba─ƒ─▒ml─▒l─▒klar─▒ Yoksay</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_Lowest">
         <source>Lowest</source>
-        <target state="translated">En Düşük</target>
+        <target state="translated">En D├╝┼ƒ├╝k</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_LinkTooltip">
         <source>Select to view the alternative package.</source>
-        <target state="translated">Alternatif paketi görüntülemek için seçin.</target>
+        <target state="translated">Alternatif paketi g├╢r├╝nt├╝lemek i├ºin se├ºin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_MoreInfo">
@@ -354,12 +354,12 @@
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessage">
         <source>This package version is deprecated.</source>
-        <target state="translated">Bu paket sürümü kullanımdan kaldırıldı.</target>
+        <target state="translated">Bu paket s├╝r├╝m├╝ kullan─▒mdan kald─▒r─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessageAlternative">
         <source>This package version is deprecated. Use {0} instead.</source>
-        <target state="translated">Bu paket sürümü kullanımdan kaldırıldı. Bunun yerine {0} kullanın.</target>
+        <target state="translated">Bu paket s├╝r├╝m├╝ kullan─▒mdan kald─▒r─▒ld─▒. Bunun yerine {0} kullan─▒n.</target>
         <note>{0} is a NuGet package id (string)</note>
       </trans-unit>
       <trans-unit id="Description_LearnMore">
@@ -369,47 +369,47 @@
       </trans-unit>
       <trans-unit id="DialogTitle_HttpSource">
         <source>HTTP Source</source>
-        <target state="translated">HTTP Kaynağı</target>
+        <target state="translated">HTTP Kayna─ƒ─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotShowThisAgain">
         <source>_Don't show this again</source>
-        <target state="translated">_Bunu bir daha gösterme</target>
+        <target state="translated">_Bunu bir daha g├╢sterme</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</source>
-        <target state="translated">NuGet için HTTPS kaynakları gereklidir. Bir HTTP kaynağı kullanmak için NuGet.Config dosyanızda 'allowInsecureConnections' ayarını açıkça “true” olarak ayarlamanız gerekir.</target>
+        <target state="translated">NuGet i├ºin HTTPS kaynaklar─▒ gereklidir. Bir HTTP kayna─ƒ─▒ kullanmak i├ºin NuGet.Config dosyan─▒zda 'allowInsecureConnections' ayar─▒n─▒ a├º─▒k├ºa ΓÇ£trueΓÇ¥ olarak ayarlaman─▒z gerekir.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MetadataNotFound">
         <source>Unable to find metadata of {0}</source>
-        <target state="translated">{0} meta verileri bulunamadı</target>
+        <target state="translated">{0} meta verileri bulunamad─▒</target>
         <note>{0} is the package ID</note>
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">{0} projesi, proje sistem önbelleğinde yer almıyor.</target>
+        <target state="translated">{0} projesi, proje sistem ├╢nbelle─ƒinde yer alm─▒yor.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceMapping_GPF_NotEnabled">
         <source>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</source>
-        <target state="translated">`{0}` paketi Genel paketler klasöründe mevcut ancak geldiği `{1}` kaynağı yapılandırılmış kaynaklardan biri değil.</target>
+        <target state="translated">`{0}` paketi Genel paketler klas├╢r├╝nde mevcut ancak geldi─ƒi `{1}` kayna─ƒ─▒ yap─▒land─▒r─▒lm─▒┼ƒ kaynaklardan biri de─ƒil.</target>
         <note>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLoadReadme">
         <source>An error occurred while trying to load the README.</source>
-        <target state="translated">README yüklenmeye çalışılırken bir hata oluştu.</target>
+        <target state="translated">README y├╝klenmeye ├ºal─▒┼ƒ─▒l─▒rken bir hata olu┼ƒtu.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_IgnoreAll">
         <source>Ignore All</source>
-        <target state="translated">Tümünü Yoksay</target>
+        <target state="translated">T├╝m├╝n├╝ Yoksay</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_OverwriteAll">
         <source>Overwrite All</source>
-        <target state="translated">Tümünü Geçersiz Kıl</target>
+        <target state="translated">T├╝m├╝n├╝ Ge├ºersiz K─▒l</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_Prompt">
@@ -419,17 +419,17 @@
       </trans-unit>
       <trans-unit id="GroupBoxHeader_InstallOptions">
         <source>Install and Update Options</source>
-        <target state="translated">Yükleme ve Güncelleme Seçenekleri</target>
+        <target state="translated">Y├╝kleme ve G├╝ncelleme Se├ºenekleri</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_UninstallOptions">
         <source>Uninstall Options</source>
-        <target state="translated">Kaldırma Seçenekleri</target>
+        <target state="translated">Kald─▒rma Se├ºenekleri</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_AdvisoryUrl">
         <source>Advisory URL</source>
-        <target state="translated">Danışman URL'si</target>
+        <target state="translated">Dan─▒┼ƒman URL'si</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_License">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_PackageSourceMappingSettings">
         <source>Configure</source>
-        <target state="translated">Yapılandır</target>
+        <target state="translated">Yap─▒land─▒r</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
@@ -459,17 +459,17 @@
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
-        <target state="translated">Uygunsuz Kullanımı Bildir</target>
+        <target state="translated">Uygunsuz Kullan─▒m─▒ Bildir</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoreUpgrade">
         <source>Ignore for now</source>
-        <target state="translated">Şimdilik yoksay</target>
+        <target state="translated">┼₧imdilik yoksay</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
         <source>Help icon</source>
-        <target state="translated">Yardım simgesi</target>
+        <target state="translated">Yard─▒m simgesi</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Action">
@@ -484,32 +484,32 @@
       </trans-unit>
       <trans-unit id="Label_Browse">
         <source>Browse</source>
-        <target state="translated">Gözat</target>
+        <target state="translated">G├╢zat</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_CreatingSourceMappings">
         <source>Creating source mappings to '{0}':</source>
-        <target state="translated">'{0}' ile kaynak eşlemeleri oluşturuluyor:</target>
+        <target state="translated">'{0}' ile kaynak e┼ƒlemeleri olu┼ƒturuluyor:</target>
         <note>{0} - The Name of a user-configured NuGet Package Source</note>
       </trans-unit>
       <trans-unit id="Label_DatePublished">
         <source>Date published:</source>
-        <target state="translated">Yayımlanma tarihi:</target>
+        <target state="translated">Yay─▒mlanma tarihi:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Dependencies">
         <source>Dependencies</source>
-        <target state="translated">Bağımlılıklar</target>
+        <target state="translated">Ba─ƒ─▒ml─▒l─▒klar</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DependencyBehavior">
         <source>Dependency behavior:</source>
-        <target state="translated">Bağımlılık davranışı:</target>
+        <target state="translated">Ba─ƒ─▒ml─▒l─▒k davran─▒┼ƒ─▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="translated">Kullanım dışı</target>
+        <target state="translated">Kullan─▒m d─▒┼ƒ─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
@@ -519,82 +519,82 @@
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons">
         <source>Deprecation reason</source>
-        <target state="translated">Kullanım dışı kalma nedeni</target>
+        <target state="translated">Kullan─▒m d─▒┼ƒ─▒ kalma nedeni</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_CriticalBugs">
         <source>This package has been deprecated as it has critical bugs.</source>
-        <target state="translated">Bu paket kritik hatalar içerdiğinden kullanım dışı bırakıldı.</target>
+        <target state="translated">Bu paket kritik hatalar i├ºerdi─ƒinden kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Legacy">
         <source>This package has been deprecated as it is legacy and no longer maintained.</source>
-        <target state="translated">Bu paket eski olduğundan ve artık korunmadığından kullanım dışı bırakıldı.</target>
+        <target state="translated">Bu paket eski oldu─ƒundan ve art─▒k korunmad─▒─ƒ─▒ndan kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_LegacyAndCriticalBugs">
         <source>This package has been deprecated as it has critical bugs and is no longer maintained.</source>
-        <target state="translated">Bu paket kritik hatalar içerdiğinden ve artık korunmadığından kullanım dışı bırakıldı.</target>
+        <target state="translated">Bu paket kritik hatalar i├ºerdi─ƒinden ve art─▒k korunmad─▒─ƒ─▒ndan kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Unknown">
         <source>The package has been deprecated.</source>
-        <target state="translated">Paket kullanım dışı bırakıldı.</target>
+        <target state="translated">Paket kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Description">
         <source>Description</source>
-        <target state="translated">Açıklama</target>
+        <target state="translated">A├º─▒klama</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Details">
         <source>Details</source>
-        <target state="translated">Ayrıntılar</target>
+        <target state="translated">Ayr─▒nt─▒lar</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Downloads">
         <source>Downloads:</source>
-        <target state="translated">İndirmeler:</target>
+        <target state="translated">─░ndirmeler:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_FileConflictAction">
         <source>File conflict action:</source>
-        <target state="translated">Dosya çakışması eylemi:</target>
+        <target state="translated">Dosya ├ºak─▒┼ƒmas─▒ eylemi:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed">
         <source>Installed</source>
-        <target state="translated">Yüklü</target>
+        <target state="translated">Y├╝kl├╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledColon">
         <source>Installed:</source>
-        <target state="translated">Yüklendi:</target>
+        <target state="translated">Y├╝klendi:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledPackages">
         <source>Installing:</source>
-        <target state="translated">Yükleniyor:</target>
+        <target state="translated">Y├╝kleniyor:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledVersionsCount">
         <source>Versions: {0}</source>
-        <target state="translated">Sürümler: {0}</target>
+        <target state="translated">S├╝r├╝mler: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed_DeprecatedWarning">
         <source>You have {0} deprecated package versions installed.</source>
-        <target state="translated">Kullanım dışı bırakılmış {0} yüklü paket sürümünüz var.</target>
+        <target state="translated">Kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒lm─▒┼ƒ {0} y├╝kl├╝ paket s├╝r├╝m├╝n├╝z var.</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning">
         <source>You have {0} vulnerable package versions and {1} deprecated package versions installed.</source>
-        <target state="translated">Güvenlik açığı bulunan {0}, kullanım dışı bırakılmış {1} yüklü paket sürümünüz var.</target>
+        <target state="translated">G├╝venlik a├º─▒─ƒ─▒ bulunan {0}, kullan─▒m d─▒┼ƒ─▒ b─▒rak─▒lm─▒┼ƒ {1} y├╝kl├╝ paket s├╝r├╝m├╝n├╝z var.</target>
         <note>{0} and {1} are numbers of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableWarning">
         <source>You have {0} vulnerable package versions installed.</source>
-        <target state="translated">Güvenlik açığı bulunan {0} yüklü paket sürümünüz var.</target>
+        <target state="translated">G├╝venlik a├º─▒─ƒ─▒ bulunan {0} y├╝kl├╝ paket s├╝r├╝m├╝n├╝z var.</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_License">
@@ -609,7 +609,7 @@
       </trans-unit>
       <trans-unit id="Label_NetworkError">
         <source>An error occurred while fetching additional information about the package. Refresh to try again.</source>
-        <target state="translated">Paketle ilgili ek bilgiler getirilirken bir hata oluştu. Yeniden denemek için yenileyin.</target>
+        <target state="translated">Paketle ilgili ek bilgiler getirilirken bir hata olu┼ƒtu. Yeniden denemek i├ºin yenileyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_NuGetWindowCaption">
@@ -619,7 +619,7 @@
       </trans-unit>
       <trans-unit id="Label_Options">
         <source>Options</source>
-        <target state="translated">Seçenekler</target>
+        <target state="translated">Se├ºenekler</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Owners">
@@ -629,32 +629,32 @@
       </trans-unit>
       <trans-unit id="Label_PackageDeprecatedToolTip">
         <source>This package version is deprecated.</source>
-        <target state="translated">Bu paket sürümü kullanımdan kaldırıldı.</target>
+        <target state="translated">Bu paket s├╝r├╝m├╝ kullan─▒mdan kald─▒r─▒ld─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDetails">
         <source>Package Details</source>
-        <target state="translated">Paket Ayrıntıları</target>
+        <target state="translated">Paket Ayr─▒nt─▒lar─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageManager">
         <source>NuGet Package Manager: {0}</source>
-        <target state="translated">NuGet Paket Yöneticisi: {0}</target>
+        <target state="translated">NuGet Paket Y├╢neticisi: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackagePrerelease">
         <source>Prerelease</source>
-        <target state="translated">Ön sürüm</target>
+        <target state="translated">├ûn s├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageSelectForInfoToolTip">
         <source>Select to view package details for more information.</source>
-        <target state="translated">Daha fazla bilgi için paket ayrıntılarını görüntülemek üzere seçin.</target>
+        <target state="translated">Daha fazla bilgi i├ºin paket ayr─▒nt─▒lar─▒n─▒ g├╢r├╝nt├╝lemek ├╝zere se├ºin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageVulnerableToolTip">
         <source>This package version has a vulnerability with {0} severity.</source>
-        <target state="translated">Bu paket sürümünde {0} önem derecesine sahip bir güvenlik açığı var.</target>
+        <target state="translated">Bu paket s├╝r├╝m├╝nde {0} ├╢nem derecesine sahip bir g├╝venlik a├º─▒─ƒ─▒ var.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_ProjectUrl">
@@ -674,27 +674,27 @@
       </trans-unit>
       <trans-unit id="Label_ReportAbuse">
         <source>Report Abuse:</source>
-        <target state="translated">Kötüye Kullanımı Bildir:</target>
+        <target state="translated">K├╢t├╝ye Kullan─▒m─▒ Bildir:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Repository">
         <source>Package source:</source>
-        <target state="translated">Paket kaynağı:</target>
+        <target state="translated">Paket kayna─ƒ─▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Solution">
         <source>Solution</source>
-        <target state="translated">Çözüm</target>
+        <target state="translated">├ç├╢z├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionNuGetWindowCaption">
         <source>NuGet - Solution</source>
-        <target state="translated">NuGet - Çözüm</target>
+        <target state="translated">NuGet - ├ç├╢z├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionPackageManager">
         <source>Manage Packages for Solution</source>
-        <target state="translated">Çözüm Paketlerini Yönetme</target>
+        <target state="translated">├ç├╢z├╝m Paketlerini Y├╢netme</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Tags">
@@ -704,102 +704,102 @@
       </trans-unit>
       <trans-unit id="Label_UninstalledPackages">
         <source>Uninstalling:</source>
-        <target state="translated">Kaldırılıyor:</target>
+        <target state="translated">Kald─▒r─▒l─▒yor:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_UpdatedPackages">
         <source>Updates:</source>
-        <target state="translated">Güncelleştirmeler:</target>
+        <target state="translated">G├╝ncelle┼ƒtirmeler:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Updates">
         <source>Updates</source>
-        <target state="translated">Güncelleştirmeler</target>
+        <target state="translated">G├╝ncelle┼ƒtirmeler</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Version">
         <source>Version:</source>
-        <target state="translated">Sürüm:</target>
+        <target state="translated">S├╝r├╝m:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Vulnerabilities">
         <source>Vulnerabilities detected ({0})</source>
-        <target state="translated">Güvenlik açıkları algılandı. ({0})</target>
+        <target state="translated">G├╝venlik a├º─▒klar─▒ alg─▒land─▒. ({0})</target>
         <note>{0} is the number of vulnerabilities</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilitiesDescription">
         <source>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</source>
-        <target state="translated">Bu paket sürümünde {0} önem derecesine sahip en az bir güvenlik açığı var. Bu, projenizde belirli sorunlara neden olabilir. Paket sürümünü güncelleştirmeyi deneyin.</target>
+        <target state="translated">Bu paket s├╝r├╝m├╝nde {0} ├╢nem derecesine sahip en az bir g├╝venlik a├º─▒─ƒ─▒ var. Bu, projenizde belirli sorunlara neden olabilir. Paket s├╝r├╝m├╝n├╝ g├╝ncelle┼ƒtirmeyi deneyin.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilityAdvisory">
         <source>Advisory ({0} severity):</source>
-        <target state="translated">Danışman ({0} önem derecesi):</target>
+        <target state="translated">Dan─▒┼ƒman ({0} ├╢nem derecesi):</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_Vulnerable">
         <source>Vulnerable</source>
-        <target state="translated">Savunmasız</target>
+        <target state="translated">Savunmas─▒z</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseFile_Loading">
         <source>Loading license file...</source>
-        <target state="translated">Lisans dosyası yükleniyor...</target>
+        <target state="translated">Lisans dosyas─▒ y├╝kleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseTerm_LinkName">
         <source>{0} license</source>
-        <target state="translated">{0} lisansı</target>
+        <target state="translated">{0} lisans─▒</target>
         <note>{0} = license name. Examples: MIT, Apache</note>
       </trans-unit>
       <trans-unit id="Link_DoNotShowAgain">
         <source>Don't show again</source>
-        <target state="translated">Bir daha gösterme</target>
+        <target state="translated">Bir daha g├╢sterme</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutInstallOptions">
         <source>Learn about Install Options</source>
-        <target state="translated">Yükleme Seçenekleri hakkında bilgi alın</target>
+        <target state="translated">Y├╝kleme Se├ºenekleri hakk─▒nda bilgi al─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutUninstallOptions">
         <source>Learn about Uninstall Options</source>
-        <target state="translated">Kaldırma Seçenekleri hakkında bilgi alın</target>
+        <target state="translated">Kald─▒rma Se├ºenekleri hakk─▒nda bilgi al─▒n</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_MigratorHelp">
         <source>Why should I migrate?</source>
-        <target state="translated">Neden geçiş yapmalıyım?</target>
+        <target state="translated">Neden ge├ºi┼ƒ yapmal─▒y─▒m?</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_UpgradeOption">
         <source>Migrate Now</source>
-        <target state="translated">Şimdi Geçiş Yap</target>
+        <target state="translated">┼₧imdi Ge├ºi┼ƒ Yap</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_configuration">
         <source>Common NuGet configurations; How settings are applied.</source>
-        <target state="translated">Ortak NuGet yapılandırmaları; Ayarların uygulanma biçimi.</target>
+        <target state="translated">Ortak NuGet yap─▒land─▒rmalar─▒; Ayarlar─▒n uygulanma bi├ºimi.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageIdColumnHeader">
         <source>Package Id</source>
-        <target state="translated">Paket Kimliği</target>
+        <target state="translated">Paket Kimli─ƒi</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageNotFound">
         <source>Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project.</source>
-        <target state="translated">{0} paketleri kaldırılamadığından geçiş başarısız oldu. Bu paketler, çözüm paketleri klasöründe bulunamadı. Projede değişiklik yapılmadı.</target>
+        <target state="translated">{0} paketleri kald─▒r─▒lamad─▒─ƒ─▒ndan ge├ºi┼ƒ ba┼ƒar─▒s─▒z oldu. Bu paketler, ├º├╢z├╝m paketleri klas├╢r├╝nde bulunamad─▒. Projede de─ƒi┼ƒiklik yap─▒lmad─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_TopLevelColumnHeader">
         <source>Top-Level</source>
-        <target state="translated">Üst Düzey</target>
+        <target state="translated">├£st D├╝zey</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_VersionColumnHeader">
         <source>Version</source>
-        <target state="translated">Sürüm</target>
+        <target state="translated">S├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="Million">
@@ -809,42 +809,42 @@
       </trans-unit>
       <trans-unit id="NuGetUpgrade_PackageDependencyOf">
         <source>(dependency of {0})</source>
-        <target state="translated">({0} bağımlılığı)</target>
+        <target state="translated">({0} ba─ƒ─▒ml─▒l─▒─ƒ─▒)</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Installing">
         <source>Installing required packages</source>
-        <target state="translated">Gerekli paketler yükleniyor</target>
+        <target state="translated">Gerekli paketler y├╝kleniyor</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Uninstalling">
         <source>Uninstalling packages from packages.config</source>
-        <target state="translated">Packages.config konumundan paketler kaldırılıyor</target>
+        <target state="translated">Packages.config konumundan paketler kald─▒r─▒l─▒yor</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_WaitMessage">
         <source>Upgrading Project to PackageReference</source>
-        <target state="translated">Proje, PackageReference biçimine yükseltiliyor</target>
+        <target state="translated">Proje, PackageReference bi├ºimine y├╝kseltiliyor</target>
         <note />
       </trans-unit>
       <trans-unit id="Operation_TotalTime">
         <source>Time Elapsed: {0}</source>
-        <target state="translated">Geçen Süre: {0}</target>
+        <target state="translated">Ge├ºen S├╝re: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageLevel_TopLevelPackageHeaderText">
         <source>Top-level packages ({0})</source>
-        <target state="translated">Üst düzey paketler ({0})</target>
+        <target state="translated">├£st d├╝zey paketler ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageLevel_TransitivePackageHeaderText">
         <source>Transitive packages ({0})</source>
-        <target state="translated">Geçişli paketler ({0})</target>
+        <target state="translated">Ge├ºi┼ƒli paketler ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageRestoreErrorTryAgain">
         <source>An error occurred while trying to restore packages:</source>
-        <target state="translated">Paketler geri yüklenmeye çalışılırken bir hata oluştu:</target>
+        <target state="translated">Paketler geri y├╝klenmeye ├ºal─▒┼ƒ─▒l─▒rken bir hata olu┼ƒtu:</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreProgressMessage">
@@ -854,7 +854,7 @@
       </trans-unit>
       <trans-unit id="PackageVersionWithTransitiveOrigins">
         <source>{0} by {1}</source>
-        <target state="translated">{1} tarafından {0}</target>
+        <target state="translated">{1} taraf─▒ndan {0}</target>
         <note>{0} - Version of package, {1} - Packages that transitively reference the package</note>
       </trans-unit>
       <trans-unit id="Preview_PackageUpdate">
@@ -869,7 +869,7 @@
       </trans-unit>
       <trans-unit id="RadioBtn_PackageRef">
         <source>PackageReference in project file</source>
-        <target state="translated">Proje dosyasındaki PackageReference</target>
+        <target state="translated">Proje dosyas─▒ndaki PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="RadioBtn_PackagesConfig">
@@ -879,33 +879,33 @@
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallMultiplePackages">
         <source>Multiple packages failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">Birden çok paket kaldırılamadı. İşlemi sonlandırmak için Visual Studio'yu yeniden başlatın.</target>
+        <target state="translated">Birden ├ºok paket kald─▒r─▒lamad─▒. ─░┼ƒlemi sonland─▒rmak i├ºin Visual Studio'yu yeniden ba┼ƒlat─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallSinglePackage">
         <source>The package at '{0}' failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">'{0}' konumundaki paket kaldırılamadı. İşlemi sonlandırmak için Visual Studio'yu yeniden başlatın.</target>
+        <target state="translated">'{0}' konumundaki paket kald─▒r─▒lamad─▒. ─░┼ƒlemi sonland─▒rmak i├ºin Visual Studio'yu yeniden ba┼ƒlat─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestartButtonLabel">
         <source>Rest_art</source>
-        <target state="translated">Yeniden _Başlat</target>
+        <target state="translated">Yeniden _Ba┼ƒlat</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
-        <target state="translated">_Geri Yükle</target>
+        <target state="translated">_Geri Y├╝kle</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowDetails">
         <source>Show Details</source>
-        <target state="translated">Ayrıntıları Göster</target>
+        <target state="translated">Ayr─▒nt─▒lar─▒ G├╢ster</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">
         <source>NuGet storage clear failed at {0}. 
 Error: {1}</source>
-        <target state="translated">{0} konumundaki NuGet depolama alanını temizleme işlemi başarısız oldu. 
+        <target state="translated">{0} konumundaki NuGet depolama alan─▒n─▒ temizleme i┼ƒlemi ba┼ƒar─▒s─▒z oldu. 
 Hata: {1}</target>
         <note>{0} :error message;
 {1}: date and time
@@ -913,32 +913,32 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
         <source>For more information, see</source>
-        <target state="translated">Daha fazla bilgi için şu sayfaya bakın:</target>
+        <target state="translated">Daha fazla bilgi i├ºin ┼ƒu sayfaya bak─▒n:</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
         <source>NuGet storage cleared at {0}</source>
-        <target state="translated">{0} konumundaki NuGet depolama alanı temizlendi</target>
+        <target state="translated">{0} konumundaki NuGet depolama alan─▒ temizlendi</target>
         <note>{0} for date and time string</note>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandWorking">
         <source>Clearing all NuGet storage...</source>
-        <target state="translated">NuGet depolama alanının tamamı temizleniyor...</target>
+        <target state="translated">NuGet depolama alan─▒n─▒n tamam─▒ temizleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_Title">
         <source>Package Manager Options</source>
-        <target state="translated">Paket Yöneticisi Seçenekleri</target>
+        <target state="translated">Paket Y├╢neticisi Se├ºenekleri</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Please provide a unique name.</source>
-        <target state="translated">Belirtilen ad zaten kullanılabilir paket kaynakları listesine eklendi. Lütfen benzersiz bir ad sağlayın.</target>
+        <target state="translated">Belirtilen ad zaten kullan─▒labilir paket kaynaklar─▒ listesine eklendi. L├╝tfen benzersiz bir ad sa─ƒlay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Please provide a unique source.</source>
-        <target state="translated">Belirtilen kaynak zaten kullanılabilir paket kaynakları listesine eklendi. Lütfen benzersiz bir kaynak sağlayın.</target>
+        <target state="translated">Belirtilen kaynak zaten kullan─▒labilir paket kaynaklar─▒ listesine eklendi. L├╝tfen benzersiz bir kaynak sa─ƒlay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
@@ -948,7 +948,7 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Status_ErrorOccurred">
         <source>An error occurred while loading packages</source>
-        <target state="translated">Paketler yüklenirken bir hata oluştu</target>
+        <target state="translated">Paketler y├╝klenirken bir hata olu┼ƒtu</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_NoMoreItems">
@@ -958,7 +958,7 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Status_Ready">
         <source>Package list loaded</source>
-        <target state="translated">Paket listesi yüklendi</target>
+        <target state="translated">Paket listesi y├╝klendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_By">
@@ -968,22 +968,22 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Text_ByAuthor">
         <source>by {0}</source>
-        <target state="translated">{0} tarafından</target>
+        <target state="translated">{0} taraf─▒ndan</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ByOwner">
         <source>by {0}</source>
-        <target state="translated">hazırlayan: {0}</target>
+        <target state="translated">haz─▒rlayan: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Changes">
         <source>Visual Studio is about to make changes to this solution:</source>
-        <target state="translated">Visual Studio bu çözümde değişiklik yapmak üzere:</target>
+        <target state="translated">Visual Studio bu ├º├╢z├╝mde de─ƒi┼ƒiklik yapmak ├╝zere:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DirectDependencies">
         <source>Top-level dependencies:</source>
-        <target state="translated">Üst düzey bağımlılıklar:</target>
+        <target state="translated">├£st d├╝zey ba─ƒ─▒ml─▒l─▒klar:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Downloads">
@@ -993,137 +993,137 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Text_ErrorOccurred">
         <source>Error occurred</source>
-        <target state="translated">Hata oluştu</target>
+        <target state="translated">Hata olu┼ƒtu</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HelpMeMigrate">
         <source>Help me migrate to NuGet PackageReference</source>
-        <target state="translated">NuGet PackageReference'a geçiş yapmama yardımcı ol</target>
+        <target state="translated">NuGet PackageReference'a ge├ºi┼ƒ yapmama yard─▒mc─▒ ol</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LegalDisclaimer">
         <source>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages.</source>
-        <target state="translated">Her paket size sahibi tarafından lisanslanmıştır. NuGet üçüncü taraf paketlerden sorumlu değildir ve bunların lisansını vermez.</target>
+        <target state="translated">Her paket size sahibi taraf─▒ndan lisanslanm─▒┼ƒt─▒r. NuGet ├╝├º├╝nc├╝ taraf paketlerden sorumlu de─ƒildir ve bunlar─▒n lisans─▒n─▒ vermez.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseHeaderText">
         <source>The following package(s) require that you accept their license terms before installing.</source>
-        <target state="translated">Aşağıdaki paketler yüklenmeden önce lisans koşullarını kabul etmenizi gerektiriyor.</target>
+        <target state="translated">A┼ƒa─ƒ─▒daki paketler y├╝klenmeden ├╢nce lisans ko┼ƒullar─▒n─▒ kabul etmenizi gerektiriyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseText">
         <source>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</source>
-        <target state="translated">"Kabul Ediyorum"a tıklayarak yukarıda listelenen paketler için lisans koşullarını kabul edersiniz. Lisans koşullarını kabul etmiyorsanız "Kabul Etmiyorum"a tıklayın.</target>
+        <target state="translated">"Kabul Ediyorum"a t─▒klayarak yukar─▒da listelenen paketler i├ºin lisans ko┼ƒullar─▒n─▒ kabul edersiniz. Lisans ko┼ƒullar─▒n─▒ kabul etmiyorsan─▒z "Kabul Etmiyorum"a t─▒klay─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Loading">
         <source>Loading...</source>
-        <target state="translated">Yükleniyor...</target>
+        <target state="translated">Y├╝kleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LoadingReadme">
         <source>Loading README...</source>
-        <target state="translated">BENİOKU dosyası yükleniyor...</target>
+        <target state="translated">BEN─░OKU dosyas─▒ y├╝kleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
         <source>You can manage these settings in </source>
-        <target state="translated">Bu ayarları şuradan yönetebilirsiniz: </target>
+        <target state="translated">Bu ayarlar─▒ ┼ƒuradan y├╢netebilirsiniz: </target>
         <note />
       </trans-unit>
       <trans-unit id="Text_MultipleVersionsInstalled">
         <source>multiple versions installed</source>
-        <target state="translated">Birden fazla sürüm yüklü</target>
+        <target state="translated">Birden fazla s├╝r├╝m y├╝kl├╝</target>
         <note>In the solution package manager, if the select package has multiple versions installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NoDependencies">
         <source>No dependencies</source>
-        <target state="translated">Bağımlılık yok</target>
+        <target state="translated">Ba─ƒ─▒ml─▒l─▒k yok</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoPackagesFound">
         <source>No packages found</source>
-        <target state="translated">Paket bulunamadı</target>
+        <target state="translated">Paket bulunamad─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="translated">Seçili paket sürümü için kullanılabilir bir BENİOKU dosyası yok. Daha fazla bilgi için lütfen [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme) adresini ziyaret edin.</target>
+        <target state="translated">Se├ºili paket s├╝r├╝m├╝ i├ºin kullan─▒labilir bir BEN─░OKU dosyas─▒ yok. Daha fazla bilgi i├ºin l├╝tfen [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme) adresini ziyaret edin.</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
         <source>Not available in this source</source>
-        <target state="translated">Bu kaynakta mevcut değil</target>
+        <target state="translated">Bu kaynakta mevcut de─ƒil</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NotInstalled">
         <source>not installed</source>
-        <target state="translated">yüklü değil</target>
+        <target state="translated">y├╝kl├╝ de─ƒil</target>
         <note>In the solution package manager, if the select package is not installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NuGetSettings">
         <source>NuGet Settings</source>
-        <target state="translated">NuGet Ayarları</target>
+        <target state="translated">NuGet Ayarlar─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeIssues">
         <source>Package compatibility issues:</source>
-        <target state="translated">Paket uyumluluk sorunları:</target>
+        <target state="translated">Paket uyumluluk sorunlar─▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeNoIssuesFound">
         <source>No issues were found.</source>
-        <target state="translated">Sorun bulunamadı.</target>
+        <target state="translated">Sorun bulunamad─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatApply">
         <source>The package manager format will apply to the following projects in this Solution</source>
-        <target state="translated">Paket yöneticisi biçimi, bu Çözüm (Solution) içindeki şu projelere uygulanacak:</target>
+        <target state="translated">Paket y├╢neticisi bi├ºimi, bu ├ç├╢z├╝m (Solution) i├ºindeki ┼ƒu projelere uygulanacak:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTopLevel">
         <source>Top-level</source>
-        <target state="translated">Üst düzey</target>
+        <target state="translated">├£st d├╝zey</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTransitive">
         <source>Transitive</source>
-        <target state="translated">Geçişli</target>
+        <target state="translated">Ge├ºi┼ƒli</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsAutoCreate">
         <source>A package source mapping will be created.</source>
-        <target state="translated">Bir paket kaynak eşlemesi oluşturulacaktır.</target>
+        <target state="translated">Bir paket kaynak e┼ƒlemesi olu┼ƒturulacakt─▒r.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsDisabled">
         <source>Package source mapping is off.</source>
-        <target state="translated">Paket kaynağı eşlemesi devre dışı.</target>
+        <target state="translated">Paket kayna─ƒ─▒ e┼ƒlemesi devre d─▒┼ƒ─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsFound">
         <source>Package source mapping found.</source>
-        <target state="translated">Paket kaynağı eşlemesi bulundu.</target>
+        <target state="translated">Paket kayna─ƒ─▒ e┼ƒlemesi bulundu.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsNotFound">
         <source>Requires a package source mapping.</source>
-        <target state="translated">Paket kaynağı eşlemesi gerektirir.</target>
+        <target state="translated">Paket kayna─ƒ─▒ e┼ƒlemesi gerektirir.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport">
         <source>Projects with PackageReference are not supported in Visual Studio 2015 and earlier.</source>
-        <target state="translated">PackageReference içeren projeler Visual Studio 2015 ve önceki sürümlerinde desteklenmez.</target>
+        <target state="translated">PackageReference i├ºeren projeler Visual Studio 2015 ve ├╢nceki s├╝r├╝mlerinde desteklenmez.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport_DocumentLink">
         <source>Learn more about package reference</source>
-        <target state="translated">Paket başvurusu hakkında daha fazla bilgi edinin</target>
+        <target state="translated">Paket ba┼ƒvurusu hakk─▒nda daha fazla bilgi edinin</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources">
         <source>Package sources:</source>
-        <target state="translated">Paket kaynakları:</target>
+        <target state="translated">Paket kaynaklar─▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackagesFound">
@@ -1133,7 +1133,7 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Text_ReadmeLoaded">
         <source>README loaded</source>
-        <target state="translated">BENİOKU yüklendi</target>
+        <target state="translated">BEN─░OKU y├╝klendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchBoxText">
@@ -1143,42 +1143,42 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Text_SearchIncomplete">
         <source>Retrieving results from one or more sources</source>
-        <target state="translated">Bir veya daha çok kaynaktan sonuçlar alınıyor</target>
+        <target state="translated">Bir veya daha ├ºok kaynaktan sonu├ºlar al─▒n─▒yor</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchStopped">
         <source>Unable to retrieve results from one or more sources</source>
-        <target state="translated">Bir veya daha çok kaynaktan sonuçlar alınamadı</target>
+        <target state="translated">Bir veya daha ├ºok kaynaktan sonu├ºlar al─▒namad─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Searching">
         <source>Searching '{0}'</source>
-        <target state="translated">'{0}' aranıyor</target>
+        <target state="translated">'{0}' aran─▒yor</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_TransitiveDependencies">
         <source>Transitive dependencies:</source>
-        <target state="translated">Geçişli bağımlılıklar:</target>
+        <target state="translated">Ge├ºi┼ƒli ba─ƒ─▒ml─▒l─▒klar:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UpgradeNuGetProjectDescription">
         <source>Migrate this project from packages.config to PackageReference format.</source>
-        <target state="translated">Bu projeyi packages.config biçiminden PackageReference biçimine geçirin.</target>
+        <target state="translated">Bu projeyi packages.config bi├ºiminden PackageReference bi├ºimine ge├ºirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UserCanceled">
         <source>Operation canceled by user</source>
-        <target state="translated">İşlem kullanıcı tarafından iptal edildi</target>
+        <target state="translated">─░┼ƒlem kullan─▒c─▒ taraf─▒ndan iptal edildi</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewLicense">
         <source>View License</source>
-        <target state="translated">Lisansı Görüntüle</target>
+        <target state="translated">Lisans─▒ G├╢r├╝nt├╝le</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewReadme">
         <source>View Readme</source>
-        <target state="translated">Benioku Dosyasını Görüntüle</target>
+        <target state="translated">Benioku Dosyas─▒n─▒ G├╢r├╝nt├╝le</target>
         <note />
       </trans-unit>
       <trans-unit id="Thousand">
@@ -1188,32 +1188,32 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="ToolTip_BlockedVersion">
         <source>Following versions are unavailable due to additional constraints in the project or packages.config</source>
-        <target state="translated">Şu sürümler, proje veya packages.config içindeki ek kısıtlamalardan dolayı kullanılamıyor</target>
+        <target state="translated">┼₧u s├╝r├╝mler, proje veya packages.config i├ºindeki ek k─▒s─▒tlamalardan dolay─▒ kullan─▒lam─▒yor</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstallButton">
         <source>Install {0} version {1}.</source>
-        <target state="translated">{0} sürüm {1} yükleyin.</target>
+        <target state="translated">{0} s├╝r├╝m {1} y├╝kleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstalledVersion">
         <source>Installed version: {0}</source>
-        <target state="translated">Yüklü sürüm: {0}</target>
+        <target state="translated">Y├╝kl├╝ s├╝r├╝m: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_LatestVersion">
         <source>Latest version: {0}</source>
-        <target state="translated">Son sürüm: {0}</target>
+        <target state="translated">Son s├╝r├╝m: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageInstalled">
         <source>Latest stable version is installed</source>
-        <target state="translated">En yeni kararlı sürüm yüklendi</target>
+        <target state="translated">En yeni kararl─▒ s├╝r├╝m y├╝klendi</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageRecommended">
         <source>IntelliCode package suggestion based on this project context</source>
-        <target state="translated">Bu proje bağlamını temel alan IntelliCode paket önerisi</target>
+        <target state="translated">Bu proje ba─ƒlam─▒n─▒ temel alan IntelliCode paket ├╢nerisi</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_Refresh">
@@ -1228,37 +1228,37 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependency">
         <source>Transitively referenced version</source>
-        <target state="translated">Geçişli olarak başvurulan sürüm</target>
+        <target state="translated">Ge├ºi┼ƒli olarak ba┼ƒvurulan s├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependencyVersion">
         <source>Transitively referenced version: {0}</source>
-        <target state="translated">Geçişli olarak başvurulan sürüm: {0}</target>
+        <target state="translated">Ge├ºi┼ƒli olarak ba┼ƒvurulan s├╝r├╝m: {0}</target>
         <note>{0} is a version number</note>
       </trans-unit>
       <trans-unit id="ToolTip_TransitivePathHelp">
         <source>To learn more about transitive paths, see</source>
-        <target state="translated">Geçişli yollar hakkında daha fazla bilgi edinmek için bkz.</target>
+        <target state="translated">Ge├ºi┼ƒli yollar hakk─▒nda daha fazla bilgi edinmek i├ºin bkz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UninstallButton">
         <source>Uninstall this package.</source>
-        <target state="translated">Bu paketi kaldırın.</target>
+        <target state="translated">Bu paketi kald─▒r─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateAvailable">
         <source>Update available</source>
-        <target state="translated">Güncelleştirme kullanılabilir</target>
+        <target state="translated">G├╝ncelle┼ƒtirme kullan─▒labilir</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateButton">
         <source>Update {0} to version {1}.</source>
-        <target state="translated">Bu paketi {1} sürümünden {0} sürümüne yükseltin.</target>
+        <target state="translated">Bu paketi {1} s├╝r├╝m├╝nden {0} s├╝r├╝m├╝ne y├╝kseltin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Tooltip_PrefixReserved">
         <source>The ID prefix of this package has been reserved for the owner of the package by the currently selected feed</source>
-        <target state="translated">Bu paketin kimlik ön eki, seçili mevcut akış tarafından paketin sahibi için ayrılmış</target>
+        <target state="translated">Bu paketin kimlik ├╢n eki, se├ºili mevcut ak─▒┼ƒ taraf─▒ndan paketin sahibi i├ºin ayr─▒lm─▒┼ƒ</target>
         <note />
       </trans-unit>
       <trans-unit id="Trillion">
@@ -1268,37 +1268,37 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="UpdateButton_VersionOverride_Tooltip">
         <source>Dependency version defined by VersionOverride, modify project file to change package version.</source>
-        <target state="translated">VersionOverride tarafından tanımlanan bağımlılık sürümü, proje dosyasını paket sürümünü değiştir olarak düzenleyin.</target>
+        <target state="translated">VersionOverride taraf─▒ndan tan─▒mlanan ba─ƒ─▒ml─▒l─▒k s├╝r├╝m├╝, proje dosyas─▒n─▒ paket s├╝r├╝m├╝n├╝ de─ƒi┼ƒtir olarak d├╝zenleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpgradeLogger_BackupPathMustBeValid">
         <source>Must be a valid path.</source>
-        <target state="translated">Geçerli bir yol olmalıdır.</target>
+        <target state="translated">Ge├ºerli bir yol olmal─▒d─▒r.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_InstallFailed">
         <source>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</source>
-        <target state="translated">NuGet geçişi paketleri PackageReference olarak yükleyemedi. Değiştirilen dosyalar {0} konumunda yedeklendi</target>
+        <target state="translated">NuGet ge├ºi┼ƒi paketleri PackageReference olarak y├╝kleyemedi. De─ƒi┼ƒtirilen dosyalar {0} konumunda yedeklendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
         <source>Please follow simple instructions from {0} to go back to previous state.</source>
-        <target state="translated">Lütfen önceki duruma geri dönmek için {0} konumundaki basit yönergeleri izleyin.</target>
+        <target state="translated">L├╝tfen ├╢nceki duruma geri d├╢nmek i├ºin {0} konumundaki basit y├╢nergeleri izleyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_UninstallFailed">
         <source>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</source>
-        <target state="translated">NuGet yükseltmesi, packages.config'den paketleri kaldıramadığı için önceki duruma geri aldı.</target>
+        <target state="translated">NuGet y├╝kseltmesi, packages.config'den paketleri kald─▒ramad─▒─ƒ─▒ i├ºin ├╢nceki duruma geri ald─▒.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_BackupFailed">
         <source>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</source>
-        <target state="translated">Proje dosyası ve packages.config yedeklemesi sırasında bir sorunla karşılaşıldığından proje yükseltilemiyor.</target>
+        <target state="translated">Proje dosyas─▒ ve packages.config yedeklemesi s─▒ras─▒nda bir sorunla kar┼ƒ─▒la┼ƒ─▒ld─▒─ƒ─▒ndan proje y├╝kseltilemiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_PackageNotFound">
         <source>Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated.</source>
-        <target state="translated">{0}.nupkg diskte bulunamadığı için paketin uyumluluğu belirlenemiyor. Proje geçirilemiyor.</target>
+        <target state="translated">{0}.nupkg diskte bulunamad─▒─ƒ─▒ i├ºin paketin uyumlulu─ƒu belirlenemiyor. Proje ge├ºirilemiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Button_Close">
@@ -1308,47 +1308,47 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalResourcesTitle">
         <source>NuGet Package Manager</source>
-        <target state="translated">NuGet Paket Yöneticisi</target>
+        <target state="translated">NuGet Paket Y├╢neticisi</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="translated">Başlatıldıktan sonra bu eylem iptal edilemez.</target>
+        <target state="translated">Ba┼ƒlat─▒ld─▒ktan sonra bu eylem iptal edilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="translated">Tüm yerel NuGet kaynakları temizlensin mi?</target>
+        <target state="translated">T├╝m yerel NuGet kaynaklar─▒ temizlensin mi?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">
         <source>Blocked by package.config</source>
-        <target state="translated">package.config tarafından engellendi</target>
+        <target state="translated">package.config taraf─▒ndan engellendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked_Generic">
         <source>Blocked by project</source>
-        <target state="translated">Proje tarafından engellendi</target>
+        <target state="translated">Proje taraf─▒ndan engellendi</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Installed">
         <source>Installed</source>
-        <target state="translated">Yüklü</target>
+        <target state="translated">Y├╝kl├╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestPrerelease">
         <source>Latest prerelease</source>
-        <target state="translated">En yeni ön sürüm</target>
+        <target state="translated">En yeni ├╢n s├╝r├╝m</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestStable">
         <source>Latest stable</source>
-        <target state="translated">En yeni kararlı</target>
+        <target state="translated">En yeni kararl─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Vulnerabilities_Loading">
         <source>Loading vulnerable packages...</source>
-        <target state="translated">Savunmasız paketler yükleniyor...</target>
+        <target state="translated">Savunmas─▒z paketler y├╝kleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Critical">
@@ -1358,12 +1358,12 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_High">
         <source>high</source>
-        <target state="translated">yüksek</target>
+        <target state="translated">y├╝ksek</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Low">
         <source>low</source>
-        <target state="translated">düşük</target>
+        <target state="translated">d├╝┼ƒ├╝k</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Moderate">
@@ -1373,52 +1373,52 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="Warn_Adding_HttpSource">
         <source>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</source>
-        <target state="translated">Güvenli olmayan bir HTTP kaynağı eklemeye çalışıyorsunuz. Güvenli olmayan bu HTTP kaynağını eklemeye devam etmek istiyor musunuz?</target>
+        <target state="translated">G├╝venli olmayan bir HTTP kayna─ƒ─▒ eklemeye ├ºal─▒┼ƒ─▒yorsunuz. G├╝venli olmayan bu HTTP kayna─ƒ─▒n─▒ eklemeye devam etmek istiyor musunuz?</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_HTTPSource">
         <source>AllowInsecureConnections is enabled and allows http access. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere.</source>
-        <target state="translated">AllowInsecureConnections ayarı etkin ve HTTP erişimine izin verir. Not: Bu yöntem güvenli değildir. Güvenli seçenekler için https://aka.ms/nuget-https-everywhere sayfasına bakın.</target>
+        <target state="translated">AllowInsecureConnections ayar─▒ etkin ve HTTP eri┼ƒimine izin verir. Not: Bu y├╢ntem g├╝venli de─ƒildir. G├╝venli se├ºenekler i├ºin https://aka.ms/nuget-https-everywhere sayfas─▒na bak─▒n.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectJson">
         <source>These options are not applicable to projects managing their dependencies through project.json or PackageReference</source>
-        <target state="translated">Bu seçenekler, bağımlılıklarını project.json veya PackageReference üzerinden yöneten projeler için uygulanmaz</target>
+        <target state="translated">Bu se├ºenekler, ba─ƒ─▒ml─▒l─▒klar─▒n─▒ project.json veya PackageReference ├╝zerinden y├╢neten projeler i├ºin uygulanmaz</target>
         <note>To be displayed for the VS UI opened through a solution. bug #2665</note>
       </trans-unit>
       <trans-unit id="WindowTitle_DeprecatedFramework">
         <source>Deprecated Framework</source>
-        <target state="translated">Kullanım Dışı Çerçeve</target>
+        <target state="translated">Kullan─▒m D─▒┼ƒ─▒ ├çer├ºeve</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_FileConflict">
         <source>File Conflict</source>
-        <target state="translated">Dosya Çakışması</target>
+        <target state="translated">Dosya ├çak─▒┼ƒmas─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseAcceptance">
         <source>License Acceptance</source>
-        <target state="translated">Lisans Kabulü</target>
+        <target state="translated">Lisans Kabul├╝</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseFileWindow">
         <source>{0} License</source>
-        <target state="translated">{0} Lisansı</target>
+        <target state="translated">{0} Lisans─▒</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_NuGetMigrator">
         <source>Migrate NuGet format to PackageReference - {0}</source>
-        <target state="translated">NuGet biçimini PackageReference'a geçirin - {0}</target>
+        <target state="translated">NuGet bi├ºimini PackageReference'a ge├ºirin - {0}</target>
         <note>{0} is the project name</note>
       </trans-unit>
       <trans-unit id="WindowTitle_PackageFormatSelector">
         <source>Choose NuGet Package Manager Format</source>
-        <target state="translated">NuGet Paket Yöneticisi Biçimini Seçin</target>
+        <target state="translated">NuGet Paket Y├╢neticisi Bi├ºimini Se├ºin</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_PreviewChanges">
         <source>Preview Changes</source>
-        <target state="translated">Değişiklikleri Önizle</target>
+        <target state="translated">De─ƒi┼ƒiklikleri ├ûnizle</target>
         <note />
       </trans-unit>
     </body>

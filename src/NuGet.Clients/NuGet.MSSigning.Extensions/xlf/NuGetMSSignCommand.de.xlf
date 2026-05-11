@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">Name des Kryptografiedienstanbieters, der den Container des privaten Schlüssels enthält.</target>
+        <target state="translated">Name des Kryptografiedienstanbieters, der den Container des privaten Schl├╝ssels enth├ñlt.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="translated">SHA-256-, SHA-384- oder SHA-512-Fingerabdruck des Zertifikats, das zum Suchen einer P7B-Datei für das Zertifikat verwendet wird.</target>
+        <target state="translated">SHA-256-, SHA-384- oder SHA-512-Fingerabdruck des Zertifikats, das zum Suchen einer P7B-Datei f├╝r das Zertifikat verwendet wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
@@ -24,27 +24,27 @@
       </trans-unit>
       <trans-unit id="MSSignCommandHashAlgorithmDescription">
         <source>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</source>
-        <target state="translated">Hashalgorithmus, der beim Generieren der Paketmanifestdatei verwendet werden soll. Standardmäßig SHA256.</target>
+        <target state="translated">Hashalgorithmus, der beim Generieren der Paketmanifestdatei verwendet werden soll. Standardm├ñ├ƒig SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
         <source>Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</source>
-        <target state="translated">Für „{0}“ wurde ein ungültiger Wert angegeben. Eine Liste der akzeptierten Werte finden Sie unter https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign.</target>
+        <target state="translated">F├╝r ΓÇ₧{0}ΓÇ£ wurde ein ung├╝ltiger Wert angegeben. Eine Liste der akzeptierten Werte finden Sie unter https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign.</target>
         <note>{0} - argument name</note>
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: Ungültiger Wert für die Option „CertificateFingerprint“. Der Wert muss ein SHA-256-, SHA-384- oder SHA-512-Zertifikatfingerabdruck (hexadezimal) sein.</target>
+        <target state="translated">{0}: Ung├╝ltiger Wert f├╝r die Option ΓÇ₧CertificateFingerprintΓÇ£. Der Wert muss ein SHA-256-, SHA-384- oder SHA-512-Zertifikatfingerabdruck (hexadezimal) sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
         <source>Cng Key is not an RSA key.</source>
-        <target state="translated">Der CNG-Schlüssel ist kein RSA-Schlüssel.</target>
+        <target state="translated">Der CNG-Schl├╝ssel ist kein RSA-Schl├╝ssel.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandKeyContainerDescription">
         <source>Name of the key container which has the private key.</source>
-        <target state="translated">Der Name des Schlüsselcontainers mit dem privaten Schlüssel.</target>
+        <target state="translated">Der Name des Schl├╝sselcontainers mit dem privaten Schl├╝ssel.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCertException">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="MSSignCommandNoCngKeyException">
         <source>Can't find cng key.</source>
-        <target state="translated">Der CNG-Schlüssel wurde nicht gefunden.</target>
+        <target state="translated">Der CNG-Schl├╝ssel wurde nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
@@ -74,17 +74,17 @@
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
         <source>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</source>
-        <target state="translated">Das Verzeichnis, in dem das signierte Paket gespeichert werden soll. Standardmäßig wird das ursprüngliche Paket durch das signierte Paket überschrieben.</target>
+        <target state="translated">Das Verzeichnis, in dem das signierte Paket gespeichert werden soll. Standardm├ñ├ƒig wird das urspr├╝ngliche Paket durch das signierte Paket ├╝berschrieben.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOverwriteDescription">
         <source>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</source>
-        <target state="translated">Schalter, der festlegt, ob die aktuelle Signatur überschrieben werden soll. Standardmäßig verursacht der Befehl einen Fehler, wenn das Paket bereits eine Signatur aufweist.</target>
+        <target state="translated">Schalter, der festlegt, ob die aktuelle Signatur ├╝berschrieben werden soll. Standardm├ñ├ƒig verursacht der Befehl einen Fehler, wenn das Paket bereits eine Signatur aufweist.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">Der vom RFC 3161-Zeitstempelserver zu verwendende Hashalgorithmus. Standardmäßig SHA256.</target>
+        <target state="translated">Der vom RFC 3161-Zeitstempelserver zu verwendende Hashalgorithmus. Standardm├ñ├ƒig SHA256.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
@@ -113,7 +113,7 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">
         <source>Sign a NuGet package by adding repository signature with specified p7b file.</source>
-        <target state="translated">Hiermit signieren Sie ein NuGet-Paket durch Hinzufügen einer Repositorysignatur mit angegebener p7b-Datei.</target>
+        <target state="translated">Hiermit signieren Sie ein NuGet-Paket durch Hinzuf├╝gen einer Repositorysignatur mit angegebener p7b-Datei.</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandPackageOwnersDescription">
