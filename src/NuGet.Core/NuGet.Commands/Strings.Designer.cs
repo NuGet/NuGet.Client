@@ -2630,6 +2630,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; {1} uses the deprecated MonoAndroid framework instead of &apos;net6.0-android&apos; or later. Consider upgrading to a newer version of this package or contacting the package author..
+        /// </summary>
+        internal static string Warning_MonoAndroidFrameworkDeprecated {
+            get {
+                return ResourceManager.GetString("Warning_MonoAndroidFrameworkDeprecated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; {1} has a known {2} severity vulnerability, {3}.
         /// </summary>
         internal static string Warning_PackageWithKnownVulnerability {

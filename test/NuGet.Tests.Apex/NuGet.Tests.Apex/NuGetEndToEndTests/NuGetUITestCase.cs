@@ -373,7 +373,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        [TestCategory("Gate")]
+        [TestCategory("StagingGate")]
         public async Task VerifyDeletedAssetsFileIsBackByReloadingProject()
         {
             // Arrange

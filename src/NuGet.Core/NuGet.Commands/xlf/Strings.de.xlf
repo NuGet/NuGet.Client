@@ -1496,6 +1496,12 @@ NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter https://ak
         <target state="translated">{0} stellt keine inklusive untere Grenze für Abhängigkeiten {1} bereit. {2} wurde stattdessen aufgelöst.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
+        <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <note>{0} - package id
+{1} - package version</note>
+      </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
         <target state="translated">Das Paket "{0}" {1} weist eine bekannte {2} Schweregrad-Sicherheitsanfälligkeit auf, {3}.</target>

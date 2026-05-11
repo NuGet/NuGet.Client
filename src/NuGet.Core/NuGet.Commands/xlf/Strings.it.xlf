@@ -1496,6 +1496,12 @@ NuGet richiede origini HTTPS. Vedi https://aka.ms/nuget-https-everywhere per alt
         <target state="translated">In {0} non è specificato un limite inferiore inclusivo per la dipendenza {1}. {2} è stato risolto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
+        <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <note>{0} - package id
+{1} - package version</note>
+      </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
         <target state="translated">Il pacchetto '{0}' {1} presenta una vulnerabilità nota di gravità {2}, {3}</target>

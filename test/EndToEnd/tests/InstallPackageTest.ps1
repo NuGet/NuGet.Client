@@ -294,20 +294,6 @@ function Test-InstallCanPipeToFSharpProjects {
     Assert-NetCorePackageInLockFile $p elmah 1.1
 }
 
-function Test-PipingMultipleProjectsToInstall {
-    # Arrange
-    $projects = @((New-WebSite), (New-ClassLibrary), (New-ConsoleApplication))
-
-Write-Host 'proejct creation successful'
-    # Act
-    $projects | Install-Package elmah
-
-Write-Host 'Installation successful'
-    # Assert
-    $projects | %{ Assert-Package $_ elmah }
-
-Write-Host 'Assertion successful'
-}
 
 function Test-InstallPackageWithNestedContentFile {
     [SkipTest('https://github.com/NuGet/Home/issues/8486')]

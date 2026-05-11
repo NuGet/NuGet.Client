@@ -116,22 +116,7 @@ EndGlobal";
 
                 _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.0", testOutputHelper: _testOutputHelper);
 
-                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var xml = XDocument.Load(stream);
-
-                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-
-                    ProjectFileUtils.AddItem(
-                        xml,
-                        "PackageReference",
-                        "TestPackage.AuthorSigned",
-                        string.Empty,
-                        new Dictionary<string, string>(),
-                        attributes);
-
-                    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                }
+                ProjectFileUtils.AddItem(projectFile, "PackageReference", "TestPackage.AuthorSigned", string.Empty, new Dictionary<string, string>() { { "Version", "1.0.0" } });
 
                 _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
             }

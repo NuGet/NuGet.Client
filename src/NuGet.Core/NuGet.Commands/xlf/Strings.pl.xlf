@@ -1496,6 +1496,12 @@ Menedżer NuGet wymaga źródeł HTTPS. Aby uzyskać więcej informacji, sprawd�
         <target state="translated">{0} nie zapewnia łącznego dolnego ograniczenia dla zależności {1}. {2} został rozwiązany zamiast tego.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
+        <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <note>{0} - package id
+{1} - package version</note>
+      </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
         <target state="translated">Pakiet „{0}” {1} ma znane {2} luki w zabezpieczeniach o ważności, {3}</target>

@@ -1779,7 +1779,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 name: "NuGetAuditSuppress",
                                 identity: advisoryUrl1,
                                 framework: NuGetFramework.AnyFramework,
-                                properties: new Dictionary<string, string>(),
                                 attributes: new Dictionary<string, string>());
             xmlA.Save(projectA.ProjectPath);
 
@@ -1790,7 +1789,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 name: "NuGetAuditSuppress",
                                 identity: advisoryUrl2,
                                 framework: NuGetFramework.AnyFramework,
-                                properties: new Dictionary<string, string>(),
                                 attributes: new Dictionary<string, string>());
             xmlB.Save(projectB.ProjectPath);
 

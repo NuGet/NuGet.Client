@@ -1496,6 +1496,12 @@ NuGet には HTTPS ソースが必要です。詳しくは、https://aka.ms/nuge
         <target state="translated">{0} では、依存関係 {1} の下限値 (その値を含む) を指定しませんでした。代わりに、{2} が解決されました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
+        <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <note>{0} - package id
+{1} - package version</note>
+      </trans-unit>
       <trans-unit id="Warning_PackageWithKnownVulnerability">
         <source>Package '{0}' {1} has a known {2} severity vulnerability, {3}</source>
         <target state="translated">パッケージ '{0}' {1} に既知の {2} 重大度の脆弱性があります、{3}</target>

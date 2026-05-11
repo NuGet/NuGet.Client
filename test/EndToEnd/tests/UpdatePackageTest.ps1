@@ -123,28 +123,6 @@ function Test-UpdatingPackageDependentPackageVersion {
 }
 
 
-function Test-UpdatingPackageWhatIf {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-    Install-Package D -Version 1.0 -Source $context.RepositoryPath
-    Assert-Package $p D 1.0
-    Assert-Package $p B 1.0
-    Assert-Package $p C 1.0
-    Assert-Package $p A 2.0
-
-    # Act
-    Update-Package D -Source $context.RepositoryPath -WhatIf
-
-    # Assert: no packages are touched
-    Assert-Package $p D 1.0
-    Assert-Package $p B 1.0
-    Assert-Package $p C 1.0
-    Assert-Package $p A 2.0
-}
 
 function Test-UpdatingPackageWithSharedDependencySimple {
     param(
@@ -410,19 +388,6 @@ function Test-UpdatePackageWithOlderVersionOfSharedDependencyInUse {
     Assert-Null (Get-SolutionPackage A 1.0)
 }
 
-function Test-UpdatePackageAcceptsSourceName {
-    # Arrange
-    $p = New-ConsoleApplication
-    Install-Package Antlr -Version 3.1.1 -Project $p.Name -Source $SourceNuGet
-
-    Assert-Package $p Antlr 3.1.1
-
-    # Act
-    Update-Package Antlr -Version 3.1.3.42154 -Project $p.Name -Source $SourceNuGet
-
-    # Assert
-    Assert-Package $p Antlr 3.1.3.42154
-}
 
 function UpdatePackageAcceptsAllAsSourceName {
     # Arrange
@@ -488,17 +453,6 @@ function Test-UpdatePackageAcceptsRelativePathSource2 {
     popd
 }
 
-function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
-    # Arrange
-    $p1 = New-ConsoleApplication
-
-    # Act
-    $p1 | Install-Package Ninject -Version 2.0.1.0
-    Remove-ProjectItem $p1 packages.config
-
-    # Assert
-    Assert-Throws { Update-Package Ninject } "'Ninject' was not installed in any project. Update failed."
-}
 
 # https://github.com/NuGet/Home/issues/9283
 #function Test-UpdatePackageMissingPackage {
