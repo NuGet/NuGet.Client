@@ -1488,7 +1488,7 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
         <source>Internal error: Assets file is inconsistent</source>
-        <target state="new">Internal error: Assets file is inconsistent</target>
+        <target state="translated">Interner Fehler: Die Assets-Datei ist inkonsistent.</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">

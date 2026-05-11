@@ -1488,7 +1488,7 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
         <source>Internal error: Assets file is inconsistent</source>
-        <target state="new">Internal error: Assets file is inconsistent</target>
+        <target state="translated">Błąd wewnętrzny: plik zasobów jest niespójny</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">

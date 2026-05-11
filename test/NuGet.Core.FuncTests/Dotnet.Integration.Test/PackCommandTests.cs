@@ -3241,7 +3241,7 @@ namespace ClassLibrary
                         xml,
                         itemType,
                         "abc.png",
-                        NuGetFramework.AnyFramework,
+                        string.Empty,
                         properties,
                         attributes);
 
@@ -4347,7 +4347,7 @@ namespace ClassLibrary
                         xml,
                         "None",
                         licenseFileName,
-                        NuGetFramework.AnyFramework,
+                        string.Empty,
                         properties,
                         attributes);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -4449,7 +4449,7 @@ namespace ClassLibrary
                         xml,
                         "None",
                         realLicenseFileName,
-                        NuGetFramework.AnyFramework,
+                        string.Empty,
                         properties,
                         attributes);
 
@@ -4608,7 +4608,7 @@ namespace ClassLibrary
                         xml,
                         "None",
                         licenseFileName,
-                        NuGetFramework.AnyFramework,
+                        string.Empty,
                         properties,
                         attributes);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -4692,7 +4692,7 @@ namespace ClassLibrary
                         xml,
                         "None",
                         licenseFileName,
-                        NuGetFramework.AnyFramework,
+                        string.Empty,
                         properties,
                         attributes);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);

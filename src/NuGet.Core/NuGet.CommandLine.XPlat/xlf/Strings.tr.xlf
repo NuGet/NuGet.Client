@@ -1489,7 +1489,7 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
         <source>Internal error: Assets file is inconsistent</source>
-        <target state="new">Internal error: Assets file is inconsistent</target>
+        <target state="translated">İç hata: Varlıklar dosyası tutarsız</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">

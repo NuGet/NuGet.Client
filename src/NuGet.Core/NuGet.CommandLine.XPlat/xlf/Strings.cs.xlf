@@ -1488,7 +1488,7 @@ Hledání porovnává řetězce bez rozlišování malých a velkých písmen po
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
         <source>Internal error: Assets file is inconsistent</source>
-        <target state="new">Internal error: Assets file is inconsistent</target>
+        <target state="translated">Vnitřní chyba: Soubor prostředků není konzistentní</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
