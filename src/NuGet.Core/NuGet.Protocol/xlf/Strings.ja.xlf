@@ -91,7 +91,7 @@
       </trans-unit>
       <trans-unit id="Error_UnexpectedJsonToken">
         <source>Unexpected JSON token type '{0}'.</source>
-        <target state="new">Unexpected JSON token type '{0}'.</target>
+        <target state="translated">予期しない JSON トークンの種類 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
